@@ -1,13 +1,15 @@
 import * as stylex from '@stylexjs/stylex'
 import { motion } from 'motion/react'
 
-import { type Card, cardId, sameCard } from '~/lib/skat/cards'
+import { type Card, cardId, legalPlays, sameCard } from '~/lib/skat/cards'
 import type { CardRow } from '~/lib/skat/lessons/types'
 import { skat } from '../../theme/skat.stylex'
 import { type CardSize, PlayingCard } from './playing-card'
 
 /** A labelled row of cards for a teaching step. Wraps rather than overlaps: these are to be read. */
 export function CardRowView({ row }: { row: CardRow }) {
+  const legal = row.follow ? legalPlays(row.cards, [row.follow.lead], row.follow.contract) : null
+  const captions = legal ? row.cards.map((c) => (legal.some((d) => sameCard(c, d)) ? '✓' : '✗')) : row.captions
   return (
     <figure {...stylex.props(styles.figure)}>
       {row.label ? <figcaption {...stylex.props(styles.label)}>{row.label}</figcaption> : null}
@@ -15,7 +17,11 @@ export function CardRowView({ row }: { row: CardRow }) {
         {row.cards.map((c, i) => (
           <div key={cardId(c) + i} {...stylex.props(styles.cell)}>
             <PlayingCard card={c} faceDown={row.faceDown} size={row.cards.length > 8 ? 'sm' : 'md'} />
-            {row.captions?.[i] !== undefined ? <span {...stylex.props(styles.caption)}>{row.captions[i]}</span> : null}
+            {captions?.[i] !== undefined ? (
+              <span data-caption={captions[i]} {...stylex.props(styles.caption, legal && (legal.some((d) => sameCard(c, d)) ? styles.captionYes : styles.captionNo))}>
+                {captions[i]}
+              </span>
+            ) : null}
           </div>
         ))}
       </div>
@@ -107,6 +113,9 @@ const styles = stylex.create({
   row: { display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
   cell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 },
   caption: { fontSize: 13, fontWeight: 700, color: skat.brassDeep },
+  // The follow rule's verdict in the course's judging colours, as on an exercise answer.
+  captionYes: { fontSize: 16, color: skat.good },
+  captionNo: { fontSize: 16, color: skat.bad },
   fan: {
     display: 'flex',
     flexDirection: { default: 'row', '@media (max-width: 480px)': 'column' },

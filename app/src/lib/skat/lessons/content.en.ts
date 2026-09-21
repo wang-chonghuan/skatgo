@@ -142,19 +142,31 @@ export const LESSONS_EN: Lesson[] = [
     steps: [
       {
         kind: 'teach',
-        title: 'Only one strict rule: follow if you can',
+        title: 'Following suit: if you have the suit, you must play it',
         body: [
-          'One player **leads** a card to the trick, and the other two follow clockwise, one card each.',
-          'There is just one rule: **if you hold a card of the suit that was led, you must play one**. You have none? Then you may play anything — a trump to take the trick (you **trump** it), or a worthless card you **throw off**.',
-          'There is no rule that you must play higher. You may win if you can, or deliberately not.',
+          'In every trick, the first card played is the **lead**. Its suit is the suit of the trick. The other two players then each play one card, clockwise — that is **following**.',
+          'Following has one strict rule: **if you hold any card of the suit that was led, you must play a card of that suit**. Which one is up to you, high or low.',
+          'In the game below, **Clubs are trumps**. An opponent leads the ♥A (a heart). You hold hearts, so you must pick one of your two hearts:',
         ],
+        rows: [
+          { label: 'The lead', cards: cards('H:A') },
+          { label: 'Your hand: ✓ may be played, ✗ may not', cards: cards('H:10 7 | S:K | D:9'), follow: { contract: { kind: 'suit', trump: 'C' }, lead: cards('H:A')[0] } },
+          { label: 'With no hearts at all, any card may be played', cards: cards('C:8 | S:K | D:9'), captions: ['trump', 'throw off', 'throw off'] },
+        ],
+        tip: 'When you have none of the suit that was led: playing a **trump** to take the trick is called **trumping**; playing a useless card of another suit is **throwing off**. And there is no rule that you must play higher — you may win, or deliberately not.',
       },
       {
         kind: 'teach',
-        title: 'Trumps count as a suit of their own',
+        title: 'A Jack is not its printed suit — it is a trump',
         body: [
-          'A trump was led? Then if you hold a trump you must play one — **Jacks included**, whatever suit is printed on them.',
-          'The other way round: in a hearts game an opponent leads clubs, and your ♣J **may not** follow — it is not a club, it is a trump.',
+          'Lesson 3 said: the four Jacks are always trumps. So when you follow, a Jack does **not belong to the suit printed on it** — it belongs to the trumps.',
+          'In the game below **Hearts are trumps**. You hold the same four cards twice; only the lead changes:',
+          '**♣A led (a club)** → only a real club, the ♣7, may be played. The ♣J shows a club, but it is a trump and cannot follow clubs.',
+          '**♥A led (a trump)** → your trumps are the ♣J and the ♥9, and you must play one of them.',
+        ],
+        rows: [
+          { label: 'When the ♣A is led', cards: cards('C:J 7 | H:9 | D:K'), follow: { contract: { kind: 'suit', trump: 'H' }, lead: cards('C:A')[0] } },
+          { label: 'When the ♥A is led', cards: cards('C:J 7 | H:9 | D:K'), follow: { contract: { kind: 'suit', trump: 'H' }, lead: cards('H:A')[0] } },
         ],
         tip: 'This is the most common mistake in the whole course. Before you follow, ask: "Which suit does the lead count as?"',
       },

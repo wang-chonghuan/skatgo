@@ -17,7 +17,10 @@ import { Btn, Panel, Rich } from './ui'
 // "continue"). A wrong answer never advances and never ends the step — the learner tries again with
 // the reason in front of them.
 
-export type StepCallbacks = { onSolved: () => void; onMistake: () => void }
+// `solvedBefore`: the learner already solved this step and has come back to it (SKATGO-3). It opens in
+// its solved state — the right answer and the explanation showing — so looking again costs nothing
+// and cannot add a mistake. It is read once, as the initial state.
+export type StepCallbacks = { onSolved: () => void; onMistake: () => void; solvedBefore?: boolean }
 
 export function Teach({ step }: { step: TeachStep }) {
   return (
@@ -55,9 +58,9 @@ function Feedback({ state, good, bad }: { state: 'idle' | 'wrong' | 'right'; goo
   )
 }
 
-export function Choice({ step, onSolved, onMistake }: { step: ChoiceStep } & StepCallbacks) {
+export function Choice({ step, onSolved, onMistake, solvedBefore }: { step: ChoiceStep } & StepCallbacks) {
   const [wrong, setWrong] = useState<number[]>([])
-  const [right, setRight] = useState(false)
+  const [right, setRight] = useState(!!solvedBefore)
   const [nonce, setNonce] = useState(0)
 
   function choose(i: number) {
@@ -98,9 +101,9 @@ export function Choice({ step, onSolved, onMistake }: { step: ChoiceStep } & Ste
   )
 }
 
-export function Pick({ step, onSolved, onMistake }: { step: PickStep } & StepCallbacks) {
+export function Pick({ step, onSolved, onMistake, solvedBefore }: { step: PickStep } & StepCallbacks) {
   const [chosen, setChosen] = useState<Card[]>([])
-  const [state, setState] = useState<'idle' | 'wrong' | 'right'>('idle')
+  const [state, setState] = useState<'idle' | 'wrong' | 'right'>(solvedBefore ? 'right' : 'idle')
   const [nonce, setNonce] = useState(0)
   const has = (list: Card[], c: Card) => list.some((d) => sameCard(c, d))
 
@@ -156,9 +159,9 @@ export function Pick({ step, onSolved, onMistake }: { step: PickStep } & StepCal
   )
 }
 
-export function Order({ step, onSolved, onMistake }: { step: OrderStep } & StepCallbacks) {
-  const [picked, setPicked] = useState<Card[]>([])
-  const [state, setState] = useState<'idle' | 'wrong' | 'right'>('idle')
+export function Order({ step, onSolved, onMistake, solvedBefore }: { step: OrderStep } & StepCallbacks) {
+  const [picked, setPicked] = useState<Card[]>(solvedBefore ? step.correct : [])
+  const [state, setState] = useState<'idle' | 'wrong' | 'right'>(solvedBefore ? 'right' : 'idle')
   const [nonce, setNonce] = useState(0)
 
   function tap(card: Card) {
@@ -201,12 +204,12 @@ export function Order({ step, onSolved, onMistake }: { step: OrderStep } & StepC
   )
 }
 
-export function Play({ step, onSolved, onMistake }: { step: PlayStep } & StepCallbacks) {
-  const [played, setPlayed] = useState<Card | null>(null)
-  const [state, setState] = useState<'idle' | 'wrong' | 'right'>('idle')
+export function Play({ step, onSolved, onMistake, solvedBefore }: { step: PlayStep } & StepCallbacks) {
+  const legal = legalPlays(step.hand, step.trick, step.contract)
+  const [played, setPlayed] = useState<Card | null>(solvedBefore ? (step.best ?? legal)[0] : null)
+  const [state, setState] = useState<'idle' | 'wrong' | 'right'>(solvedBefore ? 'right' : 'idle')
   const [why, setWhy] = useState('')
   const [nonce, setNonce] = useState(0)
-  const legal = legalPlays(step.hand, step.trick, step.contract)
   const hand = sortHand(step.hand, step.contract).filter((c) => !played || !sameCard(c, played))
 
   function tap(card: Card) {

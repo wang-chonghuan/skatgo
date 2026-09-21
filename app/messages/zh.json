@@ -138,6 +138,7 @@
   "lesson_game_done": "🎓 一整局打完了！想再练可以继续「再来一局」，或者点下面的按钮毕业。",
   "lesson_graduate": "毕业！",
   "lesson_finish": "完成本课",
+  "lesson_back": "← 上一节",
   "lesson_continue": "继续",
   "done_title": "第 {id} 课完成！",
   "done_graduated": "恭喜毕业！你会打斯卡特了。",

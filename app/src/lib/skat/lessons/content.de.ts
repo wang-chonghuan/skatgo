@@ -83,7 +83,7 @@ export const LESSONS_DE: Lesson[] = [
         title: 'Nur fünf Kartenwerte zählen',
         body: ['Wer einen Stich bekommt, gewinnt nicht „einen Stich“, sondern die **Augen** seiner drei Karten. Nur Ass, Zehn, König, Dame und Bube zählen; 7, 8 und 9 sind nichts wert und heißen **Luschen**.'],
         rows: [{ cards: cards('S:A 10 K Q J 9 8 7'), captions: ['11', '10', '4', '3', '2', '0', '0', '0'] }],
-        tip: 'Merke: **11, 10, 4, 3, 2**. Eine Farbe hat 30 Augen, vier Farben 120.',
+        tip: 'Merke: A, 10, K, D, B zählen **11, 10, 4, 3, 2**. Jede Farbe hat diese fünf Karten, zusammen 30 Augen; vier Farben ergeben **120** – die 120 Augen des ganzen Blatts aus Lektion 1.',
       },
       {
         kind: 'teach',

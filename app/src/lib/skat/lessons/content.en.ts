@@ -80,7 +80,7 @@ export const LESSONS_EN: Lesson[] = [
         title: 'Only five kinds of card score',
         body: ['When you win a trick, what you win is not "a trick" but the **card points** of its three cards. Only A, 10, K, Q and J are worth anything; 7, 8 and 9 score nothing and are called **blanks**.'],
         rows: [{ cards: cards('S:A 10 K Q J 9 8 7'), captions: ['11', '10', '4', '3', '2', '0', '0', '0'] }],
-        tip: 'Memorise: **11, 10, 4, 3, 2**. One suit holds 30 points, four suits 120.',
+        tip: 'Memorise: A, 10, K, Q, J are worth **11, 10, 4, 3, 2**. Every suit has these five cards, adding up to 30 points; four suits make **120** — the 120 points of the whole deck from lesson 1.',
       },
       {
         kind: 'teach',

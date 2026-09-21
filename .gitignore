@@ -145,3 +145,6 @@ vite.config.ts.timestamp-*
 # TanStack Start build cache, and local scratch
 .tanstack/
 .tmp/
+.intentfold/tmp/
+.intentfold/tickets/*/tmp/
+.playwright-cli/

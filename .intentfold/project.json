@@ -1,0 +1,19 @@
+{
+  "project": "skatgo",
+  "main_branch": "main",
+  "deploy": {
+    "where": "Azure Container App ca-skatgo (n-easyapp shared substrate rg-easyapp-shared / cae-easyapp-shared); live at https://skatgo.com",
+    "how": "See .intentfold/charter/operations.md § Deploy; routine redeploy is n-easyapp cap2 for project skatgo"
+  },
+  "tickets": {
+    "system": "plane",
+    "project_url": "https://app.plane.so/intentmill/projects/8333ef20-d130-4e66-8843-7b0a9b63ce4b/issues/",
+    "project": "skatgo"
+  },
+  "ports": {
+    "web": {
+      "main": 3220,
+      "ticket_prefix": 55
+    }
+  }
+}

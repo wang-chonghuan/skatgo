@@ -1,9 +1,12 @@
 import { LIGHTNINGCSS_TARGETS, astryxStylex } from '@astryxdesign/build/vite'
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import { nitro } from 'nitro/vite'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
+
+import { paraglideOptions } from './paraglide.options'
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url))
 
@@ -29,6 +32,8 @@ export default defineConfig(() => {
     // theme stylesheet, and StyleX's internal one, for the compiled atoms.
     css: { lightningcss: { targets: LIGHTNINGCSS_TARGETS } },
     plugins: [
+      // i18n (SKATGO-1) — see paraglide.options.ts.
+      paraglideVitePlugin(paraglideOptions),
       ...astryxStylex({ rootDir: ROOT, lightningcssTargets: LIGHTNINGCSS_TARGETS }),
       tanstackStart(),
       // react's vite plugin must come after start's vite plugin

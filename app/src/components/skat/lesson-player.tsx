@@ -4,9 +4,10 @@ import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { LESSONS } from '~/lib/skat/lessons/content'
+import { lessons } from '~/lib/skat/lessons/content'
 import type { Lesson, Step } from '~/lib/skat/lessons/types'
 import { type LessonRecord, useProgress } from '~/lib/skat/progress'
+import { m } from '~/paraglide/messages'
 import { skat } from '../../theme/skat.stylex'
 import { Choice, Order, Pick, Play, Teach } from './exercises'
 import { GameTable } from './game-table'
@@ -55,9 +56,9 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   return (
     <div data-testid="skat-lesson" data-step={index} data-step-kind={step.kind} {...stylex.props(styles.root)}>
       <div {...stylex.props(styles.head)}>
-        <Link to="/" aria-label="回到课程目录" {...stylex.props(styles.close)}>✕</Link>
+        <Link to="/" aria-label={m.lesson_close()} {...stylex.props(styles.close)}>✕</Link>
         <div {...stylex.props(styles.bar)}>
-          <ProgressBar value={index / steps.length} label="本课进度" />
+          <ProgressBar value={index / steps.length} label={m.lesson_progress()} />
         </div>
         <span data-testid="skat-step-count" {...stylex.props(styles.count)}>{index + 1} / {steps.length}</span>
       </div>
@@ -86,7 +87,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
                   setSolved(true)
                 }}
               />
-              {solved ? <Panel tone="good"><p {...stylex.props(styles.gamePara)}>🎓 一整局打完了！想再练可以继续「再来一局」，或者点下面的按钮毕业。</p></Panel> : null}
+              {solved ? <Panel tone="good"><p {...stylex.props(styles.gamePara)}>{m.lesson_game_done()}</p></Panel> : null}
             </div>
           ) : null}
         </motion.div>
@@ -94,7 +95,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
 
       <div {...stylex.props(styles.foot)}>
         <Btn testId="skat-continue" size="lg" grow disabled={!canContinue} onClick={advance}>
-          {isLast ? (step.kind === 'game' ? '毕业！' : '完成本课') : '继续'}
+          {isLast ? (step.kind === 'game' ? m.lesson_graduate() : m.lesson_finish()) : m.lesson_continue()}
         </Btn>
       </div>
     </div>
@@ -102,30 +103,31 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
 }
 
 function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) {
-  const i = LESSONS.findIndex((l) => l.id === lesson.id)
-  const following = LESSONS[i + 1]
+  const course = lessons()
+  const i = course.findIndex((l) => l.id === lesson.id)
+  const following = course[i + 1]
   return (
     <div data-testid="skat-lesson-done" {...stylex.props(styles.done)}>
       <motion.div initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} {...stylex.props(styles.doneEmoji)}>
         {following ? lesson.emoji : '🏅'}
       </motion.div>
-      <h2 {...stylex.props(styles.doneTitle)}>{following ? `第 ${lesson.id} 课完成！` : '恭喜毕业！你会打斯卡特了。'}</h2>
+      <h2 {...stylex.props(styles.doneTitle)}>{following ? m.done_title({ id: lesson.id }) : m.done_graduated()}</h2>
       <div {...stylex.props(styles.doneStars)}><Stars n={record.stars} /></div>
       <p {...stylex.props(styles.doneNote)}>
-        {record.mistakes === 0 ? '一次都没错，满分三星。' : `本课最好成绩：错 ${record.mistakes} 次。重学一遍可以刷到三星。`}
+        {record.mistakes === 0 ? m.done_perfect() : m.done_mistakes({ n: record.mistakes })}
       </p>
       {following ? null : (
-        <p {...stylex.props(styles.doneNote)}>接下来就是多打。去「自由对局」里和莉娜、马克斯继续练，然后找会打的朋友上桌吧。</p>
+        <p {...stylex.props(styles.doneNote)}>{m.done_next_steps()}</p>
       )}
       <div {...stylex.props(styles.doneActions)}>
         {following ? (
           <Link to="/lesson/$id" params={{ id: following.id }} data-testid="skat-next-lesson" {...linkLook('primary', 'lg')}>
-            下一课：{following.title}
+            {m.done_next_lesson({ title: following.title })}
           </Link>
         ) : (
-          <Link to="/play" {...linkLook('primary', 'lg')}>去自由对局</Link>
+          <Link to="/play" {...linkLook('primary', 'lg')}>{m.done_free_play()}</Link>
         )}
-        <Link to="/" data-testid="skat-back-home" {...linkLook('quiet', 'lg')}>回到目录</Link>
+        <Link to="/" data-testid="skat-back-home" {...linkLook('quiet', 'lg')}>{m.done_back()}</Link>
       </div>
     </div>
   )

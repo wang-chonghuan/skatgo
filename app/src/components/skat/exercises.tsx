@@ -2,9 +2,11 @@ import * as stylex from '@stylexjs/stylex'
 import { motion, useAnimate } from 'motion/react'
 import { type ReactNode, useEffect, useState } from 'react'
 
-import { type Card, SUIT_NAME, SUIT_SYMBOL, cardId, contractName, effectiveSuit, legalPlays, sameCard, sortHand } from '~/lib/skat/cards'
+import { type Card, cardId, effectiveSuit, legalPlays, sameCard, sortHand } from '~/lib/skat/cards'
+import { contractName, ledName } from '~/lib/skat/i18n'
 import { sameSet } from '~/lib/skat/lessons/drills'
 import type { ChoiceStep, OrderStep, PickStep, PlayStep, TeachStep } from '~/lib/skat/lessons/types'
+import { m } from '~/paraglide/messages'
 import { skat } from '../../theme/skat.stylex'
 import { CardRowView, Fan } from './card-row'
 import { PlayingCard } from './playing-card'
@@ -91,7 +93,7 @@ export function Choice({ step, onSolved, onMistake }: { step: ChoiceStep } & Ste
           ))}
         </div>
       </Shake>
-      <Feedback state={right ? 'right' : wrong.length ? 'wrong' : 'idle'} good={step.explain} bad={step.hint ?? '不对，再想想。'} />
+      <Feedback state={right ? 'right' : wrong.length ? 'wrong' : 'idle'} good={step.explain} bad={step.hint ?? m.ex_choice_wrong()} />
     </div>
   )
 }
@@ -141,14 +143,14 @@ export function Pick({ step, onSolved, onMistake }: { step: PickStep } & StepCal
       {step.single ? null : (
         <div {...stylex.props(styles.centerRow)}>
           <Btn testId="skat-check" tone="felt" disabled={chosen.length === 0 || state === 'right'} onClick={() => judge(chosen)}>
-            检查（已选 {chosen.length} 张）
+            {m.ex_pick_check({ n: chosen.length })}
           </Btn>
         </div>
       )}
       <Feedback
         state={state}
         good={step.explain}
-        bad={step.hint ?? (step.single ? '不是这张，再看看。' : '还不对：红圈的不该选，或者还有漏掉的。')}
+        bad={step.hint ?? (step.single ? m.ex_pick_wrong_single() : m.ex_pick_wrong_multi())}
       />
     </div>
   )
@@ -194,7 +196,7 @@ export function Order({ step, onSolved, onMistake }: { step: OrderStep } & StepC
           />
         </div>
       </Shake>
-      <Feedback state={state} good={step.explain} bad={`不对——第 ${picked.length + 1} 大的不是这张。${step.hint}`} />
+      <Feedback state={state} good={step.explain} bad={`${m.ex_order_wrong({ n: picked.length + 1 })}${step.hint}`} />
     </div>
   )
 }
@@ -212,10 +214,9 @@ export function Play({ step, onSolved, onMistake }: { step: PlayStep } & StepCal
     const isLegal = legal.some((c) => sameCard(c, card))
     if (!isLegal) {
       const led = effectiveSuit(step.trick[0], step.contract)
-      const name = led === 'T' ? '主牌' : `${SUIT_NAME[led]}${SUIT_SYMBOL[led]}`
-      setWhy(`这张不能出。首出的算**${name}**，你手里有${name}，就必须跟${name}。${card.rank === 'J' && step.contract.kind !== 'null' ? ' 记住：J 是主牌，不算它印的那门花色。' : ''}`)
+      setWhy(m.ex_play_illegal({ led: ledName(led) }) + (card.rank === 'J' && step.contract.kind !== 'null' ? m.ex_play_illegal_jack() : ''))
     } else if (step.best && !step.best.some((c) => sameCard(c, card))) {
-      setWhy(step.whyNot ?? '可以出，但不是最好的一张。再想想。')
+      setWhy(step.whyNot ?? m.ex_play_not_best())
     } else {
       setPlayed(card)
       setState('right')
@@ -232,9 +233,9 @@ export function Play({ step, onSolved, onMistake }: { step: PlayStep } & StepCal
       <p {...stylex.props(styles.prompt)}><Rich text={step.prompt} /></p>
       <div {...stylex.props(styles.felt)}>
         <div {...stylex.props(styles.trickRow)}>
-          <span {...stylex.props(styles.feltLabel)}>桌上（{contractName(step.contract)}）</span>
+          <span {...stylex.props(styles.feltLabel)}>{m.ex_on_table({ contract: contractName(step.contract) })}</span>
           <div {...stylex.props(styles.trickCards)}>
-            {step.trick.length === 0 && !played ? <span {...stylex.props(styles.feltLabel)}>还没人出牌——由你首出</span> : null}
+            {step.trick.length === 0 && !played ? <span {...stylex.props(styles.feltLabel)}>{m.ex_you_lead()}</span> : null}
             {step.trick.map((c, i) => (
               <div key={cardId(c)} {...stylex.props(styles.trickCell)}>
                 <PlayingCard card={c} size="md" />
@@ -244,7 +245,7 @@ export function Play({ step, onSolved, onMistake }: { step: PlayStep } & StepCal
             {played ? (
               <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} {...stylex.props(styles.trickCell)}>
                 <PlayingCard card={played} size="md" glow />
-                <span {...stylex.props(styles.feltLabel)}>你</span>
+                <span {...stylex.props(styles.feltLabel)}>{m.name_you()}</span>
               </motion.div>
             ) : null}
           </div>

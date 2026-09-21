@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The course's public pages in every language, each with its hreflang alternates (SKATGO-1).
+     Lessons are not listed: a new visitor is sent back to the course map until the lesson before is done.
+     Held to app/messages locales and the page list by src/lib/sitemap.test.ts. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://skatgo.com/en</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/"/>
+  </url>
+  <url>
+    <loc>https://skatgo.com/de</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/"/>
+  </url>
+  <url>
+    <loc>https://skatgo.com/zh</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/"/>
+  </url>
+  <url>
+    <loc>https://skatgo.com/en/play</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en/play"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/play"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh/play"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/play"/>
+  </url>
+  <url>
+    <loc>https://skatgo.com/de/play</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en/play"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/play"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh/play"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/play"/>
+  </url>
+  <url>
+    <loc>https://skatgo.com/zh/play</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en/play"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/play"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh/play"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/play"/>
+  </url>
+</urlset>

@@ -3,7 +3,8 @@
 // the lessons' drills and the full game both judge answers with these, so a rule is stated once.
 //
 // Rules follow the International Skat Order (ISkO). Terminology in comments is the German/English
-// one the rulebook uses; the Chinese the learner sees lives in the lesson data.
+// one the rulebook uses. The engine speaks no language: every name the learner reads — suits, cards,
+// contracts — is phrased in lib/skat/i18n.ts, in the learner's language.
 
 export type Suit = 'C' | 'S' | 'H' | 'D'
 export type Rank = '7' | '8' | '9' | 'Q' | 'K' | '10' | 'A' | 'J'
@@ -14,7 +15,6 @@ export const SUITS: Suit[] = ['C', 'S', 'H', 'D']
 export const RANKS: Rank[] = ['7', '8', '9', 'Q', 'K', '10', 'A', 'J']
 
 export const SUIT_SYMBOL: Record<Suit, string> = { C: '♣', S: '♠', H: '♥', D: '♦' }
-export const SUIT_NAME: Record<Suit, string> = { C: '梅花', S: '黑桃', H: '红心', D: '方块' }
 
 /** Card points (Augen). 120 in the deck; the declarer needs 61. */
 export const POINTS: Record<Rank, number> = { A: 11, '10': 10, K: 4, Q: 3, J: 2, '9': 0, '8': 0, '7': 0 }
@@ -26,17 +26,10 @@ export type Contract =
 
 export const cardId = (c: Card) => `${c.suit}${c.rank}`
 export const sameCard = (a: Card, b: Card) => a.suit === b.suit && a.rank === b.rank
-export const cardLabel = (c: Card) => `${SUIT_SYMBOL[c.suit]}${c.rank}`
 export const pointsOf = (cards: Card[]) => cards.reduce((n, c) => n + POINTS[c.rank], 0)
 
 export function fullDeck(): Card[] {
   return SUITS.flatMap((suit) => RANKS.map((rank) => ({ suit, rank })))
-}
-
-export function contractName(c: Contract): string {
-  if (c.kind === 'grand') return 'Grand'
-  if (c.kind === 'null') return 'Null'
-  return `${SUIT_NAME[c.trump]}${SUIT_SYMBOL[c.trump]}`
 }
 
 /** In suit and Grand games the four Jacks are trumps and belong to no suit. In Null nothing is. */

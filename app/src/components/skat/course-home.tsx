@@ -1,56 +1,71 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
+import { useEffect, useState } from 'react'
 
 import { Pill, ProgressBar, Stars, linkLook } from './ui'
-import { LESSONS, isUnlocked } from '~/lib/skat/lessons/content'
-import { useProgress } from '~/lib/skat/progress'
+import { isUnlocked, lessons } from '~/lib/skat/lessons/content'
+import { type LessonRecord, type Tally, useProgress } from '~/lib/skat/progress'
+import { m } from '~/paraglide/messages'
 import { skat } from '../../theme/skat.stylex'
 
-/** The course map: every lesson with its state, overall progress, and the way into free play. */
+const NOTHING_DONE: Record<string, LessonRecord> = {}
+const NO_GAMES: Tally = { games: 0, won: 0, score: 0 }
+
+/**
+ * The course map: every lesson with its state, overall progress, and the way into free play.
+ *
+ * The one page of the course rendered on the server (SKATGO-1, for search engines): its lessons,
+ * titles and promises are the same for every visitor. The learner's progress lives in localStorage,
+ * so the server renders the map of someone who has done nothing, the browser's first render matches
+ * it, and the progress is applied right after mount.
+ */
 export function CourseHome() {
-  const done = useProgress((s) => s.done)
-  const tally = useProgress((s) => s.tally)
-  const finished = LESSONS.filter((l) => l.id in done).length
-  const pct = Math.round((finished / LESSONS.length) * 100)
-  const current = LESSONS.find((l) => !(l.id in done))
-  const totalMinutes = LESSONS.reduce((n, l) => n + l.minutes, 0)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const storedDone = useProgress((s) => s.done)
+  const storedTally = useProgress((s) => s.tally)
+  const done = mounted ? storedDone : NOTHING_DONE
+  const tally = mounted ? storedTally : NO_GAMES
+  const course = lessons()
+  const finished = course.filter((l) => l.id in done).length
+  const pct = Math.round((finished / course.length) * 100)
+  const current = course.find((l) => !(l.id in done))
+  const totalMinutes = course.reduce((n, l) => n + l.minutes, 0)
 
   return (
     <div data-testid="skat-home" {...stylex.props(styles.root)}>
       <section {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.heroText)}>
-          <h1 {...stylex.props(styles.h1)}>一小时，学会斯卡特</h1>
-          <p {...stylex.props(styles.lead)}>
-            德国的国民牌戏：三个人、32 张牌、每局一打二。{LESSONS.length} 节小课，边看边动手，
-            最后和两个电脑对手打一整局——学完就能和会打的人上桌。
-          </p>
+          <h1 {...stylex.props(styles.h1)}>{m.home_title()}</h1>
+          <p {...stylex.props(styles.lead)}>{m.home_lead({ count: course.length })}</p>
           <div {...stylex.props(styles.heroMeta)}>
-            <Pill tone="felt">{LESSONS.length} 课 · 约 {totalMinutes} 分钟</Pill>
-            <Pill tone="felt">12 岁以上</Pill>
-            <Pill tone="felt">进度自动保存在这台设备</Pill>
+            <Pill tone="felt">{m.home_pill_length({ count: course.length, minutes: totalMinutes })}</Pill>
+            <Pill tone="felt">{m.home_pill_age()}</Pill>
+            <Pill tone="felt">{m.home_pill_saved()}</Pill>
           </div>
         </div>
         <div {...stylex.props(styles.progress)}>
           <div {...stylex.props(styles.progressHead)}>
-            <span {...stylex.props(styles.progressLabel)}>总体进度</span>
+            <span {...stylex.props(styles.progressLabel)}>{m.home_progress()}</span>
             <span data-testid="skat-overall" {...stylex.props(styles.progressPct)}>{pct}%</span>
           </div>
-          <ProgressBar value={finished / LESSONS.length} label="总体进度" />
+          <ProgressBar value={finished / course.length} label={m.home_progress()} />
           <span {...stylex.props(styles.progressNote)}>
-            已完成 {finished} / {LESSONS.length} 课{tally.games > 0 ? ` · 对局 ${tally.games} 场，赢 ${tally.won} 场` : ''}
+            {m.home_done({ finished, total: course.length })}
+            {tally.games > 0 ? m.home_games({ games: tally.games, won: tally.won }) : ''}
           </span>
           {current ? (
             <Link to="/lesson/$id" params={{ id: current.id }} data-testid="skat-resume" {...linkLook('primary', 'lg')}>
-              {finished === 0 ? '开始第 1 课' : `继续：第 ${current.id} 课`}
+              {finished === 0 ? m.home_start() : m.home_continue({ id: current.id })}
             </Link>
           ) : (
-            <Link to="/play" {...linkLook('primary', 'lg')}>🎓 已毕业 · 去打牌</Link>
+            <Link to="/play" {...linkLook('primary', 'lg')}>{m.home_graduated()}</Link>
           )}
         </div>
       </section>
 
       <ol {...stylex.props(styles.list)}>
-        {LESSONS.map((l) => {
+        {course.map((l) => {
           const record = done[l.id]
           const open = isUnlocked(l.id, done)
           const state = record ? 'done' : open ? 'open' : 'locked'
@@ -58,11 +73,11 @@ export function CourseHome() {
             <>
               <span {...stylex.props(styles.emoji, state === 'locked' && styles.emojiLocked)}>{state === 'locked' ? '🔒' : l.emoji}</span>
               <span {...stylex.props(styles.lessonText)}>
-                <span {...stylex.props(styles.lessonTitle)}>第 {l.id} 课 · {l.title}</span>
+                <span {...stylex.props(styles.lessonTitle)}>{m.lesson_heading({ id: l.id, title: l.title })}</span>
                 <span {...stylex.props(styles.lessonPromise)}>{l.promise}</span>
               </span>
               <span {...stylex.props(styles.lessonEnd)}>
-                {record ? <Stars n={record.stars} /> : <span {...stylex.props(styles.minutes)}>{l.minutes} 分钟</span>}
+                {record ? <Stars n={record.stars} /> : <span {...stylex.props(styles.minutes)}>{m.lesson_minutes({ n: l.minutes })}</span>}
               </span>
             </>
           )
@@ -91,10 +106,10 @@ export function CourseHome() {
 
       <section {...stylex.props(styles.free)}>
         <div>
-          <h2 {...stylex.props(styles.h2)}>自由对局</h2>
-          <p {...stylex.props(styles.freeNote)}>已经会了，或者想先试试手？直接和莉娜、马克斯开一桌，规则由程序把关，随时可以要提示。</p>
+          <h2 {...stylex.props(styles.h2)}>{m.free_title()}</h2>
+          <p {...stylex.props(styles.freeNote)}>{m.free_note()}</p>
         </div>
-        <Link to="/play" data-testid="skat-free-play" {...linkLook('felt', 'lg')}>开一桌 →</Link>
+        <Link to="/play" data-testid="skat-free-play" {...linkLook('felt', 'lg')}>{m.free_open()}</Link>
       </section>
     </div>
   )

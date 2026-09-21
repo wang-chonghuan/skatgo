@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
+import { m } from '~/paraglide/messages'
 import { skat } from '../../theme/skat.stylex'
 
 // The course's own small kit. It deliberately does not reach for Astryx: the course has a look of
@@ -75,7 +76,7 @@ export function ProgressBar({ value, label }: { value: number; label: string }) 
 
 export function Stars({ n }: { n: number }) {
   return (
-    <span aria-label={`${n} 颗星`} {...stylex.props(styles.stars)}>
+    <span aria-label={m.stars({ n })} {...stylex.props(styles.stars)}>
       {[1, 2, 3].map((i) => (
         <span key={i} {...stylex.props(i <= n ? styles.starOn : styles.starOff)}>★</span>
       ))}

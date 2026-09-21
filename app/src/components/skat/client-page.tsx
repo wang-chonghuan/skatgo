@@ -2,24 +2,29 @@ import * as stylex from '@stylexjs/stylex'
 import { ClientOnly } from '@tanstack/react-router'
 import { Suspense, lazy } from 'react'
 
+import { m } from '~/paraglide/messages'
 import { skat } from '../../theme/skat.stylex'
+import { CourseHome } from './course-home'
 
-// Every page of the course renders in the browser only, from one lazily loaded chunk.
+// How the routes reach the course's pages — the only way they may (engineering.md, redline 4).
 //
-// The course is all client state — progress in localStorage, random drills, a random deal — so
-// there is nothing to render before the browser has it. The lazy chunk and the brief "正在发牌……"
-// are kept as they are on parrottoon.com/skat, where this component came from: the two sites are
-// meant to behave identically, down to what shows while the course loads.
+// Lessons and the table render in the browser only, from one lazily loaded chunk: they are all
+// client state — progress in localStorage, random drills, a random deal — so there is nothing to
+// render before the browser has it, and a brief "dealing the cards…" shows meanwhile.
+//
+// The course map is the exception (SKATGO-1): it is rendered on the server, so search engines read
+// each language's lessons, titles and promises. It applies the learner's progress itself, after
+// mount — see course-home.tsx.
 const pages = () => import('./pages')
-const CourseHome = lazy(() => pages().then((m) => ({ default: m.CourseHome })))
-const LessonPage = lazy(() => pages().then((m) => ({ default: m.LessonPage })))
-const FreePlay = lazy(() => pages().then((m) => ({ default: m.FreePlay })))
+const LessonPage = lazy(() => pages().then((mod) => ({ default: mod.LessonPage })))
+const FreePlay = lazy(() => pages().then((mod) => ({ default: mod.FreePlay })))
 
-const PAGES = { home: CourseHome, lesson: LessonPage, play: FreePlay }
+const PAGES = { lesson: LessonPage, play: FreePlay }
 
-export function ClientPage({ page }: { page: keyof typeof PAGES }) {
+export function ClientPage({ page }: { page: 'home' | keyof typeof PAGES }) {
+  if (page === 'home') return <CourseHome />
   const Page = PAGES[page]
-  const loading = <p {...stylex.props(styles.loading)}>正在发牌……</p>
+  const loading = <p {...stylex.props(styles.loading)}>{m.loading()}</p>
   return (
     <ClientOnly fallback={loading}>
       <Suspense fallback={loading}>

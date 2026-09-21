@@ -22,7 +22,6 @@ export type Seat = 0 | 1 | 2
 export const next = (s: Seat): Seat => ((s + 1) % 3) as Seat
 
 export type Role = 'forehand' | 'middlehand' | 'rearhand'
-export const ROLE_NAME: Record<Role, string> = { forehand: '前家', middlehand: '中家', rearhand: '后家' }
 
 export type BidEvent = { seat: Seat; say: 'bid' | 'hold' | 'pass'; value: number }
 

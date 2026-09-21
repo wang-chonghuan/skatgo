@@ -35,7 +35,9 @@ import {
 } from '@letele/playing-cards'
 import type { ComponentType, SVGProps } from 'react'
 
-import { type Card, SUIT_NAME, cardId } from '~/lib/skat/cards'
+import { type Card, cardId } from '~/lib/skat/cards'
+import { spokenCard } from '~/lib/skat/i18n'
+import { m } from '~/paraglide/messages'
 import { skat } from '../../theme/skat.stylex'
 
 // One playing card. The faces are Adrian Kennard's public-domain SVG deck (via
@@ -85,9 +87,6 @@ function faceOf(card: Card): Face {
   return FACES[`${card.suit}${card.rank.toLowerCase()}`]
 }
 
-const RANK_NAME: Record<string, string> = { A: 'A', K: 'K', Q: 'Q', J: 'J' }
-export const spokenName = (c: Card) => `${SUIT_NAME[c.suit]} ${RANK_NAME[c.rank] ?? c.rank}`
-
 export type CardSize = 'xs' | 'sm' | 'md' | 'lg'
 
 type Props = {
@@ -130,7 +129,7 @@ export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glo
   )
   if (!onClick) {
     return (
-      <div data-card={faceDown ? 'back' : cardId(card)} role="img" aria-label={faceDown ? '牌背' : spokenName(card)} {...look}>
+      <div data-card={faceDown ? 'back' : cardId(card)} role="img" aria-label={faceDown ? m.card_back() : spokenCard(card)} {...look}>
         {body}
       </div>
     )
@@ -141,7 +140,7 @@ export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glo
       data-card={cardId(card)}
       data-legal={legal === undefined ? undefined : String(legal)}
       data-selected={selected ? 'true' : undefined}
-      aria-label={spokenName(card)}
+      aria-label={spokenCard(card)}
       aria-pressed={selected}
       onClick={onClick}
       {...data}

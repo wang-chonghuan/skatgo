@@ -1,6 +1,7 @@
 // The two computer opponents, and the hint the learner can ask for — the same functions, because a
-// hint is just "what would a sensible player do here, and why". Every decision returns its reason in
-// the learner's language for that purpose.
+// hint is just "what would a sensible player do here, and why". Every decision returns its reason as
+// a code plus the facts it cites; lib/skat/i18n.ts phrases it in the learner's language. The wording
+// of those reasons is part of the teaching.
 //
 // These are club-level heuristics, not a search. That is deliberate: the course promises the learner
 // can sit down with people who already play, and a transparent opponent that draws trumps, cashes
@@ -13,7 +14,6 @@ import {
   POINTS,
   SUITS,
   beats,
-  cardLabel,
   effectiveSuit,
   fullDeck,
   isTrump,
@@ -157,7 +157,40 @@ export type PlayContext = {
   buried: Card[]
 }
 
-export type Advice = { card: Card; reason: string }
+/** Why the heuristics chose a card. Each code is one teaching sentence (messages: `advice_<code>`). */
+export type AdviceReason =
+  | { code: 'onlyCard' }
+  | { code: 'drawTrumpsMaster'; card: Card }
+  | { code: 'drawTrumpsLow' }
+  | { code: 'cashMasterNoTrumps'; card: Card }
+  | { code: 'cashMaster'; card: Card }
+  | { code: 'leadLow' }
+  | { code: 'cannotWin' }
+  | { code: 'lastWinPlain'; card: Card }
+  | { code: 'lastNoPoints' }
+  | { code: 'lastWinCheapTrump'; card: Card; pot: number }
+  | { code: 'safeWin'; card: Card }
+  | { code: 'grabPot'; pot: number }
+  | { code: 'secondLow' }
+  | { code: 'defCashAce'; card: Card }
+  | { code: 'defNoTrumpLead' }
+  | { code: 'defOnlyTrumps' }
+  | { code: 'defSmear'; card: Card; points: number }
+  | { code: 'defNothingToSmear' }
+  | { code: 'defOvertake'; card: Card }
+  | { code: 'defDontFeed' }
+  | { code: 'defAceBeforeDeclarer'; card: Card }
+  | { code: 'defWait' }
+  | { code: 'nullLeadDeclarer' }
+  | { code: 'nullLeadDefender' }
+  | { code: 'nullVoidDump' }
+  | { code: 'nullDuck'; card: Card }
+  | { code: 'nullForced' }
+  | { code: 'nullDefUnder'; card: Card }
+  | { code: 'nullDefDump' }
+  | { code: 'nullDefPressure' }
+
+export type Advice = { card: Card; reason: AdviceReason }
 
 const lowest = (cs: Card[], contract: Contract) =>
   [...cs].sort((a, b) => POINTS[a.rank] - POINTS[b.rank] || strength(a, contract) - strength(b, contract))[0]
@@ -166,7 +199,7 @@ const fattest = (cs: Card[], contract: Contract) =>
 
 export function advise(ctx: PlayContext): Advice {
   const legal = legalPlays(ctx.hand, ctx.trick, ctx.contract)
-  if (legal.length === 1) return { card: legal[0], reason: '只有这一张能出。' }
+  if (legal.length === 1) return { card: legal[0], reason: { code: 'onlyCard' } }
   if (ctx.contract.kind === 'null') return adviseNull(ctx, legal)
   return ctx.me === ctx.declarer ? adviseDeclarer(ctx, legal) : adviseDefender(ctx, legal)
 }
@@ -193,24 +226,24 @@ function adviseDeclarer(ctx: PlayContext, legal: Card[]): Advice {
   if (trick.length === 0) {
     if (trumpsOut.length > 0 && myTrumps.length > 0) {
       if (isMaster(myTrumps[0], ctx)) {
-        return { card: myTrumps[0], reason: `先清主：${cardLabel(myTrumps[0])} 现在是最大的主牌，出它能把对手的主牌逼出来。` }
+        return { card: myTrumps[0], reason: { code: 'drawTrumpsMaster', card: myTrumps[0] } }
       }
       if (myTrumps.length >= 3) {
         const low = myTrumps[myTrumps.length - 1]
-        return { card: low, reason: '主牌多就继续清主：用小主牌把对手的大主牌引出来。' }
+        return { card: low, reason: { code: 'drawTrumpsLow' } }
       }
     }
     const masters = legal.filter((c) => !isTrump(c, contract) && isMaster(c, ctx) && POINTS[c.rank] >= 10)
     if (masters.length > 0 && trumpsOut.length === 0) {
       const c = fattest(masters, contract)
-      return { card: c, reason: `对手没主牌了，${cardLabel(c)} 是这门花色最大的，稳拿这一墩。` }
+      return { card: c, reason: { code: 'cashMasterNoTrumps', card: c } }
     }
     if (masters.length > 0) {
       const c = fattest(masters, contract)
-      return { card: c, reason: `${cardLabel(c)} 是这门花色最大的，趁对手还得跟牌先拿下。` }
+      return { card: c, reason: { code: 'cashMaster', card: c } }
     }
     const c = lowest(legal.filter((x) => !isTrump(x, contract)).length ? legal.filter((x) => !isTrump(x, contract)) : legal, contract)
-    return { card: c, reason: '没有稳赢的牌，就出一张不值钱的小牌，把大牌留着。' }
+    return { card: c, reason: { code: 'leadLow' } }
   }
 
   const winning = trick[trickWinnerIndex(trick, contract)]
@@ -219,31 +252,31 @@ function adviseDeclarer(ctx: PlayContext, legal: Card[]): Advice {
   const last = trick.length === 2
 
   if (winners.length === 0) {
-    return { card: lowest(legal, contract), reason: '这一墩赢不了，垫一张最不值钱的牌。' }
+    return { card: lowest(legal, contract), reason: { code: 'cannotWin' } }
   }
   if (last) {
     const plainWinners = winners.filter((c) => !isTrump(c, contract))
     if (plainWinners.length > 0) {
       const c = fattest(plainWinners, contract)
-      return { card: c, reason: `你最后出牌，用 ${cardLabel(c)} 赢下来，分数也一起带走。` }
+      return { card: c, reason: { code: 'lastWinPlain', card: c } }
     }
     if (pot === 0 && legal.some((c) => !beats(c, winning, contract))) {
-      return { card: lowest(legal.filter((c) => !beats(c, winning, contract)), contract), reason: '这一墩一分都没有，不值得花主牌。' }
+      return { card: lowest(legal.filter((c) => !beats(c, winning, contract)), contract), reason: { code: 'lastNoPoints' } }
     }
     const cheap = [...winners].sort((a, b) => strength(a, contract) - strength(b, contract))[0]
-    return { card: cheap, reason: `你最后出牌，用最小的够用的主牌 ${cardLabel(cheap)} 拿下这 ${pot} 点。` }
+    return { card: cheap, reason: { code: 'lastWinCheapTrump', card: cheap, pot } }
   }
   // Second to play: only commit a card the player behind cannot easily beat.
   const safe = winners.filter((c) => isMaster(c, ctx))
   if (safe.length > 0) {
     const c = fattest(safe, contract)
-    return { card: c, reason: `${cardLabel(c)} 后面的人压不过，放心赢。` }
+    return { card: c, reason: { code: 'safeWin', card: c } }
   }
   if (pot >= 10) {
     const c = [...winners].sort((a, b) => strength(b, contract) - strength(a, contract))[0]
-    return { card: c, reason: `桌上已经有 ${pot} 点，值得用大牌去抢。` }
+    return { card: c, reason: { code: 'grabPot', pot } }
   }
-  return { card: lowest(legal, contract), reason: '后面还有人，先出小牌，别把大牌送出去。' }
+  return { card: lowest(legal, contract), reason: { code: 'secondLow' } }
 }
 
 function adviseDefender(ctx: PlayContext, legal: Card[]): Advice {
@@ -256,13 +289,13 @@ function adviseDefender(ctx: PlayContext, legal: Card[]): Advice {
       const c = [...aces].sort(
         (a, b) => ctx.hand.filter((x) => x.suit === a.suit).length - ctx.hand.filter((x) => x.suit === b.suit).length,
       )[0]
-      return { card: c, reason: `防守方先兑现 A：${cardLabel(c)} 趁庄家还得跟牌，先拿 11 点。` }
+      return { card: c, reason: { code: 'defCashAce', card: c } }
     }
     const side = legal.filter((c) => !isTrump(c, contract))
     if (side.length > 0) {
-      return { card: lowest(side, contract), reason: '防守方不要主动出主牌——那是在帮庄家清主。出一张副牌小牌。' }
+      return { card: lowest(side, contract), reason: { code: 'defNoTrumpLead' } }
     }
-    return { card: lowest(legal, contract), reason: '手里只剩主牌了，出最小的。' }
+    return { card: lowest(legal, contract), reason: { code: 'defOnlyTrumps' } }
   }
 
   const winIdx = trickWinnerIndex(trick, contract)
@@ -276,9 +309,9 @@ function adviseDefender(ctx: PlayContext, legal: Card[]): Advice {
     const fat = legal.filter((c) => !(c.rank === 'J'))
     const c = fattest(fat.length ? fat : legal, contract)
     if (POINTS[c.rank] > 0) {
-      return { card: c, reason: `同伴这一墩赢定了——给他「送分」：把 ${cardLabel(c)} 的 ${POINTS[c.rank]} 点垫上去。` }
+      return { card: c, reason: { code: 'defSmear', card: c, points: POINTS[c.rank] } }
     }
-    return { card: c, reason: '同伴这一墩赢定了，可惜手里没有分能送。' }
+    return { card: c, reason: { code: 'defNothingToSmear' } }
   }
 
   if (declarerPlayed && !partnerWinning) {
@@ -287,15 +320,15 @@ function adviseDefender(ctx: PlayContext, legal: Card[]): Advice {
       const c = plainWinners.length
         ? fattest(plainWinners, contract)
         : [...winners].sort((a, b) => strength(a, contract) - strength(b, contract))[0]
-      return { card: c, reason: `庄家正赢着这一墩，用 ${cardLabel(c)} 压过他。` }
+      return { card: c, reason: { code: 'defOvertake', card: c } }
     }
-    return { card: lowest(legal, contract), reason: '压不过庄家，就别给他送分，垫最小的。' }
+    return { card: lowest(legal, contract), reason: { code: 'defDontFeed' } }
   }
 
   // Declarer still to play behind me.
   const ace = legal.find((c) => !isTrump(c, contract) && c.rank === 'A' && beats(c, winning, contract))
-  if (ace) return { card: ace, reason: `庄家还在后面，但 ${cardLabel(ace)} 他只能用主牌才压得住，值得一试。` }
-  return { card: lowest(legal, contract), reason: '庄家还没出牌，先出小的，看他怎么出。' }
+  if (ace) return { card: ace, reason: { code: 'defAceBeforeDeclarer', card: ace } }
+  return { card: lowest(legal, contract), reason: { code: 'defWait' } }
 }
 
 function adviseNull(ctx: PlayContext, legal: Card[]): Advice {
@@ -305,20 +338,20 @@ function adviseNull(ctx: PlayContext, legal: Card[]): Advice {
   const high = byRank[byRank.length - 1]
 
   if (trick.length === 0) {
-    return { card: low, reason: me === declarer ? 'Null 里庄家要躲墩：出最小的牌，让别人去赢。' : 'Null 里防守方要逼庄家赢墩：出小牌，让他没法再往下躲。' }
+    return { card: low, reason: { code: me === declarer ? 'nullLeadDeclarer' : 'nullLeadDefender' } }
   }
 
   const winning = trick[trickWinnerIndex(trick, contract)]
   const followsSuit = effectiveSuit(legal[0], contract) === effectiveSuit(trick[0], contract)
 
   if (me === declarer) {
-    if (!followsSuit) return { card: high, reason: '你这门花色没牌了——正好把手里最危险的大牌扔掉。' }
+    if (!followsSuit) return { card: high, reason: { code: 'nullVoidDump' } }
     const under = byRank.filter((c) => !beats(c, winning, contract))
     if (under.length > 0) {
       const c = under[under.length - 1]
-      return { card: c, reason: `出比桌上小的牌里最大的那张 ${cardLabel(c)}：既躲开这一墩，又甩掉一张大牌。` }
+      return { card: c, reason: { code: 'nullDuck', card: c } }
     }
-    return { card: low, reason: '躲不开了，只能出最小的，盼着后面有人压过你。' }
+    return { card: low, reason: { code: 'nullForced' } }
   }
 
   const declarerIdx = trickSeats.indexOf(declarer)
@@ -328,10 +361,10 @@ function adviseNull(ctx: PlayContext, legal: Card[]): Advice {
       const under = byRank.filter((c) => !beats(c, winning, contract))
       if (under.length > 0) {
         const c = under[under.length - 1]
-        return { card: c, reason: `庄家现在是最大的——出比他小的 ${cardLabel(c)}，让这一墩砸在他手里。` }
+        return { card: c, reason: { code: 'nullDefUnder', card: c } }
       }
     }
-    return { card: high, reason: '这一墩已经轮不到庄家赢了，顺手把大牌扔掉，留着小牌以后逼他。' }
+    return { card: high, reason: { code: 'nullDefDump' } }
   }
-  return { card: low, reason: '庄家还没出，出小牌给他压力。' }
+  return { card: low, reason: { code: 'nullDefPressure' } }
 }

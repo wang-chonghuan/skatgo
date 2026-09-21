@@ -4,23 +4,11 @@ import { AnimatePresence, motion } from 'motion/react'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { bidAdvice, chooseDeclaration } from '~/lib/skat/ai'
-import {
-  type Card,
-  type Contract,
-  SUITS,
-  SUIT_NAME,
-  SUIT_SYMBOL,
-  cardId,
-  cardLabel,
-  contractName,
-  effectiveSuit,
-  sameCard,
-  sortHand,
-} from '~/lib/skat/cards'
+import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
+import { adviceReason, cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
 import {
   type Game,
   type Seat,
-  ROLE_NAME,
   actor,
   adviceFor,
   aiBid,
@@ -41,6 +29,7 @@ import {
   trickWinner,
 } from '~/lib/skat/game'
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
+import { m } from '~/paraglide/messages'
 import { skat } from '../../theme/skat.stylex'
 import { Fan } from './card-row'
 import { PlayingCard } from './playing-card'
@@ -51,7 +40,8 @@ import { Btn, Panel, Pill, Rich } from './ui'
 // learner can follow what happened.
 
 const ME: Seat = 0
-const NAMES: Record<Seat, string> = { 0: '你', 1: '莉娜', 2: '马克斯' }
+/** A seat's name in the current language — read at render, so it is always the page's language. */
+const nameOf = (seat: Seat) => [m.name_you, m.name_lina, m.name_max][seat]()
 const FACES: Record<Seat, string> = { 0: '🙂', 1: '👩‍🦰', 2: '🧔' }
 
 const BOT_DELAY = 850
@@ -142,9 +132,7 @@ export function GameTable({ onSettled }: Props) {
     }
     if (game.phase !== 'play' || !myTurn || !contract) return
     if (!legal?.some((c) => sameCard(c, card))) {
-      const led = effectiveSuit(game.trick[0].card, contract)
-      const name = led === 'T' ? '主牌' : `${SUIT_NAME[led]}${SUIT_SYMBOL[led]}`
-      setRefusal(`必须跟牌：首出的是**${name}**，你手里还有${name}，就得出${name}。`)
+      setRefusal(m.play_refusal({ led: ledName(effectiveSuit(game.trick[0].card, contract)) }))
       return
     }
     setGame((g) => playCard(g, card))
@@ -152,14 +140,14 @@ export function GameTable({ onSettled }: Props) {
 
   function showPlayHint() {
     const advice = adviceFor(game, ME)
-    if (advice) setHint({ card: advice.card, text: `建议出 **${cardLabel(advice.card)}**。${advice.reason}` })
+    if (advice) setHint({ card: advice.card, text: m.play_hint({ card: cardLabel(advice.card), reason: adviceReason(advice.reason) }) })
   }
 
   const lastBidBy = (seat: Seat) => {
     const events = game.bidding.log.filter((e) => e.seat === seat)
     const e = events[events.length - 1]
     if (!e) return null
-    return e.say === 'pass' ? '过' : e.say === 'hold' ? `有（${e.value}）` : `${e.value}？`
+    return e.say === 'pass' ? m.bid_pass() : e.say === 'hold' ? m.bid_hold_said({ value: e.value }) : m.bid_said({ value: e.value })
   }
 
   return (
@@ -186,7 +174,7 @@ export function GameTable({ onSettled }: Props) {
                 <PlayingCard key={i} card={c} faceDown size="sm" />
               ))}
             </div>
-            <span {...stylex.props(styles.feltLabel)}>底牌</span>
+            <span {...stylex.props(styles.feltLabel)}>{m.table_skat()}</span>
           </div>
         ) : null}
 
@@ -201,31 +189,34 @@ export function GameTable({ onSettled }: Props) {
               {...stylex.props(styles.trickCard, positions[p.seat])}
             >
               <PlayingCard card={p.card} size="md" glow={game.phase === 'trickEnd' && winner === p.seat} />
-              <span {...stylex.props(styles.feltLabel)}>{NAMES[p.seat]}</span>
+              <span {...stylex.props(styles.feltLabel)}>{nameOf(p.seat)}</span>
             </motion.div>
           ))}
         </AnimatePresence>
 
         {game.phase === 'trickEnd' && winner !== null ? (
           <div {...stylex.props(styles.trickNote)}>
-            <Pill tone="brass">{NAMES[winner]}赢下这一墩</Pill>
+            <Pill tone="brass">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
           </div>
         ) : null}
       </div>
 
       <div {...stylex.props(styles.strip)}>
-        {contract ? <Pill tone="brass">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : <Pill tone="felt">{game.declarer === null ? '叫牌中' : '等待定约'}</Pill>}
-        {game.declarer !== null ? <Pill tone="felt">庄家：{NAMES[game.declarer]} · 叫到 {game.bid}</Pill> : null}
+        {contract ? <Pill tone="brass">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : <Pill tone="felt">{game.declarer === null ? m.table_bidding() : m.table_awaiting_contract()}</Pill>}
+        {game.declarer !== null ? <Pill tone="felt">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
         {game.phase === 'play' || game.phase === 'trickEnd' ? (
-          <Pill tone="felt">第 {Math.min(10, game.tricks.length + 1)} / 10 墩 · 庄家 {points.declarer} 点 · 防守 {points.defenders} 点</Pill>
+          <Pill tone="felt">{m.table_trick_count({ n: Math.min(10, game.tricks.length + 1), declarer: points.declarer, defenders: points.defenders })}</Pill>
         ) : null}
       </div>
 
       <div {...stylex.props(styles.mine)}>
         <div {...stylex.props(styles.mineHead)}>
-          <Pill tone="felt">{FACES[ME]} 你 · {ROLE_NAME[roleOf(ME, game.dealer)]}{game.declarer === ME ? ' · 庄家' : game.declarer !== null ? ' · 防守方' : ''}</Pill>
-          <Pill tone="felt">总分 {scores[ME]}</Pill>
-          {myTurn && game.phase === 'play' ? <Pill tone="brass">轮到你出牌</Pill> : null}
+          <Pill tone="felt">
+            {FACES[ME]} {nameOf(ME)} · {roleName(roleOf(ME, game.dealer))}
+            {game.declarer === ME ? ` · ${m.table_declarer_word()}` : game.declarer !== null ? ` · ${m.table_defender_word()}` : ''}
+          </Pill>
+          <Pill tone="felt">{m.table_total({ n: scores[ME] })}</Pill>
+          {myTurn && game.phase === 'play' ? <Pill tone="brass">{m.table_your_turn()}</Pill> : null}
         </div>
         <Fan
           testId="skat-hand"
@@ -260,14 +251,15 @@ export function GameTable({ onSettled }: Props) {
           onBidHint={() => {
             const a = bidAdvice(game.hands[ME])
             setHint({
-              text: a.contract
-                ? `这手牌可以考虑打 **${contractName(a.contract)}**，按现在的牌算值 **${a.limit}**——最多叫到这里，再高就「过」。`
-                : '这手牌不够强，建议「过」，安心当防守方。',
+              text: a.contract ? m.bid_hint_limit({ contract: contractName(a.contract), limit: a.limit }) : m.bid_hint_pass(),
             })
           }}
           onDiscardHint={() => {
             const plan = chooseDeclaration(game.hands[ME], game.bid)
-            setHint({ cards: plan.discard, text: `建议弃 **${plan.discard.map(cardLabel).join(' 和 ')}**，然后打 **${contractName(plan.declaration.contract)}**。` })
+            setHint({
+              cards: plan.discard,
+              text: m.skat_hint({ cards: plan.discard.map(cardLabel).join(m.list_and()), contract: contractName(plan.declaration.contract) }),
+            })
           }}
           onPlayHint={showPlayHint}
           onNewGame={newGame}
@@ -278,7 +270,7 @@ export function GameTable({ onSettled }: Props) {
 }
 
 function SeatBadge({ seat, game, active, said, score }: { seat: Seat; game: Game; active: boolean; said: string | null; score: number }) {
-  const role = ROLE_NAME[roleOf(seat, game.dealer)]
+  const role = roleName(roleOf(seat, game.dealer))
   const isDeclarer = game.declarer === seat
   // An Ouvert declarer plays with the hand face up on the table.
   const open = isDeclarer && game.declaration?.ouvert && (game.phase === 'play' || game.phase === 'trickEnd')
@@ -287,8 +279,11 @@ function SeatBadge({ seat, game, active, said, score }: { seat: Seat; game: Game
       <div {...stylex.props(styles.seatHead)}>
         <span {...stylex.props(styles.face)}>{FACES[seat]}</span>
         <div {...stylex.props(styles.seatText)}>
-          <span {...stylex.props(styles.seatName)}>{NAMES[seat]}</span>
-          <span {...stylex.props(styles.seatMeta)}>{role}{isDeclarer ? ' · 庄家' : ''} · {score} 分</span>
+          <span {...stylex.props(styles.seatName)}>{nameOf(seat)}</span>
+          <span {...stylex.props(styles.seatMeta)}>
+            {role}
+            {isDeclarer ? ` · ${m.table_declarer_word()}` : ''} · {m.table_seat_score({ n: score })}
+          </span>
         </div>
         {said ? <span {...stylex.props(styles.bubble)}>{said}</span> : null}
       </div>
@@ -324,8 +319,8 @@ function Actions(p: ActionsProps) {
   if (game.phase === 'passedIn') {
     return (
       <Row>
-        <Say>三个人都「过」了，这一局作废。</Say>
-        <Btn testId="skat-new-game" onClick={p.onNewGame}>重新发牌</Btn>
+        <Say>{m.table_passed_in()}</Say>
+        <Btn testId="skat-new-game" onClick={p.onNewGame}>{m.table_redeal()}</Btn>
       </Row>
     )
   }
@@ -335,9 +330,16 @@ function Actions(p: ActionsProps) {
   }
 
   if (who !== ME) {
-    const name = who === null ? '' : NAMES[who]
-    const doing = game.phase === 'bidding' ? '在考虑叫牌' : game.phase === 'play' ? '在出牌' : game.phase === 'trickEnd' ? '' : '在看底牌、定约'
-    return <Row><Say>{game.phase === 'trickEnd' ? '收墩……' : `${name}${doing}……`}</Say></Row>
+    const name = who === null ? '' : nameOf(who)
+    const doing =
+      game.phase === 'trickEnd'
+        ? m.table_collecting()
+        : game.phase === 'bidding'
+          ? m.table_thinking_bid({ name })
+          : game.phase === 'play'
+            ? m.table_thinking_play({ name })
+            : m.table_thinking_skat({ name })
+    return <Row><Say>{doing}</Say></Row>
   }
 
   if (game.phase === 'bidding') {
@@ -345,10 +347,10 @@ function Actions(p: ActionsProps) {
     if (b.awaiting === 'forehandAlone') {
       return (
         <Row>
-          <Say>另外两人都「过」了。你是前家，可以用 18 接下这一局，也可以让它作废。</Say>
-          <Btn testId="skat-bid" onClick={() => p.onBid('bid')}>18，我来打</Btn>
-          <Btn testId="skat-pass" tone="quiet" onClick={() => p.onBid('pass')}>过</Btn>
-          <Btn tone="felt" size="sm" onClick={p.onBidHint}>💡 我能叫多高？</Btn>
+          <Say>{m.bid_forehand_alone()}</Say>
+          <Btn testId="skat-bid" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
+          <Btn testId="skat-pass" tone="quiet" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
+          <Btn tone="felt" size="sm" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
         </Row>
       )
     }
@@ -356,19 +358,19 @@ function Actions(p: ActionsProps) {
       const value = nextBid(b.value)
       return (
         <Row>
-          <Say>轮到你向{NAMES[b.listener]}报数。</Say>
-          <Btn testId="skat-bid" onClick={() => p.onBid('bid')}>叫 {value}</Btn>
-          <Btn testId="skat-pass" tone="quiet" onClick={() => p.onBid('pass')}>过</Btn>
-          <Btn tone="felt" size="sm" onClick={p.onBidHint}>💡 我能叫多高？</Btn>
+          <Say>{m.bid_your_turn({ name: nameOf(b.listener) })}</Say>
+          <Btn testId="skat-bid" onClick={() => p.onBid('bid')}>{m.bid_button({ value: value ?? '' })}</Btn>
+          <Btn testId="skat-pass" tone="quiet" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
+          <Btn tone="felt" size="sm" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
         </Row>
       )
     }
     return (
       <Row>
-        <Say>{NAMES[b.speaker]}问你：「{b.value}？」</Say>
-        <Btn testId="skat-hold" onClick={() => p.onBid('hold')}>有（我也敢打 {b.value}）</Btn>
-        <Btn testId="skat-pass" tone="quiet" onClick={() => p.onBid('pass')}>过</Btn>
-        <Btn tone="felt" size="sm" onClick={p.onBidHint}>💡 我能叫多高？</Btn>
+        <Say>{m.bid_asked({ name: nameOf(b.speaker), value: b.value })}</Say>
+        <Btn testId="skat-hold" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
+        <Btn testId="skat-pass" tone="quiet" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
+        <Btn tone="felt" size="sm" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
       </Row>
     )
   }
@@ -377,17 +379,17 @@ function Actions(p: ActionsProps) {
     if (!game.pickedUp) {
       return (
         <Row>
-          <Say>你以 {game.bid} 当上了庄家！拿底牌，还是不看底牌打 Hand（倍数 +1）？</Say>
-          <Btn testId="skat-pickup" onClick={p.onPickUp}>拿起底牌</Btn>
-          <Btn testId="skat-hand-game" tone="quiet" onClick={p.onHand}>打 Hand</Btn>
+          <Say>{m.skat_won_bid({ bid: game.bid })}</Say>
+          <Btn testId="skat-pickup" onClick={p.onPickUp}>{m.skat_pick_up()}</Btn>
+          <Btn testId="skat-hand-game" tone="quiet" onClick={p.onHand}>{m.skat_play_hand()}</Btn>
         </Row>
       )
     }
     return (
       <Row>
-        <Say>底牌已经在你手里了（共 12 张）。点两张牌弃掉——它们的点数直接算你的。</Say>
-        <Btn testId="skat-discard" disabled={p.picked.length !== 2} onClick={p.onDiscard}>弃掉这两张（{p.picked.length}/2）</Btn>
-        <Btn tone="felt" size="sm" onClick={p.onDiscardHint}>💡 弃哪两张？</Btn>
+        <Say>{m.skat_discard_prompt()}</Say>
+        <Btn testId="skat-discard" disabled={p.picked.length !== 2} onClick={p.onDiscard}>{m.skat_discard_button({ n: p.picked.length })}</Btn>
+        <Btn tone="felt" size="sm" onClick={p.onDiscardHint}>{m.skat_discard_hint_button()}</Btn>
       </Row>
     )
   }
@@ -398,8 +400,8 @@ function Actions(p: ActionsProps) {
 
   return (
     <Row>
-      <Say>{game.trick.length === 0 ? '由你首出，出哪张都行。' : '点一张牌打出去。灰掉的牌现在不能出。'}</Say>
-      <Btn testId="skat-hint" tone="felt" size="sm" onClick={p.onPlayHint}>💡 提示</Btn>
+      <Say>{game.trick.length === 0 ? m.play_lead_any() : m.play_tap()}</Say>
+      <Btn testId="skat-hint" tone="felt" size="sm" onClick={p.onPlayHint}>{m.play_hint_button()}</Btn>
     </Row>
   )
 }
@@ -418,7 +420,7 @@ function DeclarePicker({ game, draft, setDraft, onDeclare }: { game: Game; draft
 
   return (
     <div {...stylex.props(styles.declare)}>
-      <Say>宣布定约。你叫到了 <b>{game.bid}</b>，所以这一局的分值不能低于 {game.bid}。</Say>
+      <Say><Rich text={m.declare_prompt({ bid: game.bid })} /></Say>
       <div {...stylex.props(styles.contractGrid)}>
         {CONTRACTS.map((c) => {
           const v = expectedValue(make(c), known)
@@ -434,7 +436,7 @@ function DeclarePicker({ game, draft, setDraft, onDeclare }: { game: Game; draft
               {...stylex.props(styles.contractBtn, chosen && styles.contractChosen, v < game.bid && styles.contractShort)}
             >
               <span {...stylex.props(styles.contractName)}><Rich text={contractName(c)} /></span>
-              <span {...stylex.props(styles.contractValue)}>值 {v}{v < game.bid ? ' · 不够' : ''}</span>
+              <span {...stylex.props(styles.contractValue)}>{m.declare_worth({ value: v })}{v < game.bid ? m.declare_short() : ''}</span>
             </button>
           )
         })}
@@ -442,11 +444,15 @@ function DeclarePicker({ game, draft, setDraft, onDeclare }: { game: Game; draft
       {draft ? (
         <div {...stylex.props(styles.toggles)}>
           {draft.contract.kind === 'null' ? (
-            <Toggle on={draft.ouvert} onClick={() => setDraft(make(draft.contract, { ouvert: !draft.ouvert }))}>Ouvert（摊开手牌打）</Toggle>
+            <Toggle on={draft.ouvert} onClick={() => setDraft(make(draft.contract, { ouvert: !draft.ouvert }))}>{m.declare_null_ouvert()}</Toggle>
           ) : isHand ? (
             <>
-              <Toggle on={draft.schneiderAnnounced} onClick={() => setDraft(make(draft.contract, { schneiderAnnounced: !draft.schneiderAnnounced }))}>宣告 Schneider</Toggle>
-              <Toggle on={draft.schwarzAnnounced} onClick={() => setDraft(make(draft.contract, { schwarzAnnounced: !draft.schwarzAnnounced }))}>宣告 Schwarz</Toggle>
+              <Toggle on={draft.schneiderAnnounced} onClick={() => setDraft(make(draft.contract, { schneiderAnnounced: !draft.schneiderAnnounced }))}>
+                {m.declare_announce_schneider()}
+              </Toggle>
+              <Toggle on={draft.schwarzAnnounced} onClick={() => setDraft(make(draft.contract, { schwarzAnnounced: !draft.schwarzAnnounced }))}>
+                {m.declare_announce_schwarz()}
+              </Toggle>
               <Toggle on={draft.ouvert} onClick={() => setDraft(make(draft.contract, { ouvert: !draft.ouvert }))}>Ouvert</Toggle>
             </>
           ) : null}
@@ -456,14 +462,14 @@ function DeclarePicker({ game, draft, setDraft, onDeclare }: { game: Game; draft
         <Panel tone={value >= game.bid ? 'good' : 'bad'}>
           <p {...stylex.props(styles.note)}>
             {value >= game.bid
-              ? `${contractName(draft.contract)}${draft.hand ? ' Hand' : ''}：赢了值 ${value}，盖得住叫分 ${game.bid}。`
-              : `${contractName(draft.contract)} 只值 ${value}，低于你的叫分 ${game.bid}——这是超叫，打成什么样都判负。换一个定约。`}
-            {isHand && draft.contract.kind !== 'null' ? ' （Hand：底牌里的 J 还可能改变 Matador。）' : ''}
+              ? m.declare_covers({ contract: `${contractName(draft.contract)}${draft.hand ? ' Hand' : ''}`, value, bid: game.bid })
+              : m.declare_overbid({ contract: contractName(draft.contract), value, bid: game.bid })}
+            {isHand && draft.contract.kind !== 'null' ? m.declare_hand_note() : ''}
           </p>
         </Panel>
       ) : null}
       <Row>
-        <Btn testId="skat-declare" disabled={!draft} onClick={() => draft && onDeclare(draft)}>就打这个，开始！</Btn>
+        <Btn testId="skat-declare" disabled={!draft} onClick={() => draft && onDeclare(draft)}>{m.declare_go()}</Btn>
       </Row>
     </div>
   )
@@ -481,36 +487,56 @@ function Result({ game, onNewGame }: { game: Game; onNewGame: () => void }) {
     panel.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [])
   const formula = isNull
-    ? `Null${d.hand ? ' Hand' : ''}${d.ouvert ? ' Ouvert' : ''} 固定分值 ${r.value}`
-    : `${r.parts.map((p, i) => (i === 0 ? p.label : `${p.label} 1`)).join(' + ')} → 倍数 ${r.multiplier}；${contractName(d.contract)} 基值 ${r.base} × ${r.multiplier} = ${r.base * r.multiplier}`
+    ? m.result_null_formula({ contract: `Null${d.hand ? ' Hand' : ''}${d.ouvert ? ' Ouvert' : ''}`, value: r.value })
+    : m.result_formula_mult({
+        parts: r.parts.map((p, i) => (i === 0 ? partLabel(p, r.matadors) : `${partLabel(p, r.matadors)} 1`)).join(' + '),
+        mult: r.multiplier,
+        contract: contractName(d.contract),
+        base: r.base,
+        value: r.base * r.multiplier,
+      })
   return (
     <div ref={panel} data-testid="skat-result" data-human-won={String(humanWon)} {...stylex.props(styles.declare)}>
       <Panel tone={humanWon ? 'good' : 'bad'}>
         <div {...stylex.props(styles.resultBody)}>
-          <h3 {...stylex.props(styles.resultTitle)}>{humanWon ? '🎉 你这边赢了！' : '这一局输了'}</h3>
+          <h3 {...stylex.props(styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
           <p {...stylex.props(styles.note)}>
-            {declarer === ME ? '你当庄家' : `${NAMES[declarer]}当庄家`}，打 <Rich text={`**${contractName(d.contract)}**`} />，叫分 {game.bid}。{r.reason}。
+            <Rich
+              text={m.result_line({
+                who: declarer === ME ? m.result_you_declared() : m.result_other_declared({ name: nameOf(declarer) }),
+                contract: contractName(d.contract),
+                bid: game.bid,
+                reason: settleReason(r.reason),
+              })}
+            />
           </p>
           {isNull ? null : (
             <p data-testid="skat-result-points" {...stylex.props(styles.note)}>
-              牌点：庄家 <b>{r.declarerPoints}</b>（含底牌）· 防守方 <b>{r.defenderPoints}</b>
+              <Rich text={m.result_points({ declarer: r.declarerPoints, defenders: r.defenderPoints })} />
             </p>
           )}
-          <p data-testid="skat-result-formula" {...stylex.props(styles.note)}>算式：{formula}</p>
+          <p data-testid="skat-result-formula" {...stylex.props(styles.note)}>{m.result_formula({ formula })}</p>
           <p {...stylex.props(styles.note)}>
-            {NAMES[declarer]}记 <b>{r.score > 0 ? `+${r.score}` : r.score}</b> 分{r.won ? '' : '（输了按两倍扣）'}。
+            <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score))} />
           </p>
           <div {...stylex.props(styles.resultSkat)}>
-            <span {...stylex.props(styles.inkLabel)}>底牌里是：</span>
+            <span {...stylex.props(styles.inkLabel)}>{m.result_skat()}</span>
             {game.skat.map((c) => <PlayingCard key={cardId(c)} card={c} size="xs" />)}
           </div>
         </div>
       </Panel>
       <Row>
-        <Btn testId="skat-new-game" onClick={onNewGame}>再来一局</Btn>
+        <Btn testId="skat-new-game" onClick={onNewGame}>{m.result_new_game()}</Btn>
       </Row>
     </div>
   )
+}
+
+/** "You score +30." — who wrote down what, and why it is doubled when it is. */
+function scoreLine(declarer: Seat, won: boolean, score: string): string {
+  if (declarer === ME) return won ? m.result_score_you({ score }) : m.result_score_lost_you({ score })
+  const name = nameOf(declarer)
+  return won ? m.result_score({ name, score }) : m.result_score_lost({ name, score })
 }
 
 function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {

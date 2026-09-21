@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://skatgo.com/sitemap.xml

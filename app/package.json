@@ -7,7 +7,7 @@
     "build": "vite build",
     "start": "node .output/server/index.mjs",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide && tsc --noEmit"
   },
   "dependencies": {
     "@astryxdesign/build": "^0.4.3",
@@ -26,6 +26,7 @@
   "devDependencies": {
     "@astryxdesign/cli": "^0.4.3",
     "@babel/core": "^7.29.7",
+    "@inlang/paraglide-js": "^2.25.4",
     "@stylexjs/babel-plugin": "^0.19.0",
     "@stylexjs/unplugin": "^0.19.0",
     "@types/canvas-confetti": "^1.9.0",

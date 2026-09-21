@@ -56,5 +56,10 @@ export const useProgress = create<ProgressState>()(
 // With localStorage the read finishes synchronously, inside `create` — before `useProgress` is even
 // assigned — so the flag cannot be set from a callback passed to `persist`. Set it here instead, for
 // both the case that already happened and the one that has not.
-if (useProgress.persist.hasHydrated()) useProgress.setState({ hydrated: true })
-useProgress.persist.onFinishHydration(() => useProgress.setState({ hydrated: true }))
+//
+// On the server (the course map renders there, SKATGO-1) there is no localStorage, zustand attaches
+// no `persist` API, and there is nothing to hydrate: the store stays empty and `hydrated` false.
+if (useProgress.persist) {
+  if (useProgress.persist.hasHydrated()) useProgress.setState({ hydrated: true })
+  useProgress.persist.onFinishHydration(() => useProgress.setState({ hydrated: true }))
+}

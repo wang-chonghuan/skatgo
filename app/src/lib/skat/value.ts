@@ -40,7 +40,24 @@ export function matadors(declarerCards: Card[], contract: Contract): { with: boo
   return { with: withTop, count }
 }
 
-export type MultiplierPart = { label: string; n: number }
+/** One term of the multiplier. `matadors` is the "with/without n" term; the rest count 1 each. */
+export type MultiplierPart = {
+  kind: 'matadors' | 'game' | 'hand' | 'schneider' | 'schneiderAnnounced' | 'schwarz' | 'schwarzAnnounced' | 'ouvert'
+  n: number
+}
+
+/**
+ * Why a game was won or lost, as a fact rather than a sentence: the engine speaks no language, the
+ * table phrases it (lib/skat/i18n.ts).
+ */
+export type SettleReason =
+  | { kind: 'nullWon' }
+  | { kind: 'nullLost' }
+  | { kind: 'enough'; points: number }
+  | { kind: 'short'; points: number }
+  | { kind: 'schneiderMissed' }
+  | { kind: 'schwarzMissed' }
+  | { kind: 'overbid'; worth: number; bid: number }
 
 /** Every valid game value from 18 up, ascending — the only numbers anyone may bid. */
 export const BID_LADDER: number[] = (() => {
@@ -72,8 +89,8 @@ export type Settlement = {
   multiplier: number
   matadors: { with: boolean; count: number }
   overbid: boolean
-  /** One-line reason a game was lost despite, or won because of, the card points. */
-  reason: string
+  /** Why the game was lost despite, or won because of, the card points. */
+  reason: SettleReason
 }
 
 /**
@@ -102,40 +119,40 @@ export function settle(
       multiplier: 1,
       matadors: { with: true, count: 0 },
       overbid: false,
-      reason: won ? '庄家一墩都没拿' : '庄家拿到了墩，Null 失败',
+      reason: { kind: won ? 'nullWon' : 'nullLost' },
     }
   }
 
   const base = baseValue(contract)
   const m = matadors(declarerCards, contract)
   const parts: MultiplierPart[] = [
-    { label: `${m.with ? '有' : '无'} ${m.count}`, n: m.count },
-    { label: '成局', n: 1 },
+    { kind: 'matadors', n: m.count },
+    { kind: 'game', n: 1 },
   ]
-  if (decl.hand) parts.push({ label: 'Hand', n: 1 })
+  if (decl.hand) parts.push({ kind: 'hand', n: 1 })
 
   // Schneider and Schwarz count for whoever suffered them: a declarer held to 30 or fewer pays for
   // a Schneider against themselves, which is why a bad loss is so much dearer than a narrow one.
   const schneider = outcome.declarerPoints >= 90 || outcome.declarerPoints <= 30
   const schwarz = outcome.defenderTricks === 0 || outcome.declarerTricks === 0
-  if (schneider || decl.schneiderAnnounced) parts.push({ label: 'Schneider', n: 1 })
-  if (decl.schneiderAnnounced) parts.push({ label: '宣告 Schneider', n: 1 })
-  if (schwarz || decl.schwarzAnnounced) parts.push({ label: 'Schwarz', n: 1 })
-  if (decl.schwarzAnnounced) parts.push({ label: '宣告 Schwarz', n: 1 })
-  if (decl.ouvert) parts.push({ label: 'Ouvert', n: 1 })
+  if (schneider || decl.schneiderAnnounced) parts.push({ kind: 'schneider', n: 1 })
+  if (decl.schneiderAnnounced) parts.push({ kind: 'schneiderAnnounced', n: 1 })
+  if (schwarz || decl.schwarzAnnounced) parts.push({ kind: 'schwarz', n: 1 })
+  if (decl.schwarzAnnounced) parts.push({ kind: 'schwarzAnnounced', n: 1 })
+  if (decl.ouvert) parts.push({ kind: 'ouvert', n: 1 })
 
   const multiplier = parts.reduce((n, p) => n + p.n, 0)
   let value = base * multiplier
 
   let won = outcome.declarerPoints >= 61
-  let reason = won ? `庄家拿到 ${outcome.declarerPoints} 点，够 61` : `庄家只有 ${outcome.declarerPoints} 点，不到 61`
+  let reason: SettleReason = { kind: won ? 'enough' : 'short', points: outcome.declarerPoints }
   if (won && decl.schneiderAnnounced && outcome.declarerPoints < 90) {
     won = false
-    reason = '宣告了 Schneider 却没到 90 点'
+    reason = { kind: 'schneiderMissed' }
   }
   if (won && (decl.schwarzAnnounced || decl.ouvert) && outcome.defenderTricks > 0) {
     won = false
-    reason = '宣告了 Schwarz 却让防守方拿到了墩'
+    reason = { kind: 'schwarzMissed' }
   }
 
   // Overbid (überreizt): the game turned out worth less than was bid. It is lost whatever the card
@@ -145,7 +162,7 @@ export function settle(
     overbid = true
     won = false
     value = Math.ceil(bid / base) * base
-    reason = `超叫：这一局只值 ${base * multiplier}，却叫到了 ${bid}`
+    reason = { kind: 'overbid', worth: base * multiplier, bid }
   }
 
   return { won, value, score: won ? value : -2 * value, base, parts, multiplier, matadors: m, overbid, reason }

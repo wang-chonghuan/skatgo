@@ -1,7 +1,7 @@
 // Drill generators. Each builds a fresh question from random cards and lets the rules engine work
 // out the answer, so the tenth attempt is as new as the first and no answer key can drift away from
 // the rules. They use Math.random, so they run in the browser only — the lesson player calls them
-// after mount.
+// after mount. Their wording comes from the Paraglide messages (`drill_*`), in the learner's language.
 
 import {
   type Card,
@@ -9,10 +9,7 @@ import {
   type Suit,
   POINTS,
   SUITS,
-  SUIT_NAME,
   SUIT_SYMBOL,
-  cardLabel,
-  contractName,
   effectiveSuit,
   fullDeck,
   isTrump,
@@ -25,6 +22,8 @@ import {
   trickWinnerIndex,
 } from '../cards'
 import { SUIT_BASE, GRAND_BASE, matadors } from '../value'
+import { cardLabel, contractName, ledName, matadorLabel, suitName } from '../i18n'
+import { m } from '~/paraglide/messages'
 import type { ChoiceStep, OrderStep, PickStep } from './types'
 
 const pick = <T,>(items: T[]): T => items[Math.floor(Math.random() * items.length)]
@@ -47,11 +46,11 @@ export function countPointsDrill(): ChoiceStep {
   const sum = trick.map((c) => POINTS[c.rank]).join(' + ')
   return {
     kind: 'choice',
-    prompt: '这一墩一共多少点？',
+    prompt: m.drill_count_prompt(),
     rows: [{ cards: trick }],
     ...numberOptions(total, [total + 1, total - 1, total + 2, total - 2, total + 10, total - 10, total + 7, total - 7, total + 3]),
-    explain: `${sum} = **${total}** 点。记住：A 11、10 10、K 4、Q 3、J 2，其余 0。`,
-    hint: '一张一张加：A 是 11，10 是 10，K 是 4，Q 是 3，J 是 2，7/8/9 不算分。',
+    explain: m.drill_count_explain({ sum, total }),
+    hint: m.drill_count_hint(),
   }
 }
 
@@ -64,14 +63,14 @@ export function pickTrumpsDrill(contract: Contract = Math.random() < 0.75 ? suit
   } while (trumps.length < 2 || trumps.length > 6 || !trumps.some((c) => c.rank === 'J'))
   return {
     kind: 'pick',
-    prompt: `定约是 **${contractName(contract)}**。把这手牌里所有的主牌都点出来。`,
+    prompt: m.drill_trumps_prompt({ contract: contractName(contract) }),
     cards: sortHand(hand, null),
     correct: trumps,
     explain:
       contract.kind === 'suit'
-        ? `四张 J 永远是主牌，再加上所有的${SUIT_NAME[contract.trump]}${SUIT_SYMBOL[contract.trump]}。`
-        : 'Grand 里只有四张 J 是主牌，别的花色一律平等。',
-    hint: contract.kind === 'grand' ? 'Grand：只有 J。' : '别漏了 J——不管它印的是什么花色，它都是主牌。',
+        ? m.drill_trumps_explain_suit({ suit: `${suitName(contract.trump)}${SUIT_SYMBOL[contract.trump]}` })
+        : m.drill_trumps_explain_grand(),
+    hint: contract.kind === 'grand' ? m.drill_trumps_hint_grand() : m.drill_trumps_hint_suit(),
   }
 }
 
@@ -88,17 +87,14 @@ export function orderDrill(contract: Contract = suitContract()): OrderStep {
   const correct = [...chosen].sort((a, b) => strength(b, contract) - strength(a, contract))
   return {
     kind: 'order',
-    prompt: `定约是 **${contractName(contract)}**。按从大到小的顺序依次点这些牌。`,
+    prompt: m.drill_order_prompt({ contract: contractName(contract) }),
     cards: shuffle(chosen),
     correct,
     explain:
       contract.kind === 'null'
-        ? `Null 里是「正常」顺序：${correct.map(cardLabel).join(' > ')}。`
-        : `${correct.map(cardLabel).join(' > ')}。J 先按 ♣ ♠ ♥ ♦ 排，然后才是 A、10、K、Q、9、8、7。`,
-    hint:
-      contract.kind === 'null'
-        ? 'Null 里没有主牌，J 只是一张普通牌：A、K、Q、J、10、9、8、7。'
-        : '想想：J 最大（♣ ♠ ♥ ♦），然后才轮到 A、10、K、Q、9、8、7。',
+        ? m.drill_order_explain_null({ order: correct.map(cardLabel).join(' > ') })
+        : m.drill_order_explain({ order: correct.map(cardLabel).join(' > ') }),
+    hint: contract.kind === 'null' ? m.drill_order_hint_null() : m.drill_order_hint(),
   }
 }
 
@@ -114,18 +110,20 @@ export function legalDrill(contract: Contract = Math.random() < 0.7 ? suitContra
     const trap = hand.some((c) => c.rank === 'J' && c.suit === lead.suit) || isTrump(lead, contract)
     if (!trap && Math.random() < 0.6) continue
     const led = effectiveSuit(lead, contract)
-    const ledName = led === 'T' ? '主牌' : `${SUIT_NAME[led]}${SUIT_SYMBOL[led]}`
+    const name = ledName(led)
     return {
       kind: 'pick',
-      prompt: `定约 **${contractName(contract)}**，对手首出 **${cardLabel(lead)}**。你手里哪些牌可以出？全部点出来。`,
-      context: `首出：${cardLabel(lead)}（算作${ledName}）`,
+      prompt: m.drill_legal_prompt({ contract: contractName(contract), lead: cardLabel(lead) }),
+      context: m.drill_legal_context({ lead: cardLabel(lead), led: name }),
       cards: sortHand(hand, contract),
       correct: legal,
       explain:
         legal.length === hand.length
-          ? `你手里没有${ledName}，所以随便出哪张都行。`
-          : `首出的是${ledName}，你有就必须跟。${led === 'T' ? 'J 也是主牌，可以（也必须）拿来跟。' : 'J 不算这门花色，不能拿来跟。'}`,
-      hint: `先问自己：首出的这张牌算什么花色？（提示：${ledName}）你手里有没有同一门？`,
+          ? m.drill_legal_explain_any({ led: name })
+          : led === 'T'
+            ? m.drill_legal_explain_follow_trump({ led: name })
+            : m.drill_legal_explain_follow_suit({ led: name }),
+      hint: m.drill_legal_hint({ led: name }),
     }
   }
 }
@@ -143,16 +141,18 @@ export function trickWinnerDrill(contract: Contract = pick<Contract>([suitContra
     const w = trickWinnerIndex(trick, contract)
     const winner = trick[w]
     const why = isTrump(winner, contract)
-      ? `${cardLabel(winner)} 是主牌${trick.filter((c) => isTrump(c, contract)).length > 1 ? '里最大的' : '，主牌压过一切副牌'}。`
-      : `没人出主牌，首出的是${SUIT_NAME[lead.suit]}，${cardLabel(winner)} 是这门里最大的。别的花色再大也没用。`
+      ? trick.filter((c) => isTrump(c, contract)).length > 1
+        ? m.drill_winner_why_top_trump({ card: cardLabel(winner) })
+        : m.drill_winner_why_only_trump({ card: cardLabel(winner) })
+      : m.drill_winner_why_suit({ suit: suitName(lead.suit), card: cardLabel(winner) })
     return {
       kind: 'pick',
       single: true,
-      prompt: `定约 **${contractName(contract)}**。三张牌按从左到右的顺序打出，哪一张赢下这一墩？`,
+      prompt: m.drill_winner_prompt({ contract: contractName(contract) }),
       cards: trick,
       correct: [winner],
-      explain: `${why} 这一墩值 ${pointsOf(trick)} 点。`,
-      hint: '先看有没有主牌；没有的话，只有和首出同花色的牌才有资格比大小。',
+      explain: m.drill_winner_explain({ why, points: pointsOf(trick) }),
+      hint: m.drill_winner_hint(),
     }
   }
 }
@@ -164,38 +164,46 @@ function dealtHand(): Card[] {
 export function matadorDrill(): ChoiceStep {
   const contract: Contract = Math.random() < 0.8 ? suitContract() : { kind: 'grand' }
   const hand = sortHand(dealtHand(), contract)
-  const m = matadors(hand, contract)
-  const label = (w: boolean, n: number) => `${w ? '有' : '无'} ${n}`
-  const decoys = [label(!m.with, m.count), label(m.with, m.count + 1), label(m.with, Math.max(1, m.count - 1)), label(!m.with, m.count + 1), label(m.with, m.count + 2)]
-  const options = shuffle([label(m.with, m.count), ...[...new Set(decoys)].filter((d) => d !== label(m.with, m.count)).slice(0, 3)])
+  const mat = matadors(hand, contract)
+  const label = matadorLabel
+  const decoys = [label(!mat.with, mat.count), label(mat.with, mat.count + 1), label(mat.with, Math.max(1, mat.count - 1)), label(!mat.with, mat.count + 1), label(mat.with, mat.count + 2)]
+  const options = shuffle([label(mat.with, mat.count), ...[...new Set(decoys)].filter((d) => d !== label(mat.with, mat.count)).slice(0, 3)])
   return {
     kind: 'choice',
-    prompt: `定约 **${contractName(contract)}**。这手牌的 Matador 是多少？`,
+    prompt: m.drill_matador_prompt({ contract: contractName(contract) }),
     rows: [{ cards: hand }],
     options,
-    answer: options.indexOf(label(m.with, m.count)),
-    explain: m.with
-      ? `你有 ♣J，所以是「有」。从 ♣J 往下连续数，数到第一张你**没有**的主牌为止：连着 ${m.count} 张。`
-      : `你没有 ♣J，所以是「无」。从 ♣J 往下数你**缺**的，数到第一张你有的主牌为止：连着缺 ${m.count} 张。`,
-    hint: '只看最大的那张 ♣J：有它就是「有」，没有就是「无」。然后沿着 ♣J ♠J ♥J ♦J A 10 K… 往下数连续的。',
+    answer: options.indexOf(label(mat.with, mat.count)),
+    explain: mat.with
+      ? m.drill_matador_explain_with({ n: mat.count })
+      : m.drill_matador_explain_without({ n: mat.count }),
+    hint: m.drill_matador_hint(),
   }
 }
 
 export function gameValueDrill(): ChoiceStep {
   const contract: Contract = Math.random() < 0.8 ? suitContract() : { kind: 'grand' }
   const hand = sortHand(dealtHand(), contract)
-  const m = matadors(hand, contract)
+  const mat = matadors(hand, contract)
   const handGame = Math.random() < 0.3
   const base = contract.kind === 'grand' ? GRAND_BASE : SUIT_BASE[(contract as { trump: Suit }).trump]
-  const mult = m.count + 1 + (handGame ? 1 : 0)
+  const mult = mat.count + 1 + (handGame ? 1 : 0)
   const value = base * mult
   return {
     kind: 'choice',
-    prompt: `你想打 **${contractName(contract)}**${handGame ? '，而且是 **Hand**（不看底牌）' : ''}。只要赢了，这一局值多少分？也就是——你最高能叫到多少？`,
+    prompt: handGame
+      ? m.drill_value_prompt_hand({ contract: contractName(contract) })
+      : m.drill_value_prompt({ contract: contractName(contract) }),
     rows: [{ cards: hand }],
-    ...numberOptions(value, [base * (mult + 1), base * (mult - 1), base * m.count, base * (mult + 2), (base + 1) * mult, (base - 1) * mult, base * mult + base / 2]),
-    explain: `${m.with ? '有' : '无'} ${m.count}，成局 +1${handGame ? '，Hand +1' : ''} → 倍数 ${mult}。${contractName(contract)} 的基值是 ${base}，所以 ${base} × ${mult} = **${value}**。`,
-    hint: '分值 = 基值 × 倍数。倍数 = Matador 数 + 1（成局）+ 加倍项。基值：♦9 ♥10 ♠11 ♣12 Grand 24。',
+    ...numberOptions(value, [base * (mult + 1), base * (mult - 1), base * mat.count, base * (mult + 2), (base + 1) * mult, (base - 1) * mult, base * mult + base / 2]),
+    explain: (handGame ? m.drill_value_explain_hand : m.drill_value_explain)({
+      matadors: matadorLabel(mat.with, mat.count),
+      mult,
+      contract: contractName(contract),
+      base,
+      value,
+    }),
+    hint: m.drill_value_hint(),
   }
 }
 
@@ -205,30 +213,30 @@ export function settleDrill(): ChoiceStep {
   const mult = pick([2, 3, 4])
   const value = base * mult
   const scenario = pick(['win', 'lose', 'overbid', 'schneider'] as const)
-  const name = `${SUIT_NAME[trump]}${SUIT_SYMBOL[trump]}`
+  const name = contractName({ kind: 'suit', trump })
   let prompt: string
   let score: number
   let explain: string
   if (scenario === 'win') {
     const pts = pick([61, 64, 72, 80, 88])
-    prompt = `庄家打 ${name}，倍数 ${mult}（分值 ${value}）。打完庄家拿到 **${pts}** 点。庄家这一局记多少分？`
+    prompt = m.drill_settle_win_prompt({ name, mult, value, pts })
     score = value
-    explain = `${pts} ≥ 61，赢了，记 **+${value}**。`
+    explain = m.drill_settle_win_explain({ pts, value })
   } else if (scenario === 'lose') {
     const pts = pick([60, 58, 52, 45, 38])
-    prompt = `庄家打 ${name}，倍数 ${mult}（分值 ${value}）。打完庄家只拿到 **${pts}** 点。庄家这一局记多少分？`
+    prompt = m.drill_settle_lose_prompt({ name, mult, value, pts })
     score = -2 * value
-    explain = `${pts} < 61，输了。输了按**两倍**扣：−2 × ${value} = **${score}**。${pts === 60 ? '60 点是平分，但平分算庄家输。' : ''}`
+    explain = m.drill_settle_lose_explain({ pts, value, score }) + (pts === 60 ? m.drill_settle_lose_tie() : '')
   } else if (scenario === 'schneider') {
     const pts = pick([90, 93, 101])
-    prompt = `庄家打 ${name}，开打前算的倍数是 ${mult}。结果大胜，拿到 **${pts}** 点。庄家这一局记多少分？`
+    prompt = m.drill_settle_schneider_prompt({ name, mult, pts })
     score = base * (mult + 1)
-    explain = `${pts} ≥ 90，这叫 **Schneider**，倍数再 +1：${base} × ${mult + 1} = **+${score}**。`
+    explain = m.drill_settle_schneider_explain({ pts, base, mult: mult + 1, score })
   } else {
     const bid = value + base
-    prompt = `庄家叫到了 **${bid}**，打 ${name}。亮出底牌后发现倍数其实只有 ${mult}（分值 ${value}）。庄家打到了 70 点。记多少分？`
+    prompt = m.drill_settle_overbid_prompt({ bid, name, mult, value })
     score = -2 * bid
-    explain = `分值 ${value} 小于叫分 ${bid}，这是**超叫**，拿多少点都算输。按能盖住叫分的最小倍数算：${base} × ${mult + 1} = ${bid}，再翻倍扣：**${score}**。`
+    explain = m.drill_settle_overbid_explain({ value, bid, base, mult: mult + 1, score })
   }
   const fmt = (n: number) => (n > 0 ? `+${n}` : String(n))
   const decoys = [value, -value, -2 * value, 2 * value, base * (mult + 1), -2 * base * (mult + 1), -(value + base)].filter((d) => d !== score)
@@ -239,7 +247,7 @@ export function settleDrill(): ChoiceStep {
     options: options.map(fmt),
     answer: options.indexOf(score),
     explain,
-    hint: '先判断输赢（61 点；超叫直接输）。赢了记 +分值，输了记 −2×分值。',
+    hint: m.drill_settle_hint(),
   }
 }
 

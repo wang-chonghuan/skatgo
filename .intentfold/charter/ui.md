@@ -86,7 +86,7 @@ the hand. Anything still loading shows the course's own "正在发牌……". A 
 now is dimmed but still tappable, so the table can say why.
 
 **Content and tone.** Direct and a little playful in every language the course speaks, written for
-twelve-year-olds and adults alike (「不枯燥的」). The German words a Skat table actually uses — Grand, Null, Hand, Schneider,
+learners from six to ninety-nine alike (「不枯燥的」). The German words a Skat table actually uses — Grand, Null, Hand, Schneider,
 Schwarz, Ouvert, Matador — stay German, because those are what the learner will hear at a real table.
 
 ## Redlines

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-6",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-6",
+  "branch": "SKATGO-6-lesson4-intro",
+  "base": "dc94a76f6a4c0458d2d5ea0870f0ff724f4dcc91",
+  "ports": { "web": 55006 }
+}

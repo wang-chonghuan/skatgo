@@ -13,6 +13,11 @@ export type CardRow = {
   /** One caption under each card, same order. */
   captions?: string[]
   faceDown?: boolean
+  /**
+   * The row is a hand answering `lead` in `contract`: each card is captioned ✓ (may be played) or ✗
+   * by the rules engine, never by hand — so a picture cannot teach a follow rule the game contradicts.
+   */
+  follow?: { contract: Contract; lead: Card }
 }
 
 export type TeachStep = {

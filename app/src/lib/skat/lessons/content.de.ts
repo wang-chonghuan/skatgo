@@ -145,19 +145,31 @@ export const LESSONS_DE: Lesson[] = [
     steps: [
       {
         kind: 'teach',
-        title: 'Nur eine feste Regel: Farbe bedienen',
+        title: 'Bedienen: Hast du die Farbe, musst du sie spielen',
         body: [
-          'Einer **spielt aus**, die anderen beiden geben im Uhrzeigersinn je eine Karte zu.',
-          'Es gibt nur eine Regel: **Hast du die ausgespielte Farbe, musst du sie bedienen**. Hast du sie nicht? Dann darfst du spielen, was du willst – einen Trumpf, um den Stich zu **stechen**, oder eine wertlose Karte, die du **abwirfst**.',
-          'Einen Zwang, höher zu spielen, gibt es nicht. Du darfst gewinnen, musst aber nicht.',
+          'In jedem Stich legt einer die erste Karte – er **spielt aus**. Ihre Farbe ist die Farbe des Stichs. Danach legen die anderen beiden im Uhrzeigersinn je eine Karte dazu – sie **geben zu**.',
+          'Dafür gibt es eine feste Regel: **Hast du irgendeine Karte der ausgespielten Farbe, musst du diese Farbe spielen** – man sagt: Farbe **bedienen**. Welche Karte davon, entscheidest du, hoch oder niedrig.',
+          'Im Spiel unten ist **Kreuz Trumpf**. Ein Gegner spielt das ♥A aus (Herz). Du hast Herz, also musst du eine deiner beiden Herzkarten nehmen:',
         ],
+        rows: [
+          { label: 'Ausgespielt', cards: cards('H:A') },
+          { label: 'Deine Karten: ✓ erlaubt, ✗ nicht erlaubt', cards: cards('H:10 7 | S:K | D:9'), follow: { contract: { kind: 'suit', trump: 'C' }, lead: cards('H:A')[0] } },
+          { label: 'Ohne eine einzige Herzkarte darfst du jede Karte spielen', cards: cards('C:8 | S:K | D:9'), captions: ['stechen', 'abwerfen', 'abwerfen'] },
+        ],
+        tip: 'Hast du die ausgespielte Farbe nicht: Nimmst du den Stich mit einem **Trumpf**, heißt das **stechen**; legst du eine nutzlose Karte einer anderen Farbe, heißt das **abwerfen**. Einen Zwang, höher zu spielen, gibt es übrigens nicht – du darfst gewinnen, musst aber nicht.',
       },
       {
         kind: 'teach',
-        title: 'Trumpf ist eine eigene Farbe',
+        title: 'Ein Bube gehört nicht zu seiner Farbe – er ist Trumpf',
         body: [
-          'Wird Trumpf ausgespielt, musst du Trumpf bedienen, wenn du welchen hast – **Buben eingeschlossen**, egal welche Farbe auf ihnen steht.',
-          'Umgekehrt: Im Herzspiel spielt ein Gegner Kreuz aus – mit deinem ♣B darfst du **nicht** bedienen. Er ist kein Kreuz, er ist Trumpf.',
+          'Lektion 3 sagt: Die vier Buben sind immer Trumpf. Beim Bedienen gehört ein Bube deshalb **nicht zu der Farbe, die auf ihm steht** – er gehört zu den Trümpfen.',
+          'Im Spiel unten ist **Herz Trumpf**. Du hast zweimal dieselben vier Karten; nur die ausgespielte Karte ist anders:',
+          '**♣A ausgespielt (Kreuz)** → nur ein echtes Kreuz, die ♣7, ist erlaubt. Auf dem ♣B steht zwar Kreuz, aber er ist Trumpf und bedient kein Kreuz.',
+          '**♥A ausgespielt (Trumpf)** → deine Trümpfe sind ♣B und ♥9, eine davon musst du spielen.',
+        ],
+        rows: [
+          { label: 'Wenn ♣A ausgespielt wird', cards: cards('C:J 7 | H:9 | D:K'), follow: { contract: { kind: 'suit', trump: 'H' }, lead: cards('C:A')[0] } },
+          { label: 'Wenn ♥A ausgespielt wird', cards: cards('C:J 7 | H:9 | D:K'), follow: { contract: { kind: 'suit', trump: 'H' }, lead: cards('H:A')[0] } },
         ],
         tip: 'Das ist der häufigste Fehler im ganzen Kurs. Frag dich vor jedem Zugeben: „Als welche Farbe zählt die ausgespielte Karte?“',
       },

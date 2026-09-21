@@ -41,7 +41,7 @@ function check(step: Concrete, where: string) {
 function shape(step: Concrete) {
   switch (step.kind) {
     case 'teach':
-      return { kind: step.kind, rows: step.rows?.map((r) => ({ cards: r.cards, faceDown: r.faceDown, captions: r.captions?.length })), tip: step.tip !== undefined }
+      return { kind: step.kind, rows: step.rows?.map((r) => ({ cards: r.cards, faceDown: r.faceDown, captions: r.captions?.length, follow: r.follow })), tip: step.tip !== undefined }
     case 'choice':
       return { kind: step.kind, rows: step.rows?.map((r) => r.cards), options: step.options.length, answer: step.answer, hint: step.hint !== undefined }
     case 'pick':
@@ -122,6 +122,22 @@ describe('the course', () => {
           }
         })
       })
+    })
+
+    it(`${locale}: every follow picture shows cards both allowed and refused by the engine`, () => {
+      for (const lesson of course) {
+        for (const step of lesson.steps) {
+          if (step.kind !== 'teach') continue
+          for (const row of step.rows ?? []) {
+            if (!row.follow) continue
+            const where = `${locale} lesson ${lesson.id} "${row.label}"`
+            expect(row.cards.some((c) => sameCard(c, row.follow!.lead)), `${where}: the lead is not in the hand`).toBe(false)
+            const legal = legalPlays(row.cards, [row.follow.lead], row.follow.contract)
+            expect(legal.length, `${where}: some card allowed`).toBeGreaterThan(0)
+            expect(legal.length, `${where}: some card refused`).toBeLessThan(row.cards.length)
+          }
+        }
+      }
     })
 
     it(`${locale}: ends in a full game`, () => {

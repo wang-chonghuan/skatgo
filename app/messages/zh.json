@@ -114,10 +114,10 @@
   "drill_settle_overbid_explain": "分值 {value} 小于叫分 {bid}，这是**超叫**，拿多少点都算输。按能盖住叫分的最小倍数算：{base} × {mult} = {bid}，再翻倍扣：**{score}**。",
   "drill_settle_hint": "先判断输赢（61 点；超叫直接输）。赢了记 +分值，输了记 −2×分值。",
 
-  "home_title": "一小时，学会斯卡特",
+  "home_title": "半小时，学会 Skat",
   "home_lead": "德国的国民牌戏：三个人、32 张牌、每局一打二。{count} 节小课，边看边动手，最后和两个电脑对手打一整局——学完就能和会打的人上桌。",
   "home_pill_length": "{count} 课 · 约 {minutes} 分钟",
-  "home_pill_age": "12 岁以上",
+  "home_pill_age": "6–99 岁",
   "home_pill_saved": "进度自动保存在这台设备",
   "home_progress": "总体进度",
   "home_done": "已完成 {finished} / {total} 课",

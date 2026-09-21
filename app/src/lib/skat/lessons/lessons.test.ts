@@ -111,6 +111,19 @@ describe('the course', () => {
       }
     })
 
+    it(`${locale}: no drill before lesson 5 names Grand or Null, which lesson 5 introduces`, () => {
+      const introduced = course.findIndex((l) => l.id === '5')
+      course.slice(0, introduced).forEach((lesson) => {
+        lesson.steps.forEach((step, i) => {
+          if (step.kind !== 'generated') return
+          for (let n = 0; n < 60; n++) {
+            const text = JSON.stringify(step.make())
+            expect(/\b(Grand|Null)\b/.test(text), `${locale} lesson ${lesson.id} step ${i}: ${text.slice(0, 120)}`).toBe(false)
+          }
+        })
+      })
+    })
+
     it(`${locale}: ends in a full game`, () => {
       expect(course[course.length - 1].steps.some((s) => s.kind === 'game')).toBe(true)
     })

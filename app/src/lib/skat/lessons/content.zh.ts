@@ -28,7 +28,7 @@ export const LESSONS_ZH: Lesson[] = [
     title: '三个人，32 张牌',
     promise: '知道斯卡特是怎么回事：谁对谁、打什么、怎样算赢。',
     emoji: '🃏',
-    minutes: 3,
+    minutes: 1,
     steps: [
       {
         kind: 'teach',
@@ -76,14 +76,14 @@ export const LESSONS_ZH: Lesson[] = [
     title: '牌点：哪些牌值钱',
     promise: '一眼看出一墩值多少点。',
     emoji: '💰',
-    minutes: 4,
+    minutes: 1,
     steps: [
       {
         kind: 'teach',
         title: '只有五种牌有点数',
         body: ['赢一墩，赢的不是「一墩」，而是这三张牌上的**点数**。只有 A、10、K、Q、J 值钱，7、8、9 一分没有——它们有个外号叫「白板」。'],
         rows: [{ cards: cards('S:A 10 K Q J 9 8 7'), captions: ['11', '10', '4', '3', '2', '0', '0', '0'] }],
-        tip: '口诀：**11、10、4、3、2**。一门花色 30 点，四门 120 点。',
+        tip: '口诀：A、10、K、Q、J 依次是 **11、10、4、3、2**。每门花色都有这五张，加起来 30 点；四门花色一共 **120** 点，就是第 1 课说的全副牌 120 点。',
       },
       {
         kind: 'teach',
@@ -105,7 +105,7 @@ export const LESSONS_ZH: Lesson[] = [
     title: '主牌和四个 J',
     promise: '任何定约下都能认出哪些是主牌、谁大谁小。',
     emoji: '👑',
-    minutes: 5,
+    minutes: 1,
     steps: [
       {
         kind: 'teach',
@@ -141,7 +141,7 @@ export const LESSONS_ZH: Lesson[] = [
     title: '跟牌与赢墩',
     promise: '知道轮到自己时哪些牌能出，以及一墩归谁。',
     emoji: '🎯',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -199,7 +199,7 @@ export const LESSONS_ZH: Lesson[] = [
     title: 'Grand 和 Null',
     promise: '会打另外两种定约：只有 J 是主牌的 Grand，和一墩都不能拿的 Null。',
     emoji: '🎭',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -252,7 +252,7 @@ export const LESSONS_ZH: Lesson[] = [
     title: '一局值多少分',
     promise: '会算任何一手牌的定约分值——叫牌的全部依据。',
     emoji: '🧮',
-    minutes: 7,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -297,7 +297,7 @@ export const LESSONS_ZH: Lesson[] = [
     title: '叫牌',
     promise: '听得懂、也参与得了牌桌上「18？—有。20？—过。」这段对话。',
     emoji: '📣',
-    minutes: 7,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -363,7 +363,7 @@ export const LESSONS_ZH: Lesson[] = [
     title: '底牌、扣牌与 Hand',
     promise: '当上庄家之后，知道怎么用好那两张底牌。',
     emoji: '🗃️',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -419,7 +419,7 @@ export const LESSONS_ZH: Lesson[] = [
     title: '加倍项与计分',
     promise: '一局打完，能自己把分算对，包括大胜、惨败和超叫。',
     emoji: '🏆',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -468,7 +468,7 @@ export const LESSONS_ZH: Lesson[] = [
     title: '怎么打：庄家与防守的基本功',
     promise: '不再只是「合法地出牌」，而是知道这张牌为什么出。',
     emoji: '🧠',
-    minutes: 8,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -541,7 +541,7 @@ export const LESSONS_ZH: Lesson[] = [
     title: '毕业局：上桌！',
     promise: '和两个电脑对手打完整的一局。打完，你就会斯卡特了。',
     emoji: '🎓',
-    minutes: 10,
+    minutes: 3,
     steps: [
       {
         kind: 'teach',

@@ -25,7 +25,7 @@ export const LESSONS_EN: Lesson[] = [
     title: 'Three players, 32 cards',
     promise: 'Know what Skat is about: who plays against whom, what for, and how you win.',
     emoji: '🃏',
-    minutes: 3,
+    minutes: 1,
     steps: [
       {
         kind: 'teach',
@@ -73,14 +73,14 @@ export const LESSONS_EN: Lesson[] = [
     title: 'Card points: which cards count',
     promise: 'See at a glance how many points a trick is worth.',
     emoji: '💰',
-    minutes: 4,
+    minutes: 1,
     steps: [
       {
         kind: 'teach',
         title: 'Only five kinds of card score',
         body: ['When you win a trick, what you win is not "a trick" but the **card points** of its three cards. Only A, 10, K, Q and J are worth anything; 7, 8 and 9 score nothing and are called **blanks**.'],
         rows: [{ cards: cards('S:A 10 K Q J 9 8 7'), captions: ['11', '10', '4', '3', '2', '0', '0', '0'] }],
-        tip: 'Memorise: **11, 10, 4, 3, 2**. One suit holds 30 points, four suits 120.',
+        tip: 'Memorise: A, 10, K, Q, J are worth **11, 10, 4, 3, 2**. Every suit has these five cards, adding up to 30 points; four suits make **120** — the 120 points of the whole deck from lesson 1.',
       },
       {
         kind: 'teach',
@@ -102,7 +102,7 @@ export const LESSONS_EN: Lesson[] = [
     title: 'Trumps and the four Jacks',
     promise: 'Recognise the trumps in any game, and which one beats which.',
     emoji: '👑',
-    minutes: 5,
+    minutes: 1,
     steps: [
       {
         kind: 'teach',
@@ -138,7 +138,7 @@ export const LESSONS_EN: Lesson[] = [
     title: 'Following suit and winning tricks',
     promise: 'Know which cards you may play on your turn, and who takes the trick.',
     emoji: '🎯',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -196,7 +196,7 @@ export const LESSONS_EN: Lesson[] = [
     title: 'Grand and Null',
     promise: 'Play the two other kinds of game: Grand, where only the Jacks are trumps, and Null, where you must not take a single trick.',
     emoji: '🎭',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -249,7 +249,7 @@ export const LESSONS_EN: Lesson[] = [
     title: 'What a game is worth',
     promise: 'Work out the value of any hand — the basis of all bidding.',
     emoji: '🧮',
-    minutes: 7,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -294,7 +294,7 @@ export const LESSONS_EN: Lesson[] = [
     title: 'Bidding',
     promise: 'Understand — and join in — the table talk that goes "18?" — "Yes." "20?" — "Pass."',
     emoji: '📣',
-    minutes: 7,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -360,7 +360,7 @@ export const LESSONS_EN: Lesson[] = [
     title: 'The skat, discarding and Hand',
     promise: 'Once you are declarer, know how to make the most of the two skat cards.',
     emoji: '🗃️',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -416,7 +416,7 @@ export const LESSONS_EN: Lesson[] = [
     title: 'Extras and scoring',
     promise: 'Score a finished game yourself — big wins, heavy losses and overbids included.',
     emoji: '🏆',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -465,7 +465,7 @@ export const LESSONS_EN: Lesson[] = [
     title: 'How to play: declarer and defence basics',
     promise: 'Stop just playing legal cards — know why you play each one.',
     emoji: '🧠',
-    minutes: 8,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -538,7 +538,7 @@ export const LESSONS_EN: Lesson[] = [
     title: 'Graduation game: take a seat!',
     promise: 'Play a complete game against two computer opponents. After that, you can play Skat.',
     emoji: '🎓',
-    minutes: 10,
+    minutes: 3,
     steps: [
       {
         kind: 'teach',

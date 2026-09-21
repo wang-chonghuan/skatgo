@@ -54,7 +54,9 @@ export function countPointsDrill(): ChoiceStep {
   }
 }
 
-export function pickTrumpsDrill(contract: Contract = Math.random() < 0.75 ? suitContract() : { kind: 'grand' }): PickStep {
+// The defaults below draw suit games only: lessons 3 and 4 use them, and Grand is not taught until
+// lesson 5, which asks for it by name.
+export function pickTrumpsDrill(contract: Contract = suitContract()): PickStep {
   let hand: Card[]
   let trumps: Card[]
   do {
@@ -98,7 +100,7 @@ export function orderDrill(contract: Contract = suitContract()): OrderStep {
   }
 }
 
-export function legalDrill(contract: Contract = Math.random() < 0.7 ? suitContract() : { kind: 'grand' }): PickStep {
+export function legalDrill(contract: Contract = suitContract()): PickStep {
   // Aim for the instructive cases: a plain-suit lead while the hand holds the Jack of that printed
   // suit, or a trump lead answered with Jacks.
   for (;;) {
@@ -128,7 +130,7 @@ export function legalDrill(contract: Contract = Math.random() < 0.7 ? suitContra
   }
 }
 
-export function trickWinnerDrill(contract: Contract = pick<Contract>([suitContract(), suitContract(), { kind: 'grand' }])): PickStep {
+export function trickWinnerDrill(contract: Contract = suitContract()): PickStep {
   for (;;) {
     const deck = shuffle(fullDeck())
     // Build a trick people could really have played: the second and third cards must be legal.

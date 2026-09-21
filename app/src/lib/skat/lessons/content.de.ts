@@ -25,7 +25,7 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Drei Spieler, 32 Karten',
     promise: 'Wissen, worum es beim Skat geht: wer gegen wen spielt, worum und wie man gewinnt.',
     emoji: '🃏',
-    minutes: 3,
+    minutes: 1,
     steps: [
       {
         kind: 'teach',
@@ -76,14 +76,14 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Augen: welche Karten zählen',
     promise: 'Auf einen Blick sehen, wie viele Augen ein Stich hat.',
     emoji: '💰',
-    minutes: 4,
+    minutes: 1,
     steps: [
       {
         kind: 'teach',
         title: 'Nur fünf Kartenwerte zählen',
         body: ['Wer einen Stich bekommt, gewinnt nicht „einen Stich“, sondern die **Augen** seiner drei Karten. Nur Ass, Zehn, König, Dame und Bube zählen; 7, 8 und 9 sind nichts wert und heißen **Luschen**.'],
         rows: [{ cards: cards('S:A 10 K Q J 9 8 7'), captions: ['11', '10', '4', '3', '2', '0', '0', '0'] }],
-        tip: 'Merke: **11, 10, 4, 3, 2**. Eine Farbe hat 30 Augen, vier Farben 120.',
+        tip: 'Merke: A, 10, K, D, B zählen **11, 10, 4, 3, 2**. Jede Farbe hat diese fünf Karten, zusammen 30 Augen; vier Farben ergeben **120** – die 120 Augen des ganzen Blatts aus Lektion 1.',
       },
       {
         kind: 'teach',
@@ -105,7 +105,7 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Trumpf und die vier Buben',
     promise: 'In jedem Spiel die Trümpfe erkennen – und wer wen sticht.',
     emoji: '👑',
-    minutes: 5,
+    minutes: 1,
     steps: [
       {
         kind: 'teach',
@@ -141,7 +141,7 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Bedienen und Stiche gewinnen',
     promise: 'Wissen, welche Karten du spielen darfst – und wem der Stich gehört.',
     emoji: '🎯',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -199,7 +199,7 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Grand und Null',
     promise: 'Die beiden anderen Spielarten beherrschen: Grand, in dem nur die Buben Trumpf sind, und Null, in dem man keinen Stich bekommen darf.',
     emoji: '🎭',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -252,7 +252,7 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Was ein Spiel wert ist',
     promise: 'Den Wert jedes Blattes ausrechnen – die Grundlage für das ganze Reizen.',
     emoji: '🧮',
-    minutes: 7,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -297,7 +297,7 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Reizen',
     promise: 'Das Tischgespräch „18?“ – „Ja.“ „20?“ – „Passe.“ verstehen und mitreden.',
     emoji: '📣',
-    minutes: 7,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -363,7 +363,7 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Skat, Drücken und Hand',
     promise: 'Als Alleinspieler wissen, wie man die beiden Skatkarten am besten nutzt.',
     emoji: '🗃️',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -419,7 +419,7 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Gewinnstufen und Abrechnung',
     promise: 'Ein fertiges Spiel selbst abrechnen – mit Schneider, Schwarz und überreizten Spielen.',
     emoji: '🏆',
-    minutes: 6,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -468,7 +468,7 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Richtig spielen: Grundlagen für Alleinspieler und Gegenspieler',
     promise: 'Nicht mehr nur erlaubte Karten legen – sondern wissen, warum du genau diese spielst.',
     emoji: '🧠',
-    minutes: 8,
+    minutes: 2,
     steps: [
       {
         kind: 'teach',
@@ -541,7 +541,7 @@ export const LESSONS_DE: Lesson[] = [
     title: 'Abschlussspiel: an den Tisch!',
     promise: 'Eine komplette Partie gegen zwei Computergegner spielen. Danach kannst du Skat.',
     emoji: '🎓',
-    minutes: 10,
+    minutes: 3,
     steps: [
       {
         kind: 'teach',

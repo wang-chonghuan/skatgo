@@ -114,10 +114,10 @@
   "drill_settle_overbid_explain": "A game value of {value} is below the bid of {bid}: that is an **overbid**, lost whatever the card points. It is scored at the smallest multiple that covers the bid, {base} × {mult} = {bid}, and doubled: **{score}**.",
   "drill_settle_hint": "First decide won or lost (61 card points; an overbid always loses). Won scores +game value, lost scores −2 × game value.",
 
-  "home_title": "Learn Skat in an hour",
+  "home_title": "Learn Skat in half an hour",
   "home_lead": "Germany's national card game: three players, 32 cards, one against two in every deal. {count} short, hands-on lessons, ending with a full game against two computer opponents — after that you can sit down with people who already play.",
   "home_pill_length": "{count} lessons · about {minutes} min",
-  "home_pill_age": "Ages 12 and up",
+  "home_pill_age": "Ages 6–99",
   "home_pill_saved": "Progress is saved on this device",
   "home_progress": "Overall progress",
   "home_done": "{finished} of {total} lessons done",

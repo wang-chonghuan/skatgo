@@ -21,8 +21,8 @@ human's words: 「只要进度走完，就能短时间把skat学会，学到可�
 
 **Who it is for**
 
-「12岁及其以上的包括成人用户」 — learners from twelve up, adults included, who want to be able to
-sit down at a table with people who already play.
+Learners from 6 to 99 (the human, 2026-09-21: 「年龄改为6-99岁」; at commissioning it was
+「12岁及其以上的包括成人用户」), who want to be able to sit down at a table with people who already play.
 
 **What good looks like**
 

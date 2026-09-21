@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-2",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-2",
+  "branch": "SKATGO-2-lesson2-points-tip",
+  "base": "9085983106d51fb61f794d76f20e6a25fc30178d",
+  "ports": { "web": 55002 }
+}

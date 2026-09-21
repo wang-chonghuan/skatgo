@@ -114,10 +114,10 @@
   "drill_settle_overbid_explain": "Spielwert {value} liegt unter dem Reizwert {bid}: **überreizt** – verloren, egal wie viele Augen. Gewertet wird das kleinste Vielfache, das den Reizwert erreicht, {base} × {mult} = {bid}, und doppelt: **{score}**.",
   "drill_settle_hint": "Erst entscheiden: gewonnen oder verloren (61 Augen; überreizt ist immer verloren). Gewonnen schreibt +Spielwert, verloren −2 × Spielwert.",
 
-  "home_title": "Skat lernen in einer Stunde",
+  "home_title": "Skat lernen in einer halben Stunde",
   "home_lead": "Das Kartenspiel, das in Deutschland fast jeder kennt: drei Spieler, 32 Karten, in jedem Spiel einer gegen zwei. {count} kurze Lektionen zum Mitmachen und am Ende eine ganze Partie gegen zwei Computergegner – danach kannst du dich an jeden Skattisch setzen.",
   "home_pill_length": "{count} Lektionen · ca. {minutes} Min.",
-  "home_pill_age": "Ab 12 Jahren",
+  "home_pill_age": "Von 6 bis 99 Jahren",
   "home_pill_saved": "Fortschritt wird auf diesem Gerät gespeichert",
   "home_progress": "Gesamtfortschritt",
   "home_done": "{finished} von {total} Lektionen geschafft",

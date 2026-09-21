@@ -2,7 +2,7 @@
 
 斯卡特（Skat）中文互动课程，线上地址 https://skatgo.com 。11 节课，边学边练，最后和两个电脑对手打完整的一局。
 
-这门课原本在 [Parrottoon](https://parrottoon.com/skat) 里开发（PARROT-42），这里是它的独立站点，**视觉上与 parrottoon.com/skat 逐像素一致**。课程代码、主题与样式都是从 Parrottoon 原样复制的；改动只有路由路径（`/skat/...` → `/...`）和头部「← 回 Parrottoon」链接的绝对地址。
+这门课原本在 [Parrottoon](https://parrottoon.com/skat) 里开发（PARROT-42），这里是它的独立站点，**视觉上与 parrottoon.com/skat 一致**。课程代码、主题与样式都是从 Parrottoon 原样复制的；改动只有路由路径（`/skat/...` → `/...`），以及头部不显示「← 回 Parrottoon」链接。
 
 ## 结构
 

@@ -5,10 +5,8 @@ import { skat } from './theme/skat.stylex'
 // The frame around every page of the course: the felt-green header and the reading column.
 //
 // Carried over verbatim from Parrottoon's /skat route, where this course was built (PARROT-42), so
-// that skatgo.com renders exactly what parrottoon.com/skat does. The one change is where "back"
-// goes: on Parrottoon it was a relative link to the home of the language pair, which on this domain
-// would be a 404, so it now names Parrottoon's address in full. The text and look are unchanged.
-const PARROTTOON_HOME = 'https://parrottoon.com/zh/en'
+// that skatgo.com renders what parrottoon.com/skat does. One deliberate difference: Parrottoon's
+// header also carries a "← 回 Parrottoon" link. skatgo.com is its own site, so it has none.
 
 export function SkatLayout() {
   return (
@@ -18,7 +16,6 @@ export function SkatLayout() {
           <span {...stylex.props(styles.brandMark)}>♣</span>
           斯卡特速成课
         </Link>
-        <a href={PARROTTOON_HOME} {...stylex.props(styles.back)}>← 回 Parrottoon</a>
       </header>
       <main {...stylex.props(styles.main)}>
         <Outlet />
@@ -59,7 +56,6 @@ const styles = stylex.create({
     color: skat.ink,
     fontSize: 20,
   },
-  back: { color: skat.white, opacity: 0.85, textDecoration: 'none', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' },
   main: {
     flexGrow: 1,
     width: '100%',

@@ -3,7 +3,7 @@ import confetti from 'canvas-confetti'
 import { AnimatePresence, motion } from 'motion/react'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
-import { bidAdvice, chooseDeclaration } from '~/lib/skat/ai'
+import { bidAdvice, chooseDeclaration, declarationAdvice, skatAdvice } from '~/lib/skat/ai'
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { adviceReason, cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
 import {
@@ -254,6 +254,30 @@ export function GameTable({ onSettled }: Props) {
               text: a.contract ? m.bid_hint_limit({ contract: contractName(a.contract), limit: a.limit }) : m.bid_hint_pass(),
             })
           }}
+          onSkatHint={() => {
+            const a = skatAdvice(game.hands[ME], game.bid).hand
+            const args = { contract: contractName(a.declaration.contract), value: a.value, bid: game.bid }
+            setHint({ text: a.covers ? m.skat_hint_pickup_covers(args) : m.skat_hint_pickup_short(args) })
+          }}
+          onDeclareHint={() => {
+            // The same cards the picker values: the ten kept plus the two put away, or in a Hand game
+            // the ten alone — the skat is unseen.
+            const isHand = !game.pickedUp
+            const ten = game.hands[ME]
+            const a = declarationAdvice(ten, isHand ? ten : [...ten, ...game.skat], game.bid, isHand)
+            const contract = `${contractName(a.declaration.contract)}${isHand ? ' Hand' : ''}`
+            const why =
+              a.declaration.contract.kind === 'suit'
+                ? m.declare_hint_suit({ contract, trumps: a.trumps, aces: a.aces })
+                : a.declaration.contract.kind === 'grand'
+                  ? m.declare_hint_grand({ contract, jacks: a.jacks, aces: a.aces })
+                  : a.nullRisk === 0
+                    ? m.declare_hint_null({ contract })
+                    : m.declare_hint_null_risky({ contract, n: a.nullRisk })
+            const worth = a.covers ? m.declare_hint_covers({ value: a.value, bid: game.bid }) : m.declare_hint_overbid({ value: a.value, bid: game.bid })
+            const hand = isHand ? `${m.declare_hint_no_announce()}${a.declaration.contract.kind === 'null' ? '' : m.declare_hand_note()}` : ''
+            setHint({ text: `${why}${worth}${hand}` })
+          }}
           onDiscardHint={() => {
             const plan = chooseDeclaration(game.hands[ME], game.bid)
             setHint({
@@ -307,6 +331,8 @@ type ActionsProps = {
   onDiscard: () => void
   onDeclare: (d: Declaration) => void
   onBidHint: () => void
+  onSkatHint: () => void
+  onDeclareHint: () => void
   onDiscardHint: () => void
   onPlayHint: () => void
   onNewGame: () => void
@@ -382,6 +408,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.skat_won_bid({ bid: game.bid })}</Say>
           <Btn testId="skat-pickup" onClick={p.onPickUp}>{m.skat_pick_up()}</Btn>
           <Btn testId="skat-hand-game" tone="quiet" onClick={p.onHand}>{m.skat_play_hand()}</Btn>
+          <Btn testId="skat-skat-hint" tone="felt" size="sm" onClick={p.onSkatHint}>{m.skat_hint_button()}</Btn>
         </Row>
       )
     }
@@ -395,7 +422,7 @@ function Actions(p: ActionsProps) {
   }
 
   if (game.phase === 'declare') {
-    return <DeclarePicker game={game} draft={p.draft} setDraft={p.setDraft} onDeclare={p.onDeclare} />
+    return <DeclarePicker game={game} draft={p.draft} setDraft={p.setDraft} onDeclare={p.onDeclare} onHint={p.onDeclareHint} />
   }
 
   return (
@@ -408,7 +435,19 @@ function Actions(p: ActionsProps) {
 
 const CONTRACTS: Contract[] = [...[...SUITS].reverse().map((trump): Contract => ({ kind: 'suit', trump })), { kind: 'grand' }, { kind: 'null' }]
 
-function DeclarePicker({ game, draft, setDraft, onDeclare }: { game: Game; draft: Declaration | null; setDraft: (d: Declaration | null) => void; onDeclare: (d: Declaration) => void }) {
+function DeclarePicker({
+  game,
+  draft,
+  setDraft,
+  onDeclare,
+  onHint,
+}: {
+  game: Game
+  draft: Declaration | null
+  setDraft: (d: Declaration | null) => void
+  onDeclare: (d: Declaration) => void
+  onHint: () => void
+}) {
   const isHand = !game.pickedUp
   // Matadors are counted over hand plus skat, but in a Hand game the skat is unseen: the learner can
   // only count what they hold, which is exactly the uncertainty the lesson on Hand games describes.
@@ -470,6 +509,7 @@ function DeclarePicker({ game, draft, setDraft, onDeclare }: { game: Game; draft
       ) : null}
       <Row>
         <Btn testId="skat-declare" disabled={!draft} onClick={() => draft && onDeclare(draft)}>{m.declare_go()}</Btn>
+        <Btn testId="skat-declare-hint" tone="felt" size="sm" onClick={onHint}>{m.declare_hint_button()}</Btn>
       </Row>
     </div>
   )

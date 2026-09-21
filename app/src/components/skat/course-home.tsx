@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { useEffect, useState } from 'react'
 
-import { Pill, ProgressBar, Stars, linkLook } from './ui'
+import { Pill, Stars, linkLook } from './ui'
 import { lessons } from '~/lib/skat/lessons/content'
 import { type LessonRecord, type Tally, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
@@ -28,7 +28,6 @@ export function CourseHome() {
   const tally = mounted ? storedTally : NO_GAMES
   const course = lessons()
   const finished = course.filter((l) => l.id in done).length
-  const pct = Math.round((finished / course.length) * 100)
   const current = course.find((l) => !(l.id in done))
   const totalMinutes = course.reduce((n, l) => n + l.minutes, 0)
 
@@ -44,12 +43,12 @@ export function CourseHome() {
             <Pill tone="felt">{m.home_pill_saved()}</Pill>
           </div>
         </div>
+        {/* The table sits where the progress bar was (SKATGO-8): the way to play is always one tap
+            away; the note keeps the count of lessons and games, and "continue" keeps its place. */}
         <div {...stylex.props(styles.progress)}>
-          <div {...stylex.props(styles.progressHead)}>
-            <span {...stylex.props(styles.progressLabel)}>{m.home_progress()}</span>
-            <span data-testid="skat-overall" {...stylex.props(styles.progressPct)}>{pct}%</span>
-          </div>
-          <ProgressBar value={finished / course.length} label={m.home_progress()} />
+          <Link to="/play" data-testid="skat-free-play" {...linkLook(current ? 'felt' : 'primary', 'lg')}>
+            {current ? m.free_play_button() : m.home_graduated()}
+          </Link>
           <span {...stylex.props(styles.progressNote)}>
             {m.home_done({ finished, total: course.length })}
             {tally.games > 0 ? m.home_games({ games: tally.games, won: tally.won }) : ''}
@@ -58,9 +57,7 @@ export function CourseHome() {
             <Link to="/lesson/$id" params={{ id: current.id }} data-testid="skat-resume" {...linkLook('primary', 'lg')}>
               {finished === 0 ? m.home_start() : m.home_continue({ id: current.id })}
             </Link>
-          ) : (
-            <Link to="/play" {...linkLook('primary', 'lg')}>{m.home_graduated()}</Link>
-          )}
+          ) : null}
         </div>
       </section>
 
@@ -98,14 +95,6 @@ export function CourseHome() {
           )
         })}
       </ol>
-
-      <section {...stylex.props(styles.free)}>
-        <div>
-          <h2 {...stylex.props(styles.h2)}>{m.free_title()}</h2>
-          <p {...stylex.props(styles.freeNote)}>{m.free_note()}</p>
-        </div>
-        <Link to="/play" data-testid="skat-free-play" {...linkLook('felt', 'lg')}>{m.free_open()}</Link>
-      </section>
     </div>
   )
 }
@@ -138,9 +127,6 @@ const styles = stylex.create({
     color: skat.ink,
     alignSelf: 'start',
   },
-  progressHead: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' },
-  progressLabel: { fontSize: 14, fontWeight: 700, color: skat.inkSoft },
-  progressPct: { fontSize: 30, fontWeight: 800, color: skat.ink },
   progressNote: { fontSize: 13, color: skat.inkSoft },
   list: { listStyleType: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 },
   item: { margin: 0 },
@@ -186,16 +172,4 @@ const styles = stylex.create({
   lessonPromise: { fontSize: 14, lineHeight: 1.5, color: skat.inkSoft },
   lessonEnd: { flexShrink: 0 },
   minutes: { fontSize: 13, fontWeight: 600, color: skat.inkFaint, whiteSpace: 'nowrap' },
-  free: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 16,
-    padding: 20,
-    borderRadius: 18,
-    backgroundColor: skat.paperDeep,
-  },
-  h2: { margin: 0, fontSize: 20, fontWeight: 800, color: skat.ink },
-  freeNote: { margin: 0, marginTop: 4, fontSize: 14, lineHeight: 1.6, color: skat.inkSoft, maxWidth: 480 },
 })

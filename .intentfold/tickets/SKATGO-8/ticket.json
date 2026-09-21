@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-8",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-8",
+  "branch": "SKATGO-8-hints-home",
+  "base": "5ea6fb6d535df485140b6693b4b9f71ee294e851",
+  "ports": { "web": 55008 }
+}

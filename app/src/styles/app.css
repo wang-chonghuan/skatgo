@@ -1,0 +1,55 @@
+/*
+ * The app's ONLY stylesheet.
+ *
+ * Parrottoon has no utility-CSS framework (no Tailwind, ever) and no hand-written
+ * product CSS: every product style is a StyleX rule in the component that owns it,
+ * and every value it uses is an Astryx token. This file exists solely to (a) fix
+ * the CSS layer order and (b) pull in Astryx's reset and the active theme.
+ *
+ * @astryxdesign/build's vite plugin injects the same @layer line via
+ * transformIndexHtml, which TanStack Start's SSR shell does not run — so the
+ * order is declared here, where it is guaranteed to land first.
+ *
+ * Layer order (lowest → highest priority):
+ *   reset          Astryx element reset + the theme's prose defaults
+ *   astryx-base    Astryx component atoms, when the dev server splits them out
+ *   product        Parrottoon's own StyleX rules, likewise (dev only)
+ *   priority1..9   where StyleX actually emits every compiled atom in a
+ *                  production build — the plugin's library/product split is a
+ *                  dev-server middleware and does not run at build time
+ *   astryx-theme   the active theme's component overrides — LAST, so a theme can
+ *                  restyle a component (matcha's pill buttons and 42px card
+ *                  radius are exactly this) instead of losing to its base atoms
+ *
+ * This is the order the official example app declares. The astryxStylex() vite
+ * plugin injects a shorter one via transformIndexHtml, which TanStack Start's SSR
+ * shell never runs — and that shorter order puts astryx-theme *below* the priority
+ * layers, which silently drops the theme's component overrides in a built app.
+ */
+@layer reset, astryx-base, product, priority1, priority2, priority3, priority4,
+  priority5, priority6, priority7, priority8, priority9, astryx-theme;
+
+@import '@astryxdesign/core/reset.css';
+
+/* The active theme's generated CSS. It is OURS now — built from
+   src/theme/parrottoonTheme.ts by `astryx theme build`, not pulled from a
+   package. Swapping themes means swapping this one line together with
+   src/theme.ts — see .intentfold/charter/ui.md § Switching the theme. */
+@import '../theme/parrottoon.css';
+
+/* Astryx tokens live on the <Theme> wrapper, which renders display:contents.
+   The page canvas itself therefore has to be painted here — one rule, using the
+   theme's own body-surface token, so it changes with the theme like everything
+   else. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--color-background-body);
+}
+
+body {
+  font-family: var(--font-family-body);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+}

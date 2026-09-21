@@ -13,7 +13,7 @@ Section shape is fixed by `.intentfold/readme.md`.
 
 **What this product is**
 
-An interactive Skat course in Chinese, at skatgo.com. Eleven lessons take a learner from "what is this
+An interactive Skat course at skatgo.com, in Chinese, English and German. Eleven lessons take a learner from "what is this
 deck" to a full game: each lesson teaches with cards the learner can touch, then checks with
 exercises that are judged on the spot and explain every wrong answer. Overall progress is visible from
 the course map, and the last lesson is a whole game against two computer players. The aim, in the
@@ -33,7 +33,9 @@ A learner who finishes the progress can play with people who already know the ga
 
 **What this product is not**
 
-- It is not multilingual. 「目前只要中文版」.
+- It speaks three languages and no others: Chinese, English and German — the language the learner's
+  browser asks for, and one they can switch to themselves (the human, 2026-09-21: 「三门语言的，多语言，
+  英文，德文，中文，按照浏览器来决定，放到右上角用户可以选」). It launched in Chinese only.
 - It is only the course. When it was split from Parrottoon the instruction was 「只要课程」: none of
   Parrottoon's English content, and — the human's later instruction — no link back to Parrottoon.
 - <Further deliberate non-goals. The most useful part of this file — it is what stops scope from

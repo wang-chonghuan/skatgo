@@ -7,8 +7,7 @@ The dependency inventory belongs to the lockfile; generated structure belongs to
 Record here only decisions, boundaries, and commands that the repository cannot explain by itself.
 
 > Seeded 2026-09-21 by intentfold cap1 **from the repository and from how it was built** (it was
-> extracted from Parrottoon the same day). Items marked *(inferred — confirm)* are the machine's
-> reading, not a decision anyone has stated.
+> extracted from Parrottoon the same day), and accepted by the human as written.
 
 ## Contract
 
@@ -149,11 +148,11 @@ cross-module contract.
 3. **Adding, removing, or changing a dependency** — not without the human's explicit approval and a
    ticket carrying that decision.
 4. **A route file under `app/src/routes/` importing a course page other than through
-   `~/components/skat/client-page`** — forbidden outright *(inferred — confirm)*. Detectable from the
+   `~/components/skat/client-page`** — forbidden outright. Detectable from the
    imports of the route files. It is the shape that produced the 500-everywhere build.
 5. **Hand-editing `app/src/routeTree.gen.ts` or `app/src/theme/parrottoon.{css,js,d.ts}`** — forbidden
    outright. They are generated.
 6. **A server-only reference in a browser chunk** — forbidden outright. Detectable by
    `app/scripts/check-client-bundle.mjs`.
-7. **Weakening a check to make it pass** — forbidden outright *(inferred — confirm)*: deleting an
+7. **Weakening a check to make it pass** — forbidden outright: deleting an
    assertion, loosening the grep, or skipping a test. The check failing is the check working.

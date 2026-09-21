@@ -3,8 +3,7 @@
 Binding on every UI change. **UI work follows this file strictly** — the agent does not invent
 alternatives to what is written here. Section shape is fixed by `.intentfold/readme.md`.
 
-> Seeded 2026-09-21 by intentfold cap1 from the repository. Items marked *(inferred — confirm)* are
-> the machine's reading, not a stated decision.
+> Seeded 2026-09-21 by intentfold cap1 from the repository, and accepted by the human as written.
 
 ## Contract
 
@@ -49,9 +48,8 @@ uses them; there is no spacing scale in the course palette.
 **Design source of truth**
 
 The running implementation. It began as a byte copy of parrottoon.com/skat (2026-09-21) and was
-verified pixel-identical to it; since then the header has lost the "← 回 Parrottoon" link at the
-human's instruction, and the two are no longer kept in step. *(Whether skatgo should keep looking
-like Parrottoon's course from here on is a question for the human — confirm.)*
+verified pixel-identical to it. That parity was a requirement of the split, not of the product:
+skatgo now develops on its own, and parrottoon.com/skat is not a reference for new work.
 
 ## Tools
 
@@ -87,8 +85,8 @@ disabled until the step is solved. An illegal card is refused with the follow-su
 the hand. Anything still loading shows the course's own "正在发牌……". A card that cannot be played
 now is dimmed but still tappable, so the table can say why.
 
-**Content and tone.** Chinese, direct and a little playful, written for twelve-year-olds and adults
-alike (「不枯燥的」). The German words a Skat table actually uses — Grand, Null, Hand, Schneider,
+**Content and tone.** Direct and a little playful in every language the course speaks, written for
+twelve-year-olds and adults alike (「不枯燥的」). The German words a Skat table actually uses — Grand, Null, Hand, Schneider,
 Schwarz, Ouvert, Matador — stay German, because those are what the learner will hear at a real table.
 
 ## Redlines

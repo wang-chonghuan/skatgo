@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-6",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "auto-deploy",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-6",
   "branch": "SKATGO-6-lesson4-intro",

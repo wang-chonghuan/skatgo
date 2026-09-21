@@ -5,7 +5,7 @@ import { locales } from '~/paraglide/runtime'
 import { LANG_TAG, SITE_URL, localizedUrl } from './site'
 
 // public/sitemap.xml is a static file, so it is held here to what it must list: every page of the
-// route tree that has no parameter (a lesson page redirects a new visitor, so none is listed), in
+// route tree that has no parameter (lesson pages render in the browser only; the map links them all), in
 // every language, each with the hreflang alternates the pages' own <head> carries. Both lists are
 // derived — the pages from the generated route tree, the languages from Paraglide — so a new page
 // or language fails this test until the sitemap has it.

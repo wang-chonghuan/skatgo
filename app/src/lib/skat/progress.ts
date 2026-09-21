@@ -4,16 +4,14 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 // Course progress. There are no accounts (pt_users is empty and nothing signs anyone up), so the
 // browser is the only place it can live.
 //
-// The course renders in the browser only (components/skat/client-page), so the store can read
-// localStorage as soon as it is created. `hydrated` still exists because that read is asynchronous
-// in zustand's contract: until it lands, every lesson but the first looks locked, and the lesson
-// page must not bounce a learner off a lesson they have in fact unlocked.
+// Progress no longer gates anything (SKATGO-7: every lesson opens directly); it records stars and
+// games, and the course map applies it after mount (course-home.tsx). On the server there is no
+// localStorage and the store simply stays empty.
 
 export type LessonRecord = { stars: 1 | 2 | 3; mistakes: number }
 export type Tally = { games: number; won: number; score: number }
 
 type ProgressState = {
-  hydrated: boolean
   done: Record<string, LessonRecord>
   tally: Tally
   complete: (lessonId: string, mistakes: number) => LessonRecord
@@ -29,7 +27,6 @@ export function starsFor(mistakes: number): 1 | 2 | 3 {
 export const useProgress = create<ProgressState>()(
   persist(
     (set, get) => ({
-      hydrated: false,
       done: {},
       tally: { games: 0, won: 0, score: 0 },
       complete: (lessonId, mistakes) => {
@@ -52,14 +49,3 @@ export const useProgress = create<ProgressState>()(
     },
   ),
 )
-
-// With localStorage the read finishes synchronously, inside `create` — before `useProgress` is even
-// assigned — so the flag cannot be set from a callback passed to `persist`. Set it here instead, for
-// both the case that already happened and the one that has not.
-//
-// On the server (the course map renders there, SKATGO-1) there is no localStorage, zustand attaches
-// no `persist` API, and there is nothing to hydrate: the store stays empty and `hydrated` false.
-if (useProgress.persist) {
-  if (useProgress.persist.hasHydrated()) useProgress.setState({ hydrated: true })
-  useProgress.persist.onFinishHydration(() => useProgress.setState({ hydrated: true }))
-}

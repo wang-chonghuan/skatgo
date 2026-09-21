@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useEffect, useState } from 'react'
 
 import { Pill, ProgressBar, Stars, linkLook } from './ui'
-import { isUnlocked, lessons } from '~/lib/skat/lessons/content'
+import { lessons } from '~/lib/skat/lessons/content'
 import { type LessonRecord, type Tally, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
 import { skat } from '../../theme/skat.stylex'
@@ -66,12 +66,13 @@ export function CourseHome() {
 
       <ol {...stylex.props(styles.list)}>
         {course.map((l) => {
+          // Every lesson opens directly (SKATGO-7). The one "continue" points at keeps the brass outline,
+          // so the map still says where the learner is.
           const record = done[l.id]
-          const open = isUnlocked(l.id, done)
-          const state = record ? 'done' : open ? 'open' : 'locked'
+          const state = record ? 'done' : l.id === current?.id ? 'next' : 'open'
           const inner = (
             <>
-              <span {...stylex.props(styles.emoji, state === 'locked' && styles.emojiLocked)}>{state === 'locked' ? '🔒' : l.emoji}</span>
+              <span {...stylex.props(styles.emoji)}>{l.emoji}</span>
               <span {...stylex.props(styles.lessonText)}>
                 <span {...stylex.props(styles.lessonTitle)}>{m.lesson_heading({ id: l.id, title: l.title })}</span>
                 <span {...stylex.props(styles.lessonPromise)}>{l.promise}</span>
@@ -83,22 +84,16 @@ export function CourseHome() {
           )
           return (
             <li key={l.id} {...stylex.props(styles.item)}>
-              {open ? (
-                <Link
-                  to="/lesson/$id"
-                  params={{ id: l.id }}
-                  data-testid="skat-lesson-card"
-                  data-lesson={l.id}
-                  data-state={state}
-                  {...stylex.props(styles.card, state === 'done' && styles.cardDone, state === 'open' && styles.cardOpen)}
-                >
-                  {inner}
-                </Link>
-              ) : (
-                <div data-testid="skat-lesson-card" data-lesson={l.id} data-state={state} aria-disabled="true" {...stylex.props(styles.card, styles.cardLocked)}>
-                  {inner}
-                </div>
-              )}
+              <Link
+                to="/lesson/$id"
+                params={{ id: l.id }}
+                data-testid="skat-lesson-card"
+                data-lesson={l.id}
+                data-state={state}
+                {...stylex.props(styles.card, state === 'done' && styles.cardDone, state === 'next' && styles.cardNext, state === 'open' && styles.cardOpen)}
+              >
+                {inner}
+              </Link>
             </li>
           )
         })}
@@ -164,13 +159,17 @@ const styles = stylex.create({
     transitionProperty: 'transform, box-shadow, border-color',
     transitionDuration: '140ms',
   },
-  cardOpen: {
+  cardNext: {
     borderColor: { default: skat.brass, ':hover': skat.brassDeep },
     boxShadow: { default: `0 3px 0 ${skat.brass}`, ':hover': `0 6px 14px ${skat.shadowSoft}` },
     transform: { default: 'translateY(0)', ':hover': 'translateY(-2px)' },
   },
+  cardOpen: {
+    borderColor: { default: skat.paperEdge, ':hover': skat.brass },
+    boxShadow: { default: 'none', ':hover': `0 6px 14px ${skat.shadowSoft}` },
+    transform: { default: 'translateY(0)', ':hover': 'translateY(-2px)' },
+  },
   cardDone: { borderColor: { default: skat.good, ':hover': skat.good }, backgroundColor: skat.goodSoft },
-  cardLocked: { opacity: 0.55, cursor: 'not-allowed', backgroundColor: skat.paperDeep },
   emoji: {
     display: 'flex',
     alignItems: 'center',
@@ -182,7 +181,6 @@ const styles = stylex.create({
     fontSize: 28,
     flexShrink: 0,
   },
-  emojiLocked: { backgroundColor: skat.paperEdge, fontSize: 22 },
   lessonText: { display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flexGrow: 1 },
   lessonTitle: { fontSize: 17, fontWeight: 800 },
   lessonPromise: { fontSize: 14, lineHeight: 1.5, color: skat.inkSoft },

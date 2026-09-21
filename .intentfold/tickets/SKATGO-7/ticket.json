@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-7",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-7",
+  "branch": "SKATGO-7-open-lessons",
+  "base": "cce834cd7d15970fec12b2254f9dc80c84e4d732",
+  "ports": { "web": 55007 }
+}

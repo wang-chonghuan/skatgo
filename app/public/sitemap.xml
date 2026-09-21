@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- The course's public pages in every language, each with its hreflang alternates (SKATGO-1).
-     Lessons are not listed: a new visitor is sent back to the course map until the lesson before is done.
+     Lessons are not listed: they render in the browser only and share the course's title; the course map lists them all.
      Held to app/messages locales and the page list by src/lib/sitemap.test.ts. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>

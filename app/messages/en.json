@@ -138,6 +138,7 @@
   "lesson_game_done": "🎓 That's a whole game! Keep practising with \"New game\", or press the button below to graduate.",
   "lesson_graduate": "Graduate!",
   "lesson_finish": "Finish the lesson",
+  "lesson_back": "← Back",
   "lesson_continue": "Continue",
   "done_title": "Lesson {id} complete!",
   "done_graduated": "Congratulations — you can play Skat!",

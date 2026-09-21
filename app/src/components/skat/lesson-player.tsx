@@ -23,7 +23,9 @@ type Concrete = Exclude<Step, { kind: 'generated' }>
 export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const steps = useMemo<Concrete[]>(() => lesson.steps.map((s) => (s.kind === 'generated' ? s.make() : s)), [lesson])
   const [index, setIndex] = useState(0)
-  const [solved, setSolved] = useState(false)
+  // Every step solved so far, not just the current one: a learner may step back to look again, and a
+  // step already solved must stay passable — and show its answer — when they come forward over it.
+  const [solvedSteps, setSolvedSteps] = useState<ReadonlySet<number>>(() => new Set())
   const [mistakes, setMistakes] = useState(0)
   const [record, setRecord] = useState<LessonRecord | null>(null)
   const complete = useProgress((s) => s.complete)
@@ -31,9 +33,10 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
 
   const step = steps[index]
   const isLast = index === steps.length - 1
+  const solved = solvedSteps.has(index)
   const canContinue = step.kind === 'teach' || solved
 
-  const onSolved = useCallback(() => setSolved(true), [])
+  const onSolved = useCallback(() => setSolvedSteps((s) => new Set(s).add(index)), [index])
   const onMistake = useCallback(() => setMistakes((m) => m + 1), [])
 
   function advance() {
@@ -43,7 +46,10 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
       return
     }
     setIndex(index + 1)
-    setSolved(false)
+  }
+
+  function back() {
+    if (index > 0) setIndex(index - 1)
   }
 
   useEffect(() => {
@@ -73,10 +79,10 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
           {...stylex.props(styles.body)}
         >
           {step.kind === 'teach' ? <Teach step={step} /> : null}
-          {step.kind === 'choice' ? <Choice step={step} onSolved={onSolved} onMistake={onMistake} /> : null}
-          {step.kind === 'pick' ? <Pick step={step} onSolved={onSolved} onMistake={onMistake} /> : null}
-          {step.kind === 'order' ? <Order step={step} onSolved={onSolved} onMistake={onMistake} /> : null}
-          {step.kind === 'play' ? <Play step={step} onSolved={onSolved} onMistake={onMistake} /> : null}
+          {step.kind === 'choice' ? <Choice step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
+          {step.kind === 'pick' ? <Pick step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
+          {step.kind === 'order' ? <Order step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
+          {step.kind === 'play' ? <Play step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
           {step.kind === 'game' ? (
             <div {...stylex.props(styles.gameStep)}>
               <h2 {...stylex.props(styles.gameTitle)}>{step.title}</h2>
@@ -84,7 +90,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
               <GameTable
                 onSettled={({ humanWon, humanScore }) => {
                   recordGame(humanWon, humanScore)
-                  setSolved(true)
+                  onSolved()
                 }}
               />
               {solved ? <Panel tone="good"><p {...stylex.props(styles.gamePara)}>{m.lesson_game_done()}</p></Panel> : null}
@@ -94,6 +100,9 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
       </AnimatePresence>
 
       <div {...stylex.props(styles.foot)}>
+        <Btn testId="skat-back" tone="quiet" disabled={index === 0} onClick={back}>
+          {m.lesson_back()}
+        </Btn>
         <Btn testId="skat-continue" size="lg" grow disabled={!canContinue} onClick={advance}>
           {isLast ? (step.kind === 'game' ? m.lesson_graduate() : m.lesson_finish()) : m.lesson_continue()}
         </Btn>
@@ -155,6 +164,8 @@ const styles = stylex.create({
   body: { flexGrow: 1 },
   foot: {
     display: 'flex',
+    alignItems: 'center',
+    gap: 10,
     position: 'sticky',
     bottom: 0,
     paddingBlock: 12,

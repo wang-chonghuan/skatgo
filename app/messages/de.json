@@ -173,7 +173,7 @@
   "table_defender_word": "Gegenspieler",
   "table_total": "Punkte {n}",
   "table_your_turn": "Du bist dran",
-  "table_seat_score": "{n} Punkte",
+  "table_seat_score": "{n} Pkt.",
   "bid_pass": "Passe",
   "bid_hold_said": "Ja ({value})",
   "bid_said": "{value}?",

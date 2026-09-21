@@ -584,7 +584,15 @@ const styles = stylex.create({
   face: { fontSize: 26, lineHeight: 1 },
   seatText: { display: 'flex', flexDirection: 'column', minWidth: 0, flexGrow: 1 },
   seatName: { fontWeight: 800, fontSize: 15 },
-  seatMeta: { fontSize: 12, opacity: 0.85, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  // One line on a desk; on a phone it may wrap, because the seat's role ("Mittelhand") is part of what
+  // the learner has to read, and next to a bid bubble one line leaves room for only a few letters.
+  seatMeta: {
+    fontSize: 12,
+    opacity: 0.85,
+    whiteSpace: { default: 'nowrap', '@media (max-width: 480px)': 'normal' },
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
   bubble: {
     backgroundColor: skat.paper,
     color: skat.ink,

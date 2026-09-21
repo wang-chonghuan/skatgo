@@ -173,7 +173,7 @@
   "table_defender_word": "defender",
   "table_total": "Score {n}",
   "table_your_turn": "Your turn",
-  "table_seat_score": "score {n}",
+  "table_seat_score": "{n} pts",
   "bid_pass": "Pass",
   "bid_hold_said": "Yes ({value})",
   "bid_said": "{value}?",

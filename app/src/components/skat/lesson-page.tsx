@@ -1,26 +1,22 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
-import { isUnlocked, lessonById } from '~/lib/skat/lessons/content'
-import { useProgress } from '~/lib/skat/progress'
+import { lessonById } from '~/lib/skat/lessons/content'
 import { LessonPlayer } from './lesson-player'
 
-/** The page behind /skat/lesson/$id: gate on progress, then play the lesson. */
+/**
+ * The page behind /lesson/$id. Every lesson opens directly, whatever the learner has done before
+ * (SKATGO-7); only an id that is not a lesson sends the learner back to the map.
+ */
 export function LessonPage() {
   const { id } = useParams({ from: '/lesson/$id' })
   const lesson = lessonById(id)
-  const hydrated = useProgress((s) => s.hydrated)
-  const done = useProgress((s) => s.done)
   const navigate = useNavigate()
-  const open = lesson !== undefined && isUnlocked(id, done)
 
-  // Progress lives in localStorage, so whether this lesson is open is only knowable in the browser,
-  // after the store has read it. A locked (or non-existent) lesson sends the learner back to the map.
   useEffect(() => {
-    if (hydrated && !open) void navigate({ to: '/', replace: true })
-  }, [hydrated, open, navigate])
+    if (!lesson) void navigate({ to: '/', replace: true })
+  }, [lesson, navigate])
 
-  // Nothing until the store has read localStorage: before that, every lesson but the first looks locked.
-  if (!hydrated || !open || !lesson) return null
+  if (!lesson) return null
   return <LessonPlayer key={id} lesson={lesson} />
 }

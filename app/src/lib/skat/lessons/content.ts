@@ -13,10 +13,3 @@ export const COURSES: Record<Locale, Lesson[]> = { zh: LESSONS_ZH, en: LESSONS_E
 export const lessons = (): Lesson[] => COURSES[getLocale()]
 
 export const lessonById = (id: string): Lesson | undefined => lessons().find((l) => l.id === id)
-
-/** A lesson opens once the one before it is done. The first is always open. */
-export function isUnlocked(id: string, done: Record<string, unknown>): boolean {
-  const ids = LESSONS_ZH.map((l) => l.id)
-  const i = ids.indexOf(id)
-  return i === 0 || (i > 0 && ids[i - 1] in done)
-}

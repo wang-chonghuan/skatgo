@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { type Locale, locales } from '~/paraglide/runtime'
 import { legalPlays, sameCard } from '../cards'
-import { COURSES, isUnlocked } from './content'
+import { COURSES } from './content'
 import type { Lesson, Step } from './types'
 
 import de from '../../../../messages/de.json'
@@ -80,11 +80,8 @@ const CJK = /[　-〿㐀-鿿＀-￯]/
 describe('the course', () => {
   const zhCourse = COURSES.zh
 
-  it('has unique lesson ids and unlocks in order', () => {
+  it('has unique lesson ids', () => {
     expect(new Set(zhCourse.map((l) => l.id)).size).toBe(zhCourse.length)
-    expect(isUnlocked(zhCourse[0].id, {})).toBe(true)
-    expect(isUnlocked(zhCourse[1].id, {})).toBe(false)
-    expect(isUnlocked(zhCourse[1].id, { [zhCourse[0].id]: true })).toBe(true)
   })
 
   it('exists in every language', () => {

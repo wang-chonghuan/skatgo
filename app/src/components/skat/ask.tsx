@@ -1,3 +1,4 @@
+import { Show, SignInButton, useAuth } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { useRouterState } from '@tanstack/react-router'
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
@@ -6,6 +7,7 @@ import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { skat } from '../../theme/skat.stylex'
+import { Btn } from './ui'
 
 // The floating helper (SKATGO-9): a button in the corner of every page that opens a small chat about
 // the rules and the page the learner is on — at the table, about the game in progress, seen only from
@@ -25,13 +27,14 @@ const DeepChat = lazy(() => import('deep-chat-react').then((mod) => ({ default: 
 type Message = { role?: string; text?: string }
 
 // The open page's conversation. It lives here rather than in the component, because it has to outlive
-// every time the popup closes and the component with it; a different page, or a reload, starts an
-// empty one. It is never written to storage and never leaves the tab.
-const conversation: { path: string; messages: Message[] } = { path: '', messages: [] }
+// every time the popup closes and the component with it; a different page, a different account
+// (SKATGO-12 — signing out and someone else signing in on the same tab must not see it), or a
+// reload, starts an empty one. It is never written to storage and never leaves the tab.
+const conversation: { key: string; messages: Message[] } = { key: '', messages: [] }
 
-function conversationFor(path: string): Message[] {
-  if (conversation.path !== path) {
-    conversation.path = path
+function conversationFor(key: string): Message[] {
+  if (conversation.key !== key) {
+    conversation.key = key
     conversation.messages = []
   }
   return conversation.messages
@@ -53,8 +56,9 @@ function pageOf(pathname: string): Page | null {
 export function AskLauncher() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const [open, setOpen] = useState(false)
+  const { userId } = useAuth()
   const page = pageOf(pathname)
-  const messages = conversationFor(pathname)
+  const messages = conversationFor(`${userId ?? ''} ${pathname}`)
 
   // A new page is a new conversation; the popup closes with the old one.
   useEffect(() => setOpen(false), [pathname])
@@ -84,9 +88,20 @@ export function AskLauncher() {
             </button>
           </header>
           <div {...stylex.props(styles.body)}>
-            <Suspense fallback={<p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>}>
-              <Chat key={pathname} page={page} history={messages} onMessage={(msg) => messages.push(msg)} />
-            </Suspense>
+            {/* The chat is for signed-in learners only (SKATGO-12); the endpoint refuses anyone else. */}
+            <Show when="signed-out">
+              <div data-testid="ask-sign-in" {...stylex.props(styles.gate)}>
+                <p {...stylex.props(styles.gateText)}>{m.ask_login_required()}</p>
+                <SignInButton mode="modal">
+                  <Btn testId="ask-sign-in-button">{m.auth_sign_in()}</Btn>
+                </SignInButton>
+              </div>
+            </Show>
+            <Show when="signed-in">
+              <Suspense fallback={<p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>}>
+                <Chat key={`${userId ?? ''} ${pathname}`} page={page} history={messages} onMessage={(msg) => messages.push(msg)} />
+              </Suspense>
+            </Show>
           </div>
         </section>
       ) : null}
@@ -279,4 +294,14 @@ const styles = stylex.create({
   // first, wider pass would stretch the layout viewport past the screen.
   body: { flexGrow: 1, minHeight: 0, minWidth: 0, display: 'flex', overflow: 'hidden' },
   loading: { margin: 'auto', fontSize: 14, color: skat.inkSoft },
+  gate: {
+    margin: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 16,
+    paddingInline: 24,
+    textAlign: 'center',
+  },
+  gateText: { margin: 0, fontSize: 16, lineHeight: 1.5, color: skat.ink },
 })

@@ -1,13 +1,18 @@
+import { clerkClient } from '@clerk/tanstack-react-start/server'
+
 import { askModel, type ChatMessage } from './azure'
 import { type AskPage, TABLE_CHARS, buildSystemPrompt, isLocale } from './context'
 import { LIMITS, admit } from './limits'
+import { SITE_URL } from '~/lib/site'
 import { m } from '~/paraglide/messages'
 import type { Locale } from '~/paraglide/runtime'
 
 // POST /api/ask — the assistant popup's only endpoint (SKATGO-9). It is the one server-side route of
 // the site: the model key must not reach the browser, so the browser sends the question and which
 // page it is on, and this handler builds the context, applies the limits and forwards to the model.
-// The request and the answer are not stored anywhere.
+// The request and the answer are not stored anywhere. Only a signed-in learner may ask (SKATGO-12):
+// the session is checked here, on the server, because hiding the chat from signed-out visitors would
+// not stop anyone calling this endpoint directly.
 //
 // It is wired in src/server.ts, before Paraglide's middleware and outside the page router — it is not
 // a page: it has no language form of its own, and anything that walks the app's route manifest for
@@ -24,9 +29,28 @@ const json = (status: number, body: object) =>
 
 const refuse = (status: number, locale: Locale, text: string) => json(status, { error: text })
 
-function clientIp(request: Request): string {
-  const fwd = request.headers.get('x-forwarded-for')
-  return fwd?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'local'
+/**
+ * Which pages may present a session token here: the site itself — and, when this server is being
+ * reached on the developer's own machine, the local page talking to it. The test is the request's own
+ * host rather than NODE_ENV, which the build compiles to "production" even for a local run. Clerk's
+ * production instance never issues a token to a localhost page, so in production this admits only
+ * the site. A token minted for any other origin is refused.
+ */
+function authorizedParties(request: Request): string[] {
+  const here = new URL(request.url)
+  const local = here.hostname === 'localhost' || here.hostname === '127.0.0.1'
+  return local ? [SITE_URL, here.origin] : [SITE_URL]
+}
+
+/**
+ * The signed-in learner behind this request, or null. Clerk reads only the URL and the headers (the
+ * session cookie), and it copies the request it is given — which fails once the body has been read —
+ * so it gets exactly those two and the body stays this handler's.
+ */
+async function signedInUser(request: Request): Promise<string | null> {
+  const credentials = new Request(request.url, { headers: request.headers })
+  const state = await clerkClient().authenticateRequest(credentials, { authorizedParties: authorizedParties(request) })
+  return state.toAuth()?.userId ?? null
 }
 
 export async function handleAsk(request: Request): Promise<Response> {
@@ -40,6 +64,9 @@ export async function handleAsk(request: Request): Promise<Response> {
   }
   const locale: Locale = isLocale(body.locale) ? body.locale : 'en'
   const opts = { locale }
+
+  const userId = await signedInUser(request)
+  if (!userId) return refuse(401, locale, m.ask_sign_in_required({}, opts))
 
   let page: AskPage | null = null
   if (body.page === 'home') page = { kind: 'home' }
@@ -62,7 +89,7 @@ export async function handleAsk(request: Request): Promise<Response> {
   }
   if (messages.length === 0 || messages[messages.length - 1].role !== 'user') return refuse(400, locale, m.ask_error({}, opts))
 
-  const refusal = admit(clientIp(request))
+  const refusal = admit(userId)
   if (refusal === 'rate') return refuse(429, locale, m.ask_rate_limited({}, opts))
   if (refusal === 'daily') return refuse(429, locale, m.ask_daily_limited({}, opts))
 

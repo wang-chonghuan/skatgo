@@ -16,7 +16,8 @@ merge. Acceptance verification also uses this file, so stale commands block deli
 
 One long-running service, **`web`**: the TanStack Start server in `app/`, which renders the page
 shell for `/`, `/lesson/$id` and `/play` and serves the built assets. The course itself runs in the
-browser. There is no API process, no worker and no database in use.
+browser. There is no separate API process, no worker and no database in use: the one server
+endpoint, `POST /api/ask` (the assistant), is part of `web`.
 
 **Environments**
 
@@ -31,7 +32,14 @@ without the custom domain — useful when diagnosing DNS or TLS. No staging.
 - **DNS and TLS**, Cloudflare zone `skatgo.com`: apex `A` → the environment's static IP, **DNS-only
   (grey)**, because the Azure managed certificate is issued and renewed by HTTP validation against the
   origin; `TXT asuid` → the Container App's domain-verification id; `www` `CNAME` → apex, **proxied
-  (orange)**, with a Redirect Rule sending `www` to the apex, path and query kept.
+  (orange)**, with a Redirect Rule sending `www` to the apex, path and query kept; and the Clerk
+  production instance's five `CNAME`s — `clerk`, `accounts`, `clkmail`, `clk._domainkey`,
+  `clk2._domainkey` → `*.clerk.services` — all **DNS-only (grey)**, as Clerk requires (SKATGO-12).
+- **Accounts**: Clerk application `app_3JhPKJFpPIJR7rHWf9A8neRvdFU`. Production instance
+  `ins_3JhhbSlXDnOOpj1GJJg4eh6972K` on skatgo.com — email and password; Google is switched off until it
+  has its own OAuth credentials. A development instance serves local work.
+- **The assistant's model**: Azure OpenAI deployment `gpt-5.6-luna`, reasoning effort medium, on the
+  same Azure OpenAI resource as Trovestep.
 - n-easyapp also created a Postgres schema and role (`skatgo-schema` / `skatgo-user`) and injects
   `DATABASE_URL`; the app does not use either.
 
@@ -82,7 +90,7 @@ Anything visual is judged from what ships, not from the dev server:
 
 ```bash
 npm --prefix app run build
-(cd app && PORT=<port> node .output/server/index.mjs)
+(cd app && set -a && . ./.env && set +a && PORT=<port> node .output/server/index.mjs)
 ```
 
 **Acceptance**
@@ -92,16 +100,29 @@ npm --prefix app run build
   artifacts stay uncommitted.
 - **Viewports**: desktop **1280×820** and phone **375×812** with `isMobile` and `hasTouch`. A UI
   criterion is checked at both.
-- **No accounts, no seeded data.** A fresh browser context is a learner who has done nothing. To start
+- **No seeded data.** A fresh browser context is a signed-out learner who has done nothing. To start
   a check further into the course, write progress the way the product stores it
   (`app/src/lib/skat/progress.ts`) rather than clicking through earlier lessons.
+- **A signed-in check uses the Clerk development instance.** Make its account with
+  `clerk users create --app app_3JhPKJFpPIJR7rHWf9A8neRvdFU --instance dev --email <name>+clerk_test@example.com --password <password> --yes`,
+  keeping the password in the ticket's `tmp/`. A `+clerk_test` address takes Clerk's fixed
+  verification code `424242` when Clerk asks to confirm a new device. Accounts in the production
+  instance are production data (Redline 2).
 - Exercises and deals are random. Locate the expected answer through the rules engine or a stable
   `data-*` attribute, never by matching generated text.
 
 **Environment**
 
-None locally: no `.env`, no keys. In production the Container App carries the secret `database-url`
-and the env vars `DATABASE_URL`, `DATABASE_SCHEMA`, `PORT`, `EASYAPP_DEPLOY_COMMIT` — names only:
+Locally, `app/.env` — git-ignored, never printed, never committed — carries `LLM_BASE_URL` and
+`LLM_API_KEY` (the assistant's model) and `CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` (the Clerk
+development instance; `clerk env pull --app app_3JhPKJFpPIJR7rHWf9A8neRvdFU --instance dev --file app/.env`
+writes them). The built server reads them from its environment, so load the file when starting it:
+`(cd app && set -a && . ./.env && set +a && PORT=<port> node .output/server/index.mjs)`.
+
+In production the Container App carries the secrets `database-url`, `llm-api-key` and
+`clerk-secret-key`, and the env vars `DATABASE_URL`, `DATABASE_SCHEMA`, `PORT`, `EASYAPP_DEPLOY_COMMIT`,
+`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `CLERK_SECRET_KEY` and `CLERK_PUBLISHABLE_KEY`
+— names only:
 
 ```bash
 az containerapp show -g rg-easyapp-shared -n ca-skatgo \

@@ -256,5 +256,8 @@
   "ask_daily_limited": "Die Fragen für heute sind aufgebraucht. Komm morgen wieder.",
   "ask_unavailable": "Der Helfer ist gerade nicht erreichbar.",
   "ask_intro_play": "Unsicher am Tisch? Frag einfach. Ich sehe nur, was du siehst: deine Karten und was gespielt wurde – nicht die anderen Blätter. Beim Neuladen der Seite ist der Chat weg.",
-  "ask_placeholder_play": "z. B. Welche Karte soll ich jetzt spielen?"
+  "ask_placeholder_play": "z. B. Welche Karte soll ich jetzt spielen?",
+  "auth_sign_in": "Anmelden",
+  "ask_login_required": "Der Chat ist kostenlos, aber du musst dich anmelden.",
+  "ask_sign_in_required": "Bitte melde dich an, um zu fragen."
 }

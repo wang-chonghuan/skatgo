@@ -256,5 +256,8 @@
   "ask_daily_limited": "Today's questions are used up. Come back tomorrow.",
   "ask_unavailable": "The helper is not available right now.",
   "ask_intro_play": "Stuck at the table? Just ask. I see only what you see: your cards and what has been played — not the other hands. The chat is wiped when you reload the page.",
-  "ask_placeholder_play": "e.g. Which card should I play now?"
+  "ask_placeholder_play": "e.g. Which card should I play now?",
+  "auth_sign_in": "Sign in",
+  "ask_login_required": "Chatting is free, but you need to sign in.",
+  "ask_sign_in_required": "Please sign in to ask."
 }

@@ -40,17 +40,17 @@ describe('the assistant context', () => {
 describe('the limits', () => {
   beforeEach(resetLimits)
 
-  it('lets one address ask perIp times a minute, then refuses until the window passes', () => {
+  it('lets one account ask perAccount times a minute, then refuses until the window passes', () => {
     const t0 = Date.parse('2026-09-22T10:00:00Z')
-    for (let i = 0; i < LIMITS.perIp; i++) expect(admit('a', t0 + i)).toBeNull()
-    expect(admit('a', t0 + LIMITS.perIp)).toBe('rate')
-    expect(admit('b', t0 + LIMITS.perIp)).toBeNull()
+    for (let i = 0; i < LIMITS.perAccount; i++) expect(admit('a', t0 + i)).toBeNull()
+    expect(admit('a', t0 + LIMITS.perAccount)).toBe('rate')
+    expect(admit('b', t0 + LIMITS.perAccount)).toBeNull()
     expect(admit('a', t0 + LIMITS.windowMs + 1)).toBeNull()
   })
 
   it('stops the whole site at the daily cap and starts over the next UTC day', () => {
     const t0 = Date.parse('2026-09-22T23:59:00Z')
-    for (let i = 0; i < LIMITS.perDay; i++) expect(admit(`ip${i}`, t0)).toBeNull()
+    for (let i = 0; i < LIMITS.perDay; i++) expect(admit(`user${i}`, t0)).toBeNull()
     expect(admit('late', t0)).toBe('daily')
     expect(admit('late', Date.parse('2026-09-23T00:00:01Z'))).toBeNull()
   })

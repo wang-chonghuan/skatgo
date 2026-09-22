@@ -2,6 +2,7 @@ import { Link, Outlet, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
 import { LANG_TAG } from '~/lib/site'
+import { AskLauncher } from '~/components/skat/ask'
 import { m } from '~/paraglide/messages'
 import { type Locale, getLocale, localizeHref, locales, setLocale } from '~/paraglide/runtime'
 import { skat } from './theme/skat.stylex'
@@ -13,6 +14,7 @@ import { skat } from './theme/skat.stylex'
 // header also carries a "← 回 Parrottoon" link. skatgo.com is its own site, so it has none.
 //
 // The header's right side is the language switch (SKATGO-1). The page language itself is on <html>.
+// After the reading column comes the floating helper (SKATGO-9); it decides itself which pages it is on.
 
 export function SkatLayout() {
   return (
@@ -27,6 +29,7 @@ export function SkatLayout() {
       <main {...stylex.props(styles.main)}>
         <Outlet />
       </main>
+      <AskLauncher />
     </div>
   )
 }

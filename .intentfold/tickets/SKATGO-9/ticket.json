@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-9",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-9",
+  "branch": "SKATGO-9-chat-assistant",
+  "base": "b0b2738b87f4c21c3ab54dbdc1146c23bbb6861f",
+  "ports": { "web": 55009 }
+}

@@ -240,5 +240,19 @@
   "declare_hint_weak": " This hand is not strong for any game, though: it is chosen only because its value covers the bid, and it will be hard to win — next time bid only as high as \"How high can I bid?\" says.",
   "declare_hint_no_announce": " Announce nothing: an announcement only wins if you fulfil it, and Lina and Max never announce either.",
   "result_skat": "The skat held:",
-  "result_new_game": "New game"
+  "result_new_game": "New game",
+
+  "ask_button": "Ask",
+  "ask_button_label": "Open the helper: ask about the rules or this page",
+  "ask_title": "Ask",
+  "ask_subtitle": "About the rules, or this page",
+  "ask_intro": "Something unclear? Just ask. I know this page and the rules of Skat, nothing else — and the chat is wiped when you reload the page.",
+  "ask_placeholder": "e.g. What does following suit mean?",
+  "ask_close": "Close the helper",
+  "ask_loading": "The helper is on its way…",
+  "ask_error": "That one didn't go through. Please try again.",
+  "ask_too_long": "That's a long one — please keep it under {n} characters.",
+  "ask_rate_limited": "You're asking quickly — take a minute, then try again.",
+  "ask_daily_limited": "Today's questions are used up. Come back tomorrow.",
+  "ask_unavailable": "The helper is not available right now."
 }

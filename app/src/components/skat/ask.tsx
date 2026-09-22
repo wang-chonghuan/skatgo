@@ -105,9 +105,10 @@ const messageStyles = {
   },
   intro: { bubble: { backgroundColor: skat.paperDeep, color: skat.inkSoft } },
   error: { bubble: { backgroundColor: skat.badSoft, color: skat.bad } },
-  // The three dots are drawn as box-shadows 12px either side of a 7px element, so the bubble's own
-  // padding has to make room on the left or the first dot sits on the edge.
-  loading: { message: { styles: { bubble: { backgroundColor: skat.paperDeep, color: skat.inkSoft, padding: '10px 14px 10px 26px' } } } },
+  // The three dots are one 0.45em element with a pseudo-element 0.7em either side of it, inside a
+  // 1em-wide box — so their visual middle sits 0.275em left of the box's middle, and equal padding
+  // would look lopsided. The left padding carries that 0.275em twice over; both gaps then read 0.93em.
+  loading: { message: { styles: { bubble: { backgroundColor: skat.paperDeep, color: skat.inkSoft, padding: '10px 1.08em 10px 1.63em' } } } },
 }
 const inputAreaStyle = { backgroundColor: skat.paper, borderTop: `1px solid ${skat.paperEdge}` }
 const textInput = {

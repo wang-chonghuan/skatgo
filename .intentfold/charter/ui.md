@@ -21,6 +21,12 @@ components. That was deliberate when the course was built: an Astryx control fol
 light/dark mode, while the course's palette is fixed, and a dark-mode control on cream paper is
 unreadable. A new widget reuses the kit first.
 
+Two third-party components draw their own markup and styles, both approved by the human: **deep-chat**
+(the assistant's chat body, SKATGO-9) and **Clerk**'s sign-in window and account menu (SKATGO-12).
+What the course controls is the palette handed to them — course tokens only, in
+`components/skat/ask.tsx` and `lib/clerk-appearance.ts` — and the shell around them, which is the kit.
+Clerk's windows stay in English; the human chose not to add its translation package.
+
 **Tokens**
 
 Every colour is a named token; no product file names a colour.

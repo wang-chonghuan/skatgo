@@ -13,14 +13,19 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 
 **Stack**
 
-- **TanStack Start** (Vite, TypeScript, React 19): server-rendered shell, file-based routes. There is
-  no API, no server function, and no database access — every piece of course state lives in the
-  browser.
+- **TanStack Start** (Vite, TypeScript, React 19): server-rendered shell, file-based routes. Every
+  piece of course state lives in the browser, and there is no database access. There is exactly one
+  server endpoint, `POST /api/ask` — the assistant (SKATGO-9) — answered in `app/src/server.ts` before
+  the page router: it forwards a question to Azure OpenAI, and only for a signed-in account
+  (SKATGO-12).
+- **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
+  here. The only thing behind a login is the assistant; the course needs no account.
 - **StyleX, compiled through Astryx's build integration** (`astryxStylex()`), with Astryx's reset and
   theme CSS underneath. `ui.md` owns styling.
 - **Nitro** produces the deployable server (`app/.output/server/index.mjs`).
 - Course libraries: `motion` (animation), `@letele/playing-cards` (public-domain card faces),
-  `canvas-confetti`, `zustand` (progress, persisted to `localStorage`).
+  `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
+  assistant's chat window).
 
 **Structure**
 
@@ -33,7 +38,9 @@ root has none; it holds the `Dockerfile`, whose build context is the repo root.
 | `app/src/lib/skat/lessons/` | the course: `content.ts` (lessons), `drills.ts` (randomised exercises whose answers the engine computes), `types.ts` |
 | `app/src/lib/skat/progress.ts` | learner progress in `localStorage` |
 | `app/src/components/skat/` | every page and widget of the course, and its own small UI kit (`ui.tsx`) |
-| `app/src/skat-layout.tsx` | the frame around every page |
+| `app/src/lib/ask/` | the assistant's server side: the page context it is given, the limits, the model call, and the `/api/ask` handler (with its session check) |
+| `app/src/start.ts` | Clerk's request middleware, which hands each page its session state |
+| `app/src/skat-layout.tsx` | the frame around every page, including the sign-in button and the floating assistant |
 | `app/src/routes/` | thin route files: `/`, `/lesson/$id`, `/play` |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 

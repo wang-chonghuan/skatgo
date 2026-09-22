@@ -1,0 +1,12 @@
+{
+  "ticket": "SKATGO-10",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-10",
+  "branch": "SKATGO-10-disable-send",
+  "base": "ab59f7dd59b50d08be960a0557c6ae1db0eb38be",
+  "ports": {
+    "web": 55010
+  }
+}

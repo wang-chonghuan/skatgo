@@ -116,10 +116,6 @@ const messageStyles = {
   },
   intro: { bubble: { backgroundColor: skat.paperDeep, color: skat.inkSoft } },
   error: { bubble: { backgroundColor: skat.badSoft, color: skat.bad } },
-  // The three dots are one 0.45em element with a pseudo-element 0.7em either side of it, inside a
-  // 1em-wide box — so their visual middle sits 0.275em left of the box's middle, and equal padding
-  // would look lopsided. The left padding carries that 0.275em twice over; both gaps then read 0.93em.
-  loading: { message: { styles: { bubble: { backgroundColor: skat.paperDeep, color: skat.inkSoft, padding: '10px 1.08em 10px 1.63em' } } } },
 }
 const inputAreaStyle = { backgroundColor: skat.paper, borderTop: `1px solid ${skat.paperEdge}` }
 const textInput = {
@@ -131,10 +127,17 @@ const textInput = {
   },
   placeholder: { style: { color: skat.inkFaint } },
 }
+// The send button is round and the same size in every state, so nothing jumps as it changes.
+const sendButton = { borderRadius: '999px', width: '34px', height: '34px' }
+// Nothing to send, and — while the answer is on its way — nothing that may be sent: deep-chat refuses
+// a second question until the reply lands, and the button says so rather than inviting the click.
+const sendInert = { ...sendButton, backgroundColor: skat.paperEdge, cursor: 'not-allowed' }
+// deep-chat applies each state's styles over the previous one and never resets what a state does not
+// name, so every state says both the colour and the cursor.
 const submitButtonStyles = {
-  submit: { container: { default: { backgroundColor: skat.brass, borderRadius: '999px', width: '34px', height: '34px' } }, svg: { styles: { default: { filter: 'none' } } } },
-  loading: { container: { default: { backgroundColor: skat.brassSoft, borderRadius: '999px', width: '34px', height: '34px' } } },
-  disabled: { container: { default: { backgroundColor: skat.paperEdge, borderRadius: '999px', width: '34px', height: '34px' } } },
+  submit: { container: { default: { ...sendButton, backgroundColor: skat.brass, cursor: 'pointer' } }, svg: { styles: { default: { filter: 'none', opacity: '1' } } } },
+  loading: { container: { default: sendInert }, svg: { styles: { default: { opacity: '0.45' } } } },
+  disabled: { container: { default: sendInert }, svg: { styles: { default: { opacity: '0.45' } } } },
 }
 
 function Chat({ page, history, onMessage }: { page: Page; history: Message[]; onMessage: (msg: Message) => void }) {
@@ -177,7 +180,8 @@ function Chat({ page, history, onMessage }: { page: Page; history: Message[]; on
       messageStyles={messageStyles}
       inputAreaStyle={inputAreaStyle}
       submitButtonStyles={submitButtonStyles}
-      displayLoadingBubble
+      // The three dots are gone (SKATGO-10): the button not being usable is what says "on its way".
+      displayLoadingBubble={false}
     />
   )
 }

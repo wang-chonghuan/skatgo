@@ -1,0 +1,12 @@
+{
+  "ticket": "SKATGO-11",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-11",
+  "branch": "SKATGO-11-send-button",
+  "base": "6e5b9986f53218c8e3bcf8da0bfc9c51702e79ea",
+  "ports": {
+    "web": 55011
+  }
+}

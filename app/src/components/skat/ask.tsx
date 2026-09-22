@@ -86,7 +86,7 @@ export function AskLauncher() {
 
 // deep-chat's own look, from the course palette. Defined once: a new object on every render would
 // re-apply the styles to the web component each time.
-const chatStyle = { width: '100%', height: '100%', border: 'none', borderRadius: '0', backgroundColor: skat.paper, fontFamily: 'inherit', fontSize: '15px' }
+const chatStyle = { width: '100%', maxWidth: '100%', minWidth: '0', height: '100%', border: 'none', borderRadius: '0', backgroundColor: skat.paper, fontFamily: 'inherit', fontSize: '15px' }
 const messageStyles = {
   default: {
     shared: { bubble: { maxWidth: '85%', lineHeight: '1.5', padding: '10px 14px', borderRadius: '14px' } },
@@ -167,13 +167,14 @@ const styles = stylex.create({
     zIndex: 41,
     display: 'flex',
     flexDirection: 'column',
-    width: { default: 380, [PHONE]: '100%' },
+    width: { default: 380, [PHONE]: 'auto' },
     maxWidth: { default: 'calc(100vw - 40px)', [PHONE]: 'none' },
     height: { default: 'min(560px, calc(100vh - 100px))', [PHONE]: '78vh' },
     boxSizing: 'border-box',
     overflow: 'hidden',
     borderRadius: { default: 18, [PHONE]: '18px 18px 0 0' },
-    borderWidth: 1,
+    // A bottom sheet on a phone: no side borders, or the sheet is 2px wider than the screen.
+    borderWidth: { default: 1, [PHONE]: '1px 0 0 0' },
     borderStyle: 'solid',
     borderColor: skat.paperEdge,
     backgroundColor: skat.paper,
@@ -208,6 +209,8 @@ const styles = stylex.create({
     outlineWidth: 2,
     outlineColor: skat.brass,
   },
-  body: { flexGrow: 1, minHeight: 0, display: 'flex' },
+  // Clipped in both directions: deep-chat lays itself out before its styles land, and on a phone that
+  // first, wider pass would stretch the layout viewport past the screen.
+  body: { flexGrow: 1, minHeight: 0, minWidth: 0, display: 'flex', overflow: 'hidden' },
   loading: { margin: 'auto', fontSize: 14, color: skat.inkSoft },
 })

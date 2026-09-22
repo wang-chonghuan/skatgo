@@ -7,9 +7,9 @@
 - 打开 `/zh/lesson/4`，开助手，提一个问题，在回答到达前读 shadow DOM：
   - `.deep-chat-loading-message-bubble` 存在；
   - 该气泡左右两侧到点的距离相等（±1px）；
-  - 发送按钮里没有 `.loading-submit-button`，有 `svg`；
+  - 发送按钮里没有 `.loading-submit-button`，有 `svg`，且该图标的宽高与可发送时完全相同；
   - 按钮背景与可发送时不同，`cursor: not-allowed`。
-- 真 = 四点都成立。
+- 真 = 以上都成立。
 
 ## AC2 回答到达后按钮恢复
 - 等到回答，按钮恢复 brass 底、`cursor: pointer`；再问一句能得到第二个回答。

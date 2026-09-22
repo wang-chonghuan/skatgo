@@ -136,9 +136,10 @@ const textInput = {
 const sendButton = { borderRadius: '999px', width: '34px', height: '34px' }
 // deep-chat's own submit icon, repeated here because its loading state otherwise draws three dots in
 // the button (SKATGO-11): the dots belong in the chat, where they say the answer is coming; the
-// button just says it cannot be pressed. Copied markup, so both states show the same paper plane.
+// button just says it cannot be pressed. Copied markup — including its id, which is what deep-chat's
+// own stylesheet sizes the icon by; without it the plane fills the whole button.
 const SEND_ICON =
-  '<svg xmlns="http://www.w3.org/2000/svg" stroke="currentColor" fill="none" stroke-width="1" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="14"></line><polygon points="22 2 15 22 11 14 2 10 22 2"></polygon></svg>'
+  '<svg xmlns="http://www.w3.org/2000/svg" stroke="currentColor" fill="none" stroke-width="1" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" id="submit-icon"><line x1="22" y1="2" x2="11" y2="14"></line><polygon points="22 2 15 22 11 14 2 10 22 2"></polygon></svg>'
 // Nothing to send, and — while the answer is on its way — nothing that may be sent: deep-chat refuses
 // a second question until the reply lands, and the button says so rather than inviting the click.
 const sendInert = { ...sendButton, backgroundColor: skat.paperEdge, cursor: 'not-allowed' }

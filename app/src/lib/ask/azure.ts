@@ -13,10 +13,6 @@ export type AskResult = { ok: true; text: string } | { ok: false; status: 'uncon
 const DEFAULT_MODEL = 'gpt-5.6-luna'
 const DEFAULT_EFFORT = 'medium'
 
-export function isConfigured(): boolean {
-  return Boolean(process.env.LLM_BASE_URL && process.env.LLM_API_KEY)
-}
-
 export async function askModel(system: string, messages: ChatMessage[]): Promise<AskResult> {
   const base = process.env.LLM_BASE_URL
   const key = process.env.LLM_API_KEY

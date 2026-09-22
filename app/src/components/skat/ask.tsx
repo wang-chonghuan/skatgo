@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { useRouterState } from '@tanstack/react-router'
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { m } from '~/paraglide/messages'
@@ -9,11 +9,11 @@ import { skat } from '../../theme/skat.stylex'
 
 // The floating helper (SKATGO-9): a button in the corner of every page that opens a small chat about
 // the rules and the page the learner is on — at the table, about the game in progress, seen only from
-// the learner's seat (lib/skat/table-view.ts). The conversation lives in this component and nowhere
-// else: no storage, no history, gone on reload, and a new one on every page, because the assistant's
-// context is the page. Closing the popup keeps the conversation for that page (deep-chat drops its
-// messages when hidden, so they are kept here and handed back as its history), so a learner can close
-// it, play a card, and come back to the same conversation.
+// the learner's seat (lib/skat/table-view.ts). The conversation lives in this module and nowhere
+// else: no storage, gone on reload, and a new one on every page, because the assistant's
+// context is the page. Closing the popup keeps that page's conversation — deep-chat forgets its
+// messages when it goes away, so they are kept beside it and handed back as its history — which lets
+// a learner close the popup, play a card, and come back to where they were.
 //
 // The chat body is deep-chat, a web component, loaded only when the popup first opens: it needs
 // `window`, and it is the one heavy dependency of the site — a learner who never asks never
@@ -21,6 +21,21 @@ import { skat } from '../../theme/skat.stylex'
 // own colours are set through its style properties from the same palette tokens.
 
 const DeepChat = lazy(() => import('deep-chat-react').then((mod) => ({ default: mod.DeepChat })))
+
+type Message = { role?: string; text?: string }
+
+// The open page's conversation. It lives here rather than in the component, because it has to outlive
+// every time the popup closes and the component with it; a different page, or a reload, starts an
+// empty one. It is never written to storage and never leaves the tab.
+const conversation: { path: string; messages: Message[] } = { path: '', messages: [] }
+
+function conversationFor(path: string): Message[] {
+  if (conversation.path !== path) {
+    conversation.path = path
+    conversation.messages = []
+  }
+  return conversation.messages
+}
 
 const PHONE = '@media (max-width: 480px)'
 
@@ -38,15 +53,11 @@ function pageOf(pathname: string): Page | null {
 export function AskLauncher() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const [open, setOpen] = useState(false)
-  // This page's conversation so far, in deep-chat's own shape; never stored anywhere else.
-  const saved = useRef<Message[]>([])
   const page = pageOf(pathname)
+  const messages = conversationFor(pathname)
 
   // A new page is a new conversation; the popup closes with the old one.
-  useEffect(() => {
-    setOpen(false)
-    saved.current = []
-  }, [pathname])
+  useEffect(() => setOpen(false), [pathname])
 
   useEffect(() => {
     if (!open) return
@@ -74,7 +85,7 @@ export function AskLauncher() {
           </header>
           <div {...stylex.props(styles.body)}>
             <Suspense fallback={<p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>}>
-              <Chat key={pathname} page={page} history={saved.current} onMessage={(msg) => saved.current.push(msg)} />
+              <Chat key={pathname} page={page} history={messages} onMessage={(msg) => messages.push(msg)} />
             </Suspense>
           </div>
         </section>
@@ -125,8 +136,6 @@ const submitButtonStyles = {
   loading: { container: { default: { backgroundColor: skat.brassSoft, borderRadius: '999px', width: '34px', height: '34px' } } },
   disabled: { container: { default: { backgroundColor: skat.paperEdge, borderRadius: '999px', width: '34px', height: '34px' } } },
 }
-
-type Message = { role?: string; text?: string }
 
 function Chat({ page, history, onMessage }: { page: Page; history: Message[]; onMessage: (msg: Message) => void }) {
   const locale = getLocale()

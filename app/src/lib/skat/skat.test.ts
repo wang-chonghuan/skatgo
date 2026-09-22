@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { type Contract, cards, fullDeck, legalPlays, pointsOf, shuffle, trickWinnerIndex, trumpSequence } from './cards'
+import { chooseDeclaration, declarationAdvice, skatAdvice } from './ai'
+import { type Contract, cards, fullDeck, legalPlays, pointsOf, sameCard, shuffle, trickWinnerIndex, trumpSequence } from './cards'
 import { actor, adviceFor, aiBid, aiDeclare, bidAction, collectTrick, deal, playCard } from './game'
 import { BID_LADDER, type Declaration, matadors, settle } from './value'
 
@@ -158,5 +159,32 @@ describe('a whole game between three computers', () => {
     }
     // The heuristics must actually bid on a reasonable share of deals, or this loop proved nothing.
     expect(played).toBeGreaterThan(100)
+  })
+})
+
+describe('the declaration hints (SKATGO-8)', () => {
+  // The hints must say what Lina and Max would do: same contract ranking, no announcements, and the
+  // skat always picked up — otherwise the table teaches one game and the computers play another.
+  it('recommend the contract the computers announce when the learner kept what they keep', () => {
+    for (let n = 0; n < 400; n++) {
+      const deck = shuffle(fullDeck())
+      const twelve = deck.slice(0, 12)
+      const bid = [18, 20, 23, 24, 30, 36, 48][n % 7]
+      const choice = chooseDeclaration(twelve, bid)
+      const ten = twelve.filter((c) => !choice.discard.some((d) => sameCard(c, d)))
+      const advice = declarationAdvice(ten, twelve, bid, false)
+      expect(advice.declaration.contract, `deal ${n}`).toEqual(choice.declaration.contract)
+      expect(advice.declaration.schneiderAnnounced || advice.declaration.schwarzAnnounced || advice.declaration.ouvert).toBe(false)
+    }
+  })
+
+  it('always pick up the skat, and value a Hand game over the ten cards alone', () => {
+    for (let n = 0; n < 100; n++) {
+      const ten = shuffle(fullDeck()).slice(0, 10)
+      const a = skatAdvice(ten, 18)
+      expect(a.pickUp).toBe(true)
+      expect(a.hand.declaration.hand).toBe(true)
+      expect(a.hand.covers).toBe(a.hand.value >= 18)
+    }
   })
 })

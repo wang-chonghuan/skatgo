@@ -107,21 +107,83 @@ export function bidAdvice(hand: Card[]): { limit: number; contract: Contract | n
   return best ? { limit: best.value, contract: best.declaration.contract } : { limit: 0, contract: null }
 }
 
+const ALL_CONTRACTS: Contract[] = [...SUITS.map((trump): Contract => ({ kind: 'suit', trump })), { kind: 'grand' }, { kind: 'null' }]
+const planFor = (ten: Card[], contract: Contract) =>
+  plans(ten).find((p) => JSON.stringify(p.declaration.contract) === JSON.stringify(contract))
+
+// How the computers weigh one contract against another. A contract that does not cover the bid is lost
+// before a card is played; take it only when nothing else is available. Shared by their own choice and
+// by the hints the learner is given, so the two cannot disagree.
+const rankOf = (plan: Plan, value: number, bid: number) => (value >= bid ? 10 : 0) + plan.score + value / 1000
+
 /** After the skat is in hand: which two to put away, and what to declare. */
 export function chooseDeclaration(twelve: Card[], bid: number): { discard: Card[]; declaration: Declaration } {
   let best: { discard: Card[]; declaration: Declaration; rank: number } | null = null
-  for (const contract of [...SUITS.map((trump): Contract => ({ kind: 'suit', trump })), { kind: 'grand' } as Contract, { kind: 'null' } as Contract]) {
+  for (const contract of ALL_CONTRACTS) {
     const discard = chooseDiscard(twelve, contract)
     const ten = twelve.filter((c) => !discard.some((d) => sameCard(c, d)))
-    const plan = plans(ten).find((p) => JSON.stringify(p.declaration.contract) === JSON.stringify(contract))
+    const plan = planFor(ten, contract)
     if (!plan) continue
-    const value = expectedValue(plan.declaration, twelve)
-    // A contract that does not cover the bid is lost before a card is played; take it only when
-    // nothing else is available.
-    const rank = (value >= bid ? 10 : 0) + plan.score + value / 1000
+    const rank = rankOf(plan, expectedValue(plan.declaration, twelve), bid)
     if (!best || rank > best.rank) best = { discard, declaration: plan.declaration, rank }
   }
   return { discard: best!.discard, declaration: best!.declaration }
+}
+
+/** The facts a declaration hint cites: what the hand holds for the recommended game. */
+export type DeclarationAdvice = {
+  declaration: Declaration
+  value: number
+  covers: boolean
+  /** The computers' own "worth playing" bar (plan score ≥ 1). A weak game is chosen only to cover the bid. */
+  strong: boolean
+  trumps: number
+  aces: number
+  jacks: number
+  nullRisk: number
+}
+
+/**
+ * The declaration hint: the game the computers would announce with these ten cards, ranked exactly as
+ * they rank it. `known` is what the declarer can count matadors over — the ten plus the two put away,
+ * or, in a Hand game, the ten alone (the skat is unseen). Like the computers, it announces nothing.
+ */
+export function declarationAdvice(ten: Card[], known: Card[], bid: number, hand: boolean): DeclarationAdvice {
+  // The computers choose discard and contract together. When the learner kept exactly the ten they
+  // would keep (e.g. by following the discard hint), the advice is their contract — so the discard
+  // hint and this one never contradict each other. Otherwise the contracts are ranked, their way, on
+  // the ten the learner actually kept.
+  const theirs = hand ? null : chooseDeclaration(known, bid)
+  const keptTheirs = theirs && ten.length === known.length - 2 && theirs.discard.every((d) => !ten.some((c) => sameCard(c, d)))
+  let best: { plan: Plan; value: number; rank: number } | null = null
+  for (const contract of ALL_CONTRACTS) {
+    if (keptTheirs && JSON.stringify(contract) !== JSON.stringify(theirs.declaration.contract)) continue
+    const plan = planFor(ten, contract)
+    if (!plan) continue
+    const value = expectedValue({ ...plan.declaration, hand }, known)
+    const rank = rankOf(plan, value, bid)
+    if (!best || rank > best.rank) best = { plan, value, rank }
+  }
+  const { contract } = best!.plan.declaration
+  return {
+    declaration: { ...best!.plan.declaration, hand },
+    value: best!.value,
+    covers: best!.value >= bid,
+    strong: best!.plan.score >= 1,
+    trumps: contract.kind === 'null' ? 0 : ten.filter((c) => isTrump(c, contract)).length,
+    aces: ten.filter((c) => c.rank === 'A' && !isTrump(c, contract)).length,
+    jacks: ten.filter((c) => c.rank === 'J').length,
+    nullRisk: nullRisk(ten).length,
+  }
+}
+
+/**
+ * The skat hint. The computers always pick the skat up — it improves most hands by about a card and
+ * lets the declarer put two away — so that is the advice. It also says what the ten cards would be
+ * worth as a Hand game, from the same plans, so the learner sees what Hand would risk.
+ */
+export function skatAdvice(ten: Card[], bid: number): { pickUp: true; hand: DeclarationAdvice } {
+  return { pickUp: true, hand: declarationAdvice(ten, ten, bid, true) }
 }
 
 export function chooseDiscard(twelve: Card[], contract: Contract): Card[] {

@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-9",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-9",
   "branch": "SKATGO-9-chat-assistant",

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { askModel, type ChatMessage, isConfigured } from '~/lib/ask/azure'
-import { type AskPage, buildSystemPrompt, isLocale } from '~/lib/ask/context'
+import { type AskPage, TABLE_CHARS, buildSystemPrompt, isLocale } from '~/lib/ask/context'
 import { LIMITS, admit } from '~/lib/ask/limits'
 import { m } from '~/paraglide/messages'
 import type { Locale } from '~/paraglide/runtime'
@@ -13,10 +13,10 @@ import type { Locale } from '~/paraglide/runtime'
 // path alone (paraglide.options.ts), or it would redirect it to a language prefix.
 //
 // Body, as deep-chat sends it plus `additionalBodyProps`:
-//   { messages: [{ role: 'user' | 'ai', text }], locale, page: 'home' | 'lesson', lessonId? }
+//   { messages: [{ role: 'user' | 'ai', text }], locale, page: 'home' | 'lesson' | 'play', lessonId?, table? }
 // Reply, as deep-chat reads it: { text } or { error }.
 
-type Body = { messages?: unknown; locale?: unknown; page?: unknown; lessonId?: unknown }
+type Body = { messages?: unknown; locale?: unknown; page?: unknown; lessonId?: unknown; table?: unknown }
 
 const json = (status: number, body: object) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
@@ -44,8 +44,13 @@ export const Route = createFileRoute('/api/ask')({
         const locale: Locale = isLocale(body.locale) ? body.locale : 'en'
         const opts = { locale }
 
-        const page: AskPage | null =
-          body.page === 'home' ? { kind: 'home' } : body.page === 'lesson' && typeof body.lessonId === 'string' ? { kind: 'lesson', lessonId: body.lessonId } : null
+        let page: AskPage | null = null
+        if (body.page === 'home') page = { kind: 'home' }
+        else if (body.page === 'lesson' && typeof body.lessonId === 'string') page = { kind: 'lesson', lessonId: body.lessonId }
+        else if (body.page === 'play' && typeof body.table === 'string') {
+          if (body.table.length > TABLE_CHARS) return refuse(413, locale, m.ask_error({}, opts))
+          page = { kind: 'play', table: body.table }
+        }
         if (!page) return refuse(400, locale, m.ask_error({}, opts))
         const system = buildSystemPrompt(locale, page)
         if (!system) return refuse(404, locale, m.ask_error({}, opts))

@@ -1,15 +1,19 @@
 import * as stylex from '@stylexjs/stylex'
 import { useRouterState } from '@tanstack/react-router'
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 
+import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { skat } from '../../theme/skat.stylex'
 
-// The floating helper (SKATGO-9): a round button in the corner of every course page — not the table —
-// that opens a small chat about the rules and the page the learner is on. The conversation lives in
-// this component and nowhere else: no storage, no history, gone on reload, and a new one on every
-// page, because the assistant's context is the page.
+// The floating helper (SKATGO-9): a button in the corner of every page that opens a small chat about
+// the rules and the page the learner is on — at the table, about the game in progress, seen only from
+// the learner's seat (lib/skat/table-view.ts). The conversation lives in this component and nowhere
+// else: no storage, no history, gone on reload, and a new one on every page, because the assistant's
+// context is the page. Closing the popup keeps the conversation for that page (deep-chat drops its
+// messages when hidden, so they are kept here and handed back as its history), so a learner can close
+// it, play a card, and come back to the same conversation.
 //
 // The chat body is deep-chat, a web component, loaded only when the popup first opens: it needs
 // `window`, and it is the one heavy dependency of the site — a learner who never asks never
@@ -20,11 +24,12 @@ const DeepChat = lazy(() => import('deep-chat-react').then((mod) => ({ default: 
 
 const PHONE = '@media (max-width: 480px)'
 
-type Page = { page: 'home' } | { page: 'lesson'; lessonId: string }
+type Page = { page: 'home' } | { page: 'lesson'; lessonId: string } | { page: 'play' }
 
 /** Which page the assistant is on, from the router's (language-free) path; null where it does not appear. */
 function pageOf(pathname: string): Page | null {
   if (pathname === '/') return { page: 'home' }
+  if (pathname === '/play' || pathname === '/play/') return { page: 'play' }
   const lesson = /^\/lesson\/([^/]+)\/?$/.exec(pathname)
   if (lesson) return { page: 'lesson', lessonId: decodeURIComponent(lesson[1]) }
   return null
@@ -33,10 +38,15 @@ function pageOf(pathname: string): Page | null {
 export function AskLauncher() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const [open, setOpen] = useState(false)
+  // This page's conversation so far, in deep-chat's own shape; never stored anywhere else.
+  const saved = useRef<Message[]>([])
   const page = pageOf(pathname)
 
   // A new page is a new conversation; the popup closes with the old one.
-  useEffect(() => setOpen(false), [pathname])
+  useEffect(() => {
+    setOpen(false)
+    saved.current = []
+  }, [pathname])
 
   useEffect(() => {
     if (!open) return
@@ -64,7 +74,7 @@ export function AskLauncher() {
           </header>
           <div {...stylex.props(styles.body)}>
             <Suspense fallback={<p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>}>
-              <Chat key={pathname} page={page} />
+              <Chat key={pathname} page={page} history={saved.current} onMessage={(msg) => saved.current.push(msg)} />
             </Suspense>
           </div>
         </section>
@@ -115,15 +125,44 @@ const submitButtonStyles = {
   disabled: { container: { default: { backgroundColor: skat.paperEdge, borderRadius: '999px', width: '34px', height: '34px' } } },
 }
 
-function Chat({ page }: { page: Page }) {
+type Message = { role?: string; text?: string }
+
+function Chat({ page, history, onMessage }: { page: Page; history: Message[]; onMessage: (msg: Message) => void }) {
   const locale = getLocale()
+  const atTable = page.page === 'play'
+  // deep-chat re-renders itself — and drops its messages — whenever a property object changes
+  // identity, so every object it is given is built once per page and language, not per render.
+  const props = useMemo(
+    () => ({
+      connect: { url: '/api/ask', additionalBodyProps: { locale, ...page } },
+      // At the table, the learner's current view of it goes with every question — read at the moment
+      // of sending, because the game has moved on since the popup opened.
+      requestInterceptor: atTable
+        ? (details: { body: Record<string, unknown> }) => ({ ...details, body: { ...details.body, table: useTableSnapshot.getState().text ?? '' } })
+        : undefined,
+      requestBodyLimits: { maxMessages: 6 },
+      textInput: { ...textInput, characterLimit: 500, placeholder: { ...textInput.placeholder, text: atTable ? m.ask_placeholder_play() : m.ask_placeholder() } },
+      introMessage: { text: atTable ? m.ask_intro_play() : m.ask_intro() },
+      errorMessages: { displayServiceErrorMessages: true, overrides: { default: m.ask_error() } },
+      // The conversation as it was when the popup last closed, and how new turns are kept.
+      history: [...history],
+      onMessage: ({ message, isHistory }: { message: Message; isHistory: boolean }) => {
+        if (!isHistory && typeof message.text === 'string' && (message.role === 'user' || message.role === 'ai')) onMessage({ role: message.role, text: message.text })
+      },
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `page` is identified by its fields
+    [locale, atTable, page.page, page.page === 'lesson' ? page.lessonId : ''],
+  )
   return (
     <DeepChat
-      connect={{ url: '/api/ask', additionalBodyProps: { locale, ...page } }}
-      requestBodyLimits={{ maxMessages: 6 }}
-      textInput={{ ...textInput, characterLimit: 500, placeholder: { ...textInput.placeholder, text: m.ask_placeholder() } }}
-      introMessage={{ text: m.ask_intro() }}
-      errorMessages={{ displayServiceErrorMessages: true, overrides: { default: m.ask_error() } }}
+      connect={props.connect}
+      requestInterceptor={props.requestInterceptor}
+      requestBodyLimits={props.requestBodyLimits}
+      textInput={props.textInput}
+      introMessage={props.introMessage}
+      errorMessages={props.errorMessages}
+      history={props.history}
+      onMessage={props.onMessage}
       chatStyle={chatStyle}
       messageStyles={messageStyles}
       inputAreaStyle={inputAreaStyle}

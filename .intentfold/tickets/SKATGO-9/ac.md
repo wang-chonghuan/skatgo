@@ -3,10 +3,10 @@
 服务：`(cd app && set -a && source .env && set +a && PORT=55009 node .output/server/index.mjs)`；
 脚本：`.intentfold/tickets/SKATGO-9/tmp/ac.mjs`（Playwright chromium，headed），桌面 1280×820，手机 375×812（isMobile, hasTouch）。
 
-## AC1 浮动按钮只在课程页面
-- 打开 `/zh`、`/zh/lesson/4`：`[data-testid=ask-launcher]` 可见；打开 `/zh/play`：不存在。
-- 点按钮 → `[data-testid=ask-panel]` 可见；点 `[data-testid=ask-close]` → 面板消失。
-- 桌面和手机各一次。真 = 三个页面的有无都符合，开关都生效。
+## AC1 浮动按钮在每个页面（用户 2026-09-22 扩展：对局页也要）
+- 打开 `/zh`、`/zh/lesson/4`、`/zh/play`：`[data-testid=ask-launcher]` 各 1 个。
+- 点按钮 → `[data-testid=ask-panel]` 可见；点 `[data-testid=ask-close]` → 面板不可见。
+- 桌面和手机各一次。真 = 三个页面都有，开关都生效。
 
 ## AC2 三语提问得到本页语言的回答
 - 对 zh / en / de 各打开 `/<l>/lesson/4`，点开助手，在 deep-chat 的输入框里输入一个与本课相关的问题（各语言一句：中文「什么叫必须跟牌？」；英文 "What does following suit mean?"；德文 "Was heißt Bedienen?"），回车。
@@ -27,3 +27,9 @@
 - 桌面 1280×820：面板完全在视口内（boundingBox 在 0..1280 × 0..820 内），输入框可聚焦、可输入。
 - 手机 375×812：同上（0..375 × 0..812），页面无横向滚动（`document.documentElement.scrollWidth <= 375`）。
 - 真 = 两个视口都成立。
+
+## AC6 牌桌上能问「该怎么办」，且看不到对手的牌（用户 2026-09-22 扩展）
+- 打开 `/zh/play`，等 `[data-testid=skat-table]` 出现；点开助手，问「我现在该怎么办？」，等 AI 回复（≤ 45 秒）。
+- 拦截浏览器发出的 `/api/ask` 请求体：`table` 字段存在；用页面里的引擎状态对照——请求体里不含对手手牌的任何一张（Playwright 从页面拿不到内部 state，改为：`table` 文本里出现的牌总数 ≤ 32 − 20，即最多自己的 10 张 + 已出的牌 + 自己扣的牌；并且单元测试 `table-view.test.ts` 已在 300 局的每个阶段证明不泄露）。
+- 关掉面板（`ask-close`）再点按钮打开：之前的问答还在（`getMessages()` 长度不变）。
+- 真 = 回复非空且含汉字；`table` 存在且不超过 4000 字；关开之后消息数不变。

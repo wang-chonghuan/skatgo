@@ -254,5 +254,7 @@
   "ask_too_long": "That's a long one — please keep it under {n} characters.",
   "ask_rate_limited": "You're asking quickly — take a minute, then try again.",
   "ask_daily_limited": "Today's questions are used up. Come back tomorrow.",
-  "ask_unavailable": "The helper is not available right now."
+  "ask_unavailable": "The helper is not available right now.",
+  "ask_intro_play": "Stuck at the table? Just ask. I see only what you see: your cards and what has been played — not the other hands. The chat is wiped when you reload the page.",
+  "ask_placeholder_play": "e.g. Which card should I play now?"
 }

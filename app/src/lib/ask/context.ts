@@ -7,7 +7,10 @@ import { COURSES } from '~/lib/skat/lessons/content'
 import type { Lesson, Step } from '~/lib/skat/lessons/types'
 import { type Locale, locales } from '~/paraglide/runtime'
 
-export type AskPage = { kind: 'home' } | { kind: 'lesson'; lessonId: string }
+export type AskPage = { kind: 'home' } | { kind: 'lesson'; lessonId: string } | { kind: 'play'; table: string }
+
+/** The most a browser may say about its table; the text is the learner's view (table-view.ts), never more. */
+export const TABLE_CHARS = 4000
 
 const LANGUAGE: Record<Locale, string> = { zh: 'Simplified Chinese (简体中文)', en: 'English', de: 'German (Deutsch)' }
 
@@ -30,7 +33,7 @@ SKAT RULES (International Skat Order, as this course teaches them)
 - Null values are fixed: Null 23, Null Hand 35, Null Ouvert 46, Null Ouvert Hand 59.
 - Overbid: if the final game value is lower than the declarer's bid, the game is lost; the loss is counted at the smallest multiple of the base value that reaches the bid.
 - Scoring: a won game adds its value to the declarer; a lost game subtracts twice its value. Defenders score nothing in this course (no Seeger–Fabian bonuses, no Kontra, no Bock).
-- German table words stay German: Grand, Null, Hand, Ouvert, Schneider, Schwarz, Matador, Skat, Alleinspieler (declarer), Reizen (bidding).
+- Only these table words stay German in every language, as the course keeps them: Grand, Null, Hand, Ouvert, Schneider, Schwarz, Matador, Skat. Everything else — declarer, defenders, bidding, following suit, trick — is said in the answer language, with the words the page itself uses (e.g. Chinese 庄家 / 防守方 / 叫牌).
 `.trim()
 
 const TASK = `
@@ -64,6 +67,16 @@ function describeStep(step: Step, n: number): string[] {
   }
 }
 
+function describePlay(table: string): string {
+  return [
+    'CURRENT PAGE: a game in progress at the table (the learner is playing against two computer players, Lina and Max).',
+    'Below is everything the learner can see. The other two hands and an unseen Skat are NOT included and you do not know them: never guess or assert what they hold, and say so if asked.',
+    'When the learner asks what to do, follow the course hint quoted at the end if there is one — it comes from the rules engine and is correct; explain why in the course\'s terms. Without a hint (it is not the learner\'s move), talk about what has happened and what to watch for.',
+    '',
+    table,
+  ].join('\n')
+}
+
 function describeHome(course: Lesson[]): string {
   return ['CURRENT PAGE: the course map, listing all lessons', '', ...course.map((l) => `Lesson ${l.id} — ${l.title}: ${l.promise}`)].join('\n')
 }
@@ -75,6 +88,7 @@ export function buildSystemPrompt(locale: Locale, page: AskPage): string | null 
   const course = COURSES[locale]
   let pageText: string
   if (page.kind === 'home') pageText = describeHome(course)
+  else if (page.kind === 'play') pageText = describePlay(page.table)
   else {
     const lesson = course.find((l) => l.id === page.lessonId)
     if (!lesson) return null

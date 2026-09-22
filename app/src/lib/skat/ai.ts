@@ -135,6 +135,8 @@ export type DeclarationAdvice = {
   declaration: Declaration
   value: number
   covers: boolean
+  /** The computers' own "worth playing" bar (plan score ≥ 1). A weak game is chosen only to cover the bid. */
+  strong: boolean
   trumps: number
   aces: number
   jacks: number
@@ -167,6 +169,7 @@ export function declarationAdvice(ten: Card[], known: Card[], bid: number, hand:
     declaration: { ...best!.plan.declaration, hand },
     value: best!.value,
     covers: best!.value >= bid,
+    strong: best!.plan.score >= 1,
     trumps: contract.kind === 'null' ? 0 : ten.filter((c) => isTrump(c, contract)).length,
     aces: ten.filter((c) => c.rank === 'A' && !isTrump(c, contract)).length,
     jacks: ten.filter((c) => c.rank === 'J').length,

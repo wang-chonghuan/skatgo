@@ -235,9 +235,10 @@
   "declare_hint_grand": "建议打 **{contract}**：你有 {jacks} 张 J，还有 {aces} 张 A。",
   "declare_hint_null": "建议打 **{contract}**：每门花色都有小牌垫底，没有会被逼着赢墩的大牌。",
   "declare_hint_null_risky": "建议打 **{contract}**：只有 {n} 张牌可能被逼着赢墩，别的定约都更没把握。",
-  "declare_hint_covers": " 赢了值 {value}，盖得住叫分 {bid}。",
-  "declare_hint_overbid": " 它也只值 {value}，盖不住叫分 {bid}——没有哪种定约盖得住，只能选最有希望的硬打。",
-  "declare_hint_no_announce": " 不用加喊：加喊只有做到才算赢，莉娜和马克斯也从不加喊。",
+  "declare_hint_covers": "赢了值 {value}，盖得住叫分 {bid}。",
+  "declare_hint_overbid": "它也只值 {value}，盖不住叫分 {bid}——没有哪种定约盖得住，只能选最有希望的硬打。",
+  "declare_hint_weak": "不过这手牌打什么都不强：选它只是因为它的分值盖得住叫分，赢面不大——下次按「我能叫多高？」的建议叫，别叫这么高。",
+  "declare_hint_no_announce": "不用加喊：加喊只有做到才算赢，莉娜和马克斯也从不加喊。",
   "result_skat": "底牌里是：",
   "result_new_game": "再来一局"
 }

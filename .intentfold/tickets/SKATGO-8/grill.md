@@ -37,3 +37,9 @@ Sources: charter and the code as observed (plan.md).
    a test deal). Decision: when the learner kept exactly what the computers keep, the declare hint is
    their contract; otherwise the same ranking on the cards actually kept. The unit test holds the first
    case over 400 deals (it failed before this decision, passes after).
+
+10. **Found in the acceptance read-through: a weak game recommended with praise.** With a reckless bid
+    the ranking (covering the bid first) can pick e.g. Grand with no Jacks. That is the computers' own
+    choice, so it stays; the hint now says so plainly when the plan is below the computers' "worth
+    playing" bar (score ≥ 1), and points to the bidding hint. Also: counts in en/de written as
+    "Jacks: 1" so no plural is wrong; zh sentences joined without stray spaces.

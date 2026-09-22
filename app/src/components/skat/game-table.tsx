@@ -276,7 +276,8 @@ export function GameTable({ onSettled }: Props) {
                     : m.declare_hint_null_risky({ contract, n: a.nullRisk })
             const worth = a.covers ? m.declare_hint_covers({ value: a.value, bid: game.bid }) : m.declare_hint_overbid({ value: a.value, bid: game.bid })
             const hand = isHand ? `${m.declare_hint_no_announce()}${a.declaration.contract.kind === 'null' ? '' : m.declare_hand_note()}` : ''
-            setHint({ text: `${why}${worth}${hand}` })
+            const weak = a.strong ? '' : m.declare_hint_weak()
+            setHint({ text: `${why}${worth}${weak}${hand}` })
           }}
           onDiscardHint={() => {
             const plan = chooseDeclaration(game.hands[ME], game.bid)

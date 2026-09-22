@@ -8,14 +8,15 @@ import { LANG_TAG, SITE_URL, localizedUrl } from './site'
 // route tree that has no parameter (lesson pages render in the browser only; the map links them all), in
 // every language, each with the hreflang alternates the pages' own <head> carries. Both lists are
 // derived — the pages from the generated route tree, the languages from Paraglide — so a new page
-// or language fails this test until the sitemap has it.
+// or language fails this test until the sitemap has it. Server routes under /api (SKATGO-9) are
+// not pages and have no language; the route tree does not mark them, so the path prefix does.
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
 
 const routeTree = read('../routeTree.gen.ts')
 const pages = [...routeTree.slice(routeTree.indexOf('interface FileRoutesByFullPath'), routeTree.indexOf('interface FileRoutesByTo')).matchAll(/'(\/[^']*)'/g)]
   .map((x) => x[1])
-  .filter((p) => !p.includes('$'))
+  .filter((p) => !p.includes('$') && !p.startsWith('/api/'))
 const sitemap = read('../../public/sitemap.xml')
 
 describe('sitemap.xml', () => {

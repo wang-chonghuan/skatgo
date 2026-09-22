@@ -36,5 +36,7 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
   routeStrategies: [
     { match: '/sitemap.xml', exclude: true },
     { match: '/robots.txt', exclude: true },
+    // The assistant's endpoint (SKATGO-9) is called by the page it sits on; it has no language of its own.
+    { match: '/api/ask', exclude: true },
   ],
 }

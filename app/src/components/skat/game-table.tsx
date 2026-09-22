@@ -3,9 +3,11 @@ import confetti from 'canvas-confetti'
 import { AnimatePresence, motion } from 'motion/react'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
-import { bidAdvice, chooseDeclaration, declarationAdvice, skatAdvice } from '~/lib/skat/ai'
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
-import { adviceReason, cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
+import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
+import { useTableSnapshot } from '~/lib/skat/table-snapshot'
+import { visibleTable } from '~/lib/skat/table-view'
+import { cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
 import {
   type Game,
   type Seat,
@@ -112,6 +114,14 @@ export function GameTable({ onSettled }: Props) {
     setRefusal(null)
   }, [game])
 
+  // The assistant (SKATGO-9) reads the table through this: the learner's own view, refreshed on every
+  // change and withdrawn when the table leaves the page.
+  const publish = useTableSnapshot((s) => s.publish)
+  useEffect(() => {
+    publish(visibleTable(game, scores))
+  }, [game, scores, publish])
+  useEffect(() => () => publish(null), [publish])
+
   function newGame() {
     const d = next(dealer)
     setDealer(d)
@@ -139,8 +149,8 @@ export function GameTable({ onSettled }: Props) {
   }
 
   function showPlayHint() {
-    const advice = adviceFor(game, ME)
-    if (advice) setHint({ card: advice.card, text: m.play_hint({ card: cardLabel(advice.card), reason: adviceReason(advice.reason) }) })
+    const h = playHint(game)
+    if (h) setHint(h)
   }
 
   const lastBidBy = (seat: Seat) => {
@@ -248,44 +258,10 @@ export function GameTable({ onSettled }: Props) {
             setGame((g) => declare(g, d))
             setDraft(null)
           }}
-          onBidHint={() => {
-            const a = bidAdvice(game.hands[ME])
-            setHint({
-              text: a.contract ? m.bid_hint_limit({ contract: contractName(a.contract), limit: a.limit }) : m.bid_hint_pass(),
-            })
-          }}
-          onSkatHint={() => {
-            const a = skatAdvice(game.hands[ME], game.bid).hand
-            const args = { contract: contractName(a.declaration.contract), value: a.value, bid: game.bid }
-            setHint({ text: a.covers ? m.skat_hint_pickup_covers(args) : m.skat_hint_pickup_short(args) })
-          }}
-          onDeclareHint={() => {
-            // The same cards the picker values: the ten kept plus the two put away, or in a Hand game
-            // the ten alone — the skat is unseen.
-            const isHand = !game.pickedUp
-            const ten = game.hands[ME]
-            const a = declarationAdvice(ten, isHand ? ten : [...ten, ...game.skat], game.bid, isHand)
-            const contract = `${contractName(a.declaration.contract)}${isHand ? ' Hand' : ''}`
-            const why =
-              a.declaration.contract.kind === 'suit'
-                ? m.declare_hint_suit({ contract, trumps: a.trumps, aces: a.aces })
-                : a.declaration.contract.kind === 'grand'
-                  ? m.declare_hint_grand({ contract, jacks: a.jacks, aces: a.aces })
-                  : a.nullRisk === 0
-                    ? m.declare_hint_null({ contract })
-                    : m.declare_hint_null_risky({ contract, n: a.nullRisk })
-            const worth = a.covers ? m.declare_hint_covers({ value: a.value, bid: game.bid }) : m.declare_hint_overbid({ value: a.value, bid: game.bid })
-            const hand = isHand ? `${m.declare_hint_no_announce()}${a.declaration.contract.kind === 'null' ? '' : m.declare_hand_note()}` : ''
-            const weak = a.strong ? '' : m.declare_hint_weak()
-            setHint({ text: `${why}${worth}${weak}${hand}` })
-          }}
-          onDiscardHint={() => {
-            const plan = chooseDeclaration(game.hands[ME], game.bid)
-            setHint({
-              cards: plan.discard,
-              text: m.skat_hint({ cards: plan.discard.map(cardLabel).join(m.list_and()), contract: contractName(plan.declaration.contract) }),
-            })
-          }}
+          onBidHint={() => setHint(bidHint(game))}
+          onSkatHint={() => setHint(skatHint(game))}
+          onDeclareHint={() => setHint(declareHint(game))}
+          onDiscardHint={() => setHint(discardHint(game))}
           onPlayHint={showPlayHint}
           onNewGame={newGame}
         />

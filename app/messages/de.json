@@ -240,5 +240,21 @@
   "declare_hint_weak": " Für kein Spiel ist dieses Blatt aber stark: Gewählt ist es nur, weil sein Wert den Reizwert deckt, und es wird schwer zu gewinnen – reiz das nächste Mal nur so hoch, wie „Wie hoch darf ich reizen?“ sagt.",
   "declare_hint_no_announce": " Nichts ansagen: Eine Ansage zählt nur, wenn du sie erfüllst, und Lina und Max sagen auch nie etwas an.",
   "result_skat": "Im Skat lagen:",
-  "result_new_game": "Noch ein Spiel"
+  "result_new_game": "Noch ein Spiel",
+
+  "ask_button": "Fragen",
+  "ask_button_label": "Helfer öffnen: zu den Regeln oder dieser Seite fragen",
+  "ask_title": "Fragen",
+  "ask_subtitle": "Zu den Regeln oder zu dieser Seite",
+  "ask_intro": "Etwas unklar? Frag einfach. Ich kenne diese Seite und die Skatregeln, sonst nichts – und beim Neuladen der Seite ist der Chat weg.",
+  "ask_placeholder": "z. B. Was heißt Bedienen?",
+  "ask_close": "Helfer schließen",
+  "ask_loading": "Der Helfer kommt gleich …",
+  "ask_error": "Das hat gerade nicht geklappt. Bitte noch einmal versuchen.",
+  "ask_too_long": "Das ist lang – bitte auf {n} Zeichen kürzen.",
+  "ask_rate_limited": "Du fragst schnell – warte eine Minute und versuch es dann noch mal.",
+  "ask_daily_limited": "Die Fragen für heute sind aufgebraucht. Komm morgen wieder.",
+  "ask_unavailable": "Der Helfer ist gerade nicht erreichbar.",
+  "ask_intro_play": "Unsicher am Tisch? Frag einfach. Ich sehe nur, was du siehst: deine Karten und was gespielt wurde – nicht die anderen Blätter. Beim Neuladen der Seite ist der Chat weg.",
+  "ask_placeholder_play": "z. B. Welche Karte soll ich jetzt spielen?"
 }

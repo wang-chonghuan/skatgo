@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
+import { ClerkProvider } from '@clerk/tanstack-react-start'
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { Theme } from '@astryxdesign/core/theme'
 
+import { clerkAppearance } from '~/lib/clerk-appearance'
 import { LANG_TAG, SITE_URL, localizedUrl } from '~/lib/site'
 import { m } from '~/paraglide/messages'
 import { getLocale, locales } from '~/paraglide/runtime'
@@ -85,9 +87,12 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         {import.meta.env.DEV && <link rel="stylesheet" href="/virtual:stylex.css" />}
       </head>
       <body>
-        <Theme theme={appTheme} mode={APP_THEME_MODE}>
-          {children}
-        </Theme>
+        {/* Accounts (SKATGO-12): Clerk's provider sits inside <body>, as its docs require. */}
+        <ClerkProvider appearance={clerkAppearance}>
+          <Theme theme={appTheme} mode={APP_THEME_MODE}>
+            {children}
+          </Theme>
+        </ClerkProvider>
         <Scripts />
       </body>
     </html>

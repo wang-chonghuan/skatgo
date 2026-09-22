@@ -1,8 +1,10 @@
+import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
 import { LANG_TAG } from '~/lib/site'
 import { AskLauncher } from '~/components/skat/ask'
+import { Btn } from '~/components/skat/ui'
 import { m } from '~/paraglide/messages'
 import { type Locale, getLocale, localizeHref, locales, setLocale } from '~/paraglide/runtime'
 import { skat } from './theme/skat.stylex'
@@ -13,7 +15,9 @@ import { skat } from './theme/skat.stylex'
 // that skatgo.com renders what parrottoon.com/skat does. One deliberate difference: Parrottoon's
 // header also carries a "← 回 Parrottoon" link. skatgo.com is its own site, so it has none.
 //
-// The header's right side is the language switch (SKATGO-1). The page language itself is on <html>.
+// The header's right side is the language switch (SKATGO-1) and the account (SKATGO-12): one "sign in"
+// button at every size — signing up is one click inside Clerk's window — or, signed in, the avatar.
+// The page language itself is on <html>.
 // After the reading column comes the floating helper (SKATGO-9); it decides itself which pages it is on.
 
 export function SkatLayout() {
@@ -24,13 +28,34 @@ export function SkatLayout() {
           <span {...stylex.props(styles.brandMark)}>♣</span>
           {m.site_name()}
         </Link>
-        <LanguageSwitch />
+        <div {...stylex.props(styles.headerEnd)}>
+          <LanguageSwitch />
+          <Account />
+        </div>
       </header>
       <main {...stylex.props(styles.main)}>
         <Outlet />
       </main>
       <AskLauncher />
     </div>
+  )
+}
+
+/** Signed out: the one way in, opening Clerk's window over the page. Signed in: Clerk's avatar menu. */
+function Account() {
+  return (
+    <>
+      <Show when="signed-out">
+        <SignInButton mode="modal">
+          <Btn tone="felt" size="sm" testId="sign-in">
+            {m.auth_sign_in()}
+          </Btn>
+        </SignInButton>
+      </Show>
+      <Show when="signed-in">
+        <UserButton />
+      </Show>
+    </>
   )
 }
 
@@ -102,6 +127,7 @@ const styles = stylex.create({
     color: skat.ink,
     fontSize: 20,
   },
+  headerEnd: { display: 'flex', alignItems: 'center', gap: { default: 12, '@media (max-width: 480px)': 6 }, flexShrink: 0 },
   switch: { display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 },
   lang: {
     paddingBlock: 5,

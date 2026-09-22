@@ -95,14 +95,17 @@ const messageStyles = {
   },
   intro: { bubble: { backgroundColor: skat.paperDeep, color: skat.inkSoft } },
   error: { bubble: { backgroundColor: skat.badSoft, color: skat.bad } },
-  loading: { message: { styles: { bubble: { backgroundColor: skat.paperDeep, color: skat.inkSoft } } } },
+  // The three dots are drawn as box-shadows 12px either side of a 7px element, so the bubble's own
+  // padding has to make room on the left or the first dot sits on the edge.
+  loading: { message: { styles: { bubble: { backgroundColor: skat.paperDeep, color: skat.inkSoft, padding: '10px 14px 10px 26px' } } } },
 }
 const inputAreaStyle = { backgroundColor: skat.paper, borderTop: `1px solid ${skat.paperEdge}` }
 const textInput = {
   styles: {
-    container: { backgroundColor: skat.white, border: `1px solid ${skat.paperEdge}`, borderRadius: '999px', boxShadow: 'none', color: skat.ink },
+    // deep-chat's input is 80% wide by default; in a 380px panel that leaves a 37px gutter each side.
+    container: { width: 'calc(100% - 32px)', backgroundColor: skat.white, border: `1px solid ${skat.paperEdge}`, borderRadius: '999px', boxShadow: 'none', color: skat.ink },
     focus: { border: `1px solid ${skat.brass}`, boxShadow: `0 0 0 3px ${skat.brassSoft}` },
-    text: { padding: '10px 16px', color: skat.ink },
+    text: { padding: '10px 12px', color: skat.ink },
   },
   placeholder: { style: { color: skat.inkFaint } },
 }

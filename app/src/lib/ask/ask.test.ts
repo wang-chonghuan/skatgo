@@ -40,11 +40,11 @@ describe('the assistant context', () => {
 describe('the limits', () => {
   beforeEach(resetLimits)
 
-  it('lets one account ask perAccount times a minute, then refuses until the window passes', () => {
+  it('lets one visitor ask perVisitor times a minute, then refuses until the window passes', () => {
     const t0 = Date.parse('2026-09-22T10:00:00Z')
-    for (let i = 0; i < LIMITS.perAccount; i++) expect(admit('a', t0 + i)).toBeNull()
-    expect(admit('a', t0 + LIMITS.perAccount)).toBe('rate')
-    expect(admit('b', t0 + LIMITS.perAccount)).toBeNull()
+    for (let i = 0; i < LIMITS.perVisitor; i++) expect(admit('a', t0 + i)).toBeNull()
+    expect(admit('a', t0 + LIMITS.perVisitor)).toBe('rate')
+    expect(admit('b', t0 + LIMITS.perVisitor)).toBeNull()
     expect(admit('a', t0 + LIMITS.windowMs + 1)).toBeNull()
   })
 

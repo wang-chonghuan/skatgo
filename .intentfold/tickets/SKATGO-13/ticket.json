@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-13",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-13",
+  "branch": "SKATGO-13-open-assistant",
+  "base": "60b90d0ae4e59f76306ae33183d321067258fe20",
+  "ports": { "web": 55013 }
+}

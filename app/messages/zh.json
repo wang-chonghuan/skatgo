@@ -257,7 +257,5 @@
   "ask_unavailable": "助手暂时没有上线。",
   "ask_intro_play": "牌桌上有事拿不准？直接问。我只看得到你看得到的：你的牌、桌上出过的牌——对手的牌我不知道。刷新页面后对话就会清空。",
   "ask_placeholder_play": "比如：我现在该出哪张？",
-  "auth_sign_in": "登录",
-  "ask_login_required": "聊天免费，但需要登录。",
-  "ask_sign_in_required": "请先登录再提问。"
+  "auth_sign_in": "登录"
 }

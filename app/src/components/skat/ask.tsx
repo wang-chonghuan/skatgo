@@ -1,13 +1,12 @@
-import { Show, SignInButton, useAuth } from '@clerk/tanstack-react-start'
+import { useAuth } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { useRouterState } from '@tanstack/react-router'
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, memo, useEffect, useMemo, useState } from 'react'
 
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { skat } from '../../theme/skat.stylex'
-import { Btn } from './ui'
 
 // The floating helper (SKATGO-9): a button in the corner of every page that opens a small chat about
 // the rules and the page the learner is on — at the table, about the game in progress, seen only from
@@ -88,20 +87,10 @@ export function AskLauncher() {
             </button>
           </header>
           <div {...stylex.props(styles.body)}>
-            {/* The chat is for signed-in learners only (SKATGO-12); the endpoint refuses anyone else. */}
-            <Show when="signed-out">
-              <div data-testid="ask-sign-in" {...stylex.props(styles.gate)}>
-                <p {...stylex.props(styles.gateText)}>{m.ask_login_required()}</p>
-                <SignInButton mode="modal">
-                  <Btn testId="ask-sign-in-button">{m.auth_sign_in()}</Btn>
-                </SignInButton>
-              </div>
-            </Show>
-            <Show when="signed-in">
-              <Suspense fallback={<p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>}>
-                <Chat key={`${userId ?? ''} ${pathname}`} page={page} history={messages} onMessage={(msg) => messages.push(msg)} />
-              </Suspense>
-            </Show>
+            {/* Open to everyone, signed in or not (SKATGO-13): signing in gates nothing. */}
+            <Suspense fallback={<p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>}>
+              <Chat key={`${userId ?? ''} ${pathname}`} page={page} history={messages} onMessage={(msg) => messages.push(msg)} />
+            </Suspense>
           </div>
         </section>
       ) : null}
@@ -166,7 +155,18 @@ const submitButtonStyles = {
   disabled: { container: { default: sendInert }, svg: { styles: { default: { opacity: '0.45' } } } },
 }
 
-function Chat({ page, history, onMessage }: { page: Page; history: Message[]; onMessage: (msg: Message) => void }) {
+type ChatProps = { page: Page; history: Message[]; onMessage: (msg: Message) => void }
+
+const samePage = (a: Page, b: Page) => a.page === b.page && (a.page !== 'lesson' || (b.page === 'lesson' && a.lessonId === b.lessonId))
+
+// Rendered again only when its page or its conversation changes. deep-chat drops the messages on
+// screen whenever it is rendered with its properties again, and the launcher around it renders again
+// for reasons of its own — Clerk finishing loading, or refreshing the session (SKATGO-13: with the
+// chat open before sign-in state is known, a question asked in that moment lost its answer).
+// `onMessage` is left out on purpose: it only appends to `history`, which is compared.
+const Chat = memo(ChatBody, (a, b) => a.history === b.history && samePage(a.page, b.page))
+
+function ChatBody({ page, history, onMessage }: ChatProps) {
   const locale = getLocale()
   const atTable = page.page === 'play'
   // deep-chat re-renders itself — and drops its messages — whenever a property object changes
@@ -294,14 +294,4 @@ const styles = stylex.create({
   // first, wider pass would stretch the layout viewport past the screen.
   body: { flexGrow: 1, minHeight: 0, minWidth: 0, display: 'flex', overflow: 'hidden' },
   loading: { margin: 'auto', fontSize: 14, color: skat.inkSoft },
-  gate: {
-    margin: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 16,
-    paddingInline: 24,
-    textAlign: 'center',
-  },
-  gateText: { margin: 0, fontSize: 16, lineHeight: 1.5, color: skat.ink },
 })

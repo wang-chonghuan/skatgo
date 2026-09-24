@@ -1,7 +1,7 @@
 import { useAuth } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { useRouterState } from '@tanstack/react-router'
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, memo, useEffect, useMemo, useState } from 'react'
 
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { m } from '~/paraglide/messages'
@@ -155,7 +155,18 @@ const submitButtonStyles = {
   disabled: { container: { default: sendInert }, svg: { styles: { default: { opacity: '0.45' } } } },
 }
 
-function Chat({ page, history, onMessage }: { page: Page; history: Message[]; onMessage: (msg: Message) => void }) {
+type ChatProps = { page: Page; history: Message[]; onMessage: (msg: Message) => void }
+
+const samePage = (a: Page, b: Page) => a.page === b.page && (a.page !== 'lesson' || (b.page === 'lesson' && a.lessonId === b.lessonId))
+
+// Rendered again only when its page or its conversation changes. deep-chat drops the messages on
+// screen whenever it is rendered with its properties again, and the launcher around it renders again
+// for reasons of its own — Clerk finishing loading, or refreshing the session (SKATGO-13: with the
+// chat open before sign-in state is known, a question asked in that moment lost its answer).
+// `onMessage` is left out on purpose: it only appends to `history`, which is compared.
+const Chat = memo(ChatBody, (a, b) => a.history === b.history && samePage(a.page, b.page))
+
+function ChatBody({ page, history, onMessage }: ChatProps) {
   const locale = getLocale()
   const atTable = page.page === 'play'
   // deep-chat re-renders itself — and drops its messages — whenever a property object changes

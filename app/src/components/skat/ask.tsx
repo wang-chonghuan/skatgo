@@ -1,50 +1,34 @@
 import { useAuth } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { useRouterState } from '@tanstack/react-router'
-import { Suspense, lazy, memo, useEffect, useMemo, useState } from 'react'
+import { Check, Copy, MessageCircle, Plus, X } from 'lucide-react'
+import { type ComponentType, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { useTableSnapshot } from '~/lib/skat/table-snapshot'
+import { GUEST, type ChatMessage, clearConversation, loadConversation, saveConversation } from '~/lib/ask/conversation'
+import { lessonById } from '~/lib/skat/lessons/content'
 import { m } from '~/paraglide/messages'
-import { getLocale } from '~/paraglide/runtime'
 import { skat } from '../../theme/skat.stylex'
+import type { AskPage, AskThreadProps } from './ask-thread'
 
-// The floating helper (SKATGO-9): a button in the corner of every page that opens a small chat about
-// the rules and the page the learner is on — at the table, about the game in progress, seen only from
-// the learner's seat (lib/skat/table-view.ts). The conversation lives in this module and nowhere
-// else: no storage, gone on reload, and a new one on every page, because the assistant's
-// context is the page. Closing the popup keeps that page's conversation — deep-chat forgets its
-// messages when it goes away, so they are kept beside it and handed back as its history — which lets
-// a learner close the popup, play a card, and come back to where they were.
+// The floating assistant (SKATGO-9), rebuilt after Trovestep's context chat (SKATGO-14): a round
+// button in the corner of every course page opens a window about the rules and the page the learner
+// is on — at the table, seen only from the learner's seat (lib/skat/table-view.ts). On a desk the
+// window floats bottom-right; on a phone it fills the screen and keeps its input above the keyboard.
 //
-// The chat body is deep-chat, a web component, loaded only when the popup first opens: it needs
-// `window`, and it is the one heavy dependency of the site — a learner who never asks never
-// downloads it. The shell around it (button, panel, header) is the course's own StyleX; deep-chat's
-// own colours are set through its style properties from the same palette tokens.
+// One conversation for the whole site, kept in this tab (lib/ask/conversation.ts): moving between
+// pages and reloading keep it, "New conversation" clears it. Every question still carries the page it
+// is asked on. It belongs to the signed-in account, or to the guest when nobody is signed in —
+// signing in or out changes whose conversation it is, and never whether the chat may be used.
 
-const DeepChat = lazy(() => import('deep-chat-react').then((mod) => ({ default: mod.DeepChat })))
-
-type Message = { role?: string; text?: string }
-
-// The open page's conversation. It lives here rather than in the component, because it has to outlive
-// every time the popup closes and the component with it; a different page, a different account
-// (SKATGO-12 — signing out and someone else signing in on the same tab must not see it), or a
-// reload, starts an empty one. It is never written to storage and never leaves the tab.
-const conversation: { key: string; messages: Message[] } = { key: '', messages: [] }
-
-function conversationFor(key: string): Message[] {
-  if (conversation.key !== key) {
-    conversation.key = key
-    conversation.messages = []
-  }
-  return conversation.messages
-}
+// deep-chat is a browser web component; the server build folds this branch away so the library never
+// enters the SSR bundle, and a learner who never opens the window never downloads it.
+const AskThread = lazy<ComponentType<AskThreadProps>>(() => (import.meta.env.SSR ? Promise.resolve({ default: () => null }) : import('./ask-thread')))
 
 const PHONE = '@media (max-width: 480px)'
-
-type Page = { page: 'home' } | { page: 'lesson'; lessonId: string } | { page: 'play' }
+const PHONE_QUERY = '(max-width: 480px)'
 
 /** Which page the assistant is on, from the router's (language-free) path; null where it does not appear. */
-function pageOf(pathname: string): Page | null {
+function pageOf(pathname: string): AskPage | null {
   if (pathname === '/') return { page: 'home' }
   if (pathname === '/play' || pathname === '/play/') return { page: 'play' }
   const lesson = /^\/lesson\/([^/]+)\/?$/.exec(pathname)
@@ -52,183 +36,366 @@ function pageOf(pathname: string): Page | null {
   return null
 }
 
-export function AskLauncher() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const [open, setOpen] = useState(false)
-  const { userId } = useAuth()
-  const page = pageOf(pathname)
-  const messages = conversationFor(`${userId ?? ''} ${pathname}`)
+/** The page's own title, as the window's subtitle. */
+function titleOf(page: AskPage): string {
+  if (page.page === 'home') return m.ask_page_home()
+  if (page.page === 'play') return m.free_title()
+  const lesson = lessonById(page.lessonId)
+  return lesson ? m.lesson_heading({ id: lesson.id, title: lesson.title }) : m.ask_page_home()
+}
 
-  // A new page is a new conversation; the popup closes with the old one.
-  useEffect(() => setOpen(false), [pathname])
+// --- The tab's conversation ---------------------------------------------------------------------
+
+const conversation: { owner: string | null; messages: ChatMessage[] } = { owner: null, messages: [] }
+
+function tabStorage(): Storage | null {
+  try {
+    return window.sessionStorage
+  } catch {
+    return null
+  }
+}
+
+function conversationFor(owner: string | null): ChatMessage[] {
+  if (owner === null) return []
+  if (conversation.owner !== owner) {
+    conversation.owner = owner
+    conversation.messages = loadConversation(tabStorage(), owner)
+  }
+  return conversation.messages
+}
+
+function forgetConversation(): void {
+  conversation.messages = []
+  clearConversation(tabStorage())
+}
+
+/**
+ * Whose conversation it is: the account, or the guest. Unknown while Clerk is still loading — the
+ * stored conversation must not be read as the guest's and thrown away before Clerk says who is here.
+ * If Clerk never answers (blocked, down), the visitor is the guest after a few seconds: signing in
+ * gates nothing (SKATGO-13), so its failure must not keep the chat closed either.
+ */
+function useOwner(): string | null {
+  const { isLoaded, userId } = useAuth()
+  const [gaveUp, setGaveUp] = useState(false)
+  useEffect(() => {
+    if (isLoaded) return
+    const timer = setTimeout(() => setGaveUp(true), 4_000)
+    return () => clearTimeout(timer)
+  }, [isLoaded])
+  if (isLoaded) return userId ?? GUEST
+  return gaveUp ? GUEST : null
+}
+
+// --- Phone behaviour ------------------------------------------------------------------------------
+
+function usePhone(): boolean {
+  const [phone, setPhone] = useState(() => window.matchMedia(PHONE_QUERY).matches)
+  useEffect(() => {
+    const query = window.matchMedia(PHONE_QUERY)
+    const update = () => setPhone(query.matches)
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
+  return phone
+}
+
+/**
+ * The visible area while a phone keyboard is open, or null when it is closed. Phone browsers overlay
+ * the keyboard and may scroll the page to reveal the focused input, so only the visual viewport says
+ * where the visible area is; while it is smaller than the window the sheet is placed exactly over it,
+ * which keeps the input directly above the keyboard however the browser scrolled.
+ */
+function useKeyboardViewport(enabled: boolean): { top: number; height: number } | null {
+  const [area, setArea] = useState<{ top: number; height: number } | null>(null)
+  useEffect(() => {
+    const viewport = window.visualViewport
+    if (!enabled || !viewport) {
+      setArea(null)
+      return
+    }
+    const update = () => {
+      const covered = window.innerHeight - viewport.height
+      // A pinch-zoomed page also shrinks the visual viewport; that is not a keyboard.
+      const keyboard = covered > 0 && Math.abs(viewport.scale - 1) < 0.01
+      setArea(keyboard ? { top: Math.round(viewport.offsetTop), height: Math.round(viewport.height) } : null)
+    }
+    update()
+    viewport.addEventListener('resize', update)
+    viewport.addEventListener('scroll', update)
+    return () => {
+      viewport.removeEventListener('resize', update)
+      viewport.removeEventListener('scroll', update)
+    }
+  }, [enabled])
+  return area
+}
+
+/** The page behind a full-screen window stays still, and is back where it was when the window closes. */
+function usePageScrollLock(locked: boolean): void {
+  useEffect(() => {
+    if (!locked) return
+    const root = document.documentElement
+    const previous = root.style.overflow
+    const x = window.scrollX
+    const y = window.scrollY
+    root.style.overflow = 'hidden'
+    return () => {
+      root.style.overflow = previous
+      window.scrollTo(x, y)
+    }
+  }, [locked])
+}
+
+// --- The launcher and the window ----------------------------------------------------------------
+
+export function AskLauncher() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const page = pageOf(pathname)
+  // Rendered only after hydration: a button that does nothing until the page's script has loaded is
+  // worse than no button, and where the window goes depends on the viewport.
+  if (!mounted || !page) return null
+  return <AskWindow page={page} pathname={pathname} />
+}
+
+function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
+  const owner = useOwner()
+  const phone = usePhone()
+  const [open, setOpen] = useState(false)
+  const title = titleOf(page)
+
+  // Closing hands focus back to the button it was opened from.
+  const launcher = useRef<HTMLButtonElement | null>(null)
+  const wasOpen = useRef(false)
+  useEffect(() => {
+    if (wasOpen.current && !open) launcher.current?.focus()
+    wasOpen.current = open
+  }, [open])
+
+  const keyboardArea = useKeyboardViewport(open && phone)
+  usePageScrollLock(open && phone)
+
+  // Bumped by "New conversation"; with the owner it identifies the conversation the thread shows.
+  const [generation, setGeneration] = useState(0)
+  const threadKey = `${owner ?? ''}|${generation}`
+  const messages = conversationFor(owner)
+
+  // Signing out forgets the account's conversation in this tab (the guest starts with none).
+  const previousOwner = useRef(owner)
+  useEffect(() => {
+    if (previousOwner.current && previousOwner.current !== GUEST && owner === GUEST) forgetConversation()
+    previousOwner.current = owner
+  }, [owner])
+
+  // Another page, a new conversation or another owner aborts an answer still streaming; finished
+  // messages stay in the conversation.
+  const abort = useRef(new AbortController())
+  const signal = useMemo(() => {
+    abort.current.abort()
+    abort.current = new AbortController()
+    return abort.current.signal
+  }, [threadKey, pathname])
+  useEffect(() => () => abort.current.abort(), [])
+
+  // Changing page closes the window; coming back does not reopen it.
+  const lastPath = useRef(pathname)
+  useEffect(() => {
+    if (lastPath.current !== pathname) {
+      lastPath.current = pathname
+      setOpen(false)
+    }
+  }, [pathname])
+
+  // Neither wheel nor touch over the window ever scrolls the page. A gesture is let through only inside
+  // a region that can still scroll that way (the messages or a long input); at its ends, and anywhere
+  // else in the window, it stops here instead of carrying on to the page behind.
+  const panel = useRef<HTMLElement | null>(null)
+  useEffect(() => {
+    const element = panel.current
+    if (!open || !element) return
+    const scroller = (event: Event) =>
+      event.composedPath().find((node): node is HTMLElement => node instanceof HTMLElement && (node.id === 'messages' || node.id === 'text-input') && node.scrollHeight > node.clientHeight)
+    // `delta` > 0 moves the content down, as the wheel's deltaY does.
+    const blocked = (event: Event, delta: number) => {
+      if (delta === 0) return false
+      const region = scroller(event)
+      if (!region) return true
+      return delta < 0 ? region.scrollTop <= 0 : region.scrollTop + region.clientHeight >= region.scrollHeight - 1
+    }
+    const onWheel = (event: WheelEvent) => {
+      if (blocked(event, event.deltaY)) event.preventDefault()
+    }
+    let lastY = 0
+    const onTouchStart = (event: TouchEvent) => {
+      lastY = event.touches[0]?.clientY ?? 0
+    }
+    const onTouchMove = (event: TouchEvent) => {
+      const y = event.touches[0]?.clientY ?? lastY
+      const delta = lastY - y
+      lastY = y
+      if (event.cancelable && blocked(event, delta)) event.preventDefault()
+    }
+    element.addEventListener('wheel', onWheel, { passive: false })
+    element.addEventListener('touchstart', onTouchStart, { passive: true })
+    element.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => {
+      element.removeEventListener('wheel', onWheel)
+      element.removeEventListener('touchstart', onTouchStart)
+      element.removeEventListener('touchmove', onTouchMove)
+    }
+  }, [open])
+
+  // When the keyboard opens or the visible area changes, keep the latest message in view.
+  const keyboardHeight = keyboardArea?.height ?? null
+  useEffect(() => {
+    if (keyboardHeight === null) return
+    const chat = panel.current?.querySelector('deep-chat') as (Element & { scrollToBottom?: () => void }) | null
+    chat?.scrollToBottom?.()
+  }, [keyboardHeight])
 
   useEffect(() => {
     if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
-  if (!page) return null
+  // The message count only drives the header buttons; the conversation itself stays in the store.
+  const [messageCount, setMessageCount] = useState(messages.length)
+  useEffect(() => setMessageCount(conversationFor(owner).length), [owner, generation])
+  const onMessage = useCallback(
+    (message: ChatMessage) => {
+      if (owner === null || conversation.owner !== owner) return
+      conversation.messages.push(message)
+      saveConversation(tabStorage(), owner, conversation.messages)
+      setMessageCount(conversation.messages.length)
+    },
+    [owner],
+  )
+  const newConversation = useCallback(() => {
+    forgetConversation()
+    setGeneration((value) => value + 1)
+    setMessageCount(0)
+  }, [])
+
+  // Copy the whole conversation as plain text; the icon confirms for two seconds, then returns.
+  const [copied, setCopied] = useState(false)
+  useEffect(() => {
+    if (!copied) return
+    const timer = setTimeout(() => setCopied(false), 2_000)
+    return () => clearTimeout(timer)
+  }, [copied])
+  const copyConversation = useCallback(async () => {
+    const text = conversationFor(owner)
+      .map((message) => `${message.role === 'user' ? m.ask_copy_you() : m.ask_name()}: ${message.text}`)
+      .join('\n\n')
+    if (!text) return
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+    } catch {
+      setCopied(false)
+    }
+  }, [owner])
 
   return (
     <>
+      {open ? null : (
+        <button
+          ref={launcher}
+          type="button"
+          aria-label={m.ask_button_label()}
+          title={m.ask_button_label()}
+          data-testid="ask-launcher"
+          onClick={() => setOpen(true)}
+          {...stylex.props(styles.launcher)}
+        >
+          <MessageCircle aria-hidden="true" size={24} strokeWidth={2.2} />
+        </button>
+      )}
       {open ? (
-        <section role="dialog" aria-label={m.ask_title()} data-testid="ask-panel" {...stylex.props(styles.panel)}>
+        <section
+          ref={panel}
+          role="dialog"
+          aria-label={`${m.ask_name()} · ${title}`}
+          data-testid="ask-panel"
+          data-sheet={phone ? 'true' : 'false'}
+          {...stylex.props(styles.panel, phone && styles.sheet, phone && keyboardArea && dynamic.overKeyboard(keyboardArea.top, keyboardArea.height))}
+        >
           <header {...stylex.props(styles.head)}>
             <div {...stylex.props(styles.headText)}>
-              <span {...stylex.props(styles.title)}>💬 {m.ask_title()}</span>
-              <span {...stylex.props(styles.subtitle)}>{m.ask_subtitle()}</span>
+              <span {...stylex.props(styles.name)}>{m.ask_name()}</span>
+              <span title={title} data-testid="ask-title" {...stylex.props(styles.pageTitle)}>
+                {title}
+              </span>
             </div>
-            <button type="button" aria-label={m.ask_close()} data-testid="ask-close" onClick={() => setOpen(false)} {...stylex.props(styles.close)}>
-              ✕
+            <button
+              type="button"
+              aria-label={m.ask_new()}
+              title={m.ask_new()}
+              data-testid="ask-new"
+              disabled={messageCount === 0}
+              onClick={newConversation}
+              {...stylex.props(styles.icon, messageCount === 0 && styles.iconDisabled)}
+            >
+              <Plus aria-hidden="true" size={18} />
+            </button>
+            <button
+              type="button"
+              aria-label={copied ? m.ask_copied() : m.ask_copy()}
+              title={copied ? m.ask_copied() : m.ask_copy()}
+              data-testid="ask-copy"
+              data-copied={copied ? 'true' : 'false'}
+              disabled={messageCount === 0}
+              onClick={() => void copyConversation()}
+              {...stylex.props(styles.icon, messageCount === 0 && styles.iconDisabled)}
+            >
+              {copied ? <Check aria-hidden="true" size={18} /> : <Copy aria-hidden="true" size={18} />}
+            </button>
+            <button type="button" aria-label={m.ask_close()} title={m.ask_close()} data-testid="ask-close" onClick={() => setOpen(false)} {...stylex.props(styles.icon)}>
+              <X aria-hidden="true" size={18} />
             </button>
           </header>
           <div {...stylex.props(styles.body)}>
-            {/* Open to everyone, signed in or not (SKATGO-13): signing in gates nothing. */}
-            <Suspense fallback={<p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>}>
-              <Chat key={`${userId ?? ''} ${pathname}`} page={page} history={messages} onMessage={(msg) => messages.push(msg)} />
-            </Suspense>
+            {owner === null ? (
+              <p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>
+            ) : (
+              <Suspense fallback={<p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>}>
+                <AskThread key={threadKey} page={page} history={messages} onMessage={onMessage} signal={signal} />
+              </Suspense>
+            )}
           </div>
         </section>
       ) : null}
-      <button
-        type="button"
-        aria-label={m.ask_button_label()}
-        aria-expanded={open}
-        data-testid="ask-launcher"
-        onClick={() => setOpen((o) => !o)}
-        {...stylex.props(styles.launcher, open && styles.launcherOpen)}
-      >
-        <span aria-hidden="true" {...stylex.props(styles.launcherIcon)}>{open ? '✕' : '💬'}</span>
-        <span {...stylex.props(styles.launcherText)}>{open ? m.ask_close() : m.ask_button()}</span>
-      </button>
     </>
   )
 }
 
-// deep-chat's own look, from the course palette. Defined once: a new object on every render would
-// re-apply the styles to the web component each time.
-const chatStyle = { width: '100%', maxWidth: '100%', minWidth: '0', height: '100%', border: 'none', borderRadius: '0', backgroundColor: skat.paper, fontFamily: 'inherit', fontSize: '15px' }
-const messageStyles = {
-  default: {
-    shared: { bubble: { maxWidth: '85%', lineHeight: '1.5', padding: '10px 14px', borderRadius: '14px' } },
-    user: { bubble: { backgroundColor: skat.brassSoft, color: skat.ink } },
-    ai: { bubble: { backgroundColor: skat.paperDeep, color: skat.ink } },
-  },
-  intro: { bubble: { backgroundColor: skat.paperDeep, color: skat.inkSoft } },
-  error: { bubble: { backgroundColor: skat.badSoft, color: skat.bad } },
-  // The three dots that say the answer is on its way. They are one 0.45em element with a
-  // pseudo-element 0.7em either side of it, inside a 1em-wide box — so their visual middle sits
-  // 0.275em left of the box's middle, and equal padding would look lopsided. The left padding carries
-  // that 0.275em twice over; both gaps then read 0.93em.
-  loading: { message: { styles: { bubble: { backgroundColor: skat.paperDeep, color: skat.inkSoft, padding: '10px 1.08em 10px 1.63em' } } } },
-}
-const inputAreaStyle = { backgroundColor: skat.paper, borderTop: `1px solid ${skat.paperEdge}` }
-const textInput = {
-  styles: {
-    // deep-chat's input is 80% wide by default; in a 380px panel that leaves a 37px gutter each side.
-    container: { width: 'calc(100% - 32px)', backgroundColor: skat.white, border: `1px solid ${skat.paperEdge}`, borderRadius: '999px', boxShadow: 'none', color: skat.ink },
-    focus: { border: `1px solid ${skat.brass}`, boxShadow: `0 0 0 3px ${skat.brassSoft}` },
-    text: { padding: '10px 12px', color: skat.ink },
-  },
-  placeholder: { style: { color: skat.inkFaint } },
-}
-// The send button is round and the same size in every state, so nothing jumps as it changes.
-const sendButton = { borderRadius: '999px', width: '34px', height: '34px' }
-// deep-chat's own submit icon, repeated here because its loading state otherwise draws three dots in
-// the button (SKATGO-11): the dots belong in the chat, where they say the answer is coming; the
-// button just says it cannot be pressed. Copied markup — including its id, which is what deep-chat's
-// own stylesheet sizes the icon by; without it the plane fills the whole button.
-const SEND_ICON =
-  '<svg xmlns="http://www.w3.org/2000/svg" stroke="currentColor" fill="none" stroke-width="1" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" id="submit-icon"><line x1="22" y1="2" x2="11" y2="14"></line><polygon points="22 2 15 22 11 14 2 10 22 2"></polygon></svg>'
-// Nothing to send, and — while the answer is on its way — nothing that may be sent: deep-chat refuses
-// a second question until the reply lands, and the button says so rather than inviting the click.
-const sendInert = { ...sendButton, backgroundColor: skat.paperEdge, cursor: 'not-allowed' }
-// deep-chat applies each state's styles over the previous one and never resets what a state does not
-// name, so every state says both the colour and the cursor.
-const submitButtonStyles = {
-  submit: { container: { default: { ...sendButton, backgroundColor: skat.brass, cursor: 'pointer' } }, svg: { styles: { default: { filter: 'none', opacity: '1' } } } },
-  loading: { container: { default: sendInert }, svg: { content: SEND_ICON, styles: { default: { opacity: '0.45' } } } },
-  disabled: { container: { default: sendInert }, svg: { styles: { default: { opacity: '0.45' } } } },
-}
-
-type ChatProps = { page: Page; history: Message[]; onMessage: (msg: Message) => void }
-
-const samePage = (a: Page, b: Page) => a.page === b.page && (a.page !== 'lesson' || (b.page === 'lesson' && a.lessonId === b.lessonId))
-
-// Rendered again only when its page or its conversation changes. deep-chat drops the messages on
-// screen whenever it is rendered with its properties again, and the launcher around it renders again
-// for reasons of its own — Clerk finishing loading, or refreshing the session (SKATGO-13: with the
-// chat open before sign-in state is known, a question asked in that moment lost its answer).
-// `onMessage` is left out on purpose: it only appends to `history`, which is compared.
-const Chat = memo(ChatBody, (a, b) => a.history === b.history && samePage(a.page, b.page))
-
-function ChatBody({ page, history, onMessage }: ChatProps) {
-  const locale = getLocale()
-  const atTable = page.page === 'play'
-  // deep-chat re-renders itself — and drops its messages — whenever a property object changes
-  // identity, so every object it is given is built once per page and language, not per render.
-  const props = useMemo(
-    () => ({
-      connect: { url: '/api/ask', additionalBodyProps: { locale, ...page } },
-      // At the table, the learner's current view of it goes with every question — read at the moment
-      // of sending, because the game has moved on since the popup opened.
-      requestInterceptor: atTable
-        ? (details: { body: Record<string, unknown> }) => ({ ...details, body: { ...details.body, table: useTableSnapshot.getState().text ?? '' } })
-        : undefined,
-      requestBodyLimits: { maxMessages: 6 },
-      textInput: { ...textInput, characterLimit: 500, placeholder: { ...textInput.placeholder, text: atTable ? m.ask_placeholder_play() : m.ask_placeholder() } },
-      introMessage: { text: atTable ? m.ask_intro_play() : m.ask_intro() },
-      errorMessages: { displayServiceErrorMessages: true, overrides: { default: m.ask_error() } },
-      // The conversation as it was when the popup last closed, and how new turns are kept.
-      history: [...history],
-      onMessage: ({ message, isHistory }: { message: Message; isHistory: boolean }) => {
-        if (!isHistory && typeof message.text === 'string' && (message.role === 'user' || message.role === 'ai')) onMessage({ role: message.role, text: message.text })
-      },
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `page` is identified by its fields
-    [locale, atTable, page.page, page.page === 'lesson' ? page.lessonId : ''],
-  )
-  return (
-    <DeepChat
-      connect={props.connect}
-      requestInterceptor={props.requestInterceptor}
-      requestBodyLimits={props.requestBodyLimits}
-      textInput={props.textInput}
-      introMessage={props.introMessage}
-      errorMessages={props.errorMessages}
-      history={props.history}
-      onMessage={props.onMessage}
-      chatStyle={chatStyle}
-      messageStyles={messageStyles}
-      inputAreaStyle={inputAreaStyle}
-      submitButtonStyles={submitButtonStyles}
-      displayLoadingBubble
-    />
-  )
-}
+const dynamic = stylex.create({
+  overKeyboard: (top: number, height: number) => ({ top, height, paddingBottom: 0 }),
+})
 
 const styles = stylex.create({
   launcher: {
     position: 'fixed',
-    right: { default: 20, [PHONE]: 14 },
-    bottom: { default: 20, [PHONE]: 14 },
+    right: 24,
+    bottom: { default: 48, [PHONE]: 24 },
     zIndex: 40,
-    display: 'inline-flex',
+    display: 'flex',
     alignItems: 'center',
-    gap: 8,
-    paddingBlock: 10,
-    paddingInline: { default: 16, [PHONE]: 12 },
+    justifyContent: 'center',
+    width: 56,
+    height: 56,
+    padding: 0,
     borderWidth: 0,
     borderRadius: 999,
     backgroundColor: { default: skat.feltLight, ':hover': skat.felt },
     color: skat.white,
-    fontFamily: 'inherit',
-    fontSize: 15,
-    fontWeight: 700,
     cursor: 'pointer',
     boxShadow: `0 3px 0 ${skat.feltDeep}, 0 8px 20px ${skat.shadowSoft}`,
     transform: { default: 'translateY(0)', ':active': 'translateY(2px)' },
@@ -237,59 +404,71 @@ const styles = stylex.create({
     outlineColor: skat.brass,
     outlineOffset: 2,
   },
-  launcherOpen: { backgroundColor: { default: skat.feltDeep, ':hover': skat.feltDeep } },
-  launcherIcon: { fontSize: 18, lineHeight: 1 },
-  launcherText: { display: { default: 'inline', [PHONE]: 'none' } },
   panel: {
     position: 'fixed',
-    right: { default: 20, [PHONE]: 0 },
-    left: { default: 'auto', [PHONE]: 0 },
-    bottom: { default: 76, [PHONE]: 0 },
+    right: 24,
+    bottom: 48,
     zIndex: 41,
     display: 'flex',
     flexDirection: 'column',
-    width: { default: 380, [PHONE]: 'auto' },
-    maxWidth: { default: 'calc(100vw - 40px)', [PHONE]: 'none' },
-    height: { default: 'min(560px, calc(100vh - 100px))', [PHONE]: '78vh' },
+    width: 'min(480px, calc(100vw - 48px))',
+    height: 'min(576px, calc(100dvh - 96px))',
     boxSizing: 'border-box',
     overflow: 'hidden',
-    borderRadius: { default: 18, [PHONE]: '18px 18px 0 0' },
-    // A bottom sheet on a phone: no side borders, or the sheet is 2px wider than the screen.
-    borderWidth: { default: 1, [PHONE]: '1px 0 0 0' },
+    borderRadius: 16,
+    borderWidth: 1,
     borderStyle: 'solid',
     borderColor: skat.paperEdge,
     backgroundColor: skat.paper,
     color: skat.ink,
     boxShadow: `0 14px 40px ${skat.shadow}`,
   },
+  // A phone gets the whole screen: the visible area is too small to share, and nothing behind the
+  // window should be reachable while it is open.
+  sheet: {
+    top: 0,
+    right: 0,
+    bottom: 'auto',
+    left: 0,
+    width: '100%',
+    height: '100dvh',
+    paddingTop: 'env(safe-area-inset-top)',
+    paddingBottom: 'env(safe-area-inset-bottom)',
+    borderRadius: 0,
+    borderWidth: 0,
+    boxShadow: 'none',
+  },
   head: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
+    gap: 4,
     paddingBlock: 10,
     paddingInline: 14,
     backgroundColor: skat.feltDeep,
     color: skat.white,
-  },
-  headText: { display: 'flex', flexDirection: 'column', minWidth: 0 },
-  title: { fontSize: 15, fontWeight: 800, lineHeight: 1.3 },
-  subtitle: { fontSize: 12, opacity: 0.85, lineHeight: 1.3 },
-  close: {
     flexShrink: 0,
-    width: 32,
-    height: 32,
+  },
+  headText: { display: 'flex', flexDirection: 'column', minWidth: 0, flexGrow: 1, marginRight: 4 },
+  name: { fontSize: 15, fontWeight: 800, lineHeight: 1.3 },
+  pageTitle: { fontSize: 12, opacity: 0.85, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  icon: {
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 34,
+    height: 34,
+    padding: 0,
     borderWidth: 0,
     borderRadius: 999,
-    backgroundColor: { default: skat.felt, ':hover': skat.feltLight },
+    backgroundColor: { default: 'transparent', ':hover': skat.felt },
     color: skat.white,
-    fontSize: 15,
-    fontWeight: 700,
     cursor: 'pointer',
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: 2,
     outlineColor: skat.brass,
   },
+  iconDisabled: { opacity: 0.4, cursor: 'not-allowed', backgroundColor: { default: 'transparent', ':hover': 'transparent' } },
   // Clipped in both directions: deep-chat lays itself out before its styles land, and on a phone that
   // first, wider pass would stretch the layout viewport past the screen.
   body: { flexGrow: 1, minHeight: 0, minWidth: 0, display: 'flex', overflow: 'hidden' },

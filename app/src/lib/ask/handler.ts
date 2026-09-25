@@ -1,6 +1,6 @@
 import { clerkClient } from '@clerk/tanstack-react-start/server'
 
-import { askModel, type ChatMessage } from './azure'
+import { type ChatMessage, openModelStream } from './azure'
 import { type AskPage, TABLE_CHARS, buildSystemPrompt, isLocale } from './context'
 import { LIMITS, admit } from './limits'
 import { SITE_URL } from '~/lib/site'
@@ -20,7 +20,9 @@ import type { Locale } from '~/paraglide/runtime'
 //
 // Body, as deep-chat sends it plus `additionalBodyProps`:
 //   { messages: [{ role: 'user' | 'ai', text }], locale, page: 'home' | 'lesson' | 'play', lessonId?, table? }
-// Reply, as deep-chat reads it: { text } or { error }.
+// Reply (SKATGO-14, as Trovestep's assistant answers): a refusal before the model is asked is an
+// ordinary JSON `{ error }` with its status code; an answer is a `text/event-stream` of
+// `data: {"text": …}` events, each the whole answer so far, or one `data: {"error": …}` event.
 
 type Body = { messages?: unknown; locale?: unknown; page?: unknown; lessonId?: unknown; table?: unknown }
 
@@ -28,6 +30,8 @@ const json = (status: number, body: object) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
 
 const refuse = (status: number, locale: Locale, text: string) => json(status, { error: text })
+
+const sse = (event: { text: string } | { error: string }) => new TextEncoder().encode(`data: ${JSON.stringify(event)}\n\n`)
 
 /**
  * Which pages may present a session token here: the site itself — and, when this server is being
@@ -105,8 +109,51 @@ export async function handleAsk(request: Request): Promise<Response> {
   if (refusal === 'rate') return refuse(429, locale, m.ask_rate_limited({}, opts))
   if (refusal === 'daily') return refuse(429, locale, m.ask_daily_limited({}, opts))
 
-  const result = await askModel(system, messages)
-  if (result.ok) return json(200, { text: result.text })
-  if (result.status === 'unconfigured') return refuse(503, locale, m.ask_unavailable({}, opts))
-  return refuse(502, locale, m.ask_error({}, opts))
+  // The whole answer, stream included, has LIMITS.timeoutMs; a reader who leaves ends it too, so the
+  // model stops writing an answer nobody will read.
+  const abort = new AbortController()
+  const timer = setTimeout(() => abort.abort(new Error('answer-timeout')), LIMITS.timeoutMs)
+  request.signal?.addEventListener('abort', () => abort.abort(new Error('client-closed')), { once: true })
+  const opened = await openModelStream(system, messages, abort.signal)
+  if (!opened.ok) {
+    clearTimeout(timer)
+    if (opened.status === 'unconfigured') return refuse(503, locale, m.ask_unavailable({}, opts))
+    return refuse(502, locale, m.ask_error({}, opts))
+  }
+
+  const failed = m.ask_error({}, opts)
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      let answer = ''
+      try {
+        for await (const piece of opened.deltas) {
+          answer += piece
+          if (!abort.signal.aborted) controller.enqueue(sse({ text: answer }))
+        }
+        if (!answer.trim()) controller.enqueue(sse({ error: failed }))
+      } catch {
+        // A reader who left gets nothing more; a timeout or a broken upstream is reported once.
+        if ((abort.signal.reason as Error | undefined)?.message !== 'client-closed') {
+          try {
+            controller.enqueue(sse({ error: failed }))
+          } catch {
+            // Already closed.
+          }
+        }
+      } finally {
+        clearTimeout(timer)
+        try {
+          controller.close()
+        } catch {
+          // Already closed by a disconnected reader.
+        }
+      }
+    },
+    cancel() {
+      abort.abort(new Error('client-closed'))
+    },
+  })
+  return new Response(stream, {
+    headers: { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store', 'x-accel-buffering': 'no' },
+  })
 }

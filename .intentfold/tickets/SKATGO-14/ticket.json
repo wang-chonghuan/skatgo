@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-14",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-14",
+  "branch": "SKATGO-14-chat-popup",
+  "base": "007bcf50c2360d5b5cc10dc3f4dad2895fff3bc5",
+  "ports": { "web": 55014 }
+}

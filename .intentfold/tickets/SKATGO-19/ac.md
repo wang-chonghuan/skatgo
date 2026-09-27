@@ -11,8 +11,9 @@ States: course map (fresh and with 3 lessons done), a teach step, a choice step 
 step, a play step, the whole-game table at the learner's first turn, the settlement panel, the
 assistant window open. For each state × viewport, pixel-diff baseline vs candidate.
 Pass: zero differing pixels except on the elements grill Q1 names (line heights 1.25/1.3→1.2,
-1.5→1.6, 1.7→1.75; spacing 1→2, 3→4, 5→6; large-button padding 26→24). Q3 (declare 700) and Q5
-(theme-color) change no page pixels.
+1.5→1.6, 1.7→1.75; spacing 1→2, 3→4, 5→6; large-button padding 26→24). Q5 (theme-color) changes no page
+pixels. Grill Q8 (700 everywhere) adds one accepted difference: the Chinese glyphs of the display-serif
+titles (course-map hero, teaching-step titles) render lighter.
 
 ## AC2 — requested weights are loaded
 In each state above, collect every element's computed `font-family` + `font-weight`, and

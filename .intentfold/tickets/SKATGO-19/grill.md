@@ -165,4 +165,6 @@ pixel-identical to the baseline in all 18 states.
 **Recommended: C.** zh is the launch language and the hero title is the site's face. C's change in
 en/de is the smaller of the two visible changes, and 800 is what the display titles were designed at.
 
-**Decision:** pending
+**Decision:** A, as on the branch — human, 2026-09-27. Shown A and C, the human answered 「关闭工单吧」
+without choosing C, so the branch as verified (700 everywhere) lands. The lighter Chinese serif titles
+are accepted with it. C remains available as a follow-up.

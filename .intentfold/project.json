@@ -14,6 +14,14 @@
     "web": {
       "main": 3220,
       "ticket_prefix": 55
+    },
+    "multiplayer": {
+      "main": 3221,
+      "ticket_prefix": 56
+    },
+    "database": {
+      "main": 3222,
+      "ticket_prefix": 57
     }
   }
 }

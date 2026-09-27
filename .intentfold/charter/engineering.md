@@ -14,8 +14,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 **Stack**
 
 - **TanStack Start** (Vite, TypeScript, React 19): server-rendered shell, file-based routes. Every
-  piece of course state lives in the browser, and there is no database access. There is exactly one
-  server endpoint, `POST /api/ask` — the assistant (SKATGO-9) — answered in `app/src/server.ts` before
+  piece of course state lives in the browser, without database access from the course. The web app's
+  server endpoint, `POST /api/ask` — the assistant (SKATGO-9) — is answered in `app/src/server.ts` before
   the page router: it streams a contextual answer from Azure OpenAI to any visitor. A Clerk session,
   when present, identifies the learner for rate limiting but never gates the answer (SKATGO-13/14).
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
@@ -23,6 +23,10 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 - **StyleX, compiled through Astryx's build integration** (`astryxStylex()`), with Astryx's reset and
   theme CSS underneath. `ui.md` owns styling.
 - **Nitro** produces the deployable server (`app/.output/server/index.mjs`).
+- **Colyseus** owns the independent `multiplayer/` backend (SKATGO-20, human-approved
+  2026-09-27). It reuses the pure Skat engine; PostgreSQL stores private snapshots,
+  seat ownership and idempotent command receipts. Only public state and per-seat
+  StateViews cross the socket. The course frontend remains independent.
 - Course libraries: `motion` (animation), `@letele/playing-cards` (public-domain card faces),
   `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
   assistant's chat window).
@@ -31,6 +35,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 
 `app/` is a **standalone project** — its own `package.json`, lockfile and `node_modules`. The repo
 root has none; it holds the `Dockerfile`, whose build context is the repo root.
+`multiplayer/` is another standalone npm project with its own lockfile and Dockerfile,
+also built from the repository root. Neither project imports the other's runtime.
 
 | Path | Owns |
 |---|---|
@@ -43,6 +49,7 @@ root has none; it holds the `Dockerfile`, whose build context is the repo root.
 | `app/src/skat-layout.tsx` | the frame around every page, including the sign-in button and the floating assistant |
 | `app/src/routes/` | thin route files: `/`, `/lesson/$id`, `/play` |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
+| `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment |
 
 **Key decisions**
 
@@ -92,6 +99,12 @@ npm --prefix app run typecheck && npm --prefix app run build && npm --prefix app
   it was written here.
 
 **Architecture and generation**
+
+Multiplayer defence (requires an isolated local PostgreSQL; see Operations Tools):
+
+```bash
+npm --prefix multiplayer run check
+```
 
 - **Generated, never hand-edited**: `app/src/routeTree.gen.ts` (TanStack Start writes it from
   `app/src/routes/`), and `app/src/theme/parrottoon.{css,js,d.ts}` (rebuilt from
@@ -144,8 +157,9 @@ cross-module contract.
   adjust an exercise to agree with a rule that is wrong.
 - **`app/src/lib/skat/ai.ts` is both the opponents and the hint.** Making a computer player stronger
   also changes what the learner is told to do and why; the reason strings are part of the teaching.
-- **Anything random runs in the browser only.** Drills and the deal use `Math.random`; rendering one on
-  the server would hand the browser a different question from the one it then hydrates.
+- **Course randomness runs in the browser only.** Drills and the solo deal use `Math.random`;
+  rendering one on the server would hand the browser a different question from the one it hydrates.
+  Multiplayer deals are server-owned and cryptographically shuffled, never SSR content.
 - **Progress lives in `localStorage` under one versioned key** (`progress.ts`). Changing its shape
   without a new key or a migration silently loses every learner's progress.
 

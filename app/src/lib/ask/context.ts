@@ -5,9 +5,10 @@
 
 import { COURSES } from '~/lib/skat/lessons/content'
 import type { Lesson, Step } from '~/lib/skat/lessons/types'
+import { m } from '~/paraglide/messages'
 import { type Locale, locales } from '~/paraglide/runtime'
 
-export type AskPage = { kind: 'home' } | { kind: 'lesson'; lessonId: string } | { kind: 'play'; table: string }
+export type AskPage = { kind: 'entry' } | { kind: 'home' } | { kind: 'lesson'; lessonId: string } | { kind: 'play'; table: string }
 
 /** The most a browser may say about its table; the text is the learner's view (table-view.ts), never more. */
 export const TABLE_CHARS = 4000
@@ -77,6 +78,24 @@ function describePlay(table: string): string {
   ].join('\n')
 }
 
+// The front page (SKATGO-23). Duplicate and Puzzles are announced there and nothing more is decided
+// about them, so the assistant is told exactly that and forbidden to fill the gap.
+// Each section is named as the page names it, so the answer uses the learner's own words for it.
+function describeEntry(course: Lesson[], locale: Locale): string {
+  const name = (message: (inputs: object, options: { locale: Locale }) => string) => `"${message({}, { locale })}"`
+  return [
+    'CURRENT PAGE: the front page of skatgo.com, offering four sections (quoted as the page names them):',
+    `- ${name(m.entry_course_title)}, the course (open): ${course.length} short interactive lessons, from the 32 cards to a whole game.`,
+    `- ${name(m.entry_play_title)}, free play (open): a free game against two computer players, Lina and Max.`,
+    `- ${name(m.entry_duplicate_title)}, duplicate (coming soon, not open yet): every day the same few deals for everyone, each learner playing them against the computer, compared by score.`,
+    `- ${name(m.entry_puzzles_title)}, puzzles (coming soon, not open yet): a bank of Skat problems, such as how high to bid or which card to play.`,
+    'Nothing more about Duplicate or Puzzles is decided: never invent their rules, scoring, dates or details. If asked, say they are coming and suggest the Course or Play meanwhile.',
+    '',
+    'The course\'s lessons:',
+    ...course.map((l) => `Lesson ${l.id} — ${l.title}: ${l.promise}`),
+  ].join('\n')
+}
+
 function describeHome(course: Lesson[]): string {
   return ['CURRENT PAGE: the course map, listing all lessons', '', ...course.map((l) => `Lesson ${l.id} — ${l.title}: ${l.promise}`)].join('\n')
 }
@@ -87,7 +106,8 @@ export const isLocale = (x: unknown): x is Locale => typeof x === 'string' && (l
 export function buildSystemPrompt(locale: Locale, page: AskPage): string | null {
   const course = COURSES[locale]
   let pageText: string
-  if (page.kind === 'home') pageText = describeHome(course)
+  if (page.kind === 'entry') pageText = describeEntry(course, locale)
+  else if (page.kind === 'home') pageText = describeHome(course)
   else if (page.kind === 'play') pageText = describePlay(page.table)
   else {
     const lesson = course.find((l) => l.id === page.lessonId)

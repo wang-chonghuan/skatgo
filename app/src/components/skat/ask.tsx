@@ -31,7 +31,8 @@ const AskThread = lazy<ComponentType<AskThreadProps>>(() => (import.meta.env.SSR
 
 /** Which page the assistant is on, from the router's (language-free) path; null where it does not appear. */
 function pageOf(pathname: string): AskPage | null {
-  if (pathname === '/') return { page: 'home' }
+  if (pathname === '/') return { page: 'entry' }
+  if (pathname === '/course' || pathname === '/course/') return { page: 'home' }
   if (pathname === '/play' || pathname === '/play/') return { page: 'play' }
   const lesson = /^\/lesson\/([^/]+)\/?$/.exec(pathname)
   if (lesson) return { page: 'lesson', lessonId: decodeURIComponent(lesson[1]) }
@@ -40,6 +41,7 @@ function pageOf(pathname: string): AskPage | null {
 
 /** The page's own title, as the window's subtitle. */
 function titleOf(page: AskPage): string {
+  if (page.page === 'entry') return m.ask_page_entry()
   if (page.page === 'home') return m.ask_page_home()
   if (page.page === 'play') return m.free_title()
   const lesson = lessonById(page.lessonId)

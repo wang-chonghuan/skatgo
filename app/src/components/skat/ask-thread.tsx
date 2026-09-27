@@ -19,7 +19,7 @@ import { fontSize, leading } from '../../theme/type.stylex'
 // window first opens. Answers stream in as the model writes them; while they do, the send button is
 // Stop. Every colour is a course token.
 
-export type AskPage = { page: 'home' } | { page: 'lesson'; lessonId: string } | { page: 'play' }
+export type AskPage = { page: 'entry' } | { page: 'home' } | { page: 'lesson'; lessonId: string } | { page: 'play' }
 
 type Signals = {
   onResponse: (response: { text?: string; error?: string; overwrite?: boolean }) => Promise<void>

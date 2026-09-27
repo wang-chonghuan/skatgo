@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-23",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-23",
+  "branch": "SKATGO-23-entry-cards",
+  "base": "5e6b2dc40bc6c5431462a0d2f2c1bcd77960cd14",
+  "ports": { "web": 55023 }
+}

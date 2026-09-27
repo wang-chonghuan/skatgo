@@ -19,7 +19,7 @@ import type { Locale } from '~/paraglide/runtime'
 // pages (the sitemap, the post-deploy check) must not meet it.
 //
 // Body, as deep-chat sends it plus `additionalBodyProps`:
-//   { messages: [{ role: 'user' | 'ai', text }], locale, page: 'home' | 'lesson' | 'play', lessonId?, table? }
+//   { messages: [{ role: 'user' | 'ai', text }], locale, page: 'entry' | 'home' | 'lesson' | 'play', lessonId?, table? }
 // Reply (SKATGO-14, as Trovestep's assistant answers): a refusal before the model is asked is an
 // ordinary JSON `{ error }` with its status code; an answer is a `text/event-stream` of
 // `data: {"text": …}` events, each the whole answer so far, or one `data: {"error": …}` event.
@@ -82,7 +82,8 @@ export async function handleAsk(request: Request): Promise<Response> {
 
 
   let page: AskPage | null = null
-  if (body.page === 'home') page = { kind: 'home' }
+  if (body.page === 'entry') page = { kind: 'entry' }
+  else if (body.page === 'home') page = { kind: 'home' }
   else if (body.page === 'lesson' && typeof body.lessonId === 'string') page = { kind: 'lesson', lessonId: body.lessonId }
   else if (body.page === 'play' && typeof body.table === 'string') {
     if (body.table.length > TABLE_CHARS) return refuse(413, locale, m.ask_error({}, opts))

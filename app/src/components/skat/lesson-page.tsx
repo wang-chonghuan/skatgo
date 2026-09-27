@@ -14,7 +14,7 @@ export function LessonPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!lesson) void navigate({ to: '/', replace: true })
+    if (!lesson) void navigate({ to: '/course', replace: true })
   }, [lesson, navigate])
 
   if (!lesson) return null

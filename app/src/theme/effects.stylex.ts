@@ -48,6 +48,9 @@ export const move = stylex.defineVars({
   lift: 'translateY(-2px)',
   cardHover: 'translateY(-6px)',
   cardRaised: 'translateY(-16px)',
+  /** The outer cards of a small fan in the entry-page art. */
+  tiltLeft: 'rotate(-8deg)',
+  tiltRight: 'rotate(8deg)',
   /** The stars on the finish screen. */
   starsBig: 'scale(2)',
 })

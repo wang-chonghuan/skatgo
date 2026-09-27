@@ -108,6 +108,11 @@ export const size = stylex.defineVars({
   backsTail: '22px',
   backsRow: '48px',
 
+  /** The felt art band at the top of an entry-page card. */
+  entryArt: '120px',
+  /** How far the cards of an entry-page fan overlap. */
+  entryFanOverlap: '-12px',
+
   tableCentre: '230px',
   tableCentrePhone: '190px',
   trickRow: '110px',

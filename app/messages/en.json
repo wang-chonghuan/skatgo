@@ -127,7 +127,6 @@
   "lesson_heading": "Lesson {id} · {title}",
   "lesson_minutes": "{n} min",
   "free_title": "Free play",
-  "back_to_map": "← Course map",
   "stars": "{n} of 3 stars",
 
   "lesson_close": "Back to the course map",
@@ -260,5 +259,22 @@
   "ask_unavailable": "The helper is not available right now.",
   "ask_intro_play": "Not sure at the table? Just ask. I only see what you see: your cards and the cards already played — not your opponents' hands. The conversation stays until you start a new one.",
   "ask_placeholder_play": "e.g. Which card should I play now?",
-  "auth_sign_in": "Sign in"
+  "auth_sign_in": "Sign in",
+
+  "entry_title": "Skat starts here",
+  "entry_lead": "Learn the rules, take a seat at the table — and soon, play the same deals as everyone else.",
+  "entry_course_title": "Course",
+  "entry_course_desc": "{count} short lessons, from the 32 cards to a whole game.",
+  "entry_course_start": "Start learning",
+  "entry_course_continue": "Keep learning",
+  "entry_play_title": "Play",
+  "entry_play_desc": "Take a seat against two computer players, any time.",
+  "entry_play_cta": "Deal me in",
+  "entry_duplicate_title": "Duplicate",
+  "entry_duplicate_desc": "The same few deals for everyone, every day — play them against the AI and see who scores highest.",
+  "entry_puzzles_title": "Puzzles",
+  "entry_puzzles_desc": "Bite-sized Skat problems: how high to bid, which card to play.",
+  "entry_soon": "Coming soon",
+  "back_to_start": "← Home",
+  "ask_page_entry": "Home"
 }

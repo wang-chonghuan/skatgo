@@ -21,27 +21,26 @@ endpoint, `POST /api/ask` (the assistant), is part of `web`.
 
 **Environments**
 
-Production only, at **https://skatgo.com**. The Azure default hostname
-`https://ca-skatgo.kindsmoke-4d84c417.northeurope.azurecontainerapps.io` reaches the same revision
-without the custom domain — useful when diagnosing DNS or TLS. No staging.
+Production only, at **https://skatgo.com**. The Render service hostname
+`https://skatgo.onrender.com` reaches the same deployment without the custom domain and is the
+diagnostic origin for DNS and TLS checks. No staging.
 
-- **Where it runs**: Azure Container App `ca-skatgo` in the shared n-easyapp substrate (resource group
-  `rg-easyapp-shared`, environment `cae-easyapp-shared`), image `acreasyapp.azurecr.io/skatgo:latest`,
-  built from the repo-root `Dockerfile`, serving on port 3000 with `node .output/server/index.mjs`.
-  One replica pinned (`min = max = 1`): never scale to zero, or the first request after a pause fails.
-- **DNS and TLS**, Cloudflare zone `skatgo.com`: apex `A` → the environment's static IP, **DNS-only
-  (grey)**, because the Azure managed certificate is issued and renewed by HTTP validation against the
-  origin; `TXT asuid` → the Container App's domain-verification id; `www` `CNAME` → apex, **proxied
-  (orange)**, with a Redirect Rule sending `www` to the apex, path and query kept; and the Clerk
-  production instance's five `CNAME`s — `clerk`, `accounts`, `clkmail`, `clk._domainkey`,
-  `clk2._domainkey` → `*.clerk.services` — all **DNS-only (grey)**, as Clerk requires (SKATGO-12).
+- **Where it runs**: Render Docker Web Service `skatgo`, in the Render project `skatgo` and its
+  `production` environment, Frankfurt region, Starter plan, one always-on instance. Render builds
+  the repo-root `Dockerfile`; Nitro binds `0.0.0.0:$PORT` and starts with
+  `node .output/server/index.mjs`. Automatic deploys are off: production releases pin an exact
+  merged `main` commit.
+- **DNS and TLS**, Cloudflare zone `skatgo.com`: apex uses a flattened `CNAME` to
+  `skatgo.onrender.com` and stays **DNS-only (grey)**; `www` redirects to the apex with path and
+  query preserved. Render owns the custom-domain certificate. The Clerk production instance's five
+  `CNAME`s — `clerk`, `accounts`, `clkmail`, `clk._domainkey`, `clk2._domainkey` →
+  `*.clerk.services` — stay **DNS-only (grey)**, as Clerk requires (SKATGO-12).
 - **Accounts**: Clerk application `app_3JhPKJFpPIJR7rHWf9A8neRvdFU`. Production instance
   `ins_3JhhbSlXDnOOpj1GJJg4eh6972K` on skatgo.com — email and password; Google is switched off until it
   has its own OAuth credentials. A development instance serves local work.
 - **The assistant's model**: Azure OpenAI deployment `gpt-5.6-luna`, reasoning effort medium, on the
   same Azure OpenAI resource as Trovestep.
-- n-easyapp also created a Postgres schema and role (`skatgo-schema` / `skatgo-user`) and injects
-  `DATABASE_URL`; the app does not use either.
+- **Data**: there is no Render database, Key Value instance, worker or cron job for this project.
 
 **Evidence**
 
@@ -119,25 +118,32 @@ development instance; `clerk env pull --app app_3JhPKJFpPIJR7rHWf9A8neRvdFU --in
 writes them). The built server reads them from its environment, so load the file when starting it:
 `(cd app && set -a && . ./.env && set +a && PORT=<port> node .output/server/index.mjs)`.
 
-In production the Container App carries the secrets `database-url`, `llm-api-key` and
-`clerk-secret-key`, and the env vars `DATABASE_URL`, `DATABASE_SCHEMA`, `PORT`, `EASYAPP_DEPLOY_COMMIT`,
-`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `CLERK_SECRET_KEY` and `CLERK_PUBLISHABLE_KEY`
-— names only:
+In production the Render Web Service carries exactly the application configuration
+`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `CLERK_SECRET_KEY` and
+`CLERK_PUBLISHABLE_KEY`; Render supplies `PORT` and its own `RENDER_*` runtime variables. List
+application keys without printing values:
 
 ```bash
-az containerapp show -g rg-easyapp-shared -n ca-skatgo \
-  --query 'properties.template.containers[0].env[].{name:name, secretRef:secretRef}' -o table
+eval "$(grep '^export RENDER_API_KEY' ~/.zshrc)"
+SERVICE_ID=$(render services --output json --confirm | python3 -c \
+  "import json,sys; print(next(x['service']['id'] for x in json.load(sys.stdin) if x.get('service',{}).get('name') == 'skatgo'))")
+curl -s "https://api.render.com/v1/services/$SERVICE_ID/env-vars" \
+  -H "Authorization: Bearer $RENDER_API_KEY" \
+  | python3 -c "import json,sys; print('\\n'.join(sorted(x['envVar']['key'] for x in json.load(sys.stdin))))"
 ```
 
 **Deploy**
 
-First-time creation was n-easyapp cap1 on 2026-09-21 and is done; it is not a routine command. The
-routine redeploy commits and pushes pending work first (`az acr build` uploads the working tree), builds
-the image in ACR, updates the Container App and tags it with the shipped commit. Its output includes
-database passwords, so send it to a file rather than the terminal:
+The Render Web Service has automatic deploys disabled. Deploy only a pushed commit that is the head
+of `main`; the release helper asks Render what exists, deploys the matching service, and fails unless
+the requested commit becomes live:
 
 ```bash
-python3 ~/.claude/skills/n-easyapp/scripts/redeploy_current_repo.py --project skatgo > .intentfold/tmp/redeploy.log 2>&1; echo "exit $?"
+git fetch origin main
+test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+eval "$(grep '^export RENDER_API_KEY' ~/.zshrc)"
+python3 ~/.agents/skills/ips-render-ops/scripts/release.py --dry-run --only skatgo
+python3 ~/.agents/skills/ips-render-ops/scripts/release.py --only skatgo --commit "$(git rev-parse HEAD)"
 ```
 
 **Post-deploy check**
@@ -150,13 +156,16 @@ project, so a new route or a new language needs no edit here. Every page lives u
 ```bash
 URL=https://skatgo.com
 
-# FIRST: is the revision that is serving the one just built? Everything below would happily validate
-# the old one.
+# FIRST: is the live Render deploy the commit just released? Everything below would happily validate
+# an older deploy.
 want=$(git rev-parse HEAD)
-got=$(az containerapp show -g rg-easyapp-shared -n ca-skatgo \
-  --query 'tags."easyapp.commit"' -o tsv 2>/dev/null)
+eval "$(grep '^export RENDER_API_KEY' ~/.zshrc)"
+SERVICE_ID=$(render services --output json --confirm | python3 -c \
+  "import json,sys; print(next(x['service']['id'] for x in json.load(sys.stdin) if x.get('service',{}).get('name') == 'skatgo'))")
+got=$(render deploys list "$SERVICE_ID" --output json --confirm | python3 -c \
+  "import json,sys; d=json.load(sys.stdin)[0]['deploy']; print((d.get('commit') or {}).get('id',''))")
 if [ "$got" != "$want" ]; then
-  echo "FAIL: serving $got, expected $want — the revision has not swapped yet, or the deploy shipped something else"
+  echo "FAIL: Render reports $got live/newest, expected $want"
   exit 1
 fi
 
@@ -215,16 +224,16 @@ replaced it, SKATGO-1).
 **Operations**
 
 ```bash
-# logs (last 100 lines of the running revision)
-az containerapp logs show -g rg-easyapp-shared -n ca-skatgo --tail 100
+# status, logs, deploy and rollback
+# ips-render-ops cap1, cap2, cap3 and cap7 respectively
+eval "$(grep '^export RENDER_API_KEY' ~/.zshrc)"
+render services --output json --confirm
+render logs --resources "$SERVICE_ID" --limit 100 --output text --confirm
+render deploys list "$SERVICE_ID" --output json --confirm
 
-# revisions, newest first — rollback is reactivating a previous one
-az containerapp revision list -g rg-easyapp-shared -n ca-skatgo \
-  --query '[].{name:name, active:properties.active, created:properties.createdTime}' -o table
-az containerapp revision activate -g rg-easyapp-shared -n ca-skatgo --revision <name>
-
-# custom domain + certificate binding
-az containerapp hostname list -g rg-easyapp-shared -n ca-skatgo -o json
+# custom domains and TLS: ips-render-ops cap9
+curl -s "https://api.render.com/v1/services/$SERVICE_ID/custom-domains" \
+  -H "Authorization: Bearer $RENDER_API_KEY"
 
 # readiness of the public site (ips-golive cap1, read-only)
 python3 ~/.claude/skills/ips-golive/scripts/readiness_audit.py https://skatgo.com
@@ -278,15 +287,15 @@ reactivating an older revision is the correct first move when a deploy broke the
 1. **Recording a criterion as passed when its check did not run** — forbidden outright.
 2. **Mutating external or production data from an acceptance check** — forbidden outright.
 3. **Creating or deleting cloud resources** — not without the human's explicit approval.
-4. **Deploying this project for the first time** — not without the human's explicit approval.
-   Lookupable: `az containerapp revision list -g rg-easyapp-shared -n ca-skatgo` returns no revision.
+4. **Creating or first-deploying a production Render service for this project** — not without the
+   human's explicit approval.
 5. **Changing production schema, infrastructure, ingress, scaling, or required environment keys** —
-   not without the human's explicit approval. Includes: the Container App needing an env key or
-   secret it does not already have; ingress, scale, target port, resource group or environment
-   changing; the `Dockerfile`'s base image, exposed port or start command changing.
+   not without the human's explicit approval. Includes: the Render service needing an env key or
+   secret it does not already have; region, plan, instance count, ingress or health check changing;
+   the `Dockerfile`'s base image, exposed port or start command changing.
 6. **Pointing a production domain at a new target** — not without the human's explicit approval.
-   Includes any DNS or Redirect Rule change in the `skatgo.com` Cloudflare zone, and
-   `az containerapp hostname add/bind`.
+   Includes any DNS or Redirect Rule change in the `skatgo.com` Cloudflare zone and any Render
+   custom-domain change.
 7. **Reporting a deploy as complete without running the post-deploy check** — forbidden outright.
-8. **Flipping the `skatgo.com` apex between DNS-only and proxied** — forbidden outright. It breaks
-   issuance and renewal of the Azure managed certificate.
+8. **Proxying the `skatgo.com` apex through Cloudflare** — forbidden outright. It must stay
+   DNS-only so Render owns the production certificate and origin remains directly observable.

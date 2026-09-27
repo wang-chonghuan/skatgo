@@ -15,7 +15,7 @@
 | `app/src/theme/` | 主题（Astryx，StyleX 编译）与课程调色板 `skat.stylex.ts` |
 | `app/src/routes/` | `/` 课程目录、`/lesson/$id`、`/play` |
 
-进度只存在浏览器 localStorage 里，没有账号，没有数据库。
+进度只存在浏览器 localStorage 里；账号由 Clerk 托管，只用于问答助手。应用没有数据库。
 
 ## 本地
 
@@ -33,10 +33,15 @@ npm --prefix app run typecheck && npm --prefix app run build && npm --prefix app
 
 ## 部署
 
-Azure Container App `ca-skatgo`（n-easyapp 共享底座 `rg-easyapp-shared` / `cae-easyapp-shared`），与 Parrottoon 同一套方式。例行重新部署：
+生产运行在 Render 的 `skatgo` Project / `production` Environment 中，服务是 Frankfurt 区域的
+Docker Web Service `skatgo`。服务关闭自动部署，发布时显式指定已合入 `main` 的提交：
 
 ```bash
-python3 ~/.claude/skills/n-easyapp/scripts/redeploy_current_repo.py --project skatgo
+eval "$(grep '^export RENDER_API_KEY' ~/.zshrc)"
+python3 ~/.agents/skills/ips-render-ops/scripts/release.py --only skatgo --commit "$(git rev-parse HEAD)"
 ```
 
-域名 `skatgo.com` 在 Cloudflare，apex 必须保持 **DNS-only（灰云）**：Azure 托管证书靠对源站的 HTTP 校验签发和续期，开橙云会让续期失败。
+域名 `skatgo.com` 在 Cloudflare，apex 使用扁平化 CNAME 指向 `skatgo.onrender.com` 并保持
+**DNS-only（灰云）**；`www` 重定向到 apex。生产环境只配置 Clerk 与问答助手需要的变量，
+不配置数据库。问答助手仍使用与 Trovestep 相同的 Azure OpenAI-compatible
+`LLM_BASE_URL` / `LLM_API_KEY` 合同。

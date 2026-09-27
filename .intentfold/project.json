@@ -2,8 +2,8 @@
   "project": "skatgo",
   "main_branch": "main",
   "deploy": {
-    "where": "Azure Container App ca-skatgo (n-easyapp shared substrate rg-easyapp-shared / cae-easyapp-shared); live at https://skatgo.com",
-    "how": "See .intentfold/charter/operations.md § Deploy; routine redeploy is n-easyapp cap2 for project skatgo"
+    "where": "Render project skatgo / production environment / Docker Web Service skatgo in Frankfurt; live at https://skatgo.com",
+    "how": "See .intentfold/charter/operations.md § Deploy; releases are explicit Render deploys pinned to the merged main commit"
   },
   "tickets": {
     "system": "plane",

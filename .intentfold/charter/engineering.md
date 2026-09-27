@@ -72,7 +72,7 @@ Run once before the handoff. Each part catches a different class of defect:
 ```bash
 npm --prefix app run typecheck && npm --prefix app run build && npm --prefix app run test && \
   node app/scripts/check-client-bundle.mjs && \
-  test "$(grep -rnE 'className=|style=\{\{|#[0-9a-fA-F]{6}' app/src --exclude-dir=theme | wc -l | tr -d ' ')" = 1 && \
+  test "$(git grep -nE 'className=|style=\{\{|#[0-9a-fA-F]{6}' -- app/src ':(exclude)app/src/theme/**' | wc -l | tr -d ' ')" = 1 && \
   node -e "import('$PWD/app/.output/server/_ssr/ssr.mjs').catch((e) => { console.error('server bundle does not link:', e.message); process.exit(1) })"
 ```
 
@@ -83,8 +83,10 @@ npm --prefix app run typecheck && npm --prefix app run build && npm --prefix app
   lesson's exercises against the engine.
 - **`check-client-bundle.mjs`** — a server-only reference (`Buffer.from`, `process.env`) that reached a
   browser chunk and would kill hydration.
-- **the grep** — `ui.md`'s literal check. Exactly one hit is correct: the `theme-color` meta in
-  `app/src/routes/__root.tsx`, which cannot read a CSS variable.
+- **the git grep** — `ui.md`'s literal check over tracked product source, excluding only the theme
+  registry. Exactly one hit is correct: the `theme-color` meta in `app/src/routes/__root.tsx`, which
+  cannot read a CSS variable. Using `git grep` keeps ignored Paraglide-generated documentation out
+  of the result.
 - **the import** — links the built server's SSR chunk. It is what catches the 500-everywhere build
   described under Key decisions; it was made to go red against the defective PARROT-42 build before
   it was written here.

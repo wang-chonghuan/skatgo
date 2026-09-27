@@ -3,6 +3,21 @@
 2026-09-27. Autonomous development; effective finish is `auto-deploy` for this
 ticket only, authorized in the live ticket and `grill.md`.
 
+## Primary Deliverable: Multiplayer Backend Guide
+
+Documentation addendum, 2026-09-27, explicitly requested by the human after first
+delivery. The original implementation and acceptance record below is unchanged.
+
+The [multiplayer backend guide](../../../multiplayer/README.md) is a primary output
+of this enabler and the starting point for subsequent client/frontend integration.
+It documents local startup and environment variables, SDK room creation/joining/
+recovery, public and per-seat private state, commands and receipts, disconnect/AI
+takeover, persistence, verification, and Render deployment/rollback.
+
+Engineering Charter's [Tools section](../../charter/engineering.md#tools) links
+to this guide as the project's multiplayer development entry. Maintain current
+usage there; this handoff records what was delivered.
+
 ## What Changed
 
 - Added the standalone TypeScript `multiplayer/` Colyseus service, importing the

@@ -1,0 +1,12 @@
+{
+  "ticket": "SKATGO-15",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-15",
+  "branch": "SKATGO-15-search-console",
+  "base": "516056bb58ed8edb4284120d5a5b6e61692bf481",
+  "ports": {
+    "web": 55015
+  }
+}

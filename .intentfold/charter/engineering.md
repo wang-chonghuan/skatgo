@@ -16,10 +16,10 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 - **TanStack Start** (Vite, TypeScript, React 19): server-rendered shell, file-based routes. Every
   piece of course state lives in the browser, and there is no database access. There is exactly one
   server endpoint, `POST /api/ask` — the assistant (SKATGO-9) — answered in `app/src/server.ts` before
-  the page router: it forwards a question to Azure OpenAI, and only for a signed-in account
-  (SKATGO-12).
+  the page router: it streams a contextual answer from Azure OpenAI to any visitor. A Clerk session,
+  when present, identifies the learner for rate limiting but never gates the answer (SKATGO-13/14).
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
-  here. The only thing behind a login is the assistant; the course needs no account.
+  here. Accounts are optional: neither the course nor the assistant requires one.
 - **StyleX, compiled through Astryx's build integration** (`astryxStylex()`), with Astryx's reset and
   theme CSS underneath. `ui.md` owns styling.
 - **Nitro** produces the deployable server (`app/.output/server/index.mjs`).
@@ -38,7 +38,7 @@ root has none; it holds the `Dockerfile`, whose build context is the repo root.
 | `app/src/lib/skat/lessons/` | the course: `content.ts` (lessons), `drills.ts` (randomised exercises whose answers the engine computes), `types.ts` |
 | `app/src/lib/skat/progress.ts` | learner progress in `localStorage` |
 | `app/src/components/skat/` | every page and widget of the course, and its own small UI kit (`ui.tsx`) |
-| `app/src/lib/ask/` | the assistant's server side: the page context it is given, the limits, the model call, and the `/api/ask` handler (with its session check) |
+| `app/src/lib/ask/` | the assistant's server side: the page context it is given, the limits, the model call, and the `/api/ask` handler (with an optional session lookup for rate-limit identity) |
 | `app/src/start.ts` | Clerk's request middleware, which hands each page its session state |
 | `app/src/skat-layout.tsx` | the frame around every page, including the sign-in button and the floating assistant |
 | `app/src/routes/` | thin route files: `/`, `/lesson/$id`, `/play` |

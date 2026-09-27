@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-16",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "auto-deploy",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-16",
   "branch": "SKATGO-16-render-migration",

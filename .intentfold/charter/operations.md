@@ -15,7 +15,7 @@ merge. Acceptance verification also uses this file, so stale commands block deli
 **Runtime**
 
 The **`web`** service is the TanStack Start server in `app/`, which renders the page
-shell for `/`, `/lesson/$id` and `/play` and serves the built assets. The course itself runs in the
+shell for `/` (the front page), `/course`, `/lesson/$id` and `/play` and serves the built assets. The course itself runs in the
 browser. `POST /api/ask` (the assistant) is part of `web`.
 
 The independent **`multiplayer`** Colyseus service uses PostgreSQL for durable rooms

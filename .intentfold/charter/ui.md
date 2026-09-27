@@ -61,7 +61,7 @@ its text colour:
 | Surface | What it is | Built from | Text on it |
 |---|---|---|---|
 | **Page** | the reading column | `skat.paper` | `skat.ink` |
-| **Felt** | where cards lie — the whole-game table, a drill's hand, the course map's hero | `skat.felt` under `texture.feltTable` / `feltDrill` / `feltHero`; the table and drills add `shadow.table` / `shadow.feltInset` | `skat.white` |
+| **Felt** | where cards lie — the whole-game table, a drill's hand, the course map's hero, the front page's section cards | `skat.felt` under `texture.feltTable` / `feltDrill` / `feltHero`; the table and drills add `shadow.table` / `shadow.feltInset` | `skat.white` |
 | **Deep felt** | the header bar, the assistant window's header, a seat at the table | `skat.feltDeep` | `skat.white` |
 | **Paper on felt** | a light box set on felt — the table's action area, the map's progress box, a bid bubble | `skat.paper` | `skat.ink` |
 
@@ -76,7 +76,7 @@ at any hour and the cards must stay paper-white)
 | `felt` | the table surface; hover of a felt control |
 | `feltDeep` | header bars, seats, the table's inset ring, the ledge under a felt button |
 | `feltLight` | the lit centre of a felt gradient; a felt button's face |
-| `feltLine` | reserved for rules drawn on felt (defined, not yet used) |
+| `feltLine` | the lit edge of a shape pressed into felt (`shadow.emboss`) |
 | `paper` | the page and every paper box |
 | `paperDeep` | quiet surfaces on paper: a quiet button, an ink pill, the assistant's answer bubble, hover behind a round icon |
 | `paperEdge` | borders and rules on paper; a progress track; the ledge under quiet buttons and options; an unearned star |
@@ -115,7 +115,7 @@ a role — the surface decides it.
 | `link`, `small`, `meta`, `smallBold`, `switch`, `label`, `pill`, `micro`, `windowSub`, `verdictMark` | small text: links, counts, captions, labels under cards, pills, seat meta |
 | `control`, `controlSm`, `controlMd`, `controlLg`, `option`, `toggle` | native controls (they restate the family, which controls do not inherit) |
 | `emphasis` | `**bold**` inside course text |
-| `stars`, `closeGlyph`, `markGlyph`, `seatFace`, `emojiTile`, `celebrate` | emoji and glyphs sized as pictures |
+| `stars`, `closeGlyph`, `markGlyph`, `seatFace`, `emojiTile`, `celebrate`, `watermark` | emoji and glyphs sized as pictures; `watermark` is the suit pressed into a front-page card |
 | `frame` | the frame's family, which everything inside inherits |
 
 The primitives behind the roles (`type.stylex.ts`): families `body` (DM Sans with CJK fallbacks),
@@ -167,6 +167,8 @@ window, the table centre, trick positions, overlaps, grid templates — are name
   `move.cardHover`, a selected one sits at `move.cardRaised` with `shadow.cardRaised`.
 - **Card** — every playing card carries `shadow.card`; a hinted or winning one `shadow.cardGlow`; a
   judged one `shadow.verdictGood` / `verdictBad`.
+- **Pressed in** — a shape set into the felt, lit on its upper-left edge and shadowed on its lower-right:
+  `shadow.emboss`, on the front page's suit watermarks.
 - **Float** — the assistant window, `shadow.float`; the launcher, `shadow.launcher`; the game table,
   `shadow.table`. What floats is stacked by `layer`.
 
@@ -208,6 +210,18 @@ Recurring patterns built on native elements — reuse them rather than inventing
   paper) or `felt` (on felt) background on hover: close, new conversation, copy.
 - **Floating launcher** — a `size.launcher` round `feltLight` button fixed bottom-right with
   `shadow.launcher`.
+
+**The front page** (`entry-page.tsx`, SKATGO-23) — SkatGo is modern Skat, not only a course:
+- **Hero, on the page's paper** — a brass eyebrow `Pill` with the four suits beside it (♥ ♦ in
+  `skat.red`), the title (`hero`) and lead (`body`) in ink, the one brass action (play now) and paper
+  pills for the selling points. Never on felt (Redline 4).
+- **Section cards, one suit each in Skat order** — ♣ Course, ♠ Play, ♥ Duplicate, ♦ Puzzles. Each is a
+  felt card at least `size.entryCard` tall. Its suit is pressed large into the lower right
+  (`typography.watermark`, in `skat.felt` with `shadow.emboss`, reaching `size.watermarkInset` past
+  the edge), and a corner index — the suit on a `size.brandMark` paper chip — sits beside the title.
+  Open sections are links with the tile's hover lift; their buttons are `quiet`, so the hero keeps
+  the one brass action. A section not open yet is a deep-felt card, not a link or a button, with a
+  fainter watermark and a "coming soon" `Pill`.
 
 **Layout and responsive**
 
@@ -303,3 +317,6 @@ Schwarz, Ouvert, Matador — stay German, because those are what the learner wil
 3. **`className=`, `style={{…}}`, a second stylesheet, or a design value written in `app/src` outside
    `app/src/theme/`** — forbidden outright. Detectable by the token check and the literal check in
    `Tools`. `app/src/styles/app.css` is the only stylesheet.
+4. **A felt surface in the front page's hero** — forbidden outright (the human, 2026-09-27:
+   「hero区域禁止再用绿色卡了」). Detectable from the hero's styles in
+   `app/src/components/skat/entry-page.tsx`: no `skat.felt*` background and no `texture.felt*`.

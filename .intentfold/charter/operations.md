@@ -14,10 +14,16 @@ merge. Acceptance verification also uses this file, so stale commands block deli
 
 **Runtime**
 
-One long-running service, **`web`**: the TanStack Start server in `app/`, which renders the page
+The **`web`** service is the TanStack Start server in `app/`, which renders the page
 shell for `/`, `/lesson/$id` and `/play` and serves the built assets. The course itself runs in the
-browser. There is no separate API process, no worker and no database in use: the one server
-endpoint, `POST /api/ask` (the assistant), is part of `web`.
+browser. `POST /api/ask` (the assistant) is part of `web`.
+
+The independent **`multiplayer`** Colyseus service uses PostgreSQL for durable rooms
+(SKATGO-20, human-approved 2026-09-27). It supports 1-3 humans, fills other seats with AI,
+and gives disconnected players 30 seconds before temporary AI control. Original players
+can recover the same seat within the room's 24-hour inactivity lifetime. No frontend
+admission flow is shipped yet: integration clients require a separate admission secret.
+Only one database-fenced process owns rooms; liveness and gameplay readiness are separate.
 
 **Environments**
 
@@ -40,7 +46,9 @@ diagnostic origin for DNS and TLS checks. No staging.
   has its own OAuth credentials. A development instance serves local work.
 - **The assistant's model**: Azure OpenAI deployment `gpt-5.6-luna`, reasoning effort medium, on the
   same Azure OpenAI resource as Trovestep.
-- **Data**: there is no Render database, Key Value instance, worker or cron job for this project.
+- **Multiplayer data**: a separate paid Render PostgreSQL database; no Redis, persistent
+  disk, worker or cron. New resources are API-managed in the existing project/production
+  environment, Frankfurt. The backend has its own service hostname and does not change DNS.
 
 **Evidence**
 
@@ -78,6 +86,23 @@ npm --prefix app run dev -- --port <web-port>
 ```
 
 **Build and tests**
+
+Multiplayer install, local database and verification (the database script manages only
+its named local container; Docker must be available):
+
+```bash
+npm --prefix multiplayer ci
+node multiplayer/scripts/local-db.mjs start
+npm --prefix multiplayer run check
+npm --prefix multiplayer run build
+npm --prefix multiplayer start
+```
+
+The local scripts load `multiplayer/.env`, never `app/.env`. Ticket ports come from
+`project.json`; pass `DATABASE_PORT` to the local database script and `PORT` to the
+backend. `multiplayer/README.md` owns the protocol and exact configuration contract.
+Headless SDK checks are the approved acceptance surface for multiplayer. They refuse
+non-loopback databases and services; production acceptance stays read-only.
 
 ```bash
 npm --prefix app run build
@@ -147,6 +172,18 @@ python3 ~/.agents/skills/ips-render-ops/scripts/release.py --only skatgo --commi
 ```
 
 **Post-deploy check**
+
+For multiplayer-only releases, do not redeploy `web`. After a merged revision:
+
+```bash
+node multiplayer/scripts/render.mjs deploy
+node multiplayer/scripts/render.mjs verify
+```
+
+These commands target only `skatgo-multiplayer`, confirm the exact merged commit,
+and require both liveness and gameplay readiness. The initial `provision` command
+in that script is approval-required; subsequent deploys are explicit and automatic
+deploys remain disabled. Provisioning writes only the new service/database.
 
 The deploy command exiting 0 is not confirmation — Render can report success while an old deploy keeps
 serving. Routes are derived from the app's own generated route manifest and languages from the inlang
@@ -281,8 +318,9 @@ taken before they settle shows a few anti-aliasing differences that are not real
 **Diagnose DNS from a public resolver.** This machine's resolver can cache an earlier NXDOMAIN for up
 to half an hour; `dig +short <host> @8.8.8.8` and `curl --resolve` are the authorities.
 
-**A rollback must not touch data.** Revisions are stateless and the app has no data of its own;
-reactivating an older revision is the correct first move when a deploy broke the site.
+**A rollback must not touch data.** The course web server is stateless. Multiplayer
+snapshots are versioned: roll back code only when it can read the stored schema;
+never erase or reset rooms to make an older revision start.
 
 ## Redlines
 

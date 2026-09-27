@@ -1,0 +1,14 @@
+{
+  "service": "skatgo-multiplayer",
+  "database": "skatgo-multiplayer-db",
+  "project": "skatgo",
+  "environment": "production",
+  "region": "frankfurt",
+  "servicePlan": "starter",
+  "databasePlan": "basic_256mb",
+  "databaseVersion": "17",
+  "diskSizeGB": 1,
+  "fixedMonthlyBudgetUSD": 25,
+  "pricingCheckedOn": "2026-09-27",
+  "quotedFixedMonthlyUSD": 13.3
+}

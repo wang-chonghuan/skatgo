@@ -1,7 +1,9 @@
 # SKATGO-20 Acceptance Plan
 
 Authority: the live Plane ticket. This file records how to prove its four outcomes.
-Status: planned; no criterion has run or passed.
+Status: AC1-AC3 and AC4 local checks passed on 2026-09-27. AC4's actual Render
+release and unchanged-website observation remain the authorized post-merge cap4
+step. The ticket must remain open until that step succeeds.
 
 Use real Colyseus SDK clients over a running network service and real isolated local
 PostgreSQL. The user explicitly authorized non-browser verification. Document the

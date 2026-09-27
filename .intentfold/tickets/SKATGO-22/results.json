@@ -1,0 +1,4213 @@
+{
+  "matches": {
+    "sz-ml": {
+      "a": "skatzero",
+      "b": "jskat-ml-pro",
+      "game_points": {
+        "n": 180,
+        "mean": 0.7314814814814815,
+        "se": 0.7945478448951891,
+        "normal_95": [
+          -0.8258322945130893,
+          2.2887952574760524
+        ]
+      },
+      "tournament_points": {
+        "n": 180,
+        "mean": 3.8796296296296298,
+        "se": 1.7522900663154939,
+        "normal_95": [
+          0.4451410996512619,
+          7.314118159607998
+        ]
+      },
+      "by_contract": {
+        "Clubs": {
+          "game_points": {
+            "n": 30,
+            "mean": 1.4666666666666666,
+            "se": 1.9415205164274758,
+            "normal_95": [
+              -2.338713545531186,
+              5.272046878864519
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 4.355555555555555,
+            "se": 5.929490626434452,
+            "normal_95": [
+              -7.266246072255972,
+              15.977357183367083
+            ]
+          }
+        },
+        "Spades": {
+          "game_points": {
+            "n": 30,
+            "mean": 0.8555555555555556,
+            "se": 1.2139760132511908,
+            "normal_95": [
+              -1.523837430416778,
+              3.2349485415278894
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 6.188888888888889,
+            "se": 3.6660634590325176,
+            "normal_95": [
+              -0.9965954908148449,
+              13.374373268592624
+            ]
+          }
+        },
+        "Hearts": {
+          "game_points": {
+            "n": 30,
+            "mean": 1.6666666666666667,
+            "se": 1.5556923858813299,
+            "normal_95": [
+              -1.3824904096607395,
+              4.715823742994073
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 7.222222222222222,
+            "se": 4.05606725371068,
+            "normal_95": [
+              -0.7276695950507097,
+              15.172114039495154
+            ]
+          }
+        },
+        "Diamonds": {
+          "game_points": {
+            "n": 30,
+            "mean": 0.9,
+            "se": 1.1610043214746268,
+            "normal_95": [
+              -1.3755684700902688,
+              3.1755684700902687
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 5.122222222222223,
+            "se": 3.1741485854053426,
+            "normal_95": [
+              -1.0991090051722487,
+              11.343553449616694
+            ]
+          }
+        },
+        "Grand": {
+          "game_points": {
+            "n": 30,
+            "mean": 0.26666666666666666,
+            "se": 3.525582476806674,
+            "normal_95": [
+              -6.643474987874415,
+              7.176808321207748
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 1.8222222222222222,
+            "se": 4.902725109069883,
+            "normal_95": [
+              -7.787118991554748,
+              11.431563435999193
+            ]
+          }
+        },
+        "Null": {
+          "game_points": {
+            "n": 30,
+            "mean": -0.7666666666666667,
+            "se": 1.3430821761161027,
+            "normal_95": [
+              -3.3991077318542278,
+              1.8657743985208946
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": -1.4333333333333333,
+            "se": 3.578142457795087,
+            "normal_95": [
+              -8.446492550611703,
+              5.579825883945037
+            ]
+          }
+        }
+      },
+      "by_role": [
+        {
+          "role": 0,
+          "metric": "game_points",
+          "n": 180,
+          "mean": 2.1944444444444446,
+          "se": 2.3836435346855676,
+          "normal_95": [
+            -2.477496883539268,
+            6.866385772428157
+          ]
+        },
+        {
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 180,
+          "mean": 7.194444444444445,
+          "se": 4.543794051643472,
+          "normal_95": [
+            -1.7113918967767603,
+            16.10028078566565
+          ]
+        },
+        {
+          "role": 1,
+          "metric": "game_points",
+          "n": 180,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 180,
+          "mean": 2.888888888888889,
+          "se": 1.180455595140023,
+          "normal_95": [
+            0.5751959224144438,
+            5.202581855363334
+          ]
+        },
+        {
+          "role": 2,
+          "metric": "game_points",
+          "n": 180,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 180,
+          "mean": 1.5555555555555556,
+          "se": 1.1943957231701474,
+          "normal_95": [
+            -0.7854600618579333,
+            3.896571172969044
+          ]
+        }
+      ],
+      "by_contract_role": [
+        {
+          "contract": "Clubs",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 4.4,
+          "se": 5.824561549282428,
+          "normal_95": [
+            -7.016140636593558,
+            15.816140636593559
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 7.733333333333333,
+          "se": 13.143848990441304,
+          "normal_95": [
+            -18.02861068793162,
+            33.49527735459829
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 3.284702730941012,
+          "normal_95": [
+            -3.771350685977717,
+            9.10468401931105
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 3.8036078859671605,
+          "normal_95": [
+            -4.788404789828968,
+            10.1217381231623
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 2.7,
+          "se": 3.4830129644238803,
+          "normal_95": [
+            -4.126705410270805,
+            9.526705410270806
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 12.7,
+          "se": 8.86257143349452,
+          "normal_95": [
+            -4.670640009649258,
+            30.070640009649257
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 3.284702730941012,
+          "normal_95": [
+            -3.771350685977717,
+            9.10468401931105
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 0,
+          "se": 1.9178532059415367,
+          "normal_95": [
+            -3.758992283645412,
+            3.758992283645412
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0.8,
+          "se": 10.576747430420022,
+          "normal_95": [
+            -19.930424963623242,
+            21.530424963623243
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 4.133333333333334,
+          "se": 15.655466771921661,
+          "normal_95": [
+            -26.551381539633123,
+            34.81804820629979
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 1.3333333333333333,
+          "se": 3.0222672973875486,
+          "normal_95": [
+            -4.590310569546262,
+            7.256977236212928
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 0,
+          "se": 3.3218191941495987,
+          "normal_95": [
+            -6.510765620533213,
+            6.510765620533213
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 5,
+          "se": 4.667077157643989,
+          "normal_95": [
+            -4.147471228982219,
+            14.14747122898222
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 15,
+          "se": 9.881481577219054,
+          "normal_95": [
+            -4.367703891349347,
+            34.36770389134935
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 2.666666666666667,
+          "normal_95": [
+            -2.560000000000001,
+            7.893333333333334
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 4,
+          "se": 3.510247723517497,
+          "normal_95": [
+            -2.8800855380942947,
+            10.880085538094296
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": -2.3,
+          "se": 4.029246528348309,
+          "normal_95": [
+            -10.197323195562685,
+            5.597323195562685
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": -5.633333333333334,
+          "se": 9.868734250592235,
+          "normal_95": [
+            -24.976052464494114,
+            13.709385797827448
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 4,
+          "se": 2.2283440581246223,
+          "normal_95": [
+            -0.36755435392425984,
+            8.367554353924259
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": -2.6666666666666665,
+          "se": 1.8528222234124032,
+          "normal_95": [
+            -6.298198224554977,
+            0.9648648912216435
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 2.566666666666667,
+          "se": 3.6419280397535716,
+          "normal_95": [
+            -4.5715122912503325,
+            9.704845624583667
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 9.233333333333333,
+          "se": 7.992767324394956,
+          "normal_95": [
+            -6.432490622480781,
+            24.899157289147446
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 4,
+          "se": 2.940013292643341,
+          "normal_95": [
+            -1.7624260535809482,
+            9.762426053580949
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 5.333333333333333,
+          "se": 2.5249710745279965,
+          "normal_95": [
+            0.38439002725846017,
+            10.282276639408206
+          ]
+        }
+      ],
+      "sample_counts": [
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Clubs",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Clubs",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Clubs",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Diamonds",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Diamonds",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Diamonds",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Grand",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Grand",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Grand",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Hearts",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Hearts",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Hearts",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Null",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Null",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Null",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Spades",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Spades",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Spades",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Clubs",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Clubs",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Clubs",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Diamonds",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Diamonds",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Diamonds",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Grand",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Grand",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Grand",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Hearts",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Hearts",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Hearts",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Null",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Null",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Null",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Spades",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Spades",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Spades",
+          "role": 2,
+          "games": 30
+        }
+      ],
+      "declarer_wins": {
+        "skatzero": 34,
+        "jskat-ml-pro": 25
+      },
+      "resources": [
+        {
+          "seed": 202609271,
+          "seconds": 81.76669692993164,
+          "peak_tree_mib": 781.765625,
+          "games": 360
+        },
+        {
+          "seed": 202609272,
+          "seconds": 75.92696404457092,
+          "peak_tree_mib": 833.25,
+          "games": 360
+        },
+        {
+          "seed": 202609273,
+          "seconds": 76.03164887428284,
+          "peak_tree_mib": 861.328125,
+          "games": 360
+        }
+      ],
+      "end_to_end_games_per_second": 4.620808934636706
+    },
+    "sz-base": {
+      "a": "skatzero",
+      "b": "skatgo",
+      "game_points": {
+        "n": 180,
+        "mean": 5.337037037037037,
+        "se": 1.0490027874042342,
+        "normal_95": [
+          3.280991573724738,
+          7.393082500349336
+        ]
+      },
+      "tournament_points": {
+        "n": 180,
+        "mean": 11.818518518518518,
+        "se": 2.2683014671284556,
+        "normal_95": [
+          7.372647642946745,
+          16.26438939409029
+        ]
+      },
+      "by_contract": {
+        "Clubs": {
+          "game_points": {
+            "n": 30,
+            "mean": 5.866666666666666,
+            "se": 2.2992919116587083,
+            "normal_95": [
+              1.3600545198155984,
+              10.373278813517734
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 15.644444444444446,
+            "se": 5.5082182495228285,
+            "normal_95": [
+              4.848336675379702,
+              26.44055221350919
+            ]
+          }
+        },
+        "Spades": {
+          "game_points": {
+            "n": 30,
+            "mean": 6.844444444444444,
+            "se": 2.421578880433015,
+            "normal_95": [
+              2.0981498387957345,
+              11.590739050093154
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 15.511111111111111,
+            "se": 5.434898191156233,
+            "normal_95": [
+              4.858710656444895,
+              26.163511565777327
+            ]
+          }
+        },
+        "Hearts": {
+          "game_points": {
+            "n": 30,
+            "mean": 3.7777777777777777,
+            "se": 2.112622971449865,
+            "normal_95": [
+              -0.3629632462639574,
+              7.918518801819513
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 11.333333333333334,
+            "se": 5.69689929330946,
+            "normal_95": [
+              0.16741071844679212,
+              22.499255948219876
+            ]
+          }
+        },
+        "Diamonds": {
+          "game_points": {
+            "n": 30,
+            "mean": 3.7,
+            "se": 1.8956392789405028,
+            "normal_95": [
+              -0.01545298672338502,
+              7.415452986723386
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 9.700000000000001,
+            "se": 5.105136021018779,
+            "normal_95": [
+              -0.3060666011968056,
+              19.70606660119681
+            ]
+          }
+        },
+        "Grand": {
+          "game_points": {
+            "n": 30,
+            "mean": 14.133333333333333,
+            "se": 3.867855544537562,
+            "normal_95": [
+              6.552336466039711,
+              21.714330200626954
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 23.466666666666665,
+            "se": 7.0247437152998655,
+            "normal_95": [
+              9.69816898467893,
+              37.2351643486544
+            ]
+          }
+        },
+        "Null": {
+          "game_points": {
+            "n": 30,
+            "mean": -2.3,
+            "se": 1.2812978334216578,
+            "normal_95": [
+              -4.811343753506449,
+              0.21134375350644952
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": -4.7444444444444445,
+            "se": 2.744211757396612,
+            "normal_95": [
+              -10.123099488941804,
+              0.6342106000529153
+            ]
+          }
+        }
+      },
+      "by_role": [
+        {
+          "role": 0,
+          "metric": "game_points",
+          "n": 180,
+          "mean": 16.011111111111113,
+          "se": 3.1470083622127025,
+          "normal_95": [
+            9.842974721174215,
+            22.17924750104801
+          ]
+        },
+        {
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 180,
+          "mean": 29.9,
+          "se": 6.053553162974486,
+          "normal_95": [
+            18.035035800570007,
+            41.76496419942999
+          ]
+        },
+        {
+          "role": 1,
+          "metric": "game_points",
+          "n": 180,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 180,
+          "mean": 3.5555555555555554,
+          "se": 1.148832085061252,
+          "normal_95": [
+            1.3038446688355019,
+            5.807266442275608
+          ]
+        },
+        {
+          "role": 2,
+          "metric": "game_points",
+          "n": 180,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 180,
+          "mean": 2,
+          "se": 1.0582066743370226,
+          "normal_95": [
+            -0.07408508170056427,
+            4.074085081700565
+          ]
+        }
+      ],
+      "by_contract_role": [
+        {
+          "contract": "Clubs",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 17.6,
+          "se": 6.897875734976124,
+          "normal_95": [
+            4.080163559446797,
+            31.119836440553208
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 37.6,
+          "se": 13.9405634873497,
+          "normal_95": [
+            10.27649556479459,
+            64.92350443520542
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 6.666666666666667,
+          "se": 2.7681826617913323,
+          "normal_95": [
+            1.2410286495556555,
+            12.092304683777678
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 2.666666666666667,
+          "normal_95": [
+            -2.560000000000001,
+            7.893333333333334
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 11.1,
+          "se": 5.686917836821508,
+          "normal_95": [
+            -0.046358960170156394,
+            22.246358960170156
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 27.766666666666666,
+          "se": 13.850738254388133,
+          "normal_95": [
+            0.6192196880659253,
+            54.914113645267406
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 0,
+          "se": 3.3218191941495987,
+          "normal_95": [
+            -6.510765620533213,
+            6.510765620533213
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 1.3333333333333333,
+          "se": 3.0222672973875486,
+          "normal_95": [
+            -4.590310569546262,
+            7.256977236212928
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 42.4,
+          "se": 11.603566633612687,
+          "normal_95": [
+            19.657009398119133,
+            65.14299060188087
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 62.4,
+          "se": 18.6146401411955,
+          "normal_95": [
+            25.915305323256817,
+            98.88469467674318
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 5.333333333333333,
+          "se": 3.1707475217593872,
+          "normal_95": [
+            -0.8813318093150659,
+            11.547998475981732
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 2.666666666666667,
+          "normal_95": [
+            -2.560000000000001,
+            7.893333333333334
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 11.333333333333334,
+          "se": 6.337868914349595,
+          "normal_95": [
+            -1.0888897387918721,
+            23.75555640545854
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 24.666666666666668,
+          "se": 14.001094647955071,
+          "normal_95": [
+            -2.7754788433252706,
+            52.1088121766586
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 5.333333333333333,
+          "se": 3.1707475217593872,
+          "normal_95": [
+            -0.8813318093150659,
+            11.547998475981732
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 4,
+          "se": 2.940013292643341,
+          "normal_95": [
+            -1.7624260535809482,
+            9.762426053580949
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": -6.9,
+          "se": 3.843893500264973,
+          "normal_95": [
+            -14.434031260519347,
+            0.6340312605193468
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": -16.9,
+          "se": 9.41475364557653,
+          "normal_95": [
+            -35.35291714533,
+            1.5529171453299995
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 1.8528222234124032,
+          "normal_95": [
+            -0.9648648912216435,
+            6.298198224554977
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 0,
+          "se": 1.9178532059415367,
+          "normal_95": [
+            -3.758992283645412,
+            3.758992283645412
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 20.533333333333335,
+          "se": 7.264736641299047,
+          "normal_95": [
+            6.294449516387203,
+            34.77221715027947
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 43.86666666666667,
+          "se": 14.763868082798746,
+          "normal_95": [
+            14.929485224381125,
+            72.80384810895221
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 1.3333333333333333,
+          "se": 2.3357950888975703,
+          "normal_95": [
+            -3.244825040905905,
+            5.911491707572571
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 1.3333333333333333,
+          "se": 2.3357950888975703,
+          "normal_95": [
+            -3.244825040905905,
+            5.911491707572571
+          ]
+        }
+      ],
+      "sample_counts": [
+        {
+          "player": "skatgo",
+          "contract": "Clubs",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Clubs",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Clubs",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Diamonds",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Diamonds",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Diamonds",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Grand",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Grand",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Grand",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Hearts",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Hearts",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Hearts",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Null",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Null",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Null",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Spades",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Spades",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Spades",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Clubs",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Clubs",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Clubs",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Diamonds",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Diamonds",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Diamonds",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Grand",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Grand",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Grand",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Hearts",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Hearts",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Hearts",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Null",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Null",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Null",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Spades",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Spades",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatzero",
+          "contract": "Spades",
+          "role": 2,
+          "games": 30
+        }
+      ],
+      "declarer_wins": {
+        "skatzero": 45,
+        "skatgo": 20
+      },
+      "resources": [
+        {
+          "seed": 202609271,
+          "seconds": 11.007779836654663,
+          "peak_tree_mib": 569.078125,
+          "games": 360
+        },
+        {
+          "seed": 202609272,
+          "seconds": 10.665333032608032,
+          "peak_tree_mib": 544.375,
+          "games": 360
+        },
+        {
+          "seed": 202609273,
+          "seconds": 10.612221956253052,
+          "peak_tree_mib": 536.453125,
+          "games": 360
+        }
+      ],
+      "end_to_end_games_per_second": 33.45172059812291
+    },
+    "ml-base": {
+      "a": "jskat-ml-pro",
+      "b": "skatgo",
+      "game_points": {
+        "n": 180,
+        "mean": 6.198148148148148,
+        "se": 1.1325269986771862,
+        "normal_95": [
+          3.9783952307408628,
+          8.417901065555434
+        ]
+      },
+      "tournament_points": {
+        "n": 180,
+        "mean": 11.864814814814816,
+        "se": 2.287733458169338,
+        "normal_95": [
+          7.380857236802914,
+          16.348772392826717
+        ]
+      },
+      "by_contract": {
+        "Clubs": {
+          "game_points": {
+            "n": 30,
+            "mean": 6.4,
+            "se": 2.4605391428634533,
+            "normal_95": [
+              1.5773432799876321,
+              11.222656720012369
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 16.177777777777777,
+            "se": 6.427505814226188,
+            "normal_95": [
+              3.5798663818944494,
+              28.775689173661107
+            ]
+          }
+        },
+        "Spades": {
+          "game_points": {
+            "n": 30,
+            "mean": 5.133333333333333,
+            "se": 2.40792645941937,
+            "normal_95": [
+              0.4137974728713676,
+              9.852869193795298
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 9.8,
+            "se": 5.724889085798944,
+            "normal_95": [
+              -1.4207826081659292,
+              21.02078260816593
+            ]
+          }
+        },
+        "Hearts": {
+          "game_points": {
+            "n": 30,
+            "mean": 5.555555555555555,
+            "se": 2.345253260638325,
+            "normal_95": [
+              0.958859164704438,
+              10.152251946406672
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 11.333333333333334,
+            "se": 4.956000529822049,
+            "normal_95": [
+              1.6195722948821185,
+              21.04709437178455
+            ]
+          }
+        },
+        "Diamonds": {
+          "game_points": {
+            "n": 30,
+            "mean": 3.3,
+            "se": 1.710111914063138,
+            "normal_95": [
+              -0.051819351563750615,
+              6.65181935156375
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 7.077777777777778,
+            "se": 4.0569598156667075,
+            "normal_95": [
+              -0.8738634609289679,
+              15.029419016484525
+            ]
+          }
+        },
+        "Grand": {
+          "game_points": {
+            "n": 30,
+            "mean": 16.8,
+            "se": 4.656079945594804,
+            "normal_95": [
+              7.674083306634184,
+              25.925916693365817
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 26.355555555555554,
+            "se": 8.074413387599913,
+            "normal_95": [
+              10.529705315859726,
+              42.18140579525138
+            ]
+          }
+        },
+        "Null": {
+          "game_points": {
+            "n": 30,
+            "mean": 0.0,
+            "se": 0.0,
+            "normal_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "tournament_points": {
+            "n": 30,
+            "mean": 0.4444444444444445,
+            "se": 0.4444444444444445,
+            "normal_95": [
+              -0.4266666666666667,
+              1.3155555555555556
+            ]
+          }
+        }
+      },
+      "by_role": [
+        {
+          "role": 0,
+          "metric": "game_points",
+          "n": 180,
+          "mean": 18.594444444444445,
+          "se": 3.3975809960315586,
+          "normal_95": [
+            11.93518569222259,
+            25.2537031966663
+          ]
+        },
+        {
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 180,
+          "mean": 31.372222222222224,
+          "se": 6.1028075605730585,
+          "normal_95": [
+            19.41071940349903,
+            43.33372504094542
+          ]
+        },
+        {
+          "role": 1,
+          "metric": "game_points",
+          "n": 180,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 180,
+          "mean": 2.2222222222222223,
+          "se": 1.0789894447798556,
+          "normal_95": [
+            0.10740291045370531,
+            4.337041533990739
+          ]
+        },
+        {
+          "role": 2,
+          "metric": "game_points",
+          "n": 180,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 180,
+          "mean": 2,
+          "se": 1.1041370204375374,
+          "normal_95": [
+            -0.16410856005757335,
+            4.164108560057573
+          ]
+        }
+      ],
+      "by_contract_role": [
+        {
+          "contract": "Clubs",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 19.2,
+          "se": 7.38161742859036,
+          "normal_95": [
+            4.732029839962895,
+            33.6679701600371
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 39.2,
+          "se": 15.972850529037968,
+          "normal_95": [
+            7.893212963085585,
+            70.50678703691442
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 5.333333333333333,
+          "se": 3.7056444468248064,
+          "normal_95": [
+            -1.929729782443287,
+            12.596396449109953
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 4,
+          "se": 2.940013292643341,
+          "normal_95": [
+            -1.7624260535809482,
+            9.762426053580949
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 9.9,
+          "se": 5.130335742189414,
+          "normal_95": [
+            -0.15545805469125007,
+            19.95545805469125
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 19.9,
+          "se": 12.334360006972766,
+          "normal_95": [
+            -4.275345613666623,
+            44.07534561366662
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": -1.3333333333333333,
+          "se": 3.0222672973875486,
+          "normal_95": [
+            -7.256977236212928,
+            4.590310569546262
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 3.284702730941012,
+          "normal_95": [
+            -3.771350685977717,
+            9.10468401931105
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 50.4,
+          "se": 13.968239836784411,
+          "normal_95": [
+            23.022249919902553,
+            77.77775008009745
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 73.73333333333333,
+          "se": 21.379275244069568,
+          "normal_95": [
+            31.829953854956983,
+            115.63671281170969
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 3.284702730941012,
+          "normal_95": [
+            -3.771350685977717,
+            9.10468401931105
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 2.666666666666667,
+          "normal_95": [
+            -2.560000000000001,
+            7.893333333333334
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 16.666666666666668,
+          "se": 7.035759781914975,
+          "normal_95": [
+            2.8765774941133166,
+            30.45675583922002
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 30,
+          "se": 12.79367659898984,
+          "normal_95": [
+            4.924393865979912,
+            55.07560613402009
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 4,
+          "se": 2.2283440581246223,
+          "normal_95": [
+            -0.36755435392425984,
+            8.367554353924259
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 0,
+          "se": 2.7122540144832414,
+          "normal_95": [
+            -5.316017868387153,
+            5.316017868387153
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 1.3333333333333333,
+          "se": 1.3333333333333335,
+          "normal_95": [
+            -1.2800000000000005,
+            3.946666666666667
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 0,
+          "se": 1.9178532059415367,
+          "normal_95": [
+            -3.758992283645412,
+            3.758992283645412
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 0,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 15.4,
+          "se": 7.22377937825811,
+          "normal_95": [
+            1.2413924186141063,
+            29.558607581385893
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 25.4,
+          "se": 15.733382037719277,
+          "normal_95": [
+            -5.437428793929783,
+            56.23742879392978
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 1,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 1.3333333333333333,
+          "se": 1.3333333333333335,
+          "normal_95": [
+            -1.2800000000000005,
+            3.946666666666667
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 2,
+          "metric": "game_points",
+          "n": 30,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 30,
+          "mean": 2.6666666666666665,
+          "se": 2.666666666666667,
+          "normal_95": [
+            -2.560000000000001,
+            7.893333333333334
+          ]
+        }
+      ],
+      "sample_counts": [
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Clubs",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Clubs",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Clubs",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Diamonds",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Diamonds",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Diamonds",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Grand",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Grand",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Grand",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Hearts",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Hearts",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Hearts",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Null",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Null",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Null",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Spades",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Spades",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "jskat-ml-pro",
+          "contract": "Spades",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Clubs",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Clubs",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Clubs",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Diamonds",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Diamonds",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Diamonds",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Grand",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Grand",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Grand",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Hearts",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Hearts",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Hearts",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Null",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Null",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Null",
+          "role": 2,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Spades",
+          "role": 0,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Spades",
+          "role": 1,
+          "games": 30
+        },
+        {
+          "player": "skatgo",
+          "contract": "Spades",
+          "role": 2,
+          "games": 30
+        }
+      ],
+      "declarer_wins": {
+        "jskat-ml-pro": 42,
+        "skatgo": 19
+      },
+      "resources": [
+        {
+          "seed": 202609271,
+          "seconds": 72.7452871799469,
+          "peak_tree_mib": 643.859375,
+          "games": 360
+        },
+        {
+          "seed": 202609272,
+          "seconds": 72.18619227409363,
+          "peak_tree_mib": 780.453125,
+          "games": 360
+        },
+        {
+          "seed": 202609273,
+          "seconds": 74.26402878761292,
+          "peak_tree_mib": 775.1875,
+          "games": 360
+        }
+      ],
+      "end_to_end_games_per_second": 4.927108263593373
+    },
+    "kk-sz": {
+      "a": "belief-32-shipped",
+      "b": "skatzero",
+      "game_points": {
+        "n": 18,
+        "mean": -13.24074074074074,
+        "se": 7.753547952394224,
+        "normal_95": [
+          -28.437694727433417,
+          1.956213245951938
+        ]
+      },
+      "tournament_points": {
+        "n": 18,
+        "mean": -21.75925925925926,
+        "se": 11.580033324240778,
+        "normal_95": [
+          -44.45612457477118,
+          0.9376060562526654
+        ]
+      },
+      "by_contract": {
+        "Clubs": {
+          "game_points": {
+            "n": 3,
+            "mean": -8.0,
+            "se": 8.0,
+            "normal_95": [
+              -23.68,
+              7.68
+            ]
+          },
+          "tournament_points": {
+            "n": 3,
+            "mean": -14.666666666666666,
+            "se": 14.666666666666668,
+            "normal_95": [
+              -43.413333333333334,
+              14.080000000000004
+            ]
+          }
+        },
+        "Spades": {
+          "game_points": {
+            "n": 3,
+            "mean": -4.888888888888889,
+            "se": 8.81356978446753,
+            "normal_95": [
+              -22.163485666445247,
+              12.385707888667469
+            ]
+          },
+          "tournament_points": {
+            "n": 3,
+            "mean": -11.555555555555555,
+            "se": 15.368719233045983,
+            "normal_95": [
+              -41.67824525232568,
+              18.567134141214574
+            ]
+          }
+        },
+        "Hearts": {
+          "game_points": {
+            "n": 3,
+            "mean": 4.444444444444445,
+            "se": 2.2222222222222228,
+            "normal_95": [
+              0.08888888888888768,
+              8.8
+            ]
+          },
+          "tournament_points": {
+            "n": 3,
+            "mean": 4.444444444444445,
+            "se": 2.2222222222222228,
+            "normal_95": [
+              0.08888888888888768,
+              8.8
+            ]
+          }
+        },
+        "Diamonds": {
+          "game_points": {
+            "n": 3,
+            "mean": -7.0,
+            "se": 10.148891565092221,
+            "normal_95": [
+              -26.891827467580754,
+              12.891827467580754
+            ]
+          },
+          "tournament_points": {
+            "n": 3,
+            "mean": -13.666666666666668,
+            "se": 23.429168272175733,
+            "normal_95": [
+              -59.5878364801311,
+              32.254503146797774
+            ]
+          }
+        },
+        "Grand": {
+          "game_points": {
+            "n": 3,
+            "mean": -64.0,
+            "se": 34.87119154832539,
+            "normal_95": [
+              -132.34753543471777,
+              4.34753543471777
+            ]
+          },
+          "tournament_points": {
+            "n": 3,
+            "mean": -95.11111111111111,
+            "se": 49.533128956260484,
+            "normal_95": [
+              -192.19604386538165,
+              1.9738216431594253
+            ]
+          }
+        },
+        "Null": {
+          "game_points": {
+            "n": 3,
+            "mean": 0.0,
+            "se": 0.0,
+            "normal_95": [
+              0.0,
+              0.0
+            ]
+          },
+          "tournament_points": {
+            "n": 3,
+            "mean": 0.0,
+            "se": 0.0,
+            "normal_95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "by_role": [
+        {
+          "role": 0,
+          "metric": "game_points",
+          "n": 18,
+          "mean": -39.72222222222222,
+          "se": 23.26064385718267,
+          "normal_95": [
+            -85.31308418230026,
+            5.8686397378558155
+          ]
+        },
+        {
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 18,
+          "mean": -67.5,
+          "se": 32.38617574035205,
+          "normal_95": [
+            -130.97690445109004,
+            -4.0230955489099784
+          ]
+        },
+        {
+          "role": 1,
+          "metric": "game_points",
+          "n": 18,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 18,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "role": 2,
+          "metric": "game_points",
+          "n": 18,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 18,
+          "mean": 2.2222222222222223,
+          "se": 5.084614467654046,
+          "normal_95": [
+            -7.7436221343797085,
+            12.188066578824152
+          ]
+        }
+      ],
+      "by_contract_role": [
+        {
+          "contract": "Clubs",
+          "role": 0,
+          "metric": "game_points",
+          "n": 3,
+          "mean": -24,
+          "se": 24.000000000000004,
+          "normal_95": [
+            -71.04,
+            23.040000000000006
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": -57.333333333333336,
+          "se": 57.333333333333336,
+          "normal_95": [
+            -169.70666666666668,
+            55.04
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 1,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 2,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Clubs",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 13.333333333333334,
+          "se": 13.333333333333334,
+          "normal_95": [
+            -12.799999999999999,
+            39.46666666666667
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 0,
+          "metric": "game_points",
+          "n": 3,
+          "mean": -21,
+          "se": 30.44667469527666,
+          "normal_95": [
+            -80.67548240274226,
+            38.675482402742254
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": -54.333333333333336,
+          "se": 63.546133722761695,
+          "normal_95": [
+            -178.88375542994626,
+            70.21708876327958
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 1,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 2,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Diamonds",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 13.333333333333334,
+          "se": 13.333333333333334,
+          "normal_95": [
+            -12.799999999999999,
+            39.46666666666667
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 0,
+          "metric": "game_points",
+          "n": 3,
+          "mean": -192,
+          "se": 104.61357464497617,
+          "normal_95": [
+            -397.0426063041533,
+            13.042606304153281
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": -258.6666666666667,
+          "se": 135.84959002923458,
+          "normal_95": [
+            -524.9318631239664,
+            7.598529790633052
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 1,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 2,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Grand",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": -26.666666666666668,
+          "se": 13.333333333333334,
+          "normal_95": [
+            -52.8,
+            -0.533333333333335
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 0,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 13.333333333333334,
+          "se": 6.666666666666667,
+          "normal_95": [
+            0.2666666666666675,
+            26.4
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 13.333333333333334,
+          "se": 6.666666666666667,
+          "normal_95": [
+            0.2666666666666675,
+            26.4
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 1,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 2,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Hearts",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 0,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 1,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 2,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Null",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 0,
+          "metric": "game_points",
+          "n": 3,
+          "mean": -14.666666666666666,
+          "se": 26.440709353402593,
+          "normal_95": [
+            -66.49045699933575,
+            37.15712366600241
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 0,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": -48,
+          "se": 59.340823497263116,
+          "normal_95": [
+            -164.3080140546357,
+            68.3080140546357
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 1,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 1,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 2,
+          "metric": "game_points",
+          "n": 3,
+          "mean": 0,
+          "se": 0.0,
+          "normal_95": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "contract": "Spades",
+          "role": 2,
+          "metric": "tournament_points",
+          "n": 3,
+          "mean": 13.333333333333334,
+          "se": 13.333333333333334,
+          "normal_95": [
+            -12.799999999999999,
+            39.46666666666667
+          ]
+        }
+      ],
+      "sample_counts": [
+        {
+          "player": "belief-32-shipped",
+          "contract": "Clubs",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Clubs",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Clubs",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Diamonds",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Diamonds",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Diamonds",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Grand",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Grand",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Grand",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Hearts",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Hearts",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Hearts",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Null",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Null",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Null",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Spades",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Spades",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "belief-32-shipped",
+          "contract": "Spades",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Clubs",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Clubs",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Clubs",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Diamonds",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Diamonds",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Diamonds",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Grand",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Grand",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Grand",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Hearts",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Hearts",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Hearts",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Null",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Null",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Null",
+          "role": 2,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Spades",
+          "role": 0,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Spades",
+          "role": 1,
+          "games": 3
+        },
+        {
+          "player": "skatzero",
+          "contract": "Spades",
+          "role": 2,
+          "games": 3
+        }
+      ],
+      "declarer_wins": {
+        "belief-32-shipped": 0,
+        "skatzero": 5
+      },
+      "resources": [
+        {
+          "seed": 202609271,
+          "seconds": 164.3487102985382,
+          "peak_tree_mib": 1134.84375,
+          "games": 36
+        },
+        {
+          "seed": 202609272,
+          "seconds": 126.85220694541931,
+          "peak_tree_mib": 1049.890625,
+          "games": 36
+        },
+        {
+          "seed": 202609273,
+          "seconds": 154.31437516212463,
+          "peak_tree_mib": 800.109375,
+          "games": 36
+        }
+      ],
+      "end_to_end_games_per_second": 0.24241592116115113
+    }
+  },
+  "timings": [
+    {
+      "player": "jskat-ml-pro",
+      "method": "announceContra",
+      "n": 2160,
+      "p50_ms": 0.001875,
+      "p95_ms": 0.008042,
+      "max_ms": 0.500833,
+      "mean_ms": 0.003671733796296296
+    },
+    {
+      "player": "jskat-ml-pro",
+      "method": "cardPlayed",
+      "n": 86460,
+      "p50_ms": 0.000917,
+      "p95_ms": 0.005791,
+      "max_ms": 0.327709,
+      "mean_ms": 0.001769507043719639
+    },
+    {
+      "player": "jskat-ml-pro",
+      "method": "chooseCard",
+      "n": 28820,
+      "p50_ms": 18.157458,
+      "p95_ms": 19.945958,
+      "max_ms": 39.582917,
+      "mean_ms": 14.227347918008327
+    },
+    {
+      "player": "jskat-ml-pro",
+      "method": "close",
+      "n": 3240,
+      "p50_ms": 0.000208,
+      "p95_ms": 0.00425,
+      "max_ms": 0.419625,
+      "mean_ms": 0.001496203086419753
+    },
+    {
+      "player": "jskat-ml-pro",
+      "method": "createSession",
+      "n": 3240,
+      "p50_ms": 0.001542,
+      "p95_ms": 0.004,
+      "max_ms": 1462.952083,
+      "mean_ms": 1.825523449074074
+    },
+    {
+      "player": "jskat-ml-pro",
+      "method": "endGame",
+      "n": 6480,
+      "p50_ms": 0.000292,
+      "p95_ms": 0.003667,
+      "max_ms": 0.262667,
+      "mean_ms": 0.001167595061728395
+    },
+    {
+      "player": "jskat-ml-pro",
+      "method": "startGame",
+      "n": 3240,
+      "p50_ms": 0.034625,
+      "p95_ms": 0.05875,
+      "max_ms": 9.045375,
+      "mean_ms": 0.044584189506172836
+    },
+    {
+      "player": "jskat-ml-pro",
+      "method": "trickCompleted",
+      "n": 28820,
+      "p50_ms": 0.001583,
+      "p95_ms": 0.005833,
+      "max_ms": 0.157291,
+      "mean_ms": 0.0020389246703678
+    },
+    {
+      "player": "skatgo",
+      "method": "announceContra",
+      "n": 2160,
+      "p50_ms": 0.001875,
+      "p95_ms": 0.007,
+      "max_ms": 0.472375,
+      "mean_ms": 0.0037836925925925926
+    },
+    {
+      "player": "skatgo",
+      "method": "cardPlayed",
+      "n": 85461,
+      "p50_ms": 0.261292,
+      "p95_ms": 0.277,
+      "max_ms": 1.861834,
+      "mean_ms": 0.17760485615660945
+    },
+    {
+      "player": "skatgo",
+      "method": "chooseCard",
+      "n": 28487,
+      "p50_ms": 0.264,
+      "p95_ms": 0.273916,
+      "max_ms": 2.603667,
+      "mean_ms": 0.26565358296766944
+    },
+    {
+      "player": "skatgo",
+      "method": "close",
+      "n": 3240,
+      "p50_ms": 0.000417,
+      "p95_ms": 0.004583,
+      "max_ms": 0.349875,
+      "mean_ms": 0.0014947274691358024
+    },
+    {
+      "player": "skatgo",
+      "method": "createSession",
+      "n": 3240,
+      "p50_ms": 0.000875,
+      "p95_ms": 0.001875,
+      "max_ms": 0.501667,
+      "mean_ms": 0.0013188731481481482
+    },
+    {
+      "player": "skatgo",
+      "method": "endGame",
+      "n": 6480,
+      "p50_ms": 0.009625,
+      "p95_ms": 0.312334,
+      "max_ms": 0.813709,
+      "mean_ms": 0.1431928302469136
+    },
+    {
+      "player": "skatgo",
+      "method": "startGame",
+      "n": 3240,
+      "p50_ms": 0.805042,
+      "p95_ms": 0.839333,
+      "max_ms": 95.433167,
+      "mean_ms": 0.9824533466049382
+    },
+    {
+      "player": "skatgo",
+      "method": "trickCompleted",
+      "n": 28487,
+      "p50_ms": 8.4e-05,
+      "p95_ms": 0.001084,
+      "max_ms": 0.157041,
+      "mean_ms": 0.00034516095060904976
+    },
+    {
+      "player": "skatzero",
+      "method": "announceContra",
+      "n": 2160,
+      "p50_ms": 0.002,
+      "p95_ms": 0.009,
+      "max_ms": 0.267708,
+      "mean_ms": 0.003851099074074074
+    },
+    {
+      "player": "skatzero",
+      "method": "cardPlayed",
+      "n": 86505,
+      "p50_ms": 0.261792,
+      "p95_ms": 0.280958,
+      "max_ms": 3.979042,
+      "mean_ms": 0.1786354712791168
+    },
+    {
+      "player": "skatzero",
+      "method": "chooseCard",
+      "n": 28835,
+      "p50_ms": 0.525959,
+      "p95_ms": 1.034917,
+      "max_ms": 4.225875,
+      "mean_ms": 0.5010115288364835
+    },
+    {
+      "player": "skatzero",
+      "method": "close",
+      "n": 3240,
+      "p50_ms": 0.000458,
+      "p95_ms": 0.005083,
+      "max_ms": 0.330792,
+      "mean_ms": 0.0017790388888888889
+    },
+    {
+      "player": "skatzero",
+      "method": "createSession",
+      "n": 3240,
+      "p50_ms": 0.000833,
+      "p95_ms": 0.001958,
+      "max_ms": 0.733375,
+      "mean_ms": 0.0019121385802469135
+    },
+    {
+      "player": "skatzero",
+      "method": "endGame",
+      "n": 6480,
+      "p50_ms": 0.025375,
+      "p95_ms": 0.317833,
+      "max_ms": 0.730959,
+      "mean_ms": 0.14476131188271604
+    },
+    {
+      "player": "skatzero",
+      "method": "startGame",
+      "n": 3240,
+      "p50_ms": 0.808625,
+      "p95_ms": 0.85075,
+      "max_ms": 174.680292,
+      "mean_ms": 1.217698447530864
+    },
+    {
+      "player": "skatzero",
+      "method": "trickCompleted",
+      "n": 28835,
+      "p50_ms": 0.000166,
+      "p95_ms": 0.001542,
+      "max_ms": 0.138833,
+      "mean_ms": 0.0004544335356337784
+    }
+  ],
+  "supplement_timings": [
+    {
+      "player": "belief-32-shipped",
+      "method": "announceContra",
+      "n": 108,
+      "p50_ms": 0.004208,
+      "p95_ms": 0.009125,
+      "max_ms": 0.015291,
+      "mean_ms": 0.004795129629629629
+    },
+    {
+      "player": "belief-32-shipped",
+      "method": "cardPlayed",
+      "n": 4374,
+      "p50_ms": 0.00075,
+      "p95_ms": 0.005542,
+      "max_ms": 0.299083,
+      "mean_ms": 0.0016219128943758573
+    },
+    {
+      "player": "belief-32-shipped",
+      "method": "chooseCard",
+      "n": 1458,
+      "p50_ms": 0.749875,
+      "p95_ms": 1443.908625,
+      "max_ms": 22675.921958,
+      "mean_ms": 302.5664128628258
+    },
+    {
+      "player": "belief-32-shipped",
+      "method": "close",
+      "n": 162,
+      "p50_ms": 0.000625,
+      "p95_ms": 0.003875,
+      "max_ms": 0.35425,
+      "mean_ms": 0.007698604938271605
+    },
+    {
+      "player": "belief-32-shipped",
+      "method": "createSession",
+      "n": 162,
+      "p50_ms": 0.00275,
+      "p95_ms": 0.005042,
+      "max_ms": 1.278292,
+      "mean_ms": 0.02468932098765432
+    },
+    {
+      "player": "belief-32-shipped",
+      "method": "endGame",
+      "n": 324,
+      "p50_ms": 0.000958,
+      "p95_ms": 0.005792,
+      "max_ms": 0.108667,
+      "mean_ms": 0.002545537037037037
+    },
+    {
+      "player": "belief-32-shipped",
+      "method": "startGame",
+      "n": 162,
+      "p50_ms": 0.002208,
+      "p95_ms": 0.006084,
+      "max_ms": 0.350875,
+      "mean_ms": 0.008503351851851852
+    },
+    {
+      "player": "belief-32-shipped",
+      "method": "trickCompleted",
+      "n": 1458,
+      "p50_ms": 0.000625,
+      "p95_ms": 0.003792,
+      "max_ms": 0.101708,
+      "mean_ms": 0.0013324355281207133
+    },
+    {
+      "player": "skatzero",
+      "method": "announceContra",
+      "n": 108,
+      "p50_ms": 0.005292,
+      "p95_ms": 0.012125,
+      "max_ms": 0.424583,
+      "mean_ms": 0.016582185185185186
+    },
+    {
+      "player": "skatzero",
+      "method": "cardPlayed",
+      "n": 4356,
+      "p50_ms": 0.266625,
+      "p95_ms": 0.325375,
+      "max_ms": 0.4135,
+      "mean_ms": 0.19129962603305786
+    },
+    {
+      "player": "skatzero",
+      "method": "chooseCard",
+      "n": 1452,
+      "p50_ms": 0.534,
+      "p95_ms": 1.054708,
+      "max_ms": 2.163959,
+      "mean_ms": 0.5177136184573002
+    },
+    {
+      "player": "skatzero",
+      "method": "close",
+      "n": 162,
+      "p50_ms": 0.000583,
+      "p95_ms": 0.004125,
+      "max_ms": 0.010125,
+      "mean_ms": 0.0015912777777777778
+    },
+    {
+      "player": "skatzero",
+      "method": "createSession",
+      "n": 162,
+      "p50_ms": 0.000875,
+      "p95_ms": 0.001541,
+      "max_ms": 0.436083,
+      "mean_ms": 0.007954246913580248
+    },
+    {
+      "player": "skatzero",
+      "method": "endGame",
+      "n": 324,
+      "p50_ms": 0.006916,
+      "p95_ms": 0.381083,
+      "max_ms": 0.607458,
+      "mean_ms": 0.1676870061728395
+    },
+    {
+      "player": "skatzero",
+      "method": "startGame",
+      "n": 162,
+      "p50_ms": 0.831333,
+      "p95_ms": 0.997958,
+      "max_ms": 177.646083,
+      "mean_ms": 5.009052734567901
+    },
+    {
+      "player": "skatzero",
+      "method": "trickCompleted",
+      "n": 1452,
+      "p50_ms": 0.000625,
+      "p95_ms": 0.003375,
+      "max_ms": 0.184375,
+      "mean_ms": 0.0014409903581267217
+    }
+  ],
+  "stage_timings": [
+    {
+      "experiment": "full-smoke-kk-base",
+      "player": "belief-32-shipped",
+      "method": "announceContract",
+      "n": 1,
+      "p50_ms": 0.063375,
+      "p95_ms": 0.063375,
+      "max_ms": 0.063375,
+      "mean_ms": 0.063375
+    },
+    {
+      "experiment": "full-smoke-kk-base",
+      "player": "belief-32-shipped",
+      "method": "bid",
+      "n": 9,
+      "p50_ms": 197.110458,
+      "p95_ms": 839.662166,
+      "max_ms": 839.662166,
+      "mean_ms": 318.8933562222222
+    },
+    {
+      "experiment": "full-smoke-kk-base",
+      "player": "belief-32-shipped",
+      "method": "discardSkat",
+      "n": 1,
+      "p50_ms": 0.0345,
+      "p95_ms": 0.0345,
+      "max_ms": 0.0345,
+      "mean_ms": 0.0345
+    },
+    {
+      "experiment": "full-smoke-kk-base",
+      "player": "belief-32-shipped",
+      "method": "pickUpSkat",
+      "n": 1,
+      "p50_ms": 0.006125,
+      "p95_ms": 0.006125,
+      "max_ms": 0.006125,
+      "mean_ms": 0.006125
+    },
+    {
+      "experiment": "full-smoke-kk-base",
+      "player": "belief-32-shipped",
+      "method": "prepareDeal",
+      "n": 9,
+      "p50_ms": 757.679541,
+      "p95_ms": 1522.375958,
+      "max_ms": 1522.375958,
+      "mean_ms": 812.7623935555556
+    },
+    {
+      "experiment": "full-smoke-kk-base",
+      "player": "skatgo",
+      "method": "announceContract",
+      "n": 5,
+      "p50_ms": 0.006417,
+      "p95_ms": 0.071583,
+      "max_ms": 0.071583,
+      "mean_ms": 0.0190918
+    },
+    {
+      "experiment": "full-smoke-kk-base",
+      "player": "skatgo",
+      "method": "bid",
+      "n": 12,
+      "p50_ms": 0.300708,
+      "p95_ms": 3.143875,
+      "max_ms": 3.143875,
+      "mean_ms": 0.5604375
+    },
+    {
+      "experiment": "full-smoke-kk-base",
+      "player": "skatgo",
+      "method": "discardSkat",
+      "n": 5,
+      "p50_ms": 0.676084,
+      "p95_ms": 1.895833,
+      "max_ms": 1.895833,
+      "mean_ms": 0.9728834000000001
+    },
+    {
+      "experiment": "full-smoke-kk-base",
+      "player": "skatgo",
+      "method": "pickUpSkat",
+      "n": 5,
+      "p50_ms": 0.367667,
+      "p95_ms": 1.452125,
+      "max_ms": 1.452125,
+      "mean_ms": 0.5742418
+    },
+    {
+      "experiment": "full-smoke-kk-base",
+      "player": "skatgo",
+      "method": "prepareDeal",
+      "n": 9,
+      "p50_ms": 0.629,
+      "p95_ms": 52.315542,
+      "max_ms": 52.315542,
+      "mean_ms": 10.772763888888889
+    },
+    {
+      "experiment": "full-smoke-ml-base",
+      "player": "jskat-ml-pro",
+      "method": "announceContract",
+      "n": 16,
+      "p50_ms": 0.012292,
+      "p95_ms": 0.033625,
+      "max_ms": 0.033625,
+      "mean_ms": 0.0143724375
+    },
+    {
+      "experiment": "full-smoke-ml-base",
+      "player": "jskat-ml-pro",
+      "method": "bid",
+      "n": 172,
+      "p50_ms": 0.000959,
+      "p95_ms": 1.110083,
+      "max_ms": 4.514042,
+      "mean_ms": 0.3539231976744186
+    },
+    {
+      "experiment": "full-smoke-ml-base",
+      "player": "jskat-ml-pro",
+      "method": "discardSkat",
+      "n": 16,
+      "p50_ms": 420.871375,
+      "p95_ms": 604.291792,
+      "max_ms": 604.291792,
+      "mean_ms": 450.567059875
+    },
+    {
+      "experiment": "full-smoke-ml-base",
+      "player": "jskat-ml-pro",
+      "method": "pickUpSkat",
+      "n": 16,
+      "p50_ms": 0.003625,
+      "p95_ms": 0.020834,
+      "max_ms": 0.020834,
+      "mean_ms": 0.0051668124999999995
+    },
+    {
+      "experiment": "full-smoke-ml-base",
+      "player": "jskat-ml-pro",
+      "method": "prepareDeal",
+      "n": 54,
+      "p50_ms": 0.018583,
+      "p95_ms": 0.054083,
+      "max_ms": 1.091625,
+      "mean_ms": 0.04111038888888889
+    },
+    {
+      "experiment": "full-smoke-ml-base",
+      "player": "skatgo",
+      "method": "announceContract",
+      "n": 20,
+      "p50_ms": 0.004083,
+      "p95_ms": 0.009458,
+      "max_ms": 0.079292,
+      "mean_ms": 0.00792085
+    },
+    {
+      "experiment": "full-smoke-ml-base",
+      "player": "skatgo",
+      "method": "bid",
+      "n": 173,
+      "p50_ms": 0.000667,
+      "p95_ms": 0.313542,
+      "max_ms": 2.998292,
+      "mean_ms": 0.11086487283236994
+    },
+    {
+      "experiment": "full-smoke-ml-base",
+      "player": "skatgo",
+      "method": "discardSkat",
+      "n": 20,
+      "p50_ms": 0.308166,
+      "p95_ms": 0.821208,
+      "max_ms": 2.366459,
+      "mean_ms": 0.52314155
+    },
+    {
+      "experiment": "full-smoke-ml-base",
+      "player": "skatgo",
+      "method": "pickUpSkat",
+      "n": 20,
+      "p50_ms": 0.288125,
+      "p95_ms": 0.337834,
+      "max_ms": 1.872292,
+      "mean_ms": 0.37124795
+    },
+    {
+      "experiment": "full-smoke-ml-base",
+      "player": "skatgo",
+      "method": "prepareDeal",
+      "n": 54,
+      "p50_ms": 0.550208,
+      "p95_ms": 0.690541,
+      "max_ms": 53.328542,
+      "mean_ms": 2.2685192407407406
+    }
+  ],
+  "verification": {
+    "formal_games": 3348,
+    "formal_illegal_actions": 0,
+    "formal_timeouts": 0,
+    "formal_failed_processes": 0,
+    "formal_detected_substitutions": 0,
+    "controls": [
+      {
+        "candidate": "skatzero",
+        "boards": 18,
+        "games": 108,
+        "hidden_comparisons": 108,
+        "hidden_mismatches": 0
+      },
+      {
+        "candidate": "jskat",
+        "boards": 18,
+        "games": 108,
+        "hidden_comparisons": 108,
+        "hidden_mismatches": 0
+      },
+      {
+        "candidate": "skatgo",
+        "boards": 18,
+        "games": 108,
+        "hidden_comparisons": 108,
+        "hidden_mismatches": 0
+      },
+      {
+        "candidate": "skatklar",
+        "boards": 6,
+        "games": 36,
+        "hidden_comparisons": 108,
+        "hidden_mismatches": 0
+      }
+    ],
+    "parity_graphs": 14,
+    "parity_mismatches": 0,
+    "excluded_stock_smoke_games": 36,
+    "original_history_identity_mismatches": 6,
+    "original_history_identity_checks": 9,
+    "execution_failures": [
+      {
+        "name": "compile-probe",
+        "exit_code": 1,
+        "timed_out": false
+      }
+    ],
+    "setup_note": "One relative-path position-audit launch failed before child creation; rerun with absolute paths.",
+    "unsupported_strength_claims": [
+      "Full auction",
+      "Hand",
+      "Ouvert",
+      "human Elo",
+      "Render capacity"
+    ],
+    "product_diff_empty": true
+  },
+  "skatzero_phases": [
+    {
+      "phase": "bid",
+      "seconds": 1.2934366670087911,
+      "status": "ok",
+      "answer": "72",
+      "error": null,
+      "fixture": "upstream api.py documented hand, forehand, winning bid 18",
+      "configuration": "upstream API algorithm; ONNX agent loader; 231 pickup iterations with upstream 60s cap"
+    },
+    {
+      "phase": "pickup_or_hand",
+      "seconds": 1.2721771670039743,
+      "status": "ok",
+      "answer": "GH",
+      "error": null,
+      "fixture": "upstream api.py documented hand, forehand, winning bid 18",
+      "configuration": "upstream API algorithm; ONNX agent loader; 231 pickup iterations with upstream 60s cap"
+    },
+    {
+      "phase": "discard_contract",
+      "seconds": 0.009088999999221414,
+      "status": "ok",
+      "answer": "G.CT.ST",
+      "error": null,
+      "fixture": "upstream api.py documented hand, forehand, winning bid 18",
+      "configuration": "upstream API algorithm; ONNX agent loader; 231 pickup iterations with upstream 60s cap"
+    }
+  ]
+}

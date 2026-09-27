@@ -1,0 +1,12 @@
+{
+  "ticket": "SKATGO-22",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-22",
+  "branch": "SKATGO-22-ai-benchmark",
+  "base": "dbb2c4dc60152283534fad69f9746e7495a8a53b",
+  "ports": {
+    "web": 55022
+  }
+}

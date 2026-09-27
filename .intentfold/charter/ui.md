@@ -62,12 +62,12 @@ skatgo now develops on its own, and parrottoon.com/skat is not a reference for n
 The literal check — part of `engineering.md`'s mechanical defence:
 
 ```bash
-grep -rnE "className=|style=\{\{|#[0-9a-fA-F]{6}" app/src --exclude-dir=theme
+git grep -nE "className=|style=\{\{|#[0-9a-fA-F]{6}" -- app/src ':(exclude)app/src/theme/**'
 ```
 
-It must return **exactly one** line: the `theme-color` meta in `app/src/routes/__root.tsx`, which
-cannot read a CSS variable. `app/src/theme/` is excluded because colour literals are what a registry
-is made of.
+It must return **exactly one** tracked product line: the `theme-color` meta in
+`app/src/routes/__root.tsx`, which cannot read a CSS variable. `app/src/theme/` is excluded because
+colour literals are what a registry is made of; ignored generated output is not product source.
 
 Rebuilding the Astryx theme after an approved change to `parrottoonTheme.ts`:
 

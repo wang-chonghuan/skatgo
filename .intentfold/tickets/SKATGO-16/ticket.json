@@ -1,0 +1,12 @@
+{
+  "ticket": "SKATGO-16",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-16",
+  "branch": "SKATGO-16-render-migration",
+  "base": "516056bb58ed8edb4284120d5a5b6e61692bf481",
+  "ports": {
+    "web": 55016
+  }
+}

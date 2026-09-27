@@ -12,8 +12,9 @@ npm-debug.log
 **/.env
 **/.env.*
 
-# Build-context slimming: `az acr build` uploads the whole repo root, and none of
-# these participate in the app image.
+# Build-context slimming: the image only needs the application sources copied by
+# the Dockerfile.
+.intentfold
 .tmp
 tmp
 test-results

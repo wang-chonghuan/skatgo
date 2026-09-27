@@ -148,12 +148,13 @@ python3 ~/.agents/skills/ips-render-ops/scripts/release.py --only skatgo --commi
 
 **Post-deploy check**
 
-The deploy command exiting 0 is not confirmation — Azure reports success while an old revision keeps
+The deploy command exiting 0 is not confirmation — Render can report success while an old deploy keeps
 serving. Routes are derived from the app's own generated route manifest and languages from the inlang
 project, so a new route or a new language needs no edit here. Every page lives under a language prefix
 (`/en`, `/de`, `/zh`); a URL without one answers 307 to the visitor's language (SKATGO-1):
 
 ```bash
+bash <<'BASH'
 URL=https://skatgo.com
 
 # FIRST: is the live Render deploy the commit just released? Everything below would happily validate
@@ -193,7 +194,7 @@ for l in $locales; do
     done
   done
 done
-rm -f "$body"
+rm "$body"
 
 # Without a prefix, every route redirects to one of the languages.
 for r in $routes; do
@@ -215,6 +216,7 @@ done
 [ "$assets" -gt 0 ] || { echo "FAIL: pages named no /assets/ files — not the built app"; exit 1; }
 [ "$fail" -eq 0 ] || { echo "FAIL: a page, a redirect, an asset or a crawler file is wrong"; exit 1; }
 printf 'OK: %s pages in %s languages, %s asset loads, serving %s\n' "$pages" "$(echo $locales | wc -w | tr -d ' ')" "$assets" "$got"
+BASH
 ```
 
 Run against a commit the app is not serving, it must exit 1 — that was checked before this was

@@ -7,7 +7,12 @@ import { contractName, ledName } from '~/lib/skat/i18n'
 import { sameSet } from '~/lib/skat/lessons/drills'
 import type { ChoiceStep, OrderStep, PickStep, PlayStep, TeachStep } from '~/lib/skat/lessons/types'
 import { m } from '~/paraglide/messages'
+import { bp } from '../../theme/breakpoints.stylex'
+import { playIn, shake } from '../../theme/constants'
+import { shadow, texture } from '../../theme/effects.stylex'
+import { border, opacity, radius, size, space } from '../../theme/scale.stylex'
 import { skat } from '../../theme/skat.stylex'
+import { typography } from '../../theme/type'
 import { CardRowView, Fan } from './card-row'
 import { PlayingCard } from './playing-card'
 import { Btn, Panel, Rich } from './ui'
@@ -25,13 +30,13 @@ export type StepCallbacks = { onSolved: () => void; onMistake: () => void; solve
 export function Teach({ step }: { step: TeachStep }) {
   return (
     <div {...stylex.props(styles.stack)}>
-      <h2 {...stylex.props(styles.title)}>{step.title}</h2>
+      <h2 {...stylex.props(typography.stepTitle, styles.title)}>{step.title}</h2>
       {step.body.map((p, i) => (
-        <p key={i} {...stylex.props(styles.para)}><Rich text={p} /></p>
+        <p key={i} {...stylex.props(typography.body, styles.para)}><Rich text={p} /></p>
       ))}
       {step.rows?.map((row, i) => <CardRowView key={i} row={row} />)}
       {step.tip ? (
-        <Panel tone="tip"><p {...stylex.props(styles.para)}>💡 <Rich text={step.tip} /></p></Panel>
+        <Panel tone="tip"><p {...stylex.props(typography.body, styles.para)}>💡 <Rich text={step.tip} /></p></Panel>
       ) : null}
     </div>
   )
@@ -41,7 +46,7 @@ export function Teach({ step }: { step: TeachStep }) {
 function Shake({ nonce, children }: { nonce: number; children: ReactNode }) {
   const [scope, animate] = useAnimate<HTMLDivElement>()
   useEffect(() => {
-    if (nonce > 0) void animate(scope.current, { x: [0, -9, 9, -6, 6, 0] }, { duration: 0.35 })
+    if (nonce > 0) void animate(scope.current, { x: shake.x }, { duration: shake.duration })
   }, [nonce, animate, scope])
   return <div ref={scope}>{children}</div>
 }
@@ -50,7 +55,7 @@ function Feedback({ state, good, bad }: { state: 'idle' | 'wrong' | 'right'; goo
   if (state === 'idle') return null
   return (
     <Panel tone={state === 'right' ? 'good' : 'bad'}>
-      <p data-testid={state === 'right' ? 'skat-feedback-right' : 'skat-feedback-wrong'} {...stylex.props(styles.para)}>
+      <p data-testid={state === 'right' ? 'skat-feedback-right' : 'skat-feedback-wrong'} {...stylex.props(typography.body, styles.para)}>
         {state === 'right' ? '✅ ' : '❌ '}
         <Rich text={state === 'right' ? good : bad} />
       </p>
@@ -77,7 +82,7 @@ export function Choice({ step, onSolved, onMistake, solvedBefore }: { step: Choi
 
   return (
     <div {...stylex.props(styles.stack)}>
-      <p {...stylex.props(styles.prompt)}><Rich text={step.prompt} /></p>
+      <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
       {step.rows?.map((row, i) => <CardRowView key={i} row={row} />)}
       <Shake nonce={nonce}>
         <div {...stylex.props(styles.options)}>
@@ -89,7 +94,7 @@ export function Choice({ step, onSolved, onMistake, solvedBefore }: { step: Choi
               data-correct={String(i === step.answer)}
               disabled={right || wrong.includes(i)}
               onClick={() => choose(i)}
-              {...stylex.props(styles.option, right && i === step.answer && styles.optionRight, wrong.includes(i) && styles.optionWrong)}
+              {...stylex.props(typography.option, styles.option, right && i === step.answer && styles.optionRight, wrong.includes(i) && styles.optionWrong)}
             >
               <Rich text={o} />
             </button>
@@ -136,8 +141,8 @@ export function Pick({ step, onSolved, onMistake, solvedBefore }: { step: PickSt
 
   return (
     <div {...stylex.props(styles.stack)}>
-      <p {...stylex.props(styles.prompt)}><Rich text={step.prompt} /></p>
-      {step.context ? <p {...stylex.props(styles.context)}><Rich text={step.context} /></p> : null}
+      <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
+      {step.context ? <p {...stylex.props(typography.context, styles.context)}><Rich text={step.context} /></p> : null}
       <Shake nonce={nonce}>
         <div {...stylex.props(styles.felt)}>
           <Fan testId="skat-pick" cards={step.cards} size="lg" onPick={tap} answer={step.correct} selected={state === 'right' ? [] : chosen} verdicts={verdicts} glow={state === 'right' ? step.correct : []} />
@@ -185,7 +190,7 @@ export function Order({ step, onSolved, onMistake, solvedBefore }: { step: Order
 
   return (
     <div {...stylex.props(styles.stack)}>
-      <p {...stylex.props(styles.prompt)}><Rich text={step.prompt} /></p>
+      <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
       <Shake nonce={nonce}>
         <div {...stylex.props(styles.felt)}>
           <Fan
@@ -233,22 +238,22 @@ export function Play({ step, onSolved, onMistake, solvedBefore }: { step: PlaySt
 
   return (
     <div {...stylex.props(styles.stack)}>
-      <p {...stylex.props(styles.prompt)}><Rich text={step.prompt} /></p>
+      <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
       <div {...stylex.props(styles.felt)}>
         <div {...stylex.props(styles.trickRow)}>
-          <span {...stylex.props(styles.feltLabel)}>{m.ex_on_table({ contract: contractName(step.contract) })}</span>
+          <span {...stylex.props(typography.label, styles.feltLabel)}>{m.ex_on_table({ contract: contractName(step.contract) })}</span>
           <div {...stylex.props(styles.trickCards)}>
-            {step.trick.length === 0 && !played ? <span {...stylex.props(styles.feltLabel)}>{m.ex_you_lead()}</span> : null}
+            {step.trick.length === 0 && !played ? <span {...stylex.props(typography.label, styles.feltLabel)}>{m.ex_you_lead()}</span> : null}
             {step.trick.map((c, i) => (
               <div key={cardId(c)} {...stylex.props(styles.trickCell)}>
                 <PlayingCard card={c} size="md" />
-                <span {...stylex.props(styles.feltLabel)}>{step.trickBy?.[i] ?? ''}</span>
+                <span {...stylex.props(typography.label, styles.feltLabel)}>{step.trickBy?.[i] ?? ''}</span>
               </div>
             ))}
             {played ? (
-              <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} {...stylex.props(styles.trickCell)}>
+              <motion.div initial={{ opacity: 0, y: playIn.rise }} animate={{ opacity: 1, y: 0 }} {...stylex.props(styles.trickCell)}>
                 <PlayingCard card={played} size="md" glow />
-                <span {...stylex.props(styles.feltLabel)}>{m.name_you()}</span>
+                <span {...stylex.props(typography.label, styles.feltLabel)}>{m.name_you()}</span>
               </motion.div>
             ) : null}
           </div>
@@ -263,45 +268,41 @@ export function Play({ step, onSolved, onMistake, solvedBefore }: { step: PlaySt
 }
 
 const styles = stylex.create({
-  stack: { display: 'flex', flexDirection: 'column', gap: 16 },
-  title: { margin: 0, fontSize: { default: 26, '@media (max-width: 480px)': 22 }, fontWeight: 800, lineHeight: 1.25, color: skat.ink, fontFamily: '"Fraunces", "Songti SC", "Noto Serif SC", serif' },
-  para: { margin: 0, fontSize: 16, lineHeight: 1.75, color: skat.ink },
-  prompt: { margin: 0, fontSize: { default: 19, '@media (max-width: 480px)': 17 }, lineHeight: 1.6, fontWeight: 600, color: skat.ink },
-  context: { margin: 0, fontSize: 14, color: skat.inkSoft },
-  options: { display: 'grid', gridTemplateColumns: { default: '1fr 1fr', '@media (max-width: 480px)': '1fr' }, gap: 10 },
+  stack: { display: 'flex', flexDirection: 'column', gap: space.x16 },
+  title: { margin: 0, color: skat.ink },
+  para: { margin: 0, color: skat.ink },
+  prompt: { margin: 0, color: skat.ink },
+  context: { margin: 0, color: skat.inkSoft },
+  options: { display: 'grid', gridTemplateColumns: { default: size.twoColumns, [bp.phone]: size.oneColumn }, gap: space.x10 },
   option: {
     textAlign: 'left',
-    paddingBlock: 14,
-    paddingInline: 16,
-    borderRadius: 14,
-    borderWidth: 2,
+    paddingBlock: space.x14,
+    paddingInline: space.x16,
+    borderRadius: radius.tile,
+    borderWidth: border.tile,
     borderStyle: 'solid',
     borderColor: { default: skat.paperEdge, ':hover': skat.brass },
     backgroundColor: skat.white,
     color: skat.ink,
-    fontFamily: 'inherit',
-    fontSize: 16,
-    fontWeight: 600,
-    lineHeight: 1.4,
     cursor: 'pointer',
-    boxShadow: `0 2px 0 ${skat.paperEdge}`,
+    boxShadow: shadow.ledgeOption,
   },
   optionRight: { borderColor: skat.good, backgroundColor: skat.goodSoft, opacity: 1 },
-  optionWrong: { borderColor: skat.bad, backgroundColor: skat.badSoft, opacity: 0.6, cursor: 'not-allowed' },
+  optionWrong: { borderColor: skat.bad, backgroundColor: skat.badSoft, opacity: opacity.spent, cursor: 'not-allowed' },
   felt: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 8,
-    padding: { default: 16, '@media (max-width: 480px)': 8 },
-    borderRadius: 20,
+    gap: space.x8,
+    padding: { default: space.x16, [bp.phone]: space.x8 },
+    borderRadius: radius.felt,
     backgroundColor: skat.felt,
-    backgroundImage: `radial-gradient(ellipse at 50% 30%, ${skat.feltLight} 0%, ${skat.felt} 60%, ${skat.feltDeep} 100%)`,
-    boxShadow: `inset 0 0 0 3px ${skat.feltDeep}`,
+    backgroundImage: texture.feltDrill,
+    boxShadow: shadow.feltInset,
     color: skat.white,
   },
-  feltLabel: { fontSize: 12, fontWeight: 700, opacity: 0.9, color: skat.white },
-  trickRow: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, paddingTop: 4 },
-  trickCards: { display: 'flex', gap: 12, alignItems: 'flex-start', justifyContent: 'center', minHeight: 110 },
-  trickCell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 },
+  feltLabel: { opacity: opacity.label, color: skat.white },
+  trickRow: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x8, paddingTop: space.x4 },
+  trickCards: { display: 'flex', gap: space.x12, alignItems: 'flex-start', justifyContent: 'center', minHeight: size.trickRow },
+  trickCell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
   centerRow: { display: 'flex', justifyContent: 'center' },
 })

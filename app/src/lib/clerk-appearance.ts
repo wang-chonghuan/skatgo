@@ -1,4 +1,5 @@
 import { skat } from '../theme/skat.stylex'
+import { radius } from '../theme/scale.stylex'
 
 // Clerk's own windows — sign-in, sign-up, the account menu (SKATGO-12) — in the course's colours.
 // Clerk draws them itself, like deep-chat draws the chat; what we control is the palette it is
@@ -16,6 +17,6 @@ export const clerkAppearance = {
     colorBorder: skat.paperEdge,
     colorDanger: skat.bad,
     colorRing: skat.brass,
-    borderRadius: '12px',
+    borderRadius: radius.control,
   },
 }

@@ -7,7 +7,12 @@ import { type ComponentType, Suspense, lazy, useCallback, useEffect, useMemo, us
 import { GUEST, type ChatMessage, clearConversation, loadConversation, saveConversation } from '~/lib/ask/conversation'
 import { lessonById } from '~/lib/skat/lessons/content'
 import { m } from '~/paraglide/messages'
+import { bp } from '../../theme/breakpoints.stylex'
+import { icon, phoneQuery } from '../../theme/constants'
+import { move, shadow } from '../../theme/effects.stylex'
+import { border, layer, opacity, radius, size, space } from '../../theme/scale.stylex'
 import { skat } from '../../theme/skat.stylex'
+import { typography } from '../../theme/type'
 import type { AskPage, AskThreadProps } from './ask-thread'
 
 // The floating assistant (SKATGO-9), rebuilt after Trovestep's context chat (SKATGO-14): a round
@@ -23,9 +28,6 @@ import type { AskPage, AskThreadProps } from './ask-thread'
 // deep-chat is a browser web component; the server build folds this branch away so the library never
 // enters the SSR bundle, and a learner who never opens the window never downloads it.
 const AskThread = lazy<ComponentType<AskThreadProps>>(() => (import.meta.env.SSR ? Promise.resolve({ default: () => null }) : import('./ask-thread')))
-
-const PHONE = '@media (max-width: 480px)'
-const PHONE_QUERY = '(max-width: 480px)'
 
 /** Which page the assistant is on, from the router's (language-free) path; null where it does not appear. */
 function pageOf(pathname: string): AskPage | null {
@@ -91,9 +93,9 @@ function useOwner(): string | null {
 // --- Phone behaviour ------------------------------------------------------------------------------
 
 function usePhone(): boolean {
-  const [phone, setPhone] = useState(() => window.matchMedia(PHONE_QUERY).matches)
+  const [phone, setPhone] = useState(() => window.matchMedia(phoneQuery).matches)
   useEffect(() => {
-    const query = window.matchMedia(PHONE_QUERY)
+    const query = window.matchMedia(phoneQuery)
     const update = () => setPhone(query.matches)
     query.addEventListener('change', update)
     return () => query.removeEventListener('change', update)
@@ -315,7 +317,7 @@ function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
           onClick={() => setOpen(true)}
           {...stylex.props(styles.launcher)}
         >
-          <MessageCircle aria-hidden="true" size={24} strokeWidth={2.2} />
+          <MessageCircle aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
         </button>
       )}
       {open ? (
@@ -329,8 +331,8 @@ function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
         >
           <header {...stylex.props(styles.head)}>
             <div {...stylex.props(styles.headText)}>
-              <span {...stylex.props(styles.name)}>{m.ask_name()}</span>
-              <span title={title} data-testid="ask-title" {...stylex.props(styles.pageTitle)}>
+              <span {...stylex.props(typography.windowName)}>{m.ask_name()}</span>
+              <span title={title} data-testid="ask-title" {...stylex.props(typography.windowSub, styles.pageTitle)}>
                 {title}
               </span>
             </div>
@@ -343,7 +345,7 @@ function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
               onClick={newConversation}
               {...stylex.props(styles.icon, messageCount === 0 && styles.iconDisabled)}
             >
-              <Plus aria-hidden="true" size={18} />
+              <Plus aria-hidden="true" size={icon.header} />
             </button>
             <button
               type="button"
@@ -355,17 +357,17 @@ function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
               onClick={() => void copyConversation()}
               {...stylex.props(styles.icon, messageCount === 0 && styles.iconDisabled)}
             >
-              {copied ? <Check aria-hidden="true" size={18} /> : <Copy aria-hidden="true" size={18} />}
+              {copied ? <Check aria-hidden="true" size={icon.header} /> : <Copy aria-hidden="true" size={icon.header} />}
             </button>
             <button type="button" aria-label={m.ask_close()} title={m.ask_close()} data-testid="ask-close" onClick={() => setOpen(false)} {...stylex.props(styles.icon)}>
-              <X aria-hidden="true" size={18} />
+              <X aria-hidden="true" size={icon.header} />
             </button>
           </header>
           <div {...stylex.props(styles.body)}>
             {owner === null ? (
-              <p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>
+              <p {...stylex.props(typography.context, styles.loading)}>{m.ask_loading()}</p>
             ) : (
-              <Suspense fallback={<p {...stylex.props(styles.loading)}>{m.ask_loading()}</p>}>
+              <Suspense fallback={<p {...stylex.props(typography.context, styles.loading)}>{m.ask_loading()}</p>}>
                 <AskThread key={threadKey} page={page} history={messages} onMessage={onMessage} signal={signal} />
               </Suspense>
             )}
@@ -383,45 +385,45 @@ const dynamic = stylex.create({
 const styles = stylex.create({
   launcher: {
     position: 'fixed',
-    right: 24,
-    bottom: { default: 48, [PHONE]: 24 },
-    zIndex: 40,
+    right: space.x24,
+    bottom: { default: size.launcherLift, [bp.phone]: space.x24 },
+    zIndex: layer.launcher,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 56,
-    height: 56,
+    width: size.launcher,
+    height: size.launcher,
     padding: 0,
     borderWidth: 0,
-    borderRadius: 999,
+    borderRadius: radius.round,
     backgroundColor: { default: skat.feltLight, ':hover': skat.felt },
     color: skat.white,
     cursor: 'pointer',
-    boxShadow: `0 3px 0 ${skat.feltDeep}, 0 8px 20px ${skat.shadowSoft}`,
-    transform: { default: 'translateY(0)', ':active': 'translateY(2px)' },
+    boxShadow: shadow.launcher,
+    transform: { default: move.rest, ':active': move.press },
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: 3,
+    outlineWidth: border.focus,
     outlineColor: skat.brass,
-    outlineOffset: 2,
+    outlineOffset: border.focusOffset,
   },
   panel: {
     position: 'fixed',
-    right: 24,
-    bottom: 48,
-    zIndex: 41,
+    right: space.x24,
+    bottom: size.launcherLift,
+    zIndex: layer.window,
     display: 'flex',
     flexDirection: 'column',
-    width: 'min(480px, calc(100vw - 48px))',
-    height: 'min(576px, calc(100dvh - 96px))',
+    width: size.windowWidth,
+    height: size.windowHeight,
     boxSizing: 'border-box',
     overflow: 'hidden',
-    borderRadius: 16,
-    borderWidth: 1,
+    borderRadius: radius.window,
+    borderWidth: border.hair,
     borderStyle: 'solid',
     borderColor: skat.paperEdge,
     backgroundColor: skat.paper,
     color: skat.ink,
-    boxShadow: `0 14px 40px ${skat.shadow}`,
+    boxShadow: shadow.float,
   },
   // A phone gets the whole screen: the visible area is too small to share, and nothing behind the
   // window should be reachable while it is open.
@@ -431,7 +433,7 @@ const styles = stylex.create({
     bottom: 'auto',
     left: 0,
     width: '100%',
-    height: '100dvh',
+    height: size.screenDynamic,
     paddingTop: 'env(safe-area-inset-top)',
     paddingBottom: 'env(safe-area-inset-bottom)',
     borderRadius: 0,
@@ -441,36 +443,35 @@ const styles = stylex.create({
   head: {
     display: 'flex',
     alignItems: 'center',
-    gap: 4,
-    paddingBlock: 10,
-    paddingInline: 14,
+    gap: space.x4,
+    paddingBlock: space.x10,
+    paddingInline: space.x14,
     backgroundColor: skat.feltDeep,
     color: skat.white,
     flexShrink: 0,
   },
-  headText: { display: 'flex', flexDirection: 'column', minWidth: 0, flexGrow: 1, marginRight: 4 },
-  name: { fontSize: 15, fontWeight: 800, lineHeight: 1.3 },
-  pageTitle: { fontSize: 12, opacity: 0.85, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  headText: { display: 'flex', flexDirection: 'column', minWidth: 0, flexGrow: 1, marginRight: space.x4 },
+  pageTitle: { opacity: opacity.meta, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   icon: {
     flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 34,
-    height: 34,
+    width: size.iconButton,
+    height: size.iconButton,
     padding: 0,
     borderWidth: 0,
-    borderRadius: 999,
+    borderRadius: radius.round,
     backgroundColor: { default: 'transparent', ':hover': skat.felt },
     color: skat.white,
     cursor: 'pointer',
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: 2,
+    outlineWidth: border.focusSm,
     outlineColor: skat.brass,
   },
-  iconDisabled: { opacity: 0.4, cursor: 'not-allowed', backgroundColor: { default: 'transparent', ':hover': 'transparent' } },
+  iconDisabled: { opacity: opacity.iconDisabled, cursor: 'not-allowed', backgroundColor: { default: 'transparent', ':hover': 'transparent' } },
   // Clipped in both directions: deep-chat lays itself out before its styles land, and on a phone that
   // first, wider pass would stretch the layout viewport past the screen.
   body: { flexGrow: 1, minHeight: 0, minWidth: 0, display: 'flex', overflow: 'hidden' },
-  loading: { margin: 'auto', fontSize: 14, color: skat.inkSoft },
+  loading: { margin: 'auto', color: skat.inkSoft },
 })

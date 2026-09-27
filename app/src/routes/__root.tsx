@@ -9,6 +9,7 @@ import { m } from '~/paraglide/messages'
 import { getLocale, locales } from '~/paraglide/runtime'
 import { SkatLayout } from '~/skat-layout'
 import { APP_THEME_MODE, APP_THEME_NAME, appTheme } from '~/theme'
+import { themeColor } from '~/theme/constants'
 import '~/styles/app.css'
 
 // The document shell, taken from Parrottoon's root route with only what the course uses: the same
@@ -35,8 +36,8 @@ export const Route = createRootRoute({
       meta: [
         { charSet: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        // The theme's --color-background-body, light value. A meta tag cannot read a CSS variable.
-        { name: 'theme-color', content: '#F5F5F5' },
+        // The header's felt; a meta tag cannot read a CSS variable, so the value is a constant.
+        { name: 'theme-color', content: themeColor },
         { title },
         { name: 'description', content: description },
         { property: 'og:title', content: title },

@@ -32,7 +32,12 @@ import {
 } from '~/lib/skat/game'
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
+import { bp } from '../../theme/breakpoints.stylex'
+import { confettiBurst, trick } from '../../theme/constants'
+import { shadow, texture } from '../../theme/effects.stylex'
+import { border, opacity, radius, size, space } from '../../theme/scale.stylex'
 import { skat } from '../../theme/skat.stylex'
+import { typography } from '../../theme/type'
 import { Fan } from './card-row'
 import { PlayingCard } from './playing-card'
 import { Btn, Panel, Pill, Rich } from './ui'
@@ -104,7 +109,7 @@ export function GameTable({ onSettled }: Props) {
     const humanWon = declarer === ME ? result.won : !result.won
     onSettled?.({ humanWon, humanScore: declarer === ME ? result.score : 0 })
     if (humanWon) {
-      void confetti({ particleCount: 90, spread: 70, origin: { y: 0.7 } })
+      void confetti(confettiBurst.game)
     }
   }, [game, onSettled])
 
@@ -184,7 +189,7 @@ export function GameTable({ onSettled }: Props) {
                 <PlayingCard key={i} card={c} faceDown size="sm" />
               ))}
             </div>
-            <span {...stylex.props(styles.feltLabel)}>{m.table_skat()}</span>
+            <span {...stylex.props(typography.label, styles.feltLabel)}>{m.table_skat()}</span>
           </div>
         ) : null}
 
@@ -192,14 +197,14 @@ export function GameTable({ onSettled }: Props) {
           {game.trick.map((p) => (
             <motion.div
               key={cardId(p.card)}
-              initial={{ opacity: 0, scale: 0.7, ...FROM[p.seat] }}
+              initial={{ opacity: 0, scale: trick.fromScale, ...trick.from[p.seat] }}
               animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-              exit={{ opacity: 0, scale: 0.6, transition: { duration: 0.25 } }}
-              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+              exit={{ opacity: 0, scale: trick.exitScale, transition: { duration: trick.exitDuration } }}
+              transition={trick.spring}
               {...stylex.props(styles.trickCard, positions[p.seat])}
             >
               <PlayingCard card={p.card} size="md" glow={game.phase === 'trickEnd' && winner === p.seat} />
-              <span {...stylex.props(styles.feltLabel)}>{nameOf(p.seat)}</span>
+              <span {...stylex.props(typography.label, styles.feltLabel)}>{nameOf(p.seat)}</span>
             </motion.div>
           ))}
         </AnimatePresence>
@@ -240,8 +245,8 @@ export function GameTable({ onSettled }: Props) {
       </div>
 
       <div data-testid="skat-actions" {...stylex.props(styles.actions)}>
-        {refusal ? <Panel tone="bad"><p {...stylex.props(styles.note)}><Rich text={refusal} /></p></Panel> : null}
-        {hint ? <Panel tone="tip"><p {...stylex.props(styles.note)}>💡 <Rich text={hint.text} /></p></Panel> : null}
+        {refusal ? <Panel tone="bad"><p {...stylex.props(typography.note, styles.note)}><Rich text={refusal} /></p></Panel> : null}
+        {hint ? <Panel tone="tip"><p {...stylex.props(typography.note, styles.note)}>💡 <Rich text={hint.text} /></p></Panel> : null}
         <Actions
           game={game}
           picked={picked}
@@ -278,15 +283,15 @@ function SeatBadge({ seat, game, active, said, score }: { seat: Seat; game: Game
   return (
     <div data-testid={`skat-seat-${seat}`} {...stylex.props(styles.seat, active && styles.seatActive)}>
       <div {...stylex.props(styles.seatHead)}>
-        <span {...stylex.props(styles.face)}>{FACES[seat]}</span>
+        <span {...stylex.props(typography.seatFace)}>{FACES[seat]}</span>
         <div {...stylex.props(styles.seatText)}>
-          <span {...stylex.props(styles.seatName)}>{nameOf(seat)}</span>
-          <span {...stylex.props(styles.seatMeta)}>
+          <span {...stylex.props(typography.name)}>{nameOf(seat)}</span>
+          <span {...stylex.props(typography.micro, styles.seatMeta)}>
             {role}
             {isDeclarer ? ` · ${m.table_declarer_word()}` : ''} · {m.table_seat_score({ n: score })}
           </span>
         </div>
-        {said ? <span {...stylex.props(styles.bubble)}>{said}</span> : null}
+        {said ? <span {...stylex.props(typography.bid, styles.bubble)}>{said}</span> : null}
       </div>
       <div {...stylex.props(styles.backs)}>
         {open
@@ -449,10 +454,10 @@ function DeclarePicker({
               data-covers={String(v >= game.bid)}
               aria-pressed={chosen}
               onClick={() => setDraft(make(c))}
-              {...stylex.props(styles.contractBtn, chosen && styles.contractChosen, v < game.bid && styles.contractShort)}
+              {...stylex.props(typography.control, styles.contractBtn, chosen && styles.contractChosen, v < game.bid && styles.contractShort)}
             >
-              <span {...stylex.props(styles.contractName)}><Rich text={contractName(c)} /></span>
-              <span {...stylex.props(styles.contractValue)}>{m.declare_worth({ value: v })}{v < game.bid ? m.declare_short() : ''}</span>
+              <span {...stylex.props(typography.contract)}><Rich text={contractName(c)} /></span>
+              <span {...stylex.props(typography.micro, styles.contractValue)}>{m.declare_worth({ value: v })}{v < game.bid ? m.declare_short() : ''}</span>
             </button>
           )
         })}
@@ -476,7 +481,7 @@ function DeclarePicker({
       ) : null}
       {draft && value !== null ? (
         <Panel tone={value >= game.bid ? 'good' : 'bad'}>
-          <p {...stylex.props(styles.note)}>
+          <p {...stylex.props(typography.note, styles.note)}>
             {value >= game.bid
               ? m.declare_covers({ contract: `${contractName(draft.contract)}${draft.hand ? ' Hand' : ''}`, value, bid: game.bid })
               : m.declare_overbid({ contract: contractName(draft.contract), value, bid: game.bid })}
@@ -516,8 +521,8 @@ function Result({ game, onNewGame }: { game: Game; onNewGame: () => void }) {
     <div ref={panel} data-testid="skat-result" data-human-won={String(humanWon)} {...stylex.props(styles.declare)}>
       <Panel tone={humanWon ? 'good' : 'bad'}>
         <div {...stylex.props(styles.resultBody)}>
-          <h3 {...stylex.props(styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
-          <p {...stylex.props(styles.note)}>
+          <h3 {...stylex.props(typography.resultTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
+          <p {...stylex.props(typography.note, styles.note)}>
             <Rich
               text={m.result_line({
                 who: declarer === ME ? m.result_you_declared() : m.result_other_declared({ name: nameOf(declarer) }),
@@ -528,16 +533,16 @@ function Result({ game, onNewGame }: { game: Game; onNewGame: () => void }) {
             />
           </p>
           {isNull ? null : (
-            <p data-testid="skat-result-points" {...stylex.props(styles.note)}>
+            <p data-testid="skat-result-points" {...stylex.props(typography.note, styles.note)}>
               <Rich text={m.result_points({ declarer: r.declarerPoints, defenders: r.defenderPoints })} />
             </p>
           )}
-          <p data-testid="skat-result-formula" {...stylex.props(styles.note)}>{m.result_formula({ formula })}</p>
-          <p {...stylex.props(styles.note)}>
+          <p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>
+          <p {...stylex.props(typography.note, styles.note)}>
             <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score))} />
           </p>
           <div {...stylex.props(styles.resultSkat)}>
-            <span {...stylex.props(styles.inkLabel)}>{m.result_skat()}</span>
+            <span {...stylex.props(typography.smallBold, styles.inkLabel)}>{m.result_skat()}</span>
             {game.skat.map((c) => <PlayingCard key={cardId(c)} card={c} size="xs" />)}
           </div>
         </div>
@@ -558,71 +563,64 @@ function scoreLine(declarer: Seat, won: boolean, score: string): string {
 
 function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
   return (
-    <button type="button" aria-pressed={on} onClick={onClick} {...stylex.props(styles.toggle, on && styles.toggleOn)}>
+    <button type="button" aria-pressed={on} onClick={onClick} {...stylex.props(typography.toggle, styles.toggle, on && styles.toggleOn)}>
       {on ? '☑' : '☐'} {children}
     </button>
   )
 }
 
 const Row = ({ children }: { children: ReactNode }) => <div {...stylex.props(styles.row)}>{children}</div>
-const Say = ({ children }: { children: ReactNode }) => <p {...stylex.props(styles.say)}>{children}</p>
+const Say = ({ children }: { children: ReactNode }) => <p {...stylex.props(typography.say, styles.say)}>{children}</p>
 
-// Where a card flies in from: each player's side of the table.
-const FROM: Record<Seat, { x: number; y: number }> = { 0: { x: 0, y: 90 }, 1: { x: -120, y: -40 }, 2: { x: 120, y: -40 } }
 
 const styles = stylex.create({
   table: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 10,
-    padding: { default: 16, '@media (max-width: 480px)': 10 },
-    borderRadius: 24,
+    gap: space.x10,
+    padding: { default: space.x16, [bp.phone]: space.x10 },
+    borderRadius: radius.stage,
     backgroundColor: skat.felt,
-    backgroundImage: `radial-gradient(ellipse at 50% 35%, ${skat.feltLight} 0%, ${skat.felt} 55%, ${skat.feltDeep} 100%)`,
-    boxShadow: `inset 0 0 0 3px ${skat.feltDeep}, 0 10px 30px ${skat.shadow}`,
+    backgroundImage: texture.feltTable,
+    boxShadow: shadow.table,
     color: skat.white,
     overflow: 'hidden',
   },
-  opponents: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
+  opponents: { display: 'grid', gridTemplateColumns: size.twoColumns, gap: space.x10 },
   seat: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 6,
-    padding: 8,
-    borderRadius: 14,
+    gap: space.x6,
+    padding: space.x8,
+    borderRadius: radius.tile,
     backgroundColor: skat.feltDeep,
-    borderWidth: 2,
+    borderWidth: border.tile,
     borderStyle: 'solid',
     borderColor: 'transparent',
     minWidth: 0,
   },
   seatActive: { borderColor: skat.brass },
-  seatHead: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 },
-  face: { fontSize: 26, lineHeight: 1 },
+  seatHead: { display: 'flex', alignItems: 'center', gap: space.x8, minWidth: 0 },
   seatText: { display: 'flex', flexDirection: 'column', minWidth: 0, flexGrow: 1 },
-  seatName: { fontWeight: 800, fontSize: 15 },
   // One line on a desk; on a phone it may wrap, because the seat's role ("Mittelhand") is part of what
   // the learner has to read, and next to a bid bubble one line leaves room for only a few letters.
   seatMeta: {
-    fontSize: 12,
-    opacity: 0.85,
-    whiteSpace: { default: 'nowrap', '@media (max-width: 480px)': 'normal' },
+    opacity: opacity.meta,
+    whiteSpace: { default: 'nowrap', [bp.phone]: 'normal' },
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   bubble: {
     backgroundColor: skat.paper,
     color: skat.ink,
-    fontWeight: 800,
-    fontSize: 14,
-    paddingBlock: 4,
-    paddingInline: 10,
-    borderRadius: 12,
+    paddingBlock: space.x4,
+    paddingInline: space.x10,
+    borderRadius: radius.control,
     whiteSpace: 'nowrap',
   },
-  backs: { display: 'flex', paddingRight: 22, minHeight: 48 },
-  backSlot: { flexBasis: 22, flexShrink: 1, minWidth: 8 },
-  centre: { position: 'relative', height: { default: 230, '@media (max-width: 480px)': 190 } },
+  backs: { display: 'flex', paddingRight: size.backsTail, minHeight: size.backsRow },
+  backSlot: { flexBasis: size.backSlot, flexShrink: 1, minWidth: size.backSlotMin },
+  centre: { position: 'relative', height: { default: size.tableCentre, [bp.phone]: size.tableCentrePhone } },
   skatPile: {
     position: 'absolute',
     inset: 0,
@@ -630,76 +628,71 @@ const styles = stylex.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: space.x6,
   },
-  skatCards: { display: 'flex', gap: 6 },
-  feltLabel: { fontSize: 12, fontWeight: 700, opacity: 0.9 },
-  inkLabel: { fontSize: 13, fontWeight: 700, color: skat.inkSoft },
-  trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 },
-  trickNote: { position: 'absolute', left: 0, right: 0, top: 4, display: 'flex', justifyContent: 'center' },
-  strip: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' },
-  mine: { display: 'flex', flexDirection: 'column', gap: 2 },
-  mineHead: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' },
+  skatCards: { display: 'flex', gap: space.x6 },
+  feltLabel: { opacity: opacity.label },
+  inkLabel: { color: skat.inkSoft },
+  trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
+  trickNote: { position: 'absolute', left: 0, right: 0, top: space.x4, display: 'flex', justifyContent: 'center' },
+  strip: { display: 'flex', flexWrap: 'wrap', gap: space.x6, justifyContent: 'center' },
+  mine: { display: 'flex', flexDirection: 'column', gap: space.x2 },
+  mineHead: { display: 'flex', flexWrap: 'wrap', gap: space.x6, justifyContent: 'center' },
   actions: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 10,
-    padding: { default: 14, '@media (max-width: 480px)': 12 },
-    borderRadius: 18,
+    gap: space.x10,
+    padding: { default: space.x14, [bp.phone]: space.x12 },
+    borderRadius: radius.panel,
     backgroundColor: skat.paper,
     color: skat.ink,
   },
-  row: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 },
-  say: { margin: 0, fontSize: 15, lineHeight: 1.5, flexBasis: '100%', color: skat.ink },
+  row: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x10 },
+  say: { margin: 0, flexBasis: '100%', color: skat.ink },
   // Colour is stated on every heading and paragraph in the course: the app theme colours `h*` and
   // `p` itself, and in dark mode that colour is a light one — unreadable on this paper.
-  note: { margin: 0, fontSize: 14, lineHeight: 1.6, color: skat.ink },
-  declare: { display: 'flex', flexDirection: 'column', gap: 10 },
-  contractGrid: { display: 'grid', gridTemplateColumns: { default: 'repeat(6, 1fr)', '@media (max-width: 600px)': 'repeat(3, 1fr)' }, gap: 8 },
+  note: { margin: 0, color: skat.ink },
+  declare: { display: 'flex', flexDirection: 'column', gap: space.x10 },
+  contractGrid: { display: 'grid', gridTemplateColumns: { default: size.contractColumns, [bp.contracts]: size.contractColumnsPhone }, gap: space.x8 },
   contractBtn: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 2,
-    paddingBlock: 10,
-    paddingInline: 4,
-    borderRadius: 14,
-    borderWidth: 2,
+    gap: space.x2,
+    paddingBlock: space.x10,
+    paddingInline: space.x4,
+    borderRadius: radius.tile,
+    borderWidth: border.tile,
     borderStyle: 'solid',
     borderColor: skat.paperEdge,
     backgroundColor: skat.white,
     color: skat.ink,
-    fontFamily: 'inherit',
     cursor: 'pointer',
   },
   contractChosen: { borderColor: skat.brassDeep, backgroundColor: skat.brassSoft },
-  contractShort: { opacity: 0.6 },
-  contractName: { fontSize: 16, fontWeight: 800 },
-  contractValue: { fontSize: 12, color: skat.inkSoft },
-  toggles: { display: 'flex', flexWrap: 'wrap', gap: 8 },
+  contractShort: { opacity: opacity.spent },
+  contractValue: { color: skat.inkSoft },
+  toggles: { display: 'flex', flexWrap: 'wrap', gap: space.x8 },
   toggle: {
-    borderWidth: 1,
+    borderWidth: border.hair,
     borderStyle: 'solid',
     borderColor: skat.paperEdge,
     backgroundColor: skat.white,
     color: skat.ink,
-    borderRadius: 999,
-    paddingBlock: 6,
-    paddingInline: 12,
-    fontFamily: 'inherit',
-    fontSize: 13,
-    fontWeight: 600,
+    borderRadius: radius.round,
+    paddingBlock: space.x6,
+    paddingInline: space.x12,
     cursor: 'pointer',
   },
   toggleOn: { backgroundColor: skat.brassSoft, borderColor: skat.brassDeep },
-  resultBody: { display: 'flex', flexDirection: 'column', gap: 6 },
-  resultTitle: { margin: 0, fontSize: 20, fontWeight: 800, color: skat.ink },
-  resultSkat: { display: 'flex', alignItems: 'center', gap: 6 },
+  resultBody: { display: 'flex', flexDirection: 'column', gap: space.x6 },
+  resultTitle: { margin: 0, color: skat.ink },
+  resultSkat: { display: 'flex', alignItems: 'center', gap: space.x6 },
 })
 
 // The three places a played card lands: in front of whoever played it.
 const positions = stylex.create({
-  0: { left: '50%', bottom: 0, marginLeft: { default: -36, '@media (max-width: 480px)': -29 } },
-  1: { left: { default: '22%', '@media (max-width: 480px)': '10%' }, top: 22 },
-  2: { right: { default: '22%', '@media (max-width: 480px)': '10%' }, top: 22 },
+  0: { left: size.half, bottom: 0, marginLeft: { default: size.trickHalfCard, [bp.phone]: size.trickHalfCardPhone } },
+  1: { left: { default: size.trickSide, [bp.phone]: size.trickSidePhone }, top: size.trickTop },
+  2: { right: { default: size.trickSide, [bp.phone]: size.trickSidePhone }, top: size.trickTop },
 })

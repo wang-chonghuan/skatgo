@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-19",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "auto-merge",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-19",
+  "branch": "SKATGO-19-tokenize-design",
+  "base": "dbb2c4dc60152283534fad69f9746e7495a8a53b",
+  "ports": { "web": 55019 }
+}

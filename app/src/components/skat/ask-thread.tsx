@@ -8,7 +8,11 @@ import { LIMITS } from '~/lib/ask/limits'
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
+import { icon } from '../../theme/constants'
+import { shadow } from '../../theme/effects.stylex'
+import { border, radius, size, space } from '../../theme/scale.stylex'
 import { skat } from '../../theme/skat.stylex'
+import { fontSize, leading } from '../../theme/type.stylex'
 
 // The message list, input and send button of the assistant (SKATGO-14, after Trovestep's
 // deep-chat-thread): deep-chat — the approved third-party chat body (ui.md) — loaded only when the
@@ -123,8 +127,10 @@ export default function AskThread({ page, history, onMessage, signal }: AskThrea
   }, [router, sendIcon])
 
   const config = useMemo(() => {
-    const bubble = { maxWidth: '88%', lineHeight: '1.5', padding: '10px 14px', borderRadius: '14px', color: skat.ink }
-    const button = { borderRadius: '999px', width: '36px', height: '36px' }
+    // deep-chat takes plain CSS strings; the course's tokens are CSS variables, which reach inside its
+    // shadow root by inheritance.
+    const bubble = { maxWidth: size.chatBubbleMax, lineHeight: leading.compact, padding: `${space.x10} ${space.x14}`, borderRadius: radius.tile, color: skat.ink }
+    const button = { borderRadius: radius.round, width: size.chatButton, height: size.chatButton }
     return {
       connect: {
         stream: true,
@@ -176,13 +182,13 @@ export default function AskThread({ page, history, onMessage, signal }: AskThrea
         characterLimit: LIMITS.questionChars,
         placeholder: { text: atTable ? m.ask_placeholder_play() : m.ask_placeholder(), style: { color: skat.inkFaint } },
         styles: {
-          container: { width: 'calc(100% - 32px)', backgroundColor: skat.white, border: `1px solid ${skat.paperEdge}`, borderRadius: '14px', boxShadow: 'none', color: skat.ink },
-          focus: { border: `1px solid ${skat.brass}`, boxShadow: `0 0 0 3px ${skat.brassSoft}` },
-          text: { padding: '10px 12px', color: skat.ink },
+          container: { width: size.chatInputWidth, backgroundColor: skat.white, border: `${border.hair} solid ${skat.paperEdge}`, borderRadius: radius.tile, boxShadow: 'none', color: skat.ink },
+          focus: { border: `${border.hair} solid ${skat.brass}`, boxShadow: shadow.chatFocus },
+          text: { padding: `${space.x10} ${space.x12}`, color: skat.ink },
         },
       },
-      chatStyle: { width: '100%', maxWidth: '100%', minWidth: '0', height: '100%', border: 'none', borderRadius: '0', backgroundColor: skat.paper, fontFamily: 'inherit', fontSize: '15px' },
-      inputAreaStyle: { backgroundColor: skat.paper, borderTop: `1px solid ${skat.paperEdge}` },
+      chatStyle: { width: '100%', maxWidth: '100%', minWidth: '0', height: '100%', border: 'none', borderRadius: '0', backgroundColor: skat.paper, fontFamily: 'inherit', fontSize: fontSize.f15 },
+      inputAreaStyle: { backgroundColor: skat.paper, borderTop: `${border.hair} solid ${skat.paperEdge}` },
       messageStyles: {
         default: {
           shared: { bubble },
@@ -191,9 +197,8 @@ export default function AskThread({ page, history, onMessage, signal }: AskThrea
         },
         intro: { bubble: { ...bubble, backgroundColor: skat.paperDeep, color: skat.inkSoft } },
         error: { bubble: { ...bubble, backgroundColor: skat.badSoft, color: skat.bad } },
-        // The three dots are one 0.45em element with a pseudo-element 0.7em either side, in a 1em box;
-        // offsetting by that geometry leaves the same gap on both sides (SKATGO-11).
-        loading: { message: { styles: { bubble: { ...bubble, backgroundColor: skat.paperDeep, color: skat.inkSoft, padding: '10px 1.08em 10px 1.63em' } } } },
+        // The padding centres deep-chat's three dots (SKATGO-11); its geometry is explained at the token.
+        loading: { message: { styles: { bubble: { ...bubble, backgroundColor: skat.paperDeep, color: skat.inkSoft, padding: size.chatLoadingPadding } } } },
       },
       submitButtonStyles: {
         submit: {
@@ -212,8 +217,8 @@ export default function AskThread({ page, history, onMessage, signal }: AskThrea
       auxiliaryStyle: [
         '.input-button-svg { display: flex; align-items: center; justify-content: center; }',
         '#messages, #text-input { overscroll-behavior: contain; }',
-        '.input-button-svg > svg { width: 18px; height: 18px; }',
-        `#stop-icon { position: static; width: 12px; height: 12px; border-radius: 2px; background-color: ${skat.white}; }`,
+        `.input-button-svg > svg { width: ${size.chatIcon}; height: ${size.chatIcon}; }`,
+        `#stop-icon { position: static; width: ${size.chatStopIcon}; height: ${size.chatStopIcon}; border-radius: ${size.chatStopRadius}; background-color: ${skat.white}; }`,
       ].join('\n'),
       errorMessages: { displayServiceErrorMessages: true },
       displayLoadingBubble: true,
@@ -237,7 +242,7 @@ export default function AskThread({ page, history, onMessage, signal }: AskThrea
   if (!sendIcon) {
     return (
       <span ref={iconSource} hidden>
-        <ArrowUp strokeWidth={2.5} />
+        <ArrowUp strokeWidth={icon.sendStroke} />
       </span>
     )
   }

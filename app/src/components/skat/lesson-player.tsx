@@ -8,7 +8,11 @@ import { lessons } from '~/lib/skat/lessons/content'
 import type { Lesson, Step } from '~/lib/skat/lessons/types'
 import { type LessonRecord, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
+import { confettiBurst, finish, stepSlide } from '../../theme/constants'
+import { move } from '../../theme/effects.stylex'
+import { border, radius, size, space } from '../../theme/scale.stylex'
 import { skat } from '../../theme/skat.stylex'
+import { typography } from '../../theme/type'
 import { Choice, Order, Pick, Play, Teach } from './exercises'
 import { GameTable } from './game-table'
 import { Btn, Panel, ProgressBar, Rich, Stars, linkLook } from './ui'
@@ -54,7 +58,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
 
   useEffect(() => {
     if (!record) return
-    void confetti({ particleCount: 140, spread: 80, origin: { y: 0.6 } })
+    void confetti(confettiBurst.lesson)
   }, [record])
 
   if (record) return <Finished lesson={lesson} record={record} />
@@ -62,20 +66,20 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   return (
     <div data-testid="skat-lesson" data-step={index} data-step-kind={step.kind} {...stylex.props(styles.root)}>
       <div {...stylex.props(styles.head)}>
-        <Link to="/" aria-label={m.lesson_close()} {...stylex.props(styles.close)}>✕</Link>
+        <Link to="/" aria-label={m.lesson_close()} {...stylex.props(typography.closeGlyph, styles.close)}>✕</Link>
         <div {...stylex.props(styles.bar)}>
           <ProgressBar value={index / steps.length} label={m.lesson_progress()} />
         </div>
-        <span data-testid="skat-step-count" {...stylex.props(styles.count)}>{index + 1} / {steps.length}</span>
+        <span data-testid="skat-step-count" {...stylex.props(typography.smallBold, styles.count)}>{index + 1} / {steps.length}</span>
       </div>
 
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
-          initial={{ opacity: 0, x: 28 }}
+          initial={{ opacity: 0, x: stepSlide.offset }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -28 }}
-          transition={{ duration: 0.2 }}
+          exit={{ opacity: 0, x: -stepSlide.offset }}
+          transition={{ duration: stepSlide.duration }}
           {...stylex.props(styles.body)}
         >
           {step.kind === 'teach' ? <Teach step={step} /> : null}
@@ -85,15 +89,15 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
           {step.kind === 'play' ? <Play step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
           {step.kind === 'game' ? (
             <div {...stylex.props(styles.gameStep)}>
-              <h2 {...stylex.props(styles.gameTitle)}>{step.title}</h2>
-              {step.body.map((p, i) => <p key={i} {...stylex.props(styles.gamePara)}><Rich text={p} /></p>)}
+              <h2 {...stylex.props(typography.pageTitle, styles.gameTitle)}>{step.title}</h2>
+              {step.body.map((p, i) => <p key={i} {...stylex.props(typography.bodySmall, styles.gamePara)}><Rich text={p} /></p>)}
               <GameTable
                 onSettled={({ humanWon, humanScore }) => {
                   recordGame(humanWon, humanScore)
                   onSolved()
                 }}
               />
-              {solved ? <Panel tone="good"><p {...stylex.props(styles.gamePara)}>{m.lesson_game_done()}</p></Panel> : null}
+              {solved ? <Panel tone="good"><p {...stylex.props(typography.bodySmall, styles.gamePara)}>{m.lesson_game_done()}</p></Panel> : null}
             </div>
           ) : null}
         </motion.div>
@@ -117,16 +121,16 @@ function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) 
   const following = course[i + 1]
   return (
     <div data-testid="skat-lesson-done" {...stylex.props(styles.done)}>
-      <motion.div initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} {...stylex.props(styles.doneEmoji)}>
+      <motion.div initial={{ scale: finish.fromScale, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={finish.spring} {...stylex.props(typography.celebrate)}>
         {following ? lesson.emoji : '🏅'}
       </motion.div>
-      <h2 {...stylex.props(styles.doneTitle)}>{following ? m.done_title({ id: lesson.id }) : m.done_graduated()}</h2>
+      <h2 {...stylex.props(typography.finishTitle, styles.doneTitle)}>{following ? m.done_title({ id: lesson.id }) : m.done_graduated()}</h2>
       <div {...stylex.props(styles.doneStars)}><Stars n={record.stars} /></div>
-      <p {...stylex.props(styles.doneNote)}>
+      <p {...stylex.props(typography.body, styles.doneNote)}>
         {record.mistakes === 0 ? m.done_perfect() : m.done_mistakes({ n: record.mistakes })}
       </p>
       {following ? null : (
-        <p {...stylex.props(styles.doneNote)}>{m.done_next_steps()}</p>
+        <p {...stylex.props(typography.body, styles.doneNote)}>{m.done_next_steps()}</p>
       )}
       <div {...stylex.props(styles.doneActions)}>
         {following ? (
@@ -143,44 +147,41 @@ function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) 
 }
 
 const styles = stylex.create({
-  root: { display: 'flex', flexDirection: 'column', gap: 18, minHeight: '100%' },
-  head: { display: 'flex', alignItems: 'center', gap: 12 },
+  root: { display: 'flex', flexDirection: 'column', gap: space.x18, minHeight: '100%' },
+  head: { display: 'flex', alignItems: 'center', gap: space.x12 },
   close: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 36,
-    height: 36,
-    borderRadius: 999,
+    width: size.closeButton,
+    height: size.closeButton,
+    borderRadius: radius.round,
     color: skat.inkSoft,
     backgroundColor: { default: 'transparent', ':hover': skat.paperDeep },
     textDecoration: 'none',
-    fontSize: 18,
-    fontWeight: 700,
     flexShrink: 0,
   },
   bar: { flexGrow: 1 },
-  count: { fontSize: 13, fontWeight: 700, color: skat.inkSoft, whiteSpace: 'nowrap' },
+  count: { color: skat.inkSoft, whiteSpace: 'nowrap' },
   body: { flexGrow: 1 },
   foot: {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
+    gap: space.x10,
     position: 'sticky',
     bottom: 0,
-    paddingBlock: 12,
+    paddingBlock: space.x12,
     backgroundColor: skat.paper,
-    borderTopWidth: 1,
+    borderTopWidth: border.hair,
     borderTopStyle: 'solid',
     borderTopColor: skat.paperEdge,
   },
-  gameStep: { display: 'flex', flexDirection: 'column', gap: 12 },
-  gameTitle: { margin: 0, fontSize: 24, fontWeight: 800, color: skat.ink },
-  gamePara: { margin: 0, fontSize: 15, lineHeight: 1.7, color: skat.ink },
-  done: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 14, paddingBlock: 40 },
-  doneEmoji: { fontSize: 88, lineHeight: 1 },
-  doneTitle: { margin: 0, fontSize: 28, fontWeight: 800, color: skat.ink },
-  doneStars: { transform: 'scale(2)', marginBlock: 8 },
-  doneNote: { margin: 0, fontSize: 16, lineHeight: 1.7, color: skat.inkSoft, maxWidth: 460 },
-  doneActions: { display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 8 },
+  gameStep: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  gameTitle: { margin: 0, color: skat.ink },
+  gamePara: { margin: 0, color: skat.ink },
+  done: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: space.x14, paddingBlock: space.x40 },
+  doneTitle: { margin: 0, color: skat.ink },
+  doneStars: { transform: move.starsBig, marginBlock: space.x8 },
+  doneNote: { margin: 0, color: skat.inkSoft, maxWidth: size.proseNarrow },
+  doneActions: { display: 'flex', flexWrap: 'wrap', gap: space.x12, justifyContent: 'center', marginTop: space.x8 },
 })

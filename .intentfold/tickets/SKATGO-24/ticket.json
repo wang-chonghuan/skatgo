@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-24",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-24",
   "branch": "SKATGO-24-deploy-web-only",

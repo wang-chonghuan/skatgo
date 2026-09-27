@@ -2,9 +2,9 @@
   "ticket": "SKATGO-20",
   "mode": "autonomous",
   "stage": "handed-off",
-  "finish": "auto-deploy",
+  "finish": "auto-merge",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-20",
-  "branch": "codex/SKATGO-20-colyseus-infra",
+  "branch": "codex/SKATGO-20-docs-handoff",
   "base": "dbb2c4dc60152283534fad69f9746e7495a8a53b",
   "ports": {
     "web": 55020,

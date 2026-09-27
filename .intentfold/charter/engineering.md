@@ -72,6 +72,15 @@ also built from the repository root. Neither project imports the other's runtime
 
 ## Tools
 
+**Multiplayer development entry**
+
+[Multiplayer backend guide](../../multiplayer/README.md) is the primary integration
+reference and a major SKATGO-20 deliverable. It covers local startup and environment
+variables, SDK room creation/joining/recovery, public and private state, commands
+and receipts, disconnect/AI takeover, persistence, verification, and Render
+release/rollback. Start there when integrating or extending multiplayer; ticket
+handoffs record delivery evidence, not the current usage contract.
+
 **Mechanical defence**
 
 Run once before the handoff. Each part catches a different class of defect:

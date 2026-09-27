@@ -1,12 +1,12 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
-import { Link, Outlet, useRouterState } from '@tanstack/react-router'
+import { Link, Outlet } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
 import { LANG_TAG } from '~/lib/site'
 import { AskLauncher } from '~/components/skat/ask'
 import { Btn } from '~/components/skat/ui'
 import { m } from '~/paraglide/messages'
-import { type Locale, getLocale, localizeHref, locales, setLocale } from '~/paraglide/runtime'
+import { type Locale, getLocale, locales, setLocale } from '~/paraglide/runtime'
 import { bp } from './theme/breakpoints.stylex'
 import { border, radius, size, space } from './theme/scale.stylex'
 import { skat } from './theme/skat.stylex'
@@ -62,39 +62,40 @@ function Account() {
   )
 }
 
-/** How each language names itself in the switch: short enough for a phone header, in its own script. */
-const SELF_NAME: Record<Locale, string> = { zh: '中文', en: 'EN', de: 'DE' }
-const FULL_NAME: Record<Locale, string> = { zh: '中文', en: 'English', de: 'Deutsch' }
+/** How each language names itself, in its own script. */
+const NAME: Record<Locale, string> = { zh: '中文', en: 'English', de: 'Deutsch' }
 
 /**
- * The same page in the other languages. Each is a real link to that language's URL — crawlers and
- * "open in new tab" follow it — and a click goes through Paraglide's setLocale, which also remembers
- * the choice (cookie) for the next visit to skatgo.com.
+ * The language, folded into one menu (SKATGO-23). A native <select>: it opens above everything, a phone
+ * shows its own picker, and the keyboard works without help. Choosing goes through Paraglide's
+ * setLocale, which loads the same page in that language and remembers the choice (cookie) — the only
+ * way the site ever switches to Chinese without the address saying so (lib/locale.ts). Crawlers find
+ * the other languages through the <link rel="alternate" hreflang> tags every page carries.
  */
 function LanguageSwitch() {
-  const path = useRouterState({ select: (s) => s.location.pathname })
   const current = getLocale()
   return (
-    <nav aria-label={m.language_label()} data-testid="language-switch" {...stylex.props(styles.switch)}>
-      {locales.map((l) => (
-        <a
-          key={l}
-          href={localizeHref(path, { locale: l })}
-          hrefLang={LANG_TAG[l]}
-          lang={LANG_TAG[l]}
-          aria-label={FULL_NAME[l]}
-          aria-current={l === current ? 'true' : undefined}
-          data-locale={l}
-          onClick={(e) => {
-            e.preventDefault()
-            if (l !== current) void setLocale(l)
-          }}
-          {...stylex.props(typography.switch, styles.lang, l === current && styles.langCurrent)}
-        >
-          {SELF_NAME[l]}
-        </a>
-      ))}
-    </nav>
+    <span {...stylex.props(styles.switch)}>
+      <select
+        aria-label={m.language_label()}
+        data-testid="language-switch"
+        value={current}
+        onChange={(e) => {
+          const next = e.target.value as Locale
+          if (next !== current) void setLocale(next)
+        }}
+        {...stylex.props(typography.switch, styles.select)}
+      >
+        {locales.map((l) => (
+          <option key={l} value={l} lang={LANG_TAG[l]} {...stylex.props(styles.option)}>
+            {NAME[l]}
+          </option>
+        ))}
+      </select>
+      <span aria-hidden="true" {...stylex.props(typography.switch, styles.chevron)}>
+        ▾
+      </span>
+    </span>
   )
 }
 
@@ -121,20 +122,30 @@ const styles = stylex.create({
   // The SkatGo logo (SKATGO-23): a square image, rounded here like a card.
   brandMark: { display: 'block', width: size.brandMark, height: size.brandMark, borderRadius: radius.card, flexShrink: 0 },
   headerEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x6 }, flexShrink: 0 },
-  switch: { display: 'flex', alignItems: 'center', gap: space.x2, flexShrink: 0 },
-  lang: {
+  switch: { position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0 },
+  // A pill on the felt header, the chevron drawn over its right end.
+  select: {
+    appearance: 'none',
+    margin: 0,
     paddingBlock: space.x6,
-    paddingInline: { default: space.x10, [bp.phone]: space.x8 },
+    paddingLeft: space.x12,
+    paddingRight: space.x24,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: skat.feltLight,
     borderRadius: radius.round,
     color: skat.white,
     backgroundColor: { default: 'transparent', ':hover': skat.felt },
-    textDecoration: 'none',
+    cursor: 'pointer',
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focusSm,
     outlineColor: skat.brass,
     outlineOffset: border.focusOffsetSm,
   },
-  langCurrent: { backgroundColor: { default: skat.brass, ':hover': skat.brass }, color: skat.ink },
+  // The open list is drawn by the browser; give its rows the page's paper and ink so they never
+  // inherit the header's white-on-transparent.
+  option: { color: skat.ink, backgroundColor: skat.paper },
+  chevron: { position: 'absolute', right: space.x10, color: skat.white, pointerEvents: 'none' },
   main: {
     flexGrow: 1,
     width: '100%',

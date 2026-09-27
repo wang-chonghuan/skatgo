@@ -226,8 +226,9 @@ Recurring patterns built on native elements — reuse them rather than inventing
 **Layout and responsive**
 
 - The frame (`app/src/skat-layout.tsx`): a `feltDeep` header — the brand on the left (the SkatGo
-  logo, `logo-96.png` shown at `size.brandMark` and rounded `radius.card`, then the name), the language
-  switch and account on the right — then a reading column at most `size.column` wide, centred.
+  logo, `logo-96.png` shown at `size.brandMark` and rounded `radius.card`, then the name), and on the
+  right the language menu — one native `<select>` drawn as a `radius.round` pill with a ▾, its list in
+  paper and ink — and the account; then a reading column at most `size.column` wide, centred.
 - **The phone step is `bp.phone`**, used throughout; the course map's hero stacks at `bp.hero` and the
   contract picker wraps at `bp.contracts`. On a phone a hand of more than six cards is held as two
   rows, because ten cards in one row at 375px leave each card too narrow to tap. Answer options go

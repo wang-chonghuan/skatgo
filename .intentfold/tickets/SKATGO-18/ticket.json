@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-18",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-18",
+  "branch": "SKATGO-18-ui-design-system",
+  "base": "60a1c0fbba19a7df6c2c7738958044bd7be476d7",
+  "ports": { "web": 55018 }
+}

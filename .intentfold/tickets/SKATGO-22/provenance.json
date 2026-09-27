@@ -1,0 +1,238 @@
+{
+  "sources": [
+    {
+      "directory": "skatzero",
+      "url": "https://github.com/Jimboom7/SkatZero.git",
+      "commit": "1fe5cabbd5f9c3e77ab51714b0ac702e5a71e53b",
+      "commit_date": "2025-06-19T20:47:35+02:00"
+    },
+    {
+      "directory": "skat-ai",
+      "url": "https://github.com/honkphluxx/skat-ai.git",
+      "commit": "8cd77cd59899b96d29f204e2f06645619899ef9a",
+      "commit_date": "2026-09-27T06:52:49Z"
+    },
+    {
+      "directory": "skat-ai/third_party/jskat",
+      "url": "https://github.com/honkphluxx/jskat.git",
+      "commit": "733a05fd555258720fe487a0a46b477bf8ab5bff",
+      "commit_date": "2026-09-04T19:13:28Z"
+    },
+    {
+      "directory": "skat-ml-models",
+      "url": "https://github.com/avaskys/skat-ml-models.git",
+      "commit": "c7cd5f31c5a95a7726e4ecfd74d8f5837e8ac151",
+      "commit_date": "2026-02-16T21:03:20-08:00"
+    }
+  ],
+  "files": [
+    {
+      "path": "sources/skatzero/models/onnx/D_0.onnx",
+      "bytes": 6157084,
+      "sha256": "dd1ee8ab2dcbc41099703de675ada38f792f3c22993c63794b1731f1c59f8f47"
+    },
+    {
+      "path": "sources/skatzero/models/onnx/D_1.onnx",
+      "bytes": 6193948,
+      "sha256": "638ec4074261e3b677247aef4560fbfbc485e5b9f89979b50329bc468599899f"
+    },
+    {
+      "path": "sources/skatzero/models/onnx/D_2.onnx",
+      "bytes": 6193948,
+      "sha256": "96155c43f68c2cc6b1d712745bdff4a2d0b9e4d05227e94ddc75662cb2846516"
+    },
+    {
+      "path": "sources/skatzero/models/onnx/G_0.onnx",
+      "bytes": 6157084,
+      "sha256": "e26b14b955eb72305783062df51fffa885ce18a9c5e8a5690393dbfe324a46b5"
+    },
+    {
+      "path": "sources/skatzero/models/onnx/G_1.onnx",
+      "bytes": 6193948,
+      "sha256": "54af752835b79394cebd937049a567b194266868fd1326c21b11def971f222c5"
+    },
+    {
+      "path": "sources/skatzero/models/onnx/G_2.onnx",
+      "bytes": 6193948,
+      "sha256": "975e78ad93aa328bfadcc7c8323c8dbf8ec90001581056470ed7e9d033efa508"
+    },
+    {
+      "path": "sources/skatzero/models/onnx/N_0.onnx",
+      "bytes": 5663516,
+      "sha256": "3bcdc6c4beee53f0a390334cb212cf1d1381eec389fdb245a397f129040e3b1f"
+    },
+    {
+      "path": "sources/skatzero/models/onnx/N_1.onnx",
+      "bytes": 5765916,
+      "sha256": "d3cad3fc4eec49f030127eca8ec07a376ef24581248af05a0dd061c07717b22c"
+    },
+    {
+      "path": "sources/skatzero/models/onnx/N_2.onnx",
+      "bytes": 5765916,
+      "sha256": "1c92d965a0bdbbe7cf195e721ea60b2db869f7407ee01ac5c606b3318c491fb2"
+    },
+    {
+      "path": "sources/skat-ai/third_party/jskat/.jskat/models/bidding_dense.onnx",
+      "bytes": 7730,
+      "sha256": "961b7c716fc7426ad63b70bf52dd417add0d56e40c53998d5ab81db802bb8075"
+    },
+    {
+      "path": "sources/skat-ai/third_party/jskat/.jskat/models/bidding_dense.onnx.data",
+      "bytes": 9068544,
+      "sha256": "c7f9a22133ec06d1dd64384a1fa4a20858bb31d5b272ea036d1ce488aa672c6b"
+    },
+    {
+      "path": "sources/skat-ai/third_party/jskat/.jskat/models/bidding_transformer.onnx",
+      "bytes": 37308,
+      "sha256": "8a3cd355f12005061f5aab4b00696e3b0f66e2543448dd2649bb642ebb725c53"
+    },
+    {
+      "path": "sources/skat-ai/third_party/jskat/.jskat/models/bidding_transformer.onnx.data",
+      "bytes": 13330432,
+      "sha256": "18e294afa830c4ae12eafa904987900953591b31bf88e93b93d981d66a374dd6"
+    },
+    {
+      "path": "sources/skat-ai/third_party/jskat/.jskat/models/card_play_transformer.onnx",
+      "bytes": 73328815,
+      "sha256": "b7876c92882a44787e1dc2c145915d96ebbdd1fe863281fbdb2732498d1e25e3"
+    },
+    {
+      "path": "sources/skat-ai/third_party/jskat/.jskat/models/game_eval_dense.onnx",
+      "bytes": 6388,
+      "sha256": "f19e7ca2e1f7331bee9759d42230f5b1715cc59c8508e723b8a11ba0cea15322"
+    },
+    {
+      "path": "sources/skat-ai/third_party/jskat/.jskat/models/game_eval_dense.onnx.data",
+      "bytes": 8823808,
+      "sha256": "19faece5f1f073b8564197354e01320ec6f634b5e63c18b96dd6807a81a8ebd5"
+    },
+    {
+      "path": "sources/skat-ai/third_party/jskat/.jskat/models/game_eval_transformer.onnx",
+      "bytes": 41754,
+      "sha256": "44be5760e3eae9e9be3cd1964aa5cb1cec951f272a39d192edff7288e5898cde"
+    },
+    {
+      "path": "sources/skat-ai/third_party/jskat/.jskat/models/game_eval_transformer.onnx.data",
+      "bytes": 12954624,
+      "sha256": "7252b59e2b3dc224496413e019fc7c32d69023cbe3d96190b43d6ca993b5f8df"
+    },
+    {
+      "path": "sources/skatzero/bidding/data/outcome_distributions_D.npy",
+      "bytes": 182528,
+      "sha256": "a69ff3618572a24b703fa33d91edcc46171cbee72fbcd2cd61571f8b0237a20d"
+    },
+    {
+      "path": "sources/skatzero/bidding/data/outcome_distributions_DH.npy",
+      "bytes": 201728,
+      "sha256": "f2f9716e78567d4eb52c2dd50be958d0b2459f100062b5dcd32e07afc5a6f3f7"
+    },
+    {
+      "path": "sources/skatzero/bidding/data/outcome_distributions_G.npy",
+      "bytes": 163328,
+      "sha256": "bee2ccd13798100217f2a7263aca0be23eeedabc9d7c562097fcc777b6958443"
+    },
+    {
+      "path": "sources/skatzero/bidding/data/outcome_distributions_GH.npy",
+      "bytes": 182528,
+      "sha256": "d885bbecd35f34bee6ab20085831500fedfc8a89e23f68949179413c1052c01e"
+    },
+    {
+      "path": "sources/skatzero/bidding/data/values_D.npy",
+      "bytes": 204,
+      "sha256": "85c40a740f61b46ff0e349eac7ba6a7307672e868fd385f2426136d8ee5706e3"
+    },
+    {
+      "path": "sources/skatzero/bidding/data/values_DH.npy",
+      "bytes": 212,
+      "sha256": "bd30d19c3403bd50a227845f2e34bc7445521b16d2ad650f5d2dc2c55b3b46e1"
+    },
+    {
+      "path": "sources/skatzero/bidding/data/values_G.npy",
+      "bytes": 196,
+      "sha256": "5e66dc7c8d4d7b9cec0dcff5ba6a1bb5ea16457b522555fccc297dc3cf422cd9"
+    },
+    {
+      "path": "sources/skatzero/bidding/data/values_GH.npy",
+      "bytes": 204,
+      "sha256": "ea92fc6677dcd427241ee8c7857e215b5dc69019fa4f40746214f392cf77c6c1"
+    },
+    {
+      "path": "sources/skat-ai/belief-model/belief-parity.bin",
+      "bytes": 25740,
+      "sha256": "6c65291671d1697778f6071dd5710ebdf6aeb929daa921951831436276710b5a"
+    },
+    {
+      "path": "sources/skat-ai/belief-model/belief.bin",
+      "bytes": 2939296,
+      "sha256": "df9e0b8d2df66344d929e8329206dd7eea4e598401b756d28db285cac1956199"
+    },
+    {
+      "path": "sources/skat-ai/belief-model/fixtures.npz",
+      "bytes": 26242,
+      "sha256": "8517e6e51adbaec09fd6304180618d2d2da76182727ee52ed4d6a9ecd5e9bdb3"
+    },
+    {
+      "path": "sources/skat-ai/belief-model/model.json",
+      "bytes": 441,
+      "sha256": "3cf55f7a8f8bef57c5d0adbd14947ecfafdc091155b5da572b4d1f3e0015b714"
+    },
+    {
+      "path": "runtime/slf4j-simple.jar",
+      "bytes": 15716,
+      "sha256": "ddfea59ac074c6d3e24ac2c38622d2d963895e17f70b38ed4bdae4d780be6964"
+    }
+  ],
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "baseline_commit": "dbb2c4dc60152283534fad69f9746e7495a8a53b",
+  "baseline_files": [
+    {
+      "path": "app/src/lib/skat/progress.ts",
+      "sha256": "d8966c89e33d0172560d4e392c1a40759d42f49c99c4e6cf77822fa53ef0e5d4"
+    },
+    {
+      "path": "app/src/lib/skat/hints.ts",
+      "sha256": "5145ea110f1fe5ac4ecff1a2b9c52cf5d4e5c523ea70ff2e488b9661d9f5a3ac"
+    },
+    {
+      "path": "app/src/lib/skat/value.ts",
+      "sha256": "0fa92d1545241623b600eda45533a23595639d89a766aa3d1f2179a97530656c"
+    },
+    {
+      "path": "app/src/lib/skat/table-view.ts",
+      "sha256": "d851e04e3c341e226005bf2d331f4a947d35695022d6d123ec049773a690e296"
+    },
+    {
+      "path": "app/src/lib/skat/i18n.ts",
+      "sha256": "960e0662532af3c158546309dd3031b9beb41024590e4dfdcea81bb41501c3d8"
+    },
+    {
+      "path": "app/src/lib/skat/cards.ts",
+      "sha256": "b04b2bf961ed1f259ffb27d57d57918a8c827ebda35b8f5cfdf4e227a729fd12"
+    },
+    {
+      "path": "app/src/lib/skat/ai.ts",
+      "sha256": "f469e30b60e32ed2236afeb8a4c915d4524b8d57fee834c4f74c2d3a5dbfa627"
+    },
+    {
+      "path": "app/src/lib/skat/table-snapshot.ts",
+      "sha256": "830e1fcc48459480eac785df6121051f6319d26258bbdc663e78d7a82586be1b"
+    },
+    {
+      "path": "app/src/lib/skat/game.ts",
+      "sha256": "2671ef913ce44f29b211a69edf80a3d5d568f4768db847835ae013515c1c5d13"
+    }
+  ],
+  "runtimes": {
+    "python": "3.12.13",
+    "numpy": "2.5.3",
+    "node": "24.16.0",
+    "python_onnx": "1.30.0",
+    "node_onnx": "1.30.0",
+    "java_onnx": "1.19.2",
+    "java": "21.0.12.1+1",
+    "gradle": "9.3.1",
+    "nested_jskat_gradle": "8.6"
+  },
+  "instrumentation": "One arena/search thread; CPU only; RSS process-tree sample every 0.5 seconds; 2 GiB JVM heap limit",
+  "limits": "Peak RSS is sampled per whole command, not per bot. Timing runs overlapped some local work."
+}

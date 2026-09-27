@@ -1,0 +1,12 @@
+{
+  "file": "skatgo-22-evidence.tar.gz",
+  "bytes": 2106724,
+  "sha256": "7606e72bb1c344ba55f637bba0a054f502c90f55ecc1bc0d1abaee1d2dcec99e",
+  "entries": 183,
+  "models_included": false,
+  "credentials_included": false,
+  "asset_id": "b10928b7-e268-494e-920f-0e46d06a5c45",
+  "url": "https://api.plane.so/api/assets/v2/workspaces/intentmill/b10928b7-e268-494e-920f-0e46d06a5c45/",
+  "remote_bytes_verified": 2106724,
+  "remote_sha256_verified": "7606e72bb1c344ba55f637bba0a054f502c90f55ecc1bc0d1abaee1d2dcec99e"
+}

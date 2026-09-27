@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-24",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-24",
+  "branch": "SKATGO-24-deploy-web-only",
+  "base": "1c04f21c3f12b654c5d5cd2419c3f9f40a2ec9c1",
+  "ports": { "web": 55024 }
+}

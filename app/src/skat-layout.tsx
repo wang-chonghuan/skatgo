@@ -7,7 +7,10 @@ import { AskLauncher } from '~/components/skat/ask'
 import { Btn } from '~/components/skat/ui'
 import { m } from '~/paraglide/messages'
 import { type Locale, getLocale, localizeHref, locales, setLocale } from '~/paraglide/runtime'
+import { bp } from './theme/breakpoints.stylex'
+import { border, radius, size, space } from './theme/scale.stylex'
 import { skat } from './theme/skat.stylex'
+import { typography } from './theme/type'
 
 // The frame around every page of the course: the felt-green header and the reading column.
 //
@@ -22,10 +25,10 @@ import { skat } from './theme/skat.stylex'
 
 export function SkatLayout() {
   return (
-    <div {...stylex.props(styles.page)}>
+    <div {...stylex.props(typography.frame, styles.page)}>
       <header {...stylex.props(styles.header)}>
-        <Link to="/" {...stylex.props(styles.brand)}>
-          <span {...stylex.props(styles.brandMark)}>♣</span>
+        <Link to="/" {...stylex.props(typography.brand, styles.brand)}>
+          <span {...stylex.props(typography.markGlyph, styles.brandMark)}>♣</span>
           {m.site_name()}
         </Link>
         <div {...stylex.props(styles.headerEnd)}>
@@ -86,7 +89,7 @@ function LanguageSwitch() {
             e.preventDefault()
             if (l !== current) void setLocale(l)
           }}
-          {...stylex.props(styles.lang, l === current && styles.langCurrent)}
+          {...stylex.props(typography.switch, styles.lang, l === current && styles.langCurrent)}
         >
           {SELF_NAME[l]}
         </a>
@@ -97,61 +100,56 @@ function LanguageSwitch() {
 
 const styles = stylex.create({
   page: {
-    minHeight: '100vh',
+    minHeight: size.screen,
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: skat.paper,
     color: skat.ink,
     colorScheme: 'light',
-    fontFamily: '"DM Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif',
   },
   header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
-    paddingBlock: 12,
-    paddingInline: { default: 24, '@media (max-width: 480px)': 14 },
+    gap: space.x12,
+    paddingBlock: space.x12,
+    paddingInline: { default: space.x24, [bp.phone]: space.x14 },
     backgroundColor: skat.feltDeep,
     color: skat.white,
   },
-  brand: { display: 'flex', alignItems: 'center', gap: 8, color: skat.white, textDecoration: 'none', fontWeight: 800, fontSize: 17 },
+  brand: { display: 'flex', alignItems: 'center', gap: space.x8, color: skat.white, textDecoration: 'none' },
   brandMark: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 30,
-    height: 30,
-    borderRadius: 8,
+    width: size.brandMark,
+    height: size.brandMark,
+    borderRadius: radius.card,
     backgroundColor: skat.brass,
     color: skat.ink,
-    fontSize: 20,
   },
-  headerEnd: { display: 'flex', alignItems: 'center', gap: { default: 12, '@media (max-width: 480px)': 6 }, flexShrink: 0 },
-  switch: { display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 },
+  headerEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x6 }, flexShrink: 0 },
+  switch: { display: 'flex', alignItems: 'center', gap: space.x2, flexShrink: 0 },
   lang: {
-    paddingBlock: 5,
-    paddingInline: { default: 10, '@media (max-width: 480px)': 8 },
-    borderRadius: 999,
+    paddingBlock: space.x6,
+    paddingInline: { default: space.x10, [bp.phone]: space.x8 },
+    borderRadius: radius.round,
     color: skat.white,
     backgroundColor: { default: 'transparent', ':hover': skat.felt },
     textDecoration: 'none',
-    fontSize: 13,
-    fontWeight: 700,
-    lineHeight: 1.2,
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: 2,
+    outlineWidth: border.focusSm,
     outlineColor: skat.brass,
-    outlineOffset: 1,
+    outlineOffset: border.focusOffsetSm,
   },
   langCurrent: { backgroundColor: { default: skat.brass, ':hover': skat.brass }, color: skat.ink },
   main: {
     flexGrow: 1,
     width: '100%',
-    maxWidth: 860,
+    maxWidth: size.column,
     marginInline: 'auto',
     boxSizing: 'border-box',
-    paddingBlock: { default: 28, '@media (max-width: 480px)': 16 },
-    paddingInline: { default: 24, '@media (max-width: 480px)': 12 },
+    paddingBlock: { default: space.x28, [bp.phone]: space.x16 },
+    paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
 })

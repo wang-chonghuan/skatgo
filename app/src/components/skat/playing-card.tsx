@@ -38,6 +38,9 @@ import type { ComponentType, SVGProps } from 'react'
 import { type Card, cardId } from '~/lib/skat/cards'
 import { spokenCard } from '~/lib/skat/i18n'
 import { m } from '~/paraglide/messages'
+import { bp } from '../../theme/breakpoints.stylex'
+import { move, shadow, texture, timing } from '../../theme/effects.stylex'
+import { border, radius, size } from '../../theme/scale.stylex'
 import { skat } from '../../theme/skat.stylex'
 
 // One playing card. The faces are Adrian Kennard's public-domain SVG deck (via
@@ -155,16 +158,16 @@ const styles = stylex.create({
   card: {
     display: 'block',
     flexShrink: 0,
-    aspectRatio: '5 / 7',
+    aspectRatio: size.cardAspect,
     padding: 0,
     borderWidth: 0,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: skat.white,
-    boxShadow: `0 2px 6px ${skat.shadow}`,
+    boxShadow: shadow.card,
     overflow: 'hidden',
     transitionProperty: 'transform, box-shadow, opacity, filter',
-    transitionDuration: '160ms',
-    transitionTimingFunction: 'ease-out',
+    transitionDuration: timing.card,
+    transitionTimingFunction: timing.easeOut,
   },
   face: { display: 'block', width: '100%', height: '100%' },
   back: {
@@ -172,34 +175,34 @@ const styles = stylex.create({
     width: '100%',
     height: '100%',
     boxSizing: 'border-box',
-    borderWidth: 3,
+    borderWidth: border.frame,
     borderStyle: 'solid',
     borderColor: skat.white,
     borderRadius: 'inherit',
     backgroundColor: skat.red,
-    backgroundImage: `repeating-linear-gradient(45deg, ${skat.shadowSoft} 0 4px, transparent 4px 8px), repeating-linear-gradient(-45deg, ${skat.shadowSoft} 0 4px, transparent 4px 8px)`,
+    backgroundImage: texture.cardBack,
   },
   clickable: {
     cursor: 'pointer',
-    transform: { default: 'translateY(0)', ':hover': 'translateY(-6px)' },
+    transform: { default: move.rest, ':hover': move.cardHover },
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: 3,
+    outlineWidth: border.focus,
     outlineColor: skat.brass,
-    outlineOffset: 2,
+    outlineOffset: border.focusOffset,
   },
   selected: {
-    transform: { default: 'translateY(-16px)', ':hover': 'translateY(-16px)' },
-    boxShadow: `0 10px 18px ${skat.shadow}, 0 0 0 3px ${skat.brass}`,
+    transform: { default: move.cardRaised, ':hover': move.cardRaised },
+    boxShadow: shadow.cardRaised,
   },
-  dimmed: { filter: 'brightness(0.62) saturate(0.7)' },
-  glow: { boxShadow: `0 0 0 3px ${skat.brass}, 0 0 18px 4px ${skat.glow}` },
-  good: { boxShadow: `0 0 0 4px ${skat.good}` },
-  bad: { boxShadow: `0 0 0 4px ${skat.bad}` },
+  dimmed: { filter: texture.dimmed },
+  glow: { boxShadow: shadow.cardGlow },
+  good: { boxShadow: shadow.verdictGood },
+  bad: { boxShadow: shadow.verdictBad },
 })
 
 const sizes = stylex.create({
-  xs: { width: 34, borderRadius: 4 },
-  sm: { width: 52, borderRadius: 6 },
-  md: { width: { default: 72, '@media (max-width: 480px)': 58 } },
-  lg: { width: { default: 96, '@media (max-width: 480px)': 72 } },
+  xs: { width: size.cardXs, borderRadius: radius.cardXs },
+  sm: { width: size.cardSm, borderRadius: radius.cardSm },
+  md: { width: { default: size.cardMd, [bp.phone]: size.cardMdPhone } },
+  lg: { width: { default: size.cardLg, [bp.phone]: size.cardLgPhone } },
 })

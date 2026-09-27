@@ -6,7 +6,11 @@ import { Pill, Stars, linkLook } from './ui'
 import { lessons } from '~/lib/skat/lessons/content'
 import { type LessonRecord, type Tally, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
+import { bp } from '../../theme/breakpoints.stylex'
+import { move, shadow, texture, timing } from '../../theme/effects.stylex'
+import { border, opacity, radius, size, space } from '../../theme/scale.stylex'
 import { skat } from '../../theme/skat.stylex'
+import { typography } from '../../theme/type'
 
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 const NO_GAMES: Tally = { games: 0, won: 0, score: 0 }
@@ -35,8 +39,8 @@ export function CourseHome() {
     <div data-testid="skat-home" {...stylex.props(styles.root)}>
       <section {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.heroText)}>
-          <h1 {...stylex.props(styles.h1)}>{m.home_title()}</h1>
-          <p {...stylex.props(styles.lead)}>{m.home_lead({ count: course.length })}</p>
+          <h1 {...stylex.props(typography.hero, styles.h1)}>{m.home_title()}</h1>
+          <p {...stylex.props(typography.body, styles.lead)}>{m.home_lead({ count: course.length })}</p>
           <div {...stylex.props(styles.heroMeta)}>
             <Pill tone="felt">{m.home_pill_length({ count: course.length, minutes: totalMinutes })}</Pill>
             <Pill tone="felt">{m.home_pill_age()}</Pill>
@@ -49,7 +53,7 @@ export function CourseHome() {
           <Link to="/play" data-testid="skat-free-play" {...linkLook(current ? 'felt' : 'primary', 'lg')}>
             {current ? m.free_play_button() : m.home_graduated()}
           </Link>
-          <span {...stylex.props(styles.progressNote)}>
+          <span {...stylex.props(typography.small, styles.progressNote)}>
             {m.home_done({ finished, total: course.length })}
             {tally.games > 0 ? m.home_games({ games: tally.games, won: tally.won }) : ''}
           </span>
@@ -69,13 +73,13 @@ export function CourseHome() {
           const state = record ? 'done' : l.id === current?.id ? 'next' : 'open'
           const inner = (
             <>
-              <span {...stylex.props(styles.emoji)}>{l.emoji}</span>
+              <span {...stylex.props(typography.emojiTile, styles.emoji)}>{l.emoji}</span>
               <span {...stylex.props(styles.lessonText)}>
-                <span {...stylex.props(styles.lessonTitle)}>{m.lesson_heading({ id: l.id, title: l.title })}</span>
-                <span {...stylex.props(styles.lessonPromise)}>{l.promise}</span>
+                <span {...stylex.props(typography.cardTitle)}>{m.lesson_heading({ id: l.id, title: l.title })}</span>
+                <span {...stylex.props(typography.note, styles.lessonPromise)}>{l.promise}</span>
               </span>
               <span {...stylex.props(styles.lessonEnd)}>
-                {record ? <Stars n={record.stars} /> : <span {...stylex.props(styles.minutes)}>{m.lesson_minutes({ n: l.minutes })}</span>}
+                {record ? <Stars n={record.stars} /> : <span {...stylex.props(typography.meta, styles.minutes)}>{m.lesson_minutes({ n: l.minutes })}</span>}
               </span>
             </>
           )
@@ -100,76 +104,74 @@ export function CourseHome() {
 }
 
 const styles = stylex.create({
-  root: { display: 'flex', flexDirection: 'column', gap: 24 },
+  root: { display: 'flex', flexDirection: 'column', gap: space.x24 },
   hero: {
     display: 'grid',
-    gridTemplateColumns: { default: '1.3fr 1fr', '@media (max-width: 720px)': '1fr' },
-    gap: 20,
-    padding: { default: 28, '@media (max-width: 480px)': 18 },
-    borderRadius: 24,
+    gridTemplateColumns: { default: size.heroColumns, [bp.hero]: size.oneColumn },
+    gap: space.x20,
+    padding: { default: space.x28, [bp.phone]: space.x18 },
+    borderRadius: radius.stage,
     backgroundColor: skat.felt,
-    backgroundImage: `radial-gradient(ellipse at 20% 0%, ${skat.feltLight} 0%, ${skat.felt} 50%, ${skat.feltDeep} 100%)`,
+    backgroundImage: texture.feltHero,
     color: skat.white,
   },
-  heroText: { display: 'flex', flexDirection: 'column', gap: 12 },
-  h1: { margin: 0, fontSize: { default: 36, '@media (max-width: 480px)': 28 }, lineHeight: 1.2, fontWeight: 800, color: skat.white, fontFamily: '"Fraunces", "Songti SC", "Noto Serif SC", serif' },
+  heroText: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  h1: { margin: 0, color: skat.white },
   // Colour is stated, not inherited: the app's reset gives headings and paragraphs the theme's text
   // colour, which on this felt is dark on dark.
-  lead: { margin: 0, fontSize: 16, lineHeight: 1.75, color: skat.white, opacity: 0.95 },
-  heroMeta: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  lead: { margin: 0, color: skat.white, opacity: opacity.lead },
+  heroMeta: { display: 'flex', flexWrap: 'wrap', gap: space.x6 },
   progress: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 10,
-    padding: 18,
-    borderRadius: 18,
+    gap: space.x10,
+    padding: space.x18,
+    borderRadius: radius.panel,
     backgroundColor: skat.paper,
     color: skat.ink,
     alignSelf: 'start',
   },
-  progressNote: { fontSize: 13, color: skat.inkSoft },
-  list: { listStyleType: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 },
+  progressNote: { color: skat.inkSoft },
+  list: { listStyleType: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: space.x10 },
   item: { margin: 0 },
   card: {
     display: 'flex',
     alignItems: 'center',
-    gap: 14,
-    padding: { default: 16, '@media (max-width: 480px)': 12 },
-    borderRadius: 18,
-    borderWidth: 2,
+    gap: space.x14,
+    padding: { default: space.x16, [bp.phone]: space.x12 },
+    borderRadius: radius.panel,
+    borderWidth: border.tile,
     borderStyle: 'solid',
     borderColor: skat.paperEdge,
     backgroundColor: skat.white,
     color: skat.ink,
     textDecoration: 'none',
     transitionProperty: 'transform, box-shadow, border-color',
-    transitionDuration: '140ms',
+    transitionDuration: timing.tile,
   },
   cardNext: {
     borderColor: { default: skat.brass, ':hover': skat.brassDeep },
-    boxShadow: { default: `0 3px 0 ${skat.brass}`, ':hover': `0 6px 14px ${skat.shadowSoft}` },
-    transform: { default: 'translateY(0)', ':hover': 'translateY(-2px)' },
+    boxShadow: { default: shadow.ledgeBrass, ':hover': shadow.lift },
+    transform: { default: move.rest, ':hover': move.lift },
   },
   cardOpen: {
     borderColor: { default: skat.paperEdge, ':hover': skat.brass },
-    boxShadow: { default: 'none', ':hover': `0 6px 14px ${skat.shadowSoft}` },
-    transform: { default: 'translateY(0)', ':hover': 'translateY(-2px)' },
+    boxShadow: { default: 'none', ':hover': shadow.lift },
+    transform: { default: move.rest, ':hover': move.lift },
   },
   cardDone: { borderColor: { default: skat.good, ':hover': skat.good }, backgroundColor: skat.goodSoft },
   emoji: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 52,
-    height: 52,
-    borderRadius: 14,
+    width: size.emojiTile,
+    height: size.emojiTile,
+    borderRadius: radius.tile,
     backgroundColor: skat.brassSoft,
-    fontSize: 28,
     flexShrink: 0,
   },
-  lessonText: { display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flexGrow: 1 },
-  lessonTitle: { fontSize: 17, fontWeight: 800 },
-  lessonPromise: { fontSize: 14, lineHeight: 1.5, color: skat.inkSoft },
+  lessonText: { display: 'flex', flexDirection: 'column', gap: space.x2, minWidth: 0, flexGrow: 1 },
+  lessonPromise: { color: skat.inkSoft },
   lessonEnd: { flexShrink: 0 },
-  minutes: { fontSize: 13, fontWeight: 600, color: skat.inkFaint, whiteSpace: 'nowrap' },
+  minutes: { color: skat.inkFaint, whiteSpace: 'nowrap' },
 })

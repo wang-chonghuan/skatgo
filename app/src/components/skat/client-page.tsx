@@ -4,6 +4,8 @@ import { Suspense, lazy } from 'react'
 
 import { m } from '~/paraglide/messages'
 import { skat } from '../../theme/skat.stylex'
+import { space } from '../../theme/scale.stylex'
+import { typography } from '../../theme/type'
 import { CourseHome } from './course-home'
 
 // How the routes reach the course's pages — the only way they may (engineering.md, redline 4).
@@ -24,7 +26,7 @@ const PAGES = { lesson: LessonPage, play: FreePlay }
 export function ClientPage({ page }: { page: 'home' | keyof typeof PAGES }) {
   if (page === 'home') return <CourseHome />
   const Page = PAGES[page]
-  const loading = <p {...stylex.props(styles.loading)}>{m.loading()}</p>
+  const loading = <p {...stylex.props(typography.loading, styles.loading)}>{m.loading()}</p>
   return (
     <ClientOnly fallback={loading}>
       <Suspense fallback={loading}>
@@ -35,5 +37,5 @@ export function ClientPage({ page }: { page: 'home' | keyof typeof PAGES }) {
 }
 
 const styles = stylex.create({
-  loading: { margin: 0, paddingBlock: 80, textAlign: 'center', fontSize: 16, color: skat.inkSoft },
+  loading: { margin: 0, paddingBlock: space.x80, textAlign: 'center', color: skat.inkSoft },
 })

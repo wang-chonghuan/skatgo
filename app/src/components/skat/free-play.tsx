@@ -5,6 +5,8 @@ import { GameTable } from './game-table'
 import { useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
 import { skat } from '../../theme/skat.stylex'
+import { space } from '../../theme/scale.stylex'
+import { typography } from '../../theme/type'
 
 /** A table with no lesson around it: for practice after the course, or for people who already play. */
 export function FreePlay() {
@@ -12,8 +14,8 @@ export function FreePlay() {
   return (
     <div {...stylex.props(styles.root)}>
       <div {...stylex.props(styles.head)}>
-        <h1 {...stylex.props(styles.h1)}>{m.free_title()}</h1>
-        <Link to="/" {...stylex.props(styles.back)}>{m.back_to_map()}</Link>
+        <h1 {...stylex.props(typography.pageTitle, styles.h1)}>{m.free_title()}</h1>
+        <Link to="/" {...stylex.props(typography.link, styles.back)}>{m.back_to_map()}</Link>
       </div>
       <GameTable onSettled={({ humanWon, humanScore }) => recordGame(humanWon, humanScore)} />
     </div>
@@ -21,8 +23,8 @@ export function FreePlay() {
 }
 
 const styles = stylex.create({
-  root: { display: 'flex', flexDirection: 'column', gap: 14 },
-  head: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 },
-  h1: { margin: 0, fontSize: 24, fontWeight: 800, color: skat.ink },
-  back: { color: skat.inkSoft, textDecoration: 'none', fontSize: 14, fontWeight: 600 },
+  root: { display: 'flex', flexDirection: 'column', gap: space.x14 },
+  head: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
+  h1: { margin: 0, color: skat.ink },
+  back: { color: skat.inkSoft, textDecoration: 'none' },
 })

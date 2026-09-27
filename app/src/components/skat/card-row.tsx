@@ -3,7 +3,12 @@ import { motion } from 'motion/react'
 
 import { type Card, cardId, legalPlays, sameCard } from '~/lib/skat/cards'
 import type { CardRow } from '~/lib/skat/lessons/types'
+import { bp } from '../../theme/breakpoints.stylex'
+import { deal } from '../../theme/constants'
+import { shadow } from '../../theme/effects.stylex'
+import { radius, size, space } from '../../theme/scale.stylex'
 import { skat } from '../../theme/skat.stylex'
+import { typography } from '../../theme/type'
 import { type CardSize, PlayingCard } from './playing-card'
 
 /** A labelled row of cards for a teaching step. Wraps rather than overlaps: these are to be read. */
@@ -12,13 +17,13 @@ export function CardRowView({ row }: { row: CardRow }) {
   const captions = legal ? row.cards.map((c) => (legal.some((d) => sameCard(c, d)) ? '✓' : '✗')) : row.captions
   return (
     <figure {...stylex.props(styles.figure)}>
-      {row.label ? <figcaption {...stylex.props(styles.label)}>{row.label}</figcaption> : null}
+      {row.label ? <figcaption {...stylex.props(typography.meta, styles.label)}>{row.label}</figcaption> : null}
       <div {...stylex.props(styles.row)}>
         {row.cards.map((c, i) => (
           <div key={cardId(c) + i} {...stylex.props(styles.cell)}>
             <PlayingCard card={c} faceDown={row.faceDown} size={row.cards.length > 8 ? 'sm' : 'md'} />
             {captions?.[i] !== undefined ? (
-              <span data-caption={captions[i]} {...stylex.props(styles.caption, legal && (legal.some((d) => sameCard(c, d)) ? styles.captionYes : styles.captionNo))}>
+              <span data-caption={captions[i]} {...stylex.props(typography.smallBold, styles.caption, legal && typography.verdictMark, legal && (legal.some((d) => sameCard(c, d)) ? styles.captionYes : styles.captionNo))}>
                 {captions[i]}
               </span>
             ) : null}
@@ -73,9 +78,9 @@ export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [
               <motion.div
                 key={cardId(c)}
                 layout
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: deal.rise }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.22, delay: Math.min(i, 12) * 0.025 }}
+                transition={{ duration: deal.duration, delay: Math.min(i, deal.staggerCap) * deal.stagger }}
                 {...stylex.props(
                   styles.slot,
                   slotSizes[size],
@@ -97,7 +102,7 @@ export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [
                     ...(sequence ? { 'data-order': String(sequence.findIndex((d) => sameCard(c, d)) + 1) } : {}),
                   }}
                 />
-                {badge ? <span {...stylex.props(styles.badge)}>{badge.text}</span> : null}
+                {badge ? <span {...stylex.props(typography.badge, styles.badge)}>{badge.text}</span> : null}
               </motion.div>
             )
           })}
@@ -108,56 +113,54 @@ export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [
 }
 
 const styles = stylex.create({
-  figure: { margin: 0, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' },
-  label: { fontSize: 13, fontWeight: 600, color: skat.inkSoft },
-  row: { display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
-  cell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 },
-  caption: { fontSize: 13, fontWeight: 700, color: skat.brassDeep },
+  figure: { margin: 0, display: 'flex', flexDirection: 'column', gap: space.x8, alignItems: 'center' },
+  label: { color: skat.inkSoft },
+  row: { display: 'flex', flexWrap: 'wrap', gap: space.x8, justifyContent: 'center' },
+  cell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
+  caption: { color: skat.brassDeep },
   // The follow rule's verdict in the course's judging colours, as on an exercise answer.
-  captionYes: { fontSize: 16, color: skat.good },
-  captionNo: { fontSize: 16, color: skat.bad },
+  captionYes: { color: skat.good },
+  captionNo: { color: skat.bad },
   fan: {
     display: 'flex',
-    flexDirection: { default: 'row', '@media (max-width: 480px)': 'column' },
+    flexDirection: { default: 'row', [bp.phone]: 'column' },
     justifyContent: 'center',
     width: '100%',
     // Room for a raised (selected) card and its shadow, so the fan never clips its own cards.
-    paddingTop: 20,
-    paddingBottom: 6,
-    paddingInline: 4,
+    paddingTop: space.x20,
+    paddingBottom: space.x6,
+    paddingInline: space.x4,
     boxSizing: 'border-box',
   },
-  group: { display: { default: 'contents', '@media (max-width: 480px)': 'flex' }, justifyContent: 'center', width: '100%' },
+  group: { display: { default: 'contents', [bp.phone]: 'flex' }, justifyContent: 'center', width: '100%' },
   // The lower row tucks under the upper one, the way a held hand overlaps — and it saves height.
-  lowerGroup: { marginTop: { default: 0, '@media (max-width: 480px)': -34 } },
-  slot: { position: 'relative', flexGrow: 0, flexShrink: 1, minWidth: 22 },
+  lowerGroup: { marginTop: { default: 0, [bp.phone]: size.fanRowOverlap } },
+  slot: { position: 'relative', flexGrow: 0, flexShrink: 1, minWidth: size.slotMin },
   // The last card of a row is never overlapped, so its slot must keep the card's full width. On a
   // wide screen only the fan's very last card is "last"; on a phone each row has its own.
-  groupLastSlot: { flexShrink: { default: 1, '@media (max-width: 480px)': 0 } },
+  groupLastSlot: { flexShrink: { default: 1, [bp.phone]: 0 } },
   lastSlot: { flexShrink: 0 },
   badge: {
     position: 'absolute',
-    top: -8,
-    left: -4,
-    minWidth: 22,
-    height: 22,
-    borderRadius: 999,
+    top: size.badgeOffsetTop,
+    left: size.badgeOffsetLeft,
+    minWidth: size.badge,
+    height: size.badge,
+    borderRadius: radius.round,
     backgroundColor: skat.brass,
     color: skat.ink,
-    fontSize: 13,
-    fontWeight: 800,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: `0 1px 3px ${skat.shadow}`,
+    boxShadow: shadow.badge,
     pointerEvents: 'none',
   },
 })
 
 // A slot is as wide as its card plus a breath; it shrinks when the row runs out of room.
 const slotSizes = stylex.create({
-  xs: { flexBasis: 38 },
-  sm: { flexBasis: 58 },
-  md: { flexBasis: { default: 80, '@media (max-width: 480px)': 64 } },
-  lg: { flexBasis: { default: 104, '@media (max-width: 480px)': 78 } },
+  xs: { flexBasis: size.slotXs },
+  sm: { flexBasis: size.slotSm },
+  md: { flexBasis: { default: size.slotMd, [bp.phone]: size.slotMdPhone } },
+  lg: { flexBasis: { default: size.slotLg, [bp.phone]: size.slotLgPhone } },
 })

@@ -1,8 +1,8 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "site_name": "斯卡特速成课",
-  "meta_title": "斯卡特速成课 · 11 课学会德国国民牌戏",
-  "meta_description": "一套中文互动课程：从 32 张牌讲起，边学边练，最后和两个电脑对手打完整的一局斯卡特（Skat）。",
+  "site_name": "SkatGo",
+  "meta_title": "SkatGo · 随时随地打斯卡特",
+  "meta_description": "现代的斯卡特：电脑对手随时在座，打开浏览器就能开一局；从零开始也有 11 节互动小课。",
   "og_locale": "zh_CN",
   "loading": "正在发牌……",
   "language_label": "语言",
@@ -127,7 +127,6 @@
   "lesson_heading": "第 {id} 课 · {title}",
   "lesson_minutes": "{n} 分钟",
   "free_title": "自由对局",
-  "back_to_map": "← 课程目录",
   "stars": "{n} 颗星",
 
   "lesson_close": "回到课程目录",
@@ -260,5 +259,27 @@
   "ask_unavailable": "助手暂时没有上线。",
   "ask_intro_play": "牌桌上有事拿不准？直接问。我只看得到你看得到的：你的牌、桌上出过的牌——对手的牌我不知道。对话会一直保留，点「新对话」可以清空。",
   "ask_placeholder_play": "比如：我现在该出哪张？",
-  "auth_sign_in": "登录"
+  "auth_sign_in": "登录",
+
+  "entry_title": "斯卡特，随时随地",
+  "entry_lead": "电脑对手全天候在座——不用凑够三个人，也不用等。打开就能上桌；很快，还能和所有人打同一副牌、比同一个分。",
+  "entry_eyebrow": "现代斯卡特",
+  "entry_cta": "马上开打",
+  "entry_point_ready": "电脑对手随时在座",
+  "entry_point_browser": "打开浏览器就能玩",
+  "entry_point_languages": "中文 · 英文 · 德文",
+  "entry_course_title": "教程",
+  "entry_course_desc": "{count} 节小课，从 32 张牌讲到打完整一局。",
+  "entry_course_start": "开始学",
+  "entry_course_continue": "继续学",
+  "entry_play_title": "打牌",
+  "entry_play_desc": "和两个电脑对手开一桌，想打就打。",
+  "entry_play_cta": "开一桌",
+  "entry_duplicate_title": "复式",
+  "entry_duplicate_desc": "每天同样的几副牌：人人各自对 AI，看谁分数最高。",
+  "entry_puzzles_title": "题库",
+  "entry_puzzles_desc": "一道道牌局难题：该叫多少？这张牌该怎么出？",
+  "entry_soon": "即将推出",
+  "back_to_start": "← 首页",
+  "ask_page_entry": "首页"
 }

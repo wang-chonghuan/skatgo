@@ -66,7 +66,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   return (
     <div data-testid="skat-lesson" data-step={index} data-step-kind={step.kind} {...stylex.props(styles.root)}>
       <div {...stylex.props(styles.head)}>
-        <Link to="/" aria-label={m.lesson_close()} {...stylex.props(typography.closeGlyph, styles.close)}>✕</Link>
+        <Link to="/course" aria-label={m.lesson_close()} {...stylex.props(typography.closeGlyph, styles.close)}>✕</Link>
         <div {...stylex.props(styles.bar)}>
           <ProgressBar value={index / steps.length} label={m.lesson_progress()} />
         </div>
@@ -140,7 +140,7 @@ function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) 
         ) : (
           <Link to="/play" {...linkLook('primary', 'lg')}>{m.done_free_play()}</Link>
         )}
-        <Link to="/" data-testid="skat-back-home" {...linkLook('quiet', 'lg')}>{m.done_back()}</Link>
+        <Link to="/course" data-testid="skat-back-home" {...linkLook('quiet', 'lg')}>{m.done_back()}</Link>
       </div>
     </div>
   )

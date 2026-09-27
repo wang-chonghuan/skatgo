@@ -47,8 +47,9 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/ask/` | the assistant's server side: the page context it is given, the limits, the model call, and the `/api/ask` handler (with an optional session lookup for rate-limit identity) |
 | `app/src/start.ts` | Clerk's request middleware, which hands each page its session state |
 | `app/src/skat-layout.tsx` | the frame around every page, including the sign-in button and the floating assistant |
-| `app/src/routes/` | thin route files: `/`, `/lesson/$id`, `/play` |
+| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/lesson/$id`, `/play` |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
+| `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`) is cut from it by `.intentfold/tickets/SKATGO-23/icons.mjs` — regenerate them, never edit them |
 | `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment |
 
 **Key decisions**
@@ -63,6 +64,10 @@ also built from the repository root. Neither project imports the other's runtime
   course page statically into a route once produced a server bundle that failed to load at all — an
   entry chunk exporting a binding it never defined, every page of the site answering 500
   (Parrottoon, PARROT-42). The mechanical defence below now fails the build that has that defect.
+  Two pages are rendered on the server, for search engines: the front page (`entry-page.tsx`,
+  SKATGO-23) and the course map (`course-home.tsx`, SKATGO-1). Their text is the same for everyone,
+  and they apply the learner's progress after mount; they still reach the routes only through
+  `client-page.tsx`.
 - **Split from Parrottoon on 2026-09-21**, as byte copies of its course code, theme and styles; routes
   moved from `/skat/...` to the root. The two codebases are **not synchronised**: a change in either
   does not reach the other.

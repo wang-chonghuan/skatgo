@@ -15,7 +15,7 @@ export function FreePlay() {
     <div {...stylex.props(styles.root)}>
       <div {...stylex.props(styles.head)}>
         <h1 {...stylex.props(typography.pageTitle, styles.h1)}>{m.free_title()}</h1>
-        <Link to="/" {...stylex.props(typography.link, styles.back)}>{m.back_to_map()}</Link>
+        <Link to="/" data-testid="skat-back-start" {...stylex.props(typography.link, styles.back)}>{m.back_to_start()}</Link>
       </div>
       <GameTable onSettled={({ humanWon, humanScore }) => recordGame(humanWon, humanScore)} />
     </div>

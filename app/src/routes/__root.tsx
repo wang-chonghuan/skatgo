@@ -45,15 +45,21 @@ export const Route = createRootRoute({
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: localizedUrl(path, locale) },
         { property: 'og:locale', content: m.og_locale() },
+        // The SkatGo logo for link previews (SKATGO-23), cut from app/brand/skatgo-logo.png.
+        { property: 'og:image', content: `${SITE_URL}/icon-512.png` },
+        { name: 'twitter:card', content: 'summary' },
       ],
       links: [
         { rel: 'canonical', href: localizedUrl(path, locale) },
         ...locales.map((l) => ({ rel: 'alternate', hrefLang: LANG_TAG[l], href: localizedUrl(path, l) })),
         // No prefix: the server picks the visitor's language — exactly what x-default means.
         { rel: 'alternate', hrefLang: 'x-default', href: `${SITE_URL}${path}` },
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        // The SkatGo logo everywhere a browser or phone shows the site (SKATGO-23): the tab (ICO with 16/32/48
+        // and a 32px PNG), the iOS home screen (square — iOS rounds it) and installed icons (the manifest).
+        { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/site.webmanifest' },
         // The typefaces the theme names. It does not bundle them; without this link the course falls
         // back to system fonts and no longer looks like the page it was copied from.
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },

@@ -7,6 +7,7 @@ import { skat } from '../../theme/skat.stylex'
 import { space } from '../../theme/scale.stylex'
 import { typography } from '../../theme/type'
 import { CourseHome } from './course-home'
+import { EntryPage } from './entry-page'
 
 // How the routes reach the course's pages — the only way they may (engineering.md, redline 4).
 //
@@ -14,17 +15,18 @@ import { CourseHome } from './course-home'
 // client state — progress in localStorage, random drills, a random deal — so there is nothing to
 // render before the browser has it, and a brief "dealing the cards…" shows meanwhile.
 //
-// The course map is the exception (SKATGO-1): it is rendered on the server, so search engines read
-// each language's lessons, titles and promises. It applies the learner's progress itself, after
-// mount — see course-home.tsx.
+// The front page and the course map are the exceptions (SKATGO-1, SKATGO-23): they are rendered on
+// the server, so search engines read each language's sections, lessons, titles and promises. They
+// apply the learner's progress themselves, after mount — see course-home.tsx and entry-page.tsx.
 const pages = () => import('./pages')
 const LessonPage = lazy(() => pages().then((mod) => ({ default: mod.LessonPage })))
 const FreePlay = lazy(() => pages().then((mod) => ({ default: mod.FreePlay })))
 
 const PAGES = { lesson: LessonPage, play: FreePlay }
 
-export function ClientPage({ page }: { page: 'home' | keyof typeof PAGES }) {
-  if (page === 'home') return <CourseHome />
+export function ClientPage({ page }: { page: 'entry' | 'course' | keyof typeof PAGES }) {
+  if (page === 'entry') return <EntryPage />
+  if (page === 'course') return <CourseHome />
   const Page = PAGES[page]
   const loading = <p {...stylex.props(typography.loading, styles.loading)}>{m.loading()}</p>
   return (

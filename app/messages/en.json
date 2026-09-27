@@ -1,8 +1,8 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "site_name": "Skat Crash Course",
-  "meta_title": "Skat Crash Course · Learn Germany's national card game in 11 lessons",
-  "meta_description": "An interactive course: start from the 32 cards, practise every step as you learn it, and finish with a full game of Skat against two computer opponents.",
+  "site_name": "SkatGo",
+  "meta_title": "SkatGo · Skat, anytime, anywhere",
+  "meta_description": "Modern Skat in your browser: computer opponents are always at the table, and eleven interactive lessons are there if you're new.",
   "og_locale": "en_US",
   "loading": "Dealing the cards…",
   "language_label": "Language",
@@ -127,7 +127,6 @@
   "lesson_heading": "Lesson {id} · {title}",
   "lesson_minutes": "{n} min",
   "free_title": "Free play",
-  "back_to_map": "← Course map",
   "stars": "{n} of 3 stars",
 
   "lesson_close": "Back to the course map",
@@ -260,5 +259,27 @@
   "ask_unavailable": "The helper is not available right now.",
   "ask_intro_play": "Not sure at the table? Just ask. I only see what you see: your cards and the cards already played — not your opponents' hands. The conversation stays until you start a new one.",
   "ask_placeholder_play": "e.g. Which card should I play now?",
-  "auth_sign_in": "Sign in"
+  "auth_sign_in": "Sign in",
+
+  "entry_title": "Skat, anytime, anywhere",
+  "entry_lead": "Your computer opponents never leave the table — no third player to find, no waiting. Sit down and play; soon you'll play the same deals as everyone else and compare scores.",
+  "entry_eyebrow": "Modern Skat",
+  "entry_cta": "Play now",
+  "entry_point_ready": "Opponents always ready",
+  "entry_point_browser": "Plays in your browser",
+  "entry_point_languages": "English · German · Chinese",
+  "entry_course_title": "Course",
+  "entry_course_desc": "{count} short lessons, from the 32 cards to a whole game.",
+  "entry_course_start": "Start learning",
+  "entry_course_continue": "Keep learning",
+  "entry_play_title": "Play",
+  "entry_play_desc": "Take a seat against two computer players, any time.",
+  "entry_play_cta": "Deal me in",
+  "entry_duplicate_title": "Duplicate",
+  "entry_duplicate_desc": "The same few deals for everyone, every day — play them against the AI and see who scores highest.",
+  "entry_puzzles_title": "Puzzles",
+  "entry_puzzles_desc": "Bite-sized Skat problems: how high to bid, which card to play.",
+  "entry_soon": "Coming soon",
+  "back_to_start": "← Home",
+  "ask_page_entry": "Home"
 }

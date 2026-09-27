@@ -108,6 +108,11 @@ export const size = stylex.defineVars({
   backsTail: '22px',
   backsRow: '48px',
 
+  /** The least height of an entry-page card, so its suit watermark has room. */
+  entryCard: '200px',
+  /** How far an entry-page card's suit watermark reaches past the card's edge (it is cut off there). */
+  watermarkInset: '-24px',
+
   tableCentre: '230px',
   tableCentrePhone: '190px',
   trickRow: '110px',

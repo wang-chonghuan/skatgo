@@ -32,10 +32,18 @@ export function EntryPage() {
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
       {/* SkatGo is modern Skat, not a course (the human, SKATGO-23): the hero says the game is always
-          there, and its one call to action sits the learner down at a table. */}
+          there, and its one call to action sits the learner down at a table. It sits on the page's
+          paper, never on a felt card — the felt belongs to the four sections below. */}
       <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.eyebrow)}>
           <Pill tone="brass">{m.entry_eyebrow()}</Pill>
+          <span aria-hidden="true" {...stylex.props(styles.suits)}>
+            {SUITS.map((suit) => (
+              <span key={suit} {...stylex.props(typography.markGlyph, RED.includes(suit) ? styles.suitRed : styles.suitInk)}>
+                {suit}
+              </span>
+            ))}
+          </span>
         </div>
         <h1 {...stylex.props(typography.hero, styles.title)}>{m.entry_title()}</h1>
         <p {...stylex.props(typography.body, styles.lead)}>{m.entry_lead()}</p>
@@ -44,9 +52,9 @@ export function EntryPage() {
             {m.entry_cta()}
           </Link>
           <div {...stylex.props(styles.points)}>
-            <Pill tone="felt">{m.entry_point_ready()}</Pill>
-            <Pill tone="felt">{m.entry_point_browser()}</Pill>
-            <Pill tone="felt">{m.entry_point_languages()}</Pill>
+            <Pill tone="ink">{m.entry_point_ready()}</Pill>
+            <Pill tone="ink">{m.entry_point_browser()}</Pill>
+            <Pill tone="ink">{m.entry_point_languages()}</Pill>
           </div>
         </div>
       </section>
@@ -82,6 +90,7 @@ export function EntryPage() {
 }
 
 type Suit = '♣' | '♠' | '♥' | '♦'
+const SUITS: Suit[] = ['♣', '♠', '♥', '♦']
 const RED: Suit[] = ['♥', '♦']
 
 /**
@@ -110,20 +119,14 @@ function Face({ suit, soon, title, text, children }: { suit: Suit; soon?: boolea
 
 const styles = stylex.create({
   root: { display: 'flex', flexDirection: 'column', gap: space.x24 },
-  hero: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x12,
-    padding: { default: space.x28, [bp.phone]: space.x18 },
-    borderRadius: radius.stage,
-    backgroundColor: skat.felt,
-    backgroundImage: texture.feltHero,
-    color: skat.white,
-  },
-  eyebrow: { display: 'flex' },
+  hero: { display: 'flex', flexDirection: 'column', gap: space.x12, paddingBlock: { default: space.x12, [bp.phone]: space.x4 } },
+  eyebrow: { display: 'flex', alignItems: 'center', gap: space.x12 },
+  suits: { display: 'flex', alignItems: 'center', gap: space.x6 },
+  suitInk: { color: skat.ink },
+  suitRed: { color: skat.red },
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
-  title: { margin: 0, color: skat.white },
-  lead: { margin: 0, color: skat.white, opacity: opacity.lead, maxWidth: size.column },
+  title: { margin: 0, color: skat.ink },
+  lead: { margin: 0, color: skat.inkSoft, maxWidth: size.column },
   heroFoot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x14, marginTop: space.x4 },
   points: { display: 'flex', flexWrap: 'wrap', gap: space.x6 },
   grid: { display: 'grid', gridTemplateColumns: { default: size.twoColumns, [bp.phone]: size.oneColumn }, gap: space.x16 },

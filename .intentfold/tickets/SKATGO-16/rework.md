@@ -20,3 +20,10 @@ object. No application code, service configuration, or acceptance behavior chang
 
 The production check remains strict about the exact live commit, but now works with the Render CLI
 version installed on this machine.
+
+## Follow-up
+
+The next full run exposed a second portability issue: zsh does not split unquoted scalar command
+substitutions the way the route and locale loops expected. The documented post-deploy check now runs
+inside an explicit Bash heredoc, matching the script's existing syntax and making it executable from
+the project's default zsh shell. The check was rerun against the public domain after this repair.

@@ -31,15 +31,30 @@ export function EntryPage() {
 
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
-      <header {...stylex.props(styles.intro)}>
+      {/* SkatGo is modern Skat, not a course (the human, SKATGO-23): the hero says the game is always
+          there, and its one call to action sits the learner down at a table. */}
+      <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
+        <div {...stylex.props(styles.eyebrow)}>
+          <Pill tone="brass">{m.entry_eyebrow()}</Pill>
+        </div>
         <h1 {...stylex.props(typography.hero, styles.title)}>{m.entry_title()}</h1>
         <p {...stylex.props(typography.body, styles.lead)}>{m.entry_lead()}</p>
-      </header>
+        <div {...stylex.props(styles.heroFoot)}>
+          <Link to="/play" data-testid="entry-cta" {...linkLook('primary', 'lg')}>
+            {m.entry_cta()}
+          </Link>
+          <div {...stylex.props(styles.points)}>
+            <Pill tone="felt">{m.entry_point_ready()}</Pill>
+            <Pill tone="felt">{m.entry_point_browser()}</Pill>
+            <Pill tone="felt">{m.entry_point_languages()}</Pill>
+          </div>
+        </div>
+      </section>
 
       <div {...stylex.props(styles.grid)}>
         <Link to="/course" data-testid="entry-card" data-section="course" {...stylex.props(styles.card, styles.open)}>
           <Face suit="♣" title={m.entry_course_title()} text={m.entry_course_desc({ count: course.length })}>
-            <span {...linkLook('primary', 'md')}>{finished === 0 ? m.entry_course_start() : m.entry_course_continue()}</span>
+            <span {...linkLook('quiet', 'md')}>{finished === 0 ? m.entry_course_start() : m.entry_course_continue()}</span>
             <span {...stylex.props(typography.small, styles.aside)}>{m.home_done({ finished, total: course.length })}</span>
           </Face>
         </Link>
@@ -95,9 +110,22 @@ function Face({ suit, soon, title, text, children }: { suit: Suit; soon?: boolea
 
 const styles = stylex.create({
   root: { display: 'flex', flexDirection: 'column', gap: space.x24 },
-  intro: { display: 'flex', flexDirection: 'column', gap: space.x8 },
-  title: { margin: 0, color: skat.ink },
-  lead: { margin: 0, color: skat.inkSoft },
+  hero: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x12,
+    padding: { default: space.x28, [bp.phone]: space.x18 },
+    borderRadius: radius.stage,
+    backgroundColor: skat.felt,
+    backgroundImage: texture.feltHero,
+    color: skat.white,
+  },
+  eyebrow: { display: 'flex' },
+  // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
+  title: { margin: 0, color: skat.white },
+  lead: { margin: 0, color: skat.white, opacity: opacity.lead, maxWidth: size.column },
+  heroFoot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x14, marginTop: space.x4 },
+  points: { display: 'flex', flexWrap: 'wrap', gap: space.x6 },
   grid: { display: 'grid', gridTemplateColumns: { default: size.twoColumns, [bp.phone]: size.oneColumn }, gap: space.x16 },
   card: {
     position: 'relative',

@@ -163,7 +163,7 @@ eval "$(grep '^export RENDER_API_KEY' ~/.zshrc)"
 SERVICE_ID=$(render services --output json --confirm | python3 -c \
   "import json,sys; print(next(x['service']['id'] for x in json.load(sys.stdin) if x.get('service',{}).get('name') == 'skatgo'))")
 got=$(render deploys list "$SERVICE_ID" --output json --confirm | python3 -c \
-  "import json,sys; d=json.load(sys.stdin)[0]['deploy']; print((d.get('commit') or {}).get('id',''))")
+  "import json,sys; row=json.load(sys.stdin)[0]; d=row.get('deploy',row); print((d.get('commit') or {}).get('id',''))")
 if [ "$got" != "$want" ]; then
   echo "FAIL: Render reports $got live/newest, expected $want"
   exit 1

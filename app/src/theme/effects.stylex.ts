@@ -26,6 +26,8 @@ export const shadow = stylex.defineVars({
   feltInset: `inset 0 0 0 3px ${skat.feltDeep}`,
   /** The game table: its ring, and the shadow it casts. */
   table: `inset 0 0 0 3px ${skat.feltDeep}, 0 10px 30px ${skat.shadow}`,
+  /** A shape pressed into the felt: lit on its upper-left edge, shadowed on its lower-right. */
+  emboss: `-1px -1px 0 ${skat.feltLine}, 2px 2px 0 ${skat.feltDeep}`,
   /** The chat input while it has focus. */
   chatFocus: `0 0 0 3px ${skat.brassSoft}`,
 })
@@ -48,9 +50,6 @@ export const move = stylex.defineVars({
   lift: 'translateY(-2px)',
   cardHover: 'translateY(-6px)',
   cardRaised: 'translateY(-16px)',
-  /** The outer cards of a small fan in the entry-page art. */
-  tiltLeft: 'rotate(-8deg)',
-  tiltRight: 'rotate(8deg)',
   /** The stars on the finish screen. */
   starsBig: 'scale(2)',
 })

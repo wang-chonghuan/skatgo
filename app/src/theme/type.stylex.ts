@@ -30,6 +30,7 @@ export const fontSize = stylex.defineVars({
   f28: '28px',
   f36: '36px',
   f88: '88px',
+  f200: '200px',
 })
 
 /** Only the weights the page loads (routes/__root.tsx): 400, 600, 700. */

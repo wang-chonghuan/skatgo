@@ -134,7 +134,7 @@ The primitives behind the roles (`type.stylex.ts`): families `body` (DM Sans wit
 | `window` | the assistant window (`0` as a full-screen phone sheet) |
 | `tile` | answer options, contract buttons, seats, the lesson emoji tile, chat bubbles and input |
 | `control` | a bid bubble; Clerk's windows |
-| `card` / `cardSm` / `cardXs` | playing cards (`md`/`lg` / `sm` / `xs`) and the brand mark (`card`) |
+| `card` / `cardSm` / `cardXs` | playing cards (`md`/`lg` / `sm` / `xs`) and the header logo (`card`) |
 
 Border widths: `border.hair` for a panel, the assistant window, a toggle and the chat input;
 `border.tile` for interactive tiles; `border.frame` for a card back's white frame. Focus rings are
@@ -225,9 +225,9 @@ Recurring patterns built on native elements — reuse them rather than inventing
 
 **Layout and responsive**
 
-- The frame (`app/src/skat-layout.tsx`): a `feltDeep` header — the brand (♣ on a `size.brandMark` brass
-  mark) on the left, the language switch and account on the right — then a reading column at most
-  `size.column` wide, centred.
+- The frame (`app/src/skat-layout.tsx`): a `feltDeep` header — the brand on the left (the SkatGo
+  logo, `logo-96.png` shown at `size.brandMark` and rounded `radius.card`, then the name), the language
+  switch and account on the right — then a reading column at most `size.column` wide, centred.
 - **The phone step is `bp.phone`**, used throughout; the course map's hero stacks at `bp.hero` and the
   contract picker wraps at `bp.contracts`. On a phone a hand of more than six cards is held as two
   rows, because ten cards in one row at 375px leave each card too narrow to tap. Answer options go

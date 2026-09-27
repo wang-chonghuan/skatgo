@@ -28,7 +28,7 @@ export function SkatLayout() {
     <div {...stylex.props(typography.frame, styles.page)}>
       <header {...stylex.props(styles.header)}>
         <Link to="/" {...stylex.props(typography.brand, styles.brand)}>
-          <span {...stylex.props(typography.markGlyph, styles.brandMark)}>♣</span>
+          <img src="/logo-96.png" alt="" {...stylex.props(styles.brandMark)} />
           {m.site_name()}
         </Link>
         <div {...stylex.props(styles.headerEnd)}>
@@ -118,16 +118,8 @@ const styles = stylex.create({
     color: skat.white,
   },
   brand: { display: 'flex', alignItems: 'center', gap: space.x8, color: skat.white, textDecoration: 'none' },
-  brandMark: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: size.brandMark,
-    height: size.brandMark,
-    borderRadius: radius.card,
-    backgroundColor: skat.brass,
-    color: skat.ink,
-  },
+  // The SkatGo logo (SKATGO-23): a square image, rounded here like a card.
+  brandMark: { display: 'block', width: size.brandMark, height: size.brandMark, borderRadius: radius.card, flexShrink: 0 },
   headerEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x6 }, flexShrink: 0 },
   switch: { display: 'flex', alignItems: 'center', gap: space.x2, flexShrink: 0 },
   lang: {

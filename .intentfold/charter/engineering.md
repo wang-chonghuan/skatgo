@@ -49,6 +49,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/skat-layout.tsx` | the frame around every page, including the sign-in button and the floating assistant |
 | `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/lesson/$id`, `/play` |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
+| `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`) is cut from it by `.intentfold/tickets/SKATGO-23/icons.mjs` — regenerate them, never edit them |
 | `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment |
 
 **Key decisions**

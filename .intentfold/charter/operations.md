@@ -160,16 +160,21 @@ curl -s "https://api.render.com/v1/services/$SERVICE_ID/env-vars" \
 **Deploy**
 
 The Render Web Service has automatic deploys disabled. Deploy only a pushed commit that is the head
-of `main`; the release helper asks Render what exists, deploys the matching service, and fails unless
-the requested commit becomes live:
+of `main`, to exactly the service named `skatgo` — found by name the same way the post-deploy check
+finds it. `--wait` exits non-zero if the deploy fails; the post-deploy check then proves the commit is
+the one serving:
 
 ```bash
 git fetch origin main
 test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
 eval "$(grep '^export RENDER_API_KEY' ~/.zshrc)"
-python3 ~/.agents/skills/ips-render-ops/scripts/release.py --dry-run --only skatgo
-python3 ~/.agents/skills/ips-render-ops/scripts/release.py --only skatgo --commit "$(git rev-parse HEAD)"
+SERVICE_ID=$(render services --output json --confirm | python3 -c \
+  "import json,sys; print(next(x['service']['id'] for x in json.load(sys.stdin) if x.get('service',{}).get('name') == 'skatgo'))")
+render deploys create "$SERVICE_ID" --commit "$(git rev-parse HEAD)" --wait --confirm --output text
 ```
+
+Not `release.py --only skatgo`: `--only` matches any service whose name *contains* the text, so it also
+releases `skatgo-multiplayer`, which has its own deploy below (found while deploying SKATGO-23).
 
 **Post-deploy check**
 

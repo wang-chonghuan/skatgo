@@ -3,6 +3,8 @@ import { ClerkProvider } from '@clerk/tanstack-react-start'
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { Theme } from '@astryxdesign/core/theme'
 
+import { ProductAnalytics } from '~/components/product-analytics'
+import { readProjectKey } from '~/lib/analytics'
 import { clerkAppearance } from '~/lib/clerk-appearance'
 import { LANG_TAG, SITE_URL, localizedUrl } from '~/lib/site'
 import { m } from '~/paraglide/messages'
@@ -17,15 +19,20 @@ import '~/styles/app.css'
 // render exactly what parrottoon.com/skat does, and every one of these reaches the page.
 //
 // Left out on purpose: Parrottoon's analytics beacon (its token would count this site's visits as
-// Parrottoon's), its light/dark and reading-order preferences (the course never offers either, so a
-// visitor here always sees the light page a first-time Parrottoon visitor sees), and its link
-// adapter (the course uses the router's own <Link>, never an Astryx `href`).
+// Parrottoon's — skatgo reports to its own PostHog project instead, SKATGO-25), its light/dark and
+// reading-order preferences (the course never offers either, so a visitor here always sees the light
+// page a first-time Parrottoon visitor sees), and its link adapter (the course uses the router's own
+// <Link>, never an Astryx `href`).
 //
 // The head is in the page's language (SKATGO-1): Paraglide's middleware has settled the locale for
 // the request before this renders, so the server sends each of /en, /de, /zh with its own title,
 // description, canonical URL and the hreflang links that tie the three versions of a page together.
 
 export const Route = createRootRoute({
+  // The PostHog project key (SKATGO-25), read on the server and handed to the page with its data. It
+  // never changes while a page is open, so client navigations do not ask again.
+  loader: () => ({ posthogKey: readProjectKey() }),
+  staleTime: Infinity,
   head: ({ matches }) => {
     // The router has already stripped the language prefix: this is the page's path in any language.
     const path = matches[matches.length - 1]?.pathname ?? '/'
@@ -75,14 +82,15 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  const { posthogKey } = Route.useLoaderData()
   return (
-    <RootDocument>
+    <RootDocument posthogKey={posthogKey}>
       <SkatLayout />
     </RootDocument>
   )
 }
 
-function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+function RootDocument({ children, posthogKey }: Readonly<{ children: ReactNode; posthogKey: string | null }>) {
   return (
     // The theme's generated CSS is @scope'd to [data-astryx-theme]; writing the attributes here,
     // server-side, is what keeps the first paint themed instead of flashing unstyled.
@@ -94,6 +102,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         {import.meta.env.DEV && <link rel="stylesheet" href="/virtual:stylex.css" />}
       </head>
       <body>
+        <ProductAnalytics projectKey={posthogKey} />
         {/* Accounts (SKATGO-12): Clerk's provider sits inside <body>, as its docs require. */}
         <ClerkProvider appearance={clerkAppearance}>
           <Theme theme={appTheme} mode={APP_THEME_MODE}>

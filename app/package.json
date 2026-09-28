@@ -21,6 +21,7 @@
     "canvas-confetti": "^1.9.4",
     "deep-chat-react": "^2.5.1",
     "motion": "^13.4.0",
+    "posthog-js": "^1.434.17",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "zustand": "^5.0.15"

@@ -7,7 +7,15 @@ Hostname mapping: Chromium's `--host-resolver-rules="MAP skatgo.com 127.0.0.1:<p
 `http://skatgo.com/...` reach the local server, so the page believes it is the published site.
 
 Every request to `*.posthog.com` is intercepted with `page.route` and answered locally. Nothing
-reaches PostHog (Q5).
+reaches PostHog (Q5). The answers follow production, so the SDK behaves as it will live:
+- the project's real remote config, fetched read-only beforehand;
+- an empty flags response;
+- empty scripts for the SDK's lazy `.js` files.
+
+Chromium runs with `--disable-blink-features=AutomationControlled`. PostHog's bot filter drops every
+event while `navigator.webdriver` is true, so an automated check would otherwise see no capture at all.
+
+The script is `tmp/ac.mjs`, uncommitted, and is run as `node ac.mjs with-key | no-key`.
 
 ## AC1 — a skatgo project exists, separate from Risetive's
 

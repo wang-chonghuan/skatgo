@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-25",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-25",
+  "branch": "SKATGO-25-posthog-analytics",
+  "base": "1c04f21c3f12b654c5d5cd2419c3f9f40a2ec9c1",
+  "ports": { "web": 55025, "multiplayer": 56025, "database": 57025 }
+}

@@ -67,12 +67,11 @@ export const dims = stylex.defineVars({
 
   // The table
   /** The trick in the frame: each card 26% of the frame's width; both opponents' cards level at 27%
-   *  from the top, the left one 6% from the left edge, the right one 12% from the right; the
-   *  learner's at 52% from the top and centred (37% = 50% less half of 26%). */
+   *  from the top and the same distance from their side of the frame (one value, so the two can never
+   *  differ); the learner's at 52% from the top and centred (37% = 50% less half of 26%). */
   trickCard: '26%',
   trickSideTop: '27%',
-  trickLeftInset: '6%',
-  trickRightInset: '12%',
+  trickSideInset: '9%',
   trickMineTop: '52%',
   trickMineLeft: '37%',
   /** The words over the frame: as wide as the table allows. */

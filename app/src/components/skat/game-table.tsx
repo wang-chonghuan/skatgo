@@ -1163,6 +1163,6 @@ const contractTint = stylex.create({
 // cards level near the top, each on their own side; the learner's lower, centred.
 const positions = stylex.create({
   0: { left: dims.trickMineLeft, top: dims.trickMineTop },
-  1: { left: dims.trickLeftInset, top: dims.trickSideTop },
-  2: { right: dims.trickRightInset, top: dims.trickSideTop },
+  1: { left: dims.trickSideInset, top: dims.trickSideTop },
+  2: { right: dims.trickSideInset, top: dims.trickSideTop },
 })

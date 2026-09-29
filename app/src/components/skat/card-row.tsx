@@ -174,4 +174,6 @@ const slotSizes = stylex.create({
   md: { flexBasis: { default: dims.slotMd, [bp.phone]: dims.slotMdPhone } },
   lg: { flexBasis: { default: dims.slotLg, [bp.phone]: dims.slotLgPhone } },
   table: { flexBasis: { default: dims.slotTable, [bp.phone]: dims.slotTablePhone } },
+  trick: { flexBasis: { default: dims.slotLg, [bp.phone]: dims.slotMdPhone } },
+  fill: { flexBasis: dims.slotLg },
 })

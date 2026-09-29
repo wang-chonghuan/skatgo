@@ -186,7 +186,6 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
 
   const [panelOpen, setPanelOpen] = useState(false)
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
-  const status = who === null ? null : who === ME ? (game.phase === 'play' ? m.table_your_turn() : m.table_your_move()) : m.table_whose_turn({ name: nameOf(who) })
   const acting = inFrameActions && myTurn
   const dialog = game.phase === 'passedIn' || game.phase === 'done'
 
@@ -204,9 +203,12 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
           {(game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'passedIn') && game.skat.length > 0 ? (
             <div {...stylex.props(styles.skatPile)}>
+              {/* The skat lies in the frame like a played card: the same size as the trick's cards. */}
               <div {...stylex.props(styles.skatCards)}>
                 {game.skat.map((c, i) => (
-                  <PlayingCard key={i} card={c} faceDown size="sm" />
+                  <span key={i} {...stylex.props(styles.frameCard)}>
+                    <PlayingCard card={c} faceDown size="fill" />
+                  </span>
                 ))}
               </div>
               <span {...stylex.props(typography.tricksLabel, styles.goldLabel)}>{m.table_skat()}</span>
@@ -225,19 +227,28 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
                     transition={trick.spring}
                     {...stylex.props(styles.trickCard, positions[p.seat])}
                   >
-                    <PlayingCard card={p.card} size="md" glow={game.phase === 'trickEnd' && winner === p.seat} />
+                    <PlayingCard card={p.card} size="fill" glow={game.phase === 'trickEnd' && winner === p.seat} />
                   </motion.div>
                 ))}
               </AnimatePresence>
-              {game.phase === 'trickEnd' && winner !== null ? (
-                <div {...stylex.props(styles.trickNote)}>
-                  <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
-                </div>
-              ) : status && game.trick.length === 0 ? (
-                <p data-testid="skat-status" {...stylex.props(typography.tableStatus, styles.status)}>{status}</p>
-              ) : null}
             </>
           )}
+
+          {/* What happens in the play — whose move, who is thinking, who took the trick, a refusal or a
+              hint — is said over the frame, never inside it: the frame holds only cards. */}
+          {!acting && !dialog ? (
+            <div data-testid="skat-words" {...stylex.props(styles.above)}>
+              {refusal ? <Panel tone="bad"><p {...stylex.props(typography.appText, styles.note)}><Rich text={refusal} /></p></Panel> : null}
+              {hint ? <Panel tone="tip"><p {...stylex.props(typography.appText, styles.note)}>💡 <Rich text={hint.text} /></p></Panel> : null}
+              {game.phase === 'trickEnd' && winner !== null ? (
+                <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
+              ) : (
+                <div data-testid="skat-actions" {...stylex.props(styles.words)}>
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
+                </div>
+              )}
+            </div>
+          ) : null}
 
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
               learner's orange one under the bottom edge. */}
@@ -350,16 +361,6 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
             {game.declarer !== null ? <Pill tone="quiet">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
             {game.phase === 'play' || game.phase === 'trickEnd' ? (
               <Pill tone="quiet">{m.table_trick_count({ n: Math.min(10, game.tricks.length + 1), declarer: points.declarer, defenders: points.defenders })}</Pill>
-            ) : null}
-          </div>
-
-          <div {...stylex.props(styles.panelNotes)}>
-            {refusal ? <Panel tone="bad"><p {...stylex.props(typography.appText, styles.note)}><Rich text={refusal} /></p></Panel> : null}
-            {hint && !acting ? <Panel tone="tip"><p {...stylex.props(typography.appText, styles.note)}>💡 <Rich text={hint.text} /></p></Panel> : null}
-            {!acting && !dialog ? (
-              <div data-testid="skat-actions">
-                <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
-              </div>
             ) : null}
           </div>
 
@@ -924,13 +925,39 @@ const styles = stylex.create({
   totals: { display: 'flex', gap: space.x12 },
   total: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x2 },
 
-  // The skat and the status line stack in the frame's middle, one above the other.
-  skatPile: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6 },
-  skatCards: { display: 'flex', gap: space.x6 },
+  // The skat and its label, in the frame's middle.
+  skatPile: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6, width: '100%' },
+  skatCards: { display: 'flex', justifyContent: 'center', gap: space.x6, width: '100%' },
+  // A card lying in the frame — the skat or a played card — is always 26% of the frame's width.
+  frameCard: { display: 'block', width: dims.trickCard },
   goldLabel: { color: color.amber },
-  status: { margin: 0, color: color.onColor, textAlign: 'center', paddingInline: space.x12 },
-  trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  trickNote: { position: 'absolute', left: 0, right: 0, top: space.x8, display: 'flex', justifyContent: 'center' },
+  trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: dims.trickCard },
+  // The words about the play, outside the frame: over it on a desk, growing upward; under it on a
+  // phone, below the learner's plate — the phone's info board leaves no room above.
+  above: {
+    position: 'absolute',
+    bottom: { default: '100%', [bp.phone]: 'auto' },
+    top: { default: 'auto', [bp.phone]: '100%' },
+    paddingTop: { default: 0, [bp.phone]: space.x24 },
+    left: dims.half,
+    transform: pose.centreX,
+    zIndex: layer.window,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: space.x8,
+    width: dims.tipWidth,
+    paddingBottom: { default: space.x12, [bp.phone]: 0 },
+    pointerEvents: 'none',
+  },
+  words: {
+    paddingBlock: space.x6,
+    paddingInline: space.x16,
+    borderRadius: radii.pill,
+    backgroundColor: color.board,
+    color: color.onColor,
+    textAlign: 'center',
+  },
 
   // The action drawer: white, rounded at the top, over the felt and just above the hand.
   drawer: {
@@ -953,7 +980,7 @@ const styles = stylex.create({
     borderRadius: radii.dialog,
     backgroundColor: color.surface,
     boxShadow: elev.panel,
-    color: color.text,
+    color: color.navy,
   },
   drawerHandle: {
     alignSelf: 'center',
@@ -1059,11 +1086,11 @@ const styles = stylex.create({
   chipPass: { backgroundColor: color.go, color: color.onColor },
   chipBid: { backgroundColor: color.tintHearts, color: color.plate },
   strip: { display: 'flex', flexWrap: 'wrap', gap: space.x6, justifyContent: 'center' },
-  panelNotes: { display: 'flex', flexDirection: 'column', gap: space.x10 },
   panelFoot: { display: 'flex', flexDirection: 'column', gap: space.x12, marginTop: 'auto' },
 
   row: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x10 },
-  say: { margin: 0, flexBasis: '100%', color: color.navy },
+  // A line said takes the colour of where it is said: navy in the drawer, white over the felt.
+  say: { margin: 0, flexBasis: '100%', color: 'inherit' },
   note: { margin: 0, color: color.text },
   pass: {
     flexGrow: 1,
@@ -1156,9 +1183,10 @@ const contractTint = stylex.create({
   null: { backgroundColor: color.tintNull },
 })
 
-// The three places a played card lands in the frame: in front of whoever played it.
+// The three places a played card lands in the frame, in the reference's proportions: both opponents'
+// cards level near the top, each on their own side; the learner's lower, just right of the middle.
 const positions = stylex.create({
-  0: { left: dims.half, bottom: space.x12, marginLeft: dims.trickHalf },
-  1: { left: space.x12, top: dims.half, transform: pose.centreY },
-  2: { right: space.x12, top: dims.half, transform: pose.centreY },
+  0: { left: dims.trickMineLeft, top: dims.trickMineTop },
+  1: { left: dims.trickLeftInset, top: dims.trickSideTop },
+  2: { right: dims.trickRightInset, top: dims.trickSideTop },
 })

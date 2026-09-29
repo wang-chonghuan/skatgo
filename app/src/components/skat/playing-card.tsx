@@ -92,7 +92,7 @@ function faceOf(card: Card): Face {
   return FACES[`${card.suit}${card.rank.toLowerCase()}`]
 }
 
-export type CardSize = 'xs' | 'sm' | 'md' | 'lg' | 'table'
+export type CardSize = 'xs' | 'sm' | 'md' | 'lg' | 'table' | 'trick' | 'fill'
 
 type Props = {
   card: Card
@@ -208,6 +208,10 @@ const sizes = stylex.create({
   sm: { width: dims.cardSm, borderRadius: radii.cardSm },
   md: { width: { default: dims.cardMd, [bp.phone]: dims.cardMdPhone } },
   lg: { width: { default: dims.cardLg, [bp.phone]: dims.cardLgPhone } },
+  /** A card played into the trick in the table's frame. */
+  trick: { width: { default: dims.cardLg, [bp.phone]: dims.cardMdPhone } },
+  /** As wide as its box: the trick's cards take their size from the frame. */
+  fill: { width: '100%' },
   /** The hand along the bottom of the card table. */
   table: { width: { default: dims.cardTable, [bp.phone]: dims.cardTablePhone } },
 })

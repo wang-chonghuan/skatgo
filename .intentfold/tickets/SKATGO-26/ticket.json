@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-26",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-26",
+  "branch": "SKATGO-26-funbridge-style",
+  "base": "71339da01e4c5e7b11eeba8ab697195ffec9ede4",
+  "ports": { "web": 55026, "multiplayer": 56026, "database": 57026 }
+}

@@ -301,5 +301,13 @@
   "table_game_tab": "Spiel",
   "table_panel_toggle": "Spielinfo ein- oder ausblenden",
   "table_whose_turn": "{name} ist dran",
-  "table_your_move": "Du bist dran"
+  "table_your_move": "Du bist dran",
+
+  "info_contract": "Spiel",
+  "info_bid": "Reizwert",
+  "info_declarer": "Alleinspieler",
+  "info_points": "Augen",
+  "info_tricks": "Stich {n} von 10",
+  "info_totals": "Gesamt",
+  "info_label": "Spielinformation"
 }

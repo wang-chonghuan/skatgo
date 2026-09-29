@@ -301,5 +301,13 @@
   "table_game_tab": "牌局",
   "table_panel_toggle": "展开或收起牌局信息",
   "table_whose_turn": "轮到{name}",
-  "table_your_move": "轮到你"
+  "table_your_move": "轮到你",
+
+  "info_contract": "合约",
+  "info_bid": "当前叫分",
+  "info_declarer": "庄家",
+  "info_points": "本局点数",
+  "info_tricks": "第 {n} / 10 墩",
+  "info_totals": "总分",
+  "info_label": "牌局信息"
 }

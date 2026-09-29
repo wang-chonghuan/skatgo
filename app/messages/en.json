@@ -301,5 +301,13 @@
   "table_game_tab": "Game",
   "table_panel_toggle": "Show or hide the game panel",
   "table_whose_turn": "{name} to move",
-  "table_your_move": "Your move"
+  "table_your_move": "Your move",
+
+  "info_contract": "Contract",
+  "info_bid": "Current bid",
+  "info_declarer": "Declarer",
+  "info_points": "Card points",
+  "info_tricks": "Trick {n} of 10",
+  "info_totals": "Totals",
+  "info_label": "Game information"
 }

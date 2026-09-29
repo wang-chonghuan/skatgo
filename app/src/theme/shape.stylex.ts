@@ -66,10 +66,42 @@ export const dims = stylex.defineVars({
   readingColumn: '860px',
 
   // The table
+  /** Every hand — the learner's and both opponents' — uses the same card (SKATGO-26): 120 wide on a
+   *  desk, 88 on a phone. An opponent's card lies sideways, so its slot is the card turned. */
+  sideSlotWidth: '168px',
+  sideSlotHeight: '120px',
+  sideSlotWidthPhone: '123px',
+  sideSlotHeightPhone: '88px',
+  /** Stacked down an edge, each sideways card shows 31px (16 on a phone) of the one beneath. */
+  sideStep: '-89px',
+  sideStepPhone: '-72px',
+  /** How far a stack runs off the felt's edge: only part of it shows. */
+  sideInset: '-56px',
+  sideInsetPhone: '-83px',
+  /** Where the frame's centre sits down the felt. */
+  frameTop: '50%',
+  frameTopPhone: '50%',
+  hintTabWidth: '48px',
+  hintTabHeight: '56px',
+  hintTabBottom: '22%',
+  panelPhone: 'min(360px, 88vw)',
+  panelTab: '36px',
+  panelTabHeight: '64px',
+  panelTabOffset: '-36px',
+  plateVertical: 'auto',
+  /** The info board across the top of the felt, clear of the way back and the assistant. */
+  boardWidth: 'min(640px, calc(100% - 240px))',
+  boardWidthPhone: 'calc(100% - 16px)',
+  boardTopPhone: '64px',
+  boardColumns: 'repeat(4, auto)',
+  boardColumnsPhone: 'repeat(2, minmax(0, 1fr))',
+  /** Where an opponent's last word in Reizen shows: just inside their stack. */
+  saidLeft: '124px',
+  saidLeftPhone: '52px',
   sidePanel: '450px',
   frameBid: '403px',
   framePlay: '306px',
-  framePhone: '240px',
+  framePhone: '190px',
   frameBorderBid: '3px',
   frameBorderPlay: '2px',
   plate: '180px',
@@ -87,7 +119,9 @@ export const dims = stylex.defineVars({
   feltColumns: '180px minmax(0, 1fr) 180px',
   feltColumnsPhone: '64px minmax(0, 1fr) 64px',
   /** The frame while it holds the action box (Reizen, the skat, the contract picker). */
-  frameAction: 'min(620px, 100%)',
+  frameAction: 'min(460px, calc(100% - 240px))',
+  /** A dialog over the table is not bound by the stacks. */
+  dialogWidth: 'min(560px, 100%)',
   plateWidth: '180px',
   plateWidthPhone: 'auto',
   /** Where the action box starts in the frame: below the skat pile. */
@@ -108,7 +142,7 @@ export const dims = stylex.defineVars({
   cardLg: '96px',
   cardLgPhone: '72px',
   cardTable: '120px',
-  cardTablePhone: '72px',
+  cardTablePhone: '88px',
   cardAspect: '5 / 7',
   slotXs: '38px',
   slotSm: '58px',
@@ -117,7 +151,7 @@ export const dims = stylex.defineVars({
   slotLg: '104px',
   slotLgPhone: '78px',
   slotTable: '64px',
-  slotTablePhone: '34px',
+  slotTablePhone: '74px',
   slotMin: '22px',
   badgeOffsetTop: '-8px',
   badgeOffsetLeft: '-4px',

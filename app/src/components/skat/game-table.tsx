@@ -33,7 +33,7 @@ import {
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
-import { ChevronUp, GraduationCap, Spade } from 'lucide-react'
+import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Spade } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -52,13 +52,14 @@ import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 // learner can follow what happened.
 //
 // SKATGO-26, the lobby design's card table (reference.md), laid out for Skat's three players:
-//   the felt     — a radial green; the opponents' seat plates and face-down stacks down the left and
-//                  right edges; a gold frame in the centre holding the skat, the trick, or the action
-//                  box (Reizen, the skat, the contract picker); the learner's amber plate and hand
-//                  along the bottom;
+//   the felt     — a radial green under a fine grain; both opponents' hands in the learner's card size,
+//                  sideways and running off the left and right edges; a gold frame in the centre holding
+//                  the skat, the trick, or the action box (Reizen, the skat, the contract picker), with
+//                  the seat plates on its edges; the hint tab on the left edge; the learner's hand in a
+//                  row along the bottom;
 //   the panel    — 450 wide on grey: the game tab, the Reizen history in dark columns, the contract
-//                  and the count, notes and hints, and the block buttons (blue hint, red leave). On a
-//                  phone it is a bottom sheet that opens from one summary line;
+//                  and the count, notes and hints, and the red leave button. On a phone it is a drawer
+//                  parked off the right edge behind a white tab;
 //   the dialogs  — the settlement and a passed-in deal, white on a scrim.
 // Inside a lesson the same table is embedded: the panel stacks under the felt and there is no leave.
 
@@ -183,25 +184,23 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
     return e.say === 'pass' ? m.bid_pass() : e.say === 'hold' ? m.bid_hold_said({ value: e.value }) : m.bid_said({ value: e.value })
   }
 
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const [panelOpen, setPanelOpen] = useState(false)
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
   const status = who === null ? null : who === ME ? (game.phase === 'play' ? m.table_your_turn() : m.table_your_move()) : m.table_whose_turn({ name: nameOf(who) })
+  const acting = inFrameActions && myTurn
+  const dialog = game.phase === 'passedIn' || game.phase === 'done'
 
   return (
     <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>
       <div data-testid="skat-felt" {...stylex.props(styles.felt, fullScreen && styles.feltFull)}>
+        <InfoBoard game={game} scores={scores} points={points} />
+        {/* Both opponents' hands: the same cards as the learner's, turned sideways and stacked down the
+            left and right edges, running off the felt so only part of each shows (SKATGO-26). */}
         {([1, 2] as Seat[]).map((seat) => (
-          <SeatSide
-            key={seat}
-            seat={seat}
-            game={game}
-            active={who === seat}
-            said={game.phase === 'bidding' || game.phase === 'passedIn' ? lastBidBy(seat) : null}
-            score={scores[seat]}
-          />
+          <Stack key={seat} seat={seat} game={game} />
         ))}
 
-        <div data-testid="skat-frame" data-mode={inFrameActions && myTurn ? 'action' : 'trick'} {...stylex.props(styles.frame, inFrameActions && myTurn ? styles.frameAction : styles.framePlay)}>
+        <div data-testid="skat-frame" data-mode={acting ? 'action' : 'trick'} {...stylex.props(styles.frame, acting ? styles.frameAction : styles.framePlay)}>
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
           {(game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'passedIn') && game.skat.length > 0 ? (
             <div {...stylex.props(styles.skatPile)}>
@@ -214,7 +213,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
             </div>
           ) : null}
 
-          {inFrameActions && myTurn ? (
+          {acting ? (
             <div data-testid="skat-actions" {...stylex.props(styles.actionBox)}>
               {hint ? <Panel tone="tip"><p {...stylex.props(typography.appText, styles.note)}>💡 <Rich text={hint.text} /></p></Panel> : null}
               <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
@@ -232,7 +231,6 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
                     {...stylex.props(styles.trickCard, positions[p.seat])}
                   >
                     <PlayingCard card={p.card} size="md" glow={game.phase === 'trickEnd' && winner === p.seat} />
-                    <span {...stylex.props(typography.tricksLabel, styles.goldLabel)}>{nameOf(p.seat)}</span>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -243,28 +241,44 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
               ) : status && game.trick.length === 0 ? (
                 <p data-testid="skat-status" {...stylex.props(typography.tableStatus, styles.status)}>{status}</p>
               ) : null}
-              {game.phase === 'play' || game.phase === 'trickEnd' ? (
-                <>
-                  <span {...stylex.props(styles.countLeft)}>
-                    <span {...stylex.props(typography.tricksLabel, styles.goldLabel)}>{roleName(roleOf(game.declarer ?? ME, game.dealer))}</span>
-                    <span {...stylex.props(typography.tricksLabel, styles.countValue)}>{points.declarer}</span>
-                  </span>
-                  <span {...stylex.props(styles.countRight)}>
-                    <span {...stylex.props(typography.tricksLabel, styles.goldLabel)}>{m.table_defender_word()}</span>
-                    <span {...stylex.props(typography.tricksLabel, styles.countValue)}>{points.defenders}</span>
-                  </span>
-                </>
-              ) : null}
             </>
           )}
+
+          {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
+              learner's orange one under the bottom edge. */}
+          {([1, 2] as Seat[]).map((seat) => (
+            <div key={seat} data-testid={`skat-seat-${seat}`} {...stylex.props(styles.plateSlot, seat === 1 ? styles.plateSlotLeft : styles.plateSlotRight)}>
+              <Plate seat={seat} game={game} active={who === seat} />
+            </div>
+          ))}
+          <div {...stylex.props(styles.plateSlot, styles.plateSlotBottom)}>
+            <Plate seat={ME} game={game} mine active={myTurn} />
+          </div>
+
+          {/* What each opponent last said in Reizen, in the frame's corner on their side. */}
+          {([1, 2] as Seat[]).map((seat) => {
+            const said = game.phase === 'bidding' || game.phase === 'passedIn' ? lastBidBy(seat) : null
+            return said ? (
+              <span key={seat} data-testid={`skat-said-${seat}`} {...stylex.props(typography.bidChip, styles.chip, styles.saidChip, seat === 1 ? styles.saidLeft : styles.saidRight, said === m.bid_pass() ? styles.chipPass : styles.chipBid)}>
+                {said}
+              </span>
+            ) : null
+          })}
         </div>
 
+        {/* The hint: a tab on the felt's left edge, while it is the learner's card to play. */}
+        {game.phase === 'play' && myTurn ? (
+          <button type="button" data-testid="skat-hint" aria-label={m.play_hint_button()} title={m.play_hint_button()} onClick={showPlayHint} {...stylex.props(styles.hintTab)}>
+            <Lightbulb size={icon.table} strokeWidth={icon.outline} />
+          </button>
+        ) : null}
+
         <div {...stylex.props(styles.mine)}>
-          <Plate seat={ME} game={game} mine active={myTurn} score={scores[ME]} />
           <Fan
             testId="skat-hand"
             cards={myHand}
             size="table"
+            row
             onPick={onCard}
             selected={picked}
             legal={legal}
@@ -273,16 +287,10 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
         </div>
       </div>
 
-      <aside data-testid="skat-panel" data-open={String(sheetOpen)} {...stylex.props(styles.panel, fullScreen && styles.panelFull, fullScreen && !sheetOpen && styles.panelCollapsed)}>
+      <aside data-testid="skat-panel" data-open={String(panelOpen)} {...stylex.props(styles.panel, fullScreen && styles.panelFull, fullScreen && panelOpen && styles.panelOpen)}>
         {fullScreen ? (
-          <button type="button" aria-label={m.table_panel_toggle()} aria-expanded={sheetOpen} data-testid="skat-panel-toggle" onClick={() => setSheetOpen((o) => !o)} {...stylex.props(styles.sheetHandle)}>
-            <span {...stylex.props(typography.panelLabel, styles.sheetSummary)}>
-              {contract ? contractName(contract) : game.declarer === null ? m.table_bidding() : m.table_awaiting_contract()}
-              {status ? ` · ${status}` : ''}
-            </span>
-            <span {...stylex.props(styles.sheetChevron, sheetOpen && styles.sheetChevronOpen)}>
-              <ChevronUp size={icon.table} strokeWidth={icon.outline} />
-            </span>
+          <button type="button" aria-label={m.table_panel_toggle()} aria-expanded={panelOpen} data-testid="skat-panel-toggle" onClick={() => setPanelOpen((o) => !o)} {...stylex.props(styles.panelTab)}>
+            {panelOpen ? <ChevronRight size={icon.table} strokeWidth={icon.outline} /> : <ChevronLeft size={icon.table} strokeWidth={icon.outline} />}
           </button>
         ) : null}
 
@@ -328,26 +336,31 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
             ) : null}
           </div>
 
-          {!inFrameActions || !myTurn ? (
-            <div data-testid={inFrameActions ? undefined : 'skat-actions'} {...stylex.props(styles.panelNotes)}>
-              {refusal ? <Panel tone="bad"><p {...stylex.props(typography.appText, styles.note)}><Rich text={refusal} /></p></Panel> : null}
-              {hint ? <Panel tone="tip"><p {...stylex.props(typography.appText, styles.note)}>💡 <Rich text={hint.text} /></p></Panel> : null}
-              {inFrameActions ? null : <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />}
-            </div>
-          ) : refusal ? (
-            <Panel tone="bad"><p {...stylex.props(typography.appText, styles.note)}><Rich text={refusal} /></p></Panel>
-          ) : null}
+          <div {...stylex.props(styles.panelNotes)}>
+            {refusal ? <Panel tone="bad"><p {...stylex.props(typography.appText, styles.note)}><Rich text={refusal} /></p></Panel> : null}
+            {hint && !acting ? <Panel tone="tip"><p {...stylex.props(typography.appText, styles.note)}>💡 <Rich text={hint.text} /></p></Panel> : null}
+            {!acting && !dialog ? (
+              <div data-testid="skat-actions">
+                <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
+              </div>
+            ) : null}
+          </div>
 
           <div {...stylex.props(styles.panelFoot)}>
-            {game.phase === 'play' && myTurn ? (
-              <Btn testId="skat-hint" tone="info" shape="block" size="md" grow onClick={showPlayHint}>{m.play_hint_button()}</Btn>
-            ) : null}
             {fullScreen ? (
               <Link to="/" data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
             ) : null}
           </div>
         </div>
       </aside>
+
+      {/* The settlement and a passed-in deal are dialogs over the whole table, outside the panel, which
+          on a phone is a drawer that slides. */}
+      {dialog ? (
+        <div data-testid="skat-actions">
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -402,42 +415,75 @@ function ActionsFor({
   )
 }
 
-/** An opponent's side of the felt: the seat plate, the last thing said in Reizen, and the stack of
- *  face-down cards down the edge — face up for an Ouvert declarer. */
-function SeatSide({ seat, game, active, said, score }: { seat: Seat; game: Game; active: boolean; said: string | null; score: number }) {
-  const isDeclarer = game.declarer === seat
-  const open = isDeclarer && game.declaration?.ouvert && (game.phase === 'play' || game.phase === 'trickEnd')
+/** An opponent's hand: the same card as the learner's, turned sideways, stacked down the felt's edge
+ *  and running off it — face up for an Ouvert declarer, face down otherwise. */
+function Stack({ seat, game }: { seat: Seat; game: Game }) {
+  const open = game.declarer === seat && game.declaration?.ouvert && (game.phase === 'play' || game.phase === 'trickEnd')
+  const cards = open ? sortHand(game.hands[seat], game.declaration!.contract) : game.hands[seat]
   return (
-    <div data-testid={`skat-seat-${seat}`} {...stylex.props(styles.side, seat === 1 ? styles.sideLeft : styles.sideRight)}>
-      <Plate seat={seat} game={game} active={active} score={score} />
-      {said ? <span {...stylex.props(typography.bidChip, styles.chip, said === m.bid_pass() ? styles.chipPass : styles.chipBid)}>{said}</span> : null}
-      <div {...stylex.props(styles.stack)}>
-        {open
-          ? sortHand(game.hands[seat], game.declaration!.contract).map((c) => <div key={cardId(c)} {...stylex.props(styles.stackSlot)}><PlayingCard card={c} size="sm" /></div>)
-          : game.hands[seat].map((c, i) => <div key={i} {...stylex.props(styles.stackSlot)}><PlayingCard card={c} faceDown size="sm" /></div>)}
-      </div>
+    <div data-testid={`skat-stack-${seat}`} aria-hidden={open ? undefined : 'true'} {...stylex.props(styles.stack, seat === 1 ? styles.stackLeft : styles.stackRight)}>
+      {cards.map((c, i) => (
+        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot)}>
+          <span {...stylex.props(styles.sideCard)}>
+            <PlayingCard card={c} faceDown={!open} size="table" />
+          </span>
+        </div>
+      ))}
     </div>
   )
 }
 
-/** A seat plate: the role tag, the face and name, and the seat's running total. The learner's is amber. */
-function Plate({ seat, game, mine, active, score }: { seat: Seat; game: Game; mine?: boolean; active: boolean; score: number }) {
+/** A seat plate: the role tag and the name — nothing else, so it never has to be cut short. Scores,
+ *  the contract and the count are on the info board at the top of the felt. The learner's is amber. */
+function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: boolean; active: boolean }) {
   const role = roleName(roleOf(seat, game.dealer))
-  const isDeclarer = game.declarer === seat
   return (
-    <div data-testid={mine ? 'skat-plate-me' : undefined} data-active={String(active)} {...stylex.props(styles.plate, mine && styles.plateMine, active && styles.plateActive)}>
+    <div data-testid={mine ? 'skat-plate-me' : undefined} data-active={String(active)} title={role} {...stylex.props(styles.plate, mine && styles.plateMine, active && styles.plateActive)}>
       <span aria-hidden="true" {...stylex.props(typography.roleTag, styles.roleTag)}>{role.slice(0, 1).toUpperCase()}</span>
-      <span {...stylex.props(typography.plateName, styles.plateText)}>
-        <span {...stylex.props(!mine && styles.wideOnly)}>{FACES[seat]} </span>
-        {nameOf(seat)}
-        <span {...stylex.props(!mine && styles.wideOnly)}>
-          {' · '}
-          {role}
-          {isDeclarer ? ` · ${m.table_declarer_word()}` : game.declarer !== null && mine ? ` · ${m.table_defender_word()}` : ''}
-        </span>
-      </span>
-      <span {...stylex.props(typography.plateName, styles.plateScore, !mine && styles.wideOnly)}>{mine ? m.table_total({ n: score }) : m.table_seat_score({ n: score })}</span>
+      <span {...stylex.props(typography.plateName, styles.plateText)}>{nameOf(seat)}</span>
     </div>
+  )
+}
+
+/** The info board across the top of the felt: what is being played, by whom, how the hand stands, and
+ *  the running totals — each a small label over its value, divided by fine rules. */
+function InfoBoard({ game, scores, points }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number } }) {
+  const contract = game.declaration?.contract ?? null
+  const playing = game.phase === 'play' || game.phase === 'trickEnd'
+  const extras = `${game.declaration?.hand ? ' · Hand' : ''}${game.declaration?.ouvert ? ' · Ouvert' : ''}`
+  return (
+    <section data-testid="skat-info" aria-label={m.info_label()} {...stylex.props(styles.board)}>
+      <div data-testid="skat-info-contract" {...stylex.props(styles.boardCell)}>
+        <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{contract ? m.info_contract() : m.info_bid()}</span>
+        {contract ? (
+          <span {...stylex.props(typography.infoValue, styles.boardValue)}><Rich text={contractName(contract)} />{extras}</span>
+        ) : (
+          <span {...stylex.props(typography.infoNumber, styles.boardValue)}>{game.bidding.value > 0 ? game.bidding.value : '—'}</span>
+        )}
+        <span {...stylex.props(typography.infoSub, styles.boardSub)}>{contract ? '' : game.declarer === null ? m.table_bidding() : m.table_awaiting_contract()}</span>
+      </div>
+      <div {...stylex.props(styles.boardCell)}>
+        <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_declarer()}</span>
+        <span {...stylex.props(typography.infoValue, styles.boardValue)}>{game.declarer === null ? '—' : nameOf(game.declarer)}</span>
+        <span {...stylex.props(typography.infoSub, styles.boardSub)}>{game.declarer === null ? '' : m.info_bid() + ' ' + game.bid}</span>
+      </div>
+      <div data-testid="skat-info-points" {...stylex.props(styles.boardCell)}>
+        <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_points()}</span>
+        <span {...stylex.props(typography.infoNumber, styles.boardValue)}>{playing ? `${points.declarer} : ${points.defenders}` : '—'}</span>
+        <span {...stylex.props(typography.infoSub, styles.boardSub)}>{playing ? m.info_tricks({ n: Math.min(10, game.tricks.length + 1) }) : ''}</span>
+      </div>
+      <div data-testid="skat-info-totals" {...stylex.props(styles.boardCell)}>
+        <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_totals()}</span>
+        <div {...stylex.props(styles.totals)}>
+          {([1, ME, 2] as Seat[]).map((seat) => (
+            <span key={seat} {...stylex.props(styles.total)}>
+              <span {...stylex.props(typography.infoNumber, styles.boardValue, seat === ME && styles.boardMine)}>{scores[seat]}</span>
+              <span {...stylex.props(typography.infoSub, styles.boardSub)}>{nameOf(seat)}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -737,52 +783,66 @@ const tintOf = (c: Contract): Tint => (c.kind === 'suit' ? c.trump : c.kind)
 
 
 const styles = stylex.create({
-  table: {
-    position: 'relative',
-    display: 'grid',
-    backgroundColor: color.page,
-    overflow: 'hidden',
-  },
-  // Free play: the felt fills the screen beside the 450-wide panel; on a phone the panel is a sheet.
-  tableFull: {
-    gridTemplateColumns: { default: dims.tableColumns, [bp.phone]: dims.oneColumn },
-    minHeight: dims.screenDynamic,
-  },
+  table: { position: 'relative', display: 'grid', backgroundColor: color.page, overflow: 'hidden' },
+  // Free play: the felt fills the screen beside the 450-wide panel; on a phone the panel is a drawer.
+  tableFull: { gridTemplateColumns: { default: dims.tableColumns, [bp.phone]: dims.oneColumn }, minHeight: dims.screenDynamic },
   // Inside a lesson: the panel stacks under the felt.
   tableEmbedded: { gridTemplateColumns: dims.oneColumn, borderRadius: radii.panel },
 
   felt: {
     position: 'relative',
-    display: 'grid',
-    gridTemplateColumns: { default: dims.feltColumns, [bp.phone]: dims.feltColumnsPhone },
-    gridTemplateRows: dims.feltRows,
-    alignItems: 'center',
-    justifyItems: 'center',
-    gap: space.x12,
     minHeight: dims.tableEmbedded,
-    paddingBlock: space.x16,
-    paddingInline: { default: space.x16, [bp.phone]: space.x6 },
-    boxSizing: 'border-box',
+    overflow: 'hidden',
     backgroundImage: fill.felt,
     color: color.onColor,
   },
-  feltFull: { minHeight: { default: dims.screenDynamic, [bp.phone]: dims.screenDynamic }, paddingBottom: { default: space.x16, [bp.phone]: dims.sheetCollapsed } },
+  feltFull: { minHeight: dims.screenDynamic },
 
-  side: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x8, alignSelf: 'stretch', justifyContent: 'center', minWidth: 0 },
-  sideLeft: { gridColumn: 1, gridRow: 1 },
-  sideRight: { gridColumn: dims.column3, gridRow: 1 },
-  stack: { display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  stackSlot: { marginTop: { default: dims.backOverlap, [bp.phone]: dims.backOverlapPhone, ':first-child': 0 } },
+  // An opponent's hand down an edge, only partly on the felt.
+  stack: {
+    position: 'absolute',
+    top: { default: dims.frameTop, [bp.phone]: dims.frameTopPhone },
+    display: 'flex',
+    flexDirection: 'column',
+    transform: pose.centreY,
+  },
+  stackLeft: { left: { default: dims.sideInset, [bp.phone]: dims.sideInsetPhone } },
+  stackRight: { right: { default: dims.sideInset, [bp.phone]: dims.sideInsetPhone } },
+  sideSlot: {
+    position: 'relative',
+    flexShrink: 0,
+    width: { default: dims.sideSlotWidth, [bp.phone]: dims.sideSlotWidthPhone },
+    height: { default: dims.sideSlotHeight, [bp.phone]: dims.sideSlotHeightPhone },
+    marginTop: { default: dims.sideStep, [bp.phone]: dims.sideStepPhone, ':first-child': 0 },
+  },
+  sideCard: { position: 'absolute', top: dims.half, left: dims.half, display: 'block', transform: pose.sideways },
 
+  frame: {
+    position: 'absolute',
+    top: { default: dims.frameTop, [bp.phone]: dims.frameTopPhone },
+    left: dims.half,
+    transform: pose.centre,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
+    borderStyle: 'solid',
+    borderColor: color.gold,
+  },
+  framePlay: { width: { default: dims.framePlay, [bp.phone]: dims.framePhone }, aspectRatio: dims.square, borderWidth: dims.frameBorderPlay },
+  frameAction: { width: dims.frameAction, minHeight: dims.frameBid, padding: space.x16, borderWidth: dims.frameBorderBid, zIndex: layer.launcher },
+
+  plateSlot: { position: 'absolute', display: 'flex' },
+  plateSlotLeft: { left: 0, top: dims.half, transform: pose.plateLeft },
+  plateSlotRight: { right: 0, top: dims.half, transform: pose.plateRight },
+  plateSlotBottom: { left: dims.half, bottom: 0, transform: pose.plateBottom },
   plate: {
     display: 'flex',
     alignItems: 'center',
     gap: space.x6,
-    width: { default: dims.plateWidth, [bp.phone]: dims.plateWidthPhone },
-    maxWidth: '100%',
     minHeight: dims.plateHeight,
     boxSizing: 'border-box',
-    paddingRight: space.x8,
+    paddingRight: space.x12,
     borderRadius: radii.tag,
     borderWidth: border.tile,
     borderStyle: 'solid',
@@ -790,6 +850,7 @@ const styles = stylex.create({
     backgroundColor: color.plate,
     color: color.onColor,
     overflow: 'hidden',
+    whiteSpace: 'nowrap',
   },
   plateMine: { backgroundColor: color.amber, color: color.plate },
   plateActive: { borderColor: color.gold },
@@ -804,36 +865,52 @@ const styles = stylex.create({
     backgroundColor: color.roleTag,
     color: color.onColor,
   },
-  plateText: { flexGrow: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  plateScore: { flexShrink: 0, opacity: opacity.meta },
-  // An opponent's plate on a phone keeps the role tag and the name; the rest is in the panel.
-  wideOnly: { display: { default: 'inline', [bp.phone]: 'none' } },
+  plateText: { whiteSpace: 'nowrap' },
 
-  frame: {
-    gridColumn: dims.column2,
-    gridRow: 1,
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
+  saidChip: { position: 'absolute', top: space.x12 },
+  saidLeft: { left: space.x12 },
+  saidRight: { right: space.x12 },
+
+  board: {
+    position: 'absolute',
+    top: { default: space.x16, [bp.phone]: dims.boardTopPhone },
+    left: dims.half,
+    transform: pose.centreX,
+    zIndex: layer.launcher,
+    display: 'grid',
+    gridTemplateColumns: { default: dims.boardColumns, [bp.phone]: dims.boardColumnsPhone },
     justifyContent: 'center',
+    width: { default: dims.boardWidth, [bp.phone]: dims.boardWidthPhone },
     boxSizing: 'border-box',
-    borderStyle: 'solid',
-    borderColor: color.gold,
+    borderRadius: radii.panel,
+    backgroundColor: color.board,
+    color: color.onColor,
   },
-  framePlay: {
-    width: { default: dims.framePlay, [bp.phone]: dims.framePhone },
-    aspectRatio: dims.square,
-    borderWidth: dims.frameBorderPlay,
+  boardCell: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: space.x4,
+    minWidth: 0,
+    paddingBlock: { default: space.x10, [bp.phone]: space.x8 },
+    paddingInline: { default: space.x16, [bp.phone]: space.x8 },
+    borderLeftWidth: { default: border.hair, ':first-child': 0 },
+    borderLeftStyle: 'solid',
+    borderLeftColor: color.boardLine,
+    textAlign: 'center',
   },
-  frameAction: { width: dims.frameAction, minHeight: dims.frameBid, padding: space.x16, borderWidth: dims.frameBorderBid },
+  boardLabel: { color: color.amber, whiteSpace: 'nowrap' },
+  boardValue: { color: color.onColor, whiteSpace: 'nowrap' },
+  boardMine: { color: color.amber },
+  boardSub: { color: color.onColorSoft, whiteSpace: 'nowrap', minHeight: space.x12 },
+  totals: { display: 'flex', gap: space.x12 },
+  total: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x2 },
+
   skatPile: { position: 'absolute', top: space.x12, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6 },
   skatCards: { display: 'flex', gap: space.x6 },
   goldLabel: { color: color.amber },
   status: { margin: 0, color: color.onColor, textAlign: 'center', paddingInline: space.x12 },
-  countLeft: { position: 'absolute', left: space.x8, bottom: space.x8, display: 'flex', flexDirection: 'column' },
-  countRight: { position: 'absolute', right: space.x8, bottom: space.x8, display: 'flex', flexDirection: 'column', alignItems: 'flex-end' },
-  countValue: { color: color.onColor },
-  trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
+  trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   trickNote: { position: 'absolute', left: 0, right: 0, top: space.x8, display: 'flex', justifyContent: 'center' },
 
   // The action box inside the frame: white, like the reference's bid box.
@@ -843,6 +920,7 @@ const styles = stylex.create({
     gap: space.x12,
     width: '100%',
     marginTop: dims.actionOffset,
+    marginBottom: space.x24,
     padding: space.x16,
     boxSizing: 'border-box',
     borderRadius: radii.dialog,
@@ -851,43 +929,66 @@ const styles = stylex.create({
     color: color.text,
   },
 
-  mine: { gridColumn: dims.fullRow, gridRow: dims.row2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x8, width: '100%' },
-
-  panel: {
+  hintTab: {
+    position: 'absolute',
+    left: 0,
+    bottom: dims.hintTabBottom,
     display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: color.page,
-    color: color.text,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: dims.hintTabWidth,
+    height: dims.hintTabHeight,
+    padding: 0,
+    borderWidth: 0,
+    borderTopRightRadius: radii.panel,
+    borderBottomRightRadius: radii.panel,
+    backgroundColor: color.hintTab,
+    color: color.onColor,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.gold,
   },
+
+  // The learner's hand: a row along the bottom, the same card size as the opponents'.
+  mine: { position: 'absolute', left: 0, right: 0, bottom: space.x12, display: 'flex', justifyContent: 'center', paddingInline: { default: space.x16, [bp.phone]: space.x6 }, boxSizing: 'border-box' },
+
+  panel: { position: 'relative', display: 'flex', flexDirection: 'column', backgroundColor: color.page, color: color.text },
   panelFull: {
     position: { default: 'relative', [bp.phone]: 'fixed' },
-    insetInline: { default: 'auto', [bp.phone]: 0 },
-    bottom: { default: 'auto', [bp.phone]: 0 },
-    zIndex: { default: 'auto', [bp.phone]: layer.launcher },
-    width: { default: dims.sidePanel, [bp.phone]: '100%' },
-    maxHeight: { default: 'none', [bp.phone]: dims.sheetMax },
+    top: { default: 'auto', [bp.phone]: 0 },
+    right: { default: 'auto', [bp.phone]: 0 },
+    zIndex: { default: 'auto', [bp.phone]: layer.window },
+    width: { default: dims.sidePanel, [bp.phone]: dims.panelPhone },
+    height: { default: 'auto', [bp.phone]: dims.screenDynamic },
+    transform: { default: 'none', [bp.phone]: pose.offRight },
+    transitionProperty: 'transform',
+    transitionDuration: timing.tile,
     borderTopLeftRadius: radii.panel,
-    borderBottomLeftRadius: { default: radii.panel, [bp.phone]: 0 },
-    borderTopRightRadius: { default: 0, [bp.phone]: radii.panel },
+    borderBottomLeftRadius: radii.panel,
     boxShadow: elev.panel,
   },
-  panelCollapsed: { maxHeight: { default: 'none', [bp.phone]: dims.sheetCollapsed } },
-  sheetHandle: {
+  panelOpen: { transform: { default: 'none', [bp.phone]: pose.onScreen } },
+  // The white tab that pulls the drawer out on a phone.
+  panelTab: {
     display: { default: 'none', [bp.phone]: 'flex' },
+    position: 'absolute',
+    top: dims.half,
+    left: dims.panelTabOffset,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: space.x8,
-    minHeight: dims.sheetCollapsed,
-    flexShrink: 0,
-    paddingInline: space.x16,
+    justifyContent: 'center',
+    width: dims.panelTab,
+    height: dims.panelTabHeight,
+    padding: 0,
     borderWidth: 0,
-    backgroundColor: 'transparent',
+    borderTopLeftRadius: radii.panel,
+    borderBottomLeftRadius: radii.panel,
+    backgroundColor: color.surface,
     color: color.navy,
+    boxShadow: elev.panel,
     cursor: 'pointer',
+    transform: pose.centreY,
   },
-  sheetSummary: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  sheetChevron: { display: 'flex', transitionProperty: 'transform', transitionDuration: timing.tile },
-  sheetChevronOpen: { transform: pose.flip },
   panelBody: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, padding: space.x16, overflowY: 'auto' },
   tabs: { display: 'flex', justifyContent: 'space-around', paddingBottom: space.x16, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
   tab: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4, color: color.slateDeep, textDecoration: 'none' },
@@ -999,7 +1100,7 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     gap: space.x16,
-    width: dims.frameAction,
+    width: dims.dialogWidth,
     maxHeight: '100%',
     overflowY: 'auto',
     boxSizing: 'border-box',
@@ -1023,6 +1124,6 @@ const contractTint = stylex.create({
 // The three places a played card lands in the frame: in front of whoever played it.
 const positions = stylex.create({
   0: { left: dims.half, bottom: space.x12, marginLeft: dims.trickHalf },
-  1: { left: space.x12, top: space.x48 },
-  2: { right: space.x12, top: space.x48 },
+  1: { left: space.x12, top: dims.half, transform: pose.centreY },
+  2: { right: space.x12, top: dims.half, transform: pose.centreY },
 })

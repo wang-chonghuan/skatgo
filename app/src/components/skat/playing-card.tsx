@@ -116,7 +116,7 @@ export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glo
   const Face = faceOf(card)
   // The back is drawn here rather than taken from the deck: the library's back is a flat grey, and
   // a face-down card is most of what the learner sees of their opponents. It is skatgo's own design
-  // (SKATGO-26): a gold lattice on navy inside a white frame.
+  // (SKATGO-26): a fine light lattice on charcoal inside a white frame.
   const body = faceDown ? (
     <span {...stylex.props(styles.back)} />
   ) : (
@@ -182,7 +182,7 @@ const styles = stylex.create({
     borderStyle: 'solid',
     borderColor: color.surface,
     borderRadius: 'inherit',
-    backgroundColor: color.navy,
+    backgroundColor: color.cardBack,
     backgroundImage: fill.cardBack,
   },
   clickable: {

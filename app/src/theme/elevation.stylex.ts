@@ -33,12 +33,13 @@ export const elev = stylex.defineVars({
 })
 
 export const fill = stylex.defineVars({
-  /** The card table and every drill: a radial felt centred on the play. */
-  felt: `radial-gradient(circle at 50% 50%, ${color.feltInner} 0%, ${color.feltInner} 20%, ${color.feltOuter} 100%)`,
+  /** The card table and every drill: a radial felt centred on the play (reference.md), under skatgo's
+   *  own fine grain — a fractal-noise texture drawn here, so the felt reads as cloth, not a flat fill. */
+  felt: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>"), radial-gradient(circle at 50% 50%, ${color.feltInner} 0%, ${color.feltInner} 20%, ${color.feltOuter} 100%)`,
   /** The veil a tile's colour lays over its artwork. */
   tileVeil: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.22) 100%)',
-  /** A card back: skatgo's own lattice, in the table's gold on navy (derived, original). */
-  cardBack: `repeating-linear-gradient(45deg, rgba(237, 160, 16, 0.35) 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, rgba(237, 160, 16, 0.35) 0 2px, transparent 2px 7px), linear-gradient(${color.navy}, ${color.navy})`,
+  /** A card back: skatgo's own fine lattice, light lines on charcoal (original design). */
+  cardBack: `repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.10) 0 1px, transparent 1px 6px), repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.10) 0 1px, transparent 1px 6px), linear-gradient(135deg, ${color.cardBackLight}, ${color.cardBack})`,
   dimmed: 'brightness(0.62) saturate(0.7)',
   /** A coloured button under the pointer. */
   hoverBright: 'brightness(1.06)',
@@ -57,6 +58,18 @@ export const pose = stylex.defineVars({
   lift: 'translateY(-3px)',
   rest: 'translateY(0)',
   flip: 'rotate(180deg)',
+  /** An opponent's card, turned on its side inside its landscape slot. */
+  sideways: 'translate(-50%, -50%) rotate(90deg)',
+  /** Seat plates lying along the frame's left and right edges, and the learner's under its bottom edge. */
+  plateLeft: 'translate(-50%, -50%) rotate(-90deg)',
+  plateRight: 'translate(50%, -50%) rotate(90deg)',
+  plateBottom: 'translate(-50%, 50%)',
+  centre: 'translate(-50%, -50%)',
+  centreX: 'translateX(-50%)',
+  centreY: 'translateY(-50%)',
+  /** The phone's side panel, parked off the right edge until its tab is pulled. */
+  offRight: 'translateX(100%)',
+  onScreen: 'translateX(0)',
 })
 
 /** How much of a tile's colour veils its card art (the reference lays its colour over a photograph). */

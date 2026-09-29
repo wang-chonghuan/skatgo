@@ -49,6 +49,9 @@ type FanProps = {
   answer?: Card[]
   sequence?: Card[]
   testId?: string
+  /** One row across the whole width, at every size (the card table's hand, SKATGO-26): the cards
+   *  share the width evenly and overlap as they must; each keeps a visible strip to tap. */
+  row?: boolean
 }
 
 /**
@@ -56,19 +59,19 @@ type FanProps = {
  * card itself does not — so ten cards overlap to fit a phone and spread out on a desk, with no
  * arithmetic on the count.
  */
-export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [], verdicts = [], badges = [], answer, sequence, testId }: FanProps) {
+export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [], verdicts = [], badges = [], answer, sequence, testId, row }: FanProps) {
   const has = (list: Card[], c: Card) => list.some((d) => sameCard(c, d))
   // More than six cards are held as two rows on a phone. At 375px a single row of ten leaves each
   // card a 25px sliver, which a finger cannot hit reliably (measured: a tap on a card's centre landed
   // on its neighbour); two rows of five leave about 55px each. On a wide screen the two groups
   // dissolve (`display: contents`) and the fan is one row again.
-  const half = cards.length > 6 ? Math.ceil(cards.length / 2) : cards.length
+  const half = cards.length > 6 && !row ? Math.ceil(cards.length / 2) : cards.length
   const groups = [cards.slice(0, half), cards.slice(half)].filter((g) => g.length > 0)
   let index = 0
   return (
-    <div data-testid={testId} {...stylex.props(styles.fan)}>
+    <div data-testid={testId} {...stylex.props(styles.fan, row && styles.fanRow)}>
       {groups.map((group, g) => (
-        <div key={g} {...stylex.props(styles.group, g > 0 && styles.lowerGroup)}>
+        <div key={g} {...stylex.props(styles.group, g > 0 && styles.lowerGroup, row && styles.groupRow)}>
           {group.map((c, j) => {
             const i = index++
             const isLegal = legal ? has(legal, c) : undefined
@@ -84,9 +87,10 @@ export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [
                 transition={{ duration: deal.duration, delay: Math.min(i, deal.staggerCap) * deal.stagger }}
                 {...stylex.props(
                   styles.slot,
-                  slotSizes[size],
+                  row ? styles.rowSlot : slotSizes[size],
                   j === group.length - 1 && styles.groupLastSlot,
                   i === cards.length - 1 && styles.lastSlot,
+                  row && i === cards.length - 1 && styles.rowLastSlot,
                 )}
               >
                 <PlayingCard
@@ -137,6 +141,11 @@ const styles = stylex.create({
   // The lower row tucks under the upper one, the way a held hand overlaps — and it saves height.
   lowerGroup: { marginTop: { default: 0, [bp.phone]: dims.fanRowOverlap } },
   slot: { position: 'relative', flexGrow: 0, flexShrink: 1, minWidth: dims.slotMin },
+  fanRow: { width: '100%' },
+  groupRow: { display: 'flex', flexWrap: 'nowrap', width: '100%' },
+  // In a row each slot takes an even share of the width; the last holds its whole card.
+  rowSlot: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 },
+  rowLastSlot: { flexGrow: 0, flexShrink: 0, flexBasis: 'auto' },
   // The last card of a row is never overlapped, so its slot must keep the card's full width. On a
   // wide screen only the fan's very last card is "last"; on a phone each row has its own.
   groupLastSlot: { flexShrink: { default: 1, [bp.phone]: 0 } },

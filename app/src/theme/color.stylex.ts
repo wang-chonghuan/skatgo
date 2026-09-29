@@ -41,6 +41,15 @@ export const color = stylex.defineVars({
   gold: '#EDA010',
   amber: '#FF9E10',
   plate: '#252525',
+  /** skatgo's card back: charcoal (derived). */
+  cardBack: '#34373C',
+  cardBackLight: '#4A4E55',
+  /** The hint tab on the felt's edge. */
+  hintTab: 'rgba(37, 37, 37, 0.85)',
+  /** The info board over the felt, and its dividers (derived). */
+  board: 'rgba(0, 0, 0, 0.32)',
+  boardLine: 'rgba(255, 255, 255, 0.14)',
+  onColorSoft: 'rgba(255, 255, 255, 0.72)',
   roleTag: '#007A28',
   auctionHead: '#639B3D',
   /** The active tab tile in the side panel (derived from the action green). */

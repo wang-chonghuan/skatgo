@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-26",
   "mode": "autonomous",
-  "stage": "developing",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-26",
   "branch": "SKATGO-26-funbridge-style",

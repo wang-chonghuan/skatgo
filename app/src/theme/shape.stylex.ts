@@ -66,6 +66,14 @@ export const dims = stylex.defineVars({
   readingColumn: '860px',
 
   // The table
+  /** The action drawer: as wide as the felt allows, sitting just above the learner's hand. */
+  drawerWidth: 'min(680px, calc(100% - 24px))',
+  drawerBottom: '196px',
+  drawerBottomPhone: '146px',
+  drawerMaxHeight: 'calc(100% - 220px)',
+  drawerMaxHeightPhone: 'calc(100% - 160px)',
+  drawerHandle: '40px',
+  drawerHandleHeight: '4px',
   /** Every hand — the learner's and both opponents' — uses the same card (SKATGO-26): 120 wide on a
    *  desk, 88 on a phone. An opponent's card lies sideways, so its slot is the card turned. */
   sideSlotWidth: '168px',

@@ -37,7 +37,7 @@ import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Spade } from 'luci
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { confettiBurst, icon, trick } from '../../theme/constants'
+import { confettiBurst, drawer, icon, trick } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev, fill, pose } from '../../theme/elevation.stylex'
 import { border, layer, opacity, space } from '../../theme/scale.stylex'
@@ -200,7 +200,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
           <Stack key={seat} seat={seat} game={game} />
         ))}
 
-        <div data-testid="skat-frame" data-mode={acting ? 'action' : 'trick'} {...stylex.props(styles.frame, acting ? styles.frameAction : styles.framePlay)}>
+        <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
           {(game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'passedIn') && game.skat.length > 0 ? (
             <div {...stylex.props(styles.skatPile)}>
@@ -213,12 +213,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
             </div>
           ) : null}
 
-          {acting ? (
-            <div data-testid="skat-actions" {...stylex.props(styles.actionBox)}>
-              {hint ? <Panel tone="tip"><p {...stylex.props(typography.appText, styles.note)}>💡 <Rich text={hint.text} /></p></Panel> : null}
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
-            </div>
-          ) : (
+          {(
             <>
               <AnimatePresence>
                 {game.trick.map((p) => (
@@ -265,6 +260,28 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
             ) : null
           })}
         </div>
+
+        {/* The learner's move — Reizen, the skat, the discard, the contract — in a drawer that rises from
+            the bottom of the table and stops above the hand, which the discard still needs. */}
+        <AnimatePresence>
+          {acting ? (
+            <motion.div
+              key="drawer"
+              role="dialog"
+              aria-modal="false"
+              data-testid="skat-actions"
+              initial={{ opacity: 0, y: drawer.rise }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: drawer.rise }}
+              transition={{ duration: drawer.duration }}
+              {...stylex.props(styles.drawer)}
+            >
+              <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
+              {hint ? <Panel tone="tip"><p {...stylex.props(typography.appText, styles.note)}>💡 <Rich text={hint.text} /></p></Panel> : null}
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
 
         {/* The hint: a tab on the felt's left edge, while it is the learner's card to play. */}
         {game.phase === 'play' && myTurn ? (
@@ -823,6 +840,8 @@ const styles = stylex.create({
     left: dims.half,
     transform: pose.centre,
     display: 'flex',
+    flexDirection: 'column',
+    gap: space.x10,
     alignItems: 'center',
     justifyContent: 'center',
     boxSizing: 'border-box',
@@ -830,7 +849,6 @@ const styles = stylex.create({
     borderColor: color.gold,
   },
   framePlay: { width: { default: dims.framePlay, [bp.phone]: dims.framePhone }, aspectRatio: dims.square, borderWidth: dims.frameBorderPlay },
-  frameAction: { width: dims.frameAction, minHeight: dims.frameBid, padding: space.x16, borderWidth: dims.frameBorderBid, zIndex: layer.launcher },
 
   plateSlot: { position: 'absolute', display: 'flex' },
   plateSlotLeft: { left: 0, top: dims.half, transform: pose.plateLeft },
@@ -867,7 +885,7 @@ const styles = stylex.create({
   },
   plateText: { whiteSpace: 'nowrap' },
 
-  saidChip: { position: 'absolute', top: space.x12 },
+  saidChip: { position: 'absolute', bottom: space.x32 },
   saidLeft: { left: space.x12 },
   saidRight: { right: space.x12 },
 
@@ -906,27 +924,44 @@ const styles = stylex.create({
   totals: { display: 'flex', gap: space.x12 },
   total: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x2 },
 
-  skatPile: { position: 'absolute', top: space.x12, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6 },
+  // The skat and the status line stack in the frame's middle, one above the other.
+  skatPile: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6 },
   skatCards: { display: 'flex', gap: space.x6 },
   goldLabel: { color: color.amber },
   status: { margin: 0, color: color.onColor, textAlign: 'center', paddingInline: space.x12 },
   trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   trickNote: { position: 'absolute', left: 0, right: 0, top: space.x8, display: 'flex', justifyContent: 'center' },
 
-  // The action box inside the frame: white, like the reference's bid box.
-  actionBox: {
+  // The action drawer: white, rounded at the top, over the felt and just above the hand.
+  drawer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    marginInline: 'auto',
+    bottom: { default: dims.drawerBottom, [bp.phone]: dims.drawerBottomPhone },
+    zIndex: layer.window,
     display: 'flex',
     flexDirection: 'column',
     gap: space.x12,
-    width: '100%',
-    marginTop: dims.actionOffset,
-    marginBottom: space.x24,
-    padding: space.x16,
+    width: dims.drawerWidth,
+    maxHeight: { default: dims.drawerMaxHeight, [bp.phone]: dims.drawerMaxHeightPhone },
+    overflowY: 'auto',
     boxSizing: 'border-box',
+    paddingTop: space.x8,
+    paddingBottom: space.x16,
+    paddingInline: space.x16,
     borderRadius: radii.dialog,
     backgroundColor: color.surface,
     boxShadow: elev.panel,
     color: color.text,
+  },
+  drawerHandle: {
+    alignSelf: 'center',
+    flexShrink: 0,
+    width: dims.drawerHandle,
+    height: dims.drawerHandleHeight,
+    borderRadius: radii.round,
+    backgroundColor: color.hairline,
   },
 
   hintTab: {

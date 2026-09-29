@@ -52,6 +52,9 @@ export const finish = { spring: { type: 'spring', stiffness: 260, damping: 16 },
 /** The wordless "no" after a wrong answer. */
 export const shake = { x: [0, -9, 9, -6, 6, 0], duration: 0.35 }
 
+/** The action drawer rising from the bottom of the table when it is the learner's move (SKATGO-26). */
+export const drawer = { rise: 48, duration: 0.22 }
+
 /** Celebration: finishing a lesson, and winning a game — nowhere else. */
 export const confettiBurst = {
   lesson: { particleCount: 140, spread: 80, origin: { y: 0.6 } },

@@ -3,7 +3,7 @@ import { ClientOnly } from '@tanstack/react-router'
 import { Suspense, lazy } from 'react'
 
 import { m } from '~/paraglide/messages'
-import { skat } from '../../theme/skat.stylex'
+import { color } from '../../theme/color.stylex'
 import { space } from '../../theme/scale.stylex'
 import { typography } from '../../theme/type'
 import { CourseHome } from './course-home'
@@ -39,5 +39,5 @@ export function ClientPage({ page }: { page: 'entry' | 'course' | keyof typeof P
 }
 
 const styles = stylex.create({
-  loading: { margin: 0, paddingBlock: space.x80, textAlign: 'center', color: skat.inkSoft },
+  loading: { margin: 0, paddingBlock: space.x80, textAlign: 'center', color: color.slate },
 })

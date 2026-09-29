@@ -24,7 +24,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '1',
     title: 'Drei Spieler, 32 Karten',
     promise: 'Wissen, worum es beim Skat geht: wer gegen wen spielt, worum und wie man gewinnt.',
-    emoji: '🃏',
     minutes: 1,
     steps: [
       {
@@ -75,7 +74,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '2',
     title: 'Augen: welche Karten zählen',
     promise: 'Auf einen Blick sehen, wie viele Augen ein Stich hat.',
-    emoji: '💰',
     minutes: 1,
     steps: [
       {
@@ -104,7 +102,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '3',
     title: 'Trumpf und die vier Buben',
     promise: 'In jedem Spiel die Trümpfe erkennen – und wer wen sticht.',
-    emoji: '👑',
     minutes: 1,
     steps: [
       {
@@ -140,7 +137,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '4',
     title: 'Bedienen und Stiche gewinnen',
     promise: 'Wissen, welche Karten du spielen darfst – und wem der Stich gehört.',
-    emoji: '🎯',
     minutes: 2,
     steps: [
       {
@@ -210,7 +206,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '5',
     title: 'Grand und Null',
     promise: 'Die beiden anderen Spielarten beherrschen: Grand, in dem nur die Buben Trumpf sind, und Null, in dem man keinen Stich bekommen darf.',
-    emoji: '🎭',
     minutes: 2,
     steps: [
       {
@@ -263,7 +258,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '6',
     title: 'Was ein Spiel wert ist',
     promise: 'Den Wert jedes Blattes ausrechnen – die Grundlage für das ganze Reizen.',
-    emoji: '🧮',
     minutes: 2,
     steps: [
       {
@@ -308,7 +302,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '7',
     title: 'Reizen',
     promise: 'Das Tischgespräch „18?“ – „Ja.“ „20?“ – „Passe.“ verstehen und mitreden.',
-    emoji: '📣',
     minutes: 2,
     steps: [
       {
@@ -374,7 +367,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '8',
     title: 'Skat, Drücken und Hand',
     promise: 'Als Alleinspieler wissen, wie man die beiden Skatkarten am besten nutzt.',
-    emoji: '🗃️',
     minutes: 2,
     steps: [
       {
@@ -430,7 +422,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '9',
     title: 'Gewinnstufen und Abrechnung',
     promise: 'Ein fertiges Spiel selbst abrechnen – mit Schneider, Schwarz und überreizten Spielen.',
-    emoji: '🏆',
     minutes: 2,
     steps: [
       {
@@ -479,7 +470,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '10',
     title: 'Richtig spielen: Grundlagen für Alleinspieler und Gegenspieler',
     promise: 'Nicht mehr nur erlaubte Karten legen – sondern wissen, warum du genau diese spielst.',
-    emoji: '🧠',
     minutes: 2,
     steps: [
       {
@@ -552,7 +542,6 @@ export const LESSONS_DE: Lesson[] = [
     id: '11',
     title: 'Abschlussspiel: an den Tisch!',
     promise: 'Eine komplette Partie gegen zwei Computergegner spielen. Danach kannst du Skat.',
-    emoji: '🎓',
     minutes: 3,
     steps: [
       {

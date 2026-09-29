@@ -9,9 +9,11 @@ import { lessonById } from '~/lib/skat/lessons/content'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { icon, phoneQuery } from '../../theme/constants'
-import { move, shadow } from '../../theme/effects.stylex'
-import { border, layer, opacity, radius, size, space } from '../../theme/scale.stylex'
-import { skat } from '../../theme/skat.stylex'
+import { color } from '../../theme/color.stylex'
+import { move } from '../../theme/effects.stylex'
+import { elev } from '../../theme/elevation.stylex'
+import { border, layer, opacity, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import type { AskPage, AskThreadProps } from './ask-thread'
 
@@ -170,6 +172,8 @@ function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
   const phone = usePhone()
   const [open, setOpen] = useState(false)
   const title = titleOf(page)
+  // At the card table the side panel owns the right edge (SKATGO-26); the launcher waits beside it.
+  const atTable = page.page === 'play'
 
   // Closing hands focus back to the button it was opened from.
   const launcher = useRef<HTMLButtonElement | null>(null)
@@ -317,7 +321,7 @@ function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
           title={m.ask_button_label()}
           data-testid="ask-launcher"
           onClick={() => setOpen(true)}
-          {...stylex.props(styles.launcher)}
+          {...stylex.props(styles.launcher, atTable && styles.launcherAtTable)}
         >
           <MessageCircle aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
         </button>
@@ -329,7 +333,7 @@ function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
           aria-label={`${m.ask_name()} · ${title}`}
           data-testid="ask-panel"
           data-sheet={phone ? 'true' : 'false'}
-          {...stylex.props(styles.panel, phone && styles.sheet, phone && keyboardArea && dynamic.overKeyboard(keyboardArea.top, keyboardArea.height))}
+          {...stylex.props(styles.panel, atTable && styles.besidePanel, phone && styles.sheet, phone && keyboardArea && dynamic.overKeyboard(keyboardArea.top, keyboardArea.height))}
         >
           <header {...stylex.props(styles.head)}>
             <div {...stylex.props(styles.headText)}>
@@ -384,48 +388,57 @@ const dynamic = stylex.create({
   overKeyboard: (top: number, height: number) => ({ top, height, paddingBottom: 0 }),
 })
 
+// SKATGO-26: the lobby design. The launcher is the green action; the window is a white dialog with
+// the table's corners, a white header with navy text, and the page's grey behind the conversation.
 const styles = stylex.create({
   launcher: {
     position: 'fixed',
     right: space.x24,
-    bottom: { default: size.launcherLift, [bp.phone]: space.x24 },
+    bottom: { default: dims.launcherLift, [bp.phone]: dims.launcherLiftPhone },
     zIndex: layer.launcher,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: size.launcher,
-    height: size.launcher,
+    width: dims.launcher,
+    height: dims.launcher,
     padding: 0,
     borderWidth: 0,
-    borderRadius: radius.round,
-    backgroundColor: { default: skat.feltLight, ':hover': skat.felt },
-    color: skat.white,
+    borderRadius: radii.round,
+    backgroundColor: { default: color.go, ':hover': color.roleTag },
+    color: color.onColor,
     cursor: 'pointer',
-    boxShadow: shadow.launcher,
+    boxShadow: elev.btnGo,
     transform: { default: move.rest, ':active': move.press },
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focus,
-    outlineColor: skat.brass,
+    outlineColor: color.info,
     outlineOffset: border.focusOffset,
+  },
+  besidePanel: { right: { default: dims.launcherRightTable, [bp.phone]: space.x24 } },
+  // At the table the launcher waits at the felt's top right, clear of the hand and the panel's buttons.
+  launcherAtTable: {
+    top: { default: space.x16, [bp.phone]: space.x8 },
+    right: { default: dims.launcherRightTable, [bp.phone]: space.x8 },
+    bottom: 'auto',
   },
   panel: {
     position: 'fixed',
     right: space.x24,
-    bottom: size.launcherLift,
+    bottom: dims.launcherLift,
     zIndex: layer.window,
     display: 'flex',
     flexDirection: 'column',
-    width: size.windowWidth,
-    height: size.windowHeight,
+    width: dims.windowWidth,
+    height: dims.windowHeight,
     boxSizing: 'border-box',
     overflow: 'hidden',
-    borderRadius: radius.window,
+    borderRadius: radii.dialog,
     borderWidth: border.hair,
     borderStyle: 'solid',
-    borderColor: skat.paperEdge,
-    backgroundColor: skat.paper,
-    color: skat.ink,
-    boxShadow: shadow.float,
+    borderColor: color.hairline,
+    backgroundColor: color.page,
+    color: color.text,
+    boxShadow: elev.panel,
   },
   // A phone gets the whole screen: the visible area is too small to share, and nothing behind the
   // window should be reachable while it is open.
@@ -435,7 +448,7 @@ const styles = stylex.create({
     bottom: 'auto',
     left: 0,
     width: '100%',
-    height: size.screenDynamic,
+    height: dims.screenDynamic,
     paddingTop: 'env(safe-area-inset-top)',
     paddingBottom: 'env(safe-area-inset-bottom)',
     borderRadius: 0,
@@ -448,32 +461,35 @@ const styles = stylex.create({
     gap: space.x4,
     paddingBlock: space.x10,
     paddingInline: space.x14,
-    backgroundColor: skat.feltDeep,
-    color: skat.white,
+    backgroundColor: color.surface,
+    borderBottomWidth: border.hair,
+    borderBottomStyle: 'solid',
+    borderBottomColor: color.hairline,
+    color: color.navy,
     flexShrink: 0,
   },
   headText: { display: 'flex', flexDirection: 'column', minWidth: 0, flexGrow: 1, marginRight: space.x4 },
-  pageTitle: { opacity: opacity.meta, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  pageTitle: { color: color.slate, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   icon: {
     flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: size.iconButton,
-    height: size.iconButton,
+    width: dims.closeButton,
+    height: dims.closeButton,
     padding: 0,
     borderWidth: 0,
-    borderRadius: radius.round,
-    backgroundColor: { default: 'transparent', ':hover': skat.felt },
-    color: skat.white,
+    borderRadius: radii.round,
+    backgroundColor: { default: 'transparent', ':hover': color.page },
+    color: color.navy,
     cursor: 'pointer',
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focusSm,
-    outlineColor: skat.brass,
+    outlineColor: color.info,
   },
   iconDisabled: { opacity: opacity.iconDisabled, cursor: 'not-allowed', backgroundColor: { default: 'transparent', ':hover': 'transparent' } },
   // Clipped in both directions: deep-chat lays itself out before its styles land, and on a phone that
   // first, wider pass would stretch the layout viewport past the screen.
   body: { flexGrow: 1, minHeight: 0, minWidth: 0, display: 'flex', overflow: 'hidden' },
-  loading: { margin: 'auto', color: skat.inkSoft },
+  loading: { margin: 'auto', color: color.slate },
 })

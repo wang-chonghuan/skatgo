@@ -27,7 +27,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '1',
     title: '三个人，32 张牌',
     promise: '知道斯卡特是怎么回事：谁对谁、打什么、怎样算赢。',
-    emoji: '🃏',
     minutes: 1,
     steps: [
       {
@@ -75,7 +74,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '2',
     title: '牌点：哪些牌值钱',
     promise: '一眼看出一墩值多少点。',
-    emoji: '💰',
     minutes: 1,
     steps: [
       {
@@ -104,7 +102,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '3',
     title: '主牌和四个 J',
     promise: '任何定约下都能认出哪些是主牌、谁大谁小。',
-    emoji: '👑',
     minutes: 1,
     steps: [
       {
@@ -140,7 +137,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '4',
     title: '跟牌与赢墩',
     promise: '知道轮到自己时哪些牌能出，以及一墩归谁。',
-    emoji: '🎯',
     minutes: 2,
     steps: [
       {
@@ -210,7 +206,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '5',
     title: 'Grand 和 Null',
     promise: '会打另外两种定约：只有 J 是主牌的 Grand，和一墩都不能拿的 Null。',
-    emoji: '🎭',
     minutes: 2,
     steps: [
       {
@@ -263,7 +258,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '6',
     title: '一局值多少分',
     promise: '会算任何一手牌的定约分值——叫牌的全部依据。',
-    emoji: '🧮',
     minutes: 2,
     steps: [
       {
@@ -308,7 +302,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '7',
     title: '叫牌',
     promise: '听得懂、也参与得了牌桌上「18？—有。20？—过。」这段对话。',
-    emoji: '📣',
     minutes: 2,
     steps: [
       {
@@ -374,7 +367,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '8',
     title: '底牌、扣牌与 Hand',
     promise: '当上庄家之后，知道怎么用好那两张底牌。',
-    emoji: '🗃️',
     minutes: 2,
     steps: [
       {
@@ -430,7 +422,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '9',
     title: '加倍项与计分',
     promise: '一局打完，能自己把分算对，包括大胜、惨败和超叫。',
-    emoji: '🏆',
     minutes: 2,
     steps: [
       {
@@ -479,7 +470,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '10',
     title: '怎么打：庄家与防守的基本功',
     promise: '不再只是「合法地出牌」，而是知道这张牌为什么出。',
-    emoji: '🧠',
     minutes: 2,
     steps: [
       {
@@ -552,7 +542,6 @@ export const LESSONS_ZH: Lesson[] = [
     id: '11',
     title: '毕业局：上桌！',
     promise: '和两个电脑对手打完整的一局。打完，你就会斯卡特了。',
-    emoji: '🎓',
     minutes: 3,
     steps: [
       {

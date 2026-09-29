@@ -1,16 +1,25 @@
 import * as stylex from '@stylexjs/stylex'
+import { Lightbulb } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
-import { move, shadow, timing } from '../../theme/effects.stylex'
-import { border, opacity, radius, size, space } from '../../theme/scale.stylex'
-import { skat } from '../../theme/skat.stylex'
+import { color } from '../../theme/color.stylex'
+import { move, timing } from '../../theme/effects.stylex'
+import { elev, fill } from '../../theme/elevation.stylex'
+import { border, opacity, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
+import { icon } from '../../theme/constants'
 import { typography } from '../../theme/type'
 
-// The course's own small kit. It deliberately does not reach for Astryx: the course has a look of
-// its own (PARROT-42), and an Astryx control follows the app's light/dark mode while this palette
-// is fixed — a matcha button in dark mode on cream paper would be unreadable.
+// The product's own small kit, in the lobby design (SKATGO-26, reference.md). It does not reach for
+// Astryx components: their colours follow the app theme's light/dark mode, while this palette is fixed.
+//
+// Buttons come in three shapes, one per place the design puts them:
+//   pill    — the app's buttons (40 tall, fully round), e.g. the top bar's green action;
+//   block   — the card table's buttons (rounded rectangle, radius 12), full width in the side panel;
+//   landing — the public site's buttons (radius 14, heavier type).
+// Every coloured button casts a shadow in its own colour, as the design does.
 
 const RED_SUITS = /([♥♦])/
 
@@ -32,24 +41,29 @@ export function Rich({ text }: { text: string }) {
   )
 }
 
+type Tone = 'go' | 'quiet' | 'info' | 'stop' | 'slate'
+type Shape = 'pill' | 'block' | 'landing'
+type Size = 'sm' | 'md' | 'lg'
+
 type BtnProps = {
   children: ReactNode
   onClick?: () => void
-  tone?: 'primary' | 'quiet' | 'felt' | 'danger'
-  size?: 'md' | 'lg' | 'sm'
+  tone?: Tone
+  shape?: Shape
+  size?: Size
   disabled?: boolean
   testId?: string
   grow?: boolean
 }
 
-export function Btn({ children, onClick, tone = 'primary', size = 'md', disabled, testId, grow }: BtnProps) {
+export function Btn({ children, onClick, tone = 'go', shape = 'pill', size = 'md', disabled, testId, grow }: BtnProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       data-testid={testId}
-      {...stylex.props(btnType[size], styles.btn, tones[tone], btnSizes[size], grow && styles.grow, disabled && styles.btnDisabled)}
+      {...stylex.props(btnType(shape, size), styles.btn, shapes[shape], sizes[size], tones[tone], shape === 'landing' && landingTones[tone], grow && styles.grow, disabled && styles.btnDisabled)}
     >
       {children}
     </button>
@@ -57,16 +71,32 @@ export function Btn({ children, onClick, tone = 'primary', size = 'md', disabled
 }
 
 /** The same look for a router <Link>: navigation is a link, an action is a button. */
-export function linkLook(tone: NonNullable<BtnProps['tone']> = 'primary', size: NonNullable<BtnProps['size']> = 'md') {
-  return stylex.props(btnType[size], styles.btn, tones[tone], btnSizes[size], styles.link)
+export function linkLook(tone: Tone = 'go', size: Size = 'md', shape: Shape = 'pill') {
+  return stylex.props(btnType(shape, size), styles.btn, shapes[shape], sizes[size], tones[tone], shape === 'landing' && landingTones[tone], styles.link)
 }
 
-export function Panel({ children, tone = 'paper', pad = true }: { children: ReactNode; tone?: 'paper' | 'tip' | 'good' | 'bad'; pad?: boolean }) {
+/** A white card on the grey page (the design's option card), or a judged / tip panel. */
+export function Panel({ children, tone = 'card', pad = true }: { children: ReactNode; tone?: 'card' | 'tip' | 'good' | 'bad'; pad?: boolean }) {
   return <div {...stylex.props(styles.panel, panelTones[tone], pad && styles.panelPad)}>{children}</div>
 }
 
-export function Pill({ children, tone = 'ink' }: { children: ReactNode; tone?: 'ink' | 'brass' | 'good' | 'felt' }) {
-  return <span {...stylex.props(typography.pill, styles.pill, pillTones[tone])}>{children}</span>
+/** A tip: the tip panel with the design's outline lightbulb before the words. */
+export function Tip({ children }: { children: ReactNode }) {
+  return (
+    <Panel tone="tip">
+      <div {...stylex.props(styles.tip)}>
+        <span aria-hidden="true" {...stylex.props(styles.tipIcon)}>
+          <Lightbulb size={icon.inline} strokeWidth={icon.outline} />
+        </span>
+        <div {...stylex.props(styles.tipText)}>{children}</div>
+      </div>
+    </Panel>
+  )
+}
+
+/** A short fact, never an action: white on the page, dark on the felt, amber for whose turn it is. */
+export function Pill({ children, tone = 'quiet' }: { children: ReactNode; tone?: 'quiet' | 'go' | 'good' | 'dark' | 'amber' }) {
+  return <span {...stylex.props(typography.appBtn, styles.pill, pillTones[tone])}>{children}</span>
 }
 
 export function ProgressBar({ value, label }: { value: number; label: string }) {
@@ -88,84 +118,109 @@ export function Stars({ n }: { n: number }) {
   )
 }
 
+function btnType(shape: Shape, size: Size) {
+  if (shape === 'landing') return size === 'lg' ? typography.landingCta : typography.landingBtn
+  return shape === 'block' ? typography.appBtnStrong : typography.appBtn
+}
+
 const dynamic = stylex.create({
   width: (w: string) => ({ width: w }),
 })
 
 const styles = stylex.create({
-  redSuit: { color: skat.red },
-  strong: { color: skat.ink },
+  redSuit: { color: color.suitRed },
+  strong: { color: color.navy },
   btn: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: space.x8,
+    boxSizing: 'border-box',
     borderWidth: 0,
-    borderRadius: radius.round,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
-    transitionProperty: 'transform, box-shadow, background-color',
+    transitionProperty: 'transform, box-shadow, background-color, filter',
     transitionDuration: timing.press,
     transform: { default: move.rest, ':active': move.press },
+    filter: { default: 'none', ':hover': fill.hoverBright },
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focus,
-    outlineColor: skat.brass,
+    outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
   grow: { flexGrow: 1 },
   link: { textDecoration: 'none' },
-  btnDisabled: { opacity: opacity.disabled, cursor: 'not-allowed', boxShadow: 'none' },
-  panel: { borderRadius: radius.panel, borderWidth: border.hair, borderStyle: 'solid' },
-  panelPad: { padding: { default: space.x20, [bp.phone]: space.x16 } },
+  btnDisabled: { opacity: opacity.disabled, cursor: 'not-allowed', boxShadow: 'none', filter: 'none' },
+  panel: { borderRadius: radii.option, borderWidth: border.hair, borderStyle: 'solid' },
+  panelPad: { padding: { default: space.x24, [bp.phone]: space.x16 } },
   pill: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: space.x4,
-    paddingBlock: space.x4,
-    paddingInline: space.x10,
-    borderRadius: radius.round,
+    gap: space.x6,
+    boxSizing: 'border-box',
+    minHeight: dims.control,
+    paddingInline: space.x16,
+    borderRadius: radii.pill,
     whiteSpace: 'nowrap',
   },
-  track: { height: size.progressTrack, borderRadius: radius.round, backgroundColor: skat.paperEdge, overflow: 'hidden' },
+  track: { height: space.x10, borderRadius: radii.round, backgroundColor: color.hairline, overflow: 'hidden' },
   fill: {
     height: '100%',
-    borderRadius: radius.round,
-    backgroundColor: skat.brass,
+    borderRadius: radii.round,
+    backgroundColor: color.go,
     transitionProperty: 'width',
     transitionDuration: timing.progress,
     transitionTimingFunction: timing.easeOut,
   },
   stars: { display: 'inline-flex', gap: space.x2 },
-  starOn: { color: skat.brass },
-  starOff: { color: skat.paperEdge },
+  tip: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },
+  tipIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2, color: color.amber },
+  tipText: { flexGrow: 1, minWidth: 0 },
+  starOn: { color: color.amber },
+  starOff: { color: color.hairline },
+})
+
+const shapes = stylex.create({
+  pill: { borderRadius: radii.pill },
+  block: { borderRadius: radii.panel },
+  landing: { borderRadius: radii.landingBtn },
+})
+
+// Heights: the app's controls are 40 tall (md); sm and lg are derived around it.
+const sizes = stylex.create({
+  sm: { minHeight: space.x32, paddingInline: space.x12 },
+  md: { minHeight: dims.control, paddingInline: space.x16 },
+  lg: { minHeight: space.x48, paddingInline: space.x24 },
 })
 
 const tones = stylex.create({
-  primary: { backgroundColor: skat.brass, color: skat.ink, boxShadow: shadow.ledgePrimary },
-  quiet: { backgroundColor: skat.paperDeep, color: skat.ink, boxShadow: shadow.ledgeQuiet },
-  felt: { backgroundColor: skat.feltLight, color: skat.white, boxShadow: shadow.ledgeFelt },
-  danger: { backgroundColor: skat.badSoft, color: skat.bad, boxShadow: shadow.ledgeQuiet },
+  go: { backgroundColor: color.go, color: color.onColor, boxShadow: elev.btnGo },
+  quiet: { backgroundColor: color.surface, color: color.navy, boxShadow: elev.option },
+  info: { backgroundColor: color.info, color: color.onColor, boxShadow: elev.btnInfo },
+  stop: { backgroundColor: color.stop, color: color.onColor, boxShadow: elev.btnStop },
+  slate: { backgroundColor: color.slateDeep, color: color.onColor, boxShadow: elev.btnSlate },
 })
 
-const btnSizes = stylex.create({
-  sm: { paddingBlock: space.x6, paddingInline: space.x12 },
-  md: { paddingBlock: space.x10, paddingInline: space.x18 },
-  lg: { paddingBlock: space.x14, paddingInline: space.x24 },
+// The public site's green is its own (reference.md: rgb(0,168,120)).
+const landingTones = stylex.create({
+  go: { backgroundColor: color.goLanding, boxShadow: elev.btnGoLanding },
+  quiet: {},
+  info: {},
+  stop: {},
+  slate: {},
 })
-
-// The typography role that goes with each button size.
-const btnType = { sm: typography.controlSm, md: typography.controlMd, lg: typography.controlLg }
 
 const panelTones = stylex.create({
-  paper: { backgroundColor: skat.paper, borderColor: skat.paperEdge, color: skat.ink },
-  tip: { backgroundColor: skat.brassSoft, borderColor: skat.brass, color: skat.ink },
-  good: { backgroundColor: skat.goodSoft, borderColor: skat.good, color: skat.ink },
-  bad: { backgroundColor: skat.badSoft, borderColor: skat.bad, color: skat.ink },
+  card: { backgroundColor: color.surface, borderColor: 'transparent', color: color.text, boxShadow: elev.option },
+  tip: { backgroundColor: color.surface, borderColor: color.amber, color: color.text, boxShadow: elev.option },
+  good: { backgroundColor: color.goodSoft, borderColor: color.good, color: color.text },
+  bad: { backgroundColor: color.badSoft, borderColor: color.bad, color: color.text },
 })
 
 const pillTones = stylex.create({
-  ink: { backgroundColor: skat.paperDeep, color: skat.inkSoft },
-  brass: { backgroundColor: skat.brass, color: skat.ink },
-  good: { backgroundColor: skat.goodSoft, color: skat.good },
-  felt: { backgroundColor: skat.feltDeep, color: skat.white },
+  quiet: { backgroundColor: color.surface, color: color.navy },
+  go: { backgroundColor: color.go, color: color.onColor },
+  good: { backgroundColor: color.goodSoft, color: color.good },
+  dark: { backgroundColor: color.plate, color: color.onColor },
+  amber: { backgroundColor: color.amber, color: color.plate },
 })

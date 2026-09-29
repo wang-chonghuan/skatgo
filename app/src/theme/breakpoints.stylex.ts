@@ -10,4 +10,9 @@ export const bp = stylex.defineConsts({
   contracts: '@media (max-width: 600px)',
   /** The course map's hero stacks. */
   hero: '@media (max-width: 720px)',
+  /** Too narrow for two columns of option cards beside the rail (SKATGO-26). */
+  cards: '@media (max-width: 1023px)',
+  /** Between the phone and the desk, exclusive of the phone step: a style that sets both this and
+   *  `phone` must not depend on which query is emitted last (SKATGO-26). */
+  mid: '@media (min-width: 481px) and (max-width: 720px)',
 })

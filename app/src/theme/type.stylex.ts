@@ -3,14 +3,20 @@ import * as stylex from '@stylexjs/stylex'
 // Typography primitives. Product code never uses these directly: it picks a complete role from
 // `type.ts`, which is where family, size, weight and leading are combined.
 
+// SKATGO-26: one geometric sans for everything, as the lobby design has it. The reference's typeface
+// (nexa) is commercial; Outfit (Google Fonts, open licence) is the free substitute with the same round
+// proportions and the heavy weights the titles need. Bebas Neue (open licence) sets Reizen values and
+// "Passe". CJK falls back to the system's sans.
+const SANS = '"Outfit", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif'
+
 export const family = stylex.defineVars({
-  body: '"DM Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif',
-  /** The course's display serif, for the two big titles. */
-  display: '"Fraunces", "Songti SC", "Noto Serif SC", serif',
-  /** The heading stack the Astryx theme gives `h*` (parrottoonTheme.ts): Fraunces, CJK in a sans. It
-   *  is written out rather than read from `--font-family-heading`, which is not defined where these
-   *  variables are. */
-  heading: 'Fraunces, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", Georgia, serif',
+  body: SANS,
+  /** Once the course's display serif; the lobby design has a single family. */
+  display: SANS,
+  /** The heading stack, the same single family. */
+  heading: SANS,
+  /** Condensed numerals for Reizen values and "Passe". */
+  numeral: '"Bebas Neue", "Outfit", sans-serif',
 })
 
 /** Font sizes, named by their size in px. */
@@ -30,14 +36,30 @@ export const fontSize = stylex.defineVars({
   f28: '28px',
   f36: '36px',
   f88: '88px',
+  // The lobby design's measured sizes (SKATGO-26, reference.md).
+  f11_37: '11.37px',
+  f14_21: '14.21px',
+  f18_18: '18.18px',
+  f19_6: '19.6px',
+  f20_46: '20.46px',
+  f21_45: '21.45px',
+  f25: '25px',
+  f26_95: '26.95px',
+  f30: '30px',
+  f32: '32px',
+  f40: '40px',
+  f72: '72px',
   f200: '200px',
 })
 
-/** Only the weights the page loads (routes/__root.tsx): 400, 600, 700. */
+/** Only the weights the page loads (routes/__root.tsx): 400 to 900. */
 export const weight = stylex.defineVars({
   regular: '400',
+  medium: '500',
   semibold: '600',
   bold: '700',
+  extrabold: '800',
+  black: '900',
 })
 
 export const leading = stylex.defineVars({
@@ -51,4 +73,6 @@ export const leading = stylex.defineVars({
   compact: '1.6',
   /** Reading text. */
   reading: '1.75',
+  /** The lobby design's text leading: 24 on 16, 21 on 14, 45 on 30. */
+  ui: '1.5',
 })

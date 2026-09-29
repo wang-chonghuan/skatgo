@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { motion, useAnimate } from 'motion/react'
+import { CircleCheck, CircleX } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { type Card, cardId, effectiveSuit, legalPlays, sameCard, sortHand } from '~/lib/skat/cards'
@@ -8,14 +9,15 @@ import { sameSet } from '~/lib/skat/lessons/drills'
 import type { ChoiceStep, OrderStep, PickStep, PlayStep, TeachStep } from '~/lib/skat/lessons/types'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
-import { playIn, shake } from '../../theme/constants'
-import { shadow, texture } from '../../theme/effects.stylex'
-import { border, opacity, radius, size, space } from '../../theme/scale.stylex'
-import { skat } from '../../theme/skat.stylex'
+import { color } from '../../theme/color.stylex'
+import { icon, playIn, shake } from '../../theme/constants'
+import { elev, fill } from '../../theme/elevation.stylex'
+import { border, opacity, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { CardRowView, Fan } from './card-row'
 import { PlayingCard } from './playing-card'
-import { Btn, Panel, Rich } from './ui'
+import { Btn, Panel, Rich, Tip } from './ui'
 
 // One component per kind of step. Each asks, judges with the rules engine, and reports back through
 // two callbacks: `onMistake` (counted towards the lesson's stars) and `onSolved` (unlocks
@@ -30,13 +32,13 @@ export type StepCallbacks = { onSolved: () => void; onMistake: () => void; solve
 export function Teach({ step }: { step: TeachStep }) {
   return (
     <div {...stylex.props(styles.stack)}>
-      <h2 {...stylex.props(typography.stepTitle, styles.title)}>{step.title}</h2>
+      <h2 {...stylex.props(typography.optionTitle, styles.title)}>{step.title}</h2>
       {step.body.map((p, i) => (
         <p key={i} {...stylex.props(typography.body, styles.para)}><Rich text={p} /></p>
       ))}
       {step.rows?.map((row, i) => <CardRowView key={i} row={row} />)}
       {step.tip ? (
-        <Panel tone="tip"><p {...stylex.props(typography.body, styles.para)}>💡 <Rich text={step.tip} /></p></Panel>
+        <Tip><p {...stylex.props(typography.body, styles.para)}><Rich text={step.tip} /></p></Tip>
       ) : null}
     </div>
   )
@@ -53,12 +55,17 @@ function Shake({ nonce, children }: { nonce: number; children: ReactNode }) {
 
 function Feedback({ state, good, bad }: { state: 'idle' | 'wrong' | 'right'; good: string; bad: string }) {
   if (state === 'idle') return null
+  const Mark = state === 'right' ? CircleCheck : CircleX
   return (
     <Panel tone={state === 'right' ? 'good' : 'bad'}>
-      <p data-testid={state === 'right' ? 'skat-feedback-right' : 'skat-feedback-wrong'} {...stylex.props(typography.body, styles.para)}>
-        {state === 'right' ? '✅ ' : '❌ '}
-        <Rich text={state === 'right' ? good : bad} />
-      </p>
+      <div {...stylex.props(styles.verdict)}>
+        <span aria-hidden="true" {...stylex.props(styles.verdictIcon, state === 'right' ? styles.verdictGood : styles.verdictBad)}>
+          <Mark size={icon.inline} strokeWidth={icon.outline} />
+        </span>
+        <p data-testid={state === 'right' ? 'skat-feedback-right' : 'skat-feedback-wrong'} {...stylex.props(typography.body, styles.para)}>
+          <Rich text={state === 'right' ? good : bad} />
+        </p>
+      </div>
     </Panel>
   )
 }
@@ -150,7 +157,7 @@ export function Pick({ step, onSolved, onMistake, solvedBefore }: { step: PickSt
       </Shake>
       {step.single ? null : (
         <div {...stylex.props(styles.centerRow)}>
-          <Btn testId="skat-check" tone="felt" disabled={chosen.length === 0 || state === 'right'} onClick={() => judge(chosen)}>
+          <Btn testId="skat-check" tone="info" shape="block" disabled={chosen.length === 0 || state === 'right'} onClick={() => judge(chosen)}>
             {m.ex_pick_check({ n: chosen.length })}
           </Btn>
         </div>
@@ -267,42 +274,53 @@ export function Play({ step, onSolved, onMistake, solvedBefore }: { step: PlaySt
   )
 }
 
+// SKATGO-26: the lobby design. Text is navy and slate on the white step card; an answer option is an
+// option card that rings green on hover; a drill's cards lie on the table's felt, with its gold frame.
 const styles = stylex.create({
   stack: { display: 'flex', flexDirection: 'column', gap: space.x16 },
-  title: { margin: 0, color: skat.ink },
-  para: { margin: 0, color: skat.ink },
-  prompt: { margin: 0, color: skat.ink },
-  context: { margin: 0, color: skat.inkSoft },
-  options: { display: 'grid', gridTemplateColumns: { default: size.twoColumns, [bp.phone]: size.oneColumn }, gap: space.x10 },
+  title: { margin: 0, color: color.navy },
+  para: { margin: 0, color: color.text },
+  prompt: { margin: 0, color: color.navy },
+  context: { margin: 0, color: color.slate },
+  options: { display: 'grid', gridTemplateColumns: { default: dims.twoColumns, [bp.phone]: dims.oneColumn }, gap: space.x12 },
   option: {
     textAlign: 'left',
-    paddingBlock: space.x14,
+    paddingBlock: space.x16,
     paddingInline: space.x16,
-    borderRadius: radius.tile,
+    borderRadius: radii.panel,
     borderWidth: border.tile,
     borderStyle: 'solid',
-    borderColor: { default: skat.paperEdge, ':hover': skat.brass },
-    backgroundColor: skat.white,
-    color: skat.ink,
+    borderColor: { default: color.hairline, ':hover': color.go },
+    backgroundColor: color.surface,
+    color: color.navy,
     cursor: 'pointer',
-    boxShadow: shadow.ledgeOption,
+    boxShadow: elev.option,
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
   },
-  optionRight: { borderColor: skat.good, backgroundColor: skat.goodSoft, opacity: 1 },
-  optionWrong: { borderColor: skat.bad, backgroundColor: skat.badSoft, opacity: opacity.spent, cursor: 'not-allowed' },
+  optionRight: { borderColor: color.good, backgroundColor: color.goodSoft, opacity: 1 },
+  optionWrong: { borderColor: color.bad, backgroundColor: color.badSoft, opacity: opacity.spent, cursor: 'not-allowed' },
   felt: {
     display: 'flex',
     flexDirection: 'column',
     gap: space.x8,
     padding: { default: space.x16, [bp.phone]: space.x8 },
-    borderRadius: radius.felt,
-    backgroundColor: skat.felt,
-    backgroundImage: texture.feltDrill,
-    boxShadow: shadow.feltInset,
-    color: skat.white,
+    borderRadius: radii.panel,
+    borderWidth: dims.frameBorderPlay,
+    borderStyle: 'solid',
+    borderColor: color.gold,
+    backgroundImage: fill.felt,
+    color: color.onColor,
   },
-  feltLabel: { opacity: opacity.label, color: skat.white },
+  feltLabel: { color: color.amber },
   trickRow: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x8, paddingTop: space.x4 },
-  trickCards: { display: 'flex', gap: space.x12, alignItems: 'flex-start', justifyContent: 'center', minHeight: size.trickRow },
+  trickCards: { display: 'flex', gap: space.x12, alignItems: 'flex-start', justifyContent: 'center', minHeight: dims.cardSlotRow },
   trickCell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
   centerRow: { display: 'flex', justifyContent: 'center' },
+  verdict: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },
+  verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },
+  verdictGood: { color: color.good },
+  verdictBad: { color: color.bad },
 })

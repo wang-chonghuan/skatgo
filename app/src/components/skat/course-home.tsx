@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { ArrowRight, GraduationCap } from 'lucide-react'
 
 import { Band } from './frame'
+import { lessonIcon } from './lesson-icon'
 import { Pill, Stars, linkLook } from './ui'
 import { lessons } from '~/lib/skat/lessons/content'
 import { type LessonRecord, type Tally, useProgress } from '~/lib/skat/progress'
@@ -97,7 +98,7 @@ export function CourseHome() {
                   {...stylex.props(styles.card, state === 'next' && styles.cardNext, state === 'done' && styles.cardDone)}
                 >
                   <span {...stylex.props(styles.cardHead)}>
-                    <span aria-hidden="true" {...stylex.props(typography.emojiTile, styles.emoji)}>{l.emoji}</span>
+                    <LessonGlyph id={l.id} />
                     <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{m.lesson_heading({ id: l.id, title: l.title })}</span>
                   </span>
                   <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{l.promise}</span>
@@ -111,6 +112,16 @@ export function CourseHome() {
         </ol>
       </div>
     </div>
+  )
+}
+
+/** A lesson's outline icon, in the option cards' orange. */
+function LessonGlyph({ id }: { id: string }) {
+  const Icon = lessonIcon(id)
+  return (
+    <span aria-hidden="true" {...stylex.props(styles.icon)}>
+      <Icon size={icon.option} strokeWidth={icon.outline} />
+    </span>
   )
 }
 
@@ -173,7 +184,9 @@ const styles = stylex.create({
     margin: 0,
     padding: 0,
     display: 'grid',
-    gridTemplateColumns: { default: dims.twoColumns, [bp.hero]: dims.oneColumn },
+    gridTemplateColumns: { default: dims.twoColumns, [bp.cards]: dims.oneColumn },
+    // Every lesson card the same height, across rows as well as within one.
+    gridAutoRows: dims.equalRows,
     gap: space.x16,
   },
   item: { margin: 0, display: 'flex' },
@@ -200,13 +213,14 @@ const styles = stylex.create({
   cardNext: { borderColor: color.go },
   cardDone: { backgroundColor: color.goodSoft },
   cardHead: { display: 'flex', alignItems: 'center', gap: space.x12 },
-  emoji: {
+  icon: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     width: dims.optionIcon,
     height: dims.optionIcon,
     flexShrink: 0,
+    color: color.tileOrange,
   },
   cardEnd: { display: 'flex', justifyContent: 'flex-end', marginTop: 'auto' },
   minutes: { color: color.slate, whiteSpace: 'nowrap' },

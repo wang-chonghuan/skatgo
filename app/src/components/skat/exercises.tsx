@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { motion, useAnimate } from 'motion/react'
+import { CircleCheck, CircleX } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { type Card, cardId, effectiveSuit, legalPlays, sameCard, sortHand } from '~/lib/skat/cards'
@@ -9,14 +10,14 @@ import type { ChoiceStep, OrderStep, PickStep, PlayStep, TeachStep } from '~/lib
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { playIn, shake } from '../../theme/constants'
+import { icon, playIn, shake } from '../../theme/constants'
 import { elev, fill } from '../../theme/elevation.stylex'
 import { border, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { CardRowView, Fan } from './card-row'
 import { PlayingCard } from './playing-card'
-import { Btn, Panel, Rich } from './ui'
+import { Btn, Panel, Rich, Tip } from './ui'
 
 // One component per kind of step. Each asks, judges with the rules engine, and reports back through
 // two callbacks: `onMistake` (counted towards the lesson's stars) and `onSolved` (unlocks
@@ -37,7 +38,7 @@ export function Teach({ step }: { step: TeachStep }) {
       ))}
       {step.rows?.map((row, i) => <CardRowView key={i} row={row} />)}
       {step.tip ? (
-        <Panel tone="tip"><p {...stylex.props(typography.body, styles.para)}>💡 <Rich text={step.tip} /></p></Panel>
+        <Tip><p {...stylex.props(typography.body, styles.para)}><Rich text={step.tip} /></p></Tip>
       ) : null}
     </div>
   )
@@ -54,12 +55,17 @@ function Shake({ nonce, children }: { nonce: number; children: ReactNode }) {
 
 function Feedback({ state, good, bad }: { state: 'idle' | 'wrong' | 'right'; good: string; bad: string }) {
   if (state === 'idle') return null
+  const Mark = state === 'right' ? CircleCheck : CircleX
   return (
     <Panel tone={state === 'right' ? 'good' : 'bad'}>
-      <p data-testid={state === 'right' ? 'skat-feedback-right' : 'skat-feedback-wrong'} {...stylex.props(typography.body, styles.para)}>
-        {state === 'right' ? '✅ ' : '❌ '}
-        <Rich text={state === 'right' ? good : bad} />
-      </p>
+      <div {...stylex.props(styles.verdict)}>
+        <span aria-hidden="true" {...stylex.props(styles.verdictIcon, state === 'right' ? styles.verdictGood : styles.verdictBad)}>
+          <Mark size={icon.inline} strokeWidth={icon.outline} />
+        </span>
+        <p data-testid={state === 'right' ? 'skat-feedback-right' : 'skat-feedback-wrong'} {...stylex.props(typography.body, styles.para)}>
+          <Rich text={state === 'right' ? good : bad} />
+        </p>
+      </div>
     </Panel>
   )
 }
@@ -313,4 +319,8 @@ const styles = stylex.create({
   trickCards: { display: 'flex', gap: space.x12, alignItems: 'flex-start', justifyContent: 'center', minHeight: dims.cardSlotRow },
   trickCell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
   centerRow: { display: 'flex', justifyContent: 'center' },
+  verdict: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },
+  verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },
+  verdictGood: { color: color.good },
+  verdictBad: { color: color.bad },
 })

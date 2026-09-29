@@ -144,7 +144,7 @@ describe('the course', () => {
     if (locale === 'zh') continue
 
     it(`${locale}: says the same as the Chinese course — same lessons, cards, answers and best plays`, () => {
-      expect(course.map((l) => [l.id, l.emoji, l.minutes, l.steps.length])).toEqual(zhCourse.map((l) => [l.id, l.emoji, l.minutes, l.steps.length]))
+      expect(course.map((l) => [l.id, l.minutes, l.steps.length])).toEqual(zhCourse.map((l) => [l.id, l.minutes, l.steps.length]))
       course.forEach((lesson, li) => {
         lesson.steps.forEach((step, si) => {
           const other = zhCourse[li].steps[si]

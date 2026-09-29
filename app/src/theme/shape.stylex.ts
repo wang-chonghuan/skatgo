@@ -61,6 +61,8 @@ export const dims = stylex.defineVars({
   band: '160px',
   bandPhone: '112px',
   optionIcon: '40px',
+  /** The disc behind the finish screen's icon. */
+  finishDisc: '96px',
   arrowDisc: '48px',
   pageColumn: '1287px',
   readingColumn: '860px',
@@ -219,6 +221,20 @@ export const dims = stylex.defineVars({
   column3: '3',
   row2: '2',
   lobbyTiles: 'repeat(2, minmax(0, 1fr))',
+  /** The front page's sections: both group titles and all four tiles in one grid, so every tile row is
+   *  a 1fr track — and 1fr tracks in a grid of no fixed height all take the tallest one's size. Four
+   *  tiles in a row on a desk (a spacer column keeps the two groups apart), two by two on a tablet,
+   *  one by one on a phone. */
+  lobbyGridColumns: 'minmax(0, 1fr) minmax(0, 1fr) 18px minmax(0, 1fr) minmax(0, 1fr)',
+  lobbyGridColumnsMid: 'repeat(2, minmax(0, 1fr))',
+  lobbyAreas: '"ta ta . tb tb" "c p . d z"',
+  lobbyAreasMid: '"ta ta" "c p" "tb tb" "d z"',
+  lobbyAreasPhone: '"ta" "c" "p" "tb" "d" "z"',
+  lobbyRows: 'auto 1fr',
+  /** Every row of a card grid the height of its tallest card (1fr rows in a grid of no fixed height). */
+  equalRows: '1fr',
+  lobbyRowsMid: 'auto 1fr auto 1fr',
+  lobbyRowsPhone: 'auto 1fr 1fr auto 1fr 1fr',
   threeColumns: 'repeat(3, minmax(0, 1fr))',
   fullRow: '1 / -1',
 })

@@ -67,38 +67,31 @@ export function EntryPage() {
         </ul>
       </section>
 
-      <div {...stylex.props(styles.groups)}>
-        <section {...stylex.props(styles.group)}>
-          <h2 {...stylex.props(typography.sectionTitle, styles.groupTitle)}>{m.entry_section_start()}</h2>
-          <div {...stylex.props(styles.tiles)}>
-            <Link to="/course" data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, styles.tileOpen, tileTones.course)}>
-              <Face Icon={Club} art={COURSE_ART} title={m.entry_course_title()} text={m.entry_course_desc({ count: course.length })}>
-                <Pill tone="quiet">{finished === 0 ? m.entry_course_start() : m.entry_course_continue()}</Pill>
-                <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span>
-              </Face>
-            </Link>
-            <Link to="/play" data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, styles.tileOpen, tileTones.play)}>
-              <Face Icon={Spade} art={PLAY_ART} title={m.entry_play_title()} text={m.entry_play_desc()}>
-                <Pill tone="quiet">{m.entry_play_cta()}</Pill>
-              </Face>
-            </Link>
-          </div>
-        </section>
-        <section {...stylex.props(styles.group)}>
-          <h2 {...stylex.props(typography.sectionTitle, styles.groupTitle)}>{m.entry_section_soon()}</h2>
-          <div {...stylex.props(styles.tiles)}>
-            <div aria-disabled="true" data-testid="entry-card" data-section="duplicate" data-state="soon" {...stylex.props(styles.tile, tileTones.soon)}>
-              <Face Icon={Heart} art={DUPLICATE_ART} soon title={m.entry_duplicate_title()} text={m.entry_duplicate_desc()}>
-                <Pill tone="quiet">{m.entry_soon()}</Pill>
-              </Face>
-            </div>
-            <div aria-disabled="true" data-testid="entry-card" data-section="puzzles" data-state="soon" {...stylex.props(styles.tile, tileTones.soon)}>
-              <Face Icon={Diamond} art={PUZZLES_ART} soon title={m.entry_puzzles_title()} text={m.entry_puzzles_desc()}>
-                <Pill tone="quiet">{m.entry_soon()}</Pill>
-              </Face>
-            </div>
-          </div>
-        </section>
+      {/* One grid for both groups, so all four tiles share one height (shape.stylex.ts, lobbyRows). */}
+      <div data-testid="entry-sections" {...stylex.props(styles.lobby)}>
+        <h2 {...stylex.props(typography.sectionTitle, styles.groupTitle, area.ta)}>{m.entry_section_start()}</h2>
+        <Link to="/course" data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, styles.tileOpen, tileTones.course, area.c)}>
+          <Face Icon={Club} art={COURSE_ART} title={m.entry_course_title()} text={m.entry_course_desc({ count: course.length })}>
+            <Pill tone="quiet">{finished === 0 ? m.entry_course_start() : m.entry_course_continue()}</Pill>
+            <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span>
+          </Face>
+        </Link>
+        <Link to="/play" data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, styles.tileOpen, tileTones.play, area.p)}>
+          <Face Icon={Spade} art={PLAY_ART} title={m.entry_play_title()} text={m.entry_play_desc()}>
+            <Pill tone="quiet">{m.entry_play_cta()}</Pill>
+          </Face>
+        </Link>
+        <h2 {...stylex.props(typography.sectionTitle, styles.groupTitle, styles.laterTitle, area.tb)}>{m.entry_section_soon()}</h2>
+        <div aria-disabled="true" data-testid="entry-card" data-section="duplicate" data-state="soon" {...stylex.props(styles.tile, tileTones.soon, area.d)}>
+          <Face Icon={Heart} art={DUPLICATE_ART} soon title={m.entry_duplicate_title()} text={m.entry_duplicate_desc()}>
+            <Pill tone="quiet">{m.entry_soon()}</Pill>
+          </Face>
+        </div>
+        <div aria-disabled="true" data-testid="entry-card" data-section="puzzles" data-state="soon" {...stylex.props(styles.tile, tileTones.soon, area.z)}>
+          <Face Icon={Diamond} art={PUZZLES_ART} soon title={m.entry_puzzles_title()} text={m.entry_puzzles_desc()}>
+            <Pill tone="quiet">{m.entry_soon()}</Pill>
+          </Face>
+        </div>
       </div>
     </div>
   )
@@ -164,6 +157,16 @@ const fanPose = stylex.create({
   fanFarRight: { transform: pose.fanFarRight },
 })
 
+// Where each piece sits in the sections grid (lobbyAreas).
+const area = stylex.create({
+  ta: { gridArea: 'ta' },
+  tb: { gridArea: 'tb' },
+  c: { gridArea: 'c' },
+  p: { gridArea: 'p' },
+  d: { gridArea: 'd' },
+  z: { gridArea: 'z' },
+})
+
 const tileTones = stylex.create({
   course: { backgroundColor: color.tileOrange, boxShadow: elev.tileOrange },
   play: { backgroundColor: color.tileGreen, boxShadow: elev.tileGreen },
@@ -225,10 +228,17 @@ const styles = stylex.create({
   },
   point: { margin: 0, color: color.onColor, textAlign: { default: 'center', [bp.phone]: 'left' } },
 
-  groups: { display: 'grid', gridTemplateColumns: { default: dims.twoColumns, [bp.hero]: dims.oneColumn }, gap: space.x48 },
-  group: { display: 'flex', flexDirection: 'column', gap: space.x16 },
-  groupTitle: { margin: 0, color: color.navy },
-  tiles: { display: 'grid', gridTemplateColumns: { default: dims.lobbyTiles, [bp.phone]: dims.oneColumn }, gap: space.x15 },
+  lobby: {
+    display: 'grid',
+    gridTemplateColumns: { default: dims.lobbyGridColumns, [bp.mid]: dims.lobbyGridColumnsMid, [bp.phone]: dims.oneColumn },
+    gridTemplateAreas: { default: dims.lobbyAreas, [bp.mid]: dims.lobbyAreasMid, [bp.phone]: dims.lobbyAreasPhone },
+    gridTemplateRows: { default: dims.lobbyRows, [bp.mid]: dims.lobbyRowsMid, [bp.phone]: dims.lobbyRowsPhone },
+    columnGap: space.x15,
+    rowGap: space.x15,
+  },
+  groupTitle: { margin: 0, color: color.navy, alignSelf: 'end' },
+  // Stacked groups keep the room between them that side-by-side groups have.
+  laterTitle: { marginTop: { default: 0, [bp.mid]: space.x32, [bp.phone]: space.x32 } },
   // A lobby tile: its colour over its art, a shadow in its own colour, content at the bottom left.
   tile: {
     position: 'relative',

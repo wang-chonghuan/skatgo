@@ -26,6 +26,9 @@ export const icon = {
   option: 40,
   table: 24,
   outline: 1.75,
+  /** An icon inside a button or beside a line of text; the finish screen's icon. */
+  inline: 20,
+  finish: 48,
 }
 
 /** A lesson step slides in from the right and out to the left. */

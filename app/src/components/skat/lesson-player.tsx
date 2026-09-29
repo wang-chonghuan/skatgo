@@ -2,6 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import confetti from 'canvas-confetti'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
+import { Trophy } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { lessons } from '~/lib/skat/lessons/content'
@@ -10,7 +11,7 @@ import { type LessonRecord, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { confettiBurst, finish, stepSlide } from '../../theme/constants'
+import { confettiBurst, finish, icon, stepSlide } from '../../theme/constants'
 import { move } from '../../theme/effects.stylex'
 import { elev } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
@@ -18,6 +19,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Choice, Order, Pick, Play, Teach } from './exercises'
 import { GameTable } from './game-table'
+import { lessonIcon } from './lesson-icon'
 import { Btn, Panel, ProgressBar, Rich, Stars, linkLook } from './ui'
 
 type Concrete = Exclude<Step, { kind: 'generated' }>
@@ -126,10 +128,11 @@ function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) 
   const course = lessons()
   const i = course.findIndex((l) => l.id === lesson.id)
   const following = course[i + 1]
+  const DoneIcon = following ? lessonIcon(lesson.id) : Trophy
   return (
     <div data-testid="skat-lesson-done" {...stylex.props(styles.done)}>
-      <motion.div initial={{ scale: finish.fromScale, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={finish.spring} {...stylex.props(typography.celebrate)}>
-        {following ? lesson.emoji : '🏅'}
+      <motion.div initial={{ scale: finish.fromScale, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={finish.spring} {...stylex.props(styles.doneDisc)}>
+        <DoneIcon size={icon.finish} strokeWidth={icon.outline} />
       </motion.div>
       <h2 {...stylex.props(typography.optionTitle, styles.doneTitle)}>{following ? m.done_title({ id: lesson.id }) : m.done_graduated()}</h2>
       <div {...stylex.props(styles.doneStars)}><Stars n={record.stars} /></div>
@@ -208,6 +211,16 @@ const styles = stylex.create({
     borderRadius: radii.option,
     backgroundColor: color.surface,
     boxShadow: elev.optionFeatured,
+  },
+  doneDisc: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: dims.finishDisc,
+    height: dims.finishDisc,
+    borderRadius: radii.round,
+    backgroundColor: color.goodSoft,
+    color: color.go,
   },
   doneTitle: { margin: 0, color: color.navy },
   doneStars: { transform: move.starsBig, marginBlock: space.x8 },

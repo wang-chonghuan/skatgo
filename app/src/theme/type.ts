@@ -62,8 +62,6 @@ export const typography = stylex.create({
   closeGlyph: { fontSize: fontSize.f18, fontWeight: weight.bold },
   markGlyph: { fontSize: fontSize.f20 },
   seatFace: { fontSize: fontSize.f26, lineHeight: leading.glyph },
-  emojiTile: { fontSize: fontSize.f28 },
-  celebrate: { fontSize: fontSize.f88, lineHeight: leading.glyph },
   /** The suit pressed into an entry-page card. */
   watermark: { fontSize: fontSize.f200, lineHeight: leading.glyph },
 

@@ -94,7 +94,6 @@ export type Lesson = {
   title: string
   /** One line for the course map: what you can do after this lesson. */
   promise: string
-  emoji: string
   minutes: number
   steps: Step[]
 }

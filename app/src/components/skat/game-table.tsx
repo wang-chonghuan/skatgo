@@ -283,7 +283,8 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
               data-testid="skat-actions"
               initial={{ opacity: 0, y: drawer.rise }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: drawer.rise }}
+              // It leaves at once: fading out, it would lie over the words that follow it.
+              exit={{ opacity: 0, transition: { duration: 0 } }}
               transition={{ duration: drawer.duration }}
               {...stylex.props(styles.drawer)}
             >
@@ -1079,9 +1080,10 @@ const styles = stylex.create({
   strip: { display: 'flex', flexWrap: 'wrap', gap: space.x6, justifyContent: 'center' },
   panelFoot: { display: 'flex', flexDirection: 'column', gap: space.x12, marginTop: 'auto' },
 
-  row: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x10 },
+  // A row of moves is centred under what is asked, in the drawer and in a dialog alike.
+  row: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.x10 },
   // A line said takes the colour of where it is said: navy in the drawer, white over the felt.
-  say: { margin: 0, flexBasis: '100%', color: 'inherit' },
+  say: { margin: 0, flexBasis: '100%', color: 'inherit', textAlign: 'center' },
   note: { margin: 0, color: color.text },
   declare: { display: 'flex', flexDirection: 'column', gap: space.x10 },
   contractGrid: { display: 'grid', gridTemplateColumns: { default: dims.contractColumns, [bp.contracts]: dims.contractColumnsPhone }, gap: space.x8 },

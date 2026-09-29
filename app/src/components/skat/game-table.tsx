@@ -559,9 +559,9 @@ function Actions(p: ActionsProps) {
       return (
         <Row>
           <Say>{m.bid_forehand_alone()}</Say>
-          <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}><span {...stylex.props(typography.bidChip)}>{m.bid_take_18()}</span></Btn>
-          <Pass onClick={() => p.onBid('pass')} />
-          <Btn tone="info" shape="block" size="sm" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
+          <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
+          <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
+          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
         </Row>
       )
     }
@@ -570,18 +570,18 @@ function Actions(p: ActionsProps) {
       return (
         <Row>
           <Say>{m.bid_your_turn({ name: nameOf(b.listener) })}</Say>
-          <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}><span {...stylex.props(typography.bidChip)}>{m.bid_button({ value: value ?? '' })}</span></Btn>
-          <Pass onClick={() => p.onBid('pass')} />
-          <Btn tone="info" shape="block" size="sm" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
+          <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_button({ value: value ?? '' })}</Btn>
+          <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
+          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
         </Row>
       )
     }
     return (
       <Row>
         <Say>{m.bid_asked({ name: nameOf(b.speaker), value: b.value })}</Say>
-        <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}><span {...stylex.props(typography.bidChip)}>{m.bid_hold_button({ value: b.value })}</span></Btn>
-        <Pass onClick={() => p.onBid('pass')} />
-        <Btn tone="info" shape="block" size="sm" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
+        <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
+        <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
+        <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
       </Row>
     )
   }
@@ -593,7 +593,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.skat_won_bid({ bid: game.bid })}</Say>
           <Btn testId="skat-pickup" shape="block" size="lg" onClick={p.onPickUp}>{m.skat_pick_up()}</Btn>
           <Btn testId="skat-hand-game" tone="quiet" shape="block" size="lg" onClick={p.onHand}>{m.skat_play_hand()}</Btn>
-          <Btn testId="skat-skat-hint" tone="info" shape="block" size="sm" onClick={p.onSkatHint}>{m.skat_hint_button()}</Btn>
+          <Btn testId="skat-skat-hint" tone="info" shape="block" size="lg" onClick={p.onSkatHint}>{m.skat_hint_button()}</Btn>
         </Row>
       )
     }
@@ -601,7 +601,7 @@ function Actions(p: ActionsProps) {
       <Row>
         <Say>{m.skat_discard_prompt()}</Say>
         <Btn testId="skat-discard" shape="block" size="lg" disabled={p.picked.length !== 2} onClick={p.onDiscard}>{m.skat_discard_button({ n: p.picked.length })}</Btn>
-        <Btn tone="info" shape="block" size="sm" onClick={p.onDiscardHint}>{m.skat_discard_hint_button()}</Btn>
+        <Btn tone="info" shape="block" size="lg" onClick={p.onDiscardHint}>{m.skat_discard_hint_button()}</Btn>
       </Row>
     )
   }
@@ -693,7 +693,7 @@ function DeclarePicker({
       ) : null}
       <Row>
         <Btn testId="skat-declare" shape="block" size="lg" grow disabled={!draft} onClick={() => draft && onDeclare(draft)}>{m.declare_go()}</Btn>
-        <Btn testId="skat-declare-hint" tone="info" shape="block" size="sm" onClick={onHint}>{m.declare_hint_button()}</Btn>
+        <Btn testId="skat-declare-hint" tone="info" shape="block" size="lg" onClick={onHint}>{m.declare_hint_button()}</Btn>
       </Row>
     </div>
   )
@@ -775,15 +775,6 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
 
 const Row = ({ children }: { children: ReactNode }) => <div {...stylex.props(styles.row)}>{children}</div>
 const Say = ({ children }: { children: ReactNode }) => <p {...stylex.props(typography.appText, styles.say)}>{children}</p>
-
-/** "Passe": the wide green button, set in the condensed numerals face. */
-function Pass({ onClick }: { onClick: () => void }) {
-  return (
-    <button type="button" data-testid="skat-pass" onClick={onClick} {...stylex.props(typography.passBig, styles.pass)}>
-      {m.bid_pass()}
-    </button>
-  )
-}
 
 /** A dialog over the table: white, on the scrim, one full-width green action inside. */
 function Dialog({ children }: { children: ReactNode }) {
@@ -1092,21 +1083,6 @@ const styles = stylex.create({
   // A line said takes the colour of where it is said: navy in the drawer, white over the felt.
   say: { margin: 0, flexBasis: '100%', color: 'inherit' },
   note: { margin: 0, color: color.text },
-  pass: {
-    flexGrow: 1,
-    minHeight: space.x48,
-    paddingInline: space.x24,
-    borderWidth: 0,
-    borderRadius: radii.panel,
-    backgroundColor: color.go,
-    color: color.onColor,
-    boxShadow: elev.btnGo,
-    cursor: 'pointer',
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.info,
-    outlineOffset: border.focusOffset,
-  },
   declare: { display: 'flex', flexDirection: 'column', gap: space.x10 },
   contractGrid: { display: 'grid', gridTemplateColumns: { default: dims.contractColumns, [bp.contracts]: dims.contractColumnsPhone }, gap: space.x8 },
   contractBtn: {
@@ -1184,7 +1160,7 @@ const contractTint = stylex.create({
 })
 
 // The three places a played card lands in the frame, in the reference's proportions: both opponents'
-// cards level near the top, each on their own side; the learner's lower, just right of the middle.
+// cards level near the top, each on their own side; the learner's lower, centred.
 const positions = stylex.create({
   0: { left: dims.trickMineLeft, top: dims.trickMineTop },
   1: { left: dims.trickLeftInset, top: dims.trickSideTop },

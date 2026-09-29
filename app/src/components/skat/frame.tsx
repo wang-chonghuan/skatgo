@@ -112,7 +112,7 @@ export function LandingHeader() {
         </span>
         <LanguageSwitch />
         <span {...stylex.props(styles.desktopOnly)}>
-          <Account />
+          <Account shape="landing" />
         </span>
         <button type="button" aria-label={m.nav_menu()} aria-expanded={open} data-testid="landing-menu" onClick={() => setOpen((o) => !o)} {...stylex.props(styles.menuButton)}>
           {open ? <X size={icon.tab} strokeWidth={icon.outline} /> : <Menu size={icon.tab} strokeWidth={icon.outline} />}
@@ -159,13 +159,14 @@ export function Band({ title, Icon, back, testId }: { title: string; Icon: Compo
   )
 }
 
-/** Signed out: the one way in, opening Clerk's window over the page. Signed in: Clerk's avatar menu. */
-export function Account() {
+/** Signed out: the one way in, opening Clerk's window over the page. Signed in: Clerk's avatar menu.
+ *  In the public site's header it takes that header's button shape, the same as "Play" beside it. */
+export function Account({ shape = 'pill' }: { shape?: 'pill' | 'landing' }) {
   return (
     <>
       <Show when="signed-out">
         <SignInButton mode="modal">
-          <Btn tone="quiet" size="md" testId="sign-in">
+          <Btn tone="quiet" size="md" shape={shape} testId="sign-in">
             {m.auth_sign_in()}
           </Btn>
         </SignInButton>

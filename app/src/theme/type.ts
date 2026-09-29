@@ -106,7 +106,6 @@ export const typography = stylex.create({
   panelLabel: { fontSize: fontSize.f14, fontWeight: weight.bold, lineHeight: leading.ui },
   bidNumeral: { fontFamily: family.numeral, fontSize: fontSize.f32, fontWeight: weight.regular, lineHeight: leading.glyph },
   bidChip: { fontFamily: family.numeral, fontSize: fontSize.f20, fontWeight: weight.regular, lineHeight: leading.glyph },
-  passBig: { fontFamily: family.numeral, fontSize: fontSize.f32, fontWeight: weight.regular, lineHeight: leading.glyph },
   contractTile: { fontFamily: 'inherit', fontSize: fontSize.f18, fontWeight: weight.bold, lineHeight: leading.tight },
   // The table's info board: a small caps label over a large value, and a quieter second line.
   infoLabel: { fontSize: fontSize.f12, fontWeight: weight.bold, lineHeight: leading.tight, textTransform: 'uppercase', letterSpacing: '0.06em' },

@@ -66,16 +66,15 @@ export const dims = stylex.defineVars({
   readingColumn: '860px',
 
   // The table
-  /** The trick in the frame, in the reference's proportions (measured from the human's screenshot):
-   *  each card 26% of the frame's width; both opponents' cards at 27% from the top, the left one 6%
-   *  from the left edge, the right one 12% from the right; the learner's at 52% from the top, 42%
-   *  from the left. */
+  /** The trick in the frame: each card 26% of the frame's width; both opponents' cards level at 27%
+   *  from the top, the left one 6% from the left edge, the right one 12% from the right; the
+   *  learner's at 52% from the top and centred (37% = 50% less half of 26%). */
   trickCard: '26%',
   trickSideTop: '27%',
   trickLeftInset: '6%',
   trickRightInset: '12%',
   trickMineTop: '52%',
-  trickMineLeft: '42%',
+  trickMineLeft: '37%',
   /** The words over the frame: as wide as the table allows. */
   tipWidth: 'min(460px, calc(100vw - 32px))',
   /** The action drawer: as wide as the felt allows, sitting just above the learner's hand. */

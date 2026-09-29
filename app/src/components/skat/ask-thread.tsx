@@ -9,9 +9,10 @@ import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { icon } from '../../theme/constants'
-import { shadow } from '../../theme/effects.stylex'
-import { border, radius, size, space } from '../../theme/scale.stylex'
-import { skat } from '../../theme/skat.stylex'
+import { color } from '../../theme/color.stylex'
+import { elev } from '../../theme/elevation.stylex'
+import { border, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { fontSize, leading } from '../../theme/type.stylex'
 
 // The message list, input and send button of the assistant (SKATGO-14, after Trovestep's
@@ -129,8 +130,8 @@ export default function AskThread({ page, history, onMessage, signal }: AskThrea
   const config = useMemo(() => {
     // deep-chat takes plain CSS strings; the course's tokens are CSS variables, which reach inside its
     // shadow root by inheritance.
-    const bubble = { maxWidth: size.chatBubbleMax, lineHeight: leading.compact, padding: `${space.x10} ${space.x14}`, borderRadius: radius.tile, color: skat.ink }
-    const button = { borderRadius: radius.round, width: size.chatButton, height: size.chatButton }
+    const bubble = { maxWidth: dims.chatBubbleMax, lineHeight: leading.compact, padding: `${space.x10} ${space.x14}`, borderRadius: radii.panel, color: color.text }
+    const button = { borderRadius: radii.round, width: dims.chatButton, height: dims.chatButton }
     return {
       connect: {
         stream: true,
@@ -180,35 +181,35 @@ export default function AskThread({ page, history, onMessage, signal }: AskThrea
       remarkable: { html: false, linkTarget: '_blank', typographer: false },
       textInput: {
         characterLimit: LIMITS.questionChars,
-        placeholder: { text: atTable ? m.ask_placeholder_play() : m.ask_placeholder(), style: { color: skat.inkFaint } },
+        placeholder: { text: atTable ? m.ask_placeholder_play() : m.ask_placeholder(), style: { color: color.slate } },
         styles: {
-          container: { width: size.chatInputWidth, backgroundColor: skat.white, border: `${border.hair} solid ${skat.paperEdge}`, borderRadius: radius.tile, boxShadow: 'none', color: skat.ink },
-          focus: { border: `${border.hair} solid ${skat.brass}`, boxShadow: shadow.chatFocus },
-          text: { padding: `${space.x10} ${space.x12}`, color: skat.ink },
+          container: { width: dims.chatInputWidth, backgroundColor: color.surface, border: `${border.hair} solid ${color.hairline}`, borderRadius: radii.panel, boxShadow: 'none', color: color.text },
+          focus: { border: `${border.hair} solid ${color.info}`, boxShadow: elev.focus },
+          text: { padding: `${space.x10} ${space.x12}`, color: color.text },
         },
       },
-      chatStyle: { width: '100%', maxWidth: '100%', minWidth: '0', height: '100%', border: 'none', borderRadius: '0', backgroundColor: skat.paper, fontFamily: 'inherit', fontSize: fontSize.f15 },
-      inputAreaStyle: { backgroundColor: skat.paper, borderTop: `${border.hair} solid ${skat.paperEdge}` },
+      chatStyle: { width: '100%', maxWidth: '100%', minWidth: '0', height: '100%', border: 'none', borderRadius: '0', backgroundColor: color.page, fontFamily: 'inherit', fontSize: fontSize.f15 },
+      inputAreaStyle: { backgroundColor: color.page, borderTop: `${border.hair} solid ${color.hairline}` },
       messageStyles: {
         default: {
           shared: { bubble },
-          user: { bubble: { backgroundColor: skat.brassSoft } },
-          ai: { bubble: { backgroundColor: skat.paperDeep } },
+          user: { bubble: { backgroundColor: color.goodSoft } },
+          ai: { bubble: { backgroundColor: color.surface } },
         },
-        intro: { bubble: { ...bubble, backgroundColor: skat.paperDeep, color: skat.inkSoft } },
-        error: { bubble: { ...bubble, backgroundColor: skat.badSoft, color: skat.bad } },
+        intro: { bubble: { ...bubble, backgroundColor: color.surface, color: color.slate } },
+        error: { bubble: { ...bubble, backgroundColor: color.badSoft, color: color.bad } },
         // The padding centres deep-chat's three dots (SKATGO-11); its geometry is explained at the token.
-        loading: { message: { styles: { bubble: { ...bubble, backgroundColor: skat.paperDeep, color: skat.inkSoft, padding: size.chatLoadingPadding } } } },
+        loading: { message: { styles: { bubble: { ...bubble, backgroundColor: color.surface, color: color.slate, padding: dims.chatLoadingPadding } } } },
       },
       submitButtonStyles: {
         submit: {
-          container: { default: { ...button, backgroundColor: skat.feltLight, color: skat.white, cursor: 'pointer' }, hover: { backgroundColor: skat.felt } },
+          container: { default: { ...button, backgroundColor: color.go, color: color.onColor, cursor: 'pointer' }, hover: { backgroundColor: color.roleTag } },
           svg: { content: sendIcon ?? undefined },
         },
-        loading: { container: { default: { ...button, backgroundColor: skat.paperEdge, cursor: 'progress' } } },
-        stop: { container: { default: { ...button, backgroundColor: skat.feltLight, cursor: 'pointer' }, hover: { backgroundColor: skat.felt } } },
+        loading: { container: { default: { ...button, backgroundColor: color.hairline, cursor: 'progress' } } },
+        stop: { container: { default: { ...button, backgroundColor: color.go, cursor: 'pointer' }, hover: { backgroundColor: color.roleTag } } },
         disabled: {
-          container: { default: { ...button, backgroundColor: skat.paperEdge, color: skat.inkFaint, cursor: 'not-allowed' } },
+          container: { default: { ...button, backgroundColor: color.hairline, color: color.slate, cursor: 'not-allowed' } },
           svg: { content: sendIcon ?? undefined },
         },
       },
@@ -217,8 +218,8 @@ export default function AskThread({ page, history, onMessage, signal }: AskThrea
       auxiliaryStyle: [
         '.input-button-svg { display: flex; align-items: center; justify-content: center; }',
         '#messages, #text-input { overscroll-behavior: contain; }',
-        `.input-button-svg > svg { width: ${size.chatIcon}; height: ${size.chatIcon}; }`,
-        `#stop-icon { position: static; width: ${size.chatStopIcon}; height: ${size.chatStopIcon}; border-radius: ${size.chatStopRadius}; background-color: ${skat.white}; }`,
+        `.input-button-svg > svg { width: ${dims.chatIcon}; height: ${dims.chatIcon}; }`,
+        `#stop-icon { position: static; width: ${dims.chatStopIcon}; height: ${dims.chatStopIcon}; border-radius: ${dims.chatStopRadius}; background-color: ${color.onColor}; }`,
       ].join('\n'),
       errorMessages: { displayServiceErrorMessages: true },
       displayLoadingBubble: true,

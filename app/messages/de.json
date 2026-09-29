@@ -281,5 +281,25 @@
   "entry_puzzles_desc": "Kleine Skat-Rätsel: Wie hoch reizen? Welche Karte spielen?",
   "entry_soon": "Bald verfügbar",
   "back_to_start": "← Start",
-  "ask_page_entry": "Start"
+  "ask_page_entry": "Start",
+
+  "nav_label": "Hauptnavigation",
+  "nav_home": "Start",
+  "nav_course": "Kurs",
+  "nav_play": "Spielen",
+  "nav_duplicate": "Duplicate",
+  "nav_puzzles": "Rätsel",
+  "nav_soon": "Bald verfügbar",
+  "nav_menu": "Menü",
+  "nav_back": "Zurück",
+  "nav_home_link": "Startseite",
+  "entry_section_start": "Los geht’s",
+  "entry_section_soon": "Bald verfügbar",
+
+  "table_leave": "Tisch verlassen",
+  "table_history": "Reizen",
+  "table_game_tab": "Spiel",
+  "table_panel_toggle": "Spielinfo ein- oder ausblenden",
+  "table_whose_turn": "{name} ist dran",
+  "table_your_move": "Du bist dran"
 }

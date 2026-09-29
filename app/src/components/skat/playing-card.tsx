@@ -39,9 +39,11 @@ import { type Card, cardId } from '~/lib/skat/cards'
 import { spokenCard } from '~/lib/skat/i18n'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
-import { move, shadow, texture, timing } from '../../theme/effects.stylex'
-import { border, radius, size } from '../../theme/scale.stylex'
-import { skat } from '../../theme/skat.stylex'
+import { color } from '../../theme/color.stylex'
+import { move, timing } from '../../theme/effects.stylex'
+import { elev, fill } from '../../theme/elevation.stylex'
+import { border } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 
 // One playing card. The faces are Adrian Kennard's public-domain SVG deck (via
 // @letele/playing-cards) — a learner who is about to sit down with real people should practise on
@@ -90,7 +92,7 @@ function faceOf(card: Card): Face {
   return FACES[`${card.suit}${card.rank.toLowerCase()}`]
 }
 
-export type CardSize = 'xs' | 'sm' | 'md' | 'lg'
+export type CardSize = 'xs' | 'sm' | 'md' | 'lg' | 'table'
 
 type Props = {
   card: Card
@@ -113,7 +115,8 @@ type Props = {
 export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glow, verdict, legal, data, onClick }: Props) {
   const Face = faceOf(card)
   // The back is drawn here rather than taken from the deck: the library's back is a flat grey, and
-  // a face-down card is most of what the learner sees of their opponents.
+  // a face-down card is most of what the learner sees of their opponents. It is skatgo's own design
+  // (SKATGO-26): a gold lattice on navy inside a white frame.
   const body = faceDown ? (
     <span {...stylex.props(styles.back)} />
   ) : (
@@ -158,12 +161,12 @@ const styles = stylex.create({
   card: {
     display: 'block',
     flexShrink: 0,
-    aspectRatio: size.cardAspect,
+    aspectRatio: dims.cardAspect,
     padding: 0,
     borderWidth: 0,
-    borderRadius: radius.card,
-    backgroundColor: skat.white,
-    boxShadow: shadow.card,
+    borderRadius: radii.card,
+    backgroundColor: color.surface,
+    boxShadow: elev.card,
     overflow: 'hidden',
     transitionProperty: 'transform, box-shadow, opacity, filter',
     transitionDuration: timing.card,
@@ -177,32 +180,34 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     borderWidth: border.frame,
     borderStyle: 'solid',
-    borderColor: skat.white,
+    borderColor: color.surface,
     borderRadius: 'inherit',
-    backgroundColor: skat.red,
-    backgroundImage: texture.cardBack,
+    backgroundColor: color.navy,
+    backgroundImage: fill.cardBack,
   },
   clickable: {
     cursor: 'pointer',
     transform: { default: move.rest, ':hover': move.cardHover },
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focus,
-    outlineColor: skat.brass,
+    outlineColor: color.gold,
     outlineOffset: border.focusOffset,
   },
   selected: {
     transform: { default: move.cardRaised, ':hover': move.cardRaised },
-    boxShadow: shadow.cardRaised,
+    boxShadow: elev.cardRaised,
   },
-  dimmed: { filter: texture.dimmed },
-  glow: { boxShadow: shadow.cardGlow },
-  good: { boxShadow: shadow.verdictGood },
-  bad: { boxShadow: shadow.verdictBad },
+  dimmed: { filter: fill.dimmed },
+  glow: { boxShadow: elev.cardGlow },
+  good: { boxShadow: elev.verdictGood },
+  bad: { boxShadow: elev.verdictBad },
 })
 
 const sizes = stylex.create({
-  xs: { width: size.cardXs, borderRadius: radius.cardXs },
-  sm: { width: size.cardSm, borderRadius: radius.cardSm },
-  md: { width: { default: size.cardMd, [bp.phone]: size.cardMdPhone } },
-  lg: { width: { default: size.cardLg, [bp.phone]: size.cardLgPhone } },
+  xs: { width: dims.cardXs, borderRadius: radii.cardXs },
+  sm: { width: dims.cardSm, borderRadius: radii.cardSm },
+  md: { width: { default: dims.cardMd, [bp.phone]: dims.cardMdPhone } },
+  lg: { width: { default: dims.cardLg, [bp.phone]: dims.cardLgPhone } },
+  /** The hand along the bottom of the card table. */
+  table: { width: { default: dims.cardTable, [bp.phone]: dims.cardTablePhone } },
 })

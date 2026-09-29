@@ -4,10 +4,11 @@ import { motion } from 'motion/react'
 import { type Card, cardId, legalPlays, sameCard } from '~/lib/skat/cards'
 import type { CardRow } from '~/lib/skat/lessons/types'
 import { bp } from '../../theme/breakpoints.stylex'
+import { color } from '../../theme/color.stylex'
 import { deal } from '../../theme/constants'
-import { shadow } from '../../theme/effects.stylex'
-import { radius, size, space } from '../../theme/scale.stylex'
-import { skat } from '../../theme/skat.stylex'
+import { elev } from '../../theme/elevation.stylex'
+import { space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { type CardSize, PlayingCard } from './playing-card'
 
@@ -114,13 +115,13 @@ export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [
 
 const styles = stylex.create({
   figure: { margin: 0, display: 'flex', flexDirection: 'column', gap: space.x8, alignItems: 'center' },
-  label: { color: skat.inkSoft },
+  label: { color: color.slate },
   row: { display: 'flex', flexWrap: 'wrap', gap: space.x8, justifyContent: 'center' },
   cell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
-  caption: { color: skat.brassDeep },
+  caption: { color: color.slateDeep },
   // The follow rule's verdict in the course's judging colours, as on an exercise answer.
-  captionYes: { color: skat.good },
-  captionNo: { color: skat.bad },
+  captionYes: { color: color.good },
+  captionNo: { color: color.bad },
   fan: {
     display: 'flex',
     flexDirection: { default: 'row', [bp.phone]: 'column' },
@@ -134,33 +135,34 @@ const styles = stylex.create({
   },
   group: { display: { default: 'contents', [bp.phone]: 'flex' }, justifyContent: 'center', width: '100%' },
   // The lower row tucks under the upper one, the way a held hand overlaps — and it saves height.
-  lowerGroup: { marginTop: { default: 0, [bp.phone]: size.fanRowOverlap } },
-  slot: { position: 'relative', flexGrow: 0, flexShrink: 1, minWidth: size.slotMin },
+  lowerGroup: { marginTop: { default: 0, [bp.phone]: dims.fanRowOverlap } },
+  slot: { position: 'relative', flexGrow: 0, flexShrink: 1, minWidth: dims.slotMin },
   // The last card of a row is never overlapped, so its slot must keep the card's full width. On a
   // wide screen only the fan's very last card is "last"; on a phone each row has its own.
   groupLastSlot: { flexShrink: { default: 1, [bp.phone]: 0 } },
   lastSlot: { flexShrink: 0 },
   badge: {
     position: 'absolute',
-    top: size.badgeOffsetTop,
-    left: size.badgeOffsetLeft,
-    minWidth: size.badge,
-    height: size.badge,
-    borderRadius: radius.round,
-    backgroundColor: skat.brass,
-    color: skat.ink,
+    top: dims.badgeOffsetTop,
+    left: dims.badgeOffsetLeft,
+    minWidth: dims.badge,
+    height: dims.badge,
+    borderRadius: radii.round,
+    backgroundColor: color.amber,
+    color: color.plate,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: shadow.badge,
+    boxShadow: elev.card,
     pointerEvents: 'none',
   },
 })
 
 // A slot is as wide as its card plus a breath; it shrinks when the row runs out of room.
 const slotSizes = stylex.create({
-  xs: { flexBasis: size.slotXs },
-  sm: { flexBasis: size.slotSm },
-  md: { flexBasis: { default: size.slotMd, [bp.phone]: size.slotMdPhone } },
-  lg: { flexBasis: { default: size.slotLg, [bp.phone]: size.slotLgPhone } },
+  xs: { flexBasis: dims.slotXs },
+  sm: { flexBasis: dims.slotSm },
+  md: { flexBasis: { default: dims.slotMd, [bp.phone]: dims.slotMdPhone } },
+  lg: { flexBasis: { default: dims.slotLg, [bp.phone]: dims.slotLgPhone } },
+  table: { flexBasis: { default: dims.slotTable, [bp.phone]: dims.slotTablePhone } },
 })

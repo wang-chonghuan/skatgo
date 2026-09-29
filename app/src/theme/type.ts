@@ -66,4 +66,46 @@ export const typography = stylex.create({
   celebrate: { fontSize: fontSize.f88, lineHeight: leading.glyph },
   /** The suit pressed into an entry-page card. */
   watermark: { fontSize: fontSize.f200, lineHeight: leading.glyph },
+
+  // The lobby design (SKATGO-26). Sizes and weights are the reference's (reference.md); a phone size
+  // the reference did not show is derived from the same ratio.
+
+  // The public site
+  landingTitle: { fontSize: { default: fontSize.f72, [bp.phone]: fontSize.f36 }, fontWeight: weight.black, lineHeight: leading.tight },
+  landingLead: { fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.bold, lineHeight: leading.tight },
+  landingHeading: { fontSize: { default: fontSize.f36, [bp.phone]: fontSize.f24 }, fontWeight: weight.extrabold, lineHeight: leading.tight },
+  landingBody: { fontSize: { default: fontSize.f20, [bp.phone]: fontSize.f16 }, fontWeight: weight.medium, lineHeight: leading.ui },
+  landingNav: { fontSize: fontSize.f16, fontWeight: weight.medium, lineHeight: leading.ui },
+  landingBtn: { fontFamily: 'inherit', fontSize: fontSize.f20, fontWeight: weight.bold, lineHeight: leading.ui },
+  landingCta: { fontFamily: 'inherit', fontSize: fontSize.f22, fontWeight: weight.bold, lineHeight: leading.ui },
+  landingStat: { fontSize: { default: fontSize.f40, [bp.phone]: fontSize.f28 }, fontWeight: weight.black, lineHeight: leading.tight },
+
+  // The app
+  appText: { fontSize: fontSize.f16, fontWeight: weight.regular, lineHeight: leading.ui },
+  appBtn: { fontFamily: 'inherit', fontSize: fontSize.f16, fontWeight: weight.regular, lineHeight: leading.ui },
+  appBtnStrong: { fontFamily: 'inherit', fontSize: fontSize.f16, fontWeight: weight.bold, lineHeight: leading.ui },
+  sectionTitle: { fontSize: fontSize.f20_46, fontWeight: weight.black, lineHeight: leading.tight, textTransform: 'uppercase' },
+  railLabel: { fontSize: fontSize.f14, fontWeight: weight.bold, lineHeight: leading.ui },
+  greeting: { fontSize: fontSize.f16, fontWeight: weight.regular, lineHeight: leading.ui },
+  greetingName: { fontSize: fontSize.f16, fontWeight: weight.bold, lineHeight: leading.ui },
+  tileTitle: { fontSize: { default: fontSize.f25, [bp.phone]: fontSize.f22 }, fontWeight: weight.medium, lineHeight: leading.tight },
+  tileSub: { fontSize: { default: fontSize.f18_18, [bp.phone]: fontSize.f15 }, fontWeight: weight.bold, lineHeight: leading.tight },
+  countBadge: { fontSize: fontSize.f16, fontWeight: weight.bold, lineHeight: leading.glyph },
+  bandTitle: { fontSize: { default: fontSize.f30, [bp.phone]: fontSize.f22 }, fontWeight: weight.bold, lineHeight: leading.ui },
+  bandBack: { fontSize: fontSize.f16, fontWeight: weight.regular, lineHeight: leading.glyph },
+  optionTitle: { fontSize: { default: fontSize.f26_95, [bp.phone]: fontSize.f20 }, fontWeight: weight.bold, lineHeight: leading.ui },
+  optionDesc: { fontSize: { default: fontSize.f19_6, [bp.phone]: fontSize.f15 }, fontWeight: weight.bold, lineHeight: leading.tight },
+  dialogTitle: { fontSize: fontSize.f22, fontWeight: weight.bold, lineHeight: leading.tight },
+
+  // The card table
+  plateName: { fontSize: fontSize.f14, fontWeight: weight.regular, lineHeight: leading.tight },
+  roleTag: { fontSize: fontSize.f16, fontWeight: weight.semibold, lineHeight: leading.glyph },
+  tricksLabel: { fontSize: fontSize.f14_21, fontWeight: weight.regular, lineHeight: leading.tight },
+  tableStatus: { fontSize: fontSize.f14, fontWeight: weight.semibold, lineHeight: leading.tight },
+  auctionHead: { fontSize: fontSize.f21_45, fontWeight: weight.regular, lineHeight: leading.tight },
+  panelLabel: { fontSize: fontSize.f14, fontWeight: weight.bold, lineHeight: leading.ui },
+  bidNumeral: { fontFamily: family.numeral, fontSize: fontSize.f32, fontWeight: weight.regular, lineHeight: leading.glyph },
+  bidChip: { fontFamily: family.numeral, fontSize: fontSize.f20, fontWeight: weight.regular, lineHeight: leading.glyph },
+  passBig: { fontFamily: family.numeral, fontSize: fontSize.f32, fontWeight: weight.regular, lineHeight: leading.glyph },
+  contractTile: { fontFamily: 'inherit', fontSize: fontSize.f18, fontWeight: weight.bold, lineHeight: leading.tight },
 })

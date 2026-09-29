@@ -281,5 +281,25 @@
   "entry_puzzles_desc": "一道道牌局难题：该叫多少？这张牌该怎么出？",
   "entry_soon": "即将推出",
   "back_to_start": "← 首页",
-  "ask_page_entry": "首页"
+  "ask_page_entry": "首页",
+
+  "nav_label": "主导航",
+  "nav_home": "首页",
+  "nav_course": "课程",
+  "nav_play": "打牌",
+  "nav_duplicate": "复式",
+  "nav_puzzles": "题库",
+  "nav_soon": "即将推出",
+  "nav_menu": "菜单",
+  "nav_back": "返回",
+  "nav_home_link": "回首页",
+  "entry_section_start": "开始",
+  "entry_section_soon": "即将推出",
+
+  "table_leave": "离开牌桌",
+  "table_history": "叫分记录",
+  "table_game_tab": "牌局",
+  "table_panel_toggle": "展开或收起牌局信息",
+  "table_whose_turn": "轮到{name}",
+  "table_your_move": "轮到你"
 }

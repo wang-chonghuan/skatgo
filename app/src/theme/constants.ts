@@ -6,12 +6,27 @@
 /** The phone step as a `matchMedia` query — the same width as `bp.phone` in breakpoints.stylex.ts. */
 export const phoneQuery = '(max-width: 480px)'
 
-/** The browser's toolbar colour on phones: the header's felt (`skat.feltDeep`), which a meta tag
+/** The browser's toolbar colour on phones: the page's white surface (`color.surface`), which a meta tag
  *  cannot read as a variable. */
-export const themeColor = '#134A35'
+export const themeColor = '#FFFFFF'
 
 /** lucide icon sizes in px. */
-export const icon = { launcher: 24, launcherStroke: 2.2, header: 18, sendStroke: 2.5 }
+export const icon = {
+  launcher: 24,
+  launcherStroke: 2.2,
+  header: 18,
+  sendStroke: 2.5,
+  // SKATGO-26: the rail's and the tab bar's icons, a lobby tile's icon, the band's, and the table's
+  // floating controls — outline icons at the design's sizes (reference.md).
+  rail: 28,
+  tab: 24,
+  tile: 48,
+  band: 28,
+  bandNav: 20,
+  option: 40,
+  table: 24,
+  outline: 1.75,
+}
 
 /** A lesson step slides in from the right and out to the left. */
 export const stepSlide = { offset: 28, duration: 0.2 }

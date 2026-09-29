@@ -281,5 +281,25 @@
   "entry_puzzles_desc": "Bite-sized Skat problems: how high to bid, which card to play.",
   "entry_soon": "Coming soon",
   "back_to_start": "← Home",
-  "ask_page_entry": "Home"
+  "ask_page_entry": "Home",
+
+  "nav_label": "Main navigation",
+  "nav_home": "Home",
+  "nav_course": "Course",
+  "nav_play": "Play",
+  "nav_duplicate": "Duplicate",
+  "nav_puzzles": "Puzzles",
+  "nav_soon": "Coming soon",
+  "nav_menu": "Menu",
+  "nav_back": "Back",
+  "nav_home_link": "Home",
+  "entry_section_start": "Get started",
+  "entry_section_soon": "Coming soon",
+
+  "table_leave": "Leave the table",
+  "table_history": "Bidding",
+  "table_game_tab": "Game",
+  "table_panel_toggle": "Show or hide the game panel",
+  "table_whose_turn": "{name} to move",
+  "table_your_move": "Your move"
 }

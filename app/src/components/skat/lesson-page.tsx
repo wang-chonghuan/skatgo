@@ -1,7 +1,11 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
+import { BookOpen } from 'lucide-react'
+
 import { lessonById } from '~/lib/skat/lessons/content'
+import { m } from '~/paraglide/messages'
+import { Band } from './frame'
 import { LessonPlayer } from './lesson-player'
 
 /**
@@ -18,5 +22,11 @@ export function LessonPage() {
   }, [lesson, navigate])
 
   if (!lesson) return null
-  return <LessonPlayer key={id} lesson={lesson} />
+  // The course's band, titled with the lesson; its back link returns to the course map (SKATGO-26).
+  return (
+    <>
+      <Band title={m.lesson_heading({ id: lesson.id, title: lesson.title })} Icon={BookOpen} back="/course" />
+      <LessonPlayer key={id} lesson={lesson} />
+    </>
+  )
 }

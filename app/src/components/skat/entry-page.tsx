@@ -1,26 +1,32 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { type ReactNode, useEffect, useState } from 'react'
+import { Club, Diamond, Heart, Spade } from 'lucide-react'
+import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
 
+import type { Card } from '~/lib/skat/cards'
 import { lessons } from '~/lib/skat/lessons/content'
 import { type LessonRecord, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
-import { move, shadow, texture, timing } from '../../theme/effects.stylex'
-import { border, opacity, radius, size, space } from '../../theme/scale.stylex'
-import { skat } from '../../theme/skat.stylex'
+import { color } from '../../theme/color.stylex'
+import { icon } from '../../theme/constants'
+import { timing } from '../../theme/effects.stylex'
+import { elev, fill, pose, veil } from '../../theme/elevation.stylex'
+import { border, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { PlayingCard } from './playing-card'
 import { Pill, linkLook } from './ui'
 
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
-// The front page (SKATGO-23): four ways into Skat, one per suit in Skat order — ♣ Course, ♠ Play,
-// ♥ Duplicate, ♦ Puzzles. Each card is a piece of felt with its suit pressed into it. Course and Play
-// open what already exists; Duplicate and Puzzles are announced but not open, so they are not links and
-// cannot be focused or clicked.
+// The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the headline,
+// the lead, one green call to action, a picture, and a strip of facts — then the four ways into Skat as
+// the app's colour tiles, one suit each in Skat order (SKATGO-23): ♣ Course, ♠ Play, ♥ Duplicate,
+// ♦ Puzzles. Course and Play open what exists; Duplicate and Puzzles are announced and are not links.
 //
-// Rendered on the server like the course map: the text is the same for everyone. The learner's
-// progress lives in localStorage, so it is applied right after mount, as course-home.tsx does.
+// Every picture here is skatgo's own: the public-domain deck the course plays with, fanned on felt, and
+// the suits as outline icons. Rendered on the server; the learner's progress is applied after mount.
 export function EntryPage() {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
@@ -31,59 +37,68 @@ export function EntryPage() {
 
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
-      {/* SkatGo is modern Skat, not a course (the human, SKATGO-23): the hero says the game is always
-          there, and its one call to action sits the learner down at a table. It sits on the page's
-          paper, never on a felt card — the felt belongs to the four sections below. */}
       <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
-        <div {...stylex.props(styles.eyebrow)}>
-          <Pill tone="brass">{m.entry_eyebrow()}</Pill>
-          <span aria-hidden="true" {...stylex.props(styles.suits)}>
-            {SUITS.map((suit) => (
-              <span key={suit} {...stylex.props(typography.markGlyph, RED.includes(suit) ? styles.suitRed : styles.suitInk)}>
-                {suit}
-              </span>
-            ))}
-          </span>
-        </div>
-        <h1 {...stylex.props(typography.hero, styles.title)}>{m.entry_title()}</h1>
-        <p {...stylex.props(typography.body, styles.lead)}>{m.entry_lead()}</p>
-        <div {...stylex.props(styles.heroFoot)}>
-          <Link to="/play" data-testid="entry-cta" {...linkLook('primary', 'lg')}>
-            {m.entry_cta()}
-          </Link>
-          <div {...stylex.props(styles.points)}>
-            <Pill tone="ink">{m.entry_point_ready()}</Pill>
-            <Pill tone="ink">{m.entry_point_browser()}</Pill>
-            <Pill tone="ink">{m.entry_point_languages()}</Pill>
+        <div {...stylex.props(styles.heroText)}>
+          <div {...stylex.props(styles.eyebrow)}>
+            <Pill tone="go">{m.entry_eyebrow()}</Pill>
+            <span aria-hidden="true" {...stylex.props(styles.suits)}>
+              {SUITS.map((suit) => (
+                <span key={suit} {...stylex.props(typography.markGlyph, RED.includes(suit) ? styles.suitRed : styles.suitInk)}>
+                  {suit}
+                </span>
+              ))}
+            </span>
+          </div>
+          <h1 {...stylex.props(typography.landingTitle, styles.title)}>{m.entry_title()}</h1>
+          <p {...stylex.props(typography.landingLead, styles.lead)}>{m.entry_lead()}</p>
+          <div>
+            <Link to="/play" data-testid="entry-cta" {...linkLook('go', 'lg', 'landing')}>
+              {m.entry_cta()}
+            </Link>
           </div>
         </div>
+        <HeroArt />
+        <ul data-testid="entry-points" {...stylex.props(styles.points)}>
+          {[m.entry_point_ready(), m.entry_point_browser(), m.entry_point_languages()].map((point) => (
+            <li key={point} {...stylex.props(typography.landingBody, styles.point)}>
+              {point}
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <div {...stylex.props(styles.grid)}>
-        <Link to="/course" data-testid="entry-card" data-section="course" {...stylex.props(styles.card, styles.open)}>
-          <Face suit="♣" title={m.entry_course_title()} text={m.entry_course_desc({ count: course.length })}>
-            <span {...linkLook('quiet', 'md')}>{finished === 0 ? m.entry_course_start() : m.entry_course_continue()}</span>
-            <span {...stylex.props(typography.small, styles.aside)}>{m.home_done({ finished, total: course.length })}</span>
-          </Face>
-        </Link>
-
-        <Link to="/play" data-testid="entry-card" data-section="play" {...stylex.props(styles.card, styles.open)}>
-          <Face suit="♠" title={m.entry_play_title()} text={m.entry_play_desc()}>
-            <span {...linkLook('quiet', 'md')}>{m.entry_play_cta()}</span>
-          </Face>
-        </Link>
-
-        <div aria-disabled="true" data-testid="entry-card" data-section="duplicate" data-state="soon" {...stylex.props(styles.card, styles.soon)}>
-          <Face suit="♥" soon title={m.entry_duplicate_title()} text={m.entry_duplicate_desc()}>
-            <Pill tone="ink">{m.entry_soon()}</Pill>
-          </Face>
-        </div>
-
-        <div aria-disabled="true" data-testid="entry-card" data-section="puzzles" data-state="soon" {...stylex.props(styles.card, styles.soon)}>
-          <Face suit="♦" soon title={m.entry_puzzles_title()} text={m.entry_puzzles_desc()}>
-            <Pill tone="ink">{m.entry_soon()}</Pill>
-          </Face>
-        </div>
+      <div {...stylex.props(styles.groups)}>
+        <section {...stylex.props(styles.group)}>
+          <h2 {...stylex.props(typography.sectionTitle, styles.groupTitle)}>{m.entry_section_start()}</h2>
+          <div {...stylex.props(styles.tiles)}>
+            <Link to="/course" data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, styles.tileOpen, tileTones.course)}>
+              <Face Icon={Club} art={COURSE_ART} title={m.entry_course_title()} text={m.entry_course_desc({ count: course.length })}>
+                <Pill tone="quiet">{finished === 0 ? m.entry_course_start() : m.entry_course_continue()}</Pill>
+                <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span>
+              </Face>
+            </Link>
+            <Link to="/play" data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, styles.tileOpen, tileTones.play)}>
+              <Face Icon={Spade} art={PLAY_ART} title={m.entry_play_title()} text={m.entry_play_desc()}>
+                <Pill tone="quiet">{m.entry_play_cta()}</Pill>
+              </Face>
+            </Link>
+          </div>
+        </section>
+        <section {...stylex.props(styles.group)}>
+          <h2 {...stylex.props(typography.sectionTitle, styles.groupTitle)}>{m.entry_section_soon()}</h2>
+          <div {...stylex.props(styles.tiles)}>
+            <div aria-disabled="true" data-testid="entry-card" data-section="duplicate" data-state="soon" {...stylex.props(styles.tile, tileTones.soon)}>
+              <Face Icon={Heart} art={DUPLICATE_ART} soon title={m.entry_duplicate_title()} text={m.entry_duplicate_desc()}>
+                <Pill tone="quiet">{m.entry_soon()}</Pill>
+              </Face>
+            </div>
+            <div aria-disabled="true" data-testid="entry-card" data-section="puzzles" data-state="soon" {...stylex.props(styles.tile, tileTones.soon)}>
+              <Face Icon={Diamond} art={PUZZLES_ART} soon title={m.entry_puzzles_title()} text={m.entry_puzzles_desc()}>
+                <Pill tone="quiet">{m.entry_soon()}</Pill>
+              </Face>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   )
@@ -93,97 +108,165 @@ type Suit = '♣' | '♠' | '♥' | '♦'
 const SUITS: Suit[] = ['♣', '♠', '♥', '♦']
 const RED: Suit[] = ['♥', '♦']
 
-/**
- * What every card shows: its suit pressed large into the felt behind everything, and in front a corner
- * index (the suit on a paper chip, as a playing card's corner has it), the title, one line, and the foot.
- */
-function Face({ suit, soon, title, text, children }: { suit: Suit; soon?: boolean; title: string; text: string; children: ReactNode }) {
+const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
+const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
+const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
+const DUPLICATE_ART = [card('H', 'A'), card('H', '10'), card('H', 'K')]
+const PUZZLES_ART = [card('D', '7'), card('D', 'Q'), card('D', 'A')]
+const HERO_HAND = [card('C', 'J'), card('S', 'J'), card('H', 'J'), card('D', 'J'), card('C', 'A')]
+const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
+
+/** The hero's picture: a hand of skatgo's own cards fanned on the table's felt. */
+function HeroArt() {
+  return (
+    <div aria-hidden="true" data-testid="entry-art" {...stylex.props(styles.heroArt)}>
+      <div {...stylex.props(styles.heroFan)}>
+        {HERO_HAND.map((c, i) => (
+          <span key={i} {...stylex.props(styles.heroCard, fanPose[FAN[i]])}>
+            <PlayingCard card={c} size="lg" />
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** A tile's face: its suit icon at the top left, three of skatgo's cards in the corner under the tile's
+ *  colour, and the title, one line and the foot at the bottom left. */
+function Face({ Icon, art, soon, title, text, children }: { Icon: ComponentType<{ size?: number; strokeWidth?: number }>; art: Card[]; soon?: boolean; title: string; text: string; children: ReactNode }) {
   return (
     <>
-      <span aria-hidden="true" {...stylex.props(typography.watermark, styles.watermark, soon && styles.watermarkSoon)}>
-        {suit}
+      <span aria-hidden="true" {...stylex.props(styles.art)}>
+        {art.map((c, i) => (
+          <span key={i} {...stylex.props(styles.artCard, fanPose[FAN[i + 1]])}>
+            <PlayingCard card={c} size="lg" />
+          </span>
+        ))}
+      </span>
+      <span aria-hidden="true" {...stylex.props(styles.veil, soon && styles.veilSoon)} />
+      <span aria-hidden="true" {...stylex.props(styles.icon)}>
+        <Icon size={icon.tile} strokeWidth={icon.outline} />
       </span>
       <div {...stylex.props(styles.body)}>
-        <div {...stylex.props(styles.head)}>
-          <span aria-hidden="true" {...stylex.props(typography.markGlyph, styles.index, RED.includes(suit) && styles.indexRed)}>
-            {suit}
-          </span>
-          <h2 {...stylex.props(typography.pageTitle, styles.cardTitle)}>{title}</h2>
-        </div>
-        <p {...stylex.props(typography.note, styles.text)}>{text}</p>
+        <h3 {...stylex.props(typography.tileTitle, styles.tileTitle)}>{title}</h3>
+        <p {...stylex.props(typography.tileSub, styles.tileText)}>{text}</p>
         <div {...stylex.props(styles.foot)}>{children}</div>
       </div>
     </>
   )
 }
 
+const fanPose = stylex.create({
+  fanFarLeft: { transform: pose.fanFarLeft },
+  fanLeft: { transform: pose.fanLeft },
+  fanMid: { transform: pose.fanMid },
+  fanRight: { transform: pose.fanRight },
+  fanFarRight: { transform: pose.fanFarRight },
+})
+
+const tileTones = stylex.create({
+  course: { backgroundColor: color.tileOrange, boxShadow: elev.tileOrange },
+  play: { backgroundColor: color.tileGreen, boxShadow: elev.tileGreen },
+  soon: { backgroundColor: color.tileSoon, boxShadow: elev.tileSoon },
+})
+
 const styles = stylex.create({
-  root: { display: 'flex', flexDirection: 'column', gap: space.x24 },
-  hero: { display: 'flex', flexDirection: 'column', gap: space.x12, paddingBlock: { default: space.x12, [bp.phone]: space.x4 } },
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: { default: space.x48, [bp.phone]: space.x32 },
+    width: '100%',
+    maxWidth: dims.landingColumn,
+    marginInline: 'auto',
+    boxSizing: 'border-box',
+    paddingTop: { default: space.x32, [bp.phone]: space.x32 },
+    paddingBottom: space.x72,
+    paddingInline: { default: space.x24, [bp.phone]: space.x12 },
+  },
+  hero: {
+    display: 'grid',
+    gridTemplateColumns: { default: dims.heroColumns, [bp.hero]: dims.oneColumn },
+    alignItems: 'center',
+    gap: { default: space.x32, [bp.phone]: space.x24 },
+  },
+  heroText: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: { default: space.x24, [bp.phone]: space.x16 } },
   eyebrow: { display: 'flex', alignItems: 'center', gap: space.x12 },
   suits: { display: 'flex', alignItems: 'center', gap: space.x6 },
-  suitInk: { color: skat.ink },
-  suitRed: { color: skat.red },
+  suitInk: { color: color.navy },
+  suitRed: { color: color.suitRed },
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
-  title: { margin: 0, color: skat.ink },
-  lead: { margin: 0, color: skat.inkSoft, maxWidth: size.column },
-  heroFoot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x14, marginTop: space.x4 },
-  points: { display: 'flex', flexWrap: 'wrap', gap: space.x6 },
-  grid: { display: 'grid', gridTemplateColumns: { default: size.twoColumns, [bp.phone]: size.oneColumn }, gap: space.x16 },
-  card: {
+  title: { margin: 0, color: color.navy, textWrap: 'balance' },
+  lead: { margin: 0, color: color.slate },
+  heroArt: {
     position: 'relative',
-    display: 'flex',
-    minHeight: size.entryCard,
-    overflow: 'hidden',
-    borderRadius: radius.panel,
-    borderWidth: border.tile,
-    borderStyle: 'solid',
-    borderColor: skat.feltDeep,
-    backgroundColor: skat.felt,
-    backgroundImage: texture.feltDrill,
-    color: skat.white,
-    textDecoration: 'none',
-  },
-  open: {
-    borderColor: { default: skat.feltDeep, ':hover': skat.brass },
-    boxShadow: { default: 'none', ':hover': shadow.lift },
-    transform: { default: move.rest, ':hover': move.lift },
-    transitionProperty: 'transform, box-shadow, border-color',
-    transitionDuration: timing.tile,
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: skat.brass,
-    outlineOffset: border.focusOffset,
-  },
-  // Not open yet: the deep felt, without the light.
-  soon: { backgroundColor: skat.feltDeep, backgroundImage: 'none' },
-  watermark: {
-    position: 'absolute',
-    right: size.watermarkInset,
-    bottom: size.watermarkInset,
-    color: skat.felt,
-    textShadow: shadow.emboss,
-    pointerEvents: 'none',
-    userSelect: 'none',
-  },
-  watermarkSoon: { color: skat.feltDeep, opacity: opacity.meta },
-  body: { position: 'relative', display: 'flex', flexDirection: 'column', gap: space.x8, flexGrow: 1, padding: { default: space.x20, [bp.phone]: space.x16 } },
-  head: { display: 'flex', alignItems: 'center', gap: space.x10 },
-  index: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: size.brandMark,
-    height: size.brandMark,
-    borderRadius: radius.card,
-    backgroundColor: skat.paper,
-    color: skat.ink,
-    boxShadow: shadow.card,
-    flexShrink: 0,
+    height: { default: dims.heroArtHeight, [bp.phone]: dims.heroArtHeightPhone },
+    borderRadius: radii.tile,
+    backgroundImage: fill.felt,
+    boxShadow: elev.eventCard,
+    overflow: 'hidden',
   },
-  indexRed: { color: skat.red },
-  cardTitle: { margin: 0, color: skat.white },
-  text: { margin: 0, color: skat.white, opacity: opacity.lead },
-  foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x10, marginTop: 'auto', paddingTop: space.x8 },
-  aside: { color: skat.white, opacity: opacity.meta },
+  heroFan: { display: 'flex', alignItems: 'flex-end' },
+  heroCard: { display: 'block', marginInline: dims.fanRowOverlap, transformOrigin: 'bottom center' },
+  // The strip of facts under the hero, in the public site's navy.
+  points: {
+    gridColumn: dims.fullRow,
+    display: 'grid',
+    gridTemplateColumns: { default: dims.threeColumns, [bp.phone]: dims.oneColumn },
+    gap: space.x16,
+    margin: 0,
+    paddingBlock: space.x20,
+    paddingInline: space.x24,
+    listStyleType: 'none',
+    borderRadius: radii.landingBtn,
+    backgroundColor: color.navy,
+  },
+  point: { margin: 0, color: color.onColor, textAlign: { default: 'center', [bp.phone]: 'left' } },
+
+  groups: { display: 'grid', gridTemplateColumns: { default: dims.twoColumns, [bp.hero]: dims.oneColumn }, gap: space.x48 },
+  group: { display: 'flex', flexDirection: 'column', gap: space.x16 },
+  groupTitle: { margin: 0, color: color.navy },
+  tiles: { display: 'grid', gridTemplateColumns: { default: dims.lobbyTiles, [bp.phone]: dims.oneColumn }, gap: space.x15 },
+  // A lobby tile: its colour over its art, a shadow in its own colour, content at the bottom left.
+  tile: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    minHeight: dims.tileHeight,
+    boxSizing: 'border-box',
+    padding: space.x27,
+    overflow: 'hidden',
+    borderRadius: radii.tile,
+    color: color.onColor,
+    textDecoration: 'none',
+  },
+  tileOpen: {
+    transform: { default: pose.rest, ':hover': pose.lift },
+    transitionProperty: 'transform',
+    transitionDuration: timing.tile,
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  art: {
+    position: 'absolute',
+    right: dims.tileArtRight,
+    bottom: dims.tileArtBottom,
+    display: 'flex',
+    transform: pose.tileArt,
+    pointerEvents: 'none',
+  },
+  artCard: { display: 'block', marginInline: dims.fanRowOverlap, transformOrigin: 'bottom center' },
+  veil: { position: 'absolute', inset: 0, backgroundColor: 'inherit', opacity: veil.tile, pointerEvents: 'none' },
+  veilSoon: { opacity: veil.soon },
+  icon: { position: 'absolute', top: space.x27, left: space.x27, display: 'flex', color: color.onColor },
+  body: { position: 'relative', display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: dims.tileIcon },
+  tileTitle: { margin: 0, color: color.onColor },
+  tileText: { margin: 0, color: color.onColor },
+  foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, paddingTop: space.x8 },
+  aside: { color: color.onColor },
 })

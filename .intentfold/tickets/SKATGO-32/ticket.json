@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-32",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-32",
   "branch": "SKATGO-32-table-messages",

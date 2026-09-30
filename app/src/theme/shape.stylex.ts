@@ -40,9 +40,13 @@ export const dims = stylex.defineVars({
   iconButton: '44px',
   badge: '24px',
   brandMark: '40px',
+  /** The front page header's mark (SKATGO-31): the new icon's square carries white margin, so it is shown larger. */
+  landingMark: '56px',
+  landingMarkPhone: '44px',
 
   // The public site
-  landingHeader: '100px',
+  /** The front page header (SKATGO-31: 80px, lower than the reference's 100 so the hero starts higher). */
+  landingHeader: '80px',
   landingHeaderPhone: '64px',
   landingColumn: '1140px',
   heroArt: '480px',

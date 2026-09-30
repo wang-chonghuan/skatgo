@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
-import { DAILY_EST_MINUTES } from '~/lib/daily'
+import { DAILY_DEALS } from '~/lib/daily'
 import { faq } from '~/lib/faq'
 import type { Card } from '~/lib/skat/cards'
 import { lessons } from '~/lib/skat/lessons/content'
@@ -55,7 +55,7 @@ export function EntryPage() {
         </div>
         <HeroArt />
         <ul data-testid="entry-points" {...stylex.props(styles.points)}>
-          {[m.entry_point_midnight(), m.entry_point_minutes({ minutes: DAILY_EST_MINUTES }), m.entry_point_signup()].map((point) => (
+          {[m.entry_point_daily({ deals: DAILY_DEALS }), m.entry_point_free(), m.entry_point_ai()].map((point) => (
             <li key={point} {...stylex.props(typography.landingBody, styles.point)}>
               {point}
             </li>

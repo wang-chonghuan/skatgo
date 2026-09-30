@@ -97,8 +97,8 @@ export function LandingHeader() {
   return (
     <header data-testid="landing-header" {...stylex.props(styles.landingHeader)}>
       <Link to="/" {...stylex.props(typography.landingHeading, styles.landingBrand)}>
-        <img src="/logo-96.png" alt="" {...stylex.props(styles.brandMark)} />
-        <span {...stylex.props(typography.dialogTitle)}>{m.site_name()}</span>
+        <img src="/logo-96.png" alt="" {...stylex.props(styles.landingMark)} />
+        <span {...stylex.props(typography.landingBrand)}>{m.site_name()}</span>
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
         <Link to="/daily" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_daily()}</Link>
@@ -371,6 +371,14 @@ const styles = stylex.create({
   },
   railBrand: { display: 'flex', paddingBottom: space.x16, ...focus },
   brandMark: { display: 'block', width: dims.brandMark, height: dims.brandMark, borderRadius: radii.card, flexShrink: 0 },
+  // The front page's header carries the brand larger than the rail (SKATGO-31).
+  landingMark: {
+    display: 'block',
+    width: { default: dims.landingMark, [bp.phone]: dims.landingMarkPhone },
+    height: { default: dims.landingMark, [bp.phone]: dims.landingMarkPhone },
+    borderRadius: radii.card,
+    flexShrink: 0,
+  },
   railItem: {
     display: 'flex',
     flexDirection: 'column',

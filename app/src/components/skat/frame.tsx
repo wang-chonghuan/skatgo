@@ -16,7 +16,7 @@ import { elev } from '../../theme/elevation.stylex'
 import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { suit as suitCard, fourColours, twoColours } from '../../theme/suits.stylex'
-import { FlagDE, FlagGB } from '../../theme/flags'
+import { FlagDE, FlagUS } from '../../theme/flags'
 import { typography } from '../../theme/type'
 import { Btn, linkLook, suitText } from './ui'
 
@@ -181,7 +181,7 @@ export function Account({ shape = 'pill' }: { shape?: 'pill' | 'landing' }) {
 /** How each language names itself, in its own script. */
 const NAME: Record<Locale, string> = { en: 'English', de: 'Deutsch' }
 
-const FLAG: Record<Locale, () => ReactNode> = { en: FlagGB, de: FlagDE }
+const FLAG: Record<Locale, () => ReactNode> = { en: FlagUS, de: FlagDE }
 
 /**
  * The language menu (SKATGO-23), drawn the way Funbridge draws it (SKATGO-29): a small bordered button

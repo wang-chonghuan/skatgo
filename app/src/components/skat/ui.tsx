@@ -9,6 +9,7 @@ import { move, timing } from '../../theme/effects.stylex'
 import { elev, fill } from '../../theme/elevation.stylex'
 import { border, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
+import { suit } from '../../theme/suits.stylex'
 import { icon } from '../../theme/constants'
 import { typography } from '../../theme/type'
 
@@ -21,16 +22,17 @@ import { typography } from '../../theme/type'
 //   landing — the public site's buttons (radius 14, heavier type).
 // Every coloured button casts a shadow in its own colour, as the design does.
 
-const RED_SUITS = /([♥♦])/
+const SUIT_GLYPHS = /([♣♠♥♦])/
 
-/** Inline text with the course's two conventions: **bold**, and red suit symbols coloured red. */
+/** Inline text with the course's two conventions: **bold**, and each suit symbol in its colour from
+ *  the chosen scheme (SKATGO-27). */
 export function Rich({ text }: { text: string }) {
   return (
     <>
       {text.split('**').map((part, i) => {
-        const pieces = part.split(RED_SUITS).map((piece, j) =>
-          RED_SUITS.test(piece) ? (
-            <span key={j} {...stylex.props(styles.redSuit)}>{piece}</span>
+        const pieces = part.split(SUIT_GLYPHS).map((piece, j) =>
+          SUIT_GLYPHS.test(piece) ? (
+            <span key={j} {...stylex.props(suitText[piece as Glyph])}>{piece}</span>
           ) : (
             piece
           ),
@@ -123,12 +125,21 @@ function btnType(shape: Shape, size: Size) {
   return shape === 'block' ? typography.appBtnStrong : typography.appBtn
 }
 
+type Glyph = '♣' | '♠' | '♥' | '♦'
+
+/** A suit symbol in text, in the chosen scheme's text colour. */
+export const suitText = stylex.create({
+  '♣': { color: suit.textClubs },
+  '♠': { color: suit.textSpades },
+  '♥': { color: suit.textHearts },
+  '♦': { color: suit.textDiamonds },
+})
+
 const dynamic = stylex.create({
   width: (w: string) => ({ width: w }),
 })
 
 const styles = stylex.create({
-  redSuit: { color: color.suitRed },
   strong: { color: color.navy },
   btn: {
     display: 'inline-flex',

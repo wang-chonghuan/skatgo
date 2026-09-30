@@ -33,7 +33,7 @@ import {
   Dk,
   Da,
 } from '@letele/playing-cards'
-import type { ComponentType, SVGProps } from 'react'
+import { Children, type ComponentType, type ReactNode, type SVGProps, cloneElement, isValidElement } from 'react'
 
 import { type Card, cardId } from '~/lib/skat/cards'
 import { spokenCard } from '~/lib/skat/i18n'
@@ -44,6 +44,7 @@ import { move, timing } from '../../theme/effects.stylex'
 import { elev, fill } from '../../theme/elevation.stylex'
 import { border } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
+import { suit } from '../../theme/suits.stylex'
 
 // One playing card. The faces are Adrian Kennard's public-domain SVG deck (via
 // @letele/playing-cards) — a learner who is about to sit down with real people should practise on
@@ -87,6 +88,41 @@ const FACES: Record<string, Face> = {
   Da,
 }
 
+const COURT: readonly string[] = ['J', 'Q', 'K']
+
+// SKATGO-27: a face's suit symbols and corner index take the card's suit colour; nothing else changes.
+// The deck (surveyed card by card) draws them as symbols: on 7-10 and the ace, symbols `a` and `b`
+// are all there is — the index and the pips; on a court, `a` is the pip and `h` the corner letter,
+// while the figure is other symbols (`b` gold, `c` red, `d` blue, `e` its outline). The face is
+// rendered with those two symbols' fill and stroke set to `currentColor`, which the card's `color`
+// (its suit, from theme/suits.stylex.ts) supplies. Done on the element tree, not by a stylesheet:
+// a selector cannot reach the copies a <use> renders, and a tree rewrite is the same on the server
+// and in the browser.
+const INK_PIP = ['a', 'b']
+const INK_COURT = ['a', 'h']
+
+function inked(node: ReactNode, keys: string[], within: boolean): ReactNode {
+  if (!isValidElement(node)) return node
+  const props = node.props as { id?: unknown; fill?: unknown; stroke?: unknown; children?: ReactNode }
+  const here = within || (node.type === 'symbol' && typeof props.id === 'string' && keys.some((k) => (props.id as string).endsWith(`_svg__${k}`)))
+  const change: Record<string, unknown> = {}
+  if (here && node.type === 'path') {
+    if (props.fill !== 'none') change.fill = 'currentColor'
+    if (props.stroke) change.stroke = 'currentColor'
+  }
+  if (props.children !== undefined) change.children = Children.map(props.children, (c) => inked(c, keys, here))
+  return cloneElement(node, change)
+}
+
+/** The deck's face with its suit symbols and corner index in the card's colour. */
+function InkedFace({ face, court, ...rest }: { face: Face; court: boolean } & SVGProps<SVGSVGElement>) {
+  // The deck's faces are plain function components (svgr output, no hooks), so calling one yields its
+  // element tree to rewrite.
+  const draw = face as (p: SVGProps<SVGSVGElement>) => ReactNode
+  const drawn = draw({ ...rest, 'aria-hidden': true, focusable: 'false' })
+  return <>{inked(drawn, court ? INK_COURT : INK_PIP, false)}</>
+}
+
 /** The library names a card by suit letter plus lower-case rank: `Cj`, `H10`, `Sa`. */
 function faceOf(card: Card): Face {
   return FACES[`${card.suit}${card.rank.toLowerCase()}`]
@@ -120,12 +156,14 @@ export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glo
   const body = faceDown ? (
     <span {...stylex.props(styles.back)} />
   ) : (
-    <Face {...stylex.props(styles.face)} aria-hidden="true" focusable="false" />
+    <InkedFace face={Face} court={COURT.includes(card.rank)} {...stylex.props(styles.face)} />
   )
   // `clickable` first: it sets the resting and hover transform, and `selected` must win over both.
   const look = stylex.props(
     styles.card,
     sizes[size],
+    // The suit's colour, which app.css hands to the face's pips and indices (SKATGO-27).
+    !faceDown && suitInk[card.suit],
     onClick ? styles.clickable : null,
     selected && styles.selected,
     dimmed && styles.dimmed,
@@ -201,6 +239,14 @@ const styles = stylex.create({
   glow: { boxShadow: elev.cardGlow },
   good: { boxShadow: elev.verdictGood },
   bad: { boxShadow: elev.verdictBad },
+})
+
+// Each suit's colour on a card face, from the chosen scheme (theme/suits.stylex.ts).
+const suitInk = stylex.create({
+  C: { color: suit.cardClubs },
+  S: { color: suit.cardSpades },
+  H: { color: suit.cardHearts },
+  D: { color: suit.cardDiamonds },
 })
 
 const sizes = stylex.create({

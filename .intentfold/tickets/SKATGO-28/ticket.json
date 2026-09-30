@@ -1,10 +1,14 @@
 {
   "ticket": "SKATGO-28",
   "mode": "autonomous",
-  "stage": "developing",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-28",
   "branch": "SKATGO-28-drop-chinese",
   "base": "4afab0103ab8fd741d65fa62556f61888157d6c3",
-  "ports": { "web": 55028, "multiplayer": 56028, "database": 57028 }
+  "ports": {
+    "web": 55028,
+    "multiplayer": 56028,
+    "database": 57028
+  }
 }

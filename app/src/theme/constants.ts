@@ -12,7 +12,7 @@ export const themeColor = '#FFFFFF'
 
 /** lucide icon sizes in px. */
 export const icon = {
-  launcher: 24,
+  launcher: 20,
   launcherStroke: 2.2,
   header: 18,
   sendStroke: 2.5,
@@ -59,7 +59,8 @@ export const shake = { x: [0, -9, 9, -6, 6, 0], duration: 0.35 }
 export const drawer = { rise: 48, duration: 0.22 }
 
 /** Celebration: finishing a lesson, and winning a game — nowhere else. */
+// A visitor who asked for less motion gets none (SKATGO-29).
 export const confettiBurst = {
-  lesson: { particleCount: 140, spread: 80, origin: { y: 0.6 } },
-  game: { particleCount: 90, spread: 70, origin: { y: 0.7 } },
+  lesson: { particleCount: 140, spread: 80, origin: { y: 0.6 }, disableForReducedMotion: true },
+  game: { particleCount: 90, spread: 70, origin: { y: 0.7 }, disableForReducedMotion: true },
 }

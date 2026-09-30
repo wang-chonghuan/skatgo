@@ -4,8 +4,8 @@ import type { paraglideVitePlugin } from '@inlang/paraglide-js'
 // messages/*.json into src/paraglide (generated, self-ignored), and every language lives under
 // its own prefix — /en and /de — so each is a separate, indexable page. A request without a
 // prefix is redirected by the server middleware (src/server.ts) to the language src/lib/locale.ts
-// chooses: URL, then the visitor's saved choice, then German or English from the browser, then English
-// (SKATGO-23; Chinese removed in SKATGO-28). Paraglide runs a custom strategy before its built-in ones
+// chooses: URL, then the visitor's saved choice, then the browser's first language (German gets German,
+// any other English), then German when the browser names none (SKATGO-23/28/29). Paraglide runs a custom strategy before its built-in ones
 // whatever the order, so `custom-skatgo` carries that whole rule on the server; `url` and `cookie` stay
 // for the browser, where every page already has its prefix and a choice writes the cookie.
 //
@@ -25,6 +25,44 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de'],
       ],
     },
+    // German pages have German addresses (SKATGO-29): the course, a lesson, the rules and the table.
+    // A lesson's slug is itself in the page's language (lib/skat/lessons/guide.ts); the pattern only
+    // carries it across.
+    {
+      pattern: '/course',
+      localized: [
+        ['en', '/en/course'],
+        ['de', '/de/kurs'],
+      ],
+    },
+    {
+      pattern: '/course/:slug',
+      localized: [
+        ['en', '/en/course/:slug'],
+        ['de', '/de/kurs/:slug'],
+      ],
+    },
+    {
+      pattern: '/rules',
+      localized: [
+        ['en', '/en/rules'],
+        ['de', '/de/regeln'],
+      ],
+    },
+    {
+      pattern: '/daily',
+      localized: [
+        ['en', '/en/daily'],
+        ['de', '/de/taeglich'],
+      ],
+    },
+    {
+      pattern: '/play',
+      localized: [
+        ['en', '/en/play'],
+        ['de', '/de/spielen'],
+      ],
+    },
     {
       pattern: '/:path(.*)?',
       localized: [
@@ -37,5 +75,6 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
   routeStrategies: [
     { match: '/sitemap.xml', exclude: true },
     { match: '/robots.txt', exclude: true },
+    { match: '/og/:file', exclude: true },
   ],
 }

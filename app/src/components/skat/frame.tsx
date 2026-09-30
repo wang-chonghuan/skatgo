@@ -1,8 +1,8 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { Check, ChevronLeft, Copy, GraduationCap, House, Menu, Puzzle, Settings, Spade, X } from 'lucide-react'
-import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
+import { BookOpen, CalendarDays, Check, ChevronDown, GraduationCap, House, Menu, Settings, Spade, X } from 'lucide-react'
+import { type ComponentType, type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { type CardColours, useSettings } from '~/lib/skat/settings'
 import { LANG_TAG } from '~/lib/site'
@@ -16,6 +16,7 @@ import { elev } from '../../theme/elevation.stylex'
 import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { suit as suitCard, fourColours, twoColours } from '../../theme/suits.stylex'
+import { FlagDE, FlagUS } from '../../theme/flags'
 import { typography } from '../../theme/type'
 import { Btn, linkLook, suitText } from './ui'
 
@@ -24,22 +25,24 @@ import { Btn, linkLook, suitText } from './ui'
 //   TabBar         the same navigation as a bottom bar, phone;
 //   LandingHeader  the public site's white header, on the front page;
 //   Band           a sub-page's coloured band: back and home, the page's title, language and account.
-// Navigation carries only what skatgo has; sections not open yet are shown, marked, and not links.
+// Navigation carries only what skatgo has (SKATGO-29: nothing announced).
 
-type Section = 'home' | 'course' | 'play'
-type Item = { key: string; section?: Section; to?: '/' | '/course' | '/play'; Icon: ComponentType<{ size?: number; strokeWidth?: number }>; label: () => string }
+type Section = 'home' | 'daily' | 'course' | 'rules' | 'play'
+type Item = { key: string; section: Section; to: '/' | '/daily' | '/course' | '/rules' | '/play'; Icon: ComponentType<{ size?: number; strokeWidth?: number }>; label: () => string }
 
 const ITEMS: Item[] = [
   { key: 'home', section: 'home', to: '/', Icon: House, label: () => m.nav_home() },
+  { key: 'daily', section: 'daily', to: '/daily', Icon: CalendarDays, label: () => m.nav_daily() },
   { key: 'course', section: 'course', to: '/course', Icon: GraduationCap, label: () => m.nav_course() },
+  { key: 'rules', section: 'rules', to: '/rules', Icon: BookOpen, label: () => m.nav_rules() },
   { key: 'play', section: 'play', to: '/play', Icon: Spade, label: () => m.nav_play() },
-  { key: 'duplicate', Icon: Copy, label: () => m.nav_duplicate() },
-  { key: 'puzzles', Icon: Puzzle, label: () => m.nav_puzzles() },
 ]
 
 /** Which section a path belongs to. The router has already removed the language prefix. */
 export function sectionOf(pathname: string): Section {
-  if (pathname.startsWith('/course') || pathname.startsWith('/lesson')) return 'course'
+  if (pathname.startsWith('/daily')) return 'daily'
+  if (pathname.startsWith('/course')) return 'course'
+  if (pathname.startsWith('/rules')) return 'rules'
   if (pathname.startsWith('/play')) return 'play'
   return 'home'
 }
@@ -81,13 +84,6 @@ function NavItem({ item, active, variant }: { item: Item; active: boolean; varia
       <span {...stylex.props(typography.railLabel)}>{item.label()}</span>
     </>
   )
-  if (!item.to) {
-    return (
-      <div aria-disabled="true" title={m.nav_soon()} data-nav={item.key} data-state="soon" {...stylex.props(look, styles.itemSoon)}>
-        {inner}
-      </div>
-    )
-  }
   return (
     <Link to={item.to} data-nav={item.key} data-state={active ? 'active' : undefined} aria-current={active ? 'page' : undefined} {...stylex.props(look, styles.itemLink, active && styles.itemActive)}>
       {inner}
@@ -105,7 +101,9 @@ export function LandingHeader() {
         <span {...stylex.props(typography.dialogTitle)}>{m.site_name()}</span>
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
+        <Link to="/daily" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_daily()}</Link>
         <Link to="/course" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_course()}</Link>
+        <Link to="/rules" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_rules()}</Link>
         <Link to="/play" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_play()}</Link>
       </nav>
       <div {...stylex.props(styles.landingEnd)}>
@@ -123,7 +121,9 @@ export function LandingHeader() {
       </div>
       {open ? (
         <div data-testid="landing-menu-panel" {...stylex.props(styles.menuPanel)}>
+          <Link to="/daily" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_daily()}</Link>
           <Link to="/course" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_course()}</Link>
+          <Link to="/rules" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_rules()}</Link>
           <Link to="/play" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_play()}</Link>
           <div {...stylex.props(styles.menuAccount)}>
             <Account />
@@ -135,14 +135,13 @@ export function LandingHeader() {
 }
 
 /** A sub-page's band, in its section's colour: back and home on the left, language and account on the
- *  right, the page's icon and title centred at the bottom. */
-export function Band({ title, Icon, back, testId }: { title: string; Icon: ComponentType<{ size?: number; strokeWidth?: number }>; back: '/' | '/course'; testId?: string }) {
+ *  right, the page's title centred at the bottom. */
+export function Band({ title, back, testId }: { title: string; back: '/' | '/course'; testId?: string }) {
   return (
     <header data-testid={testId ?? 'band'} {...stylex.props(styles.band)}>
       <div {...stylex.props(styles.bandTop)}>
         <div {...stylex.props(styles.bandNav)}>
           <Link to={back} data-testid="band-back" {...stylex.props(typography.bandBack, styles.bandLink)}>
-            <ChevronLeft size={icon.bandNav} strokeWidth={icon.outline} />
             {m.nav_back()}
           </Link>
           <Link to="/" aria-label={m.nav_home_link()} {...stylex.props(styles.bandLink)}>
@@ -155,10 +154,7 @@ export function Band({ title, Icon, back, testId }: { title: string; Icon: Compo
           <Account />
         </div>
       </div>
-      <h1 {...stylex.props(typography.bandTitle, styles.bandTitle)}>
-        <Icon size={icon.band} strokeWidth={icon.outline} />
-        {title}
-      </h1>
+      <h1 {...stylex.props(typography.bandTitle, styles.bandTitle)}>{title}</h1>
     </header>
   )
 }
@@ -185,35 +181,75 @@ export function Account({ shape = 'pill' }: { shape?: 'pill' | 'landing' }) {
 /** How each language names itself, in its own script. */
 const NAME: Record<Locale, string> = { en: 'English', de: 'Deutsch' }
 
+const FLAG: Record<Locale, () => ReactNode> = { en: FlagUS, de: FlagDE }
+
 /**
- * The language, folded into one menu (SKATGO-23), drawn as the design's white pill. A native <select>:
- * it opens above everything, a phone shows its own picker, and the keyboard works without help.
- * Choosing goes through Paraglide's setLocale, which loads the same page in that language and remembers
- * the choice (cookie).
+ * The language menu (SKATGO-23), drawn the way Funbridge draws it (SKATGO-29): a small bordered button
+ * with the current language's flag, opening a card of flags and names, the current one ticked. Choosing
+ * goes through Paraglide's setLocale, which loads the same page in that language and remembers the
+ * choice (cookie). Closes on a choice, a click outside or Escape.
  */
 export function LanguageSwitch() {
   const current = getLocale()
+  const [open, setOpen] = useState(false)
+  const root = useRef<HTMLSpanElement | null>(null)
+  useEffect(() => {
+    if (!open) return
+    const away = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false)
+    }
+    const escape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('pointerdown', away)
+    document.addEventListener('keydown', escape)
+    return () => {
+      document.removeEventListener('pointerdown', away)
+      document.removeEventListener('keydown', escape)
+    }
+  }, [open])
+  const Current = FLAG[current]
   return (
-    <span {...stylex.props(styles.switch)}>
-      <select
+    <span ref={root} {...stylex.props(styles.switch)}>
+      <button
+        type="button"
         aria-label={m.language_label()}
+        aria-haspopup="menu"
+        aria-expanded={open}
         data-testid="language-switch"
-        value={current}
-        onChange={(e) => {
-          const next = e.target.value as Locale
-          if (next !== current) void setLocale(next)
-        }}
-        {...stylex.props(typography.appBtn, styles.select)}
+        onClick={() => setOpen((o) => !o)}
+        {...stylex.props(styles.langButton)}
       >
-        {locales.map((l) => (
-          <option key={l} value={l} lang={LANG_TAG[l]} {...stylex.props(styles.option)}>
-            {NAME[l]}
-          </option>
-        ))}
-      </select>
-      <span aria-hidden="true" {...stylex.props(typography.switch, styles.chevron)}>
-        ▾
-      </span>
+        <Current />
+        <ChevronDown size={icon.inline} strokeWidth={icon.outline} />
+      </button>
+      {open ? (
+        <div role="menu" aria-label={m.language_label()} data-testid="language-menu" {...stylex.props(styles.langMenu)}>
+          {locales.map((l) => {
+            const Flag = FLAG[l]
+            const chosen = l === current
+            return (
+              <button
+                key={l}
+                type="button"
+                role="menuitemradio"
+                aria-checked={chosen}
+                lang={LANG_TAG[l]}
+                data-locale={l}
+                onClick={() => {
+                  setOpen(false)
+                  if (!chosen) void setLocale(l)
+                }}
+                {...stylex.props(typography.appText, styles.langItem, chosen && styles.langItemChosen)}
+              >
+                <Flag />
+                <span {...stylex.props(styles.langName)}>{NAME[l]}</span>
+                {chosen ? <Check size={icon.inline} strokeWidth={icon.outline} /> : null}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
     </span>
   )
 }
@@ -375,9 +411,8 @@ const styles = stylex.create({
     color: color.slateDeep,
     textDecoration: 'none',
   },
-  itemLink: { transitionProperty: 'color', transitionDuration: timing.tile, color: { default: color.slateDeep, ':hover': color.navy }, ...focus },
+  itemLink: { transitionProperty: 'color', transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant }, color: { default: color.slateDeep, ':hover': color.navy }, ...focus },
   itemActive: { color: { default: color.go, ':hover': color.go } },
-  itemSoon: { opacity: opacity.iconDisabled, cursor: 'default' },
 
   landingHeader: {
     position: 'sticky',
@@ -450,23 +485,56 @@ const styles = stylex.create({
   bandTitle: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: space.x10, margin: 0, color: color.onColor },
 
   switch: { position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0 },
-  select: {
-    appearance: 'none',
-    margin: 0,
-    height: dims.control,
-    paddingLeft: { default: space.x16, [bp.phone]: space.x12 },
-    paddingRight: { default: space.x32, [bp.phone]: space.x24 },
-    borderWidth: 0,
-    borderRadius: radii.pill,
-    color: color.navy,
+  // The menu's button: a bordered white box with the flag and a small chevron.
+  langButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: space.x6,
+    height: { default: dims.control, [bp.phone]: space.x32 },
+    paddingInline: { default: space.x12, [bp.phone]: space.x8 },
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.hairline,
+    borderRadius: radii.panel,
     backgroundColor: color.surface,
-    boxShadow: elev.option,
+    color: color.navy,
     cursor: 'pointer',
     ...focus,
   },
-  // The open list is drawn by the browser; give its rows the page's surface and text.
-  option: { color: color.text, backgroundColor: color.surface },
-  chevron: { position: 'absolute', right: { default: space.x14, [bp.phone]: space.x10 }, color: color.navy, pointerEvents: 'none' },
+  // The open card of languages, under the button's right edge.
+  langMenu: {
+    position: 'absolute',
+    top: dims.langMenuTop,
+    right: 0,
+    zIndex: layer.window,
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: dims.langMenu,
+    padding: space.x6,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.hairline,
+    borderRadius: radii.panel,
+    backgroundColor: color.surface,
+    boxShadow: elev.panel,
+  },
+  langItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: space.x10,
+    width: '100%',
+    paddingBlock: space.x8,
+    paddingInline: space.x10,
+    borderWidth: 0,
+    borderRadius: radii.column,
+    backgroundColor: { default: 'transparent', ':hover': color.page },
+    color: color.navy,
+    textAlign: 'start',
+    cursor: 'pointer',
+    ...focus,
+  },
+  langItemChosen: { backgroundColor: color.page },
+  langName: { flexGrow: 1 },
 
   gear: {
     display: 'inline-flex',

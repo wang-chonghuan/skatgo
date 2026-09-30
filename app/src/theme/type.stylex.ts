@@ -4,10 +4,11 @@ import * as stylex from '@stylexjs/stylex'
 // `type.ts`, which is where family, size, weight and leading are combined.
 
 // SKATGO-26: one geometric sans for everything, as the lobby design has it. The reference's typeface
-// (nexa) is commercial; Outfit (Google Fonts, open licence) is the free substitute with the same round
-// proportions and the heavy weights the titles need. Bebas Neue (open licence) sets Reizen values and
-// "Passe". CJK falls back to the system's sans.
-const SANS = '"Outfit", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif'
+// (nexa) is commercial; Red Hat Display (Google Fonts, open licence) is the free face closest to it in
+// width, weight and letterforms, set side by side with Funbridge's own (SKATGO-29, replacing Outfit,
+// which read rounder and narrower). Bebas Neue (open licence) sets Reizen values and "Passe". CJK falls
+// back to the system's sans.
+const SANS = '"Red Hat Display", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif'
 
 export const family = stylex.defineVars({
   body: SANS,
@@ -16,7 +17,7 @@ export const family = stylex.defineVars({
   /** The heading stack, the same single family. */
   heading: SANS,
   /** Condensed numerals for Reizen values and "Passe". */
-  numeral: '"Bebas Neue", "Outfit", sans-serif',
+  numeral: '"Bebas Neue", "Red Hat Display", sans-serif',
 })
 
 /** Font sizes, named by their size in px. */

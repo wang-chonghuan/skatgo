@@ -1,6 +1,7 @@
 import { createIsomorphicFn } from '@tanstack/react-start'
 
 import { SITE_URL } from '~/lib/site'
+import { getLocale } from '~/paraglide/runtime'
 
 // Product analytics (SKATGO-25): PostHog Cloud EU, organisation SkatGo, project `skatgo` — wired the way
 // Risetive (trovestep, TROVESTEP-315/318) wires it.
@@ -29,4 +30,20 @@ export const readProjectKey = createIsomorphicFn()
 export function isPublishedSite(hostname: string): boolean {
   const host = new URL(SITE_URL).hostname
   return hostname === host || hostname.endsWith(`.${host}`)
+}
+
+/**
+ * A product event (SKATGO-29), with the page's language and path added to its properties. It goes to
+ * PostHog once PostHog has started — only on the published site (components/product-analytics.tsx) —
+ * and is also announced on the window as a `skatgo:track` event, which is how a local check observes
+ * it without PostHog.
+ */
+export function track(event: string, props: Record<string, string | number> = {}) {
+  if (typeof window === 'undefined') return
+  const detail = { event, props: { locale: getLocale(), page: window.location.pathname, ...props } }
+  window.dispatchEvent(new CustomEvent('skatgo:track', { detail }))
+  if (!isPublishedSite(window.location.hostname)) return
+  void import('posthog-js').then(({ default: posthog }) => {
+    if (posthog.__loaded) posthog.capture(event, detail.props)
+  })
 }

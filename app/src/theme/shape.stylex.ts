@@ -50,8 +50,9 @@ export const dims = stylex.defineVars({
   // Lobby
   tileArtRight: '-18px',
   tileArtBottom: '-38px',
-  heroArtHeight: '420px',
-  heroArtHeightPhone: '260px',
+  /** The hero's screenshot (app/public/hero-table.webp, 434×602): its box keeps these proportions at
+   *  every width, so the whole picture shows, never cropped (SKATGO-29). */
+  heroArtRatio: '434 / 602',
   tileHeight: '223px',
   tileIcon: '48px',
   lobbyColumn: '1280px',
@@ -66,6 +67,8 @@ export const dims = stylex.defineVars({
   arrowDisc: '48px',
   pageColumn: '1287px',
   readingColumn: '860px',
+  /** A table of values on the rules page (SKATGO-29): two columns, a name and a number. */
+  rulesTable: '480px',
 
   // The settings dialog (SKATGO-27)
   settingsWidth: 'min(420px, calc(100vw - 32px))',
@@ -108,16 +111,16 @@ export const dims = stylex.defineVars({
   hintTabHeight: '56px',
   hintTabBottom: '22%',
   panelPhone: 'min(360px, 88vw)',
-  panelTab: '36px',
-  panelTabHeight: '64px',
-  panelTabOffset: '-36px',
+  panelTab: '28px',
+  panelTabHeight: '48px',
+  panelTabOffset: '-28px',
   plateVertical: 'auto',
   /** The info board across the top of the felt, clear of the way back and the assistant. */
-  boardWidth: 'min(640px, calc(100% - 240px))',
-  boardWidthPhone: 'calc(100% - 16px)',
-  boardTopPhone: '64px',
-  boardColumns: 'repeat(4, auto)',
-  boardColumnsPhone: 'repeat(2, minmax(0, 1fr))',
+  boardWidth: 'min(400px, calc(100% - 240px))',
+  /** On a phone the board hangs from the top edge between the assistant's launcher and its mirror space. */
+  boardWidthPhone: 'calc(100% - 120px)',
+  /** Two rows of two at any width (SKATGO-29). */
+  boardColumns: 'repeat(2, minmax(0, 1fr))',
   /** Where an opponent's last word in Reizen shows: just inside their stack. */
   saidLeft: '124px',
   saidLeftPhone: '52px',
@@ -166,6 +169,10 @@ export const dims = stylex.defineVars({
   cardLgPhone: '72px',
   cardTable: '120px',
   cardTablePhone: '88px',
+  /** A card's slot in the learner's one-row hand at most (SKATGO-29): its card and a small gap, so a
+   *  wide screen never spreads the hand out; the hand stays centred. */
+  rowSlotMax: '128px',
+  rowSlotMaxPhone: '94px',
   cardAspect: '5 / 7',
   slotXs: '38px',
   slotSm: '58px',
@@ -186,12 +193,10 @@ export const dims = stylex.defineVars({
   backsTail: '72px',
 
   // The assistant (SKATGO-9/11), unchanged geometry.
-  launcher: '56px',
+  launcher: '44px',
   launcherLift: '48px',
   /** On a phone the launcher clears the 64px tab bar and the table's collapsed sheet. */
   launcherLiftPhone: '80px',
-  /** At the table the launcher and its window sit left of the 450-wide side panel. */
-  launcherRightTable: '474px',
   closeButton: '36px',
   windowWidth: 'min(480px, calc(100vw - 48px))',
   windowHeight: 'min(576px, calc(100dvh - 96px))',
@@ -206,17 +211,24 @@ export const dims = stylex.defineVars({
   // Generic
   screen: '100vh',
   screenDynamic: '100dvh',
+  /** The language menu's card (SKATGO-29): its narrowest, and where it opens, just under its button. */
+  langMenu: '180px',
+  langMenuTop: 'calc(100% + 6px)',
+  /** A visually hidden element (a heading only screen readers and crawlers get): one pixel, clipped away. */
+  visuallyHidden: '1px',
+  visuallyHiddenClip: 'inset(50%)',
   half: '50%',
   oneColumn: '1fr',
   twoColumns: '1fr 1fr',
   lobbyColumns: '1fr 1fr 2fr',
-  heroColumns: '1.1fr 1fr',
+  /** The front page's hero: the headline two thirds, the picture one third (the human, SKATGO-29). */
+  heroColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
   contractColumns: 'repeat(6, 1fr)',
   contractColumnsPhone: 'repeat(3, 1fr)',
   auctionColumns: 'repeat(3, 1fr)',
+  /** The narrowest a column of bids gets (SKATGO-29): one bid chip and the column's padding. */
+  auctionCell: '56px',
   tabColumns: 'repeat(5, 1fr)',
-  /** Free play: the felt, then the 450-wide side panel. */
-  tableColumns: 'minmax(0, 1fr) 450px',
   /** The felt's rows: the seats and the frame, then the learner's hand. */
   feltRows: 'minmax(0, 1fr) auto',
   square: '1 / 1',

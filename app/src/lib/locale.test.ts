@@ -6,19 +6,22 @@ const at = (path: string, acceptLanguage: string | null, cookie: string | null =
   chooseLocale({ url: `https://skatgo.com${path}`, cookie, acceptLanguage })
 
 describe('which language a page is served in', () => {
-  it('follows the browser, but only to German or English', () => {
+  it("follows the browser's first language: German gets German, any other gets English", () => {
     expect(at('/', 'de-DE,de;q=0.9')).toBe('de')
+    expect(at('/', 'de-AT')).toBe('de')
     expect(at('/', 'en-US,en;q=0.9')).toBe('en')
-    expect(at('/', 'zh-CN,de;q=0.8,en;q=0.5')).toBe('de')
+    expect(at('/', 'zh-CN,de;q=0.8,en;q=0.5')).toBe('en')
     expect(at('/', 'fr-FR,en;q=0.6,de;q=0.4')).toBe('en')
+    expect(at('/', 'fr-FR')).toBe('en')
+    expect(at('/', 'zh-CN,zh;q=0.9')).toBe('en')
     expect(at('/', 'en;q=0.3,de;q=0.7')).toBe('de')
   })
 
-  it('a Chinese or unknown browser gets English', () => {
-    expect(at('/', 'zh-CN,zh;q=0.9')).toBe('en')
-    expect(at('/', 'fr-FR')).toBe('en')
-    expect(at('/', null)).toBe('en')
-    expect(at('/', 'de;q=0')).toBe('en')
+  it('gets German when the browser names no language', () => {
+    expect(at('/', null)).toBe('de')
+    expect(at('/', '')).toBe('de')
+    expect(at('/', '*')).toBe('de')
+    expect(at('/', 'de;q=0')).toBe('de')
   })
 
   it('keeps an explicit choice: the URL first, then the saved choice', () => {

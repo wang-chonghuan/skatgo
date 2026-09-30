@@ -6,9 +6,9 @@ import { Theme } from '@astryxdesign/core/theme'
 import { ProductAnalytics } from '~/components/product-analytics'
 import { readProjectKey } from '~/lib/analytics'
 import { clerkAppearance } from '~/lib/clerk-appearance'
-import { LANG_TAG, SITE_URL, localizedUrl } from '~/lib/site'
+import { LANG_TAG } from '~/lib/site'
 import { m } from '~/paraglide/messages'
-import { getLocale, locales } from '~/paraglide/runtime'
+import { getLocale } from '~/paraglide/runtime'
 import { SkatLayout } from '~/skat-layout'
 import { APP_THEME_MODE, APP_THEME_NAME, appTheme } from '~/theme'
 import { themeColor } from '~/theme/constants'
@@ -25,59 +25,41 @@ import '~/styles/app.css'
 // <Link>, never an Astryx `href`).
 //
 // The head is in the page's language (SKATGO-1): Paraglide's middleware has settled the locale for
-// the request before this renders, so the server sends each of /en, /de, /zh with its own title,
-// description, canonical URL and the hreflang links that tie the three versions of a page together.
+// the request before this renders. What differs per page is each route's own (lib/head.ts).
 
 export const Route = createRootRoute({
   // The PostHog project key (SKATGO-25), read on the server and handed to the page with its data. It
   // never changes while a page is open, so client navigations do not ask again.
   loader: () => ({ posthogKey: readProjectKey() }),
   staleTime: Infinity,
-  head: ({ matches }) => {
-    // The router has already stripped the language prefix: this is the page's path in any language.
-    const path = matches[matches.length - 1]?.pathname ?? '/'
-    const locale = getLocale()
-    const title = m.meta_title()
-    const description = m.meta_description()
-    return {
-      meta: [
-        { charSet: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        // The header's felt; a meta tag cannot read a CSS variable, so the value is a constant.
-        { name: 'theme-color', content: themeColor },
-        { title },
-        { name: 'description', content: description },
-        { property: 'og:title', content: title },
-        { property: 'og:description', content: description },
-        { property: 'og:type', content: 'website' },
-        { property: 'og:url', content: localizedUrl(path, locale) },
-        { property: 'og:locale', content: m.og_locale() },
-        // The SkatGo logo for link previews (SKATGO-23), cut from app/brand/skatgo-logo.png.
-        { property: 'og:image', content: `${SITE_URL}/icon-512.png` },
-        { name: 'twitter:card', content: 'summary' },
-      ],
-      links: [
-        { rel: 'canonical', href: localizedUrl(path, locale) },
-        ...locales.map((l) => ({ rel: 'alternate', hrefLang: LANG_TAG[l], href: localizedUrl(path, l) })),
-        // No prefix: the server picks the visitor's language — exactly what x-default means.
-        { rel: 'alternate', hrefLang: 'x-default', href: `${SITE_URL}${path}` },
-        // The SkatGo logo everywhere a browser or phone shows the site (SKATGO-23): the tab (ICO with 16/32/48
-        // and a 32px PNG), the iOS home screen (square — iOS rounds it) and installed icons (the manifest).
-        { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
-        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' },
-        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
-        { rel: 'manifest', href: '/site.webmanifest' },
-        // The typefaces the theme names (SKATGO-26: Outfit and Bebas Neue, both open-licensed). They are
-        // not bundled; without this link every page falls back to system fonts.
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: '' },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600;700&display=swap',
-        },
-      ],
-    }
-  },
+  // Only what every page shares. Each route writes its own title, description, canonical URL, hreflang
+  // links, Open Graph and Twitter tags and structured data (lib/head.ts, SKATGO-29); a route's title and
+  // meta override these fallbacks, which only a page without its own head (not found) keeps.
+  head: () => ({
+    meta: [
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      // The header's felt; a meta tag cannot read a CSS variable, so the value is a constant.
+      { name: 'theme-color', content: themeColor },
+      { title: m.site_name() },
+    ],
+    links: [
+      // The SkatGo logo everywhere a browser or phone shows the site (SKATGO-23): the tab (ICO with 16/32/48
+      // and a 32px PNG), the iOS home screen (square — iOS rounds it) and installed icons (the manifest).
+      { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
+      { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' },
+      { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+      { rel: 'manifest', href: '/site.webmanifest' },
+      // The typefaces the theme names (SKATGO-26/29: Red Hat Display and Bebas Neue, both open-licensed). They are
+      // not bundled; without this link every page falls back to system fonts.
+      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+      { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: '' },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600;700&display=swap',
+      },
+    ],
+  }),
   component: RootComponent,
 })
 

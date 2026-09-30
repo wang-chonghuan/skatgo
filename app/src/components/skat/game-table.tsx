@@ -184,6 +184,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
     return e.say === 'pass' ? m.bid_pass() : e.say === 'hold' ? m.bid_hold_said({ value: e.value }) : m.bid_said({ value: e.value })
   }
 
+  // The side panel is a drawer over the felt at any width (SKATGO-29): closed until the learner opens it.
   const [panelOpen, setPanelOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
@@ -320,7 +321,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
       <aside data-testid="skat-panel" data-open={String(panelOpen)} {...stylex.props(styles.panel, fullScreen && styles.panelFull, fullScreen && panelOpen && styles.panelOpen)}>
         {fullScreen ? (
           <button type="button" aria-label={m.table_panel_toggle()} aria-expanded={panelOpen} data-testid="skat-panel-toggle" onClick={() => setPanelOpen((o) => !o)} {...stylex.props(styles.panelTab)}>
-            {panelOpen ? <ChevronRight size={icon.table} strokeWidth={icon.outline} /> : <ChevronLeft size={icon.table} strokeWidth={icon.outline} />}
+            {panelOpen ? <ChevronRight size={icon.inline} strokeWidth={icon.outline} /> : <ChevronLeft size={icon.inline} strokeWidth={icon.outline} />}
           </button>
         ) : null}
 
@@ -348,6 +349,8 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
               {([1, ME, 2] as Seat[]).map((seat) => (
                 <div key={seat} {...stylex.props(styles.auctionCol)}>
                   <span {...stylex.props(typography.auctionHead, styles.auctionHead)}>{nameOf(seat)}</span>
+                  {/* Where the seat sits this deal, so the order of the bids reads (SKATGO-29). */}
+                  <span data-testid="skat-history-role" {...stylex.props(typography.infoSub, styles.auctionRole)}>{roleName(roleOf(seat, game.dealer))}</span>
                   <div {...stylex.props(styles.auctionCells)}>
                     {game.bidding.log
                       .filter((e) => e.seat === seat)
@@ -363,7 +366,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
           </section>
 
           <div data-testid="skat-strip" {...stylex.props(styles.strip)}>
-            {contract ? <Pill tone="amber">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : <Pill tone="dark">{game.declarer === null ? m.table_bidding() : m.table_awaiting_contract()}</Pill>}
+            {contract ? <Pill tone="amber">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : null}
             {game.declarer !== null ? <Pill tone="quiet">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
             {game.phase === 'play' || game.phase === 'trickEnd' ? (
               <Pill tone="quiet">{m.table_trick_count({ n: Math.min(10, game.tricks.length + 1), declarer: points.declarer, defenders: points.defenders })}</Pill>
@@ -569,7 +572,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.bid_forehand_alone()}</Say>
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.bid_hint_button()}</Btn>
+          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
         </Row>
       )
     }
@@ -580,7 +583,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.bid_your_turn({ name: nameOf(b.listener) })}</Say>
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_button({ value: value ?? '' })}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.bid_hint_button()}</Btn>
+          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
         </Row>
       )
     }
@@ -589,7 +592,7 @@ function Actions(p: ActionsProps) {
         <Say>{m.bid_asked({ name: nameOf(b.speaker), value: b.value })}</Say>
         <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-        <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.bid_hint_button()}</Btn>
+        <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
       </Row>
     )
   }
@@ -601,7 +604,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.skat_won_bid({ bid: game.bid })}</Say>
           <Btn testId="skat-pickup" shape="block" size="lg" onClick={p.onPickUp}>{m.skat_pick_up()}</Btn>
           <Btn testId="skat-hand-game" tone="quiet" shape="block" size="lg" onClick={p.onHand}>{m.skat_play_hand()}</Btn>
-          <Btn testId="skat-skat-hint" tone="info" shape="block" size="lg" onClick={p.onSkatHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.skat_hint_button()}</Btn>
+          <Btn testId="skat-skat-hint" tone="info" shape="block" size="lg" onClick={p.onSkatHint}>{m.skat_hint_button()}</Btn>
         </Row>
       )
     }
@@ -609,7 +612,7 @@ function Actions(p: ActionsProps) {
       <Row>
         <Say>{m.skat_discard_prompt()}</Say>
         <Btn testId="skat-discard" shape="block" size="lg" disabled={p.picked.length !== 2} onClick={p.onDiscard}>{m.skat_discard_button({ n: p.picked.length })}</Btn>
-        <Btn tone="info" shape="block" size="lg" onClick={p.onDiscardHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.skat_discard_hint_button()}</Btn>
+        <Btn tone="info" shape="block" size="lg" onClick={p.onDiscardHint}>{m.skat_discard_hint_button()}</Btn>
       </Row>
     )
   }
@@ -701,7 +704,7 @@ function DeclarePicker({
       ) : null}
       <Row>
         <Btn testId="skat-declare" shape="block" size="lg" grow disabled={!draft} onClick={() => draft && onDeclare(draft)}>{m.declare_go()}</Btn>
-        <Btn testId="skat-declare-hint" tone="info" shape="block" size="lg" onClick={onHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.declare_hint_button()}</Btn>
+        <Btn testId="skat-declare-hint" tone="info" shape="block" size="lg" onClick={onHint}>{m.declare_hint_button()}</Btn>
       </Row>
     </div>
   )
@@ -801,8 +804,8 @@ const tintOf = (c: Contract): Tint => (c.kind === 'suit' ? c.trump : c.kind)
 
 const styles = stylex.create({
   table: { position: 'relative', display: 'grid', backgroundColor: color.page, overflow: 'hidden' },
-  // Free play: the felt fills the screen beside the 450-wide panel; on a phone the panel is a drawer.
-  tableFull: { gridTemplateColumns: { default: dims.tableColumns, [bp.phone]: dims.oneColumn }, minHeight: dims.screenDynamic },
+  // Free play: the felt fills the screen; the panel is a drawer over it (SKATGO-29).
+  tableFull: { gridTemplateColumns: dims.oneColumn, minHeight: dims.screenDynamic },
   // Inside a lesson: the panel stacks under the felt.
   tableEmbedded: { gridTemplateColumns: dims.oneColumn, borderRadius: radii.panel },
 
@@ -889,18 +892,20 @@ const styles = stylex.create({
   saidLeft: { left: space.x12 },
   saidRight: { right: space.x12 },
 
+  // The info board hangs from the felt's top edge (SKATGO-29): square on top, rounded below.
   board: {
     position: 'absolute',
-    top: { default: space.x16, [bp.phone]: dims.boardTopPhone },
+    top: 0,
     left: dims.half,
     transform: pose.centreX,
     zIndex: layer.launcher,
     display: 'grid',
-    gridTemplateColumns: { default: dims.boardColumns, [bp.phone]: dims.boardColumnsPhone },
+    gridTemplateColumns: dims.boardColumns,
     justifyContent: 'center',
     width: { default: dims.boardWidth, [bp.phone]: dims.boardWidthPhone },
     boxSizing: 'border-box',
-    borderRadius: radii.panel,
+    borderBottomLeftRadius: radii.panel,
+    borderBottomRightRadius: radii.panel,
     backgroundColor: color.board,
     color: color.onColor,
   },
@@ -912,9 +917,13 @@ const styles = stylex.create({
     minWidth: 0,
     paddingBlock: { default: space.x10, [bp.phone]: space.x8 },
     paddingInline: { default: space.x16, [bp.phone]: space.x8 },
-    borderLeftWidth: { default: border.hair, ':first-child': 0 },
+    // Two rows of two: a rule between the columns and one between the rows.
+    borderLeftWidth: { default: border.hair, ':nth-child(odd)': 0 },
     borderLeftStyle: 'solid',
     borderLeftColor: color.boardLine,
+    borderTopWidth: { default: 0, ':nth-child(n+3)': border.hair },
+    borderTopStyle: 'solid',
+    borderTopColor: color.boardLine,
     textAlign: 'center',
   },
   boardLabel: { color: color.amber, whiteSpace: 'nowrap' },
@@ -1015,26 +1024,30 @@ const styles = stylex.create({
   mine: { position: 'absolute', left: 0, right: 0, bottom: space.x12, display: 'flex', justifyContent: 'center', paddingInline: { default: space.x16, [bp.phone]: space.x6 }, boxSizing: 'border-box' },
 
   panel: { position: 'relative', display: 'flex', flexDirection: 'column', backgroundColor: color.page, color: color.text },
+  // A drawer at any width: over the felt's right side on a wide screen, over the whole screen on a phone.
   panelFull: {
-    position: { default: 'relative', [bp.phone]: 'fixed' },
-    top: { default: 'auto', [bp.phone]: 0 },
-    right: { default: 'auto', [bp.phone]: 0 },
-    zIndex: { default: 'auto', [bp.phone]: layer.window },
+    position: { default: 'absolute', [bp.phone]: 'fixed' },
+    top: 0,
+    right: 0,
+    bottom: { default: 0, [bp.phone]: 'auto' },
+    zIndex: layer.window,
     width: { default: dims.sidePanel, [bp.phone]: dims.panelPhone },
     height: { default: 'auto', [bp.phone]: dims.screenDynamic },
-    transform: { default: 'none', [bp.phone]: pose.offRight },
+    transform: pose.offRight,
     transitionProperty: 'transform',
-    transitionDuration: timing.tile,
+    transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
     borderTopLeftRadius: radii.panel,
     borderBottomLeftRadius: radii.panel,
     boxShadow: elev.panel,
   },
-  panelOpen: { transform: { default: 'none', [bp.phone]: pose.onScreen } },
-  // The white tab that pulls the drawer out on a phone.
+  panelOpen: { transform: pose.onScreen },
+  // The white tab that folds the panel away and brings it back, at any width.
+  // The drawer's handle mirrors the hint tab's place (SKATGO-29): the same height from the bottom, on the
+  // right edge — a slim tab, so it never competes with the table.
   panelTab: {
-    display: { default: 'none', [bp.phone]: 'flex' },
+    display: 'flex',
     position: 'absolute',
-    top: dims.half,
+    bottom: dims.hintTabBottom,
     left: dims.panelTabOffset,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1048,7 +1061,6 @@ const styles = stylex.create({
     color: color.navy,
     boxShadow: elev.panel,
     cursor: 'pointer',
-    transform: pose.centreY,
   },
   panelBody: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, padding: space.x16, overflowY: 'auto' },
   tabs: { display: 'flex', justifyContent: 'space-around', paddingBottom: space.x16, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
@@ -1062,12 +1074,14 @@ const styles = stylex.create({
   auction: { display: 'grid', gridTemplateColumns: dims.auctionColumns, gap: space.x8 },
   auctionCol: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6 },
   auctionHead: { color: color.auctionHead, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' },
+  auctionRole: { color: color.slate, textTransform: 'capitalize', whiteSpace: 'nowrap' },
+  // A column of bids is as wide as its bids (SKATGO-29), never narrower than one.
   auctionCells: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: space.x4,
-    width: '100%',
+    minWidth: dims.auctionCell,
     minHeight: dims.auctionHeight,
     padding: space.x6,
     boxSizing: 'border-box',

@@ -51,29 +51,19 @@ export const parrottoonTheme = defineTheme({
   typography: {
     // base 16 / ratio 1.25 — aligned with the other themes' geometric scale.
     scale: {base: 16, ratio: 1.25},
+    // SKATGO-29: the product's one family (type.stylex.ts), so an h1..p that no role restyles is still in
+    // the face the page loads.
     body: {
-      family: 'DM Sans',
+      family: 'Red Hat Display',
       fallbacks:
         '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     },
-    // Matcha ships Playwrite US Trad, a joined handwriting face. It was replaced
-    // because a heading is the one place legibility cannot be traded for flavour:
-    // at hero size a script face is decorative, and at 17px section size it stops
-    // being readable at all.
-    //
-    // Fraunces keeps the character — it is an old-style serif with genuine
-    // personality, and it is what Astryx's own `chocolate` theme uses for
-    // headings, so this stays inside the system's taste rather than importing
-    // an outside one.
-    //
-    // The fallbacks matter more than usual here: Fraunces has no CJK glyphs, and
-    // most of this product's headings are Chinese, so every Chinese heading is
-    // rendered by this list. It leads with the platform sans faces a Chinese
-    // reader expects for display text, not with a Latin serif.
+    // Headings were Fraunces, which the site never loaded, so every h1..h6 no role restyled fell back to
+    // a system face (SKATGO-29). They are the product's one family now, like the body.
     heading: {
-      family: 'Fraunces',
+      family: 'Red Hat Display',
       fallbacks:
-        '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", Georgia, serif',
+        '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif',
     },
     code: {
       family: 'JetBrains Mono',

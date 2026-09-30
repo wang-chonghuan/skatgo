@@ -19,5 +19,7 @@ export const timing = stylex.defineVars({
   tile: '140ms',
   card: '160ms',
   progress: '400ms',
+  /** Every transition under `bp.reducedMotion` (SKATGO-29). */
+  instant: '0s',
   easeOut: 'ease-out',
 })

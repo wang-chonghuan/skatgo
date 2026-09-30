@@ -1,52 +1,37 @@
-import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
-import { GameTable } from './game-table'
-import { useProgress } from '~/lib/skat/progress'
+import { ClientPart, FreeTable } from './client-part'
 import { m } from '~/paraglide/messages'
-import { bp } from '../../theme/breakpoints.stylex'
-import { color } from '../../theme/color.stylex'
-import { border, layer, space } from '../../theme/scale.stylex'
-import { typography } from '../../theme/type'
+import { fill } from '../../theme/elevation.stylex'
+import { dims } from '../../theme/shape.stylex'
 
-/** A table with no lesson around it: for practice after the course, or for people who already play.
- *  In the lobby design (SKATGO-26) the table fills the screen; the page's title and its way back sit
- *  in the felt's top-left corner. */
+/**
+ * Free play: a table with no lesson around it, for practice after the course or for people who already
+ * play. The table is the whole screen and the page does not scroll (SKATGO-26, SKATGO-29); its title is a
+ * heading for screen readers and search engines only. The table renders in the browser; until it
+ * arrives, bare felt holds its place.
+ */
 export function FreePlay() {
-  const recordGame = useProgress((s) => s.recordGame)
   return (
     <div {...stylex.props(styles.root)}>
-      <div {...stylex.props(styles.head)}>
-        <Link to="/" data-testid="skat-back-start" {...stylex.props(typography.bandBack, styles.back)}>
-          {m.back_to_start()}
-        </Link>
-        <h1 {...stylex.props(typography.panelLabel, styles.h1)}>{m.free_title()}</h1>
-      </div>
-      <GameTable fullScreen onSettled={({ humanWon, humanScore }) => recordGame(humanWon, humanScore)} />
+      <h1 {...stylex.props(styles.hidden)}>{m.play_title()}</h1>
+      <ClientPart fallback={<div aria-hidden="true" {...stylex.props(styles.feltHold)} />}>
+        <FreeTable />
+      </ClientPart>
     </div>
   )
 }
 
 const styles = stylex.create({
-  root: { position: 'relative', flexGrow: 1, display: 'flex', flexDirection: 'column' },
-  head: {
+  root: { display: 'flex', flexDirection: 'column', flexGrow: 1 },
+  feltHold: { minHeight: dims.screenDynamic, backgroundImage: fill.felt },
+  hidden: {
     position: 'absolute',
-    top: space.x16,
-    left: { default: space.x16, [bp.phone]: space.x8 },
-    zIndex: layer.launcher,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x4,
-  },
-  h1: { margin: 0, color: color.onColor },
-  back: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: space.x4,
-    color: color.onColor,
-    textDecoration: 'none',
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.gold,
+    width: dims.visuallyHidden,
+    height: dims.visuallyHidden,
+    margin: 0,
+    overflow: 'hidden',
+    clipPath: dims.visuallyHiddenClip,
+    whiteSpace: 'nowrap',
   },
 })

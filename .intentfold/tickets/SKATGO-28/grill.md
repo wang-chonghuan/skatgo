@@ -69,6 +69,24 @@ the deal (Kartenglück), and Duplicate removes it. Then the daily rhythm and the
   - de: "Die Blätter des Tages. Die Wertung aller." / "Jeden Tag neue Blätter, für alle dieselben –
     spiel sie und sieh deinen Platz."
 
+**Third answer (2026-09-30):** 「主要句子不要突出复式，主句还是现代竖屏Skat，学习和比赛」
+The headline is not about Duplicate. It says modern Skat made for a phone held upright, to learn and to
+compete. Duplicate may appear as the competition in the lead; there are still no numbers.
+
+**Proposal (awaiting confirmation):**
+- **A (recommended):**
+  - en: headline "Modern Skat, made for your phone. Learn it, then compete."; lead "Learn step by step
+    against the computer – and soon play the same deals as everyone else and compare."
+  - de: headline "Modernes Skat, gemacht fürs Handy. Lernen, dann messen."; lead "Lern Schritt für
+    Schritt gegen den Computer – und spiel bald dieselben Blätter wie alle anderen und vergleich dich."
+- **B:**
+  - en: "Skat for your phone: learn it, play it, compete." / "A short course, a table that's always
+    open, and soon the same deals for everyone."
+  - de: "Skat fürs Handy: lernen, spielen, messen." / "Ein kurzer Kurs, ein Tisch, der immer offen ist,
+    und bald dieselben Blätter für alle."
+
+"Soon" keeps the lead honest while Duplicate is not live; it goes when Duplicate launches.
+
 **Follow-up questions (Duplicate is not live yet; its tile says "coming soon"; the hero's action opens
 free play):**
 - **Q2a:** mark it "coming soon" in the hero until it launches? Recommended: change only the text of

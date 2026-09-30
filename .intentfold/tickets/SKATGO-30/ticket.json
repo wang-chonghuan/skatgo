@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-30",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-30",
+  "branch": "SKATGO-30-suit-icon",
+  "base": "f907564c0f5b9ace8b4c7f10de81695eb79128aa",
+  "ports": { "web": 55030, "multiplayer": 56030, "database": 57030 }
+}

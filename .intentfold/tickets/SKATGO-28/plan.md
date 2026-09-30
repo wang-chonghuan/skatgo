@@ -32,11 +32,18 @@
    - `lessons.test.ts` uses the English course as the reference.
    - `locale.test.ts` and `ask.test.ts` drop their Chinese cases. A stored `zh` resolves by the browser
      rule, and that is tested.
-6. **Front page** (Q2, Q3):
-   - the facts strip's languages item reads "fully in English and German" (same strip, same style);
-   - the hero lead is shortened, in both languages.
+6. **Front page**: the facts strip's languages item drops Chinese ("English · German"); nothing
+   else on the page changes (scope narrowed, see below).
 7. **Comments** that name Chinese as the reference, or `/zh`, are updated in the files this ticket
    touches.
+
+## Scope narrowed (2026-09-30)
+
+The human: 「你这个工单先改为就把中文的去掉，其他不变，开始开发，然后直接关闭。」 The ticket in
+Plane was rewritten to that scope: remove Chinese only. The hero copy, the "fully supported" line and
+the slogan discussion (grill Q2, Q3) are dropped and left for a later ticket. The existing language rule
+(URL → saved choice → German browser → English) stays; only Chinese leaves it. Q1 (301 from `/zh`) and
+Q4 (a saved `zh` counts as none) are part of removing Chinese and stay as recommended.
 
 ## Redline lookup
 

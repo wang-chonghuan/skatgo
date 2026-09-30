@@ -13,7 +13,7 @@ export type AskPage = { kind: 'entry' } | { kind: 'home' } | { kind: 'lesson'; l
 /** The most a browser may say about its table; the text is the learner's view (table-view.ts), never more. */
 export const TABLE_CHARS = 4000
 
-const LANGUAGE: Record<Locale, string> = { zh: 'Simplified Chinese (简体中文)', en: 'English', de: 'German (Deutsch)' }
+const LANGUAGE: Record<Locale, string> = { en: 'English', de: 'German (Deutsch)' }
 
 /**
  * The rules as the course teaches them (International Skat Order, ISkO), compact. In English on
@@ -34,7 +34,7 @@ SKAT RULES (International Skat Order, as this course teaches them)
 - Null values are fixed: Null 23, Null Hand 35, Null Ouvert 46, Null Ouvert Hand 59.
 - Overbid: if the final game value is lower than the declarer's bid, the game is lost; the loss is counted at the smallest multiple of the base value that reaches the bid.
 - Scoring: a won game adds its value to the declarer; a lost game subtracts twice its value. Defenders score nothing in this course (no Seeger–Fabian bonuses, no Kontra, no Bock).
-- Only these table words stay German in every language, as the course keeps them: Grand, Null, Hand, Ouvert, Schneider, Schwarz, Matador, Skat. Everything else — declarer, defenders, bidding, following suit, trick — is said in the answer language, with the words the page itself uses (e.g. Chinese 庄家 / 防守方 / 叫牌).
+- Only these table words stay German in every language, as the course keeps them: Grand, Null, Hand, Ouvert, Schneider, Schwarz, Matador, Skat. Everything else — declarer, defenders, bidding, following suit, trick — is said in the answer language, with the words the page itself uses (e.g. German Alleinspieler / Gegenspieler / Reizen).
 `.trim()
 
 const TASK = `

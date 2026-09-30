@@ -1,13 +1,11 @@
-import { type Locale, cookieName, extractLocaleFromUrl } from '~/paraglide/runtime'
+import { type Locale, cookieName, extractLocaleFromUrl, locales } from '~/paraglide/runtime'
 
-// Which language a page is served in (SKATGO-23, the human: 「严格根据用户的浏览器选择德语和英语，识别不
-// 出来就默认英语，中文只有用户明确选择才切换到」):
-//   1. a language in the URL (/en, /de, /zh) — the address the visitor opened, which is explicit;
+// Which language a page is served in (SKATGO-23; the site is English and German only since SKATGO-28):
+//   1. a language in the URL (/en, /de) — the address the visitor opened, which is explicit;
 //   2. the visitor's saved choice — the cookie is written only when they pick a language in the header;
+//      a choice of a language the site no longer has (Chinese, saved before SKATGO-28) counts as none;
 //   3. the browser's languages, in its order of preference, looking only for German or English;
 //   4. English.
-// Chinese is never inferred from the browser: a Chinese-speaking browser gets English (or German, if it
-// also asks for German) until the visitor chooses Chinese.
 export function chooseLocale(input: { url: string; cookie: string | null; acceptLanguage: string | null }): Locale {
   const fromUrl = extractLocaleFromUrl(input.url)
   if (fromUrl) return fromUrl
@@ -16,7 +14,7 @@ export function chooseLocale(input: { url: string; cookie: string | null; accept
   return browserLocale(input.acceptLanguage) ?? 'en'
 }
 
-const CHOSEN: readonly string[] = ['en', 'de', 'zh']
+const CHOSEN: readonly string[] = locales
 
 function savedLocale(cookie: string | null): Locale | undefined {
   const value = cookie

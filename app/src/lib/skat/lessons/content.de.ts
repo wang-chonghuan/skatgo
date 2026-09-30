@@ -1,5 +1,5 @@
-// Der Kurs auf Deutsch — dieselben elf Lektionen, Karten und Antworten wie content.zh.ts
-// (lessons.test.ts hält die drei Sprachen daran fest). Begriffe nach der Internationalen Skatordnung
+// Der Kurs auf Deutsch — dieselben elf Lektionen, Karten und Antworten wie content.en.ts
+// (lessons.test.ts hält beide Sprachen daran fest). Begriffe nach der Internationalen Skatordnung
 // (DSkV): Alleinspieler, Gegenspieler, Vorhand / Mittelhand / Hinterhand, Stich, Augen, reizen,
 // drücken, Spitzen „mit / ohne“. Karten werden mit den deutschen Buchstaben zitiert (♣B = Kreuz-Bube,
 // ♠D = Pik-Dame); die abgebildeten Karten tragen englische Indizes (J, Q), was Lektion 1 einmal

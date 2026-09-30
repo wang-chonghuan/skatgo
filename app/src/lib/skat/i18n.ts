@@ -23,7 +23,7 @@ export function rankLetter(r: Rank): string {
 /** "♣J" (zh, en) or "♣B" (de): the compact label every explanation cites a card by. */
 export const cardLabel = (c: Card) => `${SUIT_SYMBOL[c.suit]}${rankLetter(c.rank)}`
 
-/** What a screen reader says for a card: "Clubs Jack", "Kreuz Bube", "梅花 J". */
+/** What a screen reader says for a card: "Clubs Jack", "Kreuz Bube". */
 export function spokenCard(c: Card): string {
   const names: Partial<Record<Rank, () => string>> = { A: m.rank_name_ace, K: m.rank_name_king, Q: m.rank_name_queen, J: m.rank_name_jack }
   return m.card_spoken({ suit: suitName(c.suit), rank: names[c.rank]?.() ?? c.rank })

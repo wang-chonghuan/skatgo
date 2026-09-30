@@ -26,11 +26,11 @@ Open `/` fresh with each `Accept-Language` and check where it lands:
 Then choose Deutsch in the menu, clear the address and reopen `/`: it lands on `/de`. A cookie set to
 `zh` with a German browser lands on `/de`.
 
-## AC3 — the front page
+## AC3 — the front page is otherwise unchanged
 
-- The facts strip's languages item states that English and German are fully supported, in the
-  strip's own style: the element and its styles are unchanged from `main`, only the text differs.
-- The hero lead is at most half its previous length in both languages.
+- The facts strip's languages item reads "English · German" / "Deutsch · Englisch"; its element and
+  styles are unchanged from `main`.
+- The hero (eyebrow, headline, lead, buttons) has the same text as on `main` in both languages.
 
 ## Also run
 

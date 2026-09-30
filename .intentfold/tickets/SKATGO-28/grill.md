@@ -123,3 +123,13 @@ its check derives the languages itself and needs no change.
 so many words to edit those lines.
 
 **Decision:** pending
+
+## Scope narrowed — 2026-09-30
+
+The human: 「你这个工单先改为就把中文的去掉，其他不变，开始开发，然后直接关闭。」
+
+- Q2 (slogan, hero lead) and Q3 (facts strip wording) are withdrawn: the hero stays as on `main`, and
+  the languages item only loses "Chinese".
+- Q1 (301 `/zh` → `/en`) and Q4 (a saved `zh` counts as none) are how Chinese is removed; taken as
+  recommended under the instruction to proceed.
+- Q5 stands: `charter/product.md` still says three languages; the human updates it.

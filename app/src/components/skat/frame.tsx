@@ -183,7 +183,7 @@ export function Account({ shape = 'pill' }: { shape?: 'pill' | 'landing' }) {
 }
 
 /** How each language names itself, in its own script. */
-const NAME: Record<Locale, string> = { zh: '中文', en: 'English', de: 'Deutsch' }
+const NAME: Record<Locale, string> = { en: 'English', de: 'Deutsch' }
 
 /**
  * The language, folded into one menu (SKATGO-23), drawn as the design's white pill. A native <select>:

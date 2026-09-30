@@ -76,6 +76,8 @@ export const typography = stylex.create({
   landingHero: { fontFamily: family.body, fontSize: { default: fontSize.f72, [bp.phone]: fontSize.f36 }, fontWeight: weight.black, lineHeight: leading.tight },
   landingHeroLead: { fontFamily: family.body, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.bold, lineHeight: leading.tight },
   landingLead: { fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.bold, lineHeight: leading.tight },
+  /** The site's name beside the mark in the front page header (SKATGO-31). */
+  landingBrand: { fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.bold, lineHeight: leading.tight },
   landingHeading: { fontSize: { default: fontSize.f36, [bp.phone]: fontSize.f24 }, fontWeight: weight.extrabold, lineHeight: leading.tight },
   landingBody: { fontSize: { default: fontSize.f20, [bp.phone]: fontSize.f16 }, fontWeight: weight.medium, lineHeight: leading.ui },
   landingNav: { fontSize: fontSize.f16, fontWeight: weight.medium, lineHeight: leading.ui },

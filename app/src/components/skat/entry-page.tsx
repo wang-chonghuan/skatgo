@@ -12,7 +12,7 @@ import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { timing } from '../../theme/effects.stylex'
-import { elev, fill, pose, veil } from '../../theme/elevation.stylex'
+import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
@@ -103,20 +103,14 @@ const heroClick = (button: 'primary' | 'secondary') => track('hero_cta_click', {
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
 const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
 const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
-const HERO_HAND = [card('C', 'J'), card('S', 'J'), card('H', 'J'), card('D', 'J'), card('C', 'A')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
-/** The hero's picture: a hand of skatgo's own cards fanned on the table's felt. */
+/** The hero's picture: a game at skatgo's own table (a screenshot of free play, SKATGO-29), cropped to
+ *  its middle — the trick, the seats and the learner's hand. */
 function HeroArt() {
   return (
-    <div aria-hidden="true" data-testid="entry-art" {...stylex.props(styles.heroArt)}>
-      <div {...stylex.props(styles.heroFan)}>
-        {HERO_HAND.map((c, i) => (
-          <span key={i} {...stylex.props(styles.heroCard, fanPose[FAN[i]])}>
-            <PlayingCard card={c} size="lg" />
-          </span>
-        ))}
-      </div>
+    <div data-testid="entry-art" {...stylex.props(styles.heroArt)}>
+      <img src="/hero-table.webp" alt={m.entry_art_alt()} {...stylex.props(styles.heroImage)} />
     </div>
   )
 }
@@ -180,18 +174,13 @@ const styles = stylex.create({
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
   lead: { margin: 0, color: color.slate },
   heroArt: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
     height: { default: dims.heroArtHeight, [bp.phone]: dims.heroArtHeightPhone },
     borderRadius: radii.tile,
-    backgroundImage: fill.felt,
     boxShadow: elev.eventCard,
     overflow: 'hidden',
   },
-  heroFan: { display: 'flex', alignItems: 'flex-end' },
-  heroCard: { display: 'block', marginInline: dims.fanRowOverlap, transformOrigin: 'bottom center' },
+  // The screenshot fills the box; what does not fit is the table's felt on either side.
+  heroImage: { display: 'block', width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' },
   // The strip of facts under the hero, in the public site's navy.
   points: {
     gridColumn: dims.fullRow,

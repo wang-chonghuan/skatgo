@@ -349,5 +349,6 @@
   "daily_title": "Today's Skat challenge: {deals} deals, one leaderboard",
   "daily_lead": "{date}. Same cards and same computer opponents for every player. Next deals in {countdown}.",
   "daily_cta": "Play today's deals",
-  "daily_countdown": "{h} h {m} min"
+  "daily_countdown": "{h} h {m} min",
+  "entry_art_alt": "A game of Skat on SkatGo: the trick in the middle, your hand below"
 }

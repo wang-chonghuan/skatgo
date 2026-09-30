@@ -349,5 +349,6 @@
   "daily_title": "Das tägliche Skat-Turnier: {deals} Spiele, eine Rangliste",
   "daily_lead": "{date}. Gleiche Karten und dieselben Computergegner für alle. Neue Karten in {countdown}.",
   "daily_cta": "Heute spielen",
-  "daily_countdown": "{h} Std. {m} Min."
+  "daily_countdown": "{h} Std. {m} Min.",
+  "entry_art_alt": "Eine Skatrunde auf SkatGo: der Stich in der Mitte, dein Blatt unten"
 }

@@ -1,7 +1,7 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { BookOpen, CalendarDays, Check, ChevronLeft, GraduationCap, House, Menu, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, CalendarDays, Check, GraduationCap, House, Menu, Settings, Spade, X } from 'lucide-react'
 import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
 
 import { type CardColours, useSettings } from '~/lib/skat/settings'
@@ -134,14 +134,13 @@ export function LandingHeader() {
 }
 
 /** A sub-page's band, in its section's colour: back and home on the left, language and account on the
- *  right, the page's icon and title centred at the bottom. */
-export function Band({ title, Icon, back, testId }: { title: string; Icon: ComponentType<{ size?: number; strokeWidth?: number }>; back: '/' | '/course'; testId?: string }) {
+ *  right, the page's title centred at the bottom. */
+export function Band({ title, back, testId }: { title: string; back: '/' | '/course'; testId?: string }) {
   return (
     <header data-testid={testId ?? 'band'} {...stylex.props(styles.band)}>
       <div {...stylex.props(styles.bandTop)}>
         <div {...stylex.props(styles.bandNav)}>
           <Link to={back} data-testid="band-back" {...stylex.props(typography.bandBack, styles.bandLink)}>
-            <ChevronLeft size={icon.bandNav} strokeWidth={icon.outline} />
             {m.nav_back()}
           </Link>
           <Link to="/" aria-label={m.nav_home_link()} {...stylex.props(styles.bandLink)}>
@@ -154,10 +153,7 @@ export function Band({ title, Icon, back, testId }: { title: string; Icon: Compo
           <Account />
         </div>
       </div>
-      <h1 {...stylex.props(typography.bandTitle, styles.bandTitle)}>
-        <Icon size={icon.band} strokeWidth={icon.outline} />
-        {title}
-      </h1>
+      <h1 {...stylex.props(typography.bandTitle, styles.bandTitle)}>{title}</h1>
     </header>
   )
 }

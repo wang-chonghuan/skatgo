@@ -70,6 +70,8 @@ export const typography = stylex.create({
 
   // The public site
   landingTitle: { fontSize: { default: fontSize.f72, [bp.phone]: fontSize.f36 }, fontWeight: weight.black, lineHeight: leading.tight },
+  /** The front page's H1 (SKATGO-29): a headline sentence, sized to read as one, not a poster. */
+  landingHero: { fontSize: { default: fontSize.f40, [bp.phone]: fontSize.f28 }, fontWeight: weight.black, lineHeight: leading.tight },
   landingLead: { fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.bold, lineHeight: leading.tight },
   landingHeading: { fontSize: { default: fontSize.f36, [bp.phone]: fontSize.f24 }, fontWeight: weight.extrabold, lineHeight: leading.tight },
   landingBody: { fontSize: { default: fontSize.f20, [bp.phone]: fontSize.f16 }, fontWeight: weight.medium, lineHeight: leading.ui },

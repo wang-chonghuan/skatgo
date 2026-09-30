@@ -1,13 +1,11 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChevronLeft } from 'lucide-react'
 
 import { ClientPart, FreeTable } from './client-part'
 import { linkLook } from './ui'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { icon } from '../../theme/constants'
 import { fill } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
@@ -24,7 +22,6 @@ export function FreePlay() {
     <div {...stylex.props(styles.root)}>
       <header {...stylex.props(styles.bar)}>
         <Link to="/" data-testid="skat-back-start" {...stylex.props(typography.bandBack, styles.back)}>
-          <ChevronLeft size={icon.bandNav} strokeWidth={icon.outline} />
           {m.back_to_start()}
         </Link>
         <h1 {...stylex.props(typography.panelLabel, styles.h1)}>{m.play_title()}</h1>

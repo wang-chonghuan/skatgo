@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex'
-import { Lightbulb } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { m } from '~/paraglide/messages'
@@ -10,7 +9,6 @@ import { elev, fill } from '../../theme/elevation.stylex'
 import { border, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { suit } from '../../theme/suits.stylex'
-import { icon } from '../../theme/constants'
 import { typography } from '../../theme/type'
 
 // The product's own small kit, in the lobby design (SKATGO-26, reference.md). It does not reach for
@@ -82,18 +80,9 @@ export function Panel({ children, tone = 'card', pad = true }: { children: React
   return <div {...stylex.props(styles.panel, panelTones[tone], pad && styles.panelPad)}>{children}</div>
 }
 
-/** A tip: the tip panel with the design's outline lightbulb before the words. */
+/** A tip: the tip panel around the words. */
 export function Tip({ children }: { children: ReactNode }) {
-  return (
-    <Panel tone="tip">
-      <div {...stylex.props(styles.tip)}>
-        <span aria-hidden="true" {...stylex.props(styles.tipIcon)}>
-          <Lightbulb size={icon.inline} strokeWidth={icon.outline} />
-        </span>
-        <div {...stylex.props(styles.tipText)}>{children}</div>
-      </div>
-    </Panel>
-  )
+  return <Panel tone="tip">{children}</Panel>
 }
 
 /** A short fact, never an action: white on the page, dark on the felt, amber for whose turn it is. */
@@ -184,9 +173,6 @@ const styles = stylex.create({
     transitionTimingFunction: timing.easeOut,
   },
   stars: { display: 'inline-flex', gap: space.x2 },
-  tip: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },
-  tipIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2, color: color.amber },
-  tipText: { flexGrow: 1, minWidth: 0 },
   starOn: { color: color.amber },
   starOff: { color: color.hairline },
 })

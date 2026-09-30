@@ -1,8 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
-import { BookOpen } from 'lucide-react'
-
 import { POINTS, RANKS, type Rank, type Suit } from '~/lib/skat/cards'
 import { contractName, rankLetter } from '~/lib/skat/i18n'
 import { lessonById } from '~/lib/skat/lessons/content'
@@ -31,7 +29,7 @@ export function RulesPage() {
   const rules = RULES[locale]
   return (
     <div data-testid="rules" {...stylex.props(styles.root)}>
-      <Band title={m.rules_title()} Icon={BookOpen} back="/" />
+      <Band title={m.rules_title()} back="/" />
       <article {...stylex.props(styles.column)}>
         {rules.intro.map((text) => (
           <p key={text} {...stylex.props(typography.landingBody, styles.lead)}>

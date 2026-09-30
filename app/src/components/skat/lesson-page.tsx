@@ -1,8 +1,6 @@
 import { Link, useParams } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
-import { BookOpen } from 'lucide-react'
-
 import { lessonById, lessons } from '~/lib/skat/lessons/content'
 import { GUIDES, lessonBySlug } from '~/lib/skat/lessons/guide'
 import { RULES } from '~/lib/skat/rules'
@@ -36,7 +34,7 @@ export function LessonPage() {
   const section = RULES[locale].sections.find((s) => s.id === guide.rule)
   return (
     <>
-      <Band title={guide.h1} Icon={BookOpen} back="/course" />
+      <Band title={guide.h1} back="/course" />
       <section data-testid="lesson-intro" {...stylex.props(styles.intro)}>
         <p {...stylex.props(typography.panelLabel, styles.kicker)}>{m.lesson_kicker({ n: lesson.id, count: course.length, minutes: lesson.minutes })}</p>
         {guide.intro.map((text) => (

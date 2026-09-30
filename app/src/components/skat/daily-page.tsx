@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { CalendarDays } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { DAILY_DEALS, dailyDate, untilNextDeals } from '~/lib/daily'
@@ -31,7 +30,7 @@ export function DailyPage() {
   const left = now ? untilNextDeals(now) : null
   return (
     <div data-testid="daily" {...stylex.props(styles.root)}>
-      <Band title={m.daily_title({ deals: DAILY_DEALS })} Icon={CalendarDays} back="/" />
+      <Band title={m.daily_title({ deals: DAILY_DEALS })} back="/" />
       <section {...stylex.props(styles.column)}>
         <p data-testid="daily-lead" {...stylex.props(typography.landingBody, styles.lead)}>
           {m.daily_lead({ date: now ? dailyDate(now, LANG_TAG[getLocale()]) : '…', countdown: left ? m.daily_countdown(left) : '…' })}

@@ -569,7 +569,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.bid_forehand_alone()}</Say>
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.bid_hint_button()}</Btn>
+          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
         </Row>
       )
     }
@@ -580,7 +580,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.bid_your_turn({ name: nameOf(b.listener) })}</Say>
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_button({ value: value ?? '' })}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.bid_hint_button()}</Btn>
+          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
         </Row>
       )
     }
@@ -589,7 +589,7 @@ function Actions(p: ActionsProps) {
         <Say>{m.bid_asked({ name: nameOf(b.speaker), value: b.value })}</Say>
         <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-        <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.bid_hint_button()}</Btn>
+        <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
       </Row>
     )
   }
@@ -601,7 +601,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.skat_won_bid({ bid: game.bid })}</Say>
           <Btn testId="skat-pickup" shape="block" size="lg" onClick={p.onPickUp}>{m.skat_pick_up()}</Btn>
           <Btn testId="skat-hand-game" tone="quiet" shape="block" size="lg" onClick={p.onHand}>{m.skat_play_hand()}</Btn>
-          <Btn testId="skat-skat-hint" tone="info" shape="block" size="lg" onClick={p.onSkatHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.skat_hint_button()}</Btn>
+          <Btn testId="skat-skat-hint" tone="info" shape="block" size="lg" onClick={p.onSkatHint}>{m.skat_hint_button()}</Btn>
         </Row>
       )
     }
@@ -609,7 +609,7 @@ function Actions(p: ActionsProps) {
       <Row>
         <Say>{m.skat_discard_prompt()}</Say>
         <Btn testId="skat-discard" shape="block" size="lg" disabled={p.picked.length !== 2} onClick={p.onDiscard}>{m.skat_discard_button({ n: p.picked.length })}</Btn>
-        <Btn tone="info" shape="block" size="lg" onClick={p.onDiscardHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.skat_discard_hint_button()}</Btn>
+        <Btn tone="info" shape="block" size="lg" onClick={p.onDiscardHint}>{m.skat_discard_hint_button()}</Btn>
       </Row>
     )
   }
@@ -701,7 +701,7 @@ function DeclarePicker({
       ) : null}
       <Row>
         <Btn testId="skat-declare" shape="block" size="lg" grow disabled={!draft} onClick={() => draft && onDeclare(draft)}>{m.declare_go()}</Btn>
-        <Btn testId="skat-declare-hint" tone="info" shape="block" size="lg" onClick={onHint}><Lightbulb size={icon.inline} strokeWidth={icon.outline} />{m.declare_hint_button()}</Btn>
+        <Btn testId="skat-declare-hint" tone="info" shape="block" size="lg" onClick={onHint}>{m.declare_hint_button()}</Btn>
       </Row>
     </div>
   )

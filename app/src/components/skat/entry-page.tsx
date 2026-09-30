@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { Club, Spade } from 'lucide-react'
-import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { DAILY_DEALS, DAILY_EST_MINUTES } from '~/lib/daily'
@@ -12,14 +11,13 @@ import { type LessonRecord, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { icon } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev, fill, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { PlayingCard } from './playing-card'
-import { Pill, linkLook, suitText } from './ui'
+import { Pill, linkLook } from './ui'
 
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
@@ -44,18 +42,11 @@ export function EntryPage() {
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.heroText)}>
-          <div {...stylex.props(styles.eyebrow)}>
+          <div>
             <Pill tone="go">{m.entry_eyebrow()}</Pill>
-            <span aria-hidden="true" {...stylex.props(styles.suits)}>
-              {SUITS.map((suit) => (
-                <span key={suit} {...stylex.props(typography.markGlyph, styles.suitInk, suitText[suit])}>
-                  {suit}
-                </span>
-              ))}
-            </span>
           </div>
-          <h1 {...stylex.props(typography.landingTitle, styles.title)}>{m.entry_title()}</h1>
-          <p {...stylex.props(typography.landingLead, styles.lead)}>{m.entry_lead({ deals: DAILY_DEALS })}</p>
+          <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
+          <p {...stylex.props(typography.landingBody, styles.lead)}>{m.entry_lead({ deals: DAILY_DEALS })}</p>
           <div {...stylex.props(styles.actions)}>
             <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
               {m.entry_cta()}
@@ -77,7 +68,7 @@ export function EntryPage() {
 
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
         <section data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, tileTones.course)}>
-          <Face Icon={Club} art={COURSE_ART} title={m.entry_new_title()} text={m.entry_new_text({ count: course.length })}>
+          <Face art={COURSE_ART} title={m.entry_new_title()} text={m.entry_new_text({ count: course.length })}>
             <Link to="/course" data-testid="entry-course" {...linkLook('quiet', 'md', 'landing')}>
               {finished === 0 ? m.entry_new_cta() : m.course_continue({ n: next })}
             </Link>
@@ -85,7 +76,7 @@ export function EntryPage() {
           </Face>
         </section>
         <section data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, tileTones.play)}>
-          <Face Icon={Spade} art={PLAY_ART} title={m.entry_game_title()} text={m.entry_game_text()}>
+          <Face art={PLAY_ART} title={m.entry_game_title()} text={m.entry_game_text()}>
             <Link to="/play" data-testid="entry-play" {...linkLook('quiet', 'md', 'landing')}>
               {m.entry_game_cta()}
             </Link>
@@ -111,8 +102,6 @@ export function EntryPage() {
 /** The hero is always in its first state until Duplicate exists (SKATGO-29, grill Q1), with one headline. */
 const heroClick = (button: 'primary' | 'secondary') => track('hero_cta_click', { state: 'A', variant: 'default', button })
 
-type Suit = '♣' | '♠' | '♥' | '♦'
-const SUITS: Suit[] = ['♣', '♠', '♥', '♦']
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
 const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
@@ -135,9 +124,9 @@ function HeroArt() {
   )
 }
 
-/** A tile's face: its suit icon at the top left, three of skatgo's cards in the corner under the tile's
- *  colour, and the title, one line and the foot at the bottom left. */
-function Face({ Icon, art, title, text, children }: { Icon: ComponentType<{ size?: number; strokeWidth?: number }>; art: Card[]; title: string; text: string; children: ReactNode }) {
+/** A tile's face: three of skatgo's cards in the corner under the tile's colour, and the title, one line
+ *  and the foot at the bottom left. */
+function Face({ art, title, text, children }: { art: Card[]; title: string; text: string; children: ReactNode }) {
   return (
     <>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
@@ -148,9 +137,6 @@ function Face({ Icon, art, title, text, children }: { Icon: ComponentType<{ size
         ))}
       </span>
       <span aria-hidden="true" {...stylex.props(styles.veil)} />
-      <span aria-hidden="true" {...stylex.props(styles.icon)}>
-        <Icon size={icon.tile} strokeWidth={icon.outline} />
-      </span>
       <div {...stylex.props(styles.body)}>
         <h2 {...stylex.props(typography.tileTitle, styles.tileTitle)}>{title}</h2>
         <p {...stylex.props(typography.tileSub, styles.tileText)}>{text}</p>
@@ -193,10 +179,6 @@ const styles = stylex.create({
     gap: { default: space.x32, [bp.phone]: space.x24 },
   },
   heroText: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0, gap: { default: space.x24, [bp.phone]: space.x16 } },
-  // The tournament's name and the four suits; on a narrow phone the suits drop under the name.
-  eyebrow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12 },
-  suits: { display: 'flex', alignItems: 'center', gap: space.x6 },
-  suitInk: { color: color.navy },
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
   lead: { margin: 0, color: color.slate },
@@ -260,8 +242,7 @@ const styles = stylex.create({
   },
   artCard: { display: 'block', marginInline: dims.fanRowOverlap, transformOrigin: 'bottom center' },
   veil: { position: 'absolute', inset: 0, backgroundColor: 'inherit', opacity: veil.tile, pointerEvents: 'none' },
-  icon: { position: 'absolute', top: space.x27, left: space.x27, display: 'flex', color: color.onColor },
-  body: { position: 'relative', display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: dims.tileIcon },
+  body: { position: 'relative', display: 'flex', flexDirection: 'column', gap: space.x8 },
   tileTitle: { margin: 0, color: color.onColor },
   tileText: { margin: 0, color: color.onColor },
   foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, paddingTop: space.x8 },

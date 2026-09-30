@@ -2,10 +2,7 @@ import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { useEffect, useState } from 'react'
 
-import { GraduationCap } from 'lucide-react'
-
 import { Band } from './frame'
-import { lessonIcon } from './lesson-icon'
 import { Pill, Stars, linkLook } from './ui'
 import { track } from '~/lib/analytics'
 import { lessons } from '~/lib/skat/lessons/content'
@@ -15,7 +12,6 @@ import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { icon } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev, pose } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
@@ -51,7 +47,7 @@ export function CourseHome() {
 
   return (
     <div data-testid="skat-home" {...stylex.props(styles.root)}>
-      <Band title={m.course_title()} Icon={GraduationCap} back="/" />
+      <Band title={m.course_title()} back="/" />
       <div {...stylex.props(styles.column)}>
         <section {...stylex.props(styles.intro)}>
           <p {...stylex.props(typography.appText, styles.lead)}>{m.course_lead({ count: course.length })}</p>
@@ -108,10 +104,7 @@ export function CourseHome() {
                   data-state={state}
                   {...stylex.props(styles.card, state === 'next' && styles.cardNext, state === 'done' && styles.cardDone)}
                 >
-                  <span {...stylex.props(styles.cardHead)}>
-                    <LessonGlyph id={l.id} />
-                    <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{m.lesson_heading({ id: l.id, title: l.title })}</span>
-                  </span>
+                  <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{m.lesson_heading({ id: l.id, title: l.title })}</span>
                   <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{l.promise}</span>
                   <span {...stylex.props(styles.cardEnd)}>
                     {record ? <Stars n={record.stars} /> : <span {...stylex.props(typography.meta, styles.minutes)}>{m.lesson_minutes({ n: l.minutes })}</span>}
@@ -123,16 +116,6 @@ export function CourseHome() {
         </ol>
       </div>
     </div>
-  )
-}
-
-/** A lesson's outline icon, in the option cards' orange. */
-function LessonGlyph({ id }: { id: string }) {
-  const Icon = lessonIcon(id)
-  return (
-    <span aria-hidden="true" {...stylex.props(styles.icon)}>
-      <Icon size={icon.option} strokeWidth={icon.outline} />
-    </span>
   )
 }
 
@@ -210,16 +193,6 @@ const styles = stylex.create({
   },
   cardNext: { borderColor: color.go },
   cardDone: { backgroundColor: color.goodSoft },
-  cardHead: { display: 'flex', alignItems: 'center', gap: space.x12 },
-  icon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: dims.optionIcon,
-    height: dims.optionIcon,
-    flexShrink: 0,
-    color: color.tileOrange,
-  },
   cardEnd: { display: 'flex', justifyContent: 'flex-end', marginTop: 'auto' },
   minutes: { color: color.slate, whiteSpace: 'nowrap' },
 })

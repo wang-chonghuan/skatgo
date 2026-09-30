@@ -183,4 +183,6 @@ soon". `product.md` says three languages and "only the course".
 
 ## Answers
 
-(pending)
+The human, 2026-09-30: 「全部按建议，开始开发」 — every question (Q1–Q12) is settled as recommended,
+including Q5: additions to the token registries for these pages are approved (no retuning of existing
+values).

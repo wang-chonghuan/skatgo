@@ -24,6 +24,23 @@ down and play; soon you'll play the same deals as everyone else and compare scor
 The promise about the same deals for everyone goes, because the "Duplicate · coming soon" tile below
 already says it.
 
+**Human's answer (2026-09-30):** 「slogan不对，应该改为复式，因为这是我主打的功能，就是每天没人打12幅牌，看排名。突出我的主打功能」
+The slogan must feature Duplicate: every day, everyone plays the same 12 deals, and sees the ranking.
+
+**Revised proposal (awaiting confirmation):**
+- **Headline:**
+  - en: "12 deals a day. The same for everyone."
+  - de: "12 Spiele am Tag. Für alle dieselben."
+- **Lead:**
+  - en: "Play today's deals and see where you rank among all players."
+  - de: "Spiel die Blätter des Tages und sieh, wo du unter allen stehst."
+
+**Follow-up questions (Duplicate is not live yet; its tile says "coming soon"; the hero's action opens
+free play):**
+- **Q2a:** mark it "coming soon" in the hero until it launches? Recommended: change only the text of
+  the green eyebrow pill to "Duplicate · coming soon", with no new element.
+- **Q2b:** keep the hero action on free play until Duplicate launches? Recommended: yes.
+
 **Decision:** pending
 
 ### Q3. Where and how does "fully in English and German" appear?

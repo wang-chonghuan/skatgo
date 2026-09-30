@@ -153,7 +153,6 @@
   "table_trick_you": "You take the trick",
   "table_trick_other": "{name} takes the trick",
   "table_bidding": "Bidding",
-  "table_awaiting_contract": "Waiting for the game to be announced",
   "table_declarer": "Declarer: {name} · bid {bid}",
   "table_trick_count": "Trick {n} of 10 · declarer {declarer} · defenders {defenders}",
   "table_declarer_word": "declarer",
@@ -348,5 +347,6 @@
   "daily_lead": "{date}. Same cards and same computer opponents for every player. Next deals in {countdown}.",
   "daily_cta": "Play today's deals",
   "daily_countdown": "{h} h {m} min",
-  "entry_art_alt": "A game of Skat on SkatGo: the trick in the middle, your hand below"
+  "entry_art_alt": "A game of Skat on SkatGo: the trick in the middle, your hand below",
+  "message_close": "Close"
 }

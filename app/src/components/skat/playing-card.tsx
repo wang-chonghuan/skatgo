@@ -106,6 +106,9 @@ function inked(node: ReactNode, keys: string[], within: boolean): ReactNode {
   const props = node.props as { id?: unknown; fill?: unknown; stroke?: unknown; children?: ReactNode }
   const here = within || (node.type === 'symbol' && typeof props.id === 'string' && keys.some((k) => (props.id as string).endsWith(`_svg__${k}`)))
   const change: Record<string, unknown> = {}
+  // The deck frames every face with a black-stroked rect; clipped by the card's rounded corners it reads
+  // as an uneven black edge. The card's white face and its shadow already draw the edge.
+  if (node.type === 'rect' && props.stroke) change.stroke = 'none'
   if (here && node.type === 'path') {
     if (props.fill !== 'none') change.fill = 'currentColor'
     if (props.stroke) change.stroke = 'currentColor'

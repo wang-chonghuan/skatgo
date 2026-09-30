@@ -51,6 +51,9 @@ export const dims = stylex.defineVars({
   tileArtRight: '-18px',
   tileArtBottom: '-38px',
   heroArtHeight: '420px',
+  /** The hero's screenshot (app/public/hero-table.webp, 571×762): on a wide screen its box keeps these
+   *  proportions, so the whole table shows (SKATGO-29). */
+  heroArtRatio: '571 / 762',
   heroArtHeightPhone: '260px',
   tileHeight: '223px',
   tileIcon: '48px',

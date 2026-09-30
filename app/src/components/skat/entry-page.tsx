@@ -166,7 +166,8 @@ const styles = stylex.create({
   hero: {
     display: 'grid',
     gridTemplateColumns: { default: dims.heroColumns, [bp.hero]: dims.oneColumn },
-    alignItems: 'center',
+    // The headline's first line starts level with the top of the picture (SKATGO-29).
+    alignItems: 'start',
     gap: { default: space.x32, [bp.phone]: space.x24 },
   },
   heroText: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0, gap: { default: space.x24, [bp.phone]: space.x16 } },
@@ -174,7 +175,8 @@ const styles = stylex.create({
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
   lead: { margin: 0, color: color.slate },
   heroArt: {
-    height: { default: dims.heroArtHeight, [bp.phone]: dims.heroArtHeightPhone },
+    height: { default: 'auto', [bp.hero]: dims.heroArtHeightPhone },
+    aspectRatio: { default: dims.heroArtRatio, [bp.hero]: 'auto' },
     borderRadius: radii.tile,
     boxShadow: elev.eventCard,
     overflow: 'hidden',

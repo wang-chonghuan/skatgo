@@ -10,12 +10,12 @@ import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { space } from '../../theme/scale.stylex'
+import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ClientPart, LessonPlayer } from './client-part'
 import { Band } from './frame'
-import { Rich, linkLook } from './ui'
+import { Rich } from './ui'
 
 /**
  * The page behind /course/$slug. Every lesson opens directly, whatever the learner has done before
@@ -50,12 +50,12 @@ export function LessonPage() {
       </ClientPart>
       <nav data-testid="lesson-links" {...stylex.props(styles.links)}>
         {following ? (
-          <Link to="/course/$slug" params={{ slug: GUIDES[locale][following.id].slug }} data-testid="lesson-next" {...linkLook('quiet', 'md')}>
+          <Link to="/course/$slug" params={{ slug: GUIDES[locale][following.id].slug }} data-testid="lesson-next" {...stylex.props(typography.appBtnStrong, styles.link)}>
             {m.lesson_next({ title: following.title })}
           </Link>
         ) : null}
         {section ? (
-          <Link to="/rules" hash={section.anchor} data-testid="lesson-rules" {...linkLook('quiet', 'md')}>
+          <Link to="/rules" hash={section.anchor} data-testid="lesson-rules" {...stylex.props(typography.appBtnStrong, styles.link)}>
             {m.lesson_rules_link({ section: section.title })}
           </Link>
         ) : null}
@@ -79,9 +79,11 @@ const styles = stylex.create({
   },
   kicker: { margin: 0, color: color.slate },
   text: { margin: 0, color: color.text },
+  // Two plain links, one per line: a lesson's title can be long, and a link wraps where a button cannot.
   links: {
     display: 'flex',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     gap: space.x12,
     width: '100%',
     maxWidth: dims.readingColumn,
@@ -89,5 +91,13 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     paddingBlock: space.x32,
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
+  },
+  link: {
+    color: color.info,
+    textDecoration: { default: 'none', ':hover': 'underline' },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
   },
 })

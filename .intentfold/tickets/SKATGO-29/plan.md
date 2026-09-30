@@ -37,7 +37,7 @@
   counted over hand plus skat.
 - Lost games score −2 × value; overbid scores the lowest multiple of the base that covers the bid.
 - An all-pass hand is dealt again; there is no Ramsch.
-- **Not implemented:** Kontra/Re, Ramsch, Bock, and Seeger-Fabian (no +50/−40 list scoring). Free
+- **Not implemented:** Kontra/Re, Ramsch, Bock, and Seeger-Fabian list scoring. Free
   play keeps a running tally: games, won, score.
 
 **Course data**

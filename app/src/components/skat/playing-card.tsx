@@ -214,7 +214,7 @@ const styles = stylex.create({
     boxShadow: elev.card,
     overflow: 'hidden',
     transitionProperty: 'transform, box-shadow, opacity, filter',
-    transitionDuration: timing.card,
+    transitionDuration: { default: timing.card, [bp.reducedMotion]: timing.instant },
     transitionTimingFunction: timing.easeOut,
   },
   face: { display: 'block', width: '100%', height: '100%' },

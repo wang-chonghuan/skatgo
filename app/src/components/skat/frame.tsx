@@ -370,7 +370,7 @@ const styles = stylex.create({
     color: color.slateDeep,
     textDecoration: 'none',
   },
-  itemLink: { transitionProperty: 'color', transitionDuration: timing.tile, color: { default: color.slateDeep, ':hover': color.navy }, ...focus },
+  itemLink: { transitionProperty: 'color', transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant }, color: { default: color.slateDeep, ':hover': color.navy }, ...focus },
   itemActive: { color: { default: color.go, ':hover': color.go } },
 
   landingHeader: {

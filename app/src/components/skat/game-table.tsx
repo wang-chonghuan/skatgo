@@ -1025,7 +1025,7 @@ const styles = stylex.create({
     height: { default: 'auto', [bp.phone]: dims.screenDynamic },
     transform: { default: 'none', [bp.phone]: pose.offRight },
     transitionProperty: 'transform',
-    transitionDuration: timing.tile,
+    transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
     borderTopLeftRadius: radii.panel,
     borderBottomLeftRadius: radii.panel,
     boxShadow: elev.panel,

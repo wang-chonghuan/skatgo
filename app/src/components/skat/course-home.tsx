@@ -205,7 +205,7 @@ const styles = stylex.create({
     textDecoration: 'none',
     transform: { default: pose.rest, ':hover': pose.lift },
     transitionProperty: 'transform, border-color',
-    transitionDuration: timing.tile,
+    transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
     ...focus,
   },
   cardNext: { borderColor: color.go },

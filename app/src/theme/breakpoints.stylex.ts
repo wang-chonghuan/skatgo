@@ -15,4 +15,7 @@ export const bp = stylex.defineConsts({
   /** Between the phone and the desk, exclusive of the phone step: a style that sets both this and
    *  `phone` must not depend on which query is emitted last (SKATGO-26). */
   mid: '@media (min-width: 481px) and (max-width: 720px)',
+  /** The visitor asked for less motion (SKATGO-29): transitions become instant. Animations follow the
+   *  same setting through motion's `MotionConfig reducedMotion="user"`. */
+  reducedMotion: '@media (prefers-reduced-motion: reduce)',
 })

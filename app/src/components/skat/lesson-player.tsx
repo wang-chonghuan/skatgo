@@ -170,6 +170,8 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     gap: space.x18,
+    // A step slides in from the side (stepSlide); on a phone that slide must not widen the page.
+    overflowX: 'clip',
     width: '100%',
     maxWidth: dims.readingColumn,
     marginInline: 'auto',

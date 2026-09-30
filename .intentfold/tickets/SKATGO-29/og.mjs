@@ -39,7 +39,7 @@ for (const path of pages) {
       document.body.innerHTML = ''
       document.body.style.margin = '0'
       const frame = document.createElement('div')
-      frame.style.cssText = 'width:1200px;height:630px;box-sizing:border-box;display:grid;grid-template-columns:1fr 470px;gap:48px;align-items:center;padding:64px;background:#FFFFFF;font-family:Outfit,sans-serif;'
+      frame.style.cssText = 'width:1200px;height:630px;box-sizing:border-box;display:grid;grid-template-columns:1fr 470px;gap:48px;align-items:center;padding:64px;background:#FFFFFF;font-family:"Red Hat Display",sans-serif;'
       const text = document.createElement('div')
       text.style.cssText = 'display:flex;flex-direction:column;gap:28px;'
       text.innerHTML = `<div style="display:flex;align-items:center;gap:14px"><img src="/logo-96.png" style="width:56px;height:56px;border-radius:8px"><span style="font-size:34px;font-weight:700;color:#022657">SkatGo</span></div>

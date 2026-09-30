@@ -364,7 +364,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
           </section>
 
           <div data-testid="skat-strip" {...stylex.props(styles.strip)}>
-            {contract ? <Pill tone="amber">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : <Pill tone="dark">{game.declarer === null ? m.table_bidding() : m.table_awaiting_contract()}</Pill>}
+            {contract ? <Pill tone="amber">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : null}
             {game.declarer !== null ? <Pill tone="quiet">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
             {game.phase === 'play' || game.phase === 'trickEnd' ? (
               <Pill tone="quiet">{m.table_trick_count({ n: Math.min(10, game.tricks.length + 1), declarer: points.declarer, defenders: points.defenders })}</Pill>

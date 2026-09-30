@@ -168,6 +168,10 @@ export const dims = stylex.defineVars({
   cardLgPhone: '72px',
   cardTable: '120px',
   cardTablePhone: '88px',
+  /** A card's slot in the learner's one-row hand at most (SKATGO-29): its card and a small gap, so a
+   *  wide screen never spreads the hand out; the hand stays centred. */
+  rowSlotMax: '128px',
+  rowSlotMaxPhone: '94px',
   cardAspect: '5 / 7',
   slotXs: '38px',
   slotSm: '58px',
@@ -208,9 +212,6 @@ export const dims = stylex.defineVars({
   // Generic
   screen: '100vh',
   screenDynamic: '100dvh',
-  /** Free play's title bar above the table (SKATGO-29), and the rest of the first screen, which the table fills. */
-  playBar: '48px',
-  screenBelowPlayBar: 'calc(100dvh - 48px)',
   half: '50%',
   oneColumn: '1fr',
   twoColumns: '1fr 1fr',

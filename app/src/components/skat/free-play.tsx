@@ -7,29 +7,24 @@ import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { fill } from '../../theme/elevation.stylex'
-import { border, space } from '../../theme/scale.stylex'
+import { space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 
 /**
  * Free play: a table with no lesson around it, for practice after the course or for people who already
- * play. A thin bar carries the way back and the page's title, the table fills the rest of the first
- * screen (SKATGO-26), and the page's own text follows below it (SKATGO-29). Everything but the table is
- * rendered on the server; until the table arrives, bare felt holds its place.
+ * play. The table fills the first screen (SKATGO-26); the page's title and text follow below it
+ * (SKATGO-29), where they stay out of the game's way. Everything but the table is rendered on the
+ * server; until the table arrives, bare felt holds its place.
  */
 export function FreePlay() {
   return (
     <div {...stylex.props(styles.root)}>
-      <header {...stylex.props(styles.bar)}>
-        <Link to="/" data-testid="skat-back-start" {...stylex.props(typography.bandBack, styles.back)}>
-          {m.back_to_start()}
-        </Link>
-        <h1 {...stylex.props(typography.panelLabel, styles.h1)}>{m.play_title()}</h1>
-      </header>
       <ClientPart fallback={<div aria-hidden="true" {...stylex.props(styles.feltHold)} />}>
         <FreeTable />
       </ClientPart>
       <section data-testid="play-intro" {...stylex.props(styles.intro)}>
+        <h1 {...stylex.props(typography.landingHeading, styles.h1)}>{m.play_title()}</h1>
         <p {...stylex.props(typography.landingBody, styles.text)}>{m.play_intro()}</p>
         <div {...stylex.props(styles.links)}>
           <Link to="/course" {...linkLook('quiet', 'md', 'landing')}>{m.entry_cta_learn()}</Link>
@@ -42,32 +37,8 @@ export function FreePlay() {
 
 const styles = stylex.create({
   root: { display: 'flex', flexDirection: 'column', flexGrow: 1 },
-  // A thin title bar above the table: the way back, then the page's title.
-  bar: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: space.x16,
-    height: dims.playBar,
-    boxSizing: 'border-box',
-    // The assistant's launcher floats at the top right of this page; the title stops short of it.
-    paddingInlineStart: { default: space.x16, [bp.phone]: space.x8 },
-    paddingInlineEnd: space.x72,
-    backgroundColor: color.feltOuter,
-    color: color.onColor,
-  },
-  feltHold: { minHeight: dims.screenBelowPlayBar, backgroundImage: fill.felt },
-  h1: { margin: 0, color: color.onColor, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  back: {
-    display: 'inline-flex',
-    flexShrink: 0,
-    alignItems: 'center',
-    gap: space.x4,
-    color: color.onColor,
-    textDecoration: 'none',
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.gold,
-  },
+  feltHold: { minHeight: dims.screenDynamic, backgroundImage: fill.felt },
+  h1: { margin: 0, color: color.onColor },
   intro: {
     display: 'flex',
     flexDirection: 'column',

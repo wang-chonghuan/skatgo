@@ -103,6 +103,10 @@ const INK_COURT = ['a', 'h']
 
 function inked(node: ReactNode, keys: string[], within: boolean): ReactNode {
   if (!isValidElement(node)) return node
+  // The deck's Ace of Spades carries its maker's address as SVG text ("www.me.uk /cards/"). SVG text is
+  // page text — a search engine read it into the front page (SKATGO-29). The deck is CC0, so no credit
+  // is owed; no face draws any other text.
+  if (node.type === 'text') return null
   const props = node.props as { id?: unknown; fill?: unknown; stroke?: unknown; children?: ReactNode }
   const here = within || (node.type === 'symbol' && typeof props.id === 'string' && keys.some((k) => (props.id as string).endsWith(`_svg__${k}`)))
   const change: Record<string, unknown> = {}

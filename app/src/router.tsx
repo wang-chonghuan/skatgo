@@ -7,7 +7,7 @@ export function getRouter() {
   const router = createRouter({
     routeTree,
     scrollRestoration: true,
-    // The route tree knows `/`, `/lesson/$id`, `/play`; the language prefix is stripped on the way in
+    // The route tree knows `/`, `/course/$slug`, `/rules`, `/play`; the language prefix is stripped on the way in
     // and put back on every link on the way out, so no route or <Link> names a language.
     rewrite: {
       input: ({ url }) => deLocalizeUrl(url),

@@ -1,8 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { Club, Diamond, Heart, Spade } from 'lucide-react'
+import { Club, Spade } from 'lucide-react'
 import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
 
+import { track } from '~/lib/analytics'
+import { faq } from '~/lib/faq'
 import type { Card } from '~/lib/skat/cards'
 import { lessons } from '~/lib/skat/lessons/content'
 import { type LessonRecord, useProgress } from '~/lib/skat/progress'
@@ -21,9 +23,9 @@ import { Pill, linkLook, suitText } from './ui'
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the headline,
-// the lead, one green call to action, a picture, and a strip of facts — then the four ways into Skat as
-// the app's colour tiles, one suit each in Skat order (SKATGO-23): ♣ Course, ♠ Play, ♥ Duplicate,
-// ♦ Puzzles. Course and Play open what exists; Duplicate and Puzzles are announced and are not links.
+// the lead, the green call to action with the way in for beginners beside it, a picture, and a strip of
+// facts — then the two ways into Skat as the app's colour tiles, one suit each (♣ the course, ♠ free
+// play), and the questions people ask (SKATGO-29). Only what exists is on it: nothing is announced.
 //
 // Every picture here is skatgo's own: the public-domain deck the course plays with, fanned on felt, and
 // the suits as outline icons. Rendered on the server; the learner's progress is applied after mount.
@@ -34,6 +36,7 @@ export function EntryPage() {
   const done = mounted ? storedDone : NOTHING_DONE
   const course = lessons()
   const finished = course.filter((l) => l.id in done).length
+  const next = course.find((l) => !(l.id in done))?.id ?? course[course.length - 1].id
 
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
@@ -51,15 +54,18 @@ export function EntryPage() {
           </div>
           <h1 {...stylex.props(typography.landingTitle, styles.title)}>{m.entry_title()}</h1>
           <p {...stylex.props(typography.landingLead, styles.lead)}>{m.entry_lead()}</p>
-          <div>
-            <Link to="/play" data-testid="entry-cta" {...linkLook('go', 'lg', 'landing')}>
+          <div {...stylex.props(styles.actions)}>
+            <Link to="/play" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
               {m.entry_cta()}
+            </Link>
+            <Link to="/course" data-testid="entry-cta-learn" onClick={() => heroClick('secondary')} {...linkLook('quiet', 'lg', 'landing')}>
+              {m.entry_cta_learn()}
             </Link>
           </div>
         </div>
         <HeroArt />
         <ul data-testid="entry-points" {...stylex.props(styles.points)}>
-          {[m.entry_point_ready(), m.entry_point_browser(), m.entry_point_languages()].map((point) => (
+          {[m.entry_point_ready(), m.entry_point_browser(), m.entry_point_signup()].map((point) => (
             <li key={point} {...stylex.props(typography.landingBody, styles.point)}>
               {point}
             </li>
@@ -67,35 +73,41 @@ export function EntryPage() {
         </ul>
       </section>
 
-      {/* One grid for both groups, so all four tiles share one height (shape.stylex.ts, lobbyRows). */}
-      <div data-testid="entry-sections" {...stylex.props(styles.lobby)}>
-        <h2 {...stylex.props(typography.sectionTitle, styles.groupTitle, area.ta)}>{m.entry_section_start()}</h2>
-        <Link to="/course" data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, styles.tileOpen, tileTones.course, area.c)}>
-          <Face Icon={Club} art={COURSE_ART} title={m.entry_course_title()} text={m.entry_course_desc({ count: course.length })}>
-            <Pill tone="quiet">{finished === 0 ? m.entry_course_start() : m.entry_course_continue()}</Pill>
-            <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span>
+      <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
+        <section data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, tileTones.course)}>
+          <Face Icon={Club} art={COURSE_ART} title={m.entry_new_title()} text={m.entry_new_text({ count: course.length })}>
+            <Link to="/course" data-testid="entry-course" {...linkLook('quiet', 'md', 'landing')}>
+              {finished === 0 ? m.entry_new_cta() : m.course_continue({ n: next })}
+            </Link>
+            {finished > 0 ? <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span> : null}
           </Face>
-        </Link>
-        <Link to="/play" data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, styles.tileOpen, tileTones.play, area.p)}>
-          <Face Icon={Spade} art={PLAY_ART} title={m.entry_play_title()} text={m.entry_play_desc()}>
-            <Pill tone="quiet">{m.entry_play_cta()}</Pill>
+        </section>
+        <section data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, tileTones.play)}>
+          <Face Icon={Spade} art={PLAY_ART} title={m.entry_game_title()} text={m.entry_game_text()}>
+            <Link to="/play" data-testid="entry-play" {...linkLook('quiet', 'md', 'landing')}>
+              {m.entry_game_cta()}
+            </Link>
           </Face>
-        </Link>
-        <h2 {...stylex.props(typography.sectionTitle, styles.groupTitle, styles.laterTitle, area.tb)}>{m.entry_section_soon()}</h2>
-        <div aria-disabled="true" data-testid="entry-card" data-section="duplicate" data-state="soon" {...stylex.props(styles.tile, tileTones.soon, area.d)}>
-          <Face Icon={Heart} art={DUPLICATE_ART} soon title={m.entry_duplicate_title()} text={m.entry_duplicate_desc()}>
-            <Pill tone="quiet">{m.entry_soon()}</Pill>
-          </Face>
-        </div>
-        <div aria-disabled="true" data-testid="entry-card" data-section="puzzles" data-state="soon" {...stylex.props(styles.tile, tileTones.soon, area.z)}>
-          <Face Icon={Diamond} art={PUZZLES_ART} soon title={m.entry_puzzles_title()} text={m.entry_puzzles_desc()}>
-            <Pill tone="quiet">{m.entry_soon()}</Pill>
-          </Face>
-        </div>
+        </section>
       </div>
+
+      <section data-testid="entry-faq" aria-labelledby="faq-title" {...stylex.props(styles.faq)}>
+        <h2 id="faq-title" {...stylex.props(typography.landingHeading, styles.faqTitle)}>{m.faq_title()}</h2>
+        <dl {...stylex.props(styles.faqList)}>
+          {faq().map(({ q, a }) => (
+            <div key={q} {...stylex.props(styles.faqItem)}>
+              <dt {...stylex.props(typography.optionTitle, styles.faqQ)}>{q}</dt>
+              <dd {...stylex.props(typography.landingBody, styles.faqA)}>{a}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
     </div>
   )
 }
+
+/** The hero is always in its first state until Duplicate exists (SKATGO-29, grill Q1), with one headline. */
+const heroClick = (button: 'primary' | 'secondary') => track('hero_cta_click', { state: 'A', variant: 'default', button })
 
 type Suit = '♣' | '♠' | '♥' | '♦'
 const SUITS: Suit[] = ['♣', '♠', '♥', '♦']
@@ -103,8 +115,6 @@ const SUITS: Suit[] = ['♣', '♠', '♥', '♦']
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
 const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
 const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
-const DUPLICATE_ART = [card('H', 'A'), card('H', '10'), card('H', 'K')]
-const PUZZLES_ART = [card('D', '7'), card('D', 'Q'), card('D', 'A')]
 const HERO_HAND = [card('C', 'J'), card('S', 'J'), card('H', 'J'), card('D', 'J'), card('C', 'A')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
@@ -125,7 +135,7 @@ function HeroArt() {
 
 /** A tile's face: its suit icon at the top left, three of skatgo's cards in the corner under the tile's
  *  colour, and the title, one line and the foot at the bottom left. */
-function Face({ Icon, art, soon, title, text, children }: { Icon: ComponentType<{ size?: number; strokeWidth?: number }>; art: Card[]; soon?: boolean; title: string; text: string; children: ReactNode }) {
+function Face({ Icon, art, title, text, children }: { Icon: ComponentType<{ size?: number; strokeWidth?: number }>; art: Card[]; title: string; text: string; children: ReactNode }) {
   return (
     <>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
@@ -135,12 +145,12 @@ function Face({ Icon, art, soon, title, text, children }: { Icon: ComponentType<
           </span>
         ))}
       </span>
-      <span aria-hidden="true" {...stylex.props(styles.veil, soon && styles.veilSoon)} />
+      <span aria-hidden="true" {...stylex.props(styles.veil)} />
       <span aria-hidden="true" {...stylex.props(styles.icon)}>
         <Icon size={icon.tile} strokeWidth={icon.outline} />
       </span>
       <div {...stylex.props(styles.body)}>
-        <h3 {...stylex.props(typography.tileTitle, styles.tileTitle)}>{title}</h3>
+        <h2 {...stylex.props(typography.tileTitle, styles.tileTitle)}>{title}</h2>
         <p {...stylex.props(typography.tileSub, styles.tileText)}>{text}</p>
         <div {...stylex.props(styles.foot)}>{children}</div>
       </div>
@@ -156,20 +166,9 @@ const fanPose = stylex.create({
   fanFarRight: { transform: pose.fanFarRight },
 })
 
-// Where each piece sits in the sections grid (lobbyAreas).
-const area = stylex.create({
-  ta: { gridArea: 'ta' },
-  tb: { gridArea: 'tb' },
-  c: { gridArea: 'c' },
-  p: { gridArea: 'p' },
-  d: { gridArea: 'd' },
-  z: { gridArea: 'z' },
-})
-
 const tileTones = stylex.create({
   course: { backgroundColor: color.tileOrange, boxShadow: elev.tileOrange },
   play: { backgroundColor: color.tileGreen, boxShadow: elev.tileGreen },
-  soon: { backgroundColor: color.tileSoon, boxShadow: elev.tileSoon },
 })
 
 const styles = stylex.create({
@@ -226,17 +225,14 @@ const styles = stylex.create({
   },
   point: { margin: 0, color: color.onColor, textAlign: { default: 'center', [bp.phone]: 'left' } },
 
-  lobby: {
+  actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
+  // The two ways in, side by side; stacked on a phone.
+  ways: {
     display: 'grid',
-    gridTemplateColumns: { default: dims.lobbyGridColumns, [bp.mid]: dims.lobbyGridColumnsMid, [bp.phone]: dims.oneColumn },
-    gridTemplateAreas: { default: dims.lobbyAreas, [bp.mid]: dims.lobbyAreasMid, [bp.phone]: dims.lobbyAreasPhone },
-    gridTemplateRows: { default: dims.lobbyRows, [bp.mid]: dims.lobbyRowsMid, [bp.phone]: dims.lobbyRowsPhone },
+    gridTemplateColumns: { default: dims.twoColumns, [bp.phone]: dims.oneColumn },
     columnGap: space.x15,
     rowGap: space.x15,
   },
-  groupTitle: { margin: 0, color: color.navy, alignSelf: 'end' },
-  // Stacked groups keep the room between them that side-by-side groups have.
-  laterTitle: { marginTop: { default: 0, [bp.mid]: space.x32, [bp.phone]: space.x32 } },
   // A lobby tile: its colour over its art, a shadow in its own colour, content at the bottom left.
   tile: {
     position: 'relative',
@@ -251,15 +247,6 @@ const styles = stylex.create({
     color: color.onColor,
     textDecoration: 'none',
   },
-  tileOpen: {
-    transform: { default: pose.rest, ':hover': pose.lift },
-    transitionProperty: 'transform',
-    transitionDuration: timing.tile,
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.info,
-    outlineOffset: border.focusOffset,
-  },
   art: {
     position: 'absolute',
     right: dims.tileArtRight,
@@ -270,11 +257,25 @@ const styles = stylex.create({
   },
   artCard: { display: 'block', marginInline: dims.fanRowOverlap, transformOrigin: 'bottom center' },
   veil: { position: 'absolute', inset: 0, backgroundColor: 'inherit', opacity: veil.tile, pointerEvents: 'none' },
-  veilSoon: { opacity: veil.soon },
   icon: { position: 'absolute', top: space.x27, left: space.x27, display: 'flex', color: color.onColor },
   body: { position: 'relative', display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: dims.tileIcon },
   tileTitle: { margin: 0, color: color.onColor },
   tileText: { margin: 0, color: color.onColor },
   foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, paddingTop: space.x8 },
   aside: { color: color.onColor },
+
+  faq: { display: 'flex', flexDirection: 'column', gap: space.x24 },
+  faqTitle: { margin: 0, color: color.navy },
+  faqList: { display: 'flex', flexDirection: 'column', margin: 0 },
+  faqItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x8,
+    paddingBlock: space.x20,
+    borderTopWidth: border.hair,
+    borderTopStyle: 'solid',
+    borderTopColor: color.hairline,
+  },
+  faqQ: { margin: 0, color: color.navy },
+  faqA: { margin: 0, color: color.slate },
 })

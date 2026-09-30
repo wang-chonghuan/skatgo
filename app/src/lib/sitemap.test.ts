@@ -1,41 +1,52 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { locales } from '~/paraglide/runtime'
+import { type Locale, locales } from '~/paraglide/runtime'
 import { LANG_TAG, SITE_URL, localizedUrl } from './site'
+import { GUIDES, lessonPath } from './skat/lessons/guide'
+import { PAGES, buildSitemap } from './sitemap'
 
-// public/sitemap.xml is a static file, so it is held here to what it must list: every page of the
-// route tree that has no parameter (lesson pages render in the browser only; the map links them all), in
-// every language, each with the hreflang alternates the pages' own <head> carries. Both lists are
-// derived — the pages from the generated route tree, the languages from Paraglide — so a new page
-// or language fails this test until the sitemap has it.
+// sitemap.xml is built on request (lib/sitemap.ts). It is held here to what it must list: every page of
+// the route tree that has no parameter, and every lesson under its own slug, in every language, each
+// with the hreflang alternates the pages' own <head> carries. The pages come from the generated route
+// tree and the languages from Paraglide, so a new page or language fails this test until the sitemap
+// has it.
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
 
 const routeTree = read('../routeTree.gen.ts')
-const pages = [...routeTree.slice(routeTree.indexOf('interface FileRoutesByFullPath'), routeTree.indexOf('interface FileRoutesByTo')).matchAll(/'(\/[^']*)'/g)]
+const routes = [...routeTree.slice(routeTree.indexOf('interface FileRoutesByFullPath'), routeTree.indexOf('interface FileRoutesByTo')).matchAll(/'(\/[^']*)'/g)]
   .map((x) => x[1])
   .filter((p) => !p.includes('$'))
-const sitemap = read('../../public/sitemap.xml')
+  .map((p) => (p.length > 1 ? p.replace(/\/$/, '') : p))
+const sitemap = buildSitemap()
+const entries = [...sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)].map((x) => x[1])
 
 describe('sitemap.xml', () => {
-  it('derives a non-empty page list', () => {
-    expect(pages.length).toBeGreaterThan(0)
+  it('lists exactly the route tree’s pages without a parameter', () => {
+    expect(routes.length).toBeGreaterThan(0)
+    expect([...PAGES].sort()).toEqual([...new Set(routes)].sort())
   })
 
-  it('lists every page in every language, with all its alternates and x-default', () => {
-    const entries = [...sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)].map((x) => x[1])
-    expect(entries).toHaveLength(pages.length * locales.length)
-    for (const page of pages) {
+  it('lists every page and every lesson in every language, with all its alternates and x-default', () => {
+    const lessons = Object.keys(GUIDES.en)
+    expect(entries).toHaveLength((PAGES.length + lessons.length) * locales.length)
+    const all: ((l: Locale) => string)[] = [...PAGES.map((p) => () => p), ...lessons.map((id) => (l: Locale) => lessonPath(id, l))]
+    for (const pathIn of all) {
       for (const locale of locales) {
-        const entry = entries.find((e) => e.includes(`<loc>${localizedUrl(page, locale)}</loc>`))
-        expect(entry, `${locale} ${page}`).toBeDefined()
-        for (const alt of locales) {
-          expect(entry).toContain(`hreflang="${LANG_TAG[alt]}" href="${localizedUrl(page, alt)}"`)
-        }
-        expect(entry).toContain(`hreflang="x-default" href="${SITE_URL}${page}"`)
+        const entry = entries.find((e) => e.includes(`<loc>${localizedUrl(pathIn(locale), locale)}</loc>`))
+        expect(entry, `${locale} ${pathIn(locale)}`).toBeDefined()
+        for (const alt of locales) expect(entry).toContain(`hreflang="${LANG_TAG[alt]}" href="${localizedUrl(pathIn(alt), alt)}"`)
+        expect(entry).toContain(`hreflang="x-default" href="${SITE_URL}/"`)
       }
     }
+  })
+
+  it('gives German pages their German addresses', () => {
+    expect(sitemap).toContain(`<loc>${SITE_URL}/de/kurs</loc>`)
+    expect(sitemap).toContain(`<loc>${SITE_URL}/de/regeln</loc>`)
+    expect(sitemap).toContain(`<loc>${SITE_URL}/de/spielen</loc>`)
+    expect(sitemap).not.toContain('/de/course')
   })
 
   it('is announced in robots.txt', () => {

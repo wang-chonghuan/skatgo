@@ -1,4 +1,5 @@
-// The browser-only page bodies of the course, behind one module so the routes load them as a single
-// lazy chunk — see ./client-page.tsx (the course map is server-rendered and not in here).
-export { FreePlay } from './free-play'
-export { LessonPage } from './lesson-page'
+// The browser-only parts of the course, behind one module so the pages load them as a single lazy chunk:
+// the lesson player and the free-play table. Everything around them — titles, text, links — is rendered
+// on the server by the pages themselves (see ./client-page.tsx).
+export { FreeTable } from './free-table'
+export { LessonPlayer } from './lesson-player'

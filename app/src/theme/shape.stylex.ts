@@ -66,6 +66,8 @@ export const dims = stylex.defineVars({
   arrowDisc: '48px',
   pageColumn: '1287px',
   readingColumn: '860px',
+  /** A table of values on the rules page (SKATGO-29): two columns, a name and a number. */
+  rulesTable: '480px',
 
   // The settings dialog (SKATGO-27)
   settingsWidth: 'min(420px, calc(100vw - 32px))',
@@ -206,6 +208,9 @@ export const dims = stylex.defineVars({
   // Generic
   screen: '100vh',
   screenDynamic: '100dvh',
+  /** Free play's title bar above the table (SKATGO-29), and the rest of the first screen, which the table fills. */
+  playBar: '48px',
+  screenBelowPlayBar: 'calc(100dvh - 48px)',
   half: '50%',
   oneColumn: '1fr',
   twoColumns: '1fr 1fr',

@@ -6,6 +6,7 @@ import { type ComponentType, Suspense, lazy, useCallback, useEffect, useMemo, us
 
 import { GUEST, type ChatMessage, clearConversation, loadConversation, saveConversation } from '~/lib/ask/conversation'
 import { lessonById } from '~/lib/skat/lessons/content'
+import { lessonBySlug } from '~/lib/skat/lessons/guide'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { icon, phoneQuery } from '../../theme/constants'
@@ -36,8 +37,9 @@ function pageOf(pathname: string): AskPage | null {
   if (pathname === '/') return { page: 'entry' }
   if (pathname === '/course' || pathname === '/course/') return { page: 'home' }
   if (pathname === '/play' || pathname === '/play/') return { page: 'play' }
-  const lesson = /^\/lesson\/([^/]+)\/?$/.exec(pathname)
-  if (lesson) return { page: 'lesson', lessonId: decodeURIComponent(lesson[1]) }
+  const slug = /^\/course\/([^/]+)\/?$/.exec(pathname)
+  const lesson = slug ? lessonBySlug(decodeURIComponent(slug[1])) : undefined
+  if (lesson) return { page: 'lesson', lessonId: lesson.id }
   return null
 }
 

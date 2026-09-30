@@ -78,18 +78,16 @@ function describePlay(table: string): string {
   ].join('\n')
 }
 
-// The front page (SKATGO-23). Duplicate and Puzzles are announced there and nothing more is decided
-// about them, so the assistant is told exactly that and forbidden to fill the gap.
-// Each section is named as the page names it, so the answer uses the learner's own words for it.
+// The front page (SKATGO-23, SKATGO-29). It offers exactly two ways into Skat and names nothing else, so
+// the assistant is told exactly that and forbidden to invent more. Each is named as the page names it,
+// so the answer uses the learner's own words for it.
 function describeEntry(course: Lesson[], locale: Locale): string {
   const name = (message: (inputs: object, options: { locale: Locale }) => string) => `"${message({}, { locale })}"`
   return [
-    'CURRENT PAGE: the front page of skatgo.com, offering four sections (quoted as the page names them):',
-    `- ${name(m.entry_course_title)}, the course (open): ${course.length} short interactive lessons, from the 32 cards to a whole game.`,
-    `- ${name(m.entry_play_title)}, free play (open): a free game against two computer players, Lina and Max.`,
-    `- ${name(m.entry_duplicate_title)}, duplicate (coming soon, not open yet): every day the same few deals for everyone, each learner playing them against the computer, compared by score.`,
-    `- ${name(m.entry_puzzles_title)}, puzzles (coming soon, not open yet): a bank of Skat problems, such as how high to bid or which card to play.`,
-    'Nothing more about Duplicate or Puzzles is decided: never invent their rules, scoring, dates or details. If asked, say they are coming and suggest the Course or Play meanwhile.',
+    'CURRENT PAGE: the front page of skatgo.com, offering two ways in (quoted as the page names them), then questions and answers:',
+    `- ${name(m.entry_new_title)}, the course: ${course.length} short interactive lessons, from the 32 cards to a whole game.`,
+    `- ${name(m.entry_game_title)}, free play: a free game against two computer players, Lina and Max.`,
+    'The site also has a rules page, a reference of the whole game. These are all the site offers: never invent or promise other features.',
     '',
     'The course\'s lessons:',
     ...course.map((l) => `Lesson ${l.id} — ${l.title}: ${l.promise}`),

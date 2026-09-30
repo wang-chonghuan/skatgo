@@ -1,7 +1,7 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { Check, ChevronLeft, Copy, GraduationCap, House, Menu, Puzzle, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, Check, ChevronLeft, GraduationCap, House, Menu, Settings, Spade, X } from 'lucide-react'
 import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
 
 import { type CardColours, useSettings } from '~/lib/skat/settings'
@@ -24,22 +24,22 @@ import { Btn, linkLook, suitText } from './ui'
 //   TabBar         the same navigation as a bottom bar, phone;
 //   LandingHeader  the public site's white header, on the front page;
 //   Band           a sub-page's coloured band: back and home, the page's title, language and account.
-// Navigation carries only what skatgo has; sections not open yet are shown, marked, and not links.
+// Navigation carries only what skatgo has (SKATGO-29: nothing announced).
 
-type Section = 'home' | 'course' | 'play'
-type Item = { key: string; section?: Section; to?: '/' | '/course' | '/play'; Icon: ComponentType<{ size?: number; strokeWidth?: number }>; label: () => string }
+type Section = 'home' | 'course' | 'rules' | 'play'
+type Item = { key: string; section: Section; to: '/' | '/course' | '/rules' | '/play'; Icon: ComponentType<{ size?: number; strokeWidth?: number }>; label: () => string }
 
 const ITEMS: Item[] = [
   { key: 'home', section: 'home', to: '/', Icon: House, label: () => m.nav_home() },
   { key: 'course', section: 'course', to: '/course', Icon: GraduationCap, label: () => m.nav_course() },
+  { key: 'rules', section: 'rules', to: '/rules', Icon: BookOpen, label: () => m.nav_rules() },
   { key: 'play', section: 'play', to: '/play', Icon: Spade, label: () => m.nav_play() },
-  { key: 'duplicate', Icon: Copy, label: () => m.nav_duplicate() },
-  { key: 'puzzles', Icon: Puzzle, label: () => m.nav_puzzles() },
 ]
 
 /** Which section a path belongs to. The router has already removed the language prefix. */
 export function sectionOf(pathname: string): Section {
-  if (pathname.startsWith('/course') || pathname.startsWith('/lesson')) return 'course'
+  if (pathname.startsWith('/course')) return 'course'
+  if (pathname.startsWith('/rules')) return 'rules'
   if (pathname.startsWith('/play')) return 'play'
   return 'home'
 }
@@ -81,13 +81,6 @@ function NavItem({ item, active, variant }: { item: Item; active: boolean; varia
       <span {...stylex.props(typography.railLabel)}>{item.label()}</span>
     </>
   )
-  if (!item.to) {
-    return (
-      <div aria-disabled="true" title={m.nav_soon()} data-nav={item.key} data-state="soon" {...stylex.props(look, styles.itemSoon)}>
-        {inner}
-      </div>
-    )
-  }
   return (
     <Link to={item.to} data-nav={item.key} data-state={active ? 'active' : undefined} aria-current={active ? 'page' : undefined} {...stylex.props(look, styles.itemLink, active && styles.itemActive)}>
       {inner}
@@ -106,6 +99,7 @@ export function LandingHeader() {
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
         <Link to="/course" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_course()}</Link>
+        <Link to="/rules" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_rules()}</Link>
         <Link to="/play" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_play()}</Link>
       </nav>
       <div {...stylex.props(styles.landingEnd)}>
@@ -124,6 +118,7 @@ export function LandingHeader() {
       {open ? (
         <div data-testid="landing-menu-panel" {...stylex.props(styles.menuPanel)}>
           <Link to="/course" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_course()}</Link>
+          <Link to="/rules" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_rules()}</Link>
           <Link to="/play" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_play()}</Link>
           <div {...stylex.props(styles.menuAccount)}>
             <Account />
@@ -377,7 +372,6 @@ const styles = stylex.create({
   },
   itemLink: { transitionProperty: 'color', transitionDuration: timing.tile, color: { default: color.slateDeep, ':hover': color.navy }, ...focus },
   itemActive: { color: { default: color.go, ':hover': color.go } },
-  itemSoon: { opacity: opacity.iconDisabled, cursor: 'default' },
 
   landingHeader: {
     position: 'sticky',

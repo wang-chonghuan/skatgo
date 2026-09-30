@@ -25,6 +25,37 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de'],
       ],
     },
+    // German pages have German addresses (SKATGO-29): the course, a lesson, the rules and the table.
+    // A lesson's slug is itself in the page's language (lib/skat/lessons/guide.ts); the pattern only
+    // carries it across.
+    {
+      pattern: '/course',
+      localized: [
+        ['en', '/en/course'],
+        ['de', '/de/kurs'],
+      ],
+    },
+    {
+      pattern: '/course/:slug',
+      localized: [
+        ['en', '/en/course/:slug'],
+        ['de', '/de/kurs/:slug'],
+      ],
+    },
+    {
+      pattern: '/rules',
+      localized: [
+        ['en', '/en/rules'],
+        ['de', '/de/regeln'],
+      ],
+    },
+    {
+      pattern: '/play',
+      localized: [
+        ['en', '/en/play'],
+        ['de', '/de/spielen'],
+      ],
+    },
     {
       pattern: '/:path(.*)?',
       localized: [
@@ -37,5 +68,6 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
   routeStrategies: [
     { match: '/sitemap.xml', exclude: true },
     { match: '/robots.txt', exclude: true },
+    { match: '/og/:file', exclude: true },
   ],
 }

@@ -801,8 +801,9 @@ const tintOf = (c: Contract): Tint => (c.kind === 'suit' ? c.trump : c.kind)
 
 const styles = stylex.create({
   table: { position: 'relative', display: 'grid', backgroundColor: color.page, overflow: 'hidden' },
-  // Free play: the felt fills the screen beside the 450-wide panel; on a phone the panel is a drawer.
-  tableFull: { gridTemplateColumns: { default: dims.tableColumns, [bp.phone]: dims.oneColumn }, minHeight: dims.screenDynamic },
+  // Free play: the felt fills the first screen under the page's title bar (SKATGO-29), beside the
+  // 450-wide panel; on a phone the panel is a drawer.
+  tableFull: { gridTemplateColumns: { default: dims.tableColumns, [bp.phone]: dims.oneColumn }, minHeight: dims.screenBelowPlayBar },
   // Inside a lesson: the panel stacks under the felt.
   tableEmbedded: { gridTemplateColumns: dims.oneColumn, borderRadius: radii.panel },
 
@@ -813,7 +814,7 @@ const styles = stylex.create({
     backgroundImage: fill.felt,
     color: color.onColor,
   },
-  feltFull: { minHeight: dims.screenDynamic },
+  feltFull: { minHeight: dims.screenBelowPlayBar },
 
   // An opponent's hand down an edge, only partly on the felt.
   stack: {

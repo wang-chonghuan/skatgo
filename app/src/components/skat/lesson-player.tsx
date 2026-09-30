@@ -5,10 +5,13 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Trophy } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { track } from '~/lib/analytics'
 import { lessons } from '~/lib/skat/lessons/content'
+import { GUIDES } from '~/lib/skat/lessons/guide'
 import type { Lesson, Step } from '~/lib/skat/lessons/types'
 import { type LessonRecord, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
+import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { confettiBurst, finish, icon, stepSlide } from '../../theme/constants'
@@ -51,10 +54,14 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const onSolved = useCallback(() => setSolvedSteps((s) => new Set(s).add(index)), [index])
   const onMistake = useCallback(() => setMistakes((m) => m + 1), [])
 
+  // Events (SKATGO-29): a lesson started, and a lesson finished, by its number.
+  useEffect(() => track('lesson_start', { lesson: Number(lesson.id) }), [lesson.id])
+
   function advance() {
     if (!canContinue) return
     if (isLast) {
       setRecord(complete(lesson.id, mistakes))
+      track('lesson_complete', { lesson: Number(lesson.id) })
       return
     }
     setIndex(index + 1)
@@ -134,21 +141,23 @@ function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) 
       <motion.div initial={{ scale: finish.fromScale, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={finish.spring} {...stylex.props(styles.doneDisc)}>
         <DoneIcon size={icon.finish} strokeWidth={icon.outline} />
       </motion.div>
-      <h2 {...stylex.props(typography.optionTitle, styles.doneTitle)}>{following ? m.done_title({ id: lesson.id }) : m.done_graduated()}</h2>
+      <h2 {...stylex.props(typography.optionTitle, styles.doneTitle)}>{following ? m.done_title({ id: lesson.id }) : m.course_ready_title()}</h2>
       <div {...stylex.props(styles.doneStars)}><Stars n={record.stars} /></div>
       <p {...stylex.props(typography.appText, styles.doneNote)}>
         {record.mistakes === 0 ? m.done_perfect() : m.done_mistakes({ n: record.mistakes })}
       </p>
       {following ? null : (
-        <p {...stylex.props(typography.appText, styles.doneNote)}>{m.done_next_steps()}</p>
+        <p {...stylex.props(typography.appText, styles.doneNote)}>{m.entry_game_text()}</p>
       )}
       <div {...stylex.props(styles.doneActions)}>
         {following ? (
-          <Link to="/lesson/$id" params={{ id: following.id }} data-testid="skat-next-lesson" {...linkLook('go', 'lg', 'block')}>
+          <Link to="/course/$slug" params={{ slug: GUIDES[getLocale()][following.id].slug }} data-testid="skat-next-lesson" {...linkLook('go', 'lg', 'block')}>
             {m.done_next_lesson({ title: following.title })}
           </Link>
         ) : (
-          <Link to="/play" {...linkLook('go', 'lg', 'block')}>{m.done_free_play()}</Link>
+          <Link to="/play" data-testid="skat-course-done-play" onClick={() => track('course_complete_cta_click')} {...linkLook('go', 'lg', 'block')}>
+            {m.entry_game_cta()}
+          </Link>
         )}
         <Link to="/course" data-testid="skat-back-home" {...linkLook('quiet', 'lg', 'block')}>{m.done_back()}</Link>
       </div>

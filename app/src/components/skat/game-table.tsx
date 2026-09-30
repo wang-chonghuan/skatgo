@@ -321,7 +321,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
       <aside data-testid="skat-panel" data-open={String(panelOpen)} {...stylex.props(styles.panel, fullScreen && styles.panelFull, fullScreen && panelOpen && styles.panelOpen)}>
         {fullScreen ? (
           <button type="button" aria-label={m.table_panel_toggle()} aria-expanded={panelOpen} data-testid="skat-panel-toggle" onClick={() => setPanelOpen((o) => !o)} {...stylex.props(styles.panelTab)}>
-            {panelOpen ? <ChevronRight size={icon.table} strokeWidth={icon.outline} /> : <ChevronLeft size={icon.table} strokeWidth={icon.outline} />}
+            {panelOpen ? <ChevronRight size={icon.inline} strokeWidth={icon.outline} /> : <ChevronLeft size={icon.inline} strokeWidth={icon.outline} />}
           </button>
         ) : null}
 
@@ -1036,8 +1036,8 @@ const styles = stylex.create({
   },
   panelOpen: { transform: pose.onScreen },
   // The white tab that folds the panel away and brings it back, at any width.
-  // The drawer's handle mirrors the hint tab (SKATGO-29): same height from the bottom, same size, on the
-  // right edge.
+  // The drawer's handle mirrors the hint tab's place (SKATGO-29): the same height from the bottom, on the
+  // right edge — a slim tab, so it never competes with the table.
   panelTab: {
     display: 'flex',
     position: 'absolute',

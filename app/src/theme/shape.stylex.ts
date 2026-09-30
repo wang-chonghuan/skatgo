@@ -110,9 +110,9 @@ export const dims = stylex.defineVars({
   hintTabHeight: '56px',
   hintTabBottom: '22%',
   panelPhone: 'min(360px, 88vw)',
-  panelTab: '48px',
-  panelTabHeight: '56px',
-  panelTabOffset: '-48px',
+  panelTab: '28px',
+  panelTabHeight: '48px',
+  panelTabOffset: '-28px',
   plateVertical: 'auto',
   /** The info board across the top of the felt, clear of the way back and the assistant. */
   boardWidth: 'min(640px, calc(100% - 240px))',

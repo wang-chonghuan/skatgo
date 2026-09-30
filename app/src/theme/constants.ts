@@ -12,7 +12,7 @@ export const themeColor = '#FFFFFF'
 
 /** lucide icon sizes in px. */
 export const icon = {
-  launcher: 24,
+  launcher: 20,
   launcherStroke: 2.2,
   header: 18,
   sendStroke: 2.5,

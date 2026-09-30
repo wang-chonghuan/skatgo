@@ -889,9 +889,10 @@ const styles = stylex.create({
   saidLeft: { left: space.x12 },
   saidRight: { right: space.x12 },
 
+  // The info board hangs from the felt's top edge (SKATGO-29): square on top, rounded below.
   board: {
     position: 'absolute',
-    top: { default: space.x16, [bp.phone]: dims.boardTopPhone },
+    top: 0,
     left: dims.half,
     transform: pose.centreX,
     zIndex: layer.launcher,
@@ -900,7 +901,8 @@ const styles = stylex.create({
     justifyContent: 'center',
     width: { default: dims.boardWidth, [bp.phone]: dims.boardWidthPhone },
     boxSizing: 'border-box',
-    borderRadius: radii.panel,
+    borderBottomLeftRadius: radii.panel,
+    borderBottomRightRadius: radii.panel,
     backgroundColor: color.board,
     color: color.onColor,
   },
@@ -1031,10 +1033,12 @@ const styles = stylex.create({
   },
   panelOpen: { transform: { default: 'none', [bp.phone]: pose.onScreen } },
   // The white tab that pulls the drawer out on a phone.
+  // The drawer's handle mirrors the hint tab (SKATGO-29): same height from the bottom, same size, on the
+  // right edge.
   panelTab: {
     display: { default: 'none', [bp.phone]: 'flex' },
     position: 'absolute',
-    top: dims.half,
+    bottom: dims.hintTabBottom,
     left: dims.panelTabOffset,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1048,7 +1052,6 @@ const styles = stylex.create({
     color: color.navy,
     boxShadow: elev.panel,
     cursor: 'pointer',
-    transform: pose.centreY,
   },
   panelBody: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, padding: space.x16, overflowY: 'auto' },
   tabs: { display: 'flex', justifyContent: 'space-around', paddingBottom: space.x16, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },

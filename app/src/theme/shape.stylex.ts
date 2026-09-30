@@ -110,14 +110,14 @@ export const dims = stylex.defineVars({
   hintTabHeight: '56px',
   hintTabBottom: '22%',
   panelPhone: 'min(360px, 88vw)',
-  panelTab: '36px',
-  panelTabHeight: '64px',
-  panelTabOffset: '-36px',
+  panelTab: '48px',
+  panelTabHeight: '56px',
+  panelTabOffset: '-48px',
   plateVertical: 'auto',
   /** The info board across the top of the felt, clear of the way back and the assistant. */
   boardWidth: 'min(640px, calc(100% - 240px))',
-  boardWidthPhone: 'calc(100% - 16px)',
-  boardTopPhone: '64px',
+  /** On a phone the board hangs from the top edge between the assistant's launcher and its mirror space. */
+  boardWidthPhone: 'calc(100% - 120px)',
   boardColumns: 'repeat(4, auto)',
   boardColumnsPhone: 'repeat(2, minmax(0, 1fr))',
   /** Where an opponent's last word in Reizen shows: just inside their stack. */
@@ -192,7 +192,7 @@ export const dims = stylex.defineVars({
   backsTail: '72px',
 
   // The assistant (SKATGO-9/11), unchanged geometry.
-  launcher: '56px',
+  launcher: '44px',
   launcherLift: '48px',
   /** On a phone the launcher clears the 64px tab bar and the table's collapsed sheet. */
   launcherLiftPhone: '80px',

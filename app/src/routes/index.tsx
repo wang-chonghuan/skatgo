@@ -2,9 +2,9 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { ClientPage } from '~/components/skat/client-page'
 import { faq } from '~/lib/faq'
+import { DAILY_DEALS } from '~/lib/daily'
 import { organization, pageHead, samePath } from '~/lib/head'
 import { SITE_URL, localizedUrl } from '~/lib/site'
-import { lessons } from '~/lib/skat/lessons/content'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 
@@ -12,7 +12,7 @@ export const Route = createFileRoute('/')({
   head: () =>
     pageHead({
       title: m.home_meta_title(),
-      description: m.home_meta_description({ count: lessons().length }),
+      description: m.home_meta_description({ deals: DAILY_DEALS }),
       paths: samePath('/'),
       image: 'home',
       jsonLd: [

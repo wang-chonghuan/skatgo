@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DailyRouteImport } from './routes/daily'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as RulesRouteImport } from './routes/rules'
 import { Route as CourseIndexRouteImport } from './routes/course.index'
@@ -18,6 +19,11 @@ import { Route as CourseSlugRouteImport } from './routes/course.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DailyRoute = DailyRouteImport.update({
+  id: '/daily',
+  path: '/daily',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayRoute = PlayRouteImport.update({
@@ -43,6 +49,7 @@ const CourseSlugRoute = CourseSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/daily': typeof DailyRoute
   '/play': typeof PlayRoute
   '/rules': typeof RulesRoute
   '/course/$slug': typeof CourseSlugRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/daily': typeof DailyRoute
   '/play': typeof PlayRoute
   '/rules': typeof RulesRoute
   '/course/$slug': typeof CourseSlugRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/daily': typeof DailyRoute
   '/play': typeof PlayRoute
   '/rules': typeof RulesRoute
   '/course/$slug': typeof CourseSlugRoute
@@ -65,14 +74,22 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/play' | '/rules' | '/course/$slug' | '/course/'
+  fullPaths: '/' | '/daily' | '/play' | '/rules' | '/course/$slug' | '/course/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/play' | '/rules' | '/course/$slug' | '/course'
-  id: '__root__' | '/' | '/play' | '/rules' | '/course/$slug' | '/course/'
+  to: '/' | '/daily' | '/play' | '/rules' | '/course/$slug' | '/course'
+  id:
+    | '__root__'
+    | '/'
+    | '/daily'
+    | '/play'
+    | '/rules'
+    | '/course/$slug'
+    | '/course/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DailyRoute: typeof DailyRoute
   PlayRoute: typeof PlayRoute
   RulesRoute: typeof RulesRoute
   CourseSlugRoute: typeof CourseSlugRoute
@@ -86,6 +103,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/daily': {
+      id: '/daily'
+      path: '/daily'
+      fullPath: '/daily'
+      preLoaderRoute: typeof DailyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/play': {
@@ -121,6 +145,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DailyRoute: DailyRoute,
   PlayRoute: PlayRoute,
   RulesRoute: RulesRoute,
   CourseSlugRoute: CourseSlugRoute,

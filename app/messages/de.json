@@ -250,12 +250,10 @@
   "ask_placeholder_play": "z. B. Welche Karte soll ich jetzt spielen?",
   "auth_sign_in": "Anmelden",
 
-  "entry_title": "Skat – jederzeit, überall",
-  "entry_lead": "Deine Computergegner sitzen immer am Tisch: kein dritter Mann gesucht, kein Warten.",
-  "entry_eyebrow": "Moderner Skat",
-  "entry_cta": "Jetzt spielen",
-  "entry_point_ready": "Gegner jederzeit bereit",
-  "entry_point_browser": "Läuft im Browser",
+  "entry_title": "Gleiche Skatkarten für alle. Wer spielt sie am besten?",
+  "entry_lead": "Jeden Tag spielen alle dieselben {deals} Spiele gegen dieselben Computergegner. So zählt nur, wie du spielst: Sieh deinen Rang und vergleiche jedes Spiel mit der KI.",
+  "entry_eyebrow": "Tägliches Skat-Turnier, kostenlos",
+  "entry_cta": "Heute spielen",
   "back_to_start": "Start",
   "ask_page_entry": "Start",
 
@@ -289,8 +287,8 @@
   "scheme_four": "Vier Farben",
   "scheme_two": "Zwei Farben",
 
-  "home_meta_title": "Skat online kostenlos lernen und spielen | SkatGo",
-  "home_meta_description": "Lerne Skat in {count} kurzen, interaktiven Lektionen und spiel kostenlos gegen zwei Computergegner, jederzeit direkt im Browser.",
+  "home_meta_title": "Skat online kostenlos: gleiche Karten für alle | SkatGo",
+  "home_meta_description": "Skat online spielen, kostenlos und ohne Kartenglück: Jeden Tag spielen alle dieselben {deals} Spiele. Sieh deinen Rang und vergleiche jedes Spiel mit der KI.",
   "entry_cta_learn": "Neu beim Skat? Hier starten",
   "entry_point_signup": "Ohne Anmeldung",
   "entry_new_title": "Neu beim Skat?",
@@ -342,5 +340,15 @@
   "play_meta_description": "Spiel Skat kostenlos gegen zwei Computergegner, jederzeit und direkt im Browser. Kein Warten auf den dritten Mann.",
   "play_title": "Skat gegen den Computer spielen",
   "play_intro": "Zwei Computergegner sitzen immer am Tisch, kein Warten auf den dritten Mann. Spiel so viele Runden, wie du willst, am Handy oder am Computer.",
-  "nav_rules": "Regeln"
+  "nav_rules": "Regeln",
+
+  "entry_point_midnight": "Jeden Tag um Mitternacht neue Karten",
+  "entry_point_minutes": "Rund {minutes} Minuten",
+  "nav_daily": "Täglich",
+  "daily_meta_title": "Tägliches Skat-Turnier online – kostenlos | SkatGo",
+  "daily_meta_description": "Jeden Tag ein kostenloses Skat-Turnier: {deals} Spiele, gleiche Karten für alle, eine Rangliste. Vergleiche jedes Spiel mit der KI.",
+  "daily_title": "Das tägliche Skat-Turnier: {deals} Spiele, eine Rangliste",
+  "daily_lead": "{date}. Gleiche Karten und dieselben Computergegner für alle. Neue Karten in {countdown}.",
+  "daily_cta": "Heute spielen",
+  "daily_countdown": "{h} Std. {m} Min."
 }

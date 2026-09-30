@@ -4,6 +4,7 @@ import { Club, Spade } from 'lucide-react'
 import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
+import { DAILY_DEALS, DAILY_EST_MINUTES } from '~/lib/daily'
 import { faq } from '~/lib/faq'
 import type { Card } from '~/lib/skat/cards'
 import { lessons } from '~/lib/skat/lessons/content'
@@ -22,10 +23,11 @@ import { Pill, linkLook, suitText } from './ui'
 
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
-// The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the headline,
-// the lead, the green call to action with the way in for beginners beside it, a picture, and a strip of
-// facts — then the two ways into Skat as the app's colour tiles, one suit each (♣ the course, ♠ free
-// play), and the questions people ask (SKATGO-29). Only what exists is on it: nothing is announced.
+// The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
+// tournament as the headline, its green call to action with the way in for beginners beside it, a
+// picture, and a strip of facts — then the two other ways into Skat as the app's colour tiles, one suit
+// each (♣ the course, ♠ free play), and the questions people ask (SKATGO-29). The hero's copy leads the
+// tournament itself (the human, 2026-09-30: 「文案先行」).
 //
 // Every picture here is skatgo's own: the public-domain deck the course plays with, fanned on felt, and
 // the suits as outline icons. Rendered on the server; the learner's progress is applied after mount.
@@ -53,9 +55,9 @@ export function EntryPage() {
             </span>
           </div>
           <h1 {...stylex.props(typography.landingTitle, styles.title)}>{m.entry_title()}</h1>
-          <p {...stylex.props(typography.landingLead, styles.lead)}>{m.entry_lead()}</p>
+          <p {...stylex.props(typography.landingLead, styles.lead)}>{m.entry_lead({ deals: DAILY_DEALS })}</p>
           <div {...stylex.props(styles.actions)}>
-            <Link to="/play" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
+            <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
               {m.entry_cta()}
             </Link>
             <Link to="/course" data-testid="entry-cta-learn" onClick={() => heroClick('secondary')} {...linkLook('quiet', 'lg', 'landing')}>
@@ -65,7 +67,7 @@ export function EntryPage() {
         </div>
         <HeroArt />
         <ul data-testid="entry-points" {...stylex.props(styles.points)}>
-          {[m.entry_point_ready(), m.entry_point_browser(), m.entry_point_signup()].map((point) => (
+          {[m.entry_point_midnight(), m.entry_point_minutes({ minutes: DAILY_EST_MINUTES }), m.entry_point_signup()].map((point) => (
             <li key={point} {...stylex.props(typography.landingBody, styles.point)}>
               {point}
             </li>
@@ -190,8 +192,9 @@ const styles = stylex.create({
     alignItems: 'center',
     gap: { default: space.x32, [bp.phone]: space.x24 },
   },
-  heroText: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: { default: space.x24, [bp.phone]: space.x16 } },
-  eyebrow: { display: 'flex', alignItems: 'center', gap: space.x12 },
+  heroText: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0, gap: { default: space.x24, [bp.phone]: space.x16 } },
+  // The tournament's name and the four suits; on a narrow phone the suits drop under the name.
+  eyebrow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12 },
   suits: { display: 'flex', alignItems: 'center', gap: space.x6 },
   suitInk: { color: color.navy },
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.

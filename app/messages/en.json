@@ -250,12 +250,10 @@
   "ask_placeholder_play": "e.g. Which card should I play now?",
   "auth_sign_in": "Sign in",
 
-  "entry_title": "Skat, anytime, anywhere",
-  "entry_lead": "Your computer opponents never leave the table — no third player to find, no waiting.",
-  "entry_eyebrow": "Modern Skat",
-  "entry_cta": "Play now",
-  "entry_point_ready": "Opponents always ready",
-  "entry_point_browser": "Plays in your browser",
+  "entry_title": "Same Skat cards for everyone. Who plays them best?",
+  "entry_lead": "Every day, every player gets the same {deals} hands against the same computer opponents. Luck is off the table: see where you rank, and compare every deal with how the AI played it.",
+  "entry_eyebrow": "Daily Skat tournament, free",
+  "entry_cta": "Play today's deals",
   "back_to_start": "Home",
   "ask_page_entry": "Home",
 
@@ -289,8 +287,8 @@
   "scheme_four": "Four colours",
   "scheme_two": "Two colours",
 
-  "home_meta_title": "Play Skat Online Free – Learn and Play in Your Browser | SkatGo",
-  "home_meta_description": "Learn Skat in {count} short interactive lessons and play free against two computer opponents, any time, right in your browser.",
+  "home_meta_title": "Free Daily Skat Online – Same Deals for Everyone | SkatGo",
+  "home_meta_description": "Play Skat online free: every day, everyone gets the same {deals} deals. No card luck. See your rank and compare every hand with the AI.",
   "entry_cta_learn": "Never played Skat? Start here",
   "entry_point_signup": "No sign-up",
   "entry_new_title": "New to Skat?",
@@ -342,5 +340,15 @@
   "play_meta_description": "Play Skat free against two computer opponents, any time, right in your browser. No waiting for a third player.",
   "play_title": "Play Skat against the computer",
   "play_intro": "Two computer players are always at the table, so there's no waiting for a third player. Play as many games as you like, on your phone or computer.",
-  "nav_rules": "Rules"
+  "nav_rules": "Rules",
+
+  "entry_point_midnight": "New deals every day at midnight (Berlin time)",
+  "entry_point_minutes": "About {minutes} minutes",
+  "nav_daily": "Daily",
+  "daily_meta_title": "Daily Skat Challenge – Free Online Tournament | SkatGo",
+  "daily_meta_description": "A free Skat tournament every day: {deals} deals, the same cards for everyone, one leaderboard. Compare every hand with the AI.",
+  "daily_title": "Today's Skat challenge: {deals} deals, one leaderboard",
+  "daily_lead": "{date}. Same cards and same computer opponents for every player. Next deals in {countdown}.",
+  "daily_cta": "Play today's deals",
+  "daily_countdown": "{h} h {m} min"
 }

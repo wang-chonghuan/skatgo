@@ -1,7 +1,7 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { BookOpen, Check, ChevronLeft, GraduationCap, House, Menu, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, CalendarDays, Check, ChevronLeft, GraduationCap, House, Menu, Settings, Spade, X } from 'lucide-react'
 import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
 
 import { type CardColours, useSettings } from '~/lib/skat/settings'
@@ -26,11 +26,12 @@ import { Btn, linkLook, suitText } from './ui'
 //   Band           a sub-page's coloured band: back and home, the page's title, language and account.
 // Navigation carries only what skatgo has (SKATGO-29: nothing announced).
 
-type Section = 'home' | 'course' | 'rules' | 'play'
-type Item = { key: string; section: Section; to: '/' | '/course' | '/rules' | '/play'; Icon: ComponentType<{ size?: number; strokeWidth?: number }>; label: () => string }
+type Section = 'home' | 'daily' | 'course' | 'rules' | 'play'
+type Item = { key: string; section: Section; to: '/' | '/daily' | '/course' | '/rules' | '/play'; Icon: ComponentType<{ size?: number; strokeWidth?: number }>; label: () => string }
 
 const ITEMS: Item[] = [
   { key: 'home', section: 'home', to: '/', Icon: House, label: () => m.nav_home() },
+  { key: 'daily', section: 'daily', to: '/daily', Icon: CalendarDays, label: () => m.nav_daily() },
   { key: 'course', section: 'course', to: '/course', Icon: GraduationCap, label: () => m.nav_course() },
   { key: 'rules', section: 'rules', to: '/rules', Icon: BookOpen, label: () => m.nav_rules() },
   { key: 'play', section: 'play', to: '/play', Icon: Spade, label: () => m.nav_play() },
@@ -38,6 +39,7 @@ const ITEMS: Item[] = [
 
 /** Which section a path belongs to. The router has already removed the language prefix. */
 export function sectionOf(pathname: string): Section {
+  if (pathname.startsWith('/daily')) return 'daily'
   if (pathname.startsWith('/course')) return 'course'
   if (pathname.startsWith('/rules')) return 'rules'
   if (pathname.startsWith('/play')) return 'play'
@@ -98,6 +100,7 @@ export function LandingHeader() {
         <span {...stylex.props(typography.dialogTitle)}>{m.site_name()}</span>
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
+        <Link to="/daily" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_daily()}</Link>
         <Link to="/course" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_course()}</Link>
         <Link to="/rules" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_rules()}</Link>
         <Link to="/play" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_play()}</Link>
@@ -117,6 +120,7 @@ export function LandingHeader() {
       </div>
       {open ? (
         <div data-testid="landing-menu-panel" {...stylex.props(styles.menuPanel)}>
+          <Link to="/daily" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_daily()}</Link>
           <Link to="/course" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_course()}</Link>
           <Link to="/rules" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_rules()}</Link>
           <Link to="/play" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_play()}</Link>

@@ -78,13 +78,14 @@ function describePlay(table: string): string {
   ].join('\n')
 }
 
-// The front page (SKATGO-23, SKATGO-29). It offers exactly two ways into Skat and names nothing else, so
-// the assistant is told exactly that and forbidden to invent more. Each is named as the page names it,
+// The front page (SKATGO-23, SKATGO-29). Its headline leads a daily tournament that is not playable yet,
+// then offers two ways into Skat; the assistant is told exactly that and forbidden to invent more. Each is named as the page names it,
 // so the answer uses the learner's own words for it.
 function describeEntry(course: Lesson[], locale: Locale): string {
   const name = (message: (inputs: object, options: { locale: Locale }) => string) => `"${message({}, { locale })}"`
   return [
-    'CURRENT PAGE: the front page of skatgo.com, offering two ways in (quoted as the page names them), then questions and answers:',
+    'CURRENT PAGE: the front page of skatgo.com. Its headline announces a daily Skat tournament (the same deals for everyone, a ranking, each deal compared with the computer). The tournament cannot be played yet: its page opens a free game meanwhile. Never invent its rules, scoring, prizes or dates; if asked, say exactly that.',
+    'Below the headline it offers two ways in (quoted as the page names them), then questions and answers:',
     `- ${name(m.entry_new_title)}, the course: ${course.length} short interactive lessons, from the 32 cards to a whole game.`,
     `- ${name(m.entry_game_title)}, free play: a free game against two computer players, Lina and Max.`,
     'The site also has a rules page, a reference of the whole game. These are all the site offers: never invent or promise other features.',

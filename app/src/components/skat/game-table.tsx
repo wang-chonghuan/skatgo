@@ -349,6 +349,8 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
               {([1, ME, 2] as Seat[]).map((seat) => (
                 <div key={seat} {...stylex.props(styles.auctionCol)}>
                   <span {...stylex.props(typography.auctionHead, styles.auctionHead)}>{nameOf(seat)}</span>
+                  {/* Where the seat sits this deal, so the order of the bids reads (SKATGO-29). */}
+                  <span data-testid="skat-history-role" {...stylex.props(typography.infoSub, styles.auctionRole)}>{roleName(roleOf(seat, game.dealer))}</span>
                   <div {...stylex.props(styles.auctionCells)}>
                     {game.bidding.log
                       .filter((e) => e.seat === seat)
@@ -1068,6 +1070,7 @@ const styles = stylex.create({
   auction: { display: 'grid', gridTemplateColumns: dims.auctionColumns, gap: space.x8 },
   auctionCol: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6 },
   auctionHead: { color: color.auctionHead, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' },
+  auctionRole: { color: color.slate, textTransform: 'capitalize', whiteSpace: 'nowrap' },
   // A column of bids is as wide as its bids (SKATGO-29), never narrower than one.
   auctionCells: {
     display: 'flex',

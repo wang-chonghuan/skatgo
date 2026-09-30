@@ -45,7 +45,9 @@ for (const path of pages) {
       text.innerHTML = `<div style="display:flex;align-items:center;gap:14px"><img src="/logo-96.png" style="width:56px;height:56px;border-radius:8px"><span style="font-size:34px;font-weight:700;color:#022657">SkatGo</span></div>
         <div style="font-size:${h1.length > 34 ? 54 : 64}px;line-height:1.05;font-weight:900;color:#022657;text-wrap:balance">${h1}</div>
         <div style="font-size:24px;font-weight:600;color:#00A878">${site}</div>`
-      art.style.height = '502px'
+      // The picture's box keeps the hero picture's own proportions; fit its width to the column (SKATGO-33).
+      art.style.width = '470px'
+      art.style.height = 'auto'
       frame.append(text, art)
       document.body.append(frame)
     },

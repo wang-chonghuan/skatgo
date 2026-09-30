@@ -215,7 +215,8 @@ export const dims = stylex.defineVars({
   oneColumn: '1fr',
   twoColumns: '1fr 1fr',
   lobbyColumns: '1fr 1fr 2fr',
-  heroColumns: '1.1fr 1fr',
+  /** The front page's hero: the headline two thirds, the picture one third (the human, SKATGO-29). */
+  heroColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
   contractColumns: 'repeat(6, 1fr)',
   contractColumnsPhone: 'repeat(3, 1fr)',
   auctionColumns: 'repeat(3, 1fr)',

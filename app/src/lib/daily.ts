@@ -4,9 +4,6 @@
 /** Deals in one day's tournament. */
 export const DAILY_DEALS = 12
 
-/** About how long a day's deals take, in minutes. */
-export const DAILY_EST_MINUTES = 20
-
 /** New deals start at midnight in this time zone. */
 export const DAILY_TIME_ZONE = 'Europe/Berlin'
 

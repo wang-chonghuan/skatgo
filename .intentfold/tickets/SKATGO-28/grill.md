@@ -27,13 +27,47 @@ already says it.
 **Human's answer (2026-09-30):** 「slogan不对，应该改为复式，因为这是我主打的功能，就是每天没人打12幅牌，看排名。突出我的主打功能」
 The slogan must feature Duplicate: every day, everyone plays the same 12 deals, and sees the ranking.
 
-**Revised proposal (awaiting confirmation):**
-- **Headline:**
-  - en: "12 deals a day. The same for everyone."
-  - de: "12 Spiele am Tag. Für alle dieselben."
-- **Lead:**
-  - en: "Play today's deals and see where you rank among all players."
-  - de: "Spiel die Blätter des Tages und sieh, wo du unter allen stehst."
+**Second answer (2026-09-30):** 「你去查查 funbridge等其他这种形式的app是如何宣传这一点的，学学。另外不要把12等数字写到文案里」
+(Look at how Funbridge and similar apps promote this, and learn from them; no numbers such as 12 in
+the copy.)
+
+**What the others say.** Read 2026-09-30, summarised in the agent's words; no copy is taken.
+
+- **Funbridge** (bridge, the same format as Duplicate). Its duplicate pitch rests on:
+  - **fairness**: everyone gets the same deals under the same conditions, so only your own decisions
+    make the difference;
+  - **comparison**: you see your rank against players everywhere right after each deal;
+  - **learning**: you see where your result differs and improve;
+  - **rhythm**: a daily tournament to "compare yourself with thousands", and weekly leagues to climb.
+
+  Big numbers appear only as social proof in a separate strip, never in the headline.
+- **BBO** (bridge): every mode names its leaderboard, and a mode is described by its shape (a stream of
+  hands, a short set of deals), not by a promise.
+- **Skat Palast** (the largest German Skat site): real opponents, community, tournaments and rankings.
+  It does **not** lead with the same cards for everyone. That fair comparison is where SkatGo can stand
+  apart among Skat sites.
+- **The daily-puzzle pattern** (Wordle and the like): one fresh set each day, the same for everyone;
+  come back tomorrow and compare.
+
+**What this suggests for SkatGo.** Lead with fairness: what Skat players grumble about is the luck of
+the deal (Kartenglück), and Duplicate removes it. Then the daily rhythm and the ranking. No numbers.
+
+**Options (original wording):**
+- **A (recommended): the luck of the deal gone.**
+  - en: headline "Skat without the luck of the deal."; lead "Every day everyone plays the same deals, so
+    the ranking shows who played them best."
+  - de: headline "Skat ohne Kartenglück."; lead "Jeden Tag spielen alle dieselben Blätter – die Wertung
+    zeigt, wer sie am besten gespielt hat."
+- **B: same cards, your play decides.**
+  - en: "Same cards for everyone. Your play decides." / "Play today's deals and see where you rank
+    among everyone who played them."
+  - de: "Gleiche Karten für alle. Dein Spiel entscheidet." / "Spiel die Blätter des Tages und sieh, wo
+    du unter allen stehst."
+- **C: the daily ritual.**
+  - en: "Today's deals. Everyone's ranking." / "New deals every day, the same for all players – play
+    them and see your place."
+  - de: "Die Blätter des Tages. Die Wertung aller." / "Jeden Tag neue Blätter, für alle dieselben –
+    spiel sie und sieh deinen Platz."
 
 **Follow-up questions (Duplicate is not live yet; its tile says "coming soon"; the hero's action opens
 free play):**

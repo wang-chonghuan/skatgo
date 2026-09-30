@@ -7,7 +7,6 @@ import { type ComponentType, Suspense, lazy, useCallback, useEffect, useMemo, us
 import { GUEST, type ChatMessage, clearConversation, loadConversation, saveConversation } from '~/lib/ask/conversation'
 import { lessonById } from '~/lib/skat/lessons/content'
 import { lessonBySlug } from '~/lib/skat/lessons/guide'
-import { useTablePanel } from '~/lib/skat/table-panel'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { icon, phoneQuery } from '../../theme/constants'
@@ -175,10 +174,9 @@ function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
   const phone = usePhone()
   const [open, setOpen] = useState(false)
   const title = titleOf(page)
-  // At the card table the side panel owns the right edge (SKATGO-26); the launcher waits beside it, or
-  // in the felt's corner while the panel is folded away (SKATGO-29).
+  // At the card table the launcher waits in the felt's top right corner; the side panel is a drawer
+  // that covers it while open (SKATGO-29).
   const atTable = page.page === 'play'
-  const panelOpen = useTablePanel((s) => s.open)
 
   // Closing hands focus back to the button it was opened from.
   const launcher = useRef<HTMLButtonElement | null>(null)
@@ -326,7 +324,7 @@ function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
           title={m.ask_button_label()}
           data-testid="ask-launcher"
           onClick={() => setOpen(true)}
-          {...stylex.props(styles.launcher, atTable && styles.launcherAtTable, atTable && !panelOpen && styles.launcherPanelFolded)}
+          {...stylex.props(styles.launcher, atTable && styles.launcherAtTable)}
         >
           <MessageCircle aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
         </button>
@@ -338,7 +336,7 @@ function AskWindow({ page, pathname }: { page: AskPage; pathname: string }) {
           aria-label={`${m.ask_name()} · ${title}`}
           data-testid="ask-panel"
           data-sheet={phone ? 'true' : 'false'}
-          {...stylex.props(styles.panel, atTable && panelOpen && styles.besidePanel, phone && styles.sheet, phone && keyboardArea && dynamic.overKeyboard(keyboardArea.top, keyboardArea.height))}
+          {...stylex.props(styles.panel, phone && styles.sheet, phone && keyboardArea && dynamic.overKeyboard(keyboardArea.top, keyboardArea.height))}
         >
           <header {...stylex.props(styles.head)}>
             <div {...stylex.props(styles.headText)}>
@@ -419,14 +417,12 @@ const styles = stylex.create({
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
-  besidePanel: { right: { default: dims.launcherRightTable, [bp.phone]: space.x24 } },
   // At the table the launcher waits at the felt's top right, clear of the hand and the panel's buttons.
   launcherAtTable: {
     top: { default: space.x16, [bp.phone]: space.x8 },
-    right: { default: dims.launcherRightTable, [bp.phone]: space.x8 },
+    right: { default: space.x16, [bp.phone]: space.x8 },
     bottom: 'auto',
   },
-  launcherPanelFolded: { right: { default: space.x16, [bp.phone]: space.x8 } },
   panel: {
     position: 'fixed',
     right: space.x24,

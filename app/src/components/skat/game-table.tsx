@@ -5,7 +5,6 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
-import { useTablePanel } from '~/lib/skat/table-panel'
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { visibleTable } from '~/lib/skat/table-view'
 import { cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
@@ -185,16 +184,15 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
     return e.say === 'pass' ? m.bid_pass() : e.say === 'hold' ? m.bid_hold_said({ value: e.value }) : m.bid_said({ value: e.value })
   }
 
-  // The side panel folds away at any width (SKATGO-29; lib/skat/table-panel.ts).
-  const panelOpen = useTablePanel((s) => s.open)
-  const togglePanel = useTablePanel((s) => s.toggle)
+  // The side panel is a drawer over the felt at any width (SKATGO-29): closed until the learner opens it.
+  const [panelOpen, setPanelOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
   const acting = inFrameActions && myTurn
   const dialog = game.phase === 'passedIn' || game.phase === 'done'
 
   return (
-    <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded, fullScreen && !panelOpen && styles.tableFolded)}>
+    <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>
       <div data-testid="skat-felt" {...stylex.props(styles.felt, fullScreen && styles.feltFull)}>
         <InfoBoard game={game} scores={scores} points={points} />
         {/* Both opponents' hands: the same cards as the learner's, turned sideways and stacked down the
@@ -320,9 +318,9 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
         </div>
       </div>
 
-      <aside data-testid="skat-panel" data-open={String(panelOpen)} {...stylex.props(styles.panel, fullScreen && styles.panelFull, fullScreen && !panelOpen && styles.panelFolded, fullScreen && panelOpen && styles.panelOpen)}>
+      <aside data-testid="skat-panel" data-open={String(panelOpen)} {...stylex.props(styles.panel, fullScreen && styles.panelFull, fullScreen && panelOpen && styles.panelOpen)}>
         {fullScreen ? (
-          <button type="button" aria-label={m.table_panel_toggle()} aria-expanded={panelOpen} data-testid="skat-panel-toggle" onClick={togglePanel} {...stylex.props(styles.panelTab)}>
+          <button type="button" aria-label={m.table_panel_toggle()} aria-expanded={panelOpen} data-testid="skat-panel-toggle" onClick={() => setPanelOpen((o) => !o)} {...stylex.props(styles.panelTab)}>
             {panelOpen ? <ChevronRight size={icon.table} strokeWidth={icon.outline} /> : <ChevronLeft size={icon.table} strokeWidth={icon.outline} />}
           </button>
         ) : null}
@@ -804,10 +802,8 @@ const tintOf = (c: Contract): Tint => (c.kind === 'suit' ? c.trump : c.kind)
 
 const styles = stylex.create({
   table: { position: 'relative', display: 'grid', backgroundColor: color.page, overflow: 'hidden' },
-  // Free play: the felt fills the screen beside the 450-wide panel; on a phone the panel is a drawer.
-  tableFull: { gridTemplateColumns: { default: dims.tableColumns, [bp.phone]: dims.oneColumn }, minHeight: dims.screenDynamic },
-  // The panel folded away: the felt takes the whole width.
-  tableFolded: { gridTemplateColumns: dims.oneColumn },
+  // Free play: the felt fills the screen; the panel is a drawer over it (SKATGO-29).
+  tableFull: { gridTemplateColumns: dims.oneColumn, minHeight: dims.screenDynamic },
   // Inside a lesson: the panel stacks under the felt.
   tableEmbedded: { gridTemplateColumns: dims.oneColumn, borderRadius: radii.panel },
 
@@ -1022,30 +1018,23 @@ const styles = stylex.create({
   mine: { position: 'absolute', left: 0, right: 0, bottom: space.x12, display: 'flex', justifyContent: 'center', paddingInline: { default: space.x16, [bp.phone]: space.x6 }, boxSizing: 'border-box' },
 
   panel: { position: 'relative', display: 'flex', flexDirection: 'column', backgroundColor: color.page, color: color.text },
+  // A drawer at any width: over the felt's right side on a wide screen, over the whole screen on a phone.
   panelFull: {
-    position: { default: 'relative', [bp.phone]: 'fixed' },
-    top: { default: 'auto', [bp.phone]: 0 },
-    right: { default: 'auto', [bp.phone]: 0 },
-    zIndex: { default: 'auto', [bp.phone]: layer.window },
+    position: { default: 'absolute', [bp.phone]: 'fixed' },
+    top: 0,
+    right: 0,
+    bottom: { default: 0, [bp.phone]: 'auto' },
+    zIndex: layer.window,
     width: { default: dims.sidePanel, [bp.phone]: dims.panelPhone },
     height: { default: 'auto', [bp.phone]: dims.screenDynamic },
-    transform: { default: 'none', [bp.phone]: pose.offRight },
+    transform: pose.offRight,
     transitionProperty: 'transform',
     transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
     borderTopLeftRadius: radii.panel,
     borderBottomLeftRadius: radii.panel,
     boxShadow: elev.panel,
   },
-  // Folded on a wide screen: the panel leaves the grid and slides out past the table's right edge, which
-  // clips it; only its handle stays in view.
-  panelFolded: {
-    position: { default: 'absolute', [bp.phone]: 'fixed' },
-    top: 0,
-    right: 0,
-    bottom: { default: 0, [bp.phone]: 'auto' },
-    transform: pose.offRight,
-  },
-  panelOpen: { transform: { default: 'none', [bp.phone]: pose.onScreen } },
+  panelOpen: { transform: pose.onScreen },
   // The white tab that folds the panel away and brings it back, at any width.
   // The drawer's handle mirrors the hint tab (SKATGO-29): same height from the bottom, same size, on the
   // right edge.
@@ -1079,12 +1068,13 @@ const styles = stylex.create({
   auction: { display: 'grid', gridTemplateColumns: dims.auctionColumns, gap: space.x8 },
   auctionCol: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6 },
   auctionHead: { color: color.auctionHead, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' },
+  // A column of bids is as wide as its bids (SKATGO-29), never narrower than one.
   auctionCells: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: space.x4,
-    width: '100%',
+    minWidth: dims.auctionCell,
     minHeight: dims.auctionHeight,
     padding: space.x6,
     boxSizing: 'border-box',

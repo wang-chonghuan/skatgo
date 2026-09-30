@@ -196,8 +196,6 @@ export const dims = stylex.defineVars({
   launcherLift: '48px',
   /** On a phone the launcher clears the 64px tab bar and the table's collapsed sheet. */
   launcherLiftPhone: '80px',
-  /** At the table the launcher and its window sit left of the 450-wide side panel. */
-  launcherRightTable: '474px',
   closeButton: '36px',
   windowWidth: 'min(480px, calc(100vw - 48px))',
   windowHeight: 'min(576px, calc(100dvh - 96px))',
@@ -221,9 +219,9 @@ export const dims = stylex.defineVars({
   contractColumns: 'repeat(6, 1fr)',
   contractColumnsPhone: 'repeat(3, 1fr)',
   auctionColumns: 'repeat(3, 1fr)',
+  /** The narrowest a column of bids gets (SKATGO-29): one bid chip and the column's padding. */
+  auctionCell: '56px',
   tabColumns: 'repeat(5, 1fr)',
-  /** Free play: the felt, then the 450-wide side panel. */
-  tableColumns: 'minmax(0, 1fr) 450px',
   /** The felt's rows: the seats and the frame, then the learner's hand. */
   feltRows: 'minmax(0, 1fr) auto',
   square: '1 / 1',

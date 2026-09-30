@@ -54,9 +54,9 @@ export const dims = stylex.defineVars({
   // Lobby
   tileArtRight: '-18px',
   tileArtBottom: '-38px',
-  /** The hero's screenshot (app/public/hero-table.webp, 434×602): its box keeps these proportions at
-   *  every width, so the whole picture shows, never cropped (SKATGO-29). */
-  heroArtRatio: '434 / 602',
+  /** The hero's picture (app/public/hero-table.webp, the human's illustration, 1448×1086, SKATGO-33): its
+   *  box keeps these proportions at every width, so the whole picture shows, never cropped. */
+  heroArtRatio: '1448 / 1086',
   tileHeight: '223px',
   tileIcon: '48px',
   lobbyColumn: '1280px',

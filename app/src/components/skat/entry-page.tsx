@@ -105,7 +105,7 @@ const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
 const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
-/** The hero's picture: a game at skatgo's own table (a screenshot of free play, SKATGO-29), shown whole. */
+/** The hero's picture: three players at a club-shaped table (the human's illustration, SKATGO-33), shown whole. */
 function HeroArt() {
   return (
     <div data-testid="entry-art" {...stylex.props(styles.heroArt)}>

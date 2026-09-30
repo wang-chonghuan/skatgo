@@ -17,7 +17,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { PlayingCard } from './playing-card'
-import { Pill, linkLook } from './ui'
+import { linkLook } from './ui'
 
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
@@ -42,9 +42,6 @@ export function EntryPage() {
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.heroText)}>
-          <div>
-            <Pill tone="go">{m.entry_eyebrow()}</Pill>
-          </div>
           <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
           <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead({ deals: DAILY_DEALS })}</p>
           <div {...stylex.props(styles.actions)}>

@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-33",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-33",
+  "branch": "SKATGO-33-crisp-hero",
+  "base": "9ce1fd6f4d26a11c2b667a08622c0df8eeb85be8",
+  "ports": {
+    "web": 55033,
+    "multiplayer": 56033,
+    "database": 57033
+  }
+}

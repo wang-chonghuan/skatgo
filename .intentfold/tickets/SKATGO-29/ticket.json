@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-29",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-29",
+  "branch": "SKATGO-29-landing-pages",
+  "base": "f907564c0f5b9ace8b4c7f10de81695eb79128aa",
+  "ports": { "web": 55029, "multiplayer": 56029, "database": 57029 }
+}

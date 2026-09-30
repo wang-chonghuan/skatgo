@@ -24,8 +24,8 @@ describe('the assistant context', () => {
   })
 
   it('describes the course map with every lesson', () => {
-    const prompt = buildSystemPrompt('zh', { kind: 'home' })
-    for (const lesson of COURSES.zh) expect(prompt).toContain(lesson.title)
+    const prompt = buildSystemPrompt('en', { kind: 'home' })
+    for (const lesson of COURSES.en) expect(prompt).toContain(lesson.title)
   })
 
   it('names the answer language and carries the rules', () => {

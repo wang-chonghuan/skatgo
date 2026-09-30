@@ -7,63 +7,36 @@
     <loc>https://skatgo.com/en</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/"/>
   </url>
   <url>
     <loc>https://skatgo.com/de</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/"/>
-  </url>
-  <url>
-    <loc>https://skatgo.com/zh</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/"/>
   </url>
   <url>
     <loc>https://skatgo.com/en/play</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en/play"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/play"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh/play"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/play"/>
   </url>
   <url>
     <loc>https://skatgo.com/de/play</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en/play"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/play"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh/play"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/play"/>
-  </url>
-  <url>
-    <loc>https://skatgo.com/zh/play</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en/play"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/play"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh/play"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/play"/>
   </url>
   <url>
     <loc>https://skatgo.com/en/course</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en/course"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/course"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh/course"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/course"/>
   </url>
   <url>
     <loc>https://skatgo.com/de/course</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en/course"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/course"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh/course"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/course"/>
-  </url>
-  <url>
-    <loc>https://skatgo.com/zh/course</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en/course"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/course"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://skatgo.com/zh/course"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/course"/>
   </url>
 </urlset>

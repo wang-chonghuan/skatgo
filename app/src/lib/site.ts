@@ -5,8 +5,8 @@ import { type Locale, localizeHref } from '~/paraglide/runtime'
 
 export const SITE_URL = 'https://skatgo.com'
 
-/** BCP 47 tag for <html lang> and hreflang. The Chinese course is written in Simplified characters. */
-export const LANG_TAG: Record<Locale, string> = { en: 'en', de: 'de', zh: 'zh-Hans' }
+/** BCP 47 tag for <html lang> and hreflang. */
+export const LANG_TAG: Record<Locale, string> = { en: 'en', de: 'de' }
 
 /** The absolute URL of a page (a route path such as `/play`) in one language. */
 export const localizedUrl = (path: string, locale: Locale) => `${SITE_URL}${localizeHref(path, { locale })}`

@@ -14,7 +14,7 @@ describe('which language a page is served in', () => {
     expect(at('/', 'en;q=0.3,de;q=0.7')).toBe('de')
   })
 
-  it('never infers Chinese: a Chinese or unknown browser gets English', () => {
+  it('a Chinese or unknown browser gets English', () => {
     expect(at('/', 'zh-CN,zh;q=0.9')).toBe('en')
     expect(at('/', 'fr-FR')).toBe('en')
     expect(at('/', null)).toBe('en')
@@ -22,10 +22,13 @@ describe('which language a page is served in', () => {
   })
 
   it('keeps an explicit choice: the URL first, then the saved choice', () => {
-    expect(at('/zh', 'de-DE')).toBe('zh')
     expect(at('/de/play', 'en-US')).toBe('de')
-    expect(at('/', 'de-DE', 'PARAGLIDE_LOCALE=zh')).toBe('zh')
     expect(at('/', 'zh-CN', 'other=1; PARAGLIDE_LOCALE=en')).toBe('en')
     expect(at('/', 'de-DE', 'PARAGLIDE_LOCALE=fr')).toBe('de')
+  })
+
+  it('treats a saved Chinese choice, from before the site dropped Chinese, as no choice', () => {
+    expect(at('/', 'de-DE', 'PARAGLIDE_LOCALE=zh')).toBe('de')
+    expect(at('/', 'zh-CN', 'PARAGLIDE_LOCALE=zh')).toBe('en')
   })
 })

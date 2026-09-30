@@ -1,5 +1,5 @@
-// The course in English — the same eleven lessons, cards and answers as content.zh.ts (lessons.test.ts
-// holds the three languages to that). Terms follow everyday English Skat usage — pagat.com and the
+// The course in English — the same eleven lessons, cards and answers as content.de.ts (lessons.test.ts
+// holds the two languages to that). Terms follow everyday English Skat usage — pagat.com and the
 // English Wikipedia, the official ISPA wording where it is also the common one: declarer, defenders,
 // forehand / middlehand / rearhand, trick, skat, matadors "with / without", card points. The German
 // words every Skat table uses (Grand, Null, Hand, Schneider, Schwarz, Ouvert) stay German. Decisions

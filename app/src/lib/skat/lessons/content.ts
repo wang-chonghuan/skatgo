@@ -4,10 +4,9 @@
 import { type Locale, getLocale } from '~/paraglide/runtime'
 import { LESSONS_DE } from './content.de'
 import { LESSONS_EN } from './content.en'
-import { LESSONS_ZH } from './content.zh'
 import type { Lesson } from './types'
 
-export const COURSES: Record<Locale, Lesson[]> = { zh: LESSONS_ZH, en: LESSONS_EN, de: LESSONS_DE }
+export const COURSES: Record<Locale, Lesson[]> = { en: LESSONS_EN, de: LESSONS_DE }
 
 /** The lessons in the current language (the URL's prefix). */
 export const lessons = (): Lesson[] => COURSES[getLocale()]

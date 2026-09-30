@@ -7,14 +7,13 @@ import type { Lesson, Step } from './types'
 
 import de from '../../../../messages/de.json'
 import en from '../../../../messages/en.json'
-import zh from '../../../../messages/zh.json'
 
 // The course's hand-written exercises are claims about the rules. Each one is checked against the
 // engine here, so a typo in a hand cannot teach the learner something false.
 //
-// The course exists three times, once per language (SKATGO-1). A translation must never change a
-// card, an answer or the best play, so the three are held to the same structure here — for the
-// random drills too, by driving each language's generator with the same random numbers.
+// The course exists once per language (SKATGO-1), English being the reference. A translation must
+// never change a card, an answer or the best play, so every language is held to the same structure
+// here — for the random drills too, by driving each language's generator with the same random numbers.
 
 type Concrete = Exclude<Step, { kind: 'generated' }>
 
@@ -78,10 +77,10 @@ afterEach(() => vi.restoreAllMocks())
 const CJK = /[　-〿㐀-鿿＀-￯]/
 
 describe('the course', () => {
-  const zhCourse = COURSES.zh
+  const reference = COURSES.en
 
   it('has unique lesson ids', () => {
-    expect(new Set(zhCourse.map((l) => l.id)).size).toBe(zhCourse.length)
+    expect(new Set(reference.map((l) => l.id)).size).toBe(reference.length)
   })
 
   it('exists in every language', () => {
@@ -141,13 +140,18 @@ describe('the course', () => {
       expect(course[course.length - 1].steps.some((s) => s.kind === 'game')).toBe(true)
     })
 
-    if (locale === 'zh') continue
+    it(`${locale}: contains no Chinese`, () => {
+      const text = JSON.stringify(course)
+      expect(text.match(CJK)?.[0] ?? null).toBeNull()
+    })
 
-    it(`${locale}: says the same as the Chinese course — same lessons, cards, answers and best plays`, () => {
-      expect(course.map((l) => [l.id, l.minutes, l.steps.length])).toEqual(zhCourse.map((l) => [l.id, l.minutes, l.steps.length]))
+    if (locale === 'en') continue
+
+    it(`${locale}: says the same as the English course — same lessons, cards, answers and best plays`, () => {
+      expect(course.map((l) => [l.id, l.minutes, l.steps.length])).toEqual(reference.map((l) => [l.id, l.minutes, l.steps.length]))
       course.forEach((lesson, li) => {
         lesson.steps.forEach((step, si) => {
-          const other = zhCourse[li].steps[si]
+          const other = reference[li].steps[si]
           expect(step.kind === 'generated', `lesson ${lesson.id} step ${si}`).toBe(other.kind === 'generated')
           for (const seed of [1, 7, 42]) {
             const seedFor = seed * 1000 + li * 50 + si
@@ -156,16 +160,11 @@ describe('the course', () => {
         })
       })
     })
-
-    it(`${locale}: contains no Chinese`, () => {
-      const text = JSON.stringify(course)
-      expect(text.match(CJK)?.[0] ?? null).toBeNull()
-    })
   }
 })
 
 describe('the messages', () => {
-  const catalogues: Record<Locale, Record<string, string>> = { en, de, zh }
+  const catalogues: Record<Locale, Record<string, string>> = { en, de }
 
   it('every language has exactly the same keys', () => {
     const keys = Object.keys(en).sort()

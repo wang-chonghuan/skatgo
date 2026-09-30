@@ -2,7 +2,7 @@ import { Outlet } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
 import { AskLauncher } from '~/components/skat/ask'
-import { AppShell, LandingHeader, Rail, TabBar, useSection } from '~/components/skat/frame'
+import { AppShell, LandingHeader, Rail, TabBar, useCardColourTheme, useSection } from '~/components/skat/frame'
 import { color } from './theme/color.stylex'
 import { dims } from './theme/shape.stylex'
 import { typography } from './theme/type'
@@ -15,9 +15,11 @@ import { typography } from './theme/type'
 // The floating assistant comes after, and decides itself which pages it is on.
 export function SkatLayout() {
   const section = useSection()
+  // The learner's card colours (SKATGO-27): every suit colour below reads theme/suits.stylex.ts.
+  const cardColours = useCardColourTheme()
   if (section === 'home') {
     return (
-      <div {...stylex.props(typography.frame, styles.page, styles.landing)}>
+      <div {...stylex.props(typography.frame, styles.page, styles.landing, cardColours)}>
         <LandingHeader />
         <main {...stylex.props(styles.main)}>
           <Outlet />
@@ -28,7 +30,7 @@ export function SkatLayout() {
   }
   if (section === 'play') {
     return (
-      <div {...stylex.props(typography.frame, styles.page, styles.table)}>
+      <div {...stylex.props(typography.frame, styles.page, styles.table, cardColours)}>
         <main {...stylex.props(styles.main)}>
           <Outlet />
         </main>
@@ -37,7 +39,7 @@ export function SkatLayout() {
     )
   }
   return (
-    <div {...stylex.props(typography.frame, styles.page)}>
+    <div {...stylex.props(typography.frame, styles.page, cardColours)}>
       <Rail />
       <AppShell>
         <main {...stylex.props(styles.main)}>

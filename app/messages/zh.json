@@ -309,5 +309,12 @@
   "info_points": "本局点数",
   "info_tricks": "第 {n} / 10 墩",
   "info_totals": "总分",
-  "info_label": "牌局信息"
+  "info_label": "牌局信息",
+
+  "settings_open": "设置",
+  "settings_title": "牌色",
+  "settings_close": "关闭",
+  "scheme_german": "德国 Skat 配色",
+  "scheme_four": "四色牌",
+  "scheme_two": "两色牌"
 }

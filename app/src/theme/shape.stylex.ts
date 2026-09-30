@@ -67,6 +67,9 @@ export const dims = stylex.defineVars({
   pageColumn: '1287px',
   readingColumn: '860px',
 
+  // The settings dialog (SKATGO-27)
+  settingsWidth: 'min(420px, calc(100vw - 32px))',
+
   // The table
   /** The trick in the frame: each card 26% of the frame's width; both opponents' cards level at 27%
    *  from the top and the same distance from their side of the frame (one value, so the two can never

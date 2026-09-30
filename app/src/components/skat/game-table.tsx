@@ -33,7 +33,7 @@ import {
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Spade } from 'lucide-react'
+import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Settings, Spade } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -44,6 +44,7 @@ import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Fan } from './card-row'
+import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { Btn, Panel, Pill, Rich, Tip, linkLook } from './ui'
 
@@ -184,6 +185,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
   }
 
   const [panelOpen, setPanelOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
   const acting = inFrameActions && myTurn
   const dialog = game.phase === 'passedIn' || game.phase === 'done'
@@ -333,6 +335,10 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
                 <span {...stylex.props(styles.tabTile)}><GraduationCap size={icon.table} strokeWidth={icon.outline} /></span>
                 <span {...stylex.props(typography.railLabel)}>{m.nav_course()}</span>
               </Link>
+              <button type="button" data-testid="settings-open-table" onClick={() => setSettingsOpen(true)} {...stylex.props(typography.control, styles.tab, styles.tabLink, styles.tabButton)}>
+                <span {...stylex.props(styles.tabTile)}><Settings size={icon.table} strokeWidth={icon.outline} /></span>
+                <span {...stylex.props(typography.railLabel)}>{m.settings_open()}</span>
+              </button>
             </div>
           ) : null}
 
@@ -371,6 +377,8 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
           </div>
         </div>
       </aside>
+
+      {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
 
       {/* The settlement and a passed-in deal are dialogs over the whole table, outside the panel, which
           on a phone is a drawer that slides. */}
@@ -1048,6 +1056,7 @@ const styles = stylex.create({
   tabLink: { outlineStyle: { default: 'none', ':focus-visible': 'solid' }, outlineWidth: border.focus, outlineColor: color.info },
   tabTile: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: dims.tabTile, height: dims.tabTile, borderRadius: radii.panel, backgroundColor: color.hairline, color: color.navy },
   tabTileActive: { backgroundColor: color.tabActive },
+  tabButton: { padding: 0, borderWidth: 0, backgroundColor: 'transparent', cursor: 'pointer' },
   history: { display: 'flex', flexDirection: 'column', gap: space.x8 },
   panelTitle: { margin: 0, color: color.navy, textAlign: 'center' },
   auction: { display: 'grid', gridTemplateColumns: dims.auctionColumns, gap: space.x8 },

@@ -309,5 +309,12 @@
   "info_points": "Augen",
   "info_tricks": "Stich {n} von 10",
   "info_totals": "Gesamt",
-  "info_label": "Spielinformation"
+  "info_label": "Spielinformation",
+
+  "settings_open": "Einstellungen",
+  "settings_title": "Kartenfarben",
+  "settings_close": "Schließen",
+  "scheme_german": "Deutsches Skatblatt",
+  "scheme_four": "Vier Farben",
+  "scheme_two": "Zwei Farben"
 }

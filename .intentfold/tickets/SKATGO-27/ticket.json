@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-27",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-27",
+  "branch": "SKATGO-27-card-colours",
+  "base": "0d56003e4b0e44faa0c3e43a0abc8528e4cf034f",
+  "ports": { "web": 55027, "multiplayer": 56027, "database": 57027 }
+}

@@ -16,7 +16,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { PlayingCard } from './playing-card'
-import { Pill, linkLook } from './ui'
+import { Pill, linkLook, suitText } from './ui'
 
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
@@ -43,7 +43,7 @@ export function EntryPage() {
             <Pill tone="go">{m.entry_eyebrow()}</Pill>
             <span aria-hidden="true" {...stylex.props(styles.suits)}>
               {SUITS.map((suit) => (
-                <span key={suit} {...stylex.props(typography.markGlyph, RED.includes(suit) ? styles.suitRed : styles.suitInk)}>
+                <span key={suit} {...stylex.props(typography.markGlyph, styles.suitInk, suitText[suit])}>
                   {suit}
                 </span>
               ))}
@@ -99,7 +99,6 @@ export function EntryPage() {
 
 type Suit = '♣' | '♠' | '♥' | '♦'
 const SUITS: Suit[] = ['♣', '♠', '♥', '♦']
-const RED: Suit[] = ['♥', '♦']
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
 const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
@@ -196,7 +195,6 @@ const styles = stylex.create({
   eyebrow: { display: 'flex', alignItems: 'center', gap: space.x12 },
   suits: { display: 'flex', alignItems: 'center', gap: space.x6 },
   suitInk: { color: color.navy },
-  suitRed: { color: color.suitRed },
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
   lead: { margin: 0, color: color.slate },

@@ -309,5 +309,12 @@
   "info_points": "Card points",
   "info_tricks": "Trick {n} of 10",
   "info_totals": "Totals",
-  "info_label": "Game information"
+  "info_label": "Game information",
+
+  "settings_open": "Settings",
+  "settings_title": "Card colours",
+  "settings_close": "Close",
+  "scheme_german": "German Skat colours",
+  "scheme_four": "Four colours",
+  "scheme_two": "Two colours"
 }

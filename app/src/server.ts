@@ -14,7 +14,8 @@ defineCustomServerStrategy('custom-skatgo', {
 })
 
 // The server entry: every request passes Paraglide's middleware first, which settles the request's
-// language (URL prefix → saved choice → German or English from the browser → English; lib/locale.ts)
+// language (URL prefix → saved choice → the browser's first language, German or else English → German
+// when the browser names none; lib/locale.ts)
 // and redirects a URL without a prefix to the localized one. The router un-prefixes URLs itself
 // (router.tsx `rewrite`), so the ORIGINAL request goes to the handler — passing the middleware's
 // de-localized one would make both strip the prefix and loop, as the TanStack example warns.

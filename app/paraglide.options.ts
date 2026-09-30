@@ -4,8 +4,8 @@ import type { paraglideVitePlugin } from '@inlang/paraglide-js'
 // messages/*.json into src/paraglide (generated, self-ignored), and every language lives under
 // its own prefix — /en and /de — so each is a separate, indexable page. A request without a
 // prefix is redirected by the server middleware (src/server.ts) to the language src/lib/locale.ts
-// chooses: URL, then the visitor's saved choice, then German or English from the browser, then English
-// (SKATGO-23; Chinese removed in SKATGO-28). Paraglide runs a custom strategy before its built-in ones
+// chooses: URL, then the visitor's saved choice, then the browser's first language (German gets German,
+// any other English), then German when the browser names none (SKATGO-23/28/29). Paraglide runs a custom strategy before its built-in ones
 // whatever the order, so `custom-skatgo` carries that whole rule on the server; `url` and `cookie` stay
 // for the browser, where every page already has its prefix and a choice writes the cookie.
 //

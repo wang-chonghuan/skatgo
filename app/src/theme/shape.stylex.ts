@@ -45,7 +45,8 @@ export const dims = stylex.defineVars({
   landingMarkPhone: '44px',
 
   // The public site
-  landingHeader: '100px',
+  /** The front page header (SKATGO-31: 80px, lower than the reference's 100 so the hero starts higher). */
+  landingHeader: '80px',
   landingHeaderPhone: '64px',
   landingColumn: '1140px',
   heroArt: '480px',

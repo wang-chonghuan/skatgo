@@ -118,11 +118,11 @@ export const dims = stylex.defineVars({
   panelTabOffset: '-28px',
   plateVertical: 'auto',
   /** The info board across the top of the felt, clear of the way back and the assistant. */
-  boardWidth: 'min(640px, calc(100% - 240px))',
+  boardWidth: 'min(400px, calc(100% - 240px))',
   /** On a phone the board hangs from the top edge between the assistant's launcher and its mirror space. */
   boardWidthPhone: 'calc(100% - 120px)',
-  boardColumns: 'repeat(4, auto)',
-  boardColumnsPhone: 'repeat(2, minmax(0, 1fr))',
+  /** Two rows of two at any width (SKATGO-29). */
+  boardColumns: 'repeat(2, minmax(0, 1fr))',
   /** Where an opponent's last word in Reizen shows: just inside their stack. */
   saidLeft: '124px',
   saidLeftPhone: '52px',

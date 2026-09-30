@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-31",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-31",
+  "branch": "SKATGO-31-brand-size",
+  "base": "11767e3e1a06944aa5ef02cbfff7684f78ca389d",
+  "ports": { "web": 55031, "multiplayer": 56031, "database": 57031 }
+}

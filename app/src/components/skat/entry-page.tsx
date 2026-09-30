@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
-import { DAILY_DEALS, DAILY_EST_MINUTES } from '~/lib/daily'
+import { DAILY_EST_MINUTES } from '~/lib/daily'
 import { faq } from '~/lib/faq'
 import type { Card } from '~/lib/skat/cards'
 import { lessons } from '~/lib/skat/lessons/content'
@@ -43,7 +43,7 @@ export function EntryPage() {
       <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.heroText)}>
           <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
-          <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead({ deals: DAILY_DEALS })}</p>
+          <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
           <div {...stylex.props(styles.actions)}>
             <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
               {m.entry_cta()}

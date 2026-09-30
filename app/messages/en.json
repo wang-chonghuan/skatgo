@@ -250,8 +250,8 @@
   "ask_placeholder_play": "e.g. Which card should I play now?",
   "auth_sign_in": "Sign in",
 
-  "entry_title": "Same Skat cards for everyone. Who plays them best?",
-  "entry_lead": "Every day, every player gets the same {deals} hands for free against the same computer opponents. Luck is off the table: see where you rank, and compare every deal with how the AI played it.",
+  "entry_title": "Daily Skat tournament",
+  "entry_lead": "Same deals for everyone. Highest score takes the board.",
   "entry_cta": "Play today's deals",
   "ask_page_entry": "Home",
 

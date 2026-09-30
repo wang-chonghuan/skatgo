@@ -250,8 +250,8 @@
   "ask_placeholder_play": "z. B. Welche Karte soll ich jetzt spielen?",
   "auth_sign_in": "Anmelden",
 
-  "entry_title": "Gleiche Skatkarten für alle. Wer spielt sie am besten?",
-  "entry_lead": "Jeden Tag spielen alle kostenlos dieselben {deals} Spiele gegen dieselben Computergegner. So zählt nur, wie du spielst: Sieh deinen Rang und vergleiche jedes Spiel mit der KI.",
+  "entry_title": "Tägliches Skat-Turnier",
+  "entry_lead": "Dieselben Spiele für alle. Die höchste Punktzahl führt die Rangliste an.",
   "entry_cta": "Heute spielen",
   "ask_page_entry": "Start",
 

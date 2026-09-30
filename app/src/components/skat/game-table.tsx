@@ -33,7 +33,7 @@ import {
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Settings, Spade } from 'lucide-react'
+import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Settings, Spade, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -46,7 +46,7 @@ import { typography } from '../../theme/type'
 import { Fan } from './card-row'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
-import { Btn, Panel, Pill, Rich, Tip, linkLook } from './ui'
+import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 
 // A whole game of Skat against two computer players. All rules live in ~/lib/skat/game; this file
 // renders a state and dispatches the learner's moves, and lets the computers move on a timer so the
@@ -194,7 +194,26 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
   return (
     <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>
       <div data-testid="skat-felt" {...stylex.props(styles.felt, fullScreen && styles.feltFull)}>
-        <InfoBoard game={game} scores={scores} points={points} />
+        {/* The top of the felt (SKATGO-32): the info board, and right under it the table's messages — a
+            hint the learner asked for, or why a card was refused — each until it is closed. Nothing
+            here can be covered by the hand or the drawer below. */}
+        <div data-testid="skat-top" {...stylex.props(styles.top)}>
+          <InfoBoard game={game} scores={scores} points={points} />
+          {refusal || hint ? (
+            <div data-testid="skat-messages" {...stylex.props(styles.messages)}>
+              {refusal ? (
+                <Message tone="bad" onClose={() => setRefusal(null)}>
+                  <Rich text={refusal} />
+                </Message>
+              ) : null}
+              {hint ? (
+                <Message tone="tip" testId="skat-hint-text" onClose={() => setHint(null)}>
+                  <Rich text={hint.text} />
+                </Message>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
         {/* Both opponents' hands: the same cards as the learner's, turned sideways and stacked down the
             left and right edges, running off the felt so only part of each shows (SKATGO-26). */}
         {([1, 2] as Seat[]).map((seat) => (
@@ -236,12 +255,11 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
             </>
           )}
 
-          {/* What happens in the play — whose move, who is thinking, who took the trick, a refusal or a
-              hint — is said over the frame, never inside it: the frame holds only cards. */}
+          {/* What happens in the play — whose move, who is thinking, who took the trick — is said over the
+              frame, never inside it: the frame holds only cards. Hints and refusals are messages at the
+              top (SKATGO-32). */}
           {!acting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.above)}>
-              {refusal ? <Panel tone="bad"><p {...stylex.props(typography.appText, styles.note)}><Rich text={refusal} /></p></Panel> : null}
-              {hint ? <Tip><p {...stylex.props(typography.appText, styles.note)}><Rich text={hint.text} /></p></Tip> : null}
               {game.phase === 'trickEnd' && winner !== null ? (
                 <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
               ) : (
@@ -291,7 +309,6 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              {hint ? <Tip><p {...stylex.props(typography.appText, styles.note)}><Rich text={hint.text} /></p></Tip> : null}
               <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
             </motion.div>
           ) : null}
@@ -489,7 +506,7 @@ function InfoBoard({ game, scores, points }: { game: Game; scores: [number, numb
         ) : (
           <span {...stylex.props(typography.infoNumber, styles.boardValue)}>{game.bidding.value > 0 ? game.bidding.value : '—'}</span>
         )}
-        <span {...stylex.props(typography.infoSub, styles.boardSub)}>{contract ? '' : game.declarer === null ? m.table_bidding() : m.table_awaiting_contract()}</span>
+        <span {...stylex.props(typography.infoSub, styles.boardSub)}>{!contract && game.declarer === null ? m.table_bidding() : ''}</span>
       </div>
       <div {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_declarer()}</span>
@@ -785,6 +802,20 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
 }
 
 const Row = ({ children }: { children: ReactNode }) => <div {...stylex.props(styles.row)}>{children}</div>
+/** A message at the top of the felt (SKATGO-32): a hint or a refusal, with a way to close it. */
+function Message({ tone, testId, onClose, children }: { tone: 'tip' | 'bad'; testId?: string; onClose: () => void; children: ReactNode }) {
+  return (
+    <Panel tone={tone}>
+      <div data-testid={testId} {...stylex.props(styles.message)}>
+        <p {...stylex.props(typography.appText, styles.note, styles.messageText)}>{children}</p>
+        <button type="button" aria-label={m.message_close()} onClick={onClose} {...stylex.props(styles.messageClose)}>
+          <X size={icon.inline} strokeWidth={icon.outline} />
+        </button>
+      </div>
+    </Panel>
+  )
+}
+
 const Say = ({ children }: { children: ReactNode }) => <p {...stylex.props(typography.appText, styles.say)}>{children}</p>
 
 /** A dialog over the table: white, on the scrim, one full-width green action inside. */
@@ -803,7 +834,9 @@ const tintOf = (c: Contract): Tint => (c.kind === 'suit' ? c.trump : c.kind)
 
 
 const styles = stylex.create({
-  table: { position: 'relative', display: 'grid', backgroundColor: color.page, overflow: 'hidden' },
+  // Clipped, not hidden (SKATGO-32): a hidden overflow can still be scrolled by focus or scrollIntoView,
+  // which slid the whole felt sideways; a clipped one cannot scroll at all.
+  table: { position: 'relative', display: 'grid', backgroundColor: color.page, overflow: 'clip' },
   // Free play: the felt fills the screen; the panel is a drawer over it (SKATGO-29).
   tableFull: { gridTemplateColumns: dims.oneColumn, minHeight: dims.screenDynamic },
   // Inside a lesson: the panel stacks under the felt.
@@ -812,7 +845,7 @@ const styles = stylex.create({
   felt: {
     position: 'relative',
     minHeight: dims.tableEmbedded,
-    overflow: 'hidden',
+    overflow: 'clip',
     backgroundImage: fill.felt,
     color: color.onColor,
   },
@@ -893,12 +926,44 @@ const styles = stylex.create({
   saidRight: { right: space.x12 },
 
   // The info board hangs from the felt's top edge (SKATGO-29): square on top, rounded below.
-  board: {
+  // The top of the felt: the board, then the messages, centred; empty space in it lets taps through.
+  top: {
     position: 'absolute',
     top: 0,
-    left: dims.half,
-    transform: pose.centreX,
+    left: 0,
+    right: 0,
     zIndex: layer.launcher,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: space.x8,
+    pointerEvents: 'none',
+  },
+  messages: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x8,
+    width: dims.tipWidth,
+    pointerEvents: 'auto',
+  },
+  message: { display: 'flex', alignItems: 'flex-start', gap: space.x8 },
+  messageText: { flexGrow: 1, minWidth: 0 },
+  messageClose: {
+    display: 'inline-flex',
+    flexShrink: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: color.slate,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+  },
+  board: {
+    pointerEvents: 'auto',
     display: 'grid',
     gridTemplateColumns: dims.boardColumns,
     justifyContent: 'center',

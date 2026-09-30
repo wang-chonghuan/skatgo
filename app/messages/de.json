@@ -153,7 +153,6 @@
   "table_trick_you": "Du bekommst den Stich",
   "table_trick_other": "{name} bekommt den Stich",
   "table_bidding": "Reizen",
-  "table_awaiting_contract": "Warten auf die Ansage",
   "table_declarer": "Alleinspieler: {name} · gereizt bis {bid}",
   "table_trick_count": "Stich {n} von 10 · Alleinspieler {declarer} · Gegenspieler {defenders} Augen",
   "table_declarer_word": "Alleinspieler",
@@ -348,5 +347,6 @@
   "daily_lead": "{date}. Gleiche Karten und dieselben Computergegner für alle. Neue Karten in {countdown}.",
   "daily_cta": "Heute spielen",
   "daily_countdown": "{h} Std. {m} Min.",
-  "entry_art_alt": "Eine Skatrunde auf SkatGo: der Stich in der Mitte, dein Blatt unten"
+  "entry_art_alt": "Eine Skatrunde auf SkatGo: der Stich in der Mitte, dein Blatt unten",
+  "message_close": "Schließen"
 }

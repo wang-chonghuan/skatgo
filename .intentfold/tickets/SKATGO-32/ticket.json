@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-32",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-32",
+  "branch": "SKATGO-32-table-messages",
+  "base": "f8d4c10ef8092ea523a63a1b63de77af75a71255",
+  "ports": {
+    "web": 55032,
+    "multiplayer": 56032,
+    "database": 57032
+  }
+}

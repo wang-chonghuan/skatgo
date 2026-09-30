@@ -46,7 +46,7 @@ export function EntryPage() {
             <Pill tone="go">{m.entry_eyebrow()}</Pill>
           </div>
           <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
-          <p {...stylex.props(typography.landingBody, styles.lead)}>{m.entry_lead({ deals: DAILY_DEALS })}</p>
+          <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead({ deals: DAILY_DEALS })}</p>
           <div {...stylex.props(styles.actions)}>
             <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
               {m.entry_cta()}

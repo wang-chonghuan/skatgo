@@ -251,8 +251,8 @@
   "auth_sign_in": "Anmelden",
 
   "entry_title": "Gleiche Skatkarten für alle. Wer spielt sie am besten?",
-  "entry_lead": "Jeden Tag spielen alle dieselben {deals} Spiele gegen dieselben Computergegner. So zählt nur, wie du spielst: Sieh deinen Rang und vergleiche jedes Spiel mit der KI.",
-  "entry_eyebrow": "Tägliches Skat-Turnier, kostenlos",
+  "entry_lead": "Jeden Tag spielen alle kostenlos dieselben {deals} Spiele gegen dieselben Computergegner. So zählt nur, wie du spielst: Sieh deinen Rang und vergleiche jedes Spiel mit der KI.",
+  "entry_eyebrow": "Kostenloses tägliches Skat-Turnier",
   "entry_cta": "Heute spielen",
   "back_to_start": "Start",
   "ask_page_entry": "Start",

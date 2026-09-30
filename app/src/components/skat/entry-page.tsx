@@ -105,8 +105,7 @@ const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
 const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
-/** The hero's picture: a game at skatgo's own table (a screenshot of free play, SKATGO-29), cropped to
- *  its middle — the trick, the seats and the learner's hand. */
+/** The hero's picture: a game at skatgo's own table (a screenshot of free play, SKATGO-29), shown whole. */
 function HeroArt() {
   return (
     <div data-testid="entry-art" {...stylex.props(styles.heroArt)}>
@@ -175,14 +174,13 @@ const styles = stylex.create({
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
   lead: { margin: 0, color: color.slate },
   heroArt: {
-    height: { default: 'auto', [bp.hero]: dims.heroArtHeightPhone },
-    aspectRatio: { default: dims.heroArtRatio, [bp.hero]: 'auto' },
+    aspectRatio: dims.heroArtRatio,
     borderRadius: radii.tile,
     boxShadow: elev.eventCard,
     overflow: 'hidden',
   },
-  // The screenshot fills the box; what does not fit is the table's felt on either side.
-  heroImage: { display: 'block', width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' },
+  // The whole screenshot, never cropped: the box has its proportions.
+  heroImage: { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
   // The strip of facts under the hero, in the public site's navy.
   points: {
     gridColumn: dims.fullRow,

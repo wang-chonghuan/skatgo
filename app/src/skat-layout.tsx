@@ -62,6 +62,7 @@ const styles = stylex.create({
     colorScheme: 'light',
   },
   landing: { backgroundColor: color.surface },
-  table: { backgroundColor: color.feltOuter },
+  // The table is exactly one screen and never scrolls (SKATGO-29).
+  table: { height: dims.screenDynamic, minHeight: dims.screenDynamic, overflow: 'hidden', backgroundColor: color.feltOuter },
   main: { flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%', boxSizing: 'border-box' },
 })

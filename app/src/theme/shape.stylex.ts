@@ -210,6 +210,9 @@ export const dims = stylex.defineVars({
   // Generic
   screen: '100vh',
   screenDynamic: '100dvh',
+  /** A visually hidden element (a heading only screen readers and crawlers get): one pixel, clipped away. */
+  visuallyHidden: '1px',
+  visuallyHiddenClip: 'inset(50%)',
   half: '50%',
   oneColumn: '1fr',
   twoColumns: '1fr 1fr',

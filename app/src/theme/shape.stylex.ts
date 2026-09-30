@@ -211,6 +211,9 @@ export const dims = stylex.defineVars({
   // Generic
   screen: '100vh',
   screenDynamic: '100dvh',
+  /** The language menu's card (SKATGO-29): its narrowest, and where it opens, just under its button. */
+  langMenu: '180px',
+  langMenuTop: 'calc(100% + 6px)',
   /** A visually hidden element (a heading only screen readers and crawlers get): one pixel, clipped away. */
   visuallyHidden: '1px',
   visuallyHiddenClip: 'inset(50%)',

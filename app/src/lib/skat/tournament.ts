@@ -148,3 +148,21 @@ export type DailyReply = {
   /** Moves the player has made in the current deal; a move must quote it. */
   revision: number
 }
+
+/** One row of a day's leaderboard (SKATGO-36): a nickname and its total, never who is behind it. */
+export type BoardRow = { rank: number; nickname: string; total: number; me: boolean }
+
+/** A day's leaderboard, and where the asking player stands on it. */
+export type DailyBoard = {
+  day: string
+  /** The top of the board. */
+  rows: BoardRow[]
+  /** The asking player's row when it is below the top. */
+  own: BoardRow | null
+  /** Entries on the board in all, beyond the rows shown. */
+  total: number
+  /** The asking player's entry that day: a finished player without a nickname gets the rank they would have. */
+  me: { finished: boolean; total: number; nickname: string | null; rank: number | null } | null
+  /** The nickname the player last used, to offer again. */
+  lastNickname: string | null
+}

@@ -361,6 +361,18 @@
   "daily_total": "Total",
   "daily_unavailable": "Today's tournament can't be reached right now. Try again in a moment.",
   "daily_retry": "Try again",
+  "daily_board_title": "Leaderboard",
+  "daily_board_today": "Today",
+  "daily_board_yesterday": "Yesterday",
+  "daily_board_empty_today": "No one on today's board yet.",
+  "daily_board_empty_yesterday": "Nobody made yesterday's board.",
+  "daily_nick_label": "Your nickname for the leaderboard",
+  "daily_nick_join": "Join the leaderboard",
+  "daily_nick_save": "Save",
+  "daily_nick_change": "Change",
+  "daily_nick_on": "On the board as {name}.",
+  "daily_nick_refused": "Please choose another nickname.",
+  "daily_would_be": "Your total: {total}. That would be #{rank} today.",
   "entry_art_alt": "Three friends playing Skat around a table shaped like a club",
   "message_close": "Close"
 }

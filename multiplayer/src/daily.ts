@@ -7,6 +7,7 @@ import { actor, deal, next, type Game, type Move, type Seat } from '../../app/sr
 import {
   DAILY_DEALS, DAILY_TIME_ZONE, PLAYER, seatView, summarize, totals, type DailyStatus, type DealSummary, type SeatView,
 } from '../../app/src/lib/skat/tournament'
+import { cleanNickname } from '../../app/src/lib/skat/nickname'
 import { actionSchema, applySeatMove, computerMove, Rejected, secretEquals, secureDeck } from './model'
 import type { Store } from './store'
 
@@ -67,6 +68,8 @@ const actInput = z.object({
   revision: z.number().int().nonnegative(),
   action: actionSchema,
 }).strict()
+const nameInput = z.object({ player, nickname: z.string().max(200) }).strict()
+const boardInput = z.object({ player: player.nullable(), day: z.enum(['today', 'yesterday']) }).strict()
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
 
 function status(day: string, e: Entry | null): DailyStatus {
@@ -165,6 +168,65 @@ export async function dailyClaim(store: Store, from: string, to: string, now = D
   })
 }
 
+/** The day before a tournament day, as YYYY-MM-DD. */
+export function dayBefore(day: string): string {
+  const [y, m, d] = day.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0, 10)
+}
+
+/** A finished player puts today's entry on the board under a nickname, or changes it, until midnight
+ *  (SKATGO-36). A refused name is refused without saying why. */
+export async function dailyName(store: Store, who: string, raw: string, now = Date.now()) {
+  const nickname = cleanNickname(raw)
+  if (!nickname) throw new Rejected('nickname_refused')
+  const day = dayOf(now)
+  return store.transaction(async c => {
+    const r = await c.query(
+      'UPDATE daily_entries SET nickname = $3 WHERE day = $1 AND player = $2 AND finished_at IS NOT NULL', [day, who, nickname])
+    if (r.rowCount !== 1) throw new Rejected('not_finished')
+    return { nickname }
+  })
+}
+
+/** How many rows the board shows; a player below them gets their own row apart. */
+const BOARD_ROWS = 100
+
+/**
+ * A day's leaderboard (SKATGO-36): the finished entries that have a nickname, by Seeger-Fabian total;
+ * equal totals share a rank and the next rank skips (1, 1, 3). Only nicknames and totals leave here —
+ * never a player id. For the asking player: their own standing (a finished player without a nickname
+ * sees the rank they would have), and the nickname they last used on an earlier day.
+ */
+export async function dailyBoard(store: Store, who: string | null, which: 'today' | 'yesterday', now = Date.now()) {
+  const day = which === 'today' ? dayOf(now) : dayBefore(dayOf(now))
+  const { rows } = await store.pool.query(
+    `SELECT player, nickname, total FROM daily_entries
+      WHERE day = $1 AND finished_at IS NOT NULL AND nickname IS NOT NULL
+      ORDER BY total DESC, finished_at ASC`, [day])
+  const ranked = rows.map((r, i) => ({
+    rank: i === 0 || rows[i - 1].total !== r.total ? i + 1 : 0,
+    nickname: r.nickname as string, total: r.total as number, me: r.player === who,
+  }))
+  for (let i = 1; i < ranked.length; i++) if (ranked[i].rank === 0) ranked[i].rank = ranked[i - 1].rank
+  const mine = ranked.findIndex(r => r.me)
+  const own = mine >= BOARD_ROWS ? ranked[mine] : null
+  let me = null
+  let lastNickname: string | null = null
+  if (who) {
+    const own = await store.pool.query(
+      'SELECT nickname, total, finished_at FROM daily_entries WHERE day = $1 AND player = $2', [day, who])
+    const e = own.rows[0]
+    if (e) {
+      const rank = 1 + ranked.filter(r => r.total > e.total).length
+      me = { finished: !!e.finished_at, total: e.total as number, nickname: e.nickname as string | null, rank: e.finished_at ? rank : null }
+    }
+    const last = await store.pool.query(
+      'SELECT nickname FROM daily_entries WHERE player = $1 AND nickname IS NOT NULL ORDER BY day DESC LIMIT 1', [who])
+    lastNickname = last.rows[0]?.nickname ?? null
+  }
+  return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, lastNickname }
+}
+
 /** The routes, behind the admission key. */
 export function dailyRoutes(store: Store, key: string, ready: () => boolean) {
   const router = express.Router()
@@ -191,6 +253,14 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean) {
     return dailyState(store, i.player, i.open ?? false)
   }))
   router.post('/act', run(async body => dailyAct(store, actInput.parse(body))))
+  router.post('/name', run(async body => {
+    const i = nameInput.parse(body)
+    return dailyName(store, i.player, i.nickname)
+  }))
+  router.post('/board', run(async body => {
+    const i = boardInput.parse(body)
+    return dailyBoard(store, i.player, i.day)
+  }))
   router.post('/claim', run(async body => {
     const i = claimInput.parse(body)
     return dailyClaim(store, i.from, i.to)

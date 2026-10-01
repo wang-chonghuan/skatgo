@@ -361,6 +361,18 @@
   "daily_total": "Gesamt",
   "daily_unavailable": "Das Turnier von heute ist gerade nicht erreichbar. Versuch es gleich noch einmal.",
   "daily_retry": "Nochmal versuchen",
+  "daily_board_title": "Rangliste",
+  "daily_board_today": "Heute",
+  "daily_board_yesterday": "Gestern",
+  "daily_board_empty_today": "Heute steht noch niemand auf der Rangliste.",
+  "daily_board_empty_yesterday": "Gestern stand niemand auf der Rangliste.",
+  "daily_nick_label": "Dein Spitzname für die Rangliste",
+  "daily_nick_join": "Auf die Rangliste",
+  "daily_nick_save": "Speichern",
+  "daily_nick_change": "Ändern",
+  "daily_nick_on": "Auf der Rangliste als {name}.",
+  "daily_nick_refused": "Bitte wähle einen anderen Spitznamen.",
+  "daily_would_be": "Deine Summe: {total}. Das wäre heute Platz {rank}.",
   "entry_art_alt": "Drei Freunde spielen Skat an einem Tisch in Kreuzform",
   "message_close": "Schließen"
 }

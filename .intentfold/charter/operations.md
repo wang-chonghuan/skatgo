@@ -286,6 +286,11 @@ render services --output json --confirm
 render logs --resources "$SERVICE_ID" --limit 100 --output text --confirm
 render deploys list "$SERVICE_ID" --output json --confirm
 
+# clear a nickname from a day's leaderboard (SKATGO-36): the entry and its score stay; it leaves the
+# board until the player names it again. Day is the Berlin date; equal nicknames that day all clear.
+render psql skatgo-multiplayer-db --confirm --output text \
+  --command "UPDATE daily_entries SET nickname = NULL WHERE day = '<YYYY-MM-DD>' AND nickname = '<nickname>'"
+
 # custom domains and TLS: ips-render-ops cap9
 curl -s "https://api.render.com/v1/services/$SERVICE_ID/custom-domains" \
   -H "Authorization: Bearer $RENDER_API_KEY"

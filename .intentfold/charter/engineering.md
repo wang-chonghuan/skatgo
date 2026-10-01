@@ -33,8 +33,9 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 - **The daily tournament runs in `multiplayer/`** (SKATGO-35), as plain HTTP routes under `/daily`
   behind the admission key, not as a room: one human against two deterministic computers needs no
   socket. Its PostgreSQL holds each day's deals (`daily_deals`) and each player's entry
-  (`daily_entries`: the human's moves per deal, per-deal summaries, the total). The web service is its
-  only client.
+  (`daily_entries`: the human's moves per deal, per-deal summaries, the total, and the nickname a
+  finished player put on the leaderboard — SKATGO-36). The leaderboard is computed from those rows on
+  request. The web service is its only client.
 - Course libraries: `motion` (animation), `@letele/playing-cards` (public-domain card faces),
   `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
   assistant's chat window).
@@ -59,6 +60,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`) is cut from it by `.intentfold/tickets/SKATGO-23/icons.mjs` — regenerate them, never edit them |
 | `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: what seat 0 may see of a deal (`seatView`), that view as a table, Seeger-Fabian |
+| `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36) |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
 | `app/src/components/skat/daily-table.tsx` | the tournament's button, day result and table; `/daily/play` is its full-screen page |
 | `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament |

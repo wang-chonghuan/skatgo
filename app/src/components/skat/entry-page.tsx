@@ -22,8 +22,8 @@ import { linkLook } from './ui'
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
-// tournament as the headline, its green call to action with the way in for beginners beside it, a
-// picture, and a strip of facts — then the two other ways into Skat as the app's colour tiles, one suit
+// tournament as the headline and its one green call to action (the way into the course is the header's
+// and the course tile's — the human, 2026-10-01), a picture, and a strip of facts — then the two other ways into Skat as the app's colour tiles, one suit
 // each (♣ the course, ♠ free play), and the questions people ask (SKATGO-29). The hero's copy leads the
 // tournament itself (the human, 2026-09-30: 「文案先行」).
 //
@@ -47,9 +47,6 @@ export function EntryPage() {
           <div {...stylex.props(styles.actions)}>
             <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
               {m.entry_cta()}
-            </Link>
-            <Link to="/course" data-testid="entry-cta-learn" onClick={() => heroClick('secondary')} {...linkLook('quiet', 'lg', 'landing')}>
-              {m.entry_cta_learn()}
             </Link>
           </div>
         </div>
@@ -97,7 +94,7 @@ export function EntryPage() {
 }
 
 /** The hero is always in its first state until Duplicate exists (SKATGO-29, grill Q1), with one headline. */
-const heroClick = (button: 'primary' | 'secondary') => track('hero_cta_click', { state: 'A', variant: 'default', button })
+const heroClick = (button: 'primary') => track('hero_cta_click', { state: 'A', variant: 'default', button })
 
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })

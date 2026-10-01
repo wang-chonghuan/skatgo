@@ -5,6 +5,8 @@
 
 /** The phone step as a `matchMedia` query — the same width as `bp.phone` in breakpoints.stylex.ts. */
 export const phoneQuery = '(max-width: 480px)'
+/** The table's pinned side panel as a `matchMedia` query — the same width as `bp.pinned`. */
+export const pinnedQuery = '(min-width: 900px)'
 
 /** The browser's toolbar colour on phones: the page's white surface (`color.surface`), which a meta tag
  *  cannot read as a variable. */
@@ -40,13 +42,15 @@ export const deal = { rise: 24, duration: 0.22, stagger: 0.025, staggerCap: 12 }
 /** The learner's card rising onto the table in a play drill. */
 export const playIn = { rise: 60 }
 
-/** A card played into the whole-game trick: from its player's side, on a spring. */
+/** A card played into the whole-game trick (SKATGO-34). The learner's card flies from its own place in
+ *  the hand (a shared layout animation); an opponent's comes in from their side of the table. Always
+ *  opaque, a short ease-out, no bounce: the eye follows one card the whole way. */
 export const trick = {
-  spring: { type: 'spring', stiffness: 380, damping: 28 },
-  fromScale: 0.7,
+  flight: { type: 'tween', duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+  fromScale: 0.85,
   exitScale: 0.6,
   exitDuration: 0.25,
-  from: { 0: { x: 0, y: 90 }, 1: { x: -120, y: -40 }, 2: { x: 120, y: -40 } },
+  from: { 1: { x: -170, y: 0 }, 2: { x: 170, y: 0 } },
 } as const
 
 /** The finish screen's emoji springing in. */

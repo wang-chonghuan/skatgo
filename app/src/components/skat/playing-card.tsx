@@ -44,6 +44,7 @@ import { move, timing } from '../../theme/effects.stylex'
 import { elev, fill } from '../../theme/elevation.stylex'
 import { border } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
+import { stage } from '../../theme/table.stylex'
 import { suit } from '../../theme/suits.stylex'
 
 // One playing card. The faces are Adrian Kennard's public-domain SVG deck (via
@@ -265,6 +266,6 @@ const sizes = stylex.create({
   trick: { width: { default: dims.cardLg, [bp.phone]: dims.cardMdPhone } },
   /** As wide as its box: the trick's cards take their size from the frame. */
   fill: { width: '100%' },
-  /** The hand along the bottom of the card table. */
-  table: { width: { default: dims.cardTable, [bp.phone]: dims.cardTablePhone } },
+  /** The hand along the bottom of the card table: the stage's card (SKATGO-34), scaled with the felt. */
+  table: { width: stage.handCard },
 })

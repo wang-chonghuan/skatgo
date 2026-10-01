@@ -80,58 +80,44 @@ export const dims = stylex.defineVars({
   // The table
   /** The trick in the frame: each card 26% of the frame's width; both opponents' cards level at 27%
    *  from the top and the same distance from their side of the frame (one value, so the two can never
-   *  differ); the learner's at 52% from the top and centred (37% = 50% less half of 26%). */
+   *  differ), and never closer than 18px, which clears the seat plate lying on that edge when the
+   *  stage makes the frame small (SKATGO-34); the learner's at 52% from the top and centred (37% = 50%
+   *  less half of 26%). */
   trickCard: '26%',
   trickSideTop: '27%',
-  trickSideInset: '9%',
+  trickSideInset: 'max(9%, 18px)',
   trickMineTop: '52%',
   trickMineLeft: '37%',
   /** The words over the frame: as wide as the table allows. */
   tipWidth: 'min(460px, calc(100vw - 32px))',
   /** The action drawer: as wide as the felt allows, sitting just above the learner's hand. */
   drawerWidth: 'min(680px, calc(100% - 24px))',
-  drawerBottom: '196px',
-  drawerBottomPhone: '146px',
-  drawerMaxHeight: 'calc(100% - 220px)',
-  drawerMaxHeightPhone: 'calc(100% - 160px)',
   drawerHandle: '40px',
   drawerHandleHeight: '4px',
-  /** Every hand — the learner's and both opponents' — uses the same card (SKATGO-26): 120 wide on a
-   *  desk, 88 on a phone. An opponent's card lies sideways, so its slot is the card turned. */
-  sideSlotWidth: '168px',
-  sideSlotHeight: '120px',
-  sideSlotWidthPhone: '123px',
-  sideSlotHeightPhone: '88px',
-  /** Stacked down an edge, each sideways card shows 31px (16 on a phone) of the one beneath. */
-  sideStep: '-89px',
-  sideStepPhone: '-72px',
-  /** How far a stack runs off the felt's edge: only part of it shows. */
-  sideInset: '-56px',
-  sideInsetPhone: '-83px',
-  /** Where the frame's centre sits down the felt. */
-  frameTop: '50%',
-  frameTopPhone: '50%',
   hintTabWidth: '48px',
   hintTabHeight: '56px',
-  hintTabBottom: '22%',
   panelPhone: 'min(360px, 88vw)',
   panelTab: '28px',
   panelTabHeight: '48px',
-  panelTabOffset: '-28px',
   plateVertical: 'auto',
-  /** The info board across the top of the felt, clear of the way back and the assistant. */
-  boardWidth: 'min(400px, calc(100% - 240px))',
   /** On a phone the board hangs from the top edge between the assistant's launcher and its mirror space. */
   boardWidthPhone: 'calc(100% - 120px)',
   /** Two rows of two at any width (SKATGO-29). */
   boardColumns: 'repeat(2, minmax(0, 1fr))',
+  /** In landscape the board is one row of four (SKATGO-34), so the band at the top stays low. */
+  boardColumnsWide: 'repeat(4, minmax(0, auto))',
+  boardWidthWide: 'min(640px, calc(100% - 144px))',
   /** Where an opponent's last word in Reizen shows: just inside their stack. */
   saidLeft: '124px',
   saidLeftPhone: '52px',
   sidePanel: '450px',
+  /** The side panel pinned beside the felt on a wide screen (SKATGO-34): about Funbridge's share. */
+  sidePanelPinned: 'clamp(280px, 28vw, 400px)',
+  /** The table's columns with the panel pinned: the felt takes what the panel leaves. */
+  feltAndPanel: 'minmax(0, 1fr) auto',
+  /** Room the pinned panel's tab row leaves at its right for the assistant's launcher above it. */
+  launcherRoom: '60px',
   frameBid: '403px',
-  framePlay: '306px',
-  framePhone: '240px',
   frameBorderBid: '3px',
   frameBorderPlay: '2px',
   plate: '180px',
@@ -171,12 +157,6 @@ export const dims = stylex.defineVars({
   cardMdPhone: '58px',
   cardLg: '96px',
   cardLgPhone: '72px',
-  cardTable: '120px',
-  cardTablePhone: '88px',
-  /** A card's slot in the learner's one-row hand at most (SKATGO-29): its card and a small gap, so a
-   *  wide screen never spreads the hand out; the hand stays centred. */
-  rowSlotMax: '128px',
-  rowSlotMaxPhone: '94px',
   cardAspect: '5 / 7',
   slotXs: '38px',
   slotSm: '58px',
@@ -229,6 +209,8 @@ export const dims = stylex.defineVars({
   heroColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
   contractColumns: 'repeat(6, 1fr)',
   contractColumnsPhone: 'repeat(3, 1fr)',
+  /** The contracts in the pinned side panel (SKATGO-34): two by three, the panel is narrow. */
+  contractColumnsPanel: 'repeat(2, minmax(0, 1fr))',
   auctionColumns: 'repeat(3, 1fr)',
   /** The narrowest a column of bids gets (SKATGO-29): one bid chip and the column's padding. */
   auctionCell: '56px',

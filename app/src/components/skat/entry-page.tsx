@@ -3,7 +3,6 @@ import * as stylex from '@stylexjs/stylex'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
-import { DAILY_DEALS } from '~/lib/daily'
 import { faq } from '~/lib/faq'
 import type { Card } from '~/lib/skat/cards'
 import { lessons } from '~/lib/skat/lessons/content'
@@ -22,8 +21,8 @@ import { linkLook } from './ui'
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
-// tournament as the headline, its green call to action with the way in for beginners beside it, a
-// picture, and a strip of facts — then the two other ways into Skat as the app's colour tiles, one suit
+// tournament as the headline and its one green call to action (the way into the course is the header's
+// and the course tile's — the human, 2026-10-01), a picture, and a strip of facts — then the two other ways into Skat as the app's colour tiles, one suit
 // each (♣ the course, ♠ free play), and the questions people ask (SKATGO-29). The hero's copy leads the
 // tournament itself (the human, 2026-09-30: 「文案先行」).
 //
@@ -44,23 +43,24 @@ export function EntryPage() {
         <div {...stylex.props(styles.heroText)}>
           <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
           <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
-          <div {...stylex.props(styles.actions)}>
-            <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
-              {m.entry_cta()}
-            </Link>
-            <Link to="/course" data-testid="entry-cta-learn" onClick={() => heroClick('secondary')} {...linkLook('quiet', 'lg', 'landing')}>
-              {m.entry_cta_learn()}
-            </Link>
+          <div {...stylex.props(styles.cta)}>
+            <div {...stylex.props(styles.actions)}>
+              <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
+                {m.entry_cta()}
+              </Link>
+            </div>
+            {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). */}
+            <ul data-testid="entry-points" {...stylex.props(styles.points)}>
+              {[m.entry_point_free(), m.entry_point_no_signup(), m.entry_point_midnight()].map((point) => (
+                <li key={point} {...stylex.props(typography.appText, styles.point)}>
+                  <span aria-hidden="true" {...stylex.props(styles.check)}>✓</span>
+                  {point}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
         <HeroArt />
-        <ul data-testid="entry-points" {...stylex.props(styles.points)}>
-          {[m.entry_point_daily({ deals: DAILY_DEALS }), m.entry_point_free(), m.entry_point_ai()].map((point) => (
-            <li key={point} {...stylex.props(typography.landingBody, styles.point)}>
-              {point}
-            </li>
-          ))}
-        </ul>
       </section>
 
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
@@ -97,7 +97,7 @@ export function EntryPage() {
 }
 
 /** The hero is always in its first state until Duplicate exists (SKATGO-29, grill Q1), with one headline. */
-const heroClick = (button: 'primary' | 'secondary') => track('hero_cta_click', { state: 'A', variant: 'default', button })
+const heroClick = (button: 'primary') => track('hero_cta_click', { state: 'A', variant: 'default', button })
 
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
@@ -181,21 +181,13 @@ const styles = stylex.create({
   },
   // The whole screenshot, never cropped: the box has its proportions.
   heroImage: { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
-  // The strip of facts under the hero, in the public site's navy.
-  points: {
-    gridColumn: dims.fullRow,
-    display: 'grid',
-    gridTemplateColumns: { default: dims.threeColumns, [bp.phone]: dims.oneColumn },
-    gap: space.x16,
-    margin: 0,
-    paddingBlock: space.x20,
-    paddingInline: space.x24,
-    listStyleType: 'none',
-    borderRadius: radii.landingBtn,
-    backgroundColor: color.navy,
-  },
-  point: { margin: 0, color: color.onColor, textAlign: { default: 'center', [bp.phone]: 'left' } },
+  // The facts under the call to action: one quiet line that wraps on a phone.
+  points: { display: 'flex', flexWrap: 'wrap', columnGap: space.x16, rowGap: space.x4, margin: 0, padding: 0, listStyleType: 'none' },
+  point: { display: 'inline-flex', gap: space.x6, margin: 0, color: color.slate },
+  check: { color: color.go },
 
+  // The call to action with its facts right under it.
+  cta: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
   // The two ways in, side by side; stacked on a phone.
   ways: {

@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-36",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-36",
+  "branch": "SKATGO-36-daily-leaderboard",
+  "base": "acdf6dab46a95924d6ce36196992b3ce2d9c7d91",
+  "ports": {
+    "web": 55036,
+    "multiplayer": 56036,
+    "database": 57036
+  }
+}

@@ -1,7 +1,7 @@
 import { signedInUser } from '~/lib/session'
 
-// POST /api/daily/state and /api/daily/act — the daily tournament's only way in from the browser
-// (SKATGO-35). The tournament itself runs in the multiplayer service, which owns the cards and the
+// POST /api/daily/state, /act, /name and /board — the daily tournament's only way in from the browser
+// (SKATGO-35, SKATGO-36: a finished player's nickname, and the leaderboard). The tournament itself runs in the multiplayer service, which owns the cards and the
 // scores; this handler only says who is playing and passes the request on with the service's key.
 //
 // Who is playing: the signed-in account, or else this device — a random id in an httpOnly cookie,
@@ -16,7 +16,7 @@ const COOKIE = 'skatgo_daily'
 const COOKIE_PATH = '/api/daily'
 /** 400 days, the longest a browser keeps a cookie. */
 const COOKIE_MAX_AGE = 400 * 24 * 60 * 60
-const OPS = new Set(['state', 'act'])
+const OPS = new Set(['state', 'act', 'name', 'board'])
 
 const json = (status: number, body: object, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } })
@@ -50,7 +50,10 @@ export async function handleDaily(request: Request): Promise<Response> {
   const anon = `anon:${hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(device)))}`
   const userId = await signedInUser(request)
   // Opening the deals (state with `open`) or making a move is playing; anything else only looks.
-  const playing = op === 'act' || (body as { open?: unknown }).open === true
+  const playing = op === 'act' || (op === 'state' && (body as { open?: unknown }).open === true)
+  // Looking at the board needs no player: a visitor nobody knows yet asks as nobody.
+  const player = userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null
+  if (op === 'name' && !player) return json(409, { error: 'not_finished' })
 
   const call = (path: string, payload: object) =>
     fetch(new URL(`/daily/${path}`, base), {
@@ -61,8 +64,8 @@ export async function handleDaily(request: Request): Promise<Response> {
     })
 
   try {
-    if (userId && known && op === 'state') await call('claim', { from: anon, to: `user:${userId}` })
-    const upstream = await call(op, { ...body, player: userId ? `user:${userId}` : anon })
+    if (userId && known && (op === 'state' || op === 'board')) await call('claim', { from: anon, to: `user:${userId}` })
+    const upstream = await call(op, { ...body, player })
     const headers: Record<string, string> = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
     // A guest without the cookie who only looks is a stranger the service has never seen: "not
     // started", and no cookie. The id is kept only once a guest's play has been accepted.

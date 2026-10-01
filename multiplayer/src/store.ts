@@ -40,6 +40,7 @@ export class Store {
           actions jsonb NOT NULL, deals jsonb NOT NULL, total integer NOT NULL,
           created_at bigint NOT NULL, finished_at bigint, PRIMARY KEY (day, player)
         );
+        ALTER TABLE daily_entries ADD COLUMN IF NOT EXISTS nickname text;
       `)
       await c.query('COMMIT')
     } catch (e) {

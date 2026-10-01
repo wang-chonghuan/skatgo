@@ -97,7 +97,7 @@ function NavItem({ item, active, variant }: { item: Item; active: boolean; varia
  *  course, the rules. No separate "Play" button beside them. */
 const HEADER_LINKS: { to: '/daily' | '/play' | '/course' | '/rules'; label: () => string }[] = [
   { to: '/daily', label: () => m.nav_header_daily() },
-  { to: '/play', label: () => m.nav_header_practice() },
+  { to: '/play', label: () => m.nav_header_free() },
   { to: '/course', label: () => m.nav_course() },
   { to: '/rules', label: () => m.nav_rules() },
 ]

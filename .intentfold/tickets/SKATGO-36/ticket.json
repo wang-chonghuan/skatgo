@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-36",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-36",
   "branch": "SKATGO-36-daily-leaderboard",

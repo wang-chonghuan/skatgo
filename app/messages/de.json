@@ -286,7 +286,6 @@
 
   "home_meta_title": "Skat online kostenlos: gleiche Karten für alle | SkatGo",
   "home_meta_description": "Skat online spielen, kostenlos und ohne Kartenglück: Jeden Tag spielen alle dieselben {deals} Spiele. Sieh deinen Rang und vergleiche jedes Spiel mit der KI.",
-  "entry_point_ai": "Unbegrenzt gegen die KI",
   "entry_new_title": "Neu beim Skat?",
   "entry_new_text": "{count} kurze, interaktive Lektionen führen dich von den 32 Karten bis zum ganzen Spiel. Du spielst dabei echte Blätter, statt Regeln auswendig zu lernen.",
   "entry_new_cta": "Lektion 1 starten",
@@ -337,8 +336,9 @@
   "play_title": "Skat gegen den Computer spielen",
   "nav_rules": "Regeln",
 
-  "entry_point_daily": "{deals} Spiele am Tag, mit Rangliste",
   "entry_point_free": "Kostenlos",
+  "entry_point_no_signup": "Ohne Anmeldung",
+  "entry_point_midnight": "Neue Karten um Mitternacht",
   "nav_daily": "Täglich",
   "nav_header_daily": "Tagesturnier",
   "nav_header_free": "Freies Spiel",

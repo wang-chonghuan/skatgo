@@ -286,7 +286,6 @@
 
   "home_meta_title": "Free Daily Skat Online – Same Deals for Everyone | SkatGo",
   "home_meta_description": "Play Skat online free: every day, everyone gets the same {deals} deals. No card luck. See your rank and compare every hand with the AI.",
-  "entry_point_ai": "Unlimited AI games",
   "entry_new_title": "New to Skat?",
   "entry_new_text": "{count} short interactive lessons take you from the 32 cards to a full game. You play real hands as you go, so there's no rulebook to memorize.",
   "entry_new_cta": "Start lesson 1",
@@ -337,8 +336,9 @@
   "play_title": "Play Skat against the computer",
   "nav_rules": "Rules",
 
-  "entry_point_daily": "{deals} deals a day, ranked",
-  "entry_point_free": "Free to play",
+  "entry_point_free": "Free",
+  "entry_point_no_signup": "No sign-up",
+  "entry_point_midnight": "New deals at midnight",
   "nav_daily": "Daily",
   "nav_header_daily": "Daily Tournament",
   "nav_header_free": "Free Play",

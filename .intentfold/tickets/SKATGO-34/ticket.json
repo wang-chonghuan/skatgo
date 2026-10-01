@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-34",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-34",
   "branch": "SKATGO-34-card-flight",

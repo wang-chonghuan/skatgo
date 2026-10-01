@@ -243,7 +243,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
                   <motion.div
                     key={cardId(p.card)}
                     layoutId={p.seat === ME ? flightId(p.card) : undefined}
-                    initial={p.seat === ME ? false : { scale: trick.fromScale, ...trick.from[p.seat as 1 | 2] }}
+                    initial={p.seat === ME ? false : { scale: trick.fromScale, ...trick.from[p.seat as keyof typeof trick.from] }}
                     animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
                     exit={{ opacity: 0, scale: trick.exitScale, transition: { duration: trick.exitDuration } }}
                     transition={{ ...trick.flight, layout: trick.flight }}

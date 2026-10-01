@@ -5,8 +5,10 @@ import { signedInUser } from '~/lib/session'
 // scores; this handler only says who is playing and passes the request on with the service's key.
 //
 // Who is playing: the signed-in account, or else this device — a random id in an httpOnly cookie,
-// set on first use and stored at the service only as its hash. When someone signs in with a device
-// entry for today, that entry moves to the account (the service decides whether it may).
+// stored at the service only as its hash. The cookie is strictly necessary and nothing else: it is
+// set only when a guest actually starts the day's deals, never for looking at /daily, so the site
+// needs no consent banner for it (the human, 2026-10-01). When someone signs in with a device entry
+// for today, that entry moves to the account (the service decides whether it may).
 //
 // Wired in src/server.ts before the page router, like /api/ask: it is not a page.
 
@@ -47,6 +49,8 @@ export async function handleDaily(request: Request): Promise<Response> {
   const device = known ?? hex(crypto.getRandomValues(new Uint8Array(32)))
   const anon = `anon:${hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(device)))}`
   const userId = await signedInUser(request)
+  // Opening the deals (state with `open`) or making a move is playing; anything else only looks.
+  const playing = op === 'act' || (body as { open?: unknown }).open === true
 
   const call = (path: string, payload: object) =>
     fetch(new URL(`/daily/${path}`, base), {
@@ -60,7 +64,11 @@ export async function handleDaily(request: Request): Promise<Response> {
     if (userId && known && op === 'state') await call('claim', { from: anon, to: `user:${userId}` })
     const upstream = await call(op, { ...body, player: userId ? `user:${userId}` : anon })
     const headers: Record<string, string> = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
-    if (!known) headers['set-cookie'] = `${COOKIE}=${device}; Path=${COOKIE_PATH}; Max-Age=${COOKIE_MAX_AGE}; HttpOnly; Secure; SameSite=Lax`
+    // A guest without the cookie who only looks is a stranger the service has never seen: "not
+    // started", and no cookie. The id is kept only once a guest's play has been accepted.
+    if (!known && !userId && playing && upstream.ok) {
+      headers['set-cookie'] = `${COOKIE}=${device}; Path=${COOKIE_PATH}; Max-Age=${COOKIE_MAX_AGE}; HttpOnly; Secure; SameSite=Lax`
+    }
     return new Response(await upstream.text(), { status: upstream.status, headers })
   } catch {
     return json(503, { error: 'unavailable' })

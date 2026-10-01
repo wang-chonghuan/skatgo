@@ -18,6 +18,9 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   server endpoint, `POST /api/ask` — the assistant (SKATGO-9) — is answered in `app/src/server.ts` before
   the page router: it streams a contextual answer from Azure OpenAI to any visitor. A Clerk session,
   when present, identifies the learner for rate limiting but never gates the answer (SKATGO-13/14).
+  Its other server endpoints, `POST /api/daily/state` and `/api/daily/act` (SKATGO-35), are answered
+  there too: they pass the daily tournament's requests on to `multiplayer/`, naming the player — the
+  Clerk account, or else a device id from an httpOnly cookie, sent on only as its hash.
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
   here. Accounts are optional: neither the course nor the assistant requires one.
 - **StyleX, compiled through Astryx's build integration** (`astryxStylex()`), with Astryx's reset and
@@ -27,6 +30,11 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   2026-09-27). It reuses the pure Skat engine; PostgreSQL stores private snapshots,
   seat ownership and idempotent command receipts. Only public state and per-seat
   StateViews cross the socket. The course frontend remains independent.
+- **The daily tournament runs in `multiplayer/`** (SKATGO-35), as plain HTTP routes under `/daily`
+  behind the admission key, not as a room: one human against two deterministic computers needs no
+  socket. Its PostgreSQL holds each day's deals (`daily_deals`) and each player's entry
+  (`daily_entries`: the human's moves per deal, per-deal summaries, the total). The web service is its
+  only client.
 - Course libraries: `motion` (animation), `@letele/playing-cards` (public-domain card faces),
   `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
   assistant's chat window).
@@ -50,7 +58,10 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/lesson/$id`, `/play` |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`) is cut from it by `.intentfold/tickets/SKATGO-23/icons.mjs` — regenerate them, never edit them |
-| `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment |
+| `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: what seat 0 may see of a deal (`seatView`), that view as a table, Seeger-Fabian |
+| `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
+| `app/src/components/skat/daily-table.tsx` | the tournament's button, day result and table; `/daily/play` is its full-screen page |
+| `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament |
 
 **Key decisions**
 
@@ -68,6 +79,11 @@ also built from the repository root. Neither project imports the other's runtime
   SKATGO-23) and the course map (`course-home.tsx`, SKATGO-1). Their text is the same for everyone,
   and they apply the learner's progress after mount; they still reach the routes only through
   `client-page.tsx`.
+- **The tournament's cards and scores are the server's** (SKATGO-35). The browser receives only seat
+  0's view of the current deal (`seatView`): its own hand, what has been played, the skat only once it
+  may know it, an Ouvert declarer's hand. A deal is stored as its deck and dealer plus the human's
+  moves and replayed through the engine; the score is what that replay settles, never a number the
+  browser sends.
 - **Split from Parrottoon on 2026-09-21**, as byte copies of its course code, theme and styles; routes
   moved from `/skat/...` to the root. The two codebases are **not synchronised**: a change in either
   does not reach the other.
@@ -178,6 +194,9 @@ cross-module contract.
 - **Course randomness runs in the browser only.** Drills and the solo deal use `Math.random`;
   rendering one on the server would hand the browser a different question from the one it hydrates.
   Multiplayer deals are server-owned and cryptographically shuffled, never SSR content.
+- **A tournament deal in progress is replayed from its moves** (SKATGO-35). Changing `ai.ts` or
+  `game.ts` changes how an unfinished deal of the current day replays; finished deals keep the summary
+  and score written when they ended.
 - **Progress lives in `localStorage` under one versioned key** (`progress.ts`). Changing its shape
   without a new key or a migration silently loses every learner's progress.
 

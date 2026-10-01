@@ -2,8 +2,8 @@ import { createHash, randomInt, timingSafeEqual } from 'node:crypto'
 import { z } from 'zod'
 import { fullDeck, type Card } from '../../app/src/lib/skat/cards'
 import {
-  actor, adviceFor, aiBid, aiDeclare, bidAction, collectTrick, deal, declare,
-  discard, pickUpSkat, playCard, playHand, type Game, type Seat,
+  actor, adviceFor, aiBid, aiDeclare, applyMove, bidAction, collectTrick, deal, declare,
+  playCard, type Game, type Move, type Seat,
 } from '../../app/src/lib/skat/game'
 import { declarationAdvice } from '../../app/src/lib/skat/ai'
 
@@ -82,24 +82,13 @@ export function applyAction(s: Snapshot, seat: Seat, action: Command['action']):
     return deal(2, secureDeck())
   }
   const g = s.game
-  if (!g || actor(g) !== seat) throw new Rejected('not_your_turn')
-  let next = g
-  switch (action.type) {
-    case 'bid': {
-      if (g.phase !== 'bidding') break
-      const valid = action.value === 'pass' ||
-        (g.bidding.awaiting === 'listener' ? action.value === 'hold' : action.value === 'bid')
-      if (valid) next = bidAction(g, action.value)
-      break
-    }
-    case 'pickup':
-      if (!g.pickedUp) next = pickUpSkat(g)
-      break
-    case 'hand': next = playHand(g); break
-    case 'discard': next = discard(g, action.cards); break
-    case 'declare': next = declare(g, action.declaration); break
-    case 'play': next = playCard(g, action.card); break
-  }
+  if (!g) throw new Rejected('not_your_turn')
+  return applySeatMove(g, seat, action)
+}
+/** A seat's move through the engine, refused unless it is that seat's turn and the move is legal. */
+export function applySeatMove(g: Game, seat: Seat, move: Move): Game {
+  if (actor(g) !== seat) throw new Rejected('not_your_turn')
+  const next = applyMove(g, move)
   if (next === g) throw new Rejected('illegal_action')
   return next
 }

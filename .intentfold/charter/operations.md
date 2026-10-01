@@ -15,14 +15,17 @@ merge. Acceptance verification also uses this file, so stale commands block deli
 **Runtime**
 
 The **`web`** service is the TanStack Start server in `app/`, which renders the page
-shell for `/` (the front page), `/course`, `/lesson/$id` and `/play` and serves the built assets. The course itself runs in the
-browser. `POST /api/ask` (the assistant) is part of `web`.
+shell for `/` (the front page), `/course`, `/lesson/$id`, `/play`, `/daily` and `/daily/play` and serves the built assets. The course itself runs in the
+browser. `POST /api/ask` (the assistant) is part of `web`, and so is `/api/daily/*`, which passes the
+daily tournament's requests on to `multiplayer`.
 
 The independent **`multiplayer`** Colyseus service uses PostgreSQL for durable rooms
 (SKATGO-20, human-approved 2026-09-27). It supports 1-3 humans, fills other seats with AI,
 and gives disconnected players 30 seconds before temporary AI control. Original players
 can recover the same seat within the room's 24-hour inactivity lifetime. No frontend
-admission flow is shipped yet: integration clients require a separate admission secret.
+admission flow for rooms is shipped yet: integration clients require a separate admission secret.
+The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily`; its one
+client is the web service, which holds the admission key.
 Only one database-fenced process owns rooms; liveness and gameplay readiness are separate.
 
 **Environments**
@@ -143,9 +146,15 @@ development instance; `clerk env pull --app app_3JhPKJFpPIJR7rHWf9A8neRvdFU --in
 writes them). The built server reads them from its environment, so load the file when starting it:
 `(cd app && set -a && . ./.env && set +a && PORT=<port> node .output/server/index.mjs)`.
 
+Locally `app/.env` also carries `MULTIPLAYER_URL` (the local multiplayer service,
+`http://127.0.0.1:<multiplayer-port>`) and `MULTIPLAYER_ADMISSION_KEY` (the value in
+`multiplayer/.env`); without them `/api/daily/*` answers 503. The daily tournament runs locally with
+both services and the local database started as Build and tests says.
+
 In production the Render Web Service carries exactly the application configuration
-`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `CLERK_SECRET_KEY` and
-`CLERK_PUBLISHABLE_KEY`; Render supplies `PORT` and its own `RENDER_*` runtime variables. List
+`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `CLERK_SECRET_KEY`,
+`CLERK_PUBLISHABLE_KEY`, `MULTIPLAYER_URL` (the `skatgo-multiplayer` service's own Render hostname)
+and `MULTIPLAYER_ADMISSION_KEY` (the multiplayer service's value; SKATGO-35); Render supplies `PORT` and its own `RENDER_*` runtime variables. List
 application keys without printing values:
 
 ```bash
@@ -178,7 +187,9 @@ releases `skatgo-multiplayer`, which has its own deploy below (found while deplo
 
 **Post-deploy check**
 
-For multiplayer-only releases, do not redeploy `web`. After a merged revision:
+For multiplayer-only releases, do not redeploy `web`. A release that changes both — the daily
+tournament's routes and the web's proxy to them — deploys `multiplayer` first, so the web never
+calls routes that are not live yet. After a merged revision:
 
 ```bash
 node multiplayer/scripts/render.mjs deploy

@@ -2,6 +2,7 @@ import { createServer } from 'node:http'
 import express from 'express'
 import { Server, matchMaker } from '@colyseus/core'
 import { WebSocketTransport } from '@colyseus/ws-transport'
+import { dailyRoutes } from './daily'
 import { makeRoom, RESTORE } from './room'
 import { Store } from './store'
 
@@ -27,6 +28,7 @@ app.get(['/healthz', '/readyz'], async (req, res) => {
     res.status(ok ? 200 : 503).json({ ok, ready, version, service: 'skatgo-multiplayer' })
   } catch { res.status(503).json({ ok: false, ready: false, version }) }
 })
+app.use('/daily', dailyRoutes(store, key, () => ready && !stopping))
 const httpServer = createServer(app)
 const server = new Server({
   transport: new WebSocketTransport({ server: httpServer, maxPayload: 16 * 1024, pingInterval: 5000, pingMaxRetries: 2 }),

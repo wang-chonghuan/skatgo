@@ -32,6 +32,14 @@ export class Store {
           receipt jsonb NOT NULL, PRIMARY KEY (room_id, seat, id)
         );
         CREATE INDEX IF NOT EXISTS multiplayer_rooms_expiry ON multiplayer_rooms(expires_at);
+        CREATE TABLE IF NOT EXISTS daily_deals (
+          day text PRIMARY KEY, deals jsonb NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS daily_entries (
+          day text NOT NULL REFERENCES daily_deals(day), player text NOT NULL,
+          actions jsonb NOT NULL, deals jsonb NOT NULL, total integer NOT NULL,
+          created_at bigint NOT NULL, finished_at bigint, PRIMARY KEY (day, player)
+        );
       `)
       await c.query('COMMIT')
     } catch (e) {

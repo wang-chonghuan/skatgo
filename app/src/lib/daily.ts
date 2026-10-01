@@ -1,11 +1,9 @@
-// The daily Skat tournament's settings (SKATGO-29). The pages describe it ahead of the tournament
-// itself (the human, 2026-09-30: 「文案先行」); the numbers they print come from here, never from the copy.
+// The daily Skat tournament's settings for its pages (SKATGO-29): the numbers they print come from
+// here, never from the copy. The settings themselves live with the tournament's rules
+// (lib/skat/tournament.ts, SKATGO-35), which the multiplayer service that runs it reads too.
+import { DAILY_TIME_ZONE } from './skat/tournament'
 
-/** Deals in one day's tournament. */
-export const DAILY_DEALS = 12
-
-/** New deals start at midnight in this time zone. */
-export const DAILY_TIME_ZONE = 'Europe/Berlin'
+export { DAILY_DEALS, DAILY_TIME_ZONE } from './skat/tournament'
 
 /** Today's date in the tournament's time zone, written the way the language writes a long date. */
 export const dailyDate = (now: Date, locale: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: DAILY_TIME_ZONE }).format(now)

@@ -10,26 +10,25 @@ import { visibleTable } from '~/lib/skat/table-view'
 import { cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
 import {
   type Game,
+  type Move,
   type Seat,
   actor,
   adviceFor,
   aiBid,
   aiDeclare,
+  applyMove,
   bidAction,
   collectTrick,
   deal,
-  declare,
-  discard,
   legalFor,
   next,
-  pickUpSkat,
   playCard,
-  playHand,
   normalise,
   roleOf,
   runningPoints,
   trickWinner,
 } from '~/lib/skat/game'
+import { seegerFabian } from '~/lib/skat/tournament'
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
@@ -65,6 +64,8 @@ import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 //                  a drawer parked off the right edge. A white tab folds it either way;
 //   the dialogs  — the settlement and a passed-in deal, white on a scrim.
 // Inside a lesson the same table is embedded: the panel stacks under the felt and there is no leave.
+// In the daily tournament (SKATGO-35) the server owns the deal: the table draws what it is sent and
+// sends the learner's moves, and offers no hints.
 //
 // Every thing on the felt is sized and placed in the stage's unit (theme/table.stylex.ts), which
 // follows the felt's size: the table scales as one, and nothing on it can cover anything else.
@@ -73,19 +74,39 @@ const ME: Seat = 0
 /** A seat's name in the current language — read at render, so it is always the page's language. */
 const nameOf = (seat: Seat) => [m.name_you, m.name_lina, m.name_max][seat]()
 
-const BOT_DELAY = 850
-const TRICK_DELAY = 1300
+export const BOT_DELAY = 850
+export const TRICK_DELAY = 1300
+
+/** A deal the server owns (the daily tournament, SKATGO-35). Nobody at this table plays for the
+ *  computers, and there are no hints: the learner's moves go to `send`, and `game` is what came back. */
+export type Tournament = {
+  game: Game
+  /** A move is on its way, or the computers' replies are still being shown one by one. */
+  busy: boolean
+  send: (move: Move) => void
+  /** After a deal: on to the next one, or to the day's result after the last. */
+  next: () => void
+  /** The deal on the table, 0-based, of `of`. */
+  deal: number
+  of: number
+  /** Seeger-Fabian totals per seat over the day's finished deals. */
+  totals: [number, number, number]
+}
 
 type Props = {
   /** Called once per game, when it is settled. */
   onSettled?: (info: { humanWon: boolean; humanScore: number }) => void
   /** Free play: the table fills the screen and offers a way out. A lesson embeds it instead. */
   fullScreen?: boolean
+  /** Play the server's deal instead of dealing one here. */
+  tournament?: Tournament
 }
 
-export function GameTable({ onSettled, fullScreen = false }: Props) {
+export function GameTable({ onSettled, fullScreen = false, tournament }: Props) {
   const [dealer, setDealer] = useState<Seat>(2)
-  const [game, setGame] = useState<Game>(() => deal(2))
+  const [localGame, setGame] = useState<Game>(() => deal(2))
+  const game = tournament?.game ?? localGame
+  const hints = !tournament
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   const [picked, setPicked] = useState<Card[]>([])
   const [hint, setHint] = useState<{ card?: Card; cards?: Card[]; text: string } | null>(null)
@@ -98,8 +119,10 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
   const myTurn = who === ME
 
   // The computers move on a timer. The updater re-checks the state it is handed, so a timer that
-  // fires late (or twice, under StrictMode) cannot move for the wrong player.
+  // fires late (or twice, under StrictMode) cannot move for the wrong player. A tournament's computers
+  // play at the server.
   useEffect(() => {
+    if (tournament) return
     if (game.phase === 'trickEnd') {
       const t = setTimeout(() => setGame((g) => collectTrick(g)), TRICK_DELAY)
       return () => clearTimeout(t)
@@ -119,7 +142,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
       })
     }, BOT_DELAY)
     return () => clearTimeout(t)
-  }, [game, who])
+  }, [game, who, tournament])
 
   useEffect(() => {
     if (game.phase !== 'done' || !game.result || game.declarer === null || settledFor.current === game) return
@@ -144,14 +167,22 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
   }, [game])
 
   // The assistant (SKATGO-9) reads the table through this: the learner's own view, refreshed on every
-  // change and withdrawn when the table leaves the page.
+  // change and withdrawn when the table leaves the page. Not in the tournament: its answer would be the
+  // hint the tournament does not give.
   const publish = useTableSnapshot((s) => s.publish)
   useEffect(() => {
-    publish(visibleTable(game, scores))
-  }, [game, scores, publish])
+    publish(tournament ? null : visibleTable(game, scores))
+  }, [game, scores, publish, tournament])
   useEffect(() => () => publish(null), [publish])
 
+  /** The learner's move: to the server in the tournament, through the engine here otherwise. */
+  function dispatch(move: Move) {
+    if (!tournament) return setGame((g) => applyMove(g, move))
+    if (!tournament.busy) tournament.send(move)
+  }
+
   function newGame() {
+    if (tournament) return tournament.next()
     const d = next(dealer)
     setDealer(d)
     setPicked([])
@@ -174,7 +205,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
       setRefusal(m.play_refusal({ led: ledName(effectiveSuit(game.trick[0].card, contract)) }))
       return
     }
-    setGame((g) => playCard(g, card))
+    dispatch({ type: 'play', card })
   }
 
   function showPlayHint() {
@@ -221,14 +252,14 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
             learner asked for, or why a card was refused, each until it is closed. The stage keeps this
             band clear (SKATGO-34): nothing on the table reaches into it. */}
         <div data-testid="skat-top" {...stylex.props(styles.top)}>
-          <InfoBoard game={game} scores={scores} points={points} />
+          <InfoBoard game={game} scores={tournament?.totals ?? scores} points={points} />
           {!acting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
               {game.phase === 'trickEnd' && winner !== null ? (
                 <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} />
                 </div>
               )}
             </div>
@@ -329,13 +360,13 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} />
             </motion.div>
           ) : null}
         </AnimatePresence>
 
         {/* The hint: a tab on the felt's left edge, while it is the learner's card to play. */}
-        {game.phase === 'play' && myTurn ? (
+        {hints && game.phase === 'play' && myTurn ? (
           <button type="button" data-testid="skat-hint" aria-label={m.play_hint_button()} title={m.play_hint_button()} onClick={showPlayHint} {...stylex.props(styles.hintTab)}>
             <Lightbulb size={icon.table} strokeWidth={icon.outline} />
           </button>
@@ -398,7 +429,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} />
             </section>
           ) : null}
 
@@ -425,6 +456,11 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
           </section>
 
           <div data-testid="skat-strip" {...stylex.props(styles.strip)}>
+            {tournament ? (
+              <Pill tone="dark">
+                <span data-testid="daily-progress" data-deal={tournament.deal + 1}>{m.daily_deal_of({ n: tournament.deal + 1, of: tournament.of, total: tournament.totals[ME] })}</span>
+              </Pill>
+            ) : null}
             {contract ? <Pill tone="amber">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : null}
             {game.declarer !== null ? <Pill tone="quiet">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
             {game.phase === 'play' || game.phase === 'trickEnd' ? (
@@ -433,7 +469,9 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
           </div>
 
           <div {...stylex.props(styles.panelFoot)}>
-            {fullScreen ? (
+            {fullScreen && tournament ? (
+              <Link to="/daily" data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
+            ) : fullScreen ? (
               <Link to="/" data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
             ) : null}
           </div>
@@ -446,7 +484,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} />
         </div>
       ) : null}
     </div>
@@ -460,21 +498,30 @@ function ActionsFor({
   picked,
   draft,
   setDraft,
-  setGame,
+  dispatch,
   setPicked,
   setHint,
   onNewGame,
+  hints,
+  dealScore,
+  last,
 }: {
   game: Game
   picked: Card[]
   draft: Declaration | null
   setDraft: (d: Declaration | null) => void
-  setGame: (update: (g: Game) => Game) => void
+  dispatch: (move: Move) => void
   setPicked: (cards: Card[]) => void
   setHint: (h: { card?: Card; cards?: Card[]; text: string } | null) => void
   onNewGame: () => void
   /** In the pinned panel: narrower than the drawer, so the contracts take two rows. */
   compact?: boolean
+  /** Whether the hint buttons are offered (not in the tournament). */
+  hints: boolean
+  /** In the tournament: the deal's Seeger-Fabian score for the learner, shown in the settlement. */
+  dealScore: number | null
+  /** In the tournament: this is the day's last deal. */
+  last: boolean
 }) {
   return (
     <Actions
@@ -483,15 +530,18 @@ function ActionsFor({
       picked={picked}
       draft={draft}
       setDraft={setDraft}
-      onBid={(a) => setGame((g) => bidAction(g, a))}
-      onPickUp={() => setGame((g) => pickUpSkat(g))}
-      onHand={() => setGame((g) => playHand(g))}
+      hints={hints}
+      dealScore={dealScore}
+      last={last}
+      onBid={(a) => dispatch({ type: 'bid', value: a })}
+      onPickUp={() => dispatch({ type: 'pickup' })}
+      onHand={() => dispatch({ type: 'hand' })}
       onDiscard={() => {
-        setGame((g) => discard(g, picked))
+        dispatch({ type: 'discard', cards: picked })
         setPicked([])
       }}
       onDeclare={(d) => {
-        setGame((g) => declare(g, d))
+        dispatch({ type: 'declare', declaration: d })
         setDraft(null)
       }}
       onBidHint={() => setHint(bidHint(game))}
@@ -596,6 +646,9 @@ type ActionsProps = {
   onDiscardHint: () => void
   onPlayHint: () => void
   onNewGame: () => void
+  hints: boolean
+  dealScore: number | null
+  last: boolean
 }
 
 function Actions(p: ActionsProps) {
@@ -605,14 +658,16 @@ function Actions(p: ActionsProps) {
   if (game.phase === 'passedIn') {
     return (
       <Dialog>
-        <Say>{m.table_passed_in()}</Say>
-        <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={p.onNewGame}>{m.table_redeal()}</Btn>
+        <Say>{p.dealScore === null ? m.table_passed_in() : m.daily_passed_in()}</Say>
+        <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={p.onNewGame}>
+          {p.dealScore === null ? m.table_redeal() : p.last ? m.daily_see_result() : m.daily_next_deal()}
+        </Btn>
       </Dialog>
     )
   }
 
   if (game.phase === 'done' && game.result && game.declarer !== null) {
-    return <Result game={game} onNewGame={p.onNewGame} />
+    return <Result game={game} onNewGame={p.onNewGame} dealScore={p.dealScore} last={p.last} />
   }
 
   if (who !== ME) {
@@ -636,7 +691,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.bid_forehand_alone()}</Say>
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
+          {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
         </Row>
       )
     }
@@ -647,7 +702,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.bid_your_turn({ name: nameOf(b.listener) })}</Say>
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_button({ value: value ?? '' })}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-          <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
+          {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
         </Row>
       )
     }
@@ -656,7 +711,7 @@ function Actions(p: ActionsProps) {
         <Say>{m.bid_asked({ name: nameOf(b.speaker), value: b.value })}</Say>
         <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-        <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn>
+        {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
       </Row>
     )
   }
@@ -668,7 +723,7 @@ function Actions(p: ActionsProps) {
           <Say>{m.skat_won_bid({ bid: game.bid })}</Say>
           <Btn testId="skat-pickup" shape="block" size="lg" onClick={p.onPickUp}>{m.skat_pick_up()}</Btn>
           <Btn testId="skat-hand-game" tone="quiet" shape="block" size="lg" onClick={p.onHand}>{m.skat_play_hand()}</Btn>
-          <Btn testId="skat-skat-hint" tone="info" shape="block" size="lg" onClick={p.onSkatHint}>{m.skat_hint_button()}</Btn>
+          {p.hints ? <Btn testId="skat-skat-hint" tone="info" shape="block" size="lg" onClick={p.onSkatHint}>{m.skat_hint_button()}</Btn> : null}
         </Row>
       )
     }
@@ -676,13 +731,13 @@ function Actions(p: ActionsProps) {
       <Row>
         <Say>{m.skat_discard_prompt()}</Say>
         <Btn testId="skat-discard" shape="block" size="lg" disabled={p.picked.length !== 2} onClick={p.onDiscard}>{m.skat_discard_button({ n: p.picked.length })}</Btn>
-        <Btn tone="info" shape="block" size="lg" onClick={p.onDiscardHint}>{m.skat_discard_hint_button()}</Btn>
+        {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onDiscardHint}>{m.skat_discard_hint_button()}</Btn> : null}
       </Row>
     )
   }
 
   if (game.phase === 'declare') {
-    return <DeclarePicker compact={p.compact} game={game} draft={p.draft} setDraft={p.setDraft} onDeclare={p.onDeclare} onHint={p.onDeclareHint} />
+    return <DeclarePicker compact={p.compact} game={game} draft={p.draft} setDraft={p.setDraft} onDeclare={p.onDeclare} onHint={p.hints ? p.onDeclareHint : undefined} />
   }
 
   return (
@@ -706,7 +761,8 @@ function DeclarePicker({
   draft: Declaration | null
   setDraft: (d: Declaration | null) => void
   onDeclare: (d: Declaration) => void
-  onHint: () => void
+  /** The hint button's action; no button without one. */
+  onHint?: () => void
   compact?: boolean
 }) {
   const isHand = !game.pickedUp
@@ -770,13 +826,13 @@ function DeclarePicker({
       ) : null}
       <Row>
         <Btn testId="skat-declare" shape="block" size="lg" grow disabled={!draft} onClick={() => draft && onDeclare(draft)}>{m.declare_go()}</Btn>
-        <Btn testId="skat-declare-hint" tone="info" shape="block" size="lg" onClick={onHint}>{m.declare_hint_button()}</Btn>
+        {onHint ? <Btn testId="skat-declare-hint" tone="info" shape="block" size="lg" onClick={onHint}>{m.declare_hint_button()}</Btn> : null}
       </Row>
     </div>
   )
 }
 
-function Result({ game, onNewGame }: { game: Game; onNewGame: () => void }) {
+function Result({ game, onNewGame, dealScore, last }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean }) {
   const r = game.result!
   const declarer = game.declarer!
   const d = game.declaration!
@@ -821,6 +877,11 @@ function Result({ game, onNewGame }: { game: Game; onNewGame: () => void }) {
           <p {...stylex.props(typography.note, styles.note)}>
             <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score))} />
           </p>
+          {dealScore === null ? null : (
+            <p data-testid="daily-deal-score" data-score={dealScore} {...stylex.props(typography.note, styles.note)}>
+              <Rich text={m.daily_deal_score({ score: dealScore > 0 ? `+${dealScore}` : String(dealScore) })} />
+            </p>
+          )}
           <div {...stylex.props(styles.resultSkat)}>
             <span {...stylex.props(typography.smallBold, styles.inkLabel)}>{m.result_skat()}</span>
             {game.skat.map((c) => <PlayingCard key={cardId(c)} card={c} size="xs" />)}
@@ -828,7 +889,9 @@ function Result({ game, onNewGame }: { game: Game; onNewGame: () => void }) {
         </div>
       </Panel>
       <Row>
-        <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={onNewGame}>{m.result_new_game()}</Btn>
+        <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={onNewGame}>
+          {dealScore === null ? m.result_new_game() : last ? m.daily_see_result() : m.daily_next_deal()}
+        </Btn>
       </Row>
     </div>
     </Dialog>

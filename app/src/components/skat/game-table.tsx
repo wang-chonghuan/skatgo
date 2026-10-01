@@ -1129,7 +1129,7 @@ const styles = stylex.create({
     outlineColor: color.gold,
   },
 
-  // The learner's hand: a row along the bottom, in landscape running a third of a card off the felt.
+  // The learner's hand: a row along the bottom, every card whole.
   mine: { position: 'absolute', left: 0, right: 0, bottom: stage.handBottom, display: 'flex', justifyContent: 'center', paddingInline: { default: space.x16, [bp.phone]: space.x6 }, boxSizing: 'border-box' },
 
   panel: { position: 'relative', display: 'flex', flexDirection: 'column', backgroundColor: color.page, color: color.text },

@@ -43,3 +43,15 @@ to do it in this ticket.
 - Folding the panel at 1000×487 gives the felt the full width, and the tab follows the edge.
 - The card flight still starts from the hand at opacity 1, and opponents' cards from their sides.
 - Mechanical defence: all pass.
+
+## Round 2: the whole hand
+
+The human: 「我这么长的屏幕你也截断了，我看要不然都不截断吧，试试看」.
+
+- The hand sits on the felt's bottom edge with every card whole (`handBottom` 0).
+- The stage grows to hold it: landscape 1000×576u, portrait 400×464u. The edge tabs and the drawer sit
+  above the full card.
+- To keep the stacks clear of the hint tab on a phone in landscape, they are smaller there: card 100u,
+  12u steps, centre 45u above the frame's.
+- Checks (`tmp/layout.mjs`): no overlap and no page scroll at 1000×487, 1440×900, 1280×720, 820×600,
+  768×1024, 390×844, 430×932, 844×390 and 667×375. At 1000×487 the card is now 78px wide (it was 87).

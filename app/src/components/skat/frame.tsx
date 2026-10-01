@@ -18,7 +18,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { suit as suitCard, fourColours, twoColours } from '../../theme/suits.stylex'
 import { FlagDE, FlagUS } from '../../theme/flags'
 import { typography } from '../../theme/type'
-import { Btn, linkLook, suitText } from './ui'
+import { Btn, suitText } from './ui'
 
 // The frame pieces of the lobby design (SKATGO-26, reference.md):
 //   Rail           the app's left navigation, desktop;
@@ -93,6 +93,15 @@ function NavItem({ item, active, variant }: { item: Item; active: boolean; varia
   )
 }
 
+/** The front page's links, in this order (the human, 2026-10-01): today's deals, guided free play, the
+ *  course, the rules. No separate "Play" button beside them. */
+const HEADER_LINKS: { to: '/daily' | '/play' | '/course' | '/rules'; label: () => string }[] = [
+  { to: '/daily', label: () => m.nav_header_daily() },
+  { to: '/play', label: () => m.nav_header_practice() },
+  { to: '/course', label: () => m.nav_course() },
+  { to: '/rules', label: () => m.nav_rules() },
+]
+
 /** The front page's header: the public site's white bar. On a phone the links fold into a menu. */
 export function LandingHeader() {
   const [open, setOpen] = useState(false)
@@ -103,15 +112,11 @@ export function LandingHeader() {
         <span {...stylex.props(typography.landingBrand)}>{m.site_name()}</span>
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
-        <Link to="/daily" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_daily()}</Link>
-        <Link to="/course" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_course()}</Link>
-        <Link to="/rules" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_rules()}</Link>
-        <Link to="/play" {...stylex.props(typography.landingNav, styles.landingLink)}>{m.nav_play()}</Link>
+        {HEADER_LINKS.map((l) => (
+          <Link key={l.to} to={l.to} data-nav={l.to} {...stylex.props(typography.landingNav, styles.landingLink)}>{l.label()}</Link>
+        ))}
       </nav>
       <div {...stylex.props(styles.landingEnd)}>
-        <span {...stylex.props(styles.desktopOnly)}>
-          <Link to="/play" data-testid="header-play" {...linkLook('go', 'md', 'landing')}>{m.nav_play()}</Link>
-        </span>
         <LanguageSwitch />
         <SettingsButton />
         <span {...stylex.props(styles.desktopOnly)}>
@@ -123,10 +128,9 @@ export function LandingHeader() {
       </div>
       {open ? (
         <div data-testid="landing-menu-panel" {...stylex.props(styles.menuPanel)}>
-          <Link to="/daily" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_daily()}</Link>
-          <Link to="/course" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_course()}</Link>
-          <Link to="/rules" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_rules()}</Link>
-          <Link to="/play" onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{m.nav_play()}</Link>
+          {HEADER_LINKS.map((l) => (
+            <Link key={l.to} to={l.to} onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{l.label()}</Link>
+          ))}
           <div {...stylex.props(styles.menuAccount)}>
             <Account />
           </div>

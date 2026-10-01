@@ -5,6 +5,8 @@
 
 /** The phone step as a `matchMedia` query — the same width as `bp.phone` in breakpoints.stylex.ts. */
 export const phoneQuery = '(max-width: 480px)'
+/** The table's pinned side panel as a `matchMedia` query — the same width as `bp.pinned`. */
+export const pinnedQuery = '(min-width: 900px)'
 
 /** The browser's toolbar colour on phones: the page's white surface (`color.surface`), which a meta tag
  *  cannot read as a variable. */

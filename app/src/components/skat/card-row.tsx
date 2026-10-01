@@ -9,6 +9,7 @@ import { deal } from '../../theme/constants'
 import { elev } from '../../theme/elevation.stylex'
 import { space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
+import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { type CardSize, PlayingCard } from './playing-card'
 
@@ -153,7 +154,7 @@ const styles = stylex.create({
   fanRow: { width: '100%' },
   groupRow: { display: 'flex', flexWrap: 'nowrap', width: '100%' },
   // In a row each slot takes an even share of the width; the last holds its whole card.
-  rowSlot: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, maxWidth: { default: dims.rowSlotMax, [bp.phone]: dims.rowSlotMaxPhone } },
+  rowSlot: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, maxWidth: stage.handSlotMax },
   rowLastSlot: { flexGrow: 0, flexShrink: 0, flexBasis: 'auto' },
   // The last card of a row is never overlapped, so its slot must keep the card's full width. On a
   // wide screen only the fan's very last card is "last"; on a phone each row has its own.

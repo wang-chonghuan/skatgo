@@ -37,11 +37,12 @@ import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Settings, Spade, X
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { confettiBurst, drawer, icon, trick } from '../../theme/constants'
+import { confettiBurst, drawer, icon, pinnedQuery, trick } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev, fill, pose } from '../../theme/elevation.stylex'
 import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
+import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
 import { SettingsDialog } from './frame'
@@ -58,11 +59,15 @@ import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 //                  the skat, the trick, or the action box (Reizen, the skat, the contract picker), with
 //                  the seat plates on its edges; the hint tab on the left edge; the learner's hand in a
 //                  row along the bottom;
-//   the panel    — 450 wide on grey: the game tab, the Reizen history in dark columns, the contract
-//                  and the count, notes and hints, and the red leave button. On a phone it is a drawer
-//                  parked off the right edge behind a white tab;
+//   the panel    — on grey: the game tab, the Reizen history in dark columns, the contract and the
+//                  count, and the red leave button. On a wide screen it is pinned beside the felt and
+//                  the table scales to the width it leaves (SKATGO-34, as Funbridge's); narrower, it is
+//                  a drawer parked off the right edge. A white tab folds it either way;
 //   the dialogs  — the settlement and a passed-in deal, white on a scrim.
 // Inside a lesson the same table is embedded: the panel stacks under the felt and there is no leave.
+//
+// Every thing on the felt is sized and placed in the stage's unit (theme/table.stylex.ts), which
+// follows the felt's size: the table scales as one, and nothing on it can cover anything else.
 
 const ME: Seat = 0
 /** A seat's name in the current language — read at render, so it is always the page's language. */
@@ -184,21 +189,50 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
     return e.say === 'pass' ? m.bid_pass() : e.say === 'hold' ? m.bid_hold_said({ value: e.value }) : m.bid_said({ value: e.value })
   }
 
-  // The side panel is a drawer over the felt at any width (SKATGO-29): closed until the learner opens it.
-  const [panelOpen, setPanelOpen] = useState(false)
+  // The side panel (SKATGO-34): pinned open beside the felt on a wide screen, a closed drawer otherwise —
+  // and either way the learner can fold it (SKATGO-29). Crossing the width puts it back to its default.
+  // Free play's table is browser-only (client-part.tsx), so the query can be read at once; a lesson's
+  // table has no side panel to pin.
+  const [pinned, setPinned] = useState(() => fullScreen && window.matchMedia(pinnedQuery).matches)
+  const [panelOpen, setPanelOpen] = useState(pinned)
+  useEffect(() => {
+    if (!fullScreen) return
+    const query = window.matchMedia(pinnedQuery)
+    const change = () => {
+      setPinned(query.matches)
+      setPanelOpen(query.matches)
+    }
+    query.addEventListener('change', change)
+    return () => query.removeEventListener('change', change)
+  }, [fullScreen])
   const [settingsOpen, setSettingsOpen] = useState(false)
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
   const acting = inFrameActions && myTurn
   const dialog = game.phase === 'passedIn' || game.phase === 'done'
+  // With the panel pinned open, the learner's move is made in the panel, as Funbridge's bidding box is
+  // (SKATGO-34): nothing then lies over the table. Otherwise it is the drawer over the felt.
+  const movesInPanel = fullScreen && pinned && panelOpen
 
   return (
     <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>
       <div data-testid="skat-felt" {...stylex.props(styles.felt, fullScreen && styles.feltFull)}>
-        {/* The top of the felt (SKATGO-32): the info board, and right under it the table's messages — a
-            hint the learner asked for, or why a card was refused — each until it is closed. Nothing
-            here can be covered by the hand or the drawer below. */}
+        {/* The top of the felt (SKATGO-32): the info board, and right under it the table's messages —
+            what happens in the play (whose move, who is thinking, who took the trick), a hint the
+            learner asked for, or why a card was refused, each until it is closed. The stage keeps this
+            band clear (SKATGO-34): nothing on the table reaches into it. */}
         <div data-testid="skat-top" {...stylex.props(styles.top)}>
           <InfoBoard game={game} scores={scores} points={points} />
+          {!acting && !dialog ? (
+            <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
+              {game.phase === 'trickEnd' && winner !== null ? (
+                <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
+              ) : (
+                <div data-testid="skat-actions" {...stylex.props(styles.words)}>
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
+                </div>
+              )}
+            </div>
+          ) : null}
           {refusal || hint ? (
             <div data-testid="skat-messages" {...stylex.props(styles.messages)}>
               {refusal ? (
@@ -256,21 +290,6 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
             </>
           )}
 
-          {/* What happens in the play — whose move, who is thinking, who took the trick — is said over the
-              frame, never inside it: the frame holds only cards. Hints and refusals are messages at the
-              top (SKATGO-32). */}
-          {!acting && !dialog ? (
-            <div data-testid="skat-words" {...stylex.props(styles.above)}>
-              {game.phase === 'trickEnd' && winner !== null ? (
-                <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
-              ) : (
-                <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
-                </div>
-              )}
-            </div>
-          ) : null}
-
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
               learner's orange one under the bottom edge. */}
           {([1, 2] as Seat[]).map((seat) => (
@@ -296,7 +315,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
         {/* The learner's move — Reizen, the skat, the discard, the contract — in a drawer that rises from
             the bottom of the table and stops above the hand, which the discard still needs. */}
         <AnimatePresence>
-          {acting ? (
+          {acting && !movesInPanel ? (
             <motion.div
               key="drawer"
               role="dialog"
@@ -322,6 +341,22 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
           </button>
         ) : null}
 
+        {/* The tab that folds the side panel away and brings it back, mirroring the hint tab on the right
+            edge (SKATGO-29). It lives on the felt, so it keeps the hint tab's height at any size; over a
+            drawer that is open it sits at the drawer's edge. */}
+        {fullScreen ? (
+          <button
+            type="button"
+            aria-label={m.table_panel_toggle()}
+            aria-expanded={panelOpen}
+            data-testid="skat-panel-toggle"
+            onClick={() => setPanelOpen((o) => !o)}
+            {...stylex.props(styles.panelTab, panelOpen && !pinned && styles.panelTabOnDrawer)}
+          >
+            {panelOpen ? <ChevronRight size={icon.inline} strokeWidth={icon.outline} /> : <ChevronLeft size={icon.inline} strokeWidth={icon.outline} />}
+          </button>
+        ) : null}
+
         <div {...stylex.props(styles.mine)}>
           <Fan
             flight
@@ -337,14 +372,13 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
         </div>
       </div>
 
-      <aside data-testid="skat-panel" data-open={String(panelOpen)} {...stylex.props(styles.panel, fullScreen && styles.panelFull, fullScreen && panelOpen && styles.panelOpen)}>
-        {fullScreen ? (
-          <button type="button" aria-label={m.table_panel_toggle()} aria-expanded={panelOpen} data-testid="skat-panel-toggle" onClick={() => setPanelOpen((o) => !o)} {...stylex.props(styles.panelTab)}>
-            {panelOpen ? <ChevronRight size={icon.inline} strokeWidth={icon.outline} /> : <ChevronLeft size={icon.inline} strokeWidth={icon.outline} />}
-          </button>
-        ) : null}
-
-        <div {...stylex.props(styles.panelBody)}>
+      <aside
+        data-testid="skat-panel"
+        data-open={String(panelOpen)}
+        data-pinned={String(fullScreen && pinned)}
+        {...stylex.props(styles.panel, fullScreen && styles.panelFull, fullScreen && panelOpen && styles.panelOpen, fullScreen && !panelOpen && styles.panelShut)}
+      >
+        <div {...stylex.props(styles.panelBody, fullScreen && styles.panelBodyFull)}>
           {fullScreen ? (
             <div {...stylex.props(styles.tabs)}>
               <span data-state="active" {...stylex.props(styles.tab)}>
@@ -360,6 +394,12 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
                 <span {...stylex.props(typography.railLabel)}>{m.settings_open()}</span>
               </button>
             </div>
+          ) : null}
+
+          {acting && movesInPanel ? (
+            <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} setGame={setGame} setPicked={setPicked} setHint={setHint} onNewGame={newGame} />
+            </section>
           ) : null}
 
           <section data-testid="skat-history" {...stylex.props(styles.history)}>
@@ -415,6 +455,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
 
 /** Every move the learner can make now, wired to the game. */
 function ActionsFor({
+  compact,
   game,
   picked,
   draft,
@@ -432,9 +473,12 @@ function ActionsFor({
   setPicked: (cards: Card[]) => void
   setHint: (h: { card?: Card; cards?: Card[]; text: string } | null) => void
   onNewGame: () => void
+  /** In the pinned panel: narrower than the drawer, so the contracts take two rows. */
+  compact?: boolean
 }) {
   return (
     <Actions
+      compact={compact}
       game={game}
       picked={picked}
       draft={draft}
@@ -473,7 +517,7 @@ function Stack({ seat, game }: { seat: Seat; game: Game }) {
       {cards.map((c, i) => (
         <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot)}>
           <span {...stylex.props(styles.sideCard)}>
-            <PlayingCard card={c} faceDown={!open} size="table" />
+            <PlayingCard card={c} faceDown={!open} size="fill" />
           </span>
         </div>
       ))}
@@ -536,6 +580,7 @@ function InfoBoard({ game, scores, points }: { game: Game; scores: [number, numb
 }
 
 type ActionsProps = {
+  compact?: boolean
   game: Game
   picked: Card[]
   draft: Declaration | null
@@ -637,7 +682,7 @@ function Actions(p: ActionsProps) {
   }
 
   if (game.phase === 'declare') {
-    return <DeclarePicker game={game} draft={p.draft} setDraft={p.setDraft} onDeclare={p.onDeclare} onHint={p.onDeclareHint} />
+    return <DeclarePicker compact={p.compact} game={game} draft={p.draft} setDraft={p.setDraft} onDeclare={p.onDeclare} onHint={p.onDeclareHint} />
   }
 
   return (
@@ -650,6 +695,7 @@ function Actions(p: ActionsProps) {
 const CONTRACTS: Contract[] = [...[...SUITS].reverse().map((trump): Contract => ({ kind: 'suit', trump })), { kind: 'grand' }, { kind: 'null' }]
 
 function DeclarePicker({
+  compact,
   game,
   draft,
   setDraft,
@@ -661,6 +707,7 @@ function DeclarePicker({
   setDraft: (d: Declaration | null) => void
   onDeclare: (d: Declaration) => void
   onHint: () => void
+  compact?: boolean
 }) {
   const isHand = !game.pickedUp
   // Matadors are counted over hand plus skat, but in a Hand game the skat is unseen: the learner can
@@ -674,7 +721,7 @@ function DeclarePicker({
   return (
     <div {...stylex.props(styles.declare)}>
       <Say><Rich text={m.declare_prompt({ bid: game.bid })} /></Say>
-      <div {...stylex.props(styles.contractGrid)}>
+      <div {...stylex.props(styles.contractGrid, compact && styles.contractGridCompact)}>
         {CONTRACTS.map((c) => {
           const v = expectedValue(make(c), known)
           const chosen = draft !== null && same(draft.contract, c)
@@ -839,42 +886,46 @@ const styles = stylex.create({
   // Clipped, not hidden (SKATGO-32): a hidden overflow can still be scrolled by focus or scrollIntoView,
   // which slid the whole felt sideways; a clipped one cannot scroll at all.
   table: { position: 'relative', display: 'grid', backgroundColor: color.page, overflow: 'clip' },
-  // Free play: the felt fills the screen; the panel is a drawer over it (SKATGO-29).
-  tableFull: { gridTemplateColumns: dims.oneColumn, minHeight: dims.screenDynamic },
+  // Free play: the felt fills the screen; on a wide screen the panel is pinned beside it (SKATGO-34),
+  // narrower it is a drawer over it (SKATGO-29).
+  tableFull: { gridTemplateColumns: { default: dims.oneColumn, [bp.pinned]: dims.feltAndPanel }, height: dims.screenDynamic },
   // Inside a lesson: the panel stacks under the felt.
   tableEmbedded: { gridTemplateColumns: dims.oneColumn, borderRadius: radii.panel },
 
+  // The felt is the stage's size container (SKATGO-34): everything on it is measured in its unit, so it
+  // needs a height of its own — the screen in free play, a fixed one inside a lesson.
   felt: {
     position: 'relative',
-    minHeight: dims.tableEmbedded,
+    height: dims.tableEmbedded,
+    containerType: 'size',
     overflow: 'clip',
     backgroundImage: fill.felt,
     color: color.onColor,
   },
-  feltFull: { minHeight: dims.screenDynamic },
+  feltFull: { height: dims.screenDynamic },
 
   // An opponent's hand down an edge, only partly on the felt.
   stack: {
     position: 'absolute',
-    top: { default: dims.frameTop, [bp.phone]: dims.frameTopPhone },
+    top: stage.stackCentre,
     display: 'flex',
     flexDirection: 'column',
     transform: pose.centreY,
   },
-  stackLeft: { left: { default: dims.sideInset, [bp.phone]: dims.sideInsetPhone } },
-  stackRight: { right: { default: dims.sideInset, [bp.phone]: dims.sideInsetPhone } },
+  stackLeft: { left: stage.stackInset },
+  stackRight: { right: stage.stackInset },
   sideSlot: {
     position: 'relative',
     flexShrink: 0,
-    width: { default: dims.sideSlotWidth, [bp.phone]: dims.sideSlotWidthPhone },
-    height: { default: dims.sideSlotHeight, [bp.phone]: dims.sideSlotHeightPhone },
-    marginTop: { default: dims.sideStep, [bp.phone]: dims.sideStepPhone, ':first-child': 0 },
+    width: stage.stackSlotWidth,
+    height: stage.stackSlotHeight,
+    marginTop: { default: stage.stackStep, ':first-child': 0 },
   },
-  sideCard: { position: 'absolute', top: dims.half, left: dims.half, display: 'block', transform: pose.sideways },
+  sideCard: { position: 'absolute', top: dims.half, left: dims.half, display: 'block', width: stage.stackCard, transform: pose.sideways },
 
   frame: {
     position: 'absolute',
-    top: { default: dims.frameTop, [bp.phone]: dims.frameTopPhone },
+    top: stage.frameCentre,
     left: dims.half,
     transform: pose.centre,
     display: 'flex',
@@ -886,7 +937,7 @@ const styles = stylex.create({
     borderStyle: 'solid',
     borderColor: color.gold,
   },
-  framePlay: { width: { default: dims.framePlay, [bp.phone]: dims.framePhone }, aspectRatio: dims.square, borderWidth: dims.frameBorderPlay },
+  framePlay: { width: stage.frame, aspectRatio: dims.square, borderWidth: dims.frameBorderPlay },
 
   plateSlot: { position: 'absolute', display: 'flex' },
   plateSlotLeft: { left: 0, top: dims.half, transform: pose.plateLeft },
@@ -923,7 +974,8 @@ const styles = stylex.create({
   },
   plateText: { whiteSpace: 'nowrap' },
 
-  saidChip: { position: 'absolute', bottom: space.x32 },
+  // In the frame's top corners (SKATGO-34): the action drawer rises from the bottom.
+  saidChip: { position: 'absolute', top: space.x12 },
   saidLeft: { left: space.x12 },
   saidRight: { right: space.x12 },
 
@@ -941,6 +993,8 @@ const styles = stylex.create({
     gap: space.x8,
     pointerEvents: 'none',
   },
+  // The line under the board for what happens in the play: inside the stage's band.
+  wordsLine: { display: 'flex', justifyContent: 'center', maxWidth: dims.tipWidth },
   messages: {
     display: 'flex',
     flexDirection: 'column',
@@ -967,9 +1021,10 @@ const styles = stylex.create({
   board: {
     pointerEvents: 'auto',
     display: 'grid',
-    gridTemplateColumns: dims.boardColumns,
+    gridTemplateColumns: { default: dims.boardColumnsWide, [bp.portrait]: dims.boardColumns },
     justifyContent: 'center',
-    width: { default: dims.boardWidth, [bp.phone]: dims.boardWidthPhone },
+    width: { default: 'auto', [bp.portrait]: dims.boardWidthPhone },
+    maxWidth: { default: dims.boardWidthWide, [bp.portrait]: 'none' },
     boxSizing: 'border-box',
     borderBottomLeftRadius: radii.panel,
     borderBottomRightRadius: radii.panel,
@@ -984,11 +1039,16 @@ const styles = stylex.create({
     minWidth: 0,
     paddingBlock: { default: space.x10, [bp.phone]: space.x8 },
     paddingInline: { default: space.x16, [bp.phone]: space.x8 },
-    // Two rows of two: a rule between the columns and one between the rows.
-    borderLeftWidth: { default: border.hair, ':nth-child(odd)': 0 },
+    // One row of four in landscape: a rule between the cells. Two rows of two in portrait: a rule
+    // between the columns and one between the rows.
+    borderLeftWidth: {
+      default: border.hair,
+      ':first-child': 0,
+      [bp.portrait]: { default: border.hair, ':nth-child(odd)': 0 },
+    },
     borderLeftStyle: 'solid',
     borderLeftColor: color.boardLine,
-    borderTopWidth: { default: 0, ':nth-child(n+3)': border.hair },
+    borderTopWidth: { default: 0, [bp.portrait]: { default: 0, ':nth-child(n+3)': border.hair } },
     borderTopStyle: 'solid',
     borderTopColor: color.boardLine,
     textAlign: 'center',
@@ -1007,24 +1067,6 @@ const styles = stylex.create({
   frameCard: { display: 'block', width: dims.trickCard },
   goldLabel: { color: color.amber },
   trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: dims.trickCard },
-  // The words about the play, outside the frame: over it on a desk, growing upward; under it on a
-  // phone, below the learner's plate — the phone's info board leaves no room above.
-  above: {
-    position: 'absolute',
-    bottom: { default: '100%', [bp.phone]: 'auto' },
-    top: { default: 'auto', [bp.phone]: '100%' },
-    paddingTop: { default: 0, [bp.phone]: space.x24 },
-    left: dims.half,
-    transform: pose.centreX,
-    zIndex: layer.window,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: space.x8,
-    width: dims.tipWidth,
-    paddingBottom: { default: space.x12, [bp.phone]: 0 },
-    pointerEvents: 'none',
-  },
   words: {
     paddingBlock: space.x6,
     paddingInline: space.x16,
@@ -1040,13 +1082,13 @@ const styles = stylex.create({
     left: 0,
     right: 0,
     marginInline: 'auto',
-    bottom: { default: dims.drawerBottom, [bp.phone]: dims.drawerBottomPhone },
+    bottom: stage.drawerBottom,
     zIndex: layer.window,
     display: 'flex',
     flexDirection: 'column',
     gap: space.x12,
     width: dims.drawerWidth,
-    maxHeight: { default: dims.drawerMaxHeight, [bp.phone]: dims.drawerMaxHeightPhone },
+    maxHeight: stage.drawerMaxHeight,
     overflowY: 'auto',
     boxSizing: 'border-box',
     paddingTop: space.x8,
@@ -1069,7 +1111,7 @@ const styles = stylex.create({
   hintTab: {
     position: 'absolute',
     left: 0,
-    bottom: dims.hintTabBottom,
+    bottom: stage.tabBottom,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1087,35 +1129,40 @@ const styles = stylex.create({
     outlineColor: color.gold,
   },
 
-  // The learner's hand: a row along the bottom, the same card size as the opponents'.
-  mine: { position: 'absolute', left: 0, right: 0, bottom: space.x12, display: 'flex', justifyContent: 'center', paddingInline: { default: space.x16, [bp.phone]: space.x6 }, boxSizing: 'border-box' },
+  // The learner's hand: a row along the bottom, in landscape running a third of a card off the felt.
+  mine: { position: 'absolute', left: 0, right: 0, bottom: stage.handBottom, display: 'flex', justifyContent: 'center', paddingInline: { default: space.x16, [bp.phone]: space.x6 }, boxSizing: 'border-box' },
 
   panel: { position: 'relative', display: 'flex', flexDirection: 'column', backgroundColor: color.page, color: color.text },
-  // A drawer at any width: over the felt's right side on a wide screen, over the whole screen on a phone.
+  // Pinned beside the felt on a wide screen (SKATGO-34): in the table's grid, so the felt — and the
+  // stage with it — takes the width it leaves; folded, it gives that width back. Narrower, a drawer over
+  // the felt's right side, over the whole screen on a phone.
   panelFull: {
-    position: { default: 'absolute', [bp.phone]: 'fixed' },
+    position: { default: 'absolute', [bp.phone]: 'fixed', [bp.pinned]: 'relative' },
     top: 0,
     right: 0,
     bottom: { default: 0, [bp.phone]: 'auto' },
-    zIndex: layer.window,
-    width: { default: dims.sidePanel, [bp.phone]: dims.panelPhone },
+    zIndex: { default: layer.window, [bp.pinned]: 'auto' },
+    width: { default: dims.sidePanel, [bp.phone]: dims.panelPhone, [bp.pinned]: dims.sidePanelPinned },
     height: { default: 'auto', [bp.phone]: dims.screenDynamic },
-    transform: pose.offRight,
-    transitionProperty: 'transform',
+    overflow: 'hidden',
+    transform: { default: pose.offRight, [bp.pinned]: pose.onScreen },
+    transitionProperty: { default: 'transform', [bp.pinned]: 'width' },
     transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
-    borderTopLeftRadius: radii.panel,
-    borderBottomLeftRadius: radii.panel,
-    boxShadow: elev.panel,
+    borderTopLeftRadius: { default: radii.panel, [bp.pinned]: 0 },
+    borderBottomLeftRadius: { default: radii.panel, [bp.pinned]: 0 },
+    boxShadow: { default: elev.panel, [bp.pinned]: 'none' },
   },
   panelOpen: { transform: pose.onScreen },
-  // The white tab that folds the panel away and brings it back, at any width.
-  // The drawer's handle mirrors the hint tab's place (SKATGO-29): the same height from the bottom, on the
-  // right edge — a slim tab, so it never competes with the table.
+  panelShut: { width: { default: dims.sidePanel, [bp.phone]: dims.panelPhone, [bp.pinned]: 0 } },
+  // The white tab that folds the panel away and brings it back, at any width. It mirrors the hint tab
+  // (SKATGO-29): the same height from the bottom, on the felt's right edge — a slim tab, so it never
+  // competes with the table. Over an open drawer it moves to the drawer's edge.
   panelTab: {
     display: 'flex',
     position: 'absolute',
-    bottom: dims.hintTabBottom,
-    left: dims.panelTabOffset,
+    bottom: stage.tabBottom,
+    right: 0,
+    zIndex: layer.window,
     alignItems: 'center',
     justifyContent: 'center',
     width: dims.panelTab,
@@ -1129,14 +1176,30 @@ const styles = stylex.create({
     boxShadow: elev.panel,
     cursor: 'pointer',
   },
-  panelBody: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, padding: space.x16, overflowY: 'auto' },
-  tabs: { display: 'flex', justifyContent: 'space-around', paddingBottom: space.x16, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
+  panelTabOnDrawer: { right: { default: dims.sidePanel, [bp.phone]: dims.panelPhone } },
+  panelBody: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, padding: space.x16, overflowY: 'auto', boxSizing: 'border-box' },
+  // The body keeps its width while a pinned panel folds, so nothing inside reflows on the way.
+  panelBodyFull: { width: { default: '100%', [bp.pinned]: dims.sidePanelPinned }, height: '100%' },
+  // Pinned, the panel's top right corner is under the assistant's launcher: the tabs leave it room.
+  tabs: { display: 'flex', justifyContent: 'space-around', paddingBottom: space.x16, paddingRight: { default: 0, [bp.pinned]: dims.launcherRoom }, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
   tab: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4, color: color.slateDeep, textDecoration: 'none' },
   tabLink: { outlineStyle: { default: 'none', ':focus-visible': 'solid' }, outlineWidth: border.focus, outlineColor: color.info },
   tabTile: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: dims.tabTile, height: dims.tabTile, borderRadius: radii.panel, backgroundColor: color.hairline, color: color.navy },
   tabTileActive: { backgroundColor: color.tabActive },
   tabButton: { padding: 0, borderWidth: 0, backgroundColor: 'transparent', cursor: 'pointer' },
   history: { display: 'flex', flexDirection: 'column', gap: space.x8 },
+  // The learner's move in the pinned panel: first under the tabs, on white like the drawer.
+  panelMoves: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x12,
+    flexShrink: 0,
+    padding: space.x16,
+    borderRadius: radii.panel,
+    backgroundColor: color.surface,
+    boxShadow: elev.panel,
+    color: color.navy,
+  },
   panelTitle: { margin: 0, color: color.navy, textAlign: 'center' },
   auction: { display: 'grid', gridTemplateColumns: dims.auctionColumns, gap: space.x8 },
   auctionCol: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6 },
@@ -1176,6 +1239,7 @@ const styles = stylex.create({
   note: { margin: 0, color: color.text },
   declare: { display: 'flex', flexDirection: 'column', gap: space.x10 },
   contractGrid: { display: 'grid', gridTemplateColumns: { default: dims.contractColumns, [bp.contracts]: dims.contractColumnsPhone }, gap: space.x8 },
+  contractGridCompact: { gridTemplateColumns: dims.contractColumnsPanel },
   contractBtn: {
     display: 'flex',
     flexDirection: 'column',

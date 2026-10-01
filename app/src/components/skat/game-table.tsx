@@ -43,7 +43,7 @@ import { elev, fill, pose } from '../../theme/elevation.stylex'
 import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { Fan } from './card-row'
+import { Fan, flightId } from './card-row'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
@@ -242,10 +242,11 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
                 {game.trick.map((p) => (
                   <motion.div
                     key={cardId(p.card)}
-                    initial={{ opacity: 0, scale: trick.fromScale, ...trick.from[p.seat] }}
+                    layoutId={p.seat === ME ? flightId(p.card) : undefined}
+                    initial={p.seat === ME ? false : { scale: trick.fromScale, ...trick.from[p.seat as 1 | 2] }}
                     animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
                     exit={{ opacity: 0, scale: trick.exitScale, transition: { duration: trick.exitDuration } }}
-                    transition={trick.spring}
+                    transition={{ ...trick.flight, layout: trick.flight }}
                     {...stylex.props(styles.trickCard, positions[p.seat])}
                   >
                     <PlayingCard card={p.card} size="fill" glow={game.phase === 'trickEnd' && winner === p.seat} />
@@ -323,6 +324,7 @@ export function GameTable({ onSettled, fullScreen = false }: Props) {
 
         <div {...stylex.props(styles.mine)}>
           <Fan
+            flight
             testId="skat-hand"
             cards={myHand}
             size="table"

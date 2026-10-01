@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-34",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-34",
+  "branch": "SKATGO-34-card-flight",
+  "base": "08f9c2b03cbd840da3909bbd640ab8af549aaa32",
+  "ports": {
+    "web": 55034,
+    "multiplayer": 56034,
+    "database": 57034
+  }
+}

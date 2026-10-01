@@ -52,6 +52,9 @@ type FanProps = {
   /** One row across the whole width, at every size (the card table's hand, SKATGO-26): the cards
    *  share the width evenly and overlap as they must; each keeps a visible strip to tap. */
   row?: boolean
+  /** The card table's hand (SKATGO-34): each card carries a shared layout id, so a played card flies
+   *  from its place in the hand to the trick, where the table gives it the same id. */
+  flight?: boolean
 }
 
 /**
@@ -59,7 +62,10 @@ type FanProps = {
  * card itself does not — so ten cards overlap to fit a phone and spread out on a desk, with no
  * arithmetic on the count.
  */
-export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [], verdicts = [], badges = [], answer, sequence, testId, row }: FanProps) {
+/** The shared layout id of a card on its way from the hand to the trick (SKATGO-34). */
+export const flightId = (c: Card) => `flight-${cardId(c)}`
+
+export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [], verdicts = [], badges = [], answer, sequence, testId, row, flight }: FanProps) {
   const has = (list: Card[], c: Card) => list.some((d) => sameCard(c, d))
   // More than six cards are held as two rows on a phone. At 375px a single row of ten leaves each
   // card a 25px sliver, which a finger cannot hit reliably (measured: a tap on a card's centre landed
@@ -93,6 +99,7 @@ export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [
                   row && i === cards.length - 1 && styles.rowLastSlot,
                 )}
               >
+                <motion.div layoutId={flight ? flightId(c) : undefined} {...stylex.props(styles.flight)}>
                 <PlayingCard
                   card={c}
                   size={size}
@@ -107,6 +114,7 @@ export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [
                     ...(sequence ? { 'data-order': String(sequence.findIndex((d) => sameCard(c, d)) + 1) } : {}),
                   }}
                 />
+                </motion.div>
                 {badge ? <span {...stylex.props(typography.badge, styles.badge)}>{badge.text}</span> : null}
               </motion.div>
             )
@@ -118,6 +126,7 @@ export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [
 }
 
 const styles = stylex.create({
+  flight: { display: 'block' },
   figure: { margin: 0, display: 'flex', flexDirection: 'column', gap: space.x8, alignItems: 'center' },
   label: { color: color.slate },
   row: { display: 'flex', flexWrap: 'wrap', gap: space.x8, justifyContent: 'center' },

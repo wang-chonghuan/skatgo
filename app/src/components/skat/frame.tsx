@@ -40,6 +40,8 @@ const ITEMS: Item[] = [
 
 /** Which section a path belongs to. The router has already removed the language prefix. */
 export function sectionOf(pathname: string): Section {
+  // The tournament's table wears the table's frame (SKATGO-35).
+  if (pathname.startsWith('/daily/play')) return 'play'
   if (pathname.startsWith('/daily')) return 'daily'
   if (pathname.startsWith('/course')) return 'course'
   if (pathname.startsWith('/rules')) return 'rules'

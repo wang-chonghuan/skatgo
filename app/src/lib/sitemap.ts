@@ -7,7 +7,7 @@ import { LANG_TAG, SITE_URL, localizedUrl } from './site'
 // new language cannot leave it stale; sitemap.test.ts holds the page list to the route tree.
 
 /** The route paths of the pages that are the same in every language. */
-export const PAGES = ['/', '/daily', '/course', '/rules', '/play']
+export const PAGES = ['/', '/daily', '/daily/play', '/course', '/rules', '/play']
 
 /** Every page as its path in each language. */
 export function sitemapPages(): Record<Locale, string>[] {

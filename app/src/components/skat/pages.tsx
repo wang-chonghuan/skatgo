@@ -1,11 +1,12 @@
 import { MotionConfig } from 'motion/react'
 import type { ComponentProps } from 'react'
 
+import { DailyEntry as Entry, DailyTable as Daily } from './daily-table'
 import { FreeTable as Table } from './free-table'
 import { LessonPlayer as Player } from './lesson-player'
 
 // The browser-only parts of the course, behind one module so the pages load them as a single lazy chunk:
-// the lesson player and the free-play table. Everything around them — titles, text, links — is rendered
+// the lesson player, the free-play table, and the daily tournament's table and button (SKATGO-35). Everything around them — titles, text, links — is rendered
 // on the server by the pages themselves (see ./client-page.tsx).
 //
 // Everything that animates lives in here, so this is where it learns the visitor's motion setting: a
@@ -21,3 +22,11 @@ export const LessonPlayer = (props: ComponentProps<typeof Player>) => (
     <Player {...props} />
   </MotionConfig>
 )
+
+export const DailyTable = () => (
+  <MotionConfig reducedMotion="user">
+    <Daily />
+  </MotionConfig>
+)
+
+export const DailyEntry = Entry

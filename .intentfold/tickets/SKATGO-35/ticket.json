@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-35",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-35",
+  "branch": "SKATGO-35-daily-tournament",
+  "base": "255e0c9475f090153adfe1768367717d38068773",
+  "ports": {
+    "web": 55035,
+    "multiplayer": 56035,
+    "database": 57035
+  }
+}

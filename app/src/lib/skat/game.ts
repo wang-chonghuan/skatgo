@@ -259,6 +259,38 @@ function finish(g: Game): Game {
   return { ...g, phase: 'done', result: { ...settlement, declarerPoints, defenderPoints } }
 }
 
+/** One move by the seat whose turn it is, as a table sends it — locally, or over the wire to a server
+ *  that owns the game (multiplayer rooms, the daily tournament). */
+export type Move =
+  | { type: 'bid'; value: BidAction }
+  | { type: 'pickup' }
+  | { type: 'hand' }
+  | { type: 'discard'; cards: Card[] }
+  | { type: 'declare'; declaration: Declaration }
+  | { type: 'play'; card: Card }
+
+/** The game after `move`, or the same object when the move is not legal now. A bid must also be the
+ *  word the moment asks for: a number from the speaker, "yes" from the listener. */
+export function applyMove(g: Game, move: Move): Game {
+  switch (move.type) {
+    case 'bid': {
+      if (g.phase !== 'bidding') return g
+      const valid = move.value === 'pass' || (g.bidding.awaiting === 'listener' ? move.value === 'hold' : move.value === 'bid')
+      return valid ? bidAction(g, move.value) : g
+    }
+    case 'pickup':
+      return g.pickedUp ? g : pickUpSkat(g)
+    case 'hand':
+      return playHand(g)
+    case 'discard':
+      return discard(g, move.cards)
+    case 'declare':
+      return declare(g, move.declaration)
+    case 'play':
+      return playCard(g, move.card)
+  }
+}
+
 /** What the heuristics would play from this seat right now — the computer's move, or the learner's hint. */
 export function adviceFor(g: Game, seat: Seat): Advice | null {
   if (g.phase !== 'play' || g.turn !== seat || !g.declaration || g.declarer === null) return null

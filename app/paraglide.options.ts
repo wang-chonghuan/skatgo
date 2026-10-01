@@ -57,6 +57,13 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
       ],
     },
     {
+      pattern: '/daily/play',
+      localized: [
+        ['en', '/en/daily/play'],
+        ['de', '/de/taeglich/spielen'],
+      ],
+    },
+    {
       pattern: '/play',
       localized: [
         ['en', '/en/play'],

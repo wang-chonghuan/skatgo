@@ -19,6 +19,10 @@ exercises that are judged on the spot and explain every wrong answer. Overall pr
 the course map, and the last lesson is a whole game against two computer players. The aim, in the
 human's words: 「只要进度走完，就能短时间把skat学会，学到可以和已经会的人打牌的水平」.
 
+A daily Skat tournament at `/daily`: every day the same 12 deals for every player, each played
+against two computer players and scored by Seeger-Fabian; one entry per player per day; scores are
+the server's, from the cards actually played.
+
 **Who it is for**
 
 Learners from 6 to 99 (the human, 2026-09-21: 「年龄改为6-99岁」; at commissioning it was
@@ -36,8 +40,9 @@ A learner who finishes the progress can play with people who already know the ga
 - It speaks three languages and no others: Chinese, English and German — the language the learner's
   browser asks for, and one they can switch to themselves (the human, 2026-09-21: 「三门语言的，多语言，
   英文，德文，中文，按照浏览器来决定，放到右上角用户可以选」). It launched in Chinese only.
-- It is only the course. When it was split from Parrottoon the instruction was 「只要课程」: none of
-  Parrottoon's English content, and — the human's later instruction — no link back to Parrottoon.
+- It is the course and the daily tournament. When it was split from Parrottoon the instruction was
+  「只要课程」: none of Parrottoon's English content, and no link back to Parrottoon. The daily
+  tournament was added by the human on 2026-10-01 (SKATGO-35).
 - <Further deliberate non-goals. The most useful part of this file — it is what stops scope from
   drifting outward one reasonable-sounding ticket at a time.>
 

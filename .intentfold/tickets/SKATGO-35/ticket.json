@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-35",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-35",
   "branch": "SKATGO-35-daily-tournament",

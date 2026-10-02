@@ -1,16 +1,20 @@
-import { randomInt } from 'node:crypto'
+import { createHash, randomInt } from 'node:crypto'
 import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
 import type { Card } from '../../app/src/lib/skat/cards'
 import { chooseDeclaration, declarationAdvice } from '../../app/src/lib/skat/ai'
-import { actor, aiBid, collectTrick, deal, next, pickUpSkat, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
+import { actor, aiBid, collectTrick, deal, next, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
+import { shuffle, type Contract } from '../../app/src/lib/skat/cards'
+import type { Declaration } from '../../app/src/lib/skat/value'
+import { nextBid } from '../../app/src/lib/skat/value'
 import {
   DAILY_DEALS, DAILY_TIME_ZONE, PLAYER, seatView, summarize, totals, type DailyStatus, type DealSummary, type SeatView,
 } from '../../app/src/lib/skat/tournament'
 import { cleanNickname } from '../../app/src/lib/skat/nickname'
 import { actionSchema, applySeatMove, computerMove, Rejected, secretEquals, secureDeck } from './model'
 import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
+import { type HandMode, type PickupMode, type SeatBidding, SKAT_PAIRS, declareAfterPickup, seatBidding, skatOrHand } from './skatzero/bidding'
 import type { Store } from './store'
 
 // The daily tournament (SKATGO-35). Every day has 12 deals, the same for every player, each played by
@@ -26,8 +30,16 @@ import type { Store } from './store'
 // the deterministic computers, exactly as before. Days dealt since SkatZero plays the cards store every
 // move of the deal — the human's and the computers' — and replay them as recorded: a computer is asked
 // once, when it is its turn, and never again for the same move.
+//
+// Days dealt since SKATGO-39 (`skatzero@…`) are SkatZero from the auction on. Their bidding needs a
+// simulation of every possible skat (≈ 1 s per computer per deal), so it is not done in a request:
+// the leader deals today and tomorrow ahead (prepareDays), works out both computers' bidding for every
+// deal, and stores it with the deal. In play, the auction and the pick-up/Hand choice are lookups;
+// only the discard and the game after a pick-up are computed then (a handful of model runs).
 
-type DealSpec = { dealer: Seat; deck: Card[] }
+/** A computer's bidding as worked out when its day was dealt (SKATGO-39). */
+type StoredBidding = Pick<SeatBidding, 'maxBid' | 'pickup' | 'hand'>
+type DealSpec = { dealer: Seat; deck: Card[]; computers?: Record<'1' | '2', StoredBidding> }
 /** One recorded move of a deal on a recorded day: who made it, and what. */
 type Logged = { seat: Seat; move: Move }
 type Entry = { actions: (Move | Logged)[][]; deals: DealSummary[]; total: number; finished_at: string | null }
@@ -35,9 +47,14 @@ type Day = { deals: DealSpec[]; computer: string }
 
 /** The old computers: the heuristics, bidding and play. */
 export const HEURISTIC = 'heuristic'
-/** Today's computers (grill Q3): SkatZero's card play, the heuristics' bidding, Hand/pickup, discard
- *  and declaration — a declared hybrid until the bidding is replaced (SKATGO-39). */
-export const COMPUTER = `skatzero-play@${SKATZERO_COMMIT.slice(0, 7)}+heuristic-bid`
+/** SKATGO-38's computers: SkatZero's card play, the heuristics' bidding, Hand/pickup, discard and
+ *  declaration — a declared hybrid. Days dealt with it keep it. */
+export const HYBRID = `skatzero-play@${SKATZERO_COMMIT.slice(0, 7)}+heuristic-bid`
+/** Today's computers (SKATGO-39): SkatZero from the auction to the last card. */
+export const COMPUTER = `skatzero@${SKATZERO_COMMIT.slice(0, 7)}`
+
+/** The day is dealt but its computers' bidding is still being worked out. */
+export class DayPreparing extends Error {}
 
 /** A computer could not decide: the move is not made, and nothing plays in its place (grill Q6). */
 export class ComputerFailed extends Error {}
@@ -100,10 +117,48 @@ function decide<T>(work: Promise<T>): Promise<T> {
   })
 }
 
-/** The next decision of the computer whose turn it is, as the moves the engine knows. The skat step of
- *  a computer declarer is three moves — pick up, put two away, declare — as the heuristics choose them. */
-async function computerTurn(g: Game, policy: Policy): Promise<Logged[]> {
+const raw = (c: Card) => c.suit + (c.rank === '10' ? 'T' : c.rank)
+const card = (z: string): Card => ({ suit: z[0] as Card['suit'], rank: (z[1] === 'T' ? '10' : z[1]) as Card['rank'] })
+const POSITION = { forehand: 0, middlehand: 1, rearhand: 2 } as const
+
+/** A SkatZero game type as the engine's declaration. Hand games never announce more (grill Q6). */
+function declaration(mode: PickupMode | HandMode): Declaration {
+  const hand = mode.endsWith('H') && mode !== 'H'
+  const base = hand ? mode.slice(0, -1) : mode
+  const contract: Contract = base === 'G' ? { kind: 'grand' } : base === 'N' || base === 'NO' ? { kind: 'null' } : { kind: 'suit', trump: base as 'C' | 'S' | 'H' | 'D' }
+  return { contract, hand, schneiderAnnounced: false, schwarzAnnounced: false, ouvert: base === 'NO' }
+}
+
+/** SkatZero's turn in the auction and at the skat, from the bidding stored with the deal. A highest bid
+ *  of 17 or 0 is a pass everywhere (grill Q2). */
+async function skatzeroTurn(g: Game, seat: Seat, spec: DealSpec, policy: Policy): Promise<Logged[]> {
+  const stored = spec.computers?.[String(seat) as '1' | '2']
+  if (!stored) throw new ComputerFailed('bidding_not_prepared')
+  const top = stored.maxBid >= 18 ? stored.maxBid : 0
+  if (g.phase === 'bidding') {
+    const b = g.bidding
+    const say = b.awaiting === 'forehandAlone' ? (top >= 18 ? 'bid' : 'pass')
+      : b.awaiting === 'speaker' ? ((nextBid(b.value) ?? Infinity) <= top ? 'bid' : 'pass')
+      : b.value <= top ? 'hold' : 'pass'
+    return [{ seat, move: { type: 'bid', value: say } }]
+  }
+  if (g.phase === 'skat' && !g.pickedUp) {
+    const choice = skatOrHand(stored, g.bid)
+    if (!choice.pickup) return [{ seat, move: { type: 'hand' } }, { seat, move: { type: 'declare', declaration: declaration(choice.mode) } }]
+    const picked = pickUpSkat(g)
+    const position = POSITION[roleOf(seat, g.dealer)]
+    const d = await decide(declareAfterPickup(policy, picked.hands[seat].map(raw), position, g.bid))
+    return [{ seat, move: { type: 'pickup' } }, { seat, move: { type: 'discard', cards: d.discard.map(card) } }, { seat, move: { type: 'declare', declaration: declaration(d.mode) } }]
+  }
+  throw new ComputerFailed('computer_unexpected_phase')
+}
+
+/** The next decision of the computer whose turn it is, as the moves the engine knows. On a hybrid day
+ *  the skat step of a computer declarer is three moves — pick up, put two away, declare — as the
+ *  heuristics choose them; on a SkatZero day the auction and the skat step are SkatZero's. */
+async function computerTurn(g: Game, policy: Policy, spec: DealSpec, computer: string): Promise<Logged[]> {
   const seat = actor(g)!
+  if (computer === COMPUTER && g.phase !== 'play') return skatzeroTurn(g, seat, spec, policy)
   if (g.phase === 'bidding') return [{ seat, move: { type: 'bid', value: aiBid(g) } }]
   if (g.phase === 'skat') {
     const picked = pickUpSkat(g)
@@ -121,7 +176,7 @@ async function computerTurn(g: Game, policy: Policy): Promise<Logged[]> {
 /** Let the computers move until it is the player's turn or the deal is over, recording each move in
  *  `log`; `steps` collects every state left behind, for the table to show in order. Every proposed
  *  move is checked by the engine; an illegal one fails the request. */
-async function advance(g: Game, log: Logged[], policy: Policy, steps?: Game[]): Promise<Game> {
+async function advance(g: Game, log: Logged[], policy: Policy, spec: DealSpec, computer: string, steps?: Game[]): Promise<Game> {
   for (;;) {
     if (g.phase === 'trickEnd') {
       g = collectTrick(g)
@@ -130,7 +185,7 @@ async function advance(g: Game, log: Logged[], policy: Policy, steps?: Game[]): 
     }
     const seat = actor(g)
     if (seat === null || seat === PLAYER) return g
-    for (const l of await computerTurn(g, policy)) {
+    for (const l of await computerTurn(g, policy, spec, computer)) {
       try {
         g = applySeatMove(g, l.seat, l.move)
       } catch {
@@ -160,11 +215,72 @@ function status(day: string, e: Entry | null): DailyStatus {
   return { day, of: DAILY_DEALS, deal: deals.length, deals, totals: totals(deals), started: !!e, finished: !!e?.finished_at }
 }
 
-/** The day's deals, dealt now with today's computers if this is the day's first request. */
+/** The day's deals. Requests never deal: a day is dealt ahead by prepareDays; one that is not there yet
+ *  is being prepared, and the request says so. */
 async function dayOfDeals(c: pg.PoolClient, day: string): Promise<Day> {
-  await c.query('INSERT INTO daily_deals (day, deals, computer) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [day, JSON.stringify(dealDay()), COMPUTER])
   const { rows } = await c.query('SELECT deals, computer FROM daily_deals WHERE day = $1', [day])
+  if (!rows[0]) throw new DayPreparing(day)
   return rows[0]
+}
+
+/** The order a computer tries the 231 possible skats in: fixed by the deal, the same every time. */
+export function skatOrder(day: string, deal: number, seat: Seat): [number, number][] {
+  const h = createHash('sha256').update(`skatgo-daily|${day}|${deal}|${seat}`).digest()
+  let a = h.readUInt32LE(0)
+  // mulberry32
+  const rand = () => {
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+  return shuffle(SKAT_PAIRS, rand)
+}
+
+/** How long one day's preparation may take before it is abandoned for a later retry (grill Q5). */
+const PREPARE_MS = 10 * 60 * 1000
+
+/** Deal `day` and work out both computers' bidding for its 12 deals, unless it is already dealt.
+ *  Runs in the leader; yields between steps, so the service keeps answering while it works. */
+export async function prepareDay(store: Store, policy: Policy, day: string, now = Date.now): Promise<'dealt' | 'present'> {
+  const { rows } = await store.pool.query('SELECT 1 FROM daily_deals WHERE day = $1', [day])
+  if (rows[0]) return 'present'
+  const started = now()
+  const specs: DealSpec[] = dealDay()
+  for (const [i, spec] of specs.entries()) {
+    const g = deal(spec.dealer, spec.deck)
+    const computers = {} as Record<'1' | '2', StoredBidding>
+    for (const seat of [1, 2] as Seat[]) {
+      const r = await seatBidding(policy, g.hands[seat].map(raw), POSITION[roleOf(seat, spec.dealer)], skatOrder(day, i, seat))
+      computers[String(seat) as '1' | '2'] = { maxBid: r.maxBid, pickup: r.pickup, hand: r.hand }
+      if (now() - started > PREPARE_MS) throw new Error('daily_prepare_timeout')
+    }
+    spec.computers = computers
+  }
+  await store.transaction(async (c) => {
+    await c.query('INSERT INTO daily_deals (day, deals, computer) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [day, JSON.stringify(specs), COMPUTER])
+  })
+  return 'dealt'
+}
+
+/** Today and tomorrow, dealt ahead — one preparation at a time. */
+let preparing: Promise<void> | null = null
+export function prepareDays(store: Store, policy: Policy, now = Date.now): Promise<void> {
+  preparing ??= (async () => {
+    try {
+      for (const offset of [0, 1]) {
+        const day = dayOf(now() + offset * 24 * 60 * 60 * 1000)
+        const t = Date.now()
+        const r = await prepareDay(store, policy, day, now)
+        if (r === 'dealt') console.log(JSON.stringify({ event: 'daily_prepared', day, ms: Date.now() - t, rss: process.memoryUsage().rss }))
+      }
+    } catch (e) {
+      console.error(JSON.stringify({ event: 'daily_prepare_failed', reason: e instanceof Error ? e.message : String(e) }))
+    } finally {
+      preparing = null
+    }
+  })()
+  return preparing
 }
 
 async function entryOf(c: pg.PoolClient, day: string, who: string): Promise<Entry | null> {
@@ -195,12 +311,12 @@ function settleEnded(specs: DealSpec[], e: Entry, now: number): Game | null {
 
 /** The same on a recorded day: a deal the computers open (they bid before the player) is played up to
  *  the player's turn, and those moves are recorded. */
-async function settleRecorded(specs: DealSpec[], e: Entry, now: number, policy: Policy): Promise<Game | null> {
+async function settleRecorded(specs: DealSpec[], e: Entry, now: number, policy: Policy, computer: string): Promise<Game | null> {
   while (e.deals.length < DAILY_DEALS) {
     const i = e.deals.length
     const log = (e.actions[i] ??= []) as Logged[]
     let g = replayLog(specs[i], log)
-    if (!ended(g) && actor(g) !== PLAYER) g = await advance(g, log, policy)
+    if (!ended(g) && actor(g) !== PLAYER) g = await advance(g, log, policy, specs[i], computer)
     if (!ended(g)) return g
     e.deals.push(summarize(g))
     e.total = totals(e.deals)[PLAYER]
@@ -223,7 +339,7 @@ export async function dailyState(store: Store, policy: Policy, who: string, open
     }
     if (e.finished_at || !open) return { status: status(day, e), view: null, revision: 0 }
     const before = JSON.stringify(e)
-    const g = computer === HEURISTIC ? settleEnded(specs, e, now) : await settleRecorded(specs, e, now, policy)
+    const g = computer === HEURISTIC ? settleEnded(specs, e, now) : await settleRecorded(specs, e, now, policy, computer)
     if (JSON.stringify(e) !== before) await save(c, day, who, e)
     return { status: status(day, e), view: g ? seatView(g) : null, revision: g ? e.actions[e.deals.length].length : 0 }
   })
@@ -257,8 +373,8 @@ export async function dailyAct(store: Store, policy: Policy, input: z.infer<type
       g = applySeatMove(g, PLAYER, move)
       log.push({ seat: PLAYER, move })
       steps.push(g)
-      await advance(g, log, policy, steps)
-      current = await settleRecorded(specs, e, now, policy)
+      await advance(g, log, policy, specs[input.deal], computer, steps)
+      current = await settleRecorded(specs, e, now, policy, computer)
     }
     await save(c, day, input.player, e)
     return {
@@ -355,6 +471,10 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
     } catch (e) {
       if (e instanceof z.ZodError) res.status(400).json({ error: 'invalid_request' })
       else if (e instanceof Rejected) res.status(409).json({ error: e.message })
+      else if (e instanceof DayPreparing) {
+        void prepareDays(store, policy()!)
+        res.status(503).json({ error: 'day_preparing' })
+      }
       else if (e instanceof ComputerFailed) {
         console.error(JSON.stringify({ event: 'daily_computer_failed', reason: e.message }))
         res.status(503).json({ error: 'computer_unavailable' })

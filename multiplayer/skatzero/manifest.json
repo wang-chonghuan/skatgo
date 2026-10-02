@@ -49,5 +49,48 @@
       "bytes": 5765916,
       "sha256": "1c92d965a0bdbbe7cf195e721ea60b2db869f7407ee01ac5c606b3318c491fb2"
     }
+  ],
+  "biddingPath": "bidding/data",
+  "bidding": [
+    {
+      "name": "outcome_distributions_D.npy",
+      "bytes": 182528,
+      "sha256": "a69ff3618572a24b703fa33d91edcc46171cbee72fbcd2cd61571f8b0237a20d"
+    },
+    {
+      "name": "outcome_distributions_DH.npy",
+      "bytes": 201728,
+      "sha256": "f2f9716e78567d4eb52c2dd50be958d0b2459f100062b5dcd32e07afc5a6f3f7"
+    },
+    {
+      "name": "outcome_distributions_G.npy",
+      "bytes": 163328,
+      "sha256": "bee2ccd13798100217f2a7263aca0be23eeedabc9d7c562097fcc777b6958443"
+    },
+    {
+      "name": "outcome_distributions_GH.npy",
+      "bytes": 182528,
+      "sha256": "d885bbecd35f34bee6ab20085831500fedfc8a89e23f68949179413c1052c01e"
+    },
+    {
+      "name": "values_D.npy",
+      "bytes": 204,
+      "sha256": "85c40a740f61b46ff0e349eac7ba6a7307672e868fd385f2426136d8ee5706e3"
+    },
+    {
+      "name": "values_DH.npy",
+      "bytes": 212,
+      "sha256": "bd30d19c3403bd50a227845f2e34bc7445521b16d2ad650f5d2dc2c55b3b46e1"
+    },
+    {
+      "name": "values_G.npy",
+      "bytes": 196,
+      "sha256": "5e66dc7c8d4d7b9cec0dcff5ba6a1bb5ea16457b522555fccc297dc3cf422cd9"
+    },
+    {
+      "name": "values_GH.npy",
+      "bytes": 204,
+      "sha256": "ea92fc6677dcd427241ee8c7857e215b5dc69019fa4f40746214f392cf77c6c1"
+    }
   ]
 }

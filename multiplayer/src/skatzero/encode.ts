@@ -30,6 +30,9 @@ export type ZState = {
   /** Null Ouvert: the declarer's open cards. */
   openHand: boolean
   soloplayerOpenCards: ZCard[]
+  /** Bidding (SKATGO-39): the declarer choosing two cards to put away from twelve ('drueck'), and
+   *  its position as SkatZero writes it — (3 − position from forehand) mod 3. Card play leaves both off. */
+  discard?: { pos: number }
 }
 
 export const SUITS = ['D', 'H', 'S', 'C'] as const
@@ -135,9 +138,17 @@ export type Encoded = {
   history: Float32Array
   /** One row of 32 per candidate. */
   actions: Float32Array
-  /** The candidates, in hand order: the legal cards. */
+  /** The candidates, in hand order: the legal cards — or, when discarding, every pair of the twelve
+   *  as 'first,second' (available_actions' order). */
   candidates: ZCard[]
   obsWidth: number
+}
+
+/** Every pair of a twelve-card hand, in SkatZero's order: (i, j) for i < j, by position in the hand. */
+export function discardPairs(hand: ZCard[]): [ZCard, ZCard][] {
+  const out: [ZCard, ZCard][] = []
+  for (let i = 0; i < hand.length; i++) for (let j = i + 1; j < hand.length; j++) out.push([hand[i], hand[j]])
+  return out
 }
 
 /** The legal cards in hand order, as SkatZero's available_actions finds them. */
@@ -167,8 +178,9 @@ export function encode(s: ZState): Encoded {
     const skat = !s.blindHand && s.skat.length === 2 ? cards32(s.skat, e) : cards32(null, e)
     const missingLeft = calculateMissing(1, s.trace, s.trump, e)
     const missingRight = calculateMissing(2, s.trace, s.trump, e)
-    const drueck = [0]
+    const drueck = [s.discard ? 1 : 0]
     const pos = [0, 0, 0]
+    if (s.discard) pos[s.discard.pos] = 1
     if (s.trump === null) {
       obs = [...common.flat(), ...skat, ...missingLeft, ...cards32(played[1], e), ...missingRight, ...cards32(played[2], e),
         ...NO_BID, ...NO_BID, ...NO_BID_JACKS, ...NO_BID_JACKS, ...blind, s.openHand ? 1 : 0, ...drueck, ...pos]
@@ -188,6 +200,15 @@ export function encode(s: ZState): Encoded {
     }
   }
 
+  if (s.discard) {
+    const pairs = discardPairs(s.hand)
+    const actions = new Float32Array(pairs.length * 32)
+    pairs.forEach(([a, b], i) => {
+      actions[i * 32 + index(a, e)] = 1
+      actions[i * 32 + index(b, e)] = 1
+    })
+    return { obs: Float32Array.from(obs), history: Float32Array.from(history(s.trace, s.self, e)), actions, candidates: pairs.map((p) => p.join(',')), obsWidth: obs.length }
+  }
   const candidates = legalCards(s.hand, s.trace, s.trump)
   const actions = new Float32Array(candidates.length * 32)
   candidates.forEach((c, i) => (actions[i * 32 + index(c, e)] = 1))

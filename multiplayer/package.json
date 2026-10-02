@@ -2,7 +2,9 @@
   "name": "skatgo-multiplayer",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "start": "node --env-file-if-exists=.env dist/server.mjs",
@@ -15,6 +17,7 @@
     "@colyseus/schema": "5.0.34",
     "@colyseus/ws-transport": "0.18.4",
     "express": "^5.1.0",
+    "onnxruntime-node": "1.30.0",
     "pg": "^8.16.3",
     "zod": "^4.1.0"
   },

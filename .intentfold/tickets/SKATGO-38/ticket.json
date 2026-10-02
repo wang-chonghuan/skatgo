@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-38",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-38",
+  "branch": "SKATGO-38-skatzero-play",
+  "base": "41b7a9959eeee4990208081b618b7c239b8662e2",
+  "ports": {
+    "web": 55038,
+    "multiplayer": 56038,
+    "database": 57038
+  }
+}

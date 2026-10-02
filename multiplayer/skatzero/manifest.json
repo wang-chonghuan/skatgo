@@ -1,0 +1,53 @@
+{
+  "source": "https://github.com/Jimboom7/SkatZero",
+  "commit": "1fe5cabbd5f9c3e77ab51714b0ac702e5a71e53b",
+  "path": "models/onnx",
+  "license": "MIT (LICENSE, copied unchanged from the source commit)",
+  "files": [
+    {
+      "name": "D_0.onnx",
+      "bytes": 6157084,
+      "sha256": "dd1ee8ab2dcbc41099703de675ada38f792f3c22993c63794b1731f1c59f8f47"
+    },
+    {
+      "name": "D_1.onnx",
+      "bytes": 6193948,
+      "sha256": "638ec4074261e3b677247aef4560fbfbc485e5b9f89979b50329bc468599899f"
+    },
+    {
+      "name": "D_2.onnx",
+      "bytes": 6193948,
+      "sha256": "96155c43f68c2cc6b1d712745bdff4a2d0b9e4d05227e94ddc75662cb2846516"
+    },
+    {
+      "name": "G_0.onnx",
+      "bytes": 6157084,
+      "sha256": "e26b14b955eb72305783062df51fffa885ce18a9c5e8a5690393dbfe324a46b5"
+    },
+    {
+      "name": "G_1.onnx",
+      "bytes": 6193948,
+      "sha256": "54af752835b79394cebd937049a567b194266868fd1326c21b11def971f222c5"
+    },
+    {
+      "name": "G_2.onnx",
+      "bytes": 6193948,
+      "sha256": "975e78ad93aa328bfadcc7c8323c8dbf8ec90001581056470ed7e9d033efa508"
+    },
+    {
+      "name": "N_0.onnx",
+      "bytes": 5663516,
+      "sha256": "3bcdc6c4beee53f0a390334cb212cf1d1381eec389fdb245a397f129040e3b1f"
+    },
+    {
+      "name": "N_1.onnx",
+      "bytes": 5765916,
+      "sha256": "d3cad3fc4eec49f030127eca8ec07a376ef24581248af05a0dd061c07717b22c"
+    },
+    {
+      "name": "N_2.onnx",
+      "bytes": 5765916,
+      "sha256": "1c92d965a0bdbbe7cf195e721ea60b2db869f7407ee01ac5c606b3318c491fb2"
+    }
+  ]
+}

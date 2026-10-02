@@ -27,6 +27,10 @@ admission flow for rooms is shipped yet: integration clients require a separate 
 The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily`; its one
 client is the web service, which holds the admission key.
 Only one database-fenced process owns rooms; liveness and gameplay readiness are separate.
+The service is ready only once SkatZero's nine models are loaded, hash-verified and warmed
+(SKATGO-38); a missing or altered model stops it at start. Its image is `node:24-slim`
+(onnxruntime-node needs glibc) and carries the committed models; nothing is downloaded at build or
+run time, and onnxruntime's telemetry is off (`ORT_DISABLE_TELEMETRY`).
 
 **Environments**
 

@@ -28,7 +28,7 @@ import {
   runningPoints,
   trickWinner,
 } from '~/lib/skat/game'
-import { seegerFabian } from '~/lib/skat/tournament'
+import { type DealSummary, seegerFabian } from '~/lib/skat/tournament'
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
@@ -44,6 +44,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
+import { AiThisDeal, VsAiTable } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
@@ -92,6 +93,9 @@ export type Tournament = {
   of: number
   /** Seeger-Fabian totals per seat over the day's finished deals. */
   totals: [number, number, number]
+  /** The day's finished deals and, for each, the AI's result in the player's seat (SKATGO-42). */
+  deals?: DealSummary[]
+  benchmarks?: (DealSummary | null)[]
 }
 
 /** A game the server owns, as free play and lesson 11 play it (SKATGO-40): the learner's moves go to
@@ -260,6 +264,13 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
   // With the panel pinned open, the learner's move is made in the panel, as Funbridge's bidding box is
   // (SKATGO-34): nothing then lies over the table. Otherwise it is the drawer over the felt.
   const movesInPanel = fullScreen && pinned && panelOpen
+  // In the tournament, after each deal: the AI's result for it and the running table (SKATGO-42).
+  const dailyAfter = tournament?.deals ? (
+    <>
+      <AiThisDeal ai={tournament.benchmarks?.[tournament.deal]} />
+      <VsAiTable deals={tournament.deals} benchmarks={tournament.benchmarks} />
+    </>
+  ) : null
 
   return (
     <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>
@@ -279,7 +290,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
                 <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} />
                 </div>
               )}
             </div>
@@ -395,7 +406,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -464,7 +475,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} />
             </section>
           ) : null}
 
@@ -519,7 +530,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} />
         </div>
       ) : null}
     </div>
@@ -540,6 +551,7 @@ function ActionsFor({
   hints,
   dealScore,
   last,
+  daily,
 }: {
   game: Game
   picked: Card[]
@@ -557,6 +569,8 @@ function ActionsFor({
   dealScore: number | null
   /** In the tournament: this is the day's last deal. */
   last: boolean
+  /** In the tournament: the AI's result and the running table, shown once the deal is over. */
+  daily?: ReactNode
 }) {
   return (
     <Actions
@@ -568,6 +582,7 @@ function ActionsFor({
       hints={hints}
       dealScore={dealScore}
       last={last}
+      daily={daily}
       onBid={(a) => dispatch({ type: 'bid', value: a })}
       onPickUp={() => dispatch({ type: 'pickup' })}
       onHand={() => dispatch({ type: 'hand' })}
@@ -684,6 +699,7 @@ type ActionsProps = {
   hints: boolean
   dealScore: number | null
   last: boolean
+  daily?: ReactNode
 }
 
 function Actions(p: ActionsProps) {
@@ -694,6 +710,7 @@ function Actions(p: ActionsProps) {
     return (
       <Dialog>
         <Say>{p.dealScore === null ? m.table_passed_in() : m.daily_passed_in()}</Say>
+        {p.daily}
         <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={p.onNewGame}>
           {p.dealScore === null ? m.table_redeal() : p.last ? m.daily_see_result() : m.daily_next_deal()}
         </Btn>
@@ -702,7 +719,7 @@ function Actions(p: ActionsProps) {
   }
 
   if (game.phase === 'done' && game.result && game.declarer !== null) {
-    return <Result game={game} onNewGame={p.onNewGame} dealScore={p.dealScore} last={p.last} />
+    return <Result game={game} onNewGame={p.onNewGame} dealScore={p.dealScore} last={p.last} daily={p.daily} />
   }
 
   if (who !== ME) {
@@ -867,7 +884,7 @@ function DeclarePicker({
   )
 }
 
-function Result({ game, onNewGame, dealScore, last }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean }) {
+function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: ReactNode }) {
   const r = game.result!
   const declarer = game.declarer!
   const d = game.declaration!
@@ -917,6 +934,7 @@ function Result({ game, onNewGame, dealScore, last }: { game: Game; onNewGame: (
               <Rich text={m.daily_deal_score({ score: dealScore > 0 ? `+${dealScore}` : String(dealScore) })} />
             </p>
           )}
+          {daily}
           <div {...stylex.props(styles.resultSkat)}>
             <span {...stylex.props(typography.smallBold, styles.inkLabel)}>{m.result_skat()}</span>
             {game.skat.map((c) => <PlayingCard key={cardId(c)} card={c} size="xs" />)}

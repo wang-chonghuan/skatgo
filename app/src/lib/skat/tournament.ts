@@ -137,6 +137,10 @@ export type DailyStatus = {
   totals: [number, number, number]
   started: boolean
   finished: boolean
+  /** For each finished deal, the same deal played by the computer in the player's seat (SKATGO-42):
+   *  its contract, declarer and Seeger-Fabian scores ([0] is the computer's). Null on days dealt
+   *  before it. */
+  benchmarks?: (DealSummary | null)[]
 }
 
 /** What the server answers: where the player stands, the current deal as they see it (when it was

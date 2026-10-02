@@ -65,6 +65,8 @@ export const opacity = stylex.defineVars({
 
 /** Stacking order of what floats over the page. */
 export const layer = stylex.defineVars({
+  /** The felt's own backdrop, under everything on the felt (SKATGO-41). */
+  backdrop: '-1',
   launcher: '40',
   window: '41',
 })

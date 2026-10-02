@@ -37,7 +37,7 @@ import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Settings, Spade, X
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { confettiBurst, drawer, icon, pinnedQuery, trick } from '../../theme/constants'
-import { timing } from '../../theme/effects.stylex'
+import { layerHint, move, timing } from '../../theme/effects.stylex'
 import { elev, fill, pose } from '../../theme/elevation.stylex'
 import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
@@ -120,6 +120,12 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
   const hints = !tournament
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   const [picked, setPicked] = useState<Card[]>([])
+  // The trick's cards that have landed (SKATGO-41). A card flies in on a layer of its own under a
+  // will-change hint, and such a layer keeps the scale it was drawn at during the flight: a card at rest
+  // on it looks slightly soft (measured). So once it has landed, the flying box — which paints nothing
+  // itself — gives up its hint, and the card's face takes a layer of its own drawn at its final size.
+  // The card stays off the felt's layer, so nothing under it is painted again.
+  const [landed, setLanded] = useState<string[]>([])
   const [hint, setHint] = useState<{ card?: Card; cards?: Card[]; text: string } | null>(null)
   const [refusal, setRefusal] = useState<string | null>(null)
   const [draft, setDraft] = useState<Declaration | null>(null)
@@ -258,6 +264,9 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
   return (
     <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>
       <div data-testid="skat-felt" {...stylex.props(styles.felt, fullScreen && styles.feltFull)}>
+        {/* The felt's cloth on a layer of its own (SKATGO-41): the noise and the gradient are painted
+            once, and cards moving over them never paint them again. */}
+        <div aria-hidden="true" data-testid="skat-felt-bg" {...stylex.props(styles.feltBackdrop)} />
         {/* The top of the felt (SKATGO-32): the info board, and right under it the table's messages —
             what happens in the play (whose move, who is thinking, who took the trick), a hint the
             learner asked for, or why a card was refused, each until it is closed. The stage keeps this
@@ -325,7 +334,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
 
           {(
             <>
-              <AnimatePresence>
+              <AnimatePresence onExitComplete={() => setLanded([])}>
                 {game.trick.map((p) => (
                   <motion.div
                     key={cardId(p.card)}
@@ -334,9 +343,13 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
                     animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
                     exit={{ opacity: 0, scale: trick.exitScale, transition: { duration: trick.exitDuration } }}
                     transition={{ ...trick.flight, layout: trick.flight }}
-                    {...stylex.props(styles.trickCard, positions[p.seat])}
+                    onAnimationComplete={() => setLanded((l) => (l.includes(cardId(p.card)) ? l : [...l, cardId(p.card)]))}
+                    onLayoutAnimationComplete={() => setLanded((l) => (l.includes(cardId(p.card)) ? l : [...l, cardId(p.card)]))}
+                    {...stylex.props(styles.trickCard, !landed.includes(cardId(p.card)) && styles.layered, positions[p.seat])}
                   >
-                    <PlayingCard card={p.card} size="fill" glow={game.phase === 'trickEnd' && winner === p.seat} />
+                    <div {...stylex.props(styles.trickFace, landed.includes(cardId(p.card)) && styles.trickFaceLanded)}>
+                      <PlayingCard card={p.card} size="fill" glow={game.phase === 'trickEnd' && winner === p.seat} />
+                    </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -981,11 +994,19 @@ const styles = stylex.create({
   // needs a height of its own — the screen in free play, a fixed one inside a lesson.
   felt: {
     position: 'relative',
+    isolation: 'isolate',
     height: dims.tableEmbedded,
     containerType: 'size',
     overflow: 'clip',
-    backgroundImage: fill.felt,
     color: color.onColor,
+  },
+  feltBackdrop: {
+    position: 'absolute',
+    inset: 0,
+    zIndex: layer.backdrop,
+    backgroundImage: fill.felt,
+    willChange: layerHint.moving,
+    pointerEvents: 'none',
   },
   feltFull: { height: dims.screenDynamic },
 
@@ -1152,6 +1173,11 @@ const styles = stylex.create({
   frameCard: { display: 'block', width: dims.trickCard },
   goldLabel: { color: color.amber },
   trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: dims.trickCard },
+  // A card in the trick (SKATGO-41): the flying box is a layer of its own until the card lands, then
+  // the face is.
+  layered: { willChange: layerHint.moving },
+  trickFace: { display: 'block', width: '100%' },
+  trickFaceLanded: { transform: move.ownLayer },
   words: {
     paddingBlock: space.x6,
     paddingInline: space.x16,
@@ -1183,6 +1209,8 @@ const styles = stylex.create({
     backgroundColor: color.surface,
     boxShadow: elev.panel,
     color: color.navy,
+    // It rises over the felt: a layer of its own (SKATGO-41).
+    willChange: layerHint.moving,
   },
   drawerHandle: {
     alignSelf: 'center',

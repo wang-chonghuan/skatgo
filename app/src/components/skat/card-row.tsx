@@ -6,6 +6,7 @@ import type { CardRow } from '~/lib/skat/lessons/types'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { deal } from '../../theme/constants'
+import { layerHint } from '../../theme/effects.stylex'
 import { elev } from '../../theme/elevation.stylex'
 import { space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
@@ -100,7 +101,7 @@ export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [
                   row && i === cards.length - 1 && styles.rowLastSlot,
                 )}
               >
-                <motion.div layoutId={flight ? flightId(c) : undefined} {...stylex.props(styles.flight)}>
+                <motion.div layoutId={flight ? flightId(c) : undefined} {...stylex.props(styles.flight, flight && styles.movingCard)}>
                 <PlayingCard
                   card={c}
                   size={size}
@@ -151,6 +152,10 @@ const styles = stylex.create({
   // The lower row tucks under the upper one, the way a held hand overlaps — and it saves height.
   lowerGroup: { marginTop: { default: 0, [bp.phone]: dims.fanRowOverlap } },
   slot: { position: 'relative', flexGrow: 0, flexShrink: 1, minWidth: dims.slotMin },
+  // The card table's hand moves as the fan closes up and as it is dealt: each card is its own layer
+  // (SKATGO-41), so the felt under it is not painted again every frame. The layer is the card's, not
+  // the slot's: a slot changes width as the fan closes up, and a layer that changes size is redrawn.
+  movingCard: { willChange: layerHint.moving },
   fanRow: { width: '100%' },
   groupRow: { display: 'flex', flexWrap: 'nowrap', width: '100%' },
   // In a row each slot takes an even share of the width; the last holds its whole card.

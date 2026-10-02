@@ -41,6 +41,7 @@ export class Store {
           created_at bigint NOT NULL, finished_at bigint, PRIMARY KEY (day, player)
         );
         ALTER TABLE daily_entries ADD COLUMN IF NOT EXISTS nickname text;
+        ALTER TABLE daily_deals ADD COLUMN IF NOT EXISTS computer text NOT NULL DEFAULT 'heuristic';
       `)
       await c.query('COMMIT')
     } catch (e) {

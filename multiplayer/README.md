@@ -119,6 +119,20 @@ process waits for the old process to drain and release ownership. Gameplay
 admission opens only after restoration. Do not increase instance count to scale
 this design; shared matchmaking and per-room routing need a separate change.
 
+## SkatZero card play (daily tournament)
+
+From SKATGO-38 the daily tournament's computers play their cards with SkatZero
+(github.com/Jimboom7/SkatZero `1fe5cab`, MIT): the nine ONNX models are committed in
+`skatzero/models/`, named with size and SHA-256 in `skatzero/manifest.json`, and loaded once
+at start (`src/skatzero/policy.ts`). Readiness waits for them; a missing or altered file stops
+the service. Bidding and the skat step are still the heuristics; `daily_deals.computer` names
+which computer a day was dealt with, and recorded days keep every move of every deal.
+
+`src/skatzero/encode.ts` is a literal port of SkatZero's Python feature encoder. Changing the
+models or the encoder means: regenerate parity against SkatZero's own driver (the Python
+reference used in SKATGO-22/38), refresh `test/fixtures/skatzero-parity.json`, update the
+manifest, and give the day's computer a new name — never edit a recorded day.
+
 ## Deployment
 
 API-managed, not Blueprint-managed. `render.json` records the approved resource

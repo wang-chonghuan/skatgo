@@ -3,6 +3,7 @@ import express from 'express'
 import { Server, matchMaker } from '@colyseus/core'
 import { WebSocketTransport } from '@colyseus/ws-transport'
 import { dailyRoutes } from './daily'
+import { loadPolicy, type Policy } from './skatzero/policy'
 import { makeRoom, RESTORE } from './room'
 import { Store } from './store'
 
@@ -18,17 +19,31 @@ let ready = false
 let stopping = false
 const store = new Store(url)
 await store.migrate()
+// SkatZero's nine models (SKATGO-38) load, verify and warm while the service starts; it is not ready
+// before they are, and a missing or altered model stops it.
+let policy: Policy | null = null
+const policyLoad = loadPolicy(new URL('../skatzero/', import.meta.url)).then(
+  (p) => {
+    policy = p
+    console.log(JSON.stringify({ event: 'skatzero_ready', rss: process.memoryUsage().rss }))
+  },
+  (e) => {
+    console.error(JSON.stringify({ event: 'skatzero_failed', reason: e instanceof Error ? e.message : String(e) }))
+    process.exit(1)
+  },
+)
 const app = express()
 app.disable('x-powered-by')
 const version = process.env.RENDER_GIT_COMMIT || process.env.APP_VERSION || 'local'
 app.get(['/healthz', '/readyz'], async (req, res) => {
   try {
     await store.pool.query('SELECT 1')
-    const ok = !stopping && (req.path === '/healthz' || ready)
-    res.status(ok ? 200 : 503).json({ ok, ready, version, service: 'skatgo-multiplayer' })
+    const isReady = ready && policy !== null
+    const ok = !stopping && (req.path === '/healthz' || isReady)
+    res.status(ok ? 200 : 503).json({ ok, ready: isReady, version, service: 'skatgo-multiplayer' })
   } catch { res.status(503).json({ ok: false, ready: false, version }) }
 })
-app.use('/daily', dailyRoutes(store, key, () => ready && !stopping))
+app.use('/daily', dailyRoutes(store, key, () => ready && !stopping, () => policy))
 const httpServer = createServer(app)
 const server = new Server({
   transport: new WebSocketTransport({ server: httpServer, maxPayload: 16 * 1024, pingInterval: 5000, pingMaxRetries: 2 }),
@@ -49,6 +64,7 @@ async function elect() {
     })
     if (acquired) {
       for (const s of await store.all()) await matchMaker.createRoom('skat', { restore: RESTORE, id: s.id })
+      await policyLoad
       ready = true
       console.log(JSON.stringify({ event: 'ready', version, port }))
       return
@@ -68,6 +84,7 @@ async function stop() {
   const deadline = setTimeout(() => process.exit(1), 20_000)
   deadline.unref()
   await server.gracefullyShutdown(false)
+  await policy?.release()
   await store.close()
   process.exit(0)
 }

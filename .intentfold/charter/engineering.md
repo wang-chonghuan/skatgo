@@ -36,6 +36,14 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   (`daily_entries`: the human's moves per deal, per-deal summaries, the total, and the nickname a
   finished player put on the leaderboard — SKATGO-36). The leaderboard is computed from those rows on
   request. The web service is its only client.
+- **The tournament's computers play their cards with SkatZero** (SKATGO-38): nine pinned ONNX models
+  from github.com/Jimboom7/SkatZero `1fe5cab` (MIT), committed under `multiplayer/skatzero/` with a
+  hash manifest and run by `onnxruntime-node` (exact version, human-approved 2026-10-02) — in
+  `multiplayer/` only, never in `app/` or the browser. `multiplayer/src/skatzero/` is the port of
+  SkatZero's feature encoder and of the measured decision procedure (one-step lookahead included).
+  Bidding, Hand/pickup, discard and declaration are still the heuristics: the day's computer is a
+  declared hybrid, named in `daily_deals.computer`. Rooms, free play, lessons and hints keep the
+  heuristics.
 - Course libraries: `motion` (animation), `@letele/playing-cards` (public-domain card faces),
   `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
   assistant's chat window).
@@ -86,6 +94,12 @@ also built from the repository root. Neither project imports the other's runtime
   may know it, an Ouvert declarer's hand. A deal is stored as its deck and dealer plus the human's
   moves and replayed through the engine; the score is what that replay settles, never a number the
   browser sends.
+- **A computer is asked once per move, and the answer is kept** (SKATGO-38). Days dealt with SkatZero
+  store every move of a deal — the human's and the computers' — and replay them as recorded; a
+  computer decides only when it is its turn and never again for that move. A computer decides from
+  what its seat may see (`viewOf`), and every move it proposes passes the engine. If it cannot decide,
+  the request fails and nothing is stored: no other player stands in for it. Days dealt before keep
+  `computer = heuristic` and replay as they always did.
 - **Split from Parrottoon on 2026-09-21**, as byte copies of its course code, theme and styles; routes
   moved from `/skat/...` to the root. The two codebases are **not synchronised**: a change in either
   does not reach the other.
@@ -142,6 +156,10 @@ Multiplayer defence (requires an isolated local PostgreSQL; see Operations Tools
 npm --prefix multiplayer run check
 ```
 
+It includes `test/skatzero.test.ts`: the committed models match `multiplayer/skatzero/manifest.json`,
+an altered model is refused, and the encoder, values and choices equal SkatZero's Python driver on
+the committed fixture (`test/fixtures/skatzero-parity.json`, produced by that driver).
+
 - **Generated, never hand-edited**: `app/src/routeTree.gen.ts` (TanStack Start writes it from
   `app/src/routes/`), and `app/src/theme/parrottoon.{css,js,d.ts}` (rebuilt from
   `app/src/theme/parrottoonTheme.ts` — the command is in `ui.md`).
@@ -196,9 +214,13 @@ cross-module contract.
 - **Course randomness runs in the browser only.** Drills and the solo deal use `Math.random`;
   rendering one on the server would hand the browser a different question from the one it hydrates.
   Multiplayer deals are server-owned and cryptographically shuffled, never SSR content.
-- **A tournament deal in progress is replayed from its moves** (SKATGO-35). Changing `ai.ts` or
-  `game.ts` changes how an unfinished deal of the current day replays; finished deals keep the summary
-  and score written when they ended.
+- **A tournament deal in progress is replayed from its moves** (SKATGO-35). On a `heuristic` day,
+  changing `ai.ts` or `game.ts` changes how an unfinished deal of that day replays; on a recorded day
+  (SKATGO-38) only `game.ts` matters, since the computers' moves are stored. Finished deals keep the
+  summary and score written when they ended.
+- **`multiplayer/src/skatzero/encode.ts` must stay equal to SkatZero's Python encoder**, quirks
+  included: the models were trained on exactly those features. A change there is checked against the
+  Python driver, not against intuition.
 - **Progress lives in `localStorage` under one versioned key** (`progress.ts`). Changing its shape
   without a new key or a migration silently loses every learner's progress.
 

@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-40",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-40",
   "branch": "SKATGO-40-free-play-server",

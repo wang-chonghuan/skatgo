@@ -20,7 +20,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Choice, Order, Pick, Play, Teach } from './exercises'
-import { GameTable } from './game-table'
+import { ServerTable } from './server-table'
 import { Btn, Panel, ProgressBar, Rich, Stars, linkLook } from './ui'
 
 type Concrete = Exclude<Step, { kind: 'generated' }>
@@ -104,7 +104,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             <div {...stylex.props(styles.gameStep)}>
               <h2 {...stylex.props(typography.dialogTitle, styles.gameTitle)}>{step.title}</h2>
               {step.body.map((p, i) => <p key={i} {...stylex.props(typography.bodySmall, styles.gamePara)}><Rich text={p} /></p>)}
-              <GameTable
+              <ServerTable
                 onSettled={({ humanWon, humanScore }) => {
                   recordGame(humanWon, humanScore)
                   onSolved()

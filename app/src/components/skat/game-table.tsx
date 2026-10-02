@@ -64,6 +64,7 @@ import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 //                  a drawer parked off the right edge. A white tab folds it either way;
 //   the dialogs  — the settlement and a passed-in deal, white on a scrim.
 // Inside a lesson the same table is embedded: the panel stacks under the felt and there is no leave.
+// Free play and lesson 11 (SKATGO-40) play a server game the same way, with hints and the assistant.
 // In the daily tournament (SKATGO-35) the server owns the deal: the table draws what it is sent and
 // sends the learner's moves, and offers no hints.
 //
@@ -93,6 +94,13 @@ export type Tournament = {
   totals: [number, number, number]
 }
 
+/** A game the server owns, as free play and lesson 11 play it (SKATGO-40): the learner's moves go to
+ *  `send`, `game` is what came back; hints and the assistant are as at the local table. */
+export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'next'> & {
+  /** The server could not be reached or refused: said plainly, with a way on (SKATGO-40 Q6). */
+  problem?: { text: string; retry?: () => void; fresh: () => void } | null
+}
+
 type Props = {
   /** Called once per game, when it is settled. */
   onSettled?: (info: { humanWon: boolean; humanScore: number }) => void
@@ -100,12 +108,15 @@ type Props = {
   fullScreen?: boolean
   /** Play the server's deal instead of dealing one here. */
   tournament?: Tournament
+  /** Play a server game with hints and the assistant (free play, lesson 11). */
+  server?: ServerGame
 }
 
-export function GameTable({ onSettled, fullScreen = false, tournament }: Props) {
+export function GameTable({ onSettled, fullScreen = false, tournament, server }: Props) {
   const [dealer, setDealer] = useState<Seat>(2)
   const [localGame, setGame] = useState<Game>(() => deal(2))
-  const game = tournament?.game ?? localGame
+  const remote = tournament ?? server
+  const game = remote?.game ?? localGame
   const hints = !tournament
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   const [picked, setPicked] = useState<Card[]>([])
@@ -122,7 +133,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament }: Props) 
   // fires late (or twice, under StrictMode) cannot move for the wrong player. A tournament's computers
   // play at the server.
   useEffect(() => {
-    if (tournament) return
+    if (remote) return
     if (game.phase === 'trickEnd') {
       const t = setTimeout(() => setGame((g) => collectTrick(g)), TRICK_DELAY)
       return () => clearTimeout(t)
@@ -142,7 +153,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament }: Props) 
       })
     }, BOT_DELAY)
     return () => clearTimeout(t)
-  }, [game, who, tournament])
+  }, [game, who, remote])
 
   useEffect(() => {
     if (game.phase !== 'done' || !game.result || game.declarer === null || settledFor.current === game) return
@@ -175,14 +186,14 @@ export function GameTable({ onSettled, fullScreen = false, tournament }: Props) 
   }, [game, scores, publish, tournament])
   useEffect(() => () => publish(null), [publish])
 
-  /** The learner's move: to the server in the tournament, through the engine here otherwise. */
+  /** The learner's move: to the server for a server game, through the engine here otherwise. */
   function dispatch(move: Move) {
-    if (!tournament) return setGame((g) => applyMove(g, move))
-    if (!tournament.busy) tournament.send(move)
+    if (!remote) return setGame((g) => applyMove(g, move))
+    if (!remote.busy) remote.send(move)
   }
 
   function newGame() {
-    if (tournament) return tournament.next()
+    if (remote) return remote.next()
     const d = next(dealer)
     setDealer(d)
     setPicked([])
@@ -264,8 +275,19 @@ export function GameTable({ onSettled, fullScreen = false, tournament }: Props) 
               )}
             </div>
           ) : null}
-          {refusal || hint ? (
+          {refusal || hint || server?.problem ? (
             <div data-testid="skat-messages" {...stylex.props(styles.messages)}>
+              {server?.problem ? (
+                <Panel tone="bad">
+                  <div data-testid="server-problem" role="alert" {...stylex.props(styles.message)}>
+                    <p {...stylex.props(typography.appText, styles.note, styles.messageText)}>{server.problem.text}</p>
+                  </div>
+                  <Row>
+                    {server.problem.retry ? <Btn testId="server-retry" size="sm" onClick={server.problem.retry}>{m.daily_retry()}</Btn> : null}
+                    <Btn testId="server-new-game" tone="quiet" size="sm" onClick={server.problem.fresh}>{m.free_new_game()}</Btn>
+                  </Row>
+                </Panel>
+              ) : null}
               {refusal ? (
                 <Message tone="bad" onClose={() => setRefusal(null)}>
                   <Rich text={refusal} />

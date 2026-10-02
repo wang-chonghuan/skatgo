@@ -16,19 +16,27 @@ merge. Acceptance verification also uses this file, so stale commands block deli
 
 The **`web`** service is the TanStack Start server in `app/`, which renders the page
 shell for `/` (the front page), `/course`, `/lesson/$id`, `/play`, `/daily` and `/daily/play` and serves the built assets. The course itself runs in the
-browser. `POST /api/ask` (the assistant) is part of `web`, and so is `/api/daily/*`, which passes the
-daily tournament's requests on to `multiplayer`.
+browser. `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*` and
+`/api/free/*`. They pass the daily tournament's and free play's requests on to `multiplayer`. Free
+play includes lesson 11's game (SKATGO-40). `/api/free/*` is limited per address to 300 new games an
+hour and 200 moves per 10 s, and answers `429 slow_down` beyond that.
 
 The independent **`multiplayer`** Colyseus service uses PostgreSQL for durable rooms
 (SKATGO-20, human-approved 2026-09-27). It supports 1-3 humans, fills other seats with AI,
 and gives disconnected players 30 seconds before temporary AI control. Original players
 can recover the same seat within the room's 24-hour inactivity lifetime. No frontend
 admission flow for rooms is shipped yet: integration clients require a separate admission secret.
-The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily`; its one
-client is the web service, which holds the admission key.
+The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily` and free play
+(SKATGO-40) under `/free`. Their one client is the web service, which holds the admission key. Free
+play stores nothing: each game is an encrypted token keyed from the admission key, so changing that
+key ends the games in progress.
 Only one database-fenced process owns rooms; liveness and gameplay readiness are separate.
-The service is ready only once SkatZero's nine models are loaded, hash-verified and warmed
-(SKATGO-38); a missing or altered model stops it at start. Its image is `node:24-slim`
+The service is ready only once two things are in place:
+- SkatZero's nine models are loaded, hash-verified and warmed (SKATGO-38);
+- free play's pool of deals (`multiplayer/skatzero/free-pool.json.gz`) is loaded and checked
+  against the manifest (SKATGO-40).
+
+A missing or altered model or pool stops the service at start. Its image is `node:24-slim`
 (onnxruntime-node needs glibc) and carries the committed models; nothing is downloaded at build or
 run time, and onnxruntime's telemetry is off (`ORT_DISABLE_TELEMETRY`).
 The leader deals the tournament's today and tomorrow ahead, with the computers' bidding (SKATGO-39;
@@ -156,8 +164,9 @@ writes them). The built server reads them from its environment, so load the file
 
 Locally `app/.env` also carries `MULTIPLAYER_URL` (the local multiplayer service,
 `http://127.0.0.1:<multiplayer-port>`) and `MULTIPLAYER_ADMISSION_KEY` (the value in
-`multiplayer/.env`); without them `/api/daily/*` answers 503. The daily tournament runs locally with
-both services and the local database started as Build and tests says.
+`multiplayer/.env`); without them `/api/daily/*` and `/api/free/*` answer 503. The daily tournament,
+free play and lesson 11's game run locally with both services and the local database started as Build
+and tests says.
 
 In production the Render Web Service carries exactly the application configuration
 `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `CLERK_SECRET_KEY`,

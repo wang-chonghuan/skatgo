@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-40",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-40",
+  "branch": "SKATGO-40-free-play-server",
+  "base": "1c026c2d853ade46dfce7e50252df11ffb8bda45",
+  "ports": { "web": 55040, "multiplayer": 56040, "database": 57040 }
+}

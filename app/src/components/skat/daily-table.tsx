@@ -3,8 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { type DailyError, dailyAct, dailyBoard, dailyName, dailyState, isError } from '~/lib/daily-api'
-import { contractName } from '~/lib/skat/i18n'
-import type { Move, Seat } from '~/lib/skat/game'
+import type { Move } from '~/lib/skat/game'
 import { type DailyBoard, type DailyReply, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { color } from '../../theme/color.stylex'
@@ -12,8 +11,9 @@ import { border, space } from '../../theme/scale.stylex'
 import { elev } from '../../theme/elevation.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { VsAiTable } from './daily-comparison'
 import { BOT_DELAY, GameTable, TRICK_DELAY } from './game-table'
-import { Btn, Panel, Rich, linkLook } from './ui'
+import { Btn, Panel, linkLook } from './ui'
 
 // The daily tournament in the browser (SKATGO-35, SKATGO-36): the button on /daily that starts or
 // continues the day, the day's result once all 12 deals are played with the nickname that puts it on
@@ -22,7 +22,6 @@ import { Btn, Panel, Rich, linkLook } from './ui'
 // computer move and trick — and the table shows them one by one on its own beats, as if the computers
 // were thinking here.
 
-const nameOf = (seat: Seat) => [m.name_you, m.name_lina, m.name_max][seat]()
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n))
 
 type Which = 'today' | 'yesterday'
@@ -49,7 +48,16 @@ export function DailyEntry() {
       {status.finished ? (
         <DailyResult status={status} board={today} onNamed={() => loadBoard('today')} />
       ) : (
-        <div>
+        <div {...stylex.props(styles.stack)}>
+          {/* The day so far against the AI (SKATGO-42), so a reload shows it at once. */}
+          {status.deals.length > 0 ? (
+            <Panel>
+              <section data-testid="daily-so-far" {...stylex.props(styles.result)}>
+                <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_vs_ai_title()}</h2>
+                <VsAiTable deals={status.deals} benchmarks={status.benchmarks} />
+              </section>
+            </Panel>
+          ) : null}
           <Link to="/daily/play" data-testid="daily-cta" {...linkLook('go', 'lg', 'landing')}>
             {status.started ? m.daily_continue({ n: status.deal + 1, of: status.of }) : m.daily_cta()}
           </Link>
@@ -173,25 +181,7 @@ function DailyResult({ status, board, onNamed }: { status: DailyStatus; board: D
     <Panel>
       <section data-testid="daily-result" data-total={status.totals[PLAYER]} {...stylex.props(styles.result)}>
         <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_result_title()}</h2>
-        <ol {...stylex.props(styles.rows)}>
-          {status.deals.map((d, i) => (
-            <li key={i} data-testid="daily-result-deal" data-score={d.scores[PLAYER]} {...stylex.props(typography.appText, styles.row)}>
-              <span {...stylex.props(styles.muted)}>{m.daily_deal_n({ n: i + 1 })}</span>
-              <span {...stylex.props(styles.what)}>
-                {d.declarer === null || !d.declaration ? (
-                  m.daily_passed_in_short()
-                ) : (
-                  <Rich text={`${contractName(d.declaration.contract)} · ${nameOf(d.declarer)}`} />
-                )}
-              </span>
-              <span {...stylex.props(styles.score)}>{signed(d.scores[PLAYER])}</span>
-            </li>
-          ))}
-        </ol>
-        <p data-testid="daily-result-total" {...stylex.props(typography.panelLabel, styles.total)}>
-          <span>{m.daily_total()}</span>
-          <span>{signed(status.totals[PLAYER])}</span>
-        </p>
+        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} />
         {board ? <Nickname key={board.me?.nickname ?? ''} board={board} onNamed={onNamed} /> : null}
       </section>
     </Panel>
@@ -275,6 +265,8 @@ export function DailyTable() {
         deal,
         of: reply.status.of,
         totals: busy ? before.current : reply.status.totals,
+        deals: reply.status.deals,
+        benchmarks: reply.status.benchmarks,
       }}
     />
   )
@@ -338,5 +330,4 @@ const styles = stylex.create({
   muted: { color: color.slate, flexShrink: 0 },
   what: { flexGrow: 1 },
   score: { flexShrink: 0 },
-  total: { display: 'flex', justifyContent: 'space-between', margin: 0, color: color.navy },
 })

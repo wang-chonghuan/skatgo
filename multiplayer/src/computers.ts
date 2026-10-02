@@ -82,8 +82,9 @@ export async function skatzeroTurn(g: Game, seat: Seat, plan: SeatPlan, policy: 
 
 /** Let the computers move until it is the player's turn or the deal is over, recording each move in
  *  `log`; `steps` collects every state left behind, for the table to show in order. Every proposed
- *  move is checked by the engine; an illegal one fails the request. */
-export async function advance(g: Game, log: Logged[], turn: (g: Game) => Promise<Logged[]>, steps?: Game[]): Promise<Game> {
+ *  move is checked by the engine; an illegal one fails the request. With `toEnd`, a computer sits in
+ *  the player's seat too and the deal is played out (SKATGO-42). */
+export async function advance(g: Game, log: Logged[], turn: (g: Game) => Promise<Logged[]>, steps?: Game[], toEnd = false): Promise<Game> {
   for (;;) {
     if (g.phase === 'trickEnd') {
       g = collectTrick(g)
@@ -91,7 +92,7 @@ export async function advance(g: Game, log: Logged[], turn: (g: Game) => Promise
       continue
     }
     const seat = actor(g)
-    if (seat === null || seat === PLAYER) return g
+    if (seat === null || (seat === PLAYER && !toEnd)) return g
     for (const l of await turn(g)) {
       try {
         g = applySeatMove(g, l.seat, l.move)

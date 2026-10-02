@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-42",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-42",
+  "branch": "SKATGO-42-daily-computer-score",
+  "base": "80b0dc13ea6a7bb47decd6cc7bae6c16088fa9e7",
+  "ports": { "web": 55042, "multiplayer": 56042, "database": 57042 }
+}

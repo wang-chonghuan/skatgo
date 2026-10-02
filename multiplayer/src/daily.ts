@@ -13,7 +13,7 @@ import { cleanNickname } from '../../app/src/lib/skat/nickname'
 import { actionSchema, applySeatMove, computerMove, Rejected, secretEquals, secureDeck } from './model'
 import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
 import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzero/bidding'
-import { ComputerFailed, type Logged, POSITION, advance, decide, raw, replayLog, skatzeroTurn } from './computers'
+import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, raw, replayLog, skatzeroTurn } from './computers'
 import type { Store } from './store'
 
 // The daily tournament (SKATGO-35). Every day has 12 deals, the same for every player, each played by
@@ -38,7 +38,11 @@ import type { Store } from './store'
 
 /** A computer's bidding as worked out when its day was dealt (SKATGO-39). */
 type StoredBidding = Pick<SeatBidding, 'maxBid' | 'pickup' | 'hand'>
-type DealSpec = { dealer: Seat; deck: Card[]; computers?: Record<'1' | '2', StoredBidding> }
+/** The deal played by SkatZero in all three seats — a computer in the player's seat against the same
+ *  two computers — as worked out when its day was dealt (SKATGO-42): its summary, shown to a player
+ *  once they have finished that deal, and its moves, kept for a later review. */
+type Benchmark = { summary: DealSummary; log: Logged[] }
+type DealSpec = { dealer: Seat; deck: Card[]; computers?: Record<'1' | '2', StoredBidding>; benchmark?: Benchmark }
 type Entry = { actions: (Move | Logged)[][]; deals: DealSummary[]; total: number; finished_at: string | null }
 type Day = { deals: DealSpec[]; computer: string }
 
@@ -127,9 +131,12 @@ const nameInput = z.object({ player, nickname: z.string().max(200) }).strict()
 const boardInput = z.object({ player: player.nullable(), day: z.enum(['today', 'yesterday']) }).strict()
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
 
-function status(day: string, e: Entry | null): DailyStatus {
+/** Where the player stands. The computer's result of a deal goes with the player's own, only once the
+ *  player has finished that deal (SKATGO-42); days dealt before it have none. */
+function status(day: string, e: Entry | null, specs: DealSpec[]): DailyStatus {
   const deals = e?.deals ?? []
-  return { day, of: DAILY_DEALS, deal: deals.length, deals, totals: totals(deals), started: !!e, finished: !!e?.finished_at }
+  const benchmarks = deals.map((_, i) => specs[i]?.benchmark?.summary ?? null)
+  return { day, of: DAILY_DEALS, deal: deals.length, deals, totals: totals(deals), started: !!e, finished: !!e?.finished_at, benchmarks }
 }
 
 /** The day's deals. Requests never deal: a day is dealt ahead by prepareDays; one that is not there yet
@@ -173,11 +180,31 @@ export async function prepareDay(store: Store, policy: Policy, day: string, now 
       if (now() - started > PREPARE_MS) throw new Error('daily_prepare_timeout')
     }
     spec.computers = computers
+    spec.benchmark = await benchmark(policy, spec, day, i)
+    if (now() - started > PREPARE_MS) throw new Error('daily_prepare_timeout')
   }
   await store.transaction(async (c) => {
     await c.query('INSERT INTO daily_deals (day, deals, computer) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [day, JSON.stringify(specs), COMPUTER])
   })
   return 'dealt'
+}
+
+/** A deal played out by SkatZero in all three seats (SKATGO-42): the player's seat gets its own
+ *  bidding, worked out like the computers' (its skats tried in the deal's fixed order for seat 0);
+ *  the other two play from their prepared plans, exactly as they do against the player. */
+async function benchmark(policy: Policy, spec: DealSpec, day: string, i: number): Promise<Benchmark> {
+  const start = deal(spec.dealer, spec.deck)
+  const own = await seatBidding(policy, start.hands[PLAYER].map(raw), POSITION[roleOf(PLAYER, spec.dealer)], skatOrder(day, i, PLAYER))
+  const plan = (b: StoredBidding): SeatPlan => ({ maxBid: b.maxBid, skatOrHand: (bid) => skatOrHand(b, bid) })
+  const plans: Record<Seat, SeatPlan> = { 0: plan(own), 1: plan(spec.computers!['1']), 2: plan(spec.computers!['2']) }
+  const log: Logged[] = []
+  const end = await advance(start, log, async (g) => {
+    const seat = actor(g)!
+    if (g.phase !== 'play') return skatzeroTurn(g, seat, plans[seat], policy)
+    return [{ seat, move: { type: 'play', card: await decide(policy.choose(viewOf(g, seat))) } }]
+  }, undefined, true)
+  if (!ended(end)) throw new ComputerFailed('benchmark_unfinished')
+  return { summary: summarize(end), log }
 }
 
 /** Today and tomorrow, dealt ahead — one preparation at a time. */
@@ -248,17 +275,17 @@ export async function dailyState(store: Store, policy: Policy, who: string, open
   return store.transaction(async c => {
     const { deals: specs, computer } = await dayOfDeals(c, day)
     let e = await entryOf(c, day, who)
-    if (!e && !open) return { status: status(day, null), view: null, revision: 0 }
+    if (!e && !open) return { status: status(day, null, specs), view: null, revision: 0 }
     if (!e) {
       await c.query('INSERT INTO daily_entries (day, player, actions, deals, total, created_at) VALUES ($1, $2, $3, $4, 0, $5)',
         [day, who, JSON.stringify([[]]), '[]', now])
       e = { actions: [[]], deals: [], total: 0, finished_at: null }
     }
-    if (e.finished_at || !open) return { status: status(day, e), view: null, revision: 0 }
+    if (e.finished_at || !open) return { status: status(day, e, specs), view: null, revision: 0 }
     const before = JSON.stringify(e)
     const g = computer === HEURISTIC ? settleEnded(specs, e, now) : await settleRecorded(specs, e, now, policy, computer)
     if (JSON.stringify(e) !== before) await save(c, day, who, e)
-    return { status: status(day, e), view: g ? seatView(g) : null, revision: g ? e.actions[e.deals.length].length : 0 }
+    return { status: status(day, e, specs), view: g ? seatView(g) : null, revision: g ? e.actions[e.deals.length].length : 0 }
   })
 }
 
@@ -295,7 +322,7 @@ export async function dailyAct(store: Store, policy: Policy, input: z.infer<type
     }
     await save(c, day, input.player, e)
     return {
-      status: status(day, e),
+      status: status(day, e, specs),
       steps: steps.map(seatView) as SeatView[],
       revision: current ? e.actions[e.deals.length].length : 0,
     }

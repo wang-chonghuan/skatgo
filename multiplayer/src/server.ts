@@ -2,7 +2,7 @@ import { createServer } from 'node:http'
 import express from 'express'
 import { Server, matchMaker } from '@colyseus/core'
 import { WebSocketTransport } from '@colyseus/ws-transport'
-import { dailyRoutes } from './daily'
+import { dailyRoutes, prepareDays } from './daily'
 import { loadPolicy, type Policy } from './skatzero/policy'
 import { makeRoom, RESTORE } from './room'
 import { Store } from './store'
@@ -66,6 +66,10 @@ async function elect() {
       for (const s of await store.all()) await matchMaker.createRoom('skat', { restore: RESTORE, id: s.id })
       await policyLoad
       ready = true
+      // The leader deals today and tomorrow ahead, with the computers' bidding (SKATGO-39); readiness
+      // does not wait for it.
+      void prepareDays(store, policy!)
+      setInterval(() => { if (ready && !stopping) void prepareDays(store, policy!) }, 60 * 60 * 1000).unref()
       console.log(JSON.stringify({ event: 'ready', version, port }))
       return
     }

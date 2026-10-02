@@ -41,9 +41,11 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   hash manifest and run by `onnxruntime-node` (exact version, human-approved 2026-10-02) — in
   `multiplayer/` only, never in `app/` or the browser. `multiplayer/src/skatzero/` is the port of
   SkatZero's feature encoder and of the measured decision procedure (one-step lookahead included).
-  Bidding, Hand/pickup, discard and declaration are still the heuristics: the day's computer is a
-  declared hybrid, named in `daily_deals.computer`. Rooms, free play, lessons and hints keep the
-  heuristics.
+  Since SKATGO-39 the bidding is SkatZero's too (`src/skatzero/bidding.ts`, a port of its `Bidder`
+  with its eight `.npy` tables committed under `multiplayer/skatzero/bidding/`): the auction, pick-up
+  or Hand, the discard and the game. Days dealt with it are `skatzero@1fe5cab`; SKATGO-38's hybrid
+  days (`skatzero-play@1fe5cab+heuristic-bid`) keep the heuristics' bidding. The opponents' bids are
+  never features, in bidding or card play. Rooms, free play, lessons and hints keep the heuristics.
 - Course libraries: `motion` (animation), `@letele/playing-cards` (public-domain card faces),
   `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
   assistant's chat window).
@@ -100,6 +102,13 @@ also built from the repository root. Neither project imports the other's runtime
   what its seat may see (`viewOf`), and every move it proposes passes the engine. If it cannot decide,
   the request fails and nothing is stored: no other player stands in for it. Days dealt before keep
   `computer = heuristic` and replay as they always did.
+- **A day's computer bidding is worked out when the day is dealt, not when it is played**
+  (SKATGO-39). One computer's bidding simulates all 231 possible skats (≈ 1 s per computer per deal
+  locally), so the leader deals today and tomorrow ahead (`prepareDays`: at start, then hourly),
+  computing in slices that yield to the event loop, and stores each computer's highest bid and its
+  pick-up/Hand tables inside the deal (`daily_deals.deals`). Requests never deal: a day not yet
+  prepared answers `503 day_preparing`. Only today's day is ever read by a route. The skats are tried in
+  an order fixed by day, deal and seat; the stored result is what play uses, on every platform.
 - **Split from Parrottoon on 2026-09-21**, as byte copies of its course code, theme and styles; routes
   moved from `/skat/...` to the root. The two codebases are **not synchronised**: a change in either
   does not reach the other.

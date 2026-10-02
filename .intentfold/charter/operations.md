@@ -31,6 +31,10 @@ The service is ready only once SkatZero's nine models are loaded, hash-verified 
 (SKATGO-38); a missing or altered model stops it at start. Its image is `node:24-slim`
 (onnxruntime-node needs glibc) and carries the committed models; nothing is downloaded at build or
 run time, and onnxruntime's telemetry is off (`ORT_DISABLE_TELEMETRY`).
+The leader deals the tournament's today and tomorrow ahead, with the computers' bidding (SKATGO-39;
+logged as `daily_prepared` with its duration, or `daily_prepare_failed`): about 40 s per day on a
+laptop, about 90 s in the local Linux container; a 10-minute limit abandons it for the next hourly try.
+Readiness does not wait for it; until today is prepared, `/daily` answers `503 day_preparing`.
 
 **Environments**
 

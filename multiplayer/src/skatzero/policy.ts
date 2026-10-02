@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import type { InferenceSession, Tensor } from 'onnxruntime-node'
 import { type Card, type Contract, pointsOf, trickWinnerIndex } from '../../../app/src/lib/skat/cards'
 import type { Game, Seat } from '../../../app/src/lib/skat/game'
+import { type BiddingTables, loadBiddingTables } from './tables'
 import { type ZCard, type ZPlay, type ZState, type ZTrump, encode, swapColors } from './encode'
 
 // SkatZero's card play (SKATGO-38): nine resident ONNX sessions — one per game type (D for every
@@ -60,6 +61,10 @@ export type Policy = {
   choose: (v: PlayerView) => Promise<Card>
   /** The net's value for each legal card (before any lookahead), in hand order. */
   values: (v: PlayerView) => Promise<{ card: Card; value: number }[]>
+  /** The declarer model's raw values for a SkatZero-space state (bidding, SKATGO-39). */
+  score: (gametype: 'D' | 'G' | 'N', s: ZState) => Promise<{ candidates: ZCard[]; values: Float32Array }>
+  /** SkatZero's bidding tables (bidding/data/*.npy), verified against the manifest. */
+  tables: BiddingTables
   release: () => Promise<void>
 }
 
@@ -146,7 +151,13 @@ export async function loadPolicy(dir: URL): Promise<Policy> {
     await run(name, new Float32Array(OBS_WIDTH[name]), new Float32Array(1050), new Float32Array(n * 32), n)
   }
 
-  return { choose, values, release: async () => { for (const s of sessions.values()) await s.release() } }
+  async function score(gametype: 'D' | 'G' | 'N', s: ZState) {
+    const e = encode(s)
+    return { candidates: e.candidates, values: await run(`${gametype}_${s.self}`, e.obs, e.history, e.actions, e.candidates.length) }
+  }
+
+  const tables = await loadBiddingTables(dir)
+  return { choose, values, score, tables, release: async () => { for (const s of sessions.values()) await s.release() } }
 }
 
 /**

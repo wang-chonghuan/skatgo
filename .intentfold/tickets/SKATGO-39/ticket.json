@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-39",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-39",
+  "branch": "SKATGO-39-skatzero-bidding",
+  "base": "e843d3bed89268ed2fac369daa87d8c37fe708e2",
+  "ports": {
+    "web": 55039,
+    "multiplayer": 56039,
+    "database": 57039
+  }
+}

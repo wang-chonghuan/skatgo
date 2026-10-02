@@ -45,7 +45,10 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   with its eight `.npy` tables committed under `multiplayer/skatzero/bidding/`): the auction, pick-up
   or Hand, the discard and the game. Days dealt with it are `skatzero@1fe5cab`; SKATGO-38's hybrid
   days (`skatzero-play@1fe5cab+heuristic-bid`) keep the heuristics' bidding. The opponents' bids are
-  never features, in bidding or card play. Rooms, free play, lessons and hints keep the heuristics.
+  never features, in bidding or card play. Since SKATGO-40 free play (`/play`) and lesson 11's game
+  play the same SkatZero computers on the server, their bidding taken from a committed pool of deals
+  (`multiplayer/skatzero/free-pool.json.gz`, label `skatzero@1fe5cab`). Rooms and hints keep the
+  heuristics.
 - Course libraries: `motion` (animation), `@letele/playing-cards` (public-domain card faces),
   `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
   assistant's chat window).
@@ -69,11 +72,12 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/lesson/$id`, `/play` |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`) is cut from it by `.intentfold/tickets/SKATGO-23/icons.mjs` — regenerate them, never edit them |
-| `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: what seat 0 may see of a deal (`seatView`), that view as a table, Seeger-Fabian |
+| `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: what seat 0 may see of a deal (`seatView`, also free play's), that view as a table, Seeger-Fabian |
 | `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36) |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
 | `app/src/components/skat/daily-table.tsx` | the tournament's button, day result and table; `/daily/play` is its full-screen page |
-| `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament |
+| `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy and its per-address limits, the browser's calls, and the table free play and lesson 11 use (`GameTable` with a `server` source, hints and assistant kept) |
+| `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament; `src/free.ts` free play; `src/computers.ts` the SkatZero computer turns both share; `scripts/make-free-pool.ts` the one-off generator of free play's pool |
 
 **Key decisions**
 
@@ -109,6 +113,20 @@ also built from the repository root. Neither project imports the other's runtime
   pick-up/Hand tables inside the deal (`daily_deals.deals`). Requests never deal: a day not yet
   prepared answers `503 day_preparing`. Only today's day is ever read by a route. The skats are tried in
   an order fixed by day, deal and seat; the stored result is what play uses, on every platform.
+- **A free-play game is a deal from a committed pool, and its state travels with the page**
+  (SKATGO-40).
+  - The pool holds 1,000 deals (seed `skatgo-free-pool/1`). For both computers it stores the
+    highest bid and the pick-up/Hand choice at every SkatZero bid value.
+  - It is generated once by `scripts/make-free-pool.ts` and committed with its size, SHA-256 and
+    count in the manifest. Readiness waits for it; an altered pool stops the service at start.
+    Running the generator with a larger count extends the pool; earlier deals stay identical.
+  - The server keeps nothing per game. The game is an AES-256-GCM token (key derived by HKDF from
+    the admission key, label `skatgo-free/1`, 24 h lifetime) holding the deal's index, the pool
+    version, the start time and every move, the computers' included.
+  - Replay runs the engine only; a computer is asked only for new moves. There is no cookie and no
+    browser storage; a reload starts a new game.
+  - The pool is in the public repository, so its decks are readable. This is accepted because free
+    play is unranked.
 - **Split from Parrottoon on 2026-09-21**, as byte copies of its course code, theme and styles; routes
   moved from `/skat/...` to the root. The two codebases are **not synchronised**: a change in either
   does not reach the other.
@@ -220,9 +238,10 @@ cross-module contract.
   adjust an exercise to agree with a rule that is wrong.
 - **`app/src/lib/skat/ai.ts` is both the opponents and the hint.** Making a computer player stronger
   also changes what the learner is told to do and why; the reason strings are part of the teaching.
-- **Course randomness runs in the browser only.** Drills and the solo deal use `Math.random`;
-  rendering one on the server would hand the browser a different question from the one it hydrates.
-  Multiplayer deals are server-owned and cryptographically shuffled, never SSR content.
+- **Course randomness runs in the browser only.** Drills use `Math.random`; rendering one on the
+  server would hand the browser a different question from the one it hydrates. Multiplayer deals are
+  server-owned and cryptographically shuffled, and free play's deal is drawn from the server's pool
+  (SKATGO-40); none of them is SSR content.
 - **A tournament deal in progress is replayed from its moves** (SKATGO-35). On a `heuristic` day,
   changing `ai.ts` or `game.ts` changes how an unfinished deal of that day replays; on a recorded day
   (SKATGO-38) only `game.ts` matters, since the computers' moves are stored. Finished deals keep the

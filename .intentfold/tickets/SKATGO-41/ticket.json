@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-41",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-41",
+  "branch": "SKATGO-41-card-animation-paint",
+  "base": "2e8807b272510d6440a1066c8b26fd5a0d7c2113",
+  "ports": { "web": 55041, "multiplayer": 56041, "database": 57041 }
+}

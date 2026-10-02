@@ -92,5 +92,12 @@
       "bytes": 204,
       "sha256": "ea92fc6677dcd427241ee8c7857e215b5dc69019fa4f40746214f392cf77c6c1"
     }
-  ]
+  ],
+  "freePool": {
+    "name": "free-pool.json.gz",
+    "bytes": 39325,
+    "sha256": "3fa37d1161a0dda5ce7c245c95fd1a0dca32088e8b54667caa94b7372346d79b",
+    "deals": 1000,
+    "seed": "skatgo-free-pool/1"
+  }
 }

@@ -3,6 +3,7 @@ import express from 'express'
 import { Server, matchMaker } from '@colyseus/core'
 import { WebSocketTransport } from '@colyseus/ws-transport'
 import { dailyRoutes, prepareDays } from './daily'
+import { freeRoutes, loadPool } from './free'
 import { loadPolicy, type Policy } from './skatzero/policy'
 import { makeRoom, RESTORE } from './room'
 import { Store } from './store'
@@ -22,8 +23,11 @@ await store.migrate()
 // SkatZero's nine models (SKATGO-38) load, verify and warm while the service starts; it is not ready
 // before they are, and a missing or altered model stops it.
 let policy: Policy | null = null
-const policyLoad = loadPolicy(new URL('../skatzero/', import.meta.url)).then(
-  (p) => {
+// Free play's pool of prepared deals (SKATGO-40), checked against the manifest like the models.
+let pool: Awaited<ReturnType<typeof loadPool>> | null = null
+const policyLoad = Promise.all([loadPolicy(new URL('../skatzero/', import.meta.url)), loadPool(new URL('../skatzero/', import.meta.url))]).then(
+  ([p, deals]) => {
+    pool = deals
     policy = p
     console.log(JSON.stringify({ event: 'skatzero_ready', rss: process.memoryUsage().rss }))
   },
@@ -44,6 +48,7 @@ app.get(['/healthz', '/readyz'], async (req, res) => {
   } catch { res.status(503).json({ ok: false, ready: false, version }) }
 })
 app.use('/daily', dailyRoutes(store, key, () => ready && !stopping, () => policy))
+app.use('/free', freeRoutes(key, () => ready && !stopping, () => policy, () => pool))
 const httpServer = createServer(app)
 const server = new Server({
   transport: new WebSocketTransport({ server: httpServer, maxPayload: 16 * 1024, pingInterval: 5000, pingMaxRetries: 2 }),

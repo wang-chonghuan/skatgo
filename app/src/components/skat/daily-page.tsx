@@ -12,7 +12,6 @@ import { space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ClientPart, DailyEntry, DailyTable } from './client-part'
-import { Band } from './frame'
 
 /**
  * The daily Skat tournament's page (SKATGO-29, SKATGO-35): its title, today's date and the time until
@@ -30,8 +29,8 @@ export function DailyPage() {
   const left = now ? untilNextDeals(now) : null
   return (
     <div data-testid="daily" {...stylex.props(styles.root)}>
-      <Band title={m.daily_title({ deals: DAILY_DEALS })} back="/" />
       <section {...stylex.props(styles.column)}>
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.daily_title({ deals: DAILY_DEALS })}</h1>
         <p data-testid="daily-lead" {...stylex.props(typography.landingBody, styles.lead)}>
           {m.daily_lead({ date: now ? dailyDate(now, LANG_TAG[getLocale()]) : '…', countdown: left ? m.daily_countdown(left) : '…' })}
         </p>
@@ -83,5 +82,6 @@ const styles = stylex.create({
     paddingBlock: { default: space.x32, [bp.phone]: space.x16 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
+  title: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.navy },
 })

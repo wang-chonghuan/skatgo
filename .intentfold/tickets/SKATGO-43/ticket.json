@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-43",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-43",
+  "branch": "SKATGO-43-topbar-course-rules",
+  "base": "5b9613aca062d76ade795702eb421677fcb15131",
+  "ports": { "web": 55043, "multiplayer": 56043, "database": 57043 }
+}

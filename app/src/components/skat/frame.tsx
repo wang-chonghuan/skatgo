@@ -23,8 +23,8 @@ import { Btn, suitText } from './ui'
 // The frame pieces of the lobby design (SKATGO-26, reference.md):
 //   Rail           the app's left navigation, desktop;
 //   TabBar         the same navigation as a bottom bar, phone;
-//   LandingHeader  the public site's white header, on the front page;
-//   Band           a sub-page's coloured band: back and home, the page's title, language and account.
+//   LandingHeader  the public site's white header, on the front page and the pages it links to;
+//   Band           a lesson's coloured band: back and home, the page's title, language and account.
 // Navigation carries only what skatgo has (SKATGO-29: nothing announced).
 
 type Section = 'home' | 'daily' | 'course' | 'rules' | 'play'
@@ -51,6 +51,20 @@ export function sectionOf(pathname: string): Section {
 
 export function useSection(): Section {
   return useRouterState({ select: (s) => sectionOf(s.location.pathname) })
+}
+
+/** Which frame a path wears. The pages the front page's header links to — the tournament, the course
+ *  and the rules — keep that header (SKATGO-43); a lesson keeps the app's rail; the tables fill the
+ *  screen. The router has already removed the language prefix. */
+export function frameOf(pathname: string): 'landing' | 'app' | 'table' {
+  const section = sectionOf(pathname)
+  if (section === 'play') return 'table'
+  if (section === 'course' && pathname.replace(/\/$/, '') !== '/course') return 'app'
+  return 'landing'
+}
+
+export function useFrame() {
+  return useRouterState({ select: (s) => frameOf(s.location.pathname) })
 }
 
 export function Rail() {
@@ -102,7 +116,8 @@ const HEADER_LINKS: { to: '/daily' | '/play' | '/course' | '/rules'; label: () =
   { to: '/rules', label: () => m.nav_rules() },
 ]
 
-/** The front page's header: the public site's white bar. On a phone the links fold into a menu. */
+/** The front page's header: the public site's white bar, also over the tournament, the course and the
+ *  rules (SKATGO-43). On a phone the links fold into a menu. */
 export function LandingHeader() {
   const [open, setOpen] = useState(false)
   return (

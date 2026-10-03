@@ -15,7 +15,6 @@ import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { Band } from './frame'
 import { Rich, linkLook } from './ui'
 
 /**
@@ -29,8 +28,8 @@ export function RulesPage() {
   const rules = RULES[locale]
   return (
     <div data-testid="rules" {...stylex.props(styles.root)}>
-      <Band title={m.rules_title()} back="/" />
       <article {...stylex.props(styles.column)}>
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.rules_title()}</h1>
         {rules.intro.map((text) => (
           <p key={text} {...stylex.props(typography.landingBody, styles.lead)}>
             <Rich text={text} />
@@ -186,6 +185,7 @@ const styles = stylex.create({
     paddingBlock: { default: space.x32, [bp.phone]: space.x16 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
+  title: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.navy },
   ways: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
   contents: {
@@ -210,7 +210,14 @@ const styles = stylex.create({
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
-  section: { display: 'flex', flexDirection: 'column', gap: space.x12, paddingTop: space.x16 },
+  // A jump from the contents lands below the header, which stays on top (SKATGO-43).
+  section: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x12,
+    paddingTop: space.x16,
+    scrollMarginTop: { default: dims.landingHeader, [bp.phone]: dims.landingHeaderPhone },
+  },
   heading: { margin: 0, color: color.navy },
   text: { margin: 0, color: color.text },
   list: { display: 'flex', flexDirection: 'column', gap: space.x6, margin: 0, paddingInlineStart: space.x20 },

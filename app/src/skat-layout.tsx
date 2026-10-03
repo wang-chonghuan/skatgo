@@ -2,24 +2,26 @@ import { Outlet } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
 import { AskLauncher } from '~/components/skat/ask'
-import { AppShell, LandingHeader, Rail, TabBar, useCardColourTheme, useSection } from '~/components/skat/frame'
+import { AppShell, LandingHeader, Rail, TabBar, useCardColourTheme, useFrame, useSection } from '~/components/skat/frame'
 import { color } from './theme/color.stylex'
 import { dims } from './theme/shape.stylex'
 import { typography } from './theme/type'
 
-// The frame around every page, in the lobby design (SKATGO-26, reference.md). Each section wears the
-// frame the reference gives its kind of page:
-//   the front page    — the public site's white header over a white page;
-//   course and lesson — the app's rail (a bottom tab bar on a phone), and the page's own coloured band;
+// The frame around every page, in the lobby design (SKATGO-26, reference.md). Each page wears the
+// frame of its kind (frameOf):
+//   the front page, and the tournament, course and rules it links to — the public site's white header
+//                       (SKATGO-43), over the front page's white page or a sub-page's grey one;
+//   a lesson          — the app's rail (a bottom tab bar on a phone), and the lesson's own coloured band;
 //   play              — the card table fills the screen, with its own side panel and way out.
 // The floating assistant comes after, and decides itself which pages it is on.
 export function SkatLayout() {
+  const frame = useFrame()
   const section = useSection()
   // The learner's card colours (SKATGO-27): every suit colour below reads theme/suits.stylex.ts.
   const cardColours = useCardColourTheme()
-  if (section === 'home') {
+  if (frame === 'landing') {
     return (
-      <div {...stylex.props(typography.frame, styles.page, styles.landing, cardColours)}>
+      <div {...stylex.props(typography.frame, styles.page, section === 'home' && styles.landing, cardColours)}>
         <LandingHeader />
         <main {...stylex.props(styles.main)}>
           <Outlet />
@@ -28,7 +30,7 @@ export function SkatLayout() {
       </div>
     )
   }
-  if (section === 'play') {
+  if (frame === 'table') {
     return (
       <div {...stylex.props(typography.frame, styles.page, styles.table, cardColours)}>
         <main {...stylex.props(styles.main)}>

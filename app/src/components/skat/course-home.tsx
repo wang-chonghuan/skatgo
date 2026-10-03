@@ -2,7 +2,6 @@ import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { useEffect, useState } from 'react'
 
-import { Band } from './frame'
 import { Pill, Stars, linkLook } from './ui'
 import { track } from '~/lib/analytics'
 import { lessons } from '~/lib/skat/lessons/content'
@@ -23,8 +22,8 @@ const NO_GAMES: Tally = { games: 0, won: 0, score: 0 }
 
 /**
  * The course page: what the course is, the way to start or continue, every lesson with its state, and
- * once it is all done, the way to the table. In the lobby design (SKATGO-26) it is a sub-page: the
- * course's orange band, the course's facts, the progress as the featured card, and every lesson as an
+ * once it is all done, the way to the table. In the lobby design (SKATGO-26) it is a sub-page under the
+ * front page's header (SKATGO-43): the course's title, the course's facts, the progress as the featured card, and every lesson as an
  * option card. Its title, lead and buttons are the landing copy of SKATGO-29.
  *
  * The one page of the course rendered on the server (SKATGO-1, for search engines): its lessons,
@@ -47,8 +46,8 @@ export function CourseHome() {
 
   return (
     <div data-testid="skat-home" {...stylex.props(styles.root)}>
-      <Band title={m.course_title()} back="/" />
       <div {...stylex.props(styles.column)}>
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.course_title()}</h1>
         <section {...stylex.props(styles.intro)}>
           <p {...stylex.props(typography.appText, styles.lead)}>{m.course_lead({ count: course.length })}</p>
           <div {...stylex.props(styles.pills)}>
@@ -140,6 +139,7 @@ const styles = stylex.create({
     paddingBottom: space.x72,
     paddingInline: { default: space.x48, [bp.phone]: space.x12 },
   },
+  title: { margin: 0, color: color.navy },
   intro: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   lead: { margin: 0, color: color.slate },
   pills: { display: 'flex', flexWrap: 'wrap', gap: space.x8 },

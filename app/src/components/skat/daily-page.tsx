@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { useEffect, useState } from 'react'
+import { Link } from '@tanstack/react-router'
 
 import { DAILY_DEALS, dailyDate, untilNextDeals } from '~/lib/daily'
 import { LANG_TAG } from '~/lib/site'
@@ -12,6 +13,8 @@ import { space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ClientPart, DailyEntry, DailyTable } from './client-part'
+import { GameReading } from './game-reading'
+import { linkLook } from './ui'
 
 /**
  * The daily Skat tournament's page (SKATGO-29, SKATGO-35): its title, today's date and the time until
@@ -31,13 +34,17 @@ export function DailyPage() {
     <div data-testid="daily" {...stylex.props(styles.root)}>
       <section {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.daily_title({ deals: DAILY_DEALS })}</h1>
-        <p data-testid="daily-lead" {...stylex.props(typography.landingBody, styles.lead)}>
-          {m.daily_lead({ date: now ? dailyDate(now, LANG_TAG[getLocale()]) : '…', countdown: left ? m.daily_countdown(left) : '…' })}
-        </p>
-        <ClientPart fallback={null}>
+        <p data-testid="daily-lead" {...stylex.props(typography.landingBody, styles.lead)}>{m.daily_static_lead()}</p>
+        {now && left ? (
+          <p {...stylex.props(typography.appText, styles.lead)}>
+            {m.daily_lead({ date: dailyDate(now, LANG_TAG[getLocale()]), countdown: m.daily_countdown(left) })}
+          </p>
+        ) : null}
+        <ClientPart fallback={<Link to="/daily/play" {...linkLook('go', 'lg', 'landing')}>{m.daily_cta()}</Link>}>
           <DailyEntry />
         </ClientPart>
       </section>
+      <GameReading daily />
     </div>
   )
 }

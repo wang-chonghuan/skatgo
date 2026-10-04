@@ -8,6 +8,8 @@ import { GUIDES, lessonPath } from './skat/lessons/guide'
 //   /de/course, /de/play — German pages now have German addresses (SKATGO-29): /de/kurs, /de/spielen.
 // Returns the new path (with the query) or null when the address has not moved.
 export function movedTo(pathname: string, search: string): string | null {
+  if (/^\/de\/?$/.test(pathname)) return `/${search}`
+  if (pathname === '/en/') return `/en${search}`
   if (pathname === '/zh' || pathname.startsWith('/zh/')) return `/en${pathname.slice(3)}${search}`
   const lesson = /^\/(en|de)\/lesson\/([^/]+)\/?$/.exec(pathname)
   if (lesson) {

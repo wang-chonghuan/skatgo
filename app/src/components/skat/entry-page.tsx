@@ -81,6 +81,11 @@ export function EntryPage() {
         </section>
       </div>
 
+      <nav aria-label={m.game_learning_title()} {...stylex.props(styles.actions)}>
+        <Link to="/rules" {...stylex.props(typography.link, styles.readingLink)}>{m.rules_title()}</Link>
+        <Link to="/course" {...stylex.props(typography.link, styles.readingLink)}>{m.course_title()}</Link>
+      </nav>
+
       <section data-testid="entry-faq" aria-labelledby="faq-title" {...stylex.props(styles.faq)}>
         <h2 id="faq-title" {...stylex.props(typography.landingHeading, styles.faqTitle)}>{m.faq_title()}</h2>
         <dl {...stylex.props(styles.faqList)}>
@@ -225,6 +230,7 @@ const styles = stylex.create({
   tileText: { margin: 0, color: color.onColor },
   foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, paddingTop: space.x8 },
   aside: { color: color.onColor },
+  readingLink: { color: color.info, textDecoration: 'underline' },
 
   faq: { display: 'flex', flexDirection: 'column', gap: space.x24 },
   faqTitle: { margin: 0, color: color.navy },

@@ -15,8 +15,10 @@ merge. Acceptance verification also uses this file, so stale commands block deli
 **Runtime**
 
 The **`web`** service is the TanStack Start server in `app/`, which renders the page
-shell for `/` (the front page), `/course`, `/lesson/$id`, `/play`, `/daily` and `/daily/play` and serves the built assets. The course itself runs in the
-browser. `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*` and
+shell and public reading content for its localized pages, and serves the built assets. Random
+exercises, cards and personal progress run in the browser. The German root is a stable 200 page;
+legacy German homepage redirects permanently to it, English remains separate, and other translated
+addresses remain unchanged (SKATGO-44). `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*` and
 `/api/free/*`. They pass the daily tournament's and free play's requests on to `multiplayer`. Free
 play includes lesson 11's game (SKATGO-40). `/api/free/*` is limited per address to 300 new games an
 hour and 200 moves per 10 s, and answers `429 slow_down` beyond that.
@@ -171,7 +173,8 @@ and tests says.
 In production the Render Web Service carries exactly the application configuration
 `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `CLERK_SECRET_KEY`,
 `CLERK_PUBLISHABLE_KEY`, `MULTIPLAYER_URL` (the `skatgo-multiplayer` service's own Render hostname)
-and `MULTIPLAYER_ADMISSION_KEY` (the multiplayer service's value; SKATGO-35); Render supplies `PORT` and its own `RENDER_*` runtime variables. List
+and `MULTIPLAYER_ADMISSION_KEY` (the multiplayer service's value; SKATGO-35), plus
+`POSTHOG_PROJECT_KEY` (SKATGO-25); Render supplies `PORT` and its own `RENDER_*` runtime variables. List
 application keys without printing values:
 
 ```bash
@@ -219,9 +222,9 @@ in that script is approval-required; subsequent deploys are explicit and automat
 deploys remain disabled. Provisioning writes only the new service/database.
 
 The deploy command exiting 0 is not confirmation — Render can report success while an old deploy keeps
-serving. Routes are derived from the app's own generated route manifest and languages from the inlang
-project, so a new route or a new language needs no edit here. Every page lives under a language prefix
-(`/en`, `/de`, `/zh`); a URL without one answers 307 to the visitor's language (SKATGO-1):
+serving. First verify the release identity, then run Engineering's search-surface checker against
+the live site. It derives pages and alternates from the served sitemap and checks stable addresses,
+content, metadata, redirects, 404s and built assets without JavaScript:
 
 ```bash
 bash <<'BASH'
@@ -240,58 +243,18 @@ if [ "$got" != "$want" ]; then
   exit 1
 fi
 
-# A $param is filled with its own name, which the router matches like any value.
-routes=$(sed -n '/interface FileRoutesByFullPath/,/^}/p' app/src/routeTree.gen.ts \
-  | grep -aoE "'/[^']*'" | tr -d "'" | sed -E 's/\$([A-Za-z_]+)/\1/g' | sort -u)
-[ -n "$routes" ] || { echo "FAIL: derived 0 routes from app/src/routeTree.gen.ts"; exit 1; }
-locales=$(python3 -c "import json; print(' '.join(json.load(open('app/project.inlang/settings.json'))['locales']))")
-[ -n "$locales" ] || { echo "FAIL: derived 0 locales from app/project.inlang/settings.json"; exit 1; }
-
-body=$(mktemp); fail=0; pages=0; assets=0
-for l in $locales; do
-  for r in $routes; do
-    p="/$l${r%/}"
-    code=$(curl -s -o "$body" -w '%{http_code}' "$URL$p")
-    printf '%s  %s\n' "$code" "$p"
-    [ "$code" = 200 ] || { fail=1; continue; }
-    pages=$((pages + 1))
-    # A page must be in its own language, and is only as good as the scripts and styles it names.
-    grep -q "<html lang=\"$l" "$body" || { echo "   <html lang> is not $l"; fail=1; }
-    for a in $(grep -aoE '(src|href)="/assets/[^"]+"' "$body" | sed -E 's/^(src|href)="//; s/"$//' | sort -u); do
-      ac=$(curl -s -o /dev/null -w '%{http_code}' "$URL$a")
-      assets=$((assets + 1))
-      [ "$ac" = 200 ] || { printf '   %s  %s\n' "$ac" "$a"; fail=1; }
-    done
-  done
-done
-rm "$body"
-
-# Without a prefix, every route redirects to one of the languages.
-for r in $routes; do
-  out=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "$URL$r")
-  printf '%s  %s\n' "$out" "$r"
-  target=${out#* }
-  [ "${out%% *}" = 307 ] && echo " $locales " | grep -q " $(echo "$target" | sed -E 's#^https?://[^/]+/([^/?]+).*#\1#') " \
-    || { echo "   expected 307 to a language prefix"; fail=1; }
-done
-
-# The files for crawlers are served as they are, never redirected.
-for f in /sitemap.xml /robots.txt; do
-  code=$(curl -s -o /dev/null -w '%{http_code}' "$URL$f")
-  printf '%s  %s\n' "$code" "$f"
-  [ "$code" = 200 ] || fail=1
-done
-
-[ "$pages" -gt 0 ] || { echo "FAIL: no route answered with a page"; exit 1; }
-[ "$assets" -gt 0 ] || { echo "FAIL: pages named no /assets/ files — not the built app"; exit 1; }
-[ "$fail" -eq 0 ] || { echo "FAIL: a page, a redirect, an asset or a crawler file is wrong"; exit 1; }
-printf 'OK: %s pages in %s languages, %s asset loads, serving %s\n' "$pages" "$(echo $locales | wc -w | tr -d ' ')" "$assets" "$got"
+node app/scripts/check-seo.mjs "$URL" || exit 1
+printf 'OK: live search surface, serving %s\n' "$got"
 BASH
 ```
 
-Run against a commit the app is not serving, it must exit 1 — that was checked before this was
-written down (first version 2026-09-21; the language-prefix version checked the same way when it
-replaced it, SKATGO-1).
+The commit guard must still reject an unreleased revision. The SEO check separately rejects broken
+canonical URLs and missing content; local acceptance is not a claim that production has changed.
+
+After an SEO release, inspect the German root and core entry URLs in Search Console, run its live
+URL test and request indexing for important changed pages. Confirm sitemap reread and watch the
+reported canonical after Google recrawls. Record pending operations and report dates; neither
+sitemap submission nor an index request guarantees indexing, ranking or traffic.
 
 **Operations**
 

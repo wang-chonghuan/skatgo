@@ -42,6 +42,8 @@ export const Route = createRootRoute({
       // The header's felt; a meta tag cannot read a CSS variable, so the value is a constant.
       { name: 'theme-color', content: themeColor },
       { title: m.site_name() },
+      // Pages override this; an unmatched route has no indexable document.
+      { name: 'robots', content: 'noindex, follow' },
     ],
     links: [
       // The SkatGo logo everywhere a browser or phone shows the site (SKATGO-23): the tab (ICO with 16/32/48
@@ -96,4 +98,3 @@ function RootDocument({ children, posthogKey }: Readonly<{ children: ReactNode; 
     </html>
   )
 }
-

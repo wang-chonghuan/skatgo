@@ -1,10 +1,11 @@
 import { m } from '~/paraglide/messages'
 import { type Locale, getLocale, locales } from '~/paraglide/runtime'
 import { LANG_TAG, SITE_URL, localizedUrl } from './site'
+import { isIndexable } from './indexability'
 
 // Every page's own head (SKATGO-29): title and description, a canonical URL that is the page itself,
-// hreflang links between its English and German versions (plus x-default, the unprefixed front door,
-// where the server picks the language), the Open Graph and Twitter tags with the page's own 1200×630
+// hreflang links between its English and German versions (German is the page's x-default),
+// the Open Graph and Twitter tags with the page's own 1200×630
 // picture, and its structured data. The root route writes only what is the same on every page.
 
 type JsonLd = Record<string, unknown>
@@ -29,10 +30,12 @@ export function pageHead({ title, description, paths, image, jsonLd }: PageHead)
   const locale = getLocale()
   const url = localizedUrl(paths[locale], locale)
   const picture = ogImageUrl(image, locale)
+  const indexable = isIndexable(paths[locale])
   return {
     meta: [
       { title },
       { name: 'description', content: description },
+      { name: 'robots', content: indexable ? 'index, follow' : 'noindex, follow' },
       { property: 'og:site_name', content: m.site_name() },
       { property: 'og:type', content: 'website' },
       { property: 'og:title', content: title },
@@ -53,9 +56,10 @@ export function pageHead({ title, description, paths, image, jsonLd }: PageHead)
     ],
     links: [
       { rel: 'canonical', href: url },
-      ...locales.map((l) => ({ rel: 'alternate', hrefLang: LANG_TAG[l], href: localizedUrl(paths[l], l) })),
-      // The unprefixed front door: the server sends each visitor on to their language.
-      { rel: 'alternate', hrefLang: 'x-default', href: `${SITE_URL}/` },
+      ...(indexable ? [
+        ...locales.map((l) => ({ rel: 'alternate', hrefLang: LANG_TAG[l], href: localizedUrl(paths[l], l) })),
+        { rel: 'alternate', hrefLang: 'x-default', href: localizedUrl(paths.de, 'de') },
+      ] : []),
     ],
   }
 }

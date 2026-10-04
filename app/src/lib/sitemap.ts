@@ -1,6 +1,7 @@
 import { type Locale, locales } from '~/paraglide/runtime'
 import { GUIDES, lessonPath } from './skat/lessons/guide'
-import { LANG_TAG, SITE_URL, localizedUrl } from './site'
+import { LANG_TAG, localizedUrl } from './site'
+import { isIndexable } from './indexability'
 
 // sitemap.xml (SKATGO-29): every indexable page in every language, each with its hreflang alternates.
 // Built on request from the same page list and lesson addresses the pages use, so a lesson's slug or a
@@ -13,7 +14,7 @@ export const PAGES = ['/', '/daily', '/daily/play', '/course', '/rules', '/play'
 export function sitemapPages(): Record<Locale, string>[] {
   const same = (path: string) => Object.fromEntries(locales.map((l) => [l, path])) as Record<Locale, string>
   const lessons = Object.keys(GUIDES.en).map((id) => Object.fromEntries(locales.map((l) => [l, lessonPath(id, l)])) as Record<Locale, string>)
-  return [...PAGES.map(same), ...lessons]
+  return [...PAGES.filter(isIndexable).map(same), ...lessons]
 }
 
 export function buildSitemap(): string {
@@ -23,7 +24,7 @@ export function buildSitemap(): string {
         '  <url>',
         `    <loc>${localizedUrl(paths[locale], locale)}</loc>`,
         ...locales.map((l) => `    <xhtml:link rel="alternate" hreflang="${LANG_TAG[l]}" href="${localizedUrl(paths[l], l)}"/>`),
-        `    <xhtml:link rel="alternate" hreflang="x-default" href="${SITE_URL}/"/>`,
+        `    <xhtml:link rel="alternate" hreflang="x-default" href="${localizedUrl(paths.de, 'de')}"/>`,
         '  </url>',
       ].join('\n'),
     ),

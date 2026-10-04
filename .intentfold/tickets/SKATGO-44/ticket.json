@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-44",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-44",
+  "branch": "codex/SKATGO-44-german-seo",
+  "base": "0f774c1363728a26aaa3d771dc80bc29c96abb50",
+  "ports": { "web": 55044, "multiplayer": 56044, "database": 57044 }
+}

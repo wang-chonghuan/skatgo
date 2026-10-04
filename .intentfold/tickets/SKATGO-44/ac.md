@@ -17,3 +17,9 @@ SEO checker must validate each derived canonical, language alternate, unique tit
 ## AC4: External Baseline and Follow-Up
 
 Record the authenticated GSC observations already made, including report dates, German URL inspection statuses and canonical values, without treating delayed GSC metrics as current traffic. Record completed diagnostics separately from post-release URL live tests, sitemap reread and index requests. Release, Google processing and ranking outcomes remain pending, never passed.
+
+User amendment on 2026-10-04: configure both consoles. Observe verified ownership in Google and Bing,
+the exact public DNS record without disturbing existing records, one accepted live sitemap in each
+console, and individual/batch receipts for the German root, course, rules, free-play and daily entries.
+Verify no active URL blocks. Initial production submissions do not verify the unreleased SEO branch
+or prove indexing; record those boundaries in `search-console.md` and `rework.md`.

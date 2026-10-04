@@ -70,6 +70,9 @@ diagnostic origin for DNS and TLS checks. No staging.
 - **Multiplayer data**: a separate paid Render PostgreSQL database; no Redis, persistent
   disk, worker or cron. New resources are API-managed in the existing project/production
   environment, Frankfurt. The backend has its own service hostname and does not change DNS.
+- **Search consoles**: Google uses a verified domain property; Bing uses a separately verified site
+  in the owner's existing account (SKATGO-44). Both receive the same live sitemap. Retain ownership
+  DNS records across application releases; submitting URLs is not proof of indexing.
 
 **Evidence**
 
@@ -252,9 +255,24 @@ The commit guard must still reject an unreleased revision. The SEO check separat
 canonical URLs and missing content; local acceptance is not a claim that production has changed.
 
 After an SEO release, inspect the German root and core entry URLs in Search Console, run its live
-URL test and request indexing for important changed pages. Confirm sitemap reread and watch the
-reported canonical after Google recrawls. Record pending operations and report dates; neither
-sitemap submission nor an index request guarantees indexing, ranking or traffic.
+URL test and request indexing for important changed pages. Submit changed URLs to Bing too. Confirm
+sitemap reread in both consoles and watch the reported canonical after recrawls. Record pending
+operations and report dates; neither sitemap submission nor an index request guarantees indexing,
+ranking or traffic.
+
+**Search consoles**
+
+- Google domain property: `https://search.google.com/search-console?resource_id=sc-domain%3Askatgo.com`.
+  Ownership uses the existing apex `google-site-verification` TXT.
+- Bing site: `https://www.bing.com/webmasters?siteUrl=https://skatgo.com/`.
+  Ownership uses DNS-only CNAME `ca6fc5fd7d1f41d62b788e61032110a4.skatgo.com` -> `verify.bing.com`
+  (TTL 300). This is an independent verification record, not an application hostname.
+- Sitemap submitted to both: `https://skatgo.com/sitemap.xml`.
+- Google: URL Inspection -> request indexing. Bing: URL Submission -> submit the changed entry
+  URLs; Sitemap details -> confirm actual crawl status and URL count. Read existing entries before
+  submitting; do not add alternate sitemap addresses or repeat requests to try to increase priority.
+- User completes sign-in. Do not create API/OAuth keys or import unrelated properties as a shortcut.
+  Verification records must not replace other DNS records or alter proxy status.
 
 **Operations**
 

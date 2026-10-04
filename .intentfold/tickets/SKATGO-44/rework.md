@@ -37,3 +37,29 @@ Actual indexing, ranking and traffic outcomes remain unverified.
 
 No API keys, notification subscriptions, paid resources, account permissions or player data changed.
 No IndexNow automation was introduced. Existing preview services remain available for review.
+
+## Authorized Release Repair
+
+Human ask on 2026-10-04: close the ticket and publish. PR #43 landed as
+`6467c305207d4266842bea488b4cc062e3e6d7e7`. The final mechanical defence passed again.
+After backend closure, that exact web commit deployed successfully; multiplayer was not deployed.
+The post-release checker verified all 32 pages, content, metadata and resources, then correctly
+failed because `/de` and `/de/` returned an absolute HTTP Location behind Render's TLS proxy.
+The ticket was reopened rather than recording this failed release criterion as passed.
+
+This repair uses a same-site relative 301 Location, preserving the visitor's public HTTPS and
+query without trusting proxy headers or changing the infrastructure. The checker retains every
+assertion and now waits for page resources to load before inspecting loaded stylesheets; the
+no-JavaScript document previously raced that observation.
+
+Frozen first-delivery evidence stays unchanged. The replacement worktree retains the original
+baseline and ports, with branch `codex/SKATGO-44-https-redirect`. No dependency, environment,
+game rules, player data or DNS change is required. The repair must pass the mechanical defence
+and same live SEO checker before successful release is reported. Final results belong in the
+backend release comment.
+
+Repair verification: typecheck, production build, 78 tests, 14 client chunks, 93 token-checked
+sources, literal check and SSR linking passed. Headed no-JavaScript acceptance on the built
+web port passed: 32 indexable pages, two noindex links, 36 assets and both negative controls.
+A request with the public Host and forwarded HTTPS header returned 301 with
+`Location: /?source=seo`, independently of the internal HTTP request URL.

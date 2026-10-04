@@ -93,6 +93,7 @@ export async function checkSeo(origin) {
       for (const alternate of Object.values(entry.alternates)) assert.ok(urls.has(alternate), `${entry.loc}: alternate missing from sitemap`)
       const response = await page.goto(local(entry.loc), { waitUntil: 'domcontentloaded' })
       await page.locator('link[rel="stylesheet"][href^="/assets/"]').waitFor({ state: 'attached' })
+      await page.waitForLoadState('load')
       await page.waitForFunction(() => [...document.styleSheets].some((sheet) => sheet.href?.includes('/assets/')))
       const data = await page.evaluate(() => {
         const visible = (element) => {

@@ -13,7 +13,7 @@ Section shape is fixed by `.intentfold/readme.md`.
 
 **What this product is**
 
-An interactive Skat course at skatgo.com, in Chinese, English and German. Eleven lessons take a learner from "what is this
+An interactive Skat course at skatgo.com, in German and English. Eleven lessons take a learner from "what is this
 deck" to a full game: each lesson teaches with cards the learner can touch, then checks with
 exercises that are judged on the spot and explain every wrong answer. Overall progress is visible from
 the course map, and the last lesson is a whole game against two computer players. The aim, in the
@@ -28,18 +28,23 @@ the server's, from the cards actually played.
 Learners from 6 to 99 (the human, 2026-09-21: 「年龄改为6-99岁」; at commissioning it was
 「12岁及其以上的包括成人用户」), who want to be able to sit down at a table with people who already play.
 
+Germany is the primary market. German search entry pages and vocabulary take priority; English
+remains an independent secondary language (human, 2026-10-04, SKATGO-44: 「主要用户应该是德国的，
+英文用户占比百分之一应该」). That percentage is a positioning expectation, not measured traffic.
+
 **What good looks like**
 
 A learner who finishes the progress can play with people who already know the game. On the way, it is
 「不枯燥的」 — they keep going rather than drop out.
 
-<How you would measure that today. Nothing measures it yet: there is no analytics on skatgo.com.>
+PostHog measures published-site visits and product events; Search Console measures Google search
+exposure. Neither alone proves that learners can play, and delayed search reports are not total traffic.
 
 **What this product is not**
 
-- It speaks three languages and no others: Chinese, English and German — the language the learner's
-  browser asks for, and one they can switch to themselves (the human, 2026-09-21: 「三门语言的，多语言，
-  英文，德文，中文，按照浏览器来决定，放到右上角用户可以选」). It launched in Chinese only.
+- It speaks German and English. Chinese was removed in SKATGO-28. Public URLs determine page
+  language, and learners can switch it themselves. The German homepage is stable for every browser,
+  replacing the original browser-selected homepage contract (human-authorized SKATGO-44).
 - It is the course and the daily tournament. When it was split from Parrottoon the instruction was
   「只要课程」: none of Parrottoon's English content, and no link back to Parrottoon. The daily
   tournament was added by the human on 2026-10-01 (SKATGO-35).
@@ -55,4 +60,5 @@ A learner who finishes the progress can play with people who already know the ga
 1. **<What this product must never become>** — forbidden outright. <The removed feature that must not
    come back, the shape it must not take. Keep it detectable: name the route, the file, the
    dependency, so crossing it is visible without judgement.>
-2. **Editing this file** — forbidden outright. Product intent is the human's exclusively.
+2. **Editing this file** — not without the human's explicit approval. Product intent is the human's
+   exclusively; the German-market and SEO corrections here were authorized in SKATGO-44.

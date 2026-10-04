@@ -1,13 +1,9 @@
 import type { paraglideVitePlugin } from '@inlang/paraglide-js'
 
 // i18n (SKATGO-1), as TanStack's own start-i18n-paraglide example wires it: Paraglide compiles
-// messages/*.json into src/paraglide (generated, self-ignored), and every language lives under
-// its own prefix — /en and /de — so each is a separate, indexable page. A request without a
-// prefix is redirected by the server middleware (src/server.ts) to the language src/lib/locale.ts
-// chooses: URL, then the visitor's saved choice, then the browser's first language (German gets German,
-// any other English), then German when the browser names none (SKATGO-23/28/29). Paraglide runs a custom strategy before its built-in ones
-// whatever the order, so `custom-skatgo` carries that whole rule on the server; `url` and `cookie` stay
-// for the browser, where every page already has its prefix and a choice writes the cookie.
+// messages/*.json into src/paraglide (generated, self-ignored). The German homepage is `/`; English
+// stays `/en`. Other pages retain their published language prefixes. Explicit URLs always determine
+// the language, including `/`, regardless of saved preferences (SKATGO-44).
 //
 // Shared by vite.config.ts (dev, build) and vitest.config.ts (tests), so the generated runtime is the
 // same wherever the code runs.
@@ -22,7 +18,7 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
       pattern: '/',
       localized: [
         ['en', '/en'],
-        ['de', '/de'],
+        ['de', '/'],
       ],
     },
     // German pages have German addresses (SKATGO-29): the course, a lesson, the rules and the table.

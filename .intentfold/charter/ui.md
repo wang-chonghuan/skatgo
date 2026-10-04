@@ -225,6 +225,11 @@ Recurring patterns built on native elements — reuse them rather than inventing
 
 **Layout and responsive**
 
+- **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
+  without JavaScript. Free play keeps its full-screen table first, with a scrollable reading section
+  below; the personal daily execution page remains full-screen. Use the current lobby tokens and
+  typography for these reading sections, not hidden keyword text or new decorative containers.
+
 - The frame (`app/src/skat-layout.tsx`): a `feltDeep` header — the brand on the left (the SkatGo
   logo, `logo-96.png` shown at `size.brandMark` and rounded `radius.card`, then the name), and on the
   right the language menu — one native `<select>` drawn as a `radius.round` pill with a ▾, its list in

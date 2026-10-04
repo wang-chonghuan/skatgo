@@ -1,4 +1,4 @@
-import { Outlet } from '@tanstack/react-router'
+import { Outlet, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
 import { AskLauncher } from '~/components/skat/ask'
@@ -17,6 +17,7 @@ import { typography } from './theme/type'
 export function SkatLayout() {
   const frame = useFrame()
   const section = useSection()
+  const freePlay = useRouterState({ select: (s) => s.location.pathname === '/play' })
   // The learner's card colours (SKATGO-27): every suit colour below reads theme/suits.stylex.ts.
   const cardColours = useCardColourTheme()
   if (frame === 'landing') {
@@ -32,7 +33,7 @@ export function SkatLayout() {
   }
   if (frame === 'table') {
     return (
-      <div {...stylex.props(typography.frame, styles.page, styles.table, cardColours)}>
+      <div {...stylex.props(typography.frame, styles.page, freePlay ? styles.freePlay : styles.table, cardColours)}>
         <main {...stylex.props(styles.main)}>
           <Outlet />
         </main>
@@ -66,5 +67,6 @@ const styles = stylex.create({
   landing: { backgroundColor: color.surface },
   // The table is exactly one screen and never scrolls (SKATGO-29).
   table: { height: dims.screenDynamic, minHeight: dims.screenDynamic, overflow: 'hidden', backgroundColor: color.feltOuter },
+  freePlay: { position: 'relative', backgroundColor: color.page },
   main: { flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%', boxSizing: 'border-box' },
 })

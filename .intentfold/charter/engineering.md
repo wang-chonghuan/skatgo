@@ -85,16 +85,15 @@ also built from the repository root. Neither project imports the other's runtime
   `lib/skat`; there are no hand-typed answer keys, so an exercise cannot teach something the game at
   the end contradicts. Hand-written exercises are checked against the engine by
   `lessons/lessons.test.ts`.
-- **Every page of the course renders in the browser only, from one lazily loaded chunk**
-  (`components/skat/client-page.tsx`). Two reasons. Nothing is renderable before the browser has the
-  learner's progress and the random cards. And on this exact stack (Nitro over rolldown), importing a
-  course page statically into a route once produced a server bundle that failed to load at all — an
-  entry chunk exporting a binding it never defined, every page of the site answering 500
-  (Parrottoon, PARROT-42). The mechanical defence below now fails the build that has that defect.
-  Two pages are rendered on the server, for search engines: the front page (`entry-page.tsx`,
-  SKATGO-23) and the course map (`course-home.tsx`, SKATGO-1). Their text is the same for everyone,
-  and they apply the learner's progress after mount; they still reach the routes only through
-  `client-page.tsx`.
+- **Public titles, explanations and navigation render on the server** through
+  `components/skat/client-page.tsx`. Random exercises, game tables and personal tournament state are
+  browser-only, behind `client-part.tsx`; progress is applied after mount. A crawler must not need
+  hydration to read an indexable page. The SSR bundle import check protects against the historical
+  Nitro/rolldown undefined-binding failure (PARROT-42), not a prohibition on static page content.
+- **German-first public addresses** (SKATGO-44): one stable German root, a permanent redirect from
+  the old German homepage, and independent English pages. Paraglide patterns own translated
+  addresses; canonical, page-specific hreflang, internal links and sitemap agree with them.
+  `lib/indexability.ts` owns exclusion of personal execution pages; those routes declare noindex.
 - **The tournament's cards and scores are the server's** (SKATGO-35). The browser receives only seat
   0's view of the current deal (`seatView`): its own hand, what has been played, the skat only once it
   may know it, an Ouvert declarer's hand. A deal is stored as its deck and dealer plus the human's
@@ -176,6 +175,21 @@ npm --prefix app run typecheck && npm --prefix app run build && npm --prefix app
   it was written here.
 
 **Architecture and generation**
+
+**Search surface**
+
+Run against the built server at the acceptance boundary, and against production after release:
+
+```bash
+node app/scripts/check-seo.mjs <origin>
+```
+
+Requires the Playwright installation used for acceptance. If it is outside app node_modules, set
+`PLAYWRIGHT_MODULE` to its resolved package directory. `HEADED=1` opens Chromium visibly. The checker
+parses the live sitemap, derives its pages and language variants, then verifies visible content with
+JavaScript disabled, reciprocal alternates, self-canonical URLs, robots, unique metadata, JSON-LD,
+assets, internal links, stable German root, legacy redirects and unknown-page 404s. Empty derivation
+fails. Deliberately incorrect canonical and empty-content observations must be rejected.
 
 Multiplayer defence (requires an isolated local PostgreSQL; see Operations Tools):
 

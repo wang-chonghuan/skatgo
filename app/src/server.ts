@@ -38,7 +38,8 @@ export default {
     if (url.pathname.startsWith('/api/daily/')) return handleDaily(req)
     if (url.pathname.startsWith('/api/free/')) return handleFree(req)
     const moved = movedTo(url.pathname, url.search)
-    if (moved) return Promise.resolve(Response.redirect(new URL(moved, url), 301))
+    // Keep the public scheme when TLS terminates at the reverse proxy.
+    if (moved) return Promise.resolve(new Response(null, { status: 301, headers: { location: moved } }))
     if (url.pathname === '/sitemap.xml') return Promise.resolve(new Response(buildSitemap(), { headers: { 'content-type': 'application/xml; charset=utf-8' } }))
     return paraglideMiddleware(req, () => handler.fetch(req))
   },

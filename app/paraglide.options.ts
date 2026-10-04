@@ -67,6 +67,20 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
       ],
     },
     {
+      pattern: '/privacy',
+      localized: [
+        ['en', '/en/privacy'],
+        ['de', '/de/datenschutz'],
+      ],
+    },
+    {
+      pattern: '/terms',
+      localized: [
+        ['en', '/en/terms'],
+        ['de', '/de/nutzungsbedingungen'],
+      ],
+    },
+    {
       pattern: '/:path(.*)?',
       localized: [
         ['en', '/en/:path(.*)?'],

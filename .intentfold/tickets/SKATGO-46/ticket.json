@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-46",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-46",
+  "branch": "codex/SKATGO-46-google-login",
+  "base": "5c433ada61a4ad01fc01adf8263cdd6dc998e09d",
+  "ports": {
+    "web": 55046,
+    "multiplayer": 56046,
+    "database": 57046
+  }
+}

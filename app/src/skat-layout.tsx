@@ -2,6 +2,7 @@ import { Outlet, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
 import { AskLauncher } from '~/components/skat/ask'
+import { LegalFooter } from '~/components/skat/legal-page'
 import { AppShell, LandingHeader, Rail, TabBar, useCardColourTheme, useFrame, useSection } from '~/components/skat/frame'
 import { color } from './theme/color.stylex'
 import { dims } from './theme/shape.stylex'
@@ -27,6 +28,7 @@ export function SkatLayout() {
         <main {...stylex.props(styles.main)}>
           <Outlet />
         </main>
+        <LegalFooter />
         <AskLauncher />
       </div>
     )

@@ -8,7 +8,7 @@ import { readProjectKey } from '~/lib/analytics'
 import { clerkAppearance } from '~/lib/clerk-appearance'
 import { LANG_TAG } from '~/lib/site'
 import { m } from '~/paraglide/messages'
-import { getLocale } from '~/paraglide/runtime'
+import { getLocale, localizeHref } from '~/paraglide/runtime'
 import { SkatLayout } from '~/skat-layout'
 import { APP_THEME_MODE, APP_THEME_NAME, appTheme } from '~/theme'
 import { themeColor } from '~/theme/constants'
@@ -88,7 +88,13 @@ function RootDocument({ children, posthogKey }: Readonly<{ children: ReactNode; 
       <body>
         <ProductAnalytics projectKey={posthogKey} />
         {/* Accounts (SKATGO-12): Clerk's provider sits inside <body>, as its docs require. */}
-        <ClerkProvider appearance={clerkAppearance}>
+        <ClerkProvider appearance={{
+          ...clerkAppearance,
+          options: {
+            privacyPageUrl: localizeHref('/privacy'),
+            termsPageUrl: localizeHref('/terms'),
+          },
+        }}>
           <Theme theme={appTheme} mode={APP_THEME_MODE}>
             {children}
           </Theme>

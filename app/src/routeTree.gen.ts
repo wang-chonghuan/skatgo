@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DailyRouteImport } from './routes/daily'
 import { Route as PlayRouteImport } from './routes/play'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RulesRouteImport } from './routes/rules'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CourseIndexRouteImport } from './routes/course.index'
 import { Route as CourseSlugRouteImport } from './routes/course.$slug'
 import { Route as DailyPlayRouteImport } from './routes/daily_.play'
@@ -32,9 +34,19 @@ const PlayRoute = PlayRouteImport.update({
   path: '/play',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RulesRoute = RulesRouteImport.update({
   id: '/rules',
   path: '/rules',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CourseIndexRoute = CourseIndexRouteImport.update({
@@ -57,7 +69,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/daily': typeof DailyRoute
   '/play': typeof PlayRoute
+  '/privacy': typeof PrivacyRoute
   '/rules': typeof RulesRoute
+  '/terms': typeof TermsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/daily/play': typeof DailyPlayRoute
   '/course/': typeof CourseIndexRoute
@@ -66,7 +80,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/daily': typeof DailyRoute
   '/play': typeof PlayRoute
+  '/privacy': typeof PrivacyRoute
   '/rules': typeof RulesRoute
+  '/terms': typeof TermsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/daily/play': typeof DailyPlayRoute
   '/course': typeof CourseIndexRoute
@@ -76,7 +92,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/daily': typeof DailyRoute
   '/play': typeof PlayRoute
+  '/privacy': typeof PrivacyRoute
   '/rules': typeof RulesRoute
+  '/terms': typeof TermsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/daily_/play': typeof DailyPlayRoute
   '/course/': typeof CourseIndexRoute
@@ -87,7 +105,9 @@ export interface FileRouteTypes {
     | '/'
     | '/daily'
     | '/play'
+    | '/privacy'
     | '/rules'
+    | '/terms'
     | '/course/$slug'
     | '/daily/play'
     | '/course/'
@@ -96,7 +116,9 @@ export interface FileRouteTypes {
     | '/'
     | '/daily'
     | '/play'
+    | '/privacy'
     | '/rules'
+    | '/terms'
     | '/course/$slug'
     | '/daily/play'
     | '/course'
@@ -105,7 +127,9 @@ export interface FileRouteTypes {
     | '/'
     | '/daily'
     | '/play'
+    | '/privacy'
     | '/rules'
+    | '/terms'
     | '/course/$slug'
     | '/daily_/play'
     | '/course/'
@@ -115,7 +139,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DailyRoute: typeof DailyRoute
   PlayRoute: typeof PlayRoute
+  PrivacyRoute: typeof PrivacyRoute
   RulesRoute: typeof RulesRoute
+  TermsRoute: typeof TermsRoute
   CourseSlugRoute: typeof CourseSlugRoute
   DailyPlayRoute: typeof DailyPlayRoute
   CourseIndexRoute: typeof CourseIndexRoute
@@ -144,11 +170,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rules': {
       id: '/rules'
       path: '/rules'
       fullPath: '/rules'
       preLoaderRoute: typeof RulesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/course/': {
@@ -179,7 +219,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DailyRoute: DailyRoute,
   PlayRoute: PlayRoute,
+  PrivacyRoute: PrivacyRoute,
   RulesRoute: RulesRoute,
+  TermsRoute: TermsRoute,
   CourseSlugRoute: CourseSlugRoute,
   DailyPlayRoute: DailyPlayRoute,
   CourseIndexRoute: CourseIndexRoute,

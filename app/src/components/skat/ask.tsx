@@ -419,6 +419,7 @@ const styles = stylex.create({
   },
   // At the table the launcher waits at the felt's top right, clear of the hand and the panel's buttons.
   launcherAtTable: {
+    position: 'absolute',
     top: { default: space.x16, [bp.phone]: space.x8 },
     right: { default: space.x16, [bp.phone]: space.x8 },
     bottom: 'auto',

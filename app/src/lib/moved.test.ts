@@ -21,6 +21,12 @@ describe('moved addresses', () => {
   })
 
   it('leaves current addresses alone', () => {
-    for (const path of ['/en', '/de', '/en/course', '/de/kurs', '/en/play', '/de/spielen', '/en/rules', '/de/regeln', '/api/ask']) expect(movedTo(path, '')).toBeNull()
+    for (const path of ['/', '/en', '/en/course', '/de/kurs', '/en/play', '/de/spielen', '/en/rules', '/de/regeln', '/api/ask']) expect(movedTo(path, '')).toBeNull()
+  })
+
+  it('consolidates the German homepage with query preserved', () => {
+    expect(movedTo('/de', '')).toBe('/')
+    expect(movedTo('/de/', '?source=search')).toBe('/?source=search')
+    expect(movedTo('/en/', '?source=search')).toBe('/en?source=search')
   })
 })

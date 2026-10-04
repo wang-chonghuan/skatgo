@@ -6,6 +6,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "start": "node .output/server/index.mjs",
+    "check:seo": "node scripts/run-seo.mjs",
+    "test:seo": "node --test scripts/seo.test.mjs",
     "test": "vitest run",
     "typecheck": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide && tsc --noEmit"
   },
@@ -40,6 +42,7 @@
     "@vitejs/plugin-react": "^6.0.5",
     "lucide-react": "^1.31.0",
     "nitro": "^3.0.260610-beta",
+    "playwright": "1.63.0",
     "typescript": "^7.0.2",
     "vite": "^8.2.1",
     "vitest": "^4.1.10"

@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-45",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-45",
+  "branch": "codex/SKATGO-45-seo-check",
+  "base": "6d6e4f0c4b9aeb37a8085ee10d7b977234ce31de",
+  "ports": {
+    "web": 55045,
+    "multiplayer": 56045,
+    "database": 57045
+  }
+}

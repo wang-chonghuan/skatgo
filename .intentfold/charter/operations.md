@@ -86,6 +86,7 @@ Code inspection alone is not evidence that behavior works.
 
 ```bash
 npm --prefix app install
+npm --prefix app exec -- playwright install chromium
 ```
 
 **Run locally**
@@ -143,8 +144,8 @@ npm --prefix app run build
 
 **Acceptance**
 
-- **A scripted browser (Playwright), headed** — the default for every UI criterion. Install with
-  `npx playwright install chromium`; run scripts from `.intentfold/tickets/<ticket-id>/tmp/` so their
+- **A scripted browser (Playwright), headed** — the default for every UI criterion. Use the app's
+  pinned Playwright and Chromium installation above; run scripts from `.intentfold/tickets/<ticket-id>/tmp/` so their
   artifacts stay uncommitted.
 - **Viewports**: desktop **1280×820** and phone **375×812** with `isMobile` and `hasTouch`. A UI
   criterion is checked at both.
@@ -226,7 +227,7 @@ deploys remain disabled. Provisioning writes only the new service/database.
 
 The deploy command exiting 0 is not confirmation — Render can report success while an old deploy keeps
 serving. First verify the release identity, then run Engineering's search-surface checker against
-the live site. It derives pages and alternates from the served sitemap and checks stable addresses,
+the live site. It compares the served sitemap with source-derived pages and checks stable addresses,
 content, metadata, redirects, 404s and built assets without JavaScript:
 
 ```bash
@@ -246,7 +247,7 @@ if [ "$got" != "$want" ]; then
   exit 1
 fi
 
-node app/scripts/check-seo.mjs "$URL" || exit 1
+npm run check:seo -- "$URL" || exit 1
 printf 'OK: live search surface, serving %s\n' "$got"
 BASH
 ```

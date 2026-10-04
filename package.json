@@ -1,0 +1,8 @@
+{
+  "name": "skatgo-commands",
+  "private": true,
+  "scripts": {
+    "check:seo": "npm --prefix app run check:seo --",
+    "test:seo": "npm --prefix app run test:seo --"
+  }
+}

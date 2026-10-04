@@ -207,7 +207,7 @@ patterns derive coverage without a second hand-written page list. The checker ve
 SSR content, reciprocal alternates, self-canonical URLs, Googlebot/Bingbot robots, unique metadata,
 JSON-LD, assets, internal links, stable German root, proxy-safe redirects, noindex personal pages and
 404s. Empty or incomplete derivation fails. `npm run test:seo` exercises actual broken HTTP responses,
-not only validator objects. See [SEO check usage](../../app/scripts/README.md).
+not only validator objects. See [SEO check usage](../../../app/scripts/README.md).
 
 Passing proves the rendered contract, not actual indexing, Google-selected canonical, rankings,
 traffic, console configuration or DNS ownership; the command never submits indexing requests.

@@ -56,7 +56,9 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 **Structure**
 
 `app/` is a **standalone project** — its own `package.json`, lockfile and `node_modules`. The repo
-root has none; it holds the `Dockerfile`, whose build context is the repo root.
+root has only a private, dependency-free npm command dispatcher (SKATGO-45, human-approved
+2026-10-04), not a workspace or runtime package; it also holds the `Dockerfile`, whose build context
+is the repo root.
 `multiplayer/` is another standalone npm project with its own lockfile and Dockerfile,
 also built from the repository root. Neither project imports the other's runtime.
 
@@ -152,7 +154,8 @@ Run once before the handoff. Each part catches a different class of defect:
 npm --prefix app run typecheck && npm --prefix app run build && npm --prefix app run test && \
   node app/scripts/check-client-bundle.mjs && node app/scripts/check-design-tokens.mjs && \
   test "$(git grep -nE 'className=|style=\{\{|#[0-9a-fA-F]{6}' -- app/src ':(exclude)app/src/theme/**' | wc -l | tr -d ' ')" = 0 && \
-  node -e "import('$PWD/app/.output/server/_ssr/ssr.mjs').catch((e) => { console.error('server bundle does not link:', e.message); process.exit(1) })"
+  node -e "import('$PWD/app/.output/server/_ssr/ssr.mjs').catch((e) => { console.error('server bundle does not link:', e.message); process.exit(1) })" && \
+  npm run check:seo -- --built && npm run test:seo
 ```
 
 - **`typecheck`** — Vite compiles without typechecking; a prop or token that does not exist builds and
@@ -173,23 +176,41 @@ npm --prefix app run typecheck && npm --prefix app run build && npm --prefix app
 - **the import** — links the built server's SSR chunk. It is what catches the 500-everywhere build
   described under Key decisions; it was made to go red against the defective PARROT-42 build before
   it was written here.
+- **`check:seo -- --built`** — inspects the current checkout's production build from the preceding
+  `build`, in an owned loopback preview with JavaScript disabled. No existing listener is reused.
+  `test:seo` proves representative HTTP-response regressions fail and process ownership is respected.
 
 **Architecture and generation**
 
 **Search surface**
 
-Run against the built server at the acceptance boundary, and against production after release:
+From the repository root or `app/`, inspect current code without starting a server manually:
 
 ```bash
-node app/scripts/check-seo.mjs <origin>
+npm run check:seo
 ```
 
-Requires the Playwright installation used for acceptance. If it is outside app node_modules, set
-`PLAYWRIGHT_MODULE` to its resolved package directory. `HEADED=1` opens Chromium visibly. The checker
-parses the live sitemap, derives its pages and language variants, then verifies visible content with
-JavaScript disabled, reciprocal alternates, self-canonical URLs, robots, unique metadata, JSON-LD,
-assets, internal links, stable German root, legacy redirects and unknown-page 404s. Empty derivation
-fails. Deliberately incorrect canonical and empty-content observations must be rejected.
+Playwright is pinned in app devDependencies. Install Chromium as Operations Tools says.
+`HEADED=1` opens Chromium visibly. The default builds current code, starts only its own production
+server, waits for readiness, checks it, and cleans up on completion/failure/interruption. It uses the
+recorded ticket/main web port or a free port in the configured web block, never an existing listener.
+`--built` is only for callers that just built this checkout, such as the defence above.
+
+```bash
+npm run check:seo -- <origin>
+```
+
+Explicit-origin mode is read-only and does not build, start, stop or deploy that server. It still
+compares against the current source inventory, so production acceptance requires Operations' exact
+release-identity guard first. Routes, sitemap registry, lesson guides, indexability and language
+patterns derive coverage without a second hand-written page list. The checker verifies visible
+SSR content, reciprocal alternates, self-canonical URLs, Googlebot/Bingbot robots, unique metadata,
+JSON-LD, assets, internal links, stable German root, proxy-safe redirects, noindex personal pages and
+404s. Empty or incomplete derivation fails. `npm run test:seo` exercises actual broken HTTP responses,
+not only validator objects. See [SEO check usage](../../app/scripts/README.md).
+
+Passing proves the rendered contract, not actual indexing, Google-selected canonical, rankings,
+traffic, console configuration or DNS ownership; the command never submits indexing requests.
 
 Multiplayer defence (requires an isolated local PostgreSQL; see Operations Tools):
 

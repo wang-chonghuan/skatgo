@@ -54,7 +54,7 @@ export function DailyEntry() {
             <Panel>
               <section data-testid="daily-so-far" {...stylex.props(styles.result)}>
                 <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_vs_ai_title()}</h2>
-                <VsAiTable deals={status.deals} benchmarks={status.benchmarks} />
+                <VsAiTable deals={status.deals} benchmarks={status.benchmarks} openLatest />
               </section>
             </Panel>
           ) : null}

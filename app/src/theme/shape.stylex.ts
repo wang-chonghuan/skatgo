@@ -157,9 +157,10 @@ export const dims = stylex.defineVars({
   half: '50%',
   oneColumn: '1fr',
   twoColumns: '1fr 1fr',
-  /** The daily table of you against the AI (SKATGO-42): the deal's number in a fixed column (every row
-   *  is its own grid, so the columns line up only if none sizes to its content), then two equal ones. */
-  vsAiColumns: '3.5em minmax(0, 1fr) minmax(0, 1fr)',
+  /** The daily table of you against the AI (SKATGO-42, SKATGO-48): the deal's number, you and the AI in
+   *  two equal columns, then the difference with the row's chevron. Every row is its own grid, so the
+   *  columns line up only if none sizes to its content. */
+  vsAiColumns: '2em minmax(0, 1fr) minmax(0, 1fr) 5em',
   /** The front page's hero: the headline two thirds, the picture one third (the human, SKATGO-29). */
   heroColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
   contractColumns: 'repeat(6, 1fr)',

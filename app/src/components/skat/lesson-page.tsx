@@ -12,7 +12,6 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ClientPart, LessonPlayer } from './client-part'
-import { Band } from './frame'
 import { Rich } from './ui'
 
 /**
@@ -34,8 +33,8 @@ export function LessonPage() {
   const section = RULES[locale].sections.find((s) => s.id === guide.rule)
   return (
     <>
-      <Band title={guide.h1} back="/course" />
       <section data-testid="lesson-intro" {...stylex.props(styles.intro)}>
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{guide.h1}</h1>
         <p {...stylex.props(typography.panelLabel, styles.kicker)}>{m.lesson_kicker({ n: lesson.id, count: course.length, minutes: lesson.minutes })}</p>
         {guide.intro.map((text) => (
           <p key={text} {...stylex.props(typography.appText, styles.text)}>
@@ -75,6 +74,7 @@ const styles = stylex.create({
     paddingTop: { default: space.x32, [bp.phone]: space.x16 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
+  title: { margin: 0, color: color.navy },
   kicker: { margin: 0, color: color.slate },
   text: { margin: 0, color: color.text },
   // Two plain links, one per line: a lesson's title can be long, and a link wraps where a button cannot.

@@ -21,7 +21,9 @@ human's words: 「只要进度走完，就能短时间把skat学会，学到可�
 
 A daily Skat tournament at `/daily`: every day the same 12 deals for every player, each played
 against two computer players and scored by Seeger-Fabian; one entry per player per day; scores are
-the server's, from the cards actually played.
+the server's, from the cards actually played. After each deal the player sees how the computer played the same deal
+from their seat — its contract, declarer and score, the computer named "AI" — and a table of both
+results grows by one row per deal, also on the day's page and its result (SKATGO-42).
 
 **Who it is for**
 

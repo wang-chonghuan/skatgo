@@ -7,7 +7,9 @@ alternatives to what is written here. Section shape is fixed by `.intentfold/rea
 > The design system below was extracted from the running code on 2026-09-27 (SKATGO-18) as the
 > binding reference for large-scale development (「当前的风格就可以」), and turned into tokens the same
 > day (SKATGO-19, 「把一切都token化」): every design value now lives in a registry under
-> `app/src/theme/`, and product code names it.
+> `app/src/theme/`, and product code names it. The lobby design (SKATGO-26) replaced that look; this
+> file was brought up to date with the code on 2026-10-05 (SKATGO-47, the human: 「都在这个工单里一起
+> 改掉」).
 
 ## Contract
 
@@ -19,20 +21,18 @@ order underneath. There is no utility-CSS framework and no hand-written componen
 
 **Where components live**
 
-`app/src/components/skat/`. The course has **its own small kit** in `ui.tsx` (`Btn`, `Panel`, `Pill`,
-`ProgressBar`, `Stars`, `Rich`) and renders on native elements styled with StyleX; it uses no Astryx
-components. That was deliberate when the course was built: an Astryx control follows the app theme's
-light/dark mode, while the course's palette is fixed, and a dark-mode control on cream paper is
-unreadable. A new widget reuses the kit first.
+`app/src/components/skat/`. The product has **its own small kit** in `ui.tsx` and renders on native
+elements styled with StyleX; it uses no Astryx components, whose colours follow the app theme's
+light/dark mode while this palette is fixed. A new widget reuses the kit first.
 
 Two third-party components draw their own markup and styles, both approved by the human: **deep-chat**
 (the assistant's chat body, SKATGO-9) and **Clerk**'s sign-in window and account menu (SKATGO-12).
-What the course controls is what it hands them — course tokens only, in
-`components/skat/ask-thread.tsx` and `lib/clerk-appearance.ts` — and the shell around them, which is
-the kit. Tokens reach them as CSS variables, which inherit into deep-chat's shadow root. Clerk's
-windows stay in English; the human chose not to add its translation package. Icons come from
-**lucide-react** and appear only in the assistant (the launcher, the window header and the send
-button); the course itself uses emoji and the suit symbols instead of icons.
+What the product controls is what it hands them — tokens only, in `components/skat/ask-thread.tsx`
+and `lib/clerk-appearance.ts` — and the shell around them, which is the kit. Tokens reach them as CSS
+variables, which inherit into deep-chat's shadow root. Clerk's windows stay in English; the human
+chose not to add its translation package. Icons are **lucide-react** outline icons at the sizes in
+`icon` (`constants.ts`): the header's menu, language and settings controls, the table's side panel and
+edge tabs, an exercise's controls, and the assistant. Suits are the text glyphs ♣ ♠ ♥ ♦, never icons.
 
 **Token registries — the only place a design value is written**
 
@@ -41,220 +41,217 @@ breakpoint of its own; `check-design-tokens.mjs` (Tools) fails the build otherwi
 
 | File | Exports | Owns |
 |---|---|---|
-| `skat.stylex.ts` | `skat` | the palette (`defineVars`) |
+| `color.stylex.ts` | `color` | the palette (`defineVars`) |
+| `suits.stylex.ts` | `suit`, `fourColours`, `twoColours` | the suits' colours in the three schemes the learner chooses between (SKATGO-27) |
 | `breakpoints.stylex.ts` | `bp` | media-query keys (`defineConsts` — a media query cannot read a variable) |
-| `scale.stylex.ts` | `space`, `radius`, `border`, `size`, `opacity`, `layer` | spacing, corners, border widths, component dimensions and geometry, opacity, stacking |
-| `effects.stylex.ts` | `shadow`, `texture`, `move`, `timing` | shadows, felt gradients and the card back, transforms, CSS transition timing |
+| `scale.stylex.ts` | `space`, `border`, `opacity`, `layer` | spacing, border widths, opacity, stacking |
+| `shape.stylex.ts` | `radii`, `dims` | corner radii; component dimensions and geometry |
+| `elevation.stylex.ts` | `elev`, `fill`, `pose`, `veil` | shadows, fills (the felt, the card back, filters), transforms of the card art and the table, a tile's veil |
+| `effects.stylex.ts` | `move`, `timing`, `layerHint` | where a thing rests, is pressed or rises; CSS transition timing; the compositing hint for things that move (SKATGO-41) |
+| `table.stylex.ts` | `stageUnit`, `stage` | the card table's stage, measured in one unit that follows the felt's room (SKATGO-34) |
 | `type.stylex.ts` | `family`, `fontSize`, `weight`, `leading` | typography primitives — used only by `type.ts` |
 | `type.ts` | `typography` | the typography roles product code picks from |
-| `constants.ts` | `phoneQuery`, `themeColor`, `icon`, `stepSlide`, `deal`, `playIn`, `trick`, `finish`, `shake`, `confettiBurst` | values for code that cannot read a CSS variable: `matchMedia`, the `theme-color` meta, lucide sizes, `motion` and `canvas-confetti` |
+| `constants.ts` | `phoneQuery`, `pinnedQuery`, `themeColor`, `icon`, `stepSlide`, `deal`, `cardIndex`, `playIn`, `trick`, `finish`, `shake`, `drawer`, `confettiBurst` | values for code that cannot read a CSS variable: `matchMedia`, the `theme-color` meta, lucide sizes, SVG attributes, `motion` and `canvas-confetti` |
+| `flags.tsx`, `icons.tsx` | `FlagUS`, `FlagDE`; the Astryx icon registry | the language menu's flags; the icons the Astryx theme is built with |
 | `parrottoonTheme.ts` | the Astryx theme, compiled to `parrottoon.{css,js,d.ts}` | the reset and prose defaults underneath (the name is historical) |
 
 The registry holds the value and a comment saying what it is for; this file holds the rules for
 choosing. Read the registry for any value.
 
-**The look: a card room**
+**The look: the lobby design** (SKATGO-26, after Funbridge; measured in
+`.intentfold/tickets/SKATGO-26/reference.md`)
 
-Green baize, cream paper, brass. Every screen is built from four surfaces, and each surface decides
-its text colour:
+A light grey page with white surfaces, navy titles and slate secondary text; one action green; the
+sections as colour tiles; and the card table as a dark green felt at any hour. The palette is one
+fixed light palette, not a light/dark pair.
 
 | Surface | What it is | Built from | Text on it |
 |---|---|---|---|
-| **Page** | the reading column | `skat.paper` | `skat.ink` |
-| **Felt** | where cards lie — the whole-game table, a drill's hand, the course map's hero, the front page's section cards | `skat.felt` under `texture.feltTable` / `feltDrill` / `feltHero`; the table and drills add `shadow.table` / `shadow.feltInset` | `skat.white` |
-| **Deep felt** | the header bar, the assistant window's header, a seat at the table | `skat.feltDeep` | `skat.white` |
-| **Paper on felt** | a light box set on felt — the table's action area, the map's progress box, a bid bubble | `skat.paper` | `skat.ink` |
+| **Page** | every sub-page's background; the front page's is white | `color.page` (front page `color.surface`) | `color.text`, titles `color.navy`, secondary `color.slate` |
+| **Header** | the public site's white bar over every page but the tables | `color.surface`, `elev.landingHeader` | `color.navy`, links `color.slate` |
+| **Option card** | a white card on the page: a lesson, the course's progress, the tournament's board and results, a panel | `color.surface`, `radii.option`, `elev.option` (the featured one `elev.optionFeatured`) | `color.navy` / `color.slate` |
+| **Colour tile** | a section on the front page: ♣ the course (`tileOrange`), ♠ free play (`tileGreen`) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
+| **Felt** | where cards lie: the table, a drill's hand | `fill.felt` (`feltInner` → `feltOuter`, with a fine grain) | `color.onColor`; highlights `color.gold` / `color.amber` |
+| **Board and plates** | the table's info board, the seat plates, dark pills | `color.board` with `color.boardLine`; `color.plate` | `color.onColor`, quieter `color.onColorSoft` |
+| **Footer** | the legal links under every header page (SKATGO-46) | `color.surface` with a `hairline` rule | links in `color.info` |
 
-Interactive tiles on the page — a lesson card, an answer option, a contract button, a toggle — are
-`skat.white` with a `skat.paperEdge` border, so they stand off the cream page.
+**Colour roles** (`color`)
 
-**Colour roles** (`skat`, one fixed palette, deliberately not a light/dark pair: a card table is green
-at any hour and the cards must stay paper-white)
-
-| Token | Role |
+| Tokens | Role |
 |---|---|
-| `felt` | the table surface; hover of a felt control |
-| `feltDeep` | header bars, seats, the table's inset ring, the ledge under a felt button |
-| `feltLight` | the lit centre of a felt gradient; a felt button's face |
-| `feltLine` | the lit edge of a shape pressed into felt (`shadow.emboss`) |
-| `paper` | the page and every paper box |
-| `paperDeep` | quiet surfaces on paper: a quiet button, an ink pill, the assistant's answer bubble, hover behind a round icon |
-| `paperEdge` | borders and rules on paper; a progress track; the ledge under quiet buttons and options; an unearned star |
-| `ink` | primary text on paper |
-| `inkSoft` | secondary text: leads, notes, captions, counts |
-| `inkFaint` | tertiary text: minutes, placeholders |
-| `brass` | the one call to action; highlights, focus rings, the current state, earned stars, the progress fill |
-| `brassDeep` | the ledge under a brass button; a chosen tile's border; card-row captions |
-| `brassSoft` | tip panels, a chosen tile's fill, the lesson emoji tile, the learner's own chat bubble |
-| `red` | the red suits (♥ ♦) in text, and the card back |
-| `good` / `goodSoft` | a right answer: border / fill — and nothing else |
-| `bad` / `badSoft` | a wrong answer or a refusal: border / fill — and nothing else |
-| `white` | text on felt; the face of cards and interactive tiles |
-| `shadow` | a card's own shadow; a floating window's shadow |
-| `shadowSoft` | hover lift; the launcher's drop shadow; the hatching on a card back |
-| `glow` | the halo around a glowing (hinted or winning) card |
-| `scrim` | reserved for dimming the page behind an overlay (defined, not yet used) |
+| `page`, `surface`, `hairline` | the page, white surfaces, rules and borders (`footer` is kept without a current use) |
+| `text`, `navy`, `slate`, `slateDeep`, `onColor` | body text, titles and links, secondary text, a darker slate (the slate button), text on colour or felt |
+| `go` | the one call to action, and the current state; `goLanding` is the public site's own green on its landing buttons |
+| `info` | links in text, the hint button, the focus ring |
+| `stop` | leaving the table |
+| `tileGreen`, `tileOrange`, `tileIndigo`, `tileTeal`, `tileSoon` | section tiles; `tileSoon` for a section not open yet |
+| `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `cardBack`, `cardBackLight`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
+| `good` / `goodSoft`, `bad` / `badSoft` | a right / wrong answer: border / fill — and nothing else |
+| `suitRed` | ♥ and ♦ in text where no suit scheme applies |
+| `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
+| `scrim`, `topBar`, `tileVeil` | overlays |
 
-The browser's toolbar colour on phones is `themeColor` (`constants.ts`), the header's `feltDeep`.
+The browser's toolbar colour on phones is `themeColor` (`constants.ts`), the header's white.
 
-**Typography**
+**Suit colours** (`suits.stylex.ts`, SKATGO-27)
 
-Product code picks a **role** from `typography` (`type.ts`) and never sets `fontFamily`, `fontSize`,
-`fontWeight` or `lineHeight` itself. A role fixes family, size (and its phone size), weight and, where
-the design sets one, leading; a role without a leading keeps the one it sits in. Colour is not part of
-a role — the surface decides it.
+Three schemes, chosen in the header's settings: German Skat (the default — ♣ black, ♠ green, ♥ red,
+♦ gold), four colours, and two colours as the deck is printed. `suit.card*` colours a card face's pips
+and corner index; `suit.text*` colours a suit glyph in running text, where a black suit takes the
+text's own colour so it stays legible on white and on felt. The chosen theme is applied on the frame's
+root after mount.
 
-| Roles | For |
-|---|---|
-| `hero`, `stepTitle` | the course map's title and a teaching step's title — the display serif (`family.display`) |
-| `finishTitle`, `pageTitle`, `resultTitle` | the finish screen, the game step and free play, the settlement — the heading stack (`family.heading`) |
-| `brand`, `cardTitle`, `contract`, `name`, `windowName`, `bid`, `badge` | names and titles inside the UI |
-| `prompt` | the question of an exercise |
-| `body`, `bodySmall` | reading text (`leading.reading`) |
-| `say`, `note`, `context`, `loading` | the table's running line, notes in panels, context lines, the loading line |
-| `link`, `small`, `meta`, `smallBold`, `switch`, `label`, `pill`, `micro`, `windowSub`, `verdictMark` | small text: links, counts, captions, labels under cards, pills, seat meta |
-| `control`, `controlSm`, `controlMd`, `controlLg`, `option`, `toggle` | native controls (they restate the family, which controls do not inherit) |
-| `emphasis` | `**bold**` inside course text |
-| `stars`, `closeGlyph`, `markGlyph`, `seatFace`, `emojiTile`, `celebrate`, `watermark` | emoji and glyphs sized as pictures; `watermark` is the suit pressed into a front-page card |
-| `frame` | the frame's family, which everything inside inherits |
+**Typography** (`type.stylex.ts`, `type.ts`)
 
-The primitives behind the roles (`type.stylex.ts`): families `body` (DM Sans with CJK fallbacks),
-`display` (Fraunces with Songti), `heading` (the Astryx heading stack); sizes `f12`–`f88`; weights
-`regular`, `semibold`, `bold` — only weights the page actually loads; leadings `glyph`, `tight`,
-`control`, `compact`, `reading`. A new combination is a new role in `type.ts`, never an inline style.
+Product code picks a **role** from `typography` and never sets `fontFamily`, `fontSize`, `fontWeight`
+or `lineHeight` itself. A role fixes family, size (and its phone size), weight and, where the design
+sets one, leading. Colour is not part of a role — the surface decides it.
 
-**Shape** (`radius`, `border`)
+- **Families**: one geometric sans, **Red Hat Display**, for everything (`family.body`, `display`,
+  `heading` are the same face); **Bebas Neue** (`family.numeral`) only for Reizen values, "Passe" and the
+  table's numbers. It has a single weight.
+- **Weights** (SKATGO-47): two by purpose — `weight.text` (500) for reading text: paragraphs,
+  explanations, leads, table rows; `weight.ui` (600) for controls, navigation, links, labels and meta:
+  buttons, pills, the table's names and small lines. Titles, emphasis and the large numbers keep
+  `bold` (700) to `black` (900). `regular` (400) is only Bebas Neue's. **Every text role states its
+  weight**: the Astryx theme sets `<p>` and `<small>` to 400 itself, so a weight a role leaves out is 400,
+  not the frame's. The frame's default is `weight.text`.
+- **Sizes** are named by their px (`f12` … `f200`, and the reference's measured sizes such as `f19_6`);
+  **leadings** `glyph`, `tight`, `control`, `compact`, `reading`, `ui`.
+- **Roles**, by where they are used:
+  - the public site: `landingHero`, `landingHeroLead`, `landingTitle`, `landingLead`, `landingBrand`,
+    `landingHeading` (the h1 of every sub-page, and the front page's section headings), `landingBody`,
+    `landingNav`, `landingBtn`, `landingCta`, `landingStat`;
+  - the app's pages: `appText`, `appBtn`, `appBtnStrong`, `appLink`, `optionTitle`, `optionDesc`,
+    `tileTitle`, `tileSub`, `sectionTitle`, `panelLabel`, `dialogTitle`, `greeting`, `greetingName`,
+    `countBadge`;
+  - the course and its exercises: `hero`, `stepTitle`, `finishTitle`, `pageTitle`, `resultTitle`,
+    `prompt`, `body`, `bodySmall`, `say`, `note`, `context`, `loading`, `emphasis` (**bold** in course
+    text), `link`, `small`, `meta`, `smallBold`, `label`, `pill`, `micro`, `badge`, `toggle`, `option`,
+    `control*`, and `brand`, `cardTitle`, `switch` (kept in the registry, without a current use);
+  - the assistant's window: `windowName`, `windowSub`;
+  - the card table: `railLabel` (the side panel's tab labels), `plateName`, `roleTag`, `tricksLabel`, `tableStatus`, `auctionHead`, `bidNumeral`,
+    `bidChip`, `contractTile`, `infoLabel`, `infoValue`, `infoNumber`, `infoSub`, `contract`, `name`,
+    `bid`;
+  - glyphs sized as pictures: `stars`, `closeGlyph`, `markGlyph`, `seatFace`, `verdictMark`, `watermark`;
+  - `frame`: the family and default weight everything inside inherits.
 
-| Radius | Used for |
-|---|---|
-| `round` | buttons, pills, the progress bar, toggles, round icon buttons, the launcher, number badges |
-| `stage` | the big felt surfaces: the course map's hero, the game table |
-| `felt` | a drill's felt |
-| `panel` | panels, lesson cards, the progress box, the table's action area |
-| `window` | the assistant window (`0` as a full-screen phone sheet) |
-| `tile` | answer options, contract buttons, seats, the lesson emoji tile, chat bubbles and input |
-| `control` | a bid bubble; Clerk's windows |
-| `card` / `cardSm` / `cardXs` | playing cards (`md`/`lg` / `sm` / `xs`) and the header logo (`card`) |
+  `bandTitle` and `bandBack` are kept in the registry without a current use: the band they styled was
+  removed in SKATGO-47. A new combination is a new role in `type.ts`, never an inline style.
 
-Border widths: `border.hair` for a panel, the assistant window, a toggle and the chat input;
-`border.tile` for interactive tiles; `border.frame` for a card back's white frame. Focus rings are
-`border.focus` offset `border.focusOffset` (`focusSm` / `focusOffsetSm` in the header).
+**Shape** (`radii`, `border`)
 
-**Spacing** (`space`, named by size: `x2 x4 x6 x8 x10 x12 x14 x16 x18 x20 x24 x28`, and `x40`, `x80` for
-the vertical room of the finish and loading screens)
+`radii.pill` for the app's buttons and pills, `landingBtn` for the public site's buttons, `tile` for
+colour tiles, `option` for option cards, `dialog` for dialogs, `panel` for the table's side panel, its
+tabs and block buttons, `column` for an auction column, `tag` for a seat's role tag, `card` / `cardSm` /
+`cardXs` for playing cards, `round` for round things. Borders: `border.hair` for panels and inputs,
+`border.tile` for interactive tiles, `border.frame` for a card back's frame; the focus ring is
+`border.focus` offset `border.focusOffset` (`focusSm` / `focusOffsetSm` on small header controls).
 
-| Where | Desktop | Phone |
-|---|---|---|
-| Reading column padding (block / inline) | `x28` / `x24` | `x16` / `x12` |
-| Header padding (block / inline) | `x12` / `x24` | `x12` / `x14` |
-| Hero padding | `x28` | `x18` |
-| Panel padding | `x20` | `x16` |
-| Felt padding (drill / table) | `x16` | `x8` / `x10` |
-| Gap between page sections | `x18`–`x24` | same |
-| Gap inside a stack of content | `x12`–`x16` | same |
-| Gap in a row of controls or a list | `x10` | same |
-| Gap among pills, chips, small cards | `x6`–`x8` | same |
+**Spacing and dimensions** (`space`, `dims`)
 
-Component dimensions and geometry — card widths, fan slots, the reading column, the launcher, the
-window, the table centre, trick positions, overlaps, grid templates — are named in `size`.
+Spacing steps are named by their px (`space.x2` … `x80`, with the reference's `x15`, `x27`, `x32`,
+`x48`, `x72`). Component dimensions — the header, the reading column (`dims.readingColumn`) and the
+wider page column (`dims.pageColumn`), controls, card sizes and slots, the table's panel and drawer,
+grid templates — are named in `dims`; the table's stage in `stage` (`table.stylex.ts`).
 
-**Elevation** (`shadow`, `move`)
+**Elevation and motion** (`elev`, `fill`, `pose`, `move`, `timing`, `layer`, `layerHint`)
 
-- **Ledge** — `shadow.ledgePrimary` / `ledgeQuiet` / `ledgeFelt` / `ledgeBrass` / `ledgeOption`: the
-  solid shadow that makes a button or the current lesson card look pressable. Pressing moves it
-  `move.press`; at rest it is `move.rest`.
-- **Lift** — on hover a tile rises `move.lift` with `shadow.lift`; a clickable card rises
-  `move.cardHover`, a selected one sits at `move.cardRaised` with `shadow.cardRaised`.
-- **Card** — every playing card carries `shadow.card`; a hinted or winning one `shadow.cardGlow`; a
-  judged one `shadow.verdictGood` / `verdictBad`.
-- **Pressed in** — a shape set into the felt, lit on its upper-left edge and shadowed on its lower-right:
-  `shadow.emboss`, on the front page's suit watermarks.
-- **Float** — the assistant window, `shadow.float`; the launcher, `shadow.launcher`; the game table,
-  `shadow.table`. What floats is stacked by `layer`.
+- Every coloured surface casts a shadow in its own colour (`elev.tile*`, `elev.btn*`); white cards
+  `elev.option` / `optionFeatured`; floating panels `elev.panel`; playing cards `elev.card`, a raised
+  one `elev.cardRaised`, a glowing (hinted or winning) one `elev.cardGlow`, a judged one
+  `elev.verdictGood` / `verdictBad`.
+- A tile rises `pose.lift` on hover; a clickable card `move.cardHover`, a selected one `move.cardRaised`;
+  a pressed button `move.press`.
+- **Things that move over the felt** (SKATGO-41): a flying card carries `layerHint.moving` while it
+  moves, so the browser moves a finished bitmap instead of repainting the felt under it; a card at rest
+  in the trick sits on `move.ownLayer`, drawn at its final size and sharp. The felt's own backdrop is a
+  separate element at `layer.backdrop` inside an isolated felt, so nothing that moves repaints it.
+- **Transitions** (`timing`): `press`, `tile`, `card`, `progress`, eased `easeOut`; under
+  `bp.reducedMotion` every transition is `timing.instant`, and animations follow motion's
+  `MotionConfig reducedMotion="user"` (SKATGO-29).
+- **Animations** (`constants.ts`, for `motion`): a lesson step slides by `stepSlide`; cards are dealt by
+  `deal`; a drill's played card rises by `playIn`; a played card flies onto the table by `trick`; the
+  side panel's drawer rises by `drawer`; the finish emoji springs in by `finish`; a wrong answer shakes
+  by `shake`.
+- **Celebration** (`confettiBurst`): on finishing a lesson and on winning a game — nowhere else.
+- Stacking: `layer.launcher` for the header and the assistant's launcher, `layer.window` for its window,
+  menus and dialogs.
 
 **Components — the kit (`ui.tsx`)**
 
 | Component | Variants | Use it for |
 |---|---|---|
-| `Btn` | tone `primary` (brass, the one main action), `quiet` (paperDeep: back, pass, secondary), `felt` (feltLight: hints, checks, actions that belong to the table, sign-in on the header), `danger` (badSoft; available, not yet used); size `sm` / `md` / `lg`; `grow`; `disabled` | every action |
-| `linkLook(tone, size)` | the same tones and sizes as `Btn`, for a router `<Link>` | navigation that looks like a button: an action is a `Btn`, navigation is a link |
-| `Panel` | tone `paper`, `tip` (brassSoft, with 💡), `good`, `bad`; `pad` | tips, feedback on an answer, a refusal, a settlement |
-| `Pill` | tone `felt` (on felt: facts and state), `brass` (the contract, whose turn it is, who took the trick), `ink`, `good` | short facts, never actions |
+| `Btn` | tone `go` (the one main action), `quiet` (white: secondary), `info` (hints), `stop` (leaving the table), `slate`; shape `pill` (the app's buttons), `block` (the table's full-width buttons), `landing` (the public site's, heavier type); size `sm` / `md` / `lg`; `grow`; `disabled` | every action |
+| `linkLook(tone, size, shape)` | the same tones, sizes and shapes as `Btn`, for a router `<Link>` | navigation that looks like a button: an action is a `Btn`, navigation is a link |
+| `Panel` / `Tip` | tone `card` (white), `tip` (white with an amber border), `good`, `bad`; `pad` | tips, feedback on an answer, a refusal, a settlement |
+| `Pill` | tone `quiet`, `go`, `good`, `dark`, `amber` | short facts, never actions |
 | `ProgressBar` | `value`, `label` | progress through a lesson |
 | `Stars` | `n` of 3 | a lesson's result |
-| `Rich` | — | every piece of course text: renders `**bold**` and colours ♥ ♦ red |
+| `Rich` | — | every piece of course text: renders `**bold**` and each suit glyph in its scheme colour |
 
-Button sizes pair a role with padding: `sm` is `controlSm` with `space.x6`/`x12`, `md` is `controlMd`
-with `x10`/`x18`, `lg` is `controlLg` with `x14`/`x24`. A disabled button is at `opacity.disabled`
-with no ledge.
-
-**Components — the course's widgets**
+**Components — the course's and the table's widgets**
 
 | Widget | File | What it is |
 |---|---|---|
-| `PlayingCard` | `playing-card.tsx` | one card, `size.cardAspect`, public-domain faces (`@letele/playing-cards`); sizes `xs`, `sm`, `md`, `lg` (`size.card*`, phone widths for `md`/`lg`); states `selected`, `dimmed` (`texture.dimmed`), `glow`, `verdict` good/bad, `faceDown` (red hatched back, `texture.cardBack`) |
-| `Fan` | `card-row.tsx` | a hand held as a fan: slots (`size.slot*`) shrink and overlap to fit; more than six cards split into two rows on a phone; order badges; `data-answer` / `data-order` for scripted checks |
-| `CardRowView` | `card-row.tsx` | a labelled, wrapping row of cards for reading, with optional captions or ✓ / ✗ |
-| `Shake` / `Feedback` | `exercises.tsx` | the wordless "no" after a wrong answer (`shake`), and the good/bad panel that explains it |
-| `GameTable` | `game-table.tsx` | the whole-game felt: two seats, the trick in the centre, a strip of pills, the learner's hand, and a paper action area |
+| `PlayingCard` | `playing-card.tsx` | one card from the public-domain deck `@letele/playing-cards`. The face's pips and corner index take the suit scheme's colour, and the corner index is drawn `cardIndex.stroke` wide (SKATGO-47, the deck's own is 80); the deck's text is removed. Sizes `xs`, `sm`, `md`, `lg`, `table`, `trick`, `fill`; states `selected`, `dimmed` (`fill.dimmed`), `glow`, `verdict` good/bad, `faceDown` (`fill.cardBack`, skatgo's own charcoal lattice) |
+| `Fan` / `CardRowView` | `card-row.tsx` | a hand held as a fan (two rows of a long hand on a phone; `data-answer` / `data-order` for scripted checks), and a labelled row of cards for reading |
+| `Shake` / `Feedback` | `exercises.tsx` | the wordless "no" after a wrong answer, and the good/bad panel that explains it |
+| `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34) |
 
-Recurring patterns built on native elements — reuse them rather than inventing a neighbour:
+Recurring patterns — reuse them rather than inventing a neighbour:
 
-- **Tile choice** — a white tile, `border.tile` in `paperEdge` that turns `brass` on hover; chosen:
-  `brassDeep` border on `brassSoft`; right: `good` on `goodSoft`; wrong: `bad` on `badSoft` at
-  `opacity.spent`. Answer options, contract buttons and toggles are all this.
-- **Lesson card** — a white tile with the emoji in a `size.emojiTile` `brassSoft` square; states
-  `done` (`good` on `goodSoft`), `next` (brass border and `shadow.ledgeBrass`), `open` (brass border on
-  hover).
-- **Round icon button** — `size.closeButton` / `size.iconButton`, transparent, a `paperDeep` (on
-  paper) or `felt` (on felt) background on hover: close, new conversation, copy.
-- **Floating launcher** — a `size.launcher` round `feltLight` button fixed bottom-right with
-  `shadow.launcher`.
+- **Option card** — a white `radii.option` card with `elev.option`, `optionTitle` over `optionDesc`;
+  a lesson card's states: `next` (a `go` border), `done` (`goodSoft`), open.
+- **Choice tile** — a white tile with a `border.tile` in `hairline` that turns `go` on hover; chosen,
+  right and wrong as the `go`, `good` and `bad` tokens say. Answer options, contracts and the settings'
+  schemes are this.
 
-**The front page** (`entry-page.tsx`, SKATGO-23) — SkatGo is modern Skat, not only a course:
-- **Hero, on the page's paper** — a brass eyebrow `Pill` with the four suits beside it (♥ ♦ in
-  `skat.red`), the title (`hero`) and lead (`body`) in ink, the one brass action (play now) and paper
-  pills for the selling points. Never on felt (Redline 4).
-- **Section cards, one suit each in Skat order** — ♣ Course, ♠ Play, ♥ Duplicate, ♦ Puzzles. Each is a
-  felt card at least `size.entryCard` tall. Its suit is pressed large into the lower right
-  (`typography.watermark`, in `skat.felt` with `shadow.emboss`, reaching `size.watermarkInset` past
-  the edge), and a corner index — the suit on a `size.brandMark` paper chip — sits beside the title.
-  Open sections are links with the tile's hover lift; their buttons are `quiet`, so the hero keeps
-  the one brass action. A section not open yet is a deep-felt card, not a link or a button, with a
-  fainter watermark and a "coming soon" `Pill`.
+**Frames and pages**
 
-**Layout and responsive**
+- **The frame** (`skat-layout.tsx`, `components/skat/frame.tsx`): every page but the tables wears the
+  public site's header (SKATGO-43; lessons too since SKATGO-47). The header has:
+  - the SkatGo mark (`dims.landingMark`) and name (`landingBrand`);
+  - the four links, in this order (the human, 2026-10-01): the daily tournament, free play, the
+    course, the rules;
+  - on the right, the language menu (a flag button opening a card of flags), the card-colour settings
+    gear, and sign-in or the account.
 
+  On a phone the links and the account fold into a menu. Under the page sits the legal footer. The
+  header is the same on every page; it shows no current-page highlight (its links carry
+  `aria-current`). There is no rail, tab bar or coloured band.
+- **The front page** (`entry-page.tsx`), on white:
+  - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
+    its one green landing action (play today's deals); a quiet ✓ line of what a first visitor wants to
+    know; and the human's illustration (SKATGO-33). Never on felt (Redline 4);
+  - the sections as colour tiles, one suit each: ♣ the course, ♠ free play, each with its card art and
+    a `quiet` button;
+  - the questions people ask.
+- **A sub-page** (the course, a lesson, the rules, the daily tournament, the legal pages), on the
+  grey page: its title is the column's first element, an `<h1>` in `landingHeading`, `color.navy`;
+  then its content in white option cards. A lesson keeps its "back / continue" bar sticky at the
+  bottom of the screen.
+- **The tables** (`/play`, `/daily/play`): the felt fills the screen and never scrolls; free play
+  keeps a reading section below it (SKATGO-44).
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
   without JavaScript. Free play keeps its full-screen table first, with a scrollable reading section
   below; the personal daily execution page remains full-screen. Use the current lobby tokens and
   typography for these reading sections, not hidden keyword text or new decorative containers.
 
-- The frame (`app/src/skat-layout.tsx`): a `feltDeep` header — the brand on the left (the SkatGo
-  logo, `logo-96.png` shown at `size.brandMark` and rounded `radius.card`, then the name), and on the
-  right the language menu — one native `<select>` drawn as a `radius.round` pill with a ▾, its list in
-  paper and ink — and the account; then a reading column at most `size.column` wide, centred.
-- **The phone step is `bp.phone`**, used throughout; the course map's hero stacks at `bp.hero` and the
-  contract picker wraps at `bp.contracts`. On a phone a hand of more than six cards is held as two
-  rows, because ten cards in one row at 375px leave each card too narrow to tap. Answer options go
-  from two columns to one. The assistant window becomes a full-screen sheet (`phoneQuery`).
-- A lesson keeps its "back / continue" bar sticky at the bottom, on `paper` with a `paperEdge` rule.
+**Responsive**
+
+- **The phone step is `bp.phone`** (480), used throughout; `bp.cards` takes option cards to one column,
+  `bp.hero` stacks the hero, `bp.contracts` wraps the contract picker, `bp.mid` is the step between
+  phone and desk, `bp.portrait` turns the table's stage upright, `bp.pinned` pins its side panel.
+- On a phone a hand of more than six cards is held as two rows, and the assistant's window becomes a
+  full-screen sheet (`phoneQuery`).
 - **Every UI change is checked at desktop 1280×820 and phone 375×812.**
-
-**Motion**
-
-- **Transitions** (`timing`): `press` for buttons, `tile` for tiles, `card` for cards, `progress` for the
-  progress fill, with `easeOut`.
-- **Animations** (`constants.ts`, for `motion`): a lesson step slides by `stepSlide`; cards are dealt
-  into a fan by `deal`; a drill's played card rises by `playIn`; a played card springs onto the table
-  by `trick`; the finish emoji springs in by `finish`; a wrong answer shakes by `shake`.
-- **Celebration** (`confettiBurst`): on finishing a lesson and on winning a game — nowhere else.
 
 **Design source of truth**
 
-The registries under `app/src/theme/` for the values, and this file for the rules — what each surface,
-token, role and component is for. The course began as a byte copy of parrottoon.com/skat
-(2026-09-21); that parity was a requirement of the split, not of the product, and parrottoon.com/skat
+The registries under `app/src/theme/` hold the values, and this file holds the rules: what each
+surface, token, role and component is for. `.intentfold/tickets/SKATGO-26/reference.md` is the
+measured reference of the lobby design. The course began as a byte copy of parrottoon.com/skat; that
 is not a reference for new work.
 
 ## Tools
@@ -285,38 +282,42 @@ Rebuilding the Astryx theme after an approved change to `parrottoonTheme.ts`:
 ## Guidance
 
 **Build from the tokens.** A new screen is assembled from the surfaces, roles, scales, elevation forms
-and components above. A value the registries do not have — a new size, radius, shadow, role or
+and components above. A value the registries do not have — a new size, radius, shadow, role, weight or
 spacing step — is a question for the human (Redline 1), not a judgement call, and never an inline
 value.
 
 **Choosing components.** Reach for a custom component only when the kit genuinely has nothing that
 fits — not because the existing one needs configuring, and not because writing one looks faster.
 
-**One primary per view.** A view has at most one `brass` action; the rest are `quiet` or, on and
-around the table, `felt`. Hints are always a `felt` `sm` button.
+**One primary per view.** A view has at most one `go` action; the rest are `quiet`, or on the table
+`block` buttons in their own tones. Hints are an `info` button.
 
-**Choosing a token.** Use the role, not the value that looks right: `ink` / `inkSoft` / `inkFaint`
-for text on paper by importance, `white` for text on felt, `brass` for the one call to action and for
-highlights, `good` / `bad` (with their `Soft` backgrounds) only for judging an answer. State the text
-colour on every heading and paragraph: the Astryx theme colours `h*` and `p` itself, and in dark mode
-that colour is light — unreadable on paper. A missing token is a stop, not a reason to compose one.
+**Choosing a token.** Use the role, not the value that looks right: `navy` for titles and strong text,
+`text` for body, `slate` for secondary text, `onColor` on colour and felt, `go` for the one call to
+action and the current state, `good` / `bad` (with their `Soft` fills) only for judging an answer.
+State the text colour on every heading and paragraph, and give every text a role that carries its
+weight: the Astryx theme colours `h*` and `p` and sets `p` and `small` to 400 itself. A missing token
+is a stop, not a reason to compose one.
 
 **Interaction states.** A wrong answer explains itself, shakes, and never advances; "continue" stays
 disabled until the step is solved. An illegal card is refused with the follow-suit reason and stays in
-the hand. Anything still loading shows the course's own "正在发牌……". A card that cannot be played
-now is dimmed but still tappable, so the table can say why. Every control shows the brass focus ring.
+the hand. Anything still loading shows the product's own loading line (`m.loading()`, "dealing the
+cards…"). A card that cannot be played now is dimmed but still tappable, so the table can say why.
+Every control shows the focus ring in `color.info`.
 
-**Content and tone.** Direct and a little playful in every language the course speaks, written for
-learners from six to ninety-nine alike (「不枯燥的」). The German words a Skat table actually uses — Grand, Null, Hand, Schneider,
-Schwarz, Ouvert, Matador — stay German, because those are what the learner will hear at a real table.
+**Content and tone.** Direct and a little playful in every language the product speaks, written for
+learners from six to ninety-nine alike (「不枯燥的」). The German words a Skat table actually uses —
+Grand, Null, Hand, Schneider, Schwarz, Ouvert, Matador — stay German, because those are what the
+learner will hear at a real table.
 
 ## Redlines
 
 1. **Changing a governed token registry** — adding, renaming, removing or retuning a value — not
    without the human's explicit approval. Registries: every file under `app/src/theme/` —
-   `skat.stylex.ts`, `breakpoints.stylex.ts`, `scale.stylex.ts`, `effects.stylex.ts`,
-   `type.stylex.ts`, `type.ts`, `constants.ts`, and `parrottoonTheme.ts` (with its generated
-   `parrottoon.{css,js,d.ts}`). A missing token is a stop; reaching for a raw value instead of asking
+   `color.stylex.ts`, `suits.stylex.ts`, `breakpoints.stylex.ts`, `scale.stylex.ts`,
+   `shape.stylex.ts`, `elevation.stylex.ts`, `effects.stylex.ts`, `table.stylex.ts`,
+   `type.stylex.ts`, `type.ts`, `constants.ts`, `flags.tsx`, `icons.tsx`, and `parrottoonTheme.ts`
+   (with its generated `parrottoon.{css,js,d.ts}`). A missing token is a stop; reaching for a raw value instead of asking
    is the evasion this entry exists to name.
 2. **Tailwind, or any utility-CSS framework** — forbidden outright. Detectable from
    `app/package.json` and from any class attribute.
@@ -325,4 +326,5 @@ Schwarz, Ouvert, Matador — stay German, because those are what the learner wil
    `Tools`. `app/src/styles/app.css` is the only stylesheet.
 4. **A felt surface in the front page's hero** — forbidden outright (the human, 2026-09-27:
    「hero区域禁止再用绿色卡了」). Detectable from the hero's styles in
-   `app/src/components/skat/entry-page.tsx`: no `skat.felt*` background and no `texture.felt*`.
+   `app/src/components/skat/entry-page.tsx`: no `color.feltInner` / `color.feltOuter` background and
+   no `fill.felt`.

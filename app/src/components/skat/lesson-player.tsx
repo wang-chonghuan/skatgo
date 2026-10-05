@@ -190,7 +190,7 @@ const styles = stylex.create({
     alignItems: 'center',
     gap: space.x10,
     position: 'sticky',
-    bottom: { default: 0, [bp.phone]: dims.tabBar },
+    bottom: 0,
     paddingBlock: space.x12,
     backgroundColor: color.page,
     borderTopWidth: border.hair,

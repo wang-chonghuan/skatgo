@@ -268,7 +268,6 @@
   "nav_course": "Kurs",
   "nav_play": "Spielen",
   "nav_menu": "Menü",
-  "nav_back": "Zurück",
   "nav_home_link": "Startseite",
 
   "table_leave": "Tisch verlassen",
@@ -338,6 +337,7 @@
   "lesson_kicker": "Lektion {n} von {count}, etwa {minutes} Min.",
   "lesson_next": "Nächste Lektion: {title}",
   "lesson_rules_link": "In den Regeln: {section}",
+  "lesson_all": "Alle Lektionen",
   "rules_meta_title": "Skatregeln: Die kompletten Regeln mit Beispielen | SkatGo",
   "rules_meta_description": "Die kompletten Skatregeln: Karten, Reizen, Spielarten, Spielwert und Abrechnung, mit Beispielen.",
   "rules_title": "Skatregeln",

@@ -30,7 +30,7 @@ type Concrete = Exclude<Step, { kind: 'generated' }>
  * use Math.random, and doing it during render would hand the server and the browser two different
  * questions.
  *
- * In the lobby design (SKATGO-26) the lesson sits under the course's band (lesson-page.tsx): the
+ * In the lobby design (SKATGO-26) the lesson sits under its title and introduction (lesson-page.tsx): the
  * progress row, then the step on a white card, then the sticky bar with the table's block buttons.
  */
 export function LessonPlayer({ lesson }: { lesson: Lesson }) {

@@ -18,8 +18,8 @@ import { Rich } from './ui'
  * The page behind /course/$slug. Every lesson opens directly, whatever the learner has done before
  * (SKATGO-7). Rendered on the server around the player (SKATGO-29): the lesson's question as its title,
  * a short explanation of the idea — what a search engine and a first-time visitor read — then the
- * interactive lesson, which only the browser renders, and the ways on: the next lesson and the section
- * of the rules it teaches. The route has already sent an unknown or foreign slug elsewhere.
+ * interactive lesson, which only the browser renders, and the ways on: the next lesson, the section
+ * of the rules it teaches, and the course's list of lessons. The route has already sent an unknown or foreign slug elsewhere.
  */
 export function LessonPage() {
   const { slug } = useParams({ from: '/course/$slug' })
@@ -56,6 +56,9 @@ export function LessonPage() {
             {m.lesson_rules_link({ section: section.title })}
           </Link>
         ) : null}
+        <Link to="/course" data-testid="lesson-all" {...stylex.props(typography.appBtnStrong, styles.link)}>
+          {m.lesson_all()}
+        </Link>
       </nav>
     </>
   )

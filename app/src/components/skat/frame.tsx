@@ -21,8 +21,8 @@ import { typography } from '../../theme/type'
 import { Btn, suitText } from './ui'
 
 // The frame pieces of the lobby design (SKATGO-26, reference.md): the public site's white header over
-// every page but the tables (SKATGO-43, SKATGO-47 — the app's rail, tab bar and coloured band are gone),
-// with the language menu, the card-colour settings and the account. Navigation carries only what skatgo
+// every page but the tables (SKATGO-43, SKATGO-47), with the language menu, the card-colour settings
+// and the account. Navigation carries only what skatgo
 // has (SKATGO-29: nothing announced).
 
 type Section = 'home' | 'daily' | 'course' | 'rules' | 'play'
@@ -83,7 +83,7 @@ export function LandingHeader() {
           <Account shape="landing" />
         </span>
         <button type="button" aria-label={m.nav_menu()} aria-expanded={open} data-testid="landing-menu" onClick={() => setOpen((o) => !o)} {...stylex.props(styles.menuButton)}>
-          {open ? <X size={icon.tab} strokeWidth={icon.outline} /> : <Menu size={icon.tab} strokeWidth={icon.outline} />}
+          {open ? <X size={icon.menu} strokeWidth={icon.outline} /> : <Menu size={icon.menu} strokeWidth={icon.outline} />}
         </button>
       </div>
       {open ? (
@@ -221,7 +221,7 @@ export function SettingsButton() {
   return (
     <>
       <button type="button" aria-label={m.settings_open()} title={m.settings_open()} data-testid="settings-open" onClick={() => setOpen(true)} {...stylex.props(styles.gear)}>
-        <Settings size={icon.bandNav} strokeWidth={icon.outline} />
+        <Settings size={icon.gear} strokeWidth={icon.outline} />
       </button>
       {open ? <SettingsDialog onClose={() => setOpen(false)} /> : null}
     </>
@@ -238,7 +238,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
         <div {...stylex.props(styles.dialogHead)}>
           <h2 {...stylex.props(typography.dialogTitle, styles.dialogTitle)}>{m.settings_title()}</h2>
           <button type="button" aria-label={m.settings_close()} data-testid="settings-close" onClick={onClose} {...stylex.props(styles.close)}>
-            <X size={icon.tab} strokeWidth={icon.outline} />
+            <X size={icon.menu} strokeWidth={icon.outline} />
           </button>
         </div>
         <div role="radiogroup" aria-label={m.settings_title()} {...stylex.props(styles.schemes)}>
@@ -290,8 +290,7 @@ const focus = {
 } as const
 
 const styles = stylex.create({
-  // The rail: 120 wide, white, full height, items stacked under the brand mark.
-  // The front page's header carries the brand larger than the rail (SKATGO-31).
+  // The header's mark (SKATGO-31).
   landingMark: {
     display: 'block',
     width: { default: dims.landingMark, [bp.phone]: dims.landingMarkPhone },

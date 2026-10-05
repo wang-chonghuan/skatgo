@@ -6,7 +6,6 @@ import * as stylex from '@stylexjs/stylex'
 export const move = stylex.defineVars({
   rest: 'translateY(0)',
   press: 'translateY(2px)',
-  lift: 'translateY(-2px)',
   cardHover: 'translateY(-6px)',
   cardRaised: 'translateY(-16px)',
   /** The stars on the finish screen. */

@@ -79,17 +79,16 @@ fixed light palette, not a light/dark pair.
 
 | Tokens | Role |
 |---|---|
-| `page`, `surface`, `hairline` | the page, white surfaces, rules and borders (`footer` is kept without a current use) |
+| `page`, `surface`, `hairline` | the page, white surfaces, rules and borders |
 | `text`, `navy`, `slate`, `slateDeep`, `onColor` | body text, titles and links, secondary text, a darker slate (the slate button), text on colour or felt |
 | `go` | the one call to action, and the current state; `goLanding` is the public site's own green on its landing buttons |
 | `info` | links in text, the hint button, the focus ring |
 | `stop` | leaving the table |
-| `tileGreen`, `tileOrange`, `tileIndigo`, `tileTeal`, `tileSoon` | section tiles; `tileSoon` for a section not open yet |
+| `tileGreen`, `tileOrange` | the front page's section tiles: ♠ free play, ♣ the course |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `cardBack`, `cardBackLight`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | a right / wrong answer: border / fill — and nothing else |
-| `suitRed` | ♥ and ♦ in text where no suit scheme applies |
 | `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
-| `scrim`, `topBar`, `tileVeil` | overlays |
+| `scrim` | the dim behind a dialog |
 
 The browser's toolbar colour on phones is `themeColor` (`constants.ts`), the header's white.
 
@@ -107,37 +106,33 @@ Product code picks a **role** from `typography` and never sets `fontFamily`, `fo
 or `lineHeight` itself. A role fixes family, size (and its phone size), weight and, where the design
 sets one, leading. Colour is not part of a role — the surface decides it.
 
-- **Families**: one geometric sans, **Red Hat Display**, for everything (`family.body`, `display`,
-  `heading` are the same face); **Bebas Neue** (`family.numeral`) only for Reizen values, "Passe" and the
-  table's numbers. It has a single weight.
+- **Families**: one geometric sans, **Red Hat Display** (`family.body`), for everything; **Bebas Neue**
+  (`family.numeral`) only for Reizen values, "Passe" and the table's numbers. It has a single weight.
 - **Weights** (SKATGO-47): two by purpose — `weight.text` (500) for reading text: paragraphs,
   explanations, leads, table rows; `weight.ui` (600) for controls, navigation, links, labels and meta:
   buttons, pills, the table's names and small lines. Titles, emphasis and the large numbers keep
-  `bold` (700) to `black` (900). `regular` (400) is only Bebas Neue's. **Every text role states its
-  weight**: the Astryx theme sets `<p>` and `<small>` to 400 itself, so a weight a role leaves out is 400,
-  not the frame's. The frame's default is `weight.text`.
-- **Sizes** are named by their px (`f12` … `f200`, and the reference's measured sizes such as `f19_6`);
+  `bold` (700) to `black` (900). `regular` (400) is only Bebas Neue's. **Every role that sets text
+  states its weight** (glyph roles and `control` inherit theirs): the Astryx theme sets `<p>` and
+  `<small>` to 400 itself, so a weight a role leaves out is 400, not the frame's. The frame's default is
+  `weight.text`.
+- **Sizes** are named by their px (`f12` … `f72`, with the reference's measured sizes such as `f19_6`);
   **leadings** `glyph`, `tight`, `control`, `compact`, `reading`, `ui`.
 - **Roles**, by where they are used:
-  - the public site: `landingHero`, `landingHeroLead`, `landingTitle`, `landingLead`, `landingBrand`,
-    `landingHeading` (the h1 of every sub-page, and the front page's section headings), `landingBody`,
-    `landingNav`, `landingBtn`, `landingCta`, `landingStat`;
+  - the public site: `landingHero`, `landingHeroLead`, `landingBrand`, `landingHeading` (the h1 of
+    every sub-page, and the front page's section headings), `landingBody`, `landingNav`, `landingBtn`,
+    `landingCta`;
   - the app's pages: `appText`, `appBtn`, `appBtnStrong`, `appLink`, `optionTitle`, `optionDesc`,
-    `tileTitle`, `tileSub`, `sectionTitle`, `panelLabel`, `dialogTitle`, `greeting`, `greetingName`,
-    `countBadge`;
-  - the course and its exercises: `hero`, `stepTitle`, `finishTitle`, `pageTitle`, `resultTitle`,
-    `prompt`, `body`, `bodySmall`, `say`, `note`, `context`, `loading`, `emphasis` (**bold** in course
-    text), `link`, `small`, `meta`, `smallBold`, `label`, `pill`, `micro`, `badge`, `toggle`, `option`,
-    `control*`, and `brand`, `cardTitle`, `switch` (kept in the registry, without a current use);
+    `tileTitle`, `tileSub`, `dialogTitle`;
+  - the course and its exercises: `prompt`, `body`, `bodySmall`, `note`, `context`, `loading`,
+    `emphasis` (**bold** in course text), `link`, `small`, `meta`, `smallBold`, `label`, `micro`,
+    `badge`, `toggle`, `option`, `control`, `stars`, `verdictMark`;
   - the assistant's window: `windowName`, `windowSub`;
-  - the card table: `railLabel` (the side panel's tab labels), `plateName`, `roleTag`, `tricksLabel`, `tableStatus`, `auctionHead`, `bidNumeral`,
-    `bidChip`, `contractTile`, `infoLabel`, `infoValue`, `infoNumber`, `infoSub`, `contract`, `name`,
-    `bid`;
-  - glyphs sized as pictures: `stars`, `closeGlyph`, `markGlyph`, `seatFace`, `verdictMark`, `watermark`;
+  - the card table: `tabLabel` (the side panel's tabs), `plateName`, `roleTag`, `tricksLabel`,
+    `auctionHead`, `panelLabel`, `bidChip`, `contractTile`, `infoLabel`, `infoValue`, `infoNumber`,
+    `infoSub`;
   - `frame`: the family and default weight everything inside inherits.
 
-  `bandTitle` and `bandBack` are kept in the registry without a current use: the band they styled was
-  removed in SKATGO-47. A new combination is a new role in `type.ts`, never an inline style.
+  A new combination is a new role in `type.ts`, never an inline style.
 
 **Shape** (`radii`, `border`)
 
@@ -146,7 +141,7 @@ colour tiles, `option` for option cards, `dialog` for dialogs, `panel` for the t
 tabs and block buttons, `column` for an auction column, `tag` for a seat's role tag, `card` / `cardSm` /
 `cardXs` for playing cards, `round` for round things. Borders: `border.hair` for panels and inputs,
 `border.tile` for interactive tiles, `border.frame` for a card back's frame; the focus ring is
-`border.focus` offset `border.focusOffset` (`focusSm` / `focusOffsetSm` on small header controls).
+`border.focus` offset `border.focusOffset` (`focusSm` on small header controls).
 
 **Spacing and dimensions** (`space`, `dims`)
 
@@ -219,7 +214,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 
   On a phone the links and the account fold into a menu. Under the page sits the legal footer. The
   header is the same on every page; it shows no current-page highlight (its links carry
-  `aria-current`). There is no rail, tab bar or coloured band.
+  `aria-current`).
 - **The front page** (`entry-page.tsx`), on white:
   - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
     its one green landing action (play today's deals); a quiet ✓ line of what a first visitor wants to
@@ -230,7 +225,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **A sub-page** (the course, a lesson, the rules, the daily tournament, the legal pages), on the
   grey page: its title is the column's first element, an `<h1>` in `landingHeading`, `color.navy`;
   then its content in white option cards. A lesson keeps its "back / continue" bar sticky at the
-  bottom of the screen.
+  bottom of the screen, and ends with its ways on: the next lesson, its section of the rules, and all
+  lessons.
 - **The tables** (`/play`, `/daily/play`): the felt fills the screen and never scrolls; free play
   keeps a reading section below it (SKATGO-44).
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
@@ -241,8 +237,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 **Responsive**
 
 - **The phone step is `bp.phone`** (480), used throughout; `bp.cards` takes option cards to one column,
-  `bp.hero` stacks the hero, `bp.contracts` wraps the contract picker, `bp.mid` is the step between
-  phone and desk, `bp.portrait` turns the table's stage upright, `bp.pinned` pins its side panel.
+  `bp.hero` stacks the hero, `bp.contracts` wraps the contract picker, `bp.portrait` turns the table's stage upright, `bp.pinned` pins its side panel.
 - On a phone a hand of more than six cards is held as two rows, and the assistant's window becomes a
   full-screen sheet (`phoneQuery`).
 - **Every UI change is checked at desktop 1280×820 and phone 375×812.**

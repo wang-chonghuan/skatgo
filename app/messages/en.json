@@ -268,7 +268,6 @@
   "nav_course": "Course",
   "nav_play": "Play",
   "nav_menu": "Menu",
-  "nav_back": "Back",
   "nav_home_link": "Home",
 
   "table_leave": "Leave the table",
@@ -338,6 +337,7 @@
   "lesson_kicker": "Lesson {n} of {count}, about {minutes} min",
   "lesson_next": "Next lesson: {title}",
   "lesson_rules_link": "In the rules: {section}",
+  "lesson_all": "All lessons",
   "rules_meta_title": "Skat Rules: The Complete Guide with Examples | SkatGo",
   "rules_meta_description": "The complete Skat rules: cards, bidding, game types, game values and scoring, with examples.",
   "rules_title": "Skat rules",

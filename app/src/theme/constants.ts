@@ -18,19 +18,14 @@ export const icon = {
   launcherStroke: 2.2,
   header: 18,
   sendStroke: 2.5,
-  // SKATGO-26: the rail's and the tab bar's icons, a lobby tile's icon, the band's, and the table's
-  // floating controls — outline icons at the design's sizes (reference.md).
-  rail: 28,
-  tab: 24,
-  tile: 48,
-  band: 28,
-  bandNav: 20,
-  option: 40,
+  // SKATGO-26: outline icons at the design's sizes (reference.md) — the header's menu and close
+  // buttons, its settings gear, and the table's floating controls.
+  menu: 24,
+  gear: 20,
   table: 24,
   outline: 1.75,
   /** An icon inside a button or beside a line of text; the finish screen's icon. */
   inline: 20,
-  finish: 48,
 }
 
 /** A lesson step slides in from the right and out to the left. */

@@ -101,6 +101,19 @@ export function seegerFabian(g: Pick<Game, 'phase' | 'declarer' | 'result'>): [n
   return out
 }
 
+/** How a played deal ended, beyond who won (SKATGO-48): what a comparison needs to say what happened
+ *  even when a defender's score is 0 either way. */
+export type DealDetail = {
+  /** The game value it was scored at (after any overbid correction). */
+  value: number
+  declarerPoints: number
+  defenderPoints: number
+  overbid: boolean
+  /** Reached, announced or not. */
+  schneider: boolean
+  schwarz: boolean
+}
+
 /** What a finished deal leaves in the day's record: enough to list it and to total every seat. */
 export type DealSummary = {
   declarer: Seat | null
@@ -109,6 +122,22 @@ export type DealSummary = {
   won: boolean | null
   /** Seeger-Fabian per seat; [0] is the player's. */
   scores: [number, number, number]
+  /** How a played deal ended (SKATGO-48); null for a deal nobody played. */
+  detail: DealDetail | null
+}
+
+export function detailOf(g: Game): DealDetail | null {
+  if (g.phase !== 'done' || !g.result) return null
+  const r = g.result
+  const kinds = new Set(r.parts.map((p) => p.kind))
+  return {
+    value: r.value,
+    declarerPoints: r.declarerPoints,
+    defenderPoints: r.defenderPoints,
+    overbid: r.overbid,
+    schneider: kinds.has('schneider'),
+    schwarz: kinds.has('schwarz'),
+  }
 }
 
 export function summarize(g: Game): DealSummary {
@@ -118,6 +147,7 @@ export function summarize(g: Game): DealSummary {
     bid: g.bid,
     won: g.result ? g.result.won : null,
     scores: seegerFabian(g),
+    detail: detailOf(g),
   }
 }
 

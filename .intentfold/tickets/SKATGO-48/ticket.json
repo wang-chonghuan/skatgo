@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-48",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-48",
+  "branch": "SKATGO-48-daily-compare",
+  "base": "ac02010ff677778451cbdbf4b1205626ef95ed28",
+  "ports": { "web": 55048, "multiplayer": 56048, "database": 57048 }
+}

@@ -44,7 +44,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { AiThisDeal, VsAiTable } from './daily-comparison'
+import { VsAiTable } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
@@ -264,13 +264,9 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
   // With the panel pinned open, the learner's move is made in the panel, as Funbridge's bidding box is
   // (SKATGO-34): nothing then lies over the table. Otherwise it is the drawer over the felt.
   const movesInPanel = fullScreen && pinned && panelOpen
-  // In the tournament, after each deal: the AI's result for it and the running table (SKATGO-42).
-  const dailyAfter = tournament?.deals ? (
-    <>
-      <AiThisDeal ai={tournament.benchmarks?.[tournament.deal]} />
-      <VsAiTable deals={tournament.deals} benchmarks={tournament.benchmarks} />
-    </>
-  ) : null
+  // In the tournament, after each deal: the running table against the AI, the deal just played open
+  // (SKATGO-42, SKATGO-48).
+  const dailyAfter = tournament?.deals ? <VsAiTable deals={tournament.deals} benchmarks={tournament.benchmarks} openLatest /> : null
 
   return (
     <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>

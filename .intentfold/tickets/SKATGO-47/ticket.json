@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-47",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-47",
   "branch": "SKATGO-47-font-weight",

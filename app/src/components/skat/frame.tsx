@@ -261,7 +261,7 @@ export function LanguageSwitch() {
                   setOpen(false)
                   if (!chosen) void setLocale(l)
                 }}
-                {...stylex.props(typography.appText, styles.langItem, chosen && styles.langItemChosen)}
+                {...stylex.props(typography.appLink, styles.langItem, chosen && styles.langItemChosen)}
               >
                 <Flag />
                 <span {...stylex.props(styles.langName)}>{NAME[l]}</span>

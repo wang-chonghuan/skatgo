@@ -8,9 +8,12 @@ import { family, fontSize, leading, weight } from './type.stylex'
 // (check-design-tokens.mjs). A role without `lineHeight` keeps the leading it sits in (the theme's
 // prose default on `p` and `h*`, the frame's elsewhere); giving it one would move text that is right.
 // Colour is not part of a role: the surface decides it (ui.md).
+// Every text role states its weight (SKATGO-47): the Astryx theme sets <p> and <small> to 400 itself, so
+// a weight the role leaves out is 400, not the frame's. Reading text is `weight.text`, controls, links,
+// labels and meta `weight.ui`; titles and emphasis keep their own.
 export const typography = stylex.create({
   /** The frame's family, which everything inside inherits. */
-  frame: { fontFamily: family.body },
+  frame: { fontFamily: family.body, fontWeight: weight.text },
 
   // Titles
   hero: { fontFamily: family.display, fontSize: { default: fontSize.f36, [bp.phone]: fontSize.f28 }, fontWeight: weight.bold, lineHeight: leading.tight },
@@ -23,12 +26,12 @@ export const typography = stylex.create({
 
   // Text
   prompt: { fontSize: { default: fontSize.f19, [bp.phone]: fontSize.f17 }, fontWeight: weight.semibold, lineHeight: leading.compact },
-  body: { fontSize: fontSize.f16, lineHeight: leading.reading },
-  bodySmall: { fontSize: fontSize.f15, lineHeight: leading.reading },
-  say: { fontSize: fontSize.f15, lineHeight: leading.compact },
-  note: { fontSize: fontSize.f14, lineHeight: leading.compact },
-  context: { fontSize: fontSize.f14 },
-  loading: { fontSize: fontSize.f16 },
+  body: { fontSize: fontSize.f16, fontWeight: weight.text, lineHeight: leading.reading },
+  bodySmall: { fontSize: fontSize.f15, fontWeight: weight.text, lineHeight: leading.reading },
+  say: { fontSize: fontSize.f15, fontWeight: weight.text, lineHeight: leading.compact },
+  note: { fontSize: fontSize.f14, fontWeight: weight.text, lineHeight: leading.compact },
+  context: { fontSize: fontSize.f14, fontWeight: weight.text },
+  loading: { fontSize: fontSize.f16, fontWeight: weight.text },
   emphasis: { fontWeight: weight.bold },
 
   // Names and labels
@@ -37,14 +40,14 @@ export const typography = stylex.create({
   windowName: { fontSize: fontSize.f15, fontWeight: weight.bold, lineHeight: leading.tight },
   bid: { fontSize: fontSize.f14, fontWeight: weight.bold },
   link: { fontSize: fontSize.f14, fontWeight: weight.semibold },
-  small: { fontSize: fontSize.f13 },
+  small: { fontSize: fontSize.f13, fontWeight: weight.ui },
   meta: { fontSize: fontSize.f13, fontWeight: weight.semibold },
   smallBold: { fontSize: fontSize.f13, fontWeight: weight.bold },
   switch: { fontSize: fontSize.f13, fontWeight: weight.bold, lineHeight: leading.tight },
   label: { fontSize: fontSize.f12, fontWeight: weight.bold },
   pill: { fontSize: fontSize.f12, fontWeight: weight.bold, lineHeight: leading.control },
-  micro: { fontSize: fontSize.f12 },
-  windowSub: { fontSize: fontSize.f12, lineHeight: leading.tight },
+  micro: { fontSize: fontSize.f12, fontWeight: weight.ui },
+  windowSub: { fontSize: fontSize.f12, fontWeight: weight.ui, lineHeight: leading.tight },
   /** A ✓ / ✗ under a card: the caption's weight at reading size. */
   verdictMark: { fontSize: fontSize.f16 },
 
@@ -79,35 +82,38 @@ export const typography = stylex.create({
   /** The site's name beside the mark in the front page header (SKATGO-31): the hero headline's face and weight. */
   landingBrand: { fontFamily: family.body, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.black, lineHeight: leading.tight },
   landingHeading: { fontSize: { default: fontSize.f36, [bp.phone]: fontSize.f24 }, fontWeight: weight.extrabold, lineHeight: leading.tight },
-  landingBody: { fontSize: { default: fontSize.f20, [bp.phone]: fontSize.f16 }, fontWeight: weight.medium, lineHeight: leading.ui },
-  landingNav: { fontSize: fontSize.f16, fontWeight: weight.medium, lineHeight: leading.ui },
+  landingBody: { fontSize: { default: fontSize.f20, [bp.phone]: fontSize.f16 }, fontWeight: weight.text, lineHeight: leading.ui },
+  landingNav: { fontSize: fontSize.f16, fontWeight: weight.ui, lineHeight: leading.ui },
   landingBtn: { fontFamily: 'inherit', fontSize: fontSize.f20, fontWeight: weight.bold, lineHeight: leading.ui },
   landingCta: { fontFamily: 'inherit', fontSize: fontSize.f22, fontWeight: weight.bold, lineHeight: leading.ui },
   landingStat: { fontSize: { default: fontSize.f40, [bp.phone]: fontSize.f28 }, fontWeight: weight.black, lineHeight: leading.tight },
 
   // The app
-  appText: { fontSize: fontSize.f16, fontWeight: weight.regular, lineHeight: leading.ui },
-  appBtn: { fontFamily: 'inherit', fontSize: fontSize.f16, fontWeight: weight.regular, lineHeight: leading.ui },
+  appText: { fontSize: fontSize.f16, fontWeight: weight.text, lineHeight: leading.ui },
+  appBtn: { fontFamily: 'inherit', fontSize: fontSize.f16, fontWeight: weight.ui, lineHeight: leading.ui },
+  /** A link or menu item set as text — the rules' contents, the language menu (SKATGO-47). It restates
+   *  the family because a menu item is a native control. */
+  appLink: { fontFamily: 'inherit', fontSize: fontSize.f16, fontWeight: weight.ui, lineHeight: leading.ui },
   appBtnStrong: { fontFamily: 'inherit', fontSize: fontSize.f16, fontWeight: weight.bold, lineHeight: leading.ui },
   sectionTitle: { fontSize: fontSize.f20_46, fontWeight: weight.black, lineHeight: leading.tight, textTransform: 'uppercase' },
   railLabel: { fontSize: fontSize.f14, fontWeight: weight.bold, lineHeight: leading.ui },
-  greeting: { fontSize: fontSize.f16, fontWeight: weight.regular, lineHeight: leading.ui },
+  greeting: { fontSize: fontSize.f16, fontWeight: weight.text, lineHeight: leading.ui },
   greetingName: { fontSize: fontSize.f16, fontWeight: weight.bold, lineHeight: leading.ui },
-  tileTitle: { fontSize: { default: fontSize.f25, [bp.phone]: fontSize.f22 }, fontWeight: weight.medium, lineHeight: leading.tight },
+  tileTitle: { fontSize: { default: fontSize.f25, [bp.phone]: fontSize.f22 }, fontWeight: weight.ui, lineHeight: leading.tight },
   tileSub: { fontSize: { default: fontSize.f18_18, [bp.phone]: fontSize.f15 }, fontWeight: weight.bold, lineHeight: leading.tight },
   countBadge: { fontSize: fontSize.f16, fontWeight: weight.bold, lineHeight: leading.glyph },
   bandTitle: { fontSize: { default: fontSize.f30, [bp.phone]: fontSize.f22 }, fontWeight: weight.bold, lineHeight: leading.ui },
-  bandBack: { fontSize: fontSize.f16, fontWeight: weight.regular, lineHeight: leading.glyph },
+  bandBack: { fontSize: fontSize.f16, fontWeight: weight.ui, lineHeight: leading.glyph },
   optionTitle: { fontSize: { default: fontSize.f26_95, [bp.phone]: fontSize.f20 }, fontWeight: weight.bold, lineHeight: leading.ui },
   optionDesc: { fontSize: { default: fontSize.f19_6, [bp.phone]: fontSize.f15 }, fontWeight: weight.bold, lineHeight: leading.tight },
   dialogTitle: { fontSize: fontSize.f22, fontWeight: weight.bold, lineHeight: leading.tight },
 
   // The card table
-  plateName: { fontSize: fontSize.f14, fontWeight: weight.regular, lineHeight: leading.tight },
+  plateName: { fontSize: fontSize.f14, fontWeight: weight.ui, lineHeight: leading.tight },
   roleTag: { fontSize: fontSize.f16, fontWeight: weight.semibold, lineHeight: leading.glyph },
-  tricksLabel: { fontSize: fontSize.f14_21, fontWeight: weight.regular, lineHeight: leading.tight },
+  tricksLabel: { fontSize: fontSize.f14_21, fontWeight: weight.ui, lineHeight: leading.tight },
   tableStatus: { fontSize: fontSize.f14, fontWeight: weight.semibold, lineHeight: leading.tight },
-  auctionHead: { fontSize: fontSize.f21_45, fontWeight: weight.regular, lineHeight: leading.tight },
+  auctionHead: { fontSize: fontSize.f21_45, fontWeight: weight.ui, lineHeight: leading.tight },
   panelLabel: { fontSize: fontSize.f14, fontWeight: weight.bold, lineHeight: leading.ui },
   bidNumeral: { fontFamily: family.numeral, fontSize: fontSize.f32, fontWeight: weight.regular, lineHeight: leading.glyph },
   bidChip: { fontFamily: family.numeral, fontSize: fontSize.f20, fontWeight: weight.regular, lineHeight: leading.glyph },
@@ -116,5 +122,5 @@ export const typography = stylex.create({
   infoLabel: { fontSize: fontSize.f12, fontWeight: weight.bold, lineHeight: leading.tight, textTransform: 'uppercase', letterSpacing: '0.06em' },
   infoValue: { fontSize: { default: fontSize.f22, [bp.phone]: fontSize.f18 }, fontWeight: weight.bold, lineHeight: leading.tight },
   infoNumber: { fontFamily: family.numeral, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.regular, lineHeight: leading.glyph },
-  infoSub: { fontSize: fontSize.f13, fontWeight: weight.medium, lineHeight: leading.tight },
+  infoSub: { fontSize: fontSize.f13, fontWeight: weight.ui, lineHeight: leading.tight },
 })

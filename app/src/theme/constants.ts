@@ -39,6 +39,11 @@ export const stepSlide = { offset: 28, duration: 0.2 }
 /** Cards dealt into a fan, one after another. */
 export const deal = { rise: 24, duration: 0.22, stagger: 0.025, staggerCap: 12 }
 
+/** A card face's corner index — the rank's figures and letters — is a stroked line in the deck's
+ *  1000-unit symbol box, drawn 80 wide by the deck. SKATGO-47 draws it bolder (an SVG attribute, so not
+ *  a CSS variable). */
+export const cardIndex = { stroke: 112 }
+
 /** The learner's card rising onto the table in a play drill. */
 export const playIn = { rise: 60 }
 

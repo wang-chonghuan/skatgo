@@ -17,9 +17,8 @@ export const space = stylex.defineVars({
   x18: '18px',
   x20: '20px',
   x24: '24px',
-  x28: '28px',
-  // The lobby design's steps (SKATGO-26, reference.md): the gap between lobby tiles, a tile's inner
-  // padding, the space above a section's grid, a tall control, and the grid's inset from the rail.
+  // The lobby design's steps (SKATGO-26, reference.md): the gap between the front page's tiles, a
+  // tile's inner padding, a tall control, and the larger section spacing.
   x15: '15px',
   x27: '27.28px',
   x32: '32px',
@@ -43,18 +42,11 @@ export const border = stylex.defineVars({
   /** Focus ring on the small controls in a header. */
   focusSm: '2px',
   focusOffset: '2px',
-  focusOffsetSm: '1px',
 })
 
 // Corner radii and component dimensions live in shape.stylex.ts (SKATGO-26).
 
 export const opacity = stylex.defineVars({
-  /** The lead paragraph on felt. */
-  lead: '0.95',
-  /** Labels under cards on felt. */
-  label: '0.9',
-  /** Secondary lines on felt: seat meta, the window's page title. */
-  meta: '0.85',
   /** A wrong option already tried; a contract that does not cover the bid. */
   spent: '0.6',
   /** A disabled button. */

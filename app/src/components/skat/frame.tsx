@@ -1,8 +1,8 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { BookOpen, CalendarDays, Check, ChevronDown, GraduationCap, House, Menu, Settings, Spade, X } from 'lucide-react'
-import { type ComponentType, type ReactNode, useEffect, useRef, useState } from 'react'
+import { Check, ChevronDown, Menu, Settings, X } from 'lucide-react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { type CardColours, useSettings } from '~/lib/skat/settings'
 import { LANG_TAG } from '~/lib/site'
@@ -20,23 +20,12 @@ import { FlagDE, FlagUS } from '../../theme/flags'
 import { typography } from '../../theme/type'
 import { Btn, suitText } from './ui'
 
-// The frame pieces of the lobby design (SKATGO-26, reference.md):
-//   Rail           the app's left navigation, desktop;
-//   TabBar         the same navigation as a bottom bar, phone;
-//   LandingHeader  the public site's white header, on the front page and the pages it links to;
-//   Band           a lesson's coloured band: back and home, the page's title, language and account.
-// Navigation carries only what skatgo has (SKATGO-29: nothing announced).
+// The frame pieces of the lobby design (SKATGO-26, reference.md): the public site's white header over
+// every page but the tables (SKATGO-43, SKATGO-47), with the language menu, the card-colour settings
+// and the account. Navigation carries only what skatgo
+// has (SKATGO-29: nothing announced).
 
 type Section = 'home' | 'daily' | 'course' | 'rules' | 'play'
-type Item = { key: string; section: Section; to: '/' | '/daily' | '/course' | '/rules' | '/play'; Icon: ComponentType<{ size?: number; strokeWidth?: number }>; label: () => string }
-
-const ITEMS: Item[] = [
-  { key: 'home', section: 'home', to: '/', Icon: House, label: () => m.nav_home() },
-  { key: 'daily', section: 'daily', to: '/daily', Icon: CalendarDays, label: () => m.nav_daily() },
-  { key: 'course', section: 'course', to: '/course', Icon: GraduationCap, label: () => m.nav_course() },
-  { key: 'rules', section: 'rules', to: '/rules', Icon: BookOpen, label: () => m.nav_rules() },
-  { key: 'play', section: 'play', to: '/play', Icon: Spade, label: () => m.nav_play() },
-]
 
 /** Which section a path belongs to. The router has already removed the language prefix. */
 export function sectionOf(pathname: string): Section {
@@ -53,58 +42,14 @@ export function useSection(): Section {
   return useRouterState({ select: (s) => sectionOf(s.location.pathname) })
 }
 
-/** Which frame a path wears. The pages the front page's header links to — the tournament, the course
- *  and the rules — keep that header (SKATGO-43); a lesson keeps the app's rail; the tables fill the
- *  screen. The router has already removed the language prefix. */
-export function frameOf(pathname: string): 'landing' | 'app' | 'table' {
-  const section = sectionOf(pathname)
-  if (section === 'play') return 'table'
-  if (section === 'course' && pathname.replace(/\/$/, '') !== '/course') return 'app'
-  return 'landing'
+/** Which frame a path wears: the tables fill the screen; every other page, lessons included, wears the
+ *  front page's header (SKATGO-43, SKATGO-47). The router has already removed the language prefix. */
+export function frameOf(pathname: string): 'landing' | 'table' {
+  return sectionOf(pathname) === 'play' ? 'table' : 'landing'
 }
 
 export function useFrame() {
   return useRouterState({ select: (s) => frameOf(s.location.pathname) })
-}
-
-export function Rail() {
-  const current = useSection()
-  return (
-    <nav aria-label={m.nav_label()} data-testid="rail" {...stylex.props(styles.rail)}>
-      <Link to="/" aria-label={m.site_name()} {...stylex.props(styles.railBrand)}>
-        <img src="/logo-96.png" alt="" {...stylex.props(styles.brandMark)} />
-      </Link>
-      {ITEMS.map((item) => (
-        <NavItem key={item.key} item={item} active={item.section === current} variant="rail" />
-      ))}
-    </nav>
-  )
-}
-
-export function TabBar() {
-  const current = useSection()
-  return (
-    <nav aria-label={m.nav_label()} data-testid="tab-bar" {...stylex.props(styles.tabBar)}>
-      {ITEMS.map((item) => (
-        <NavItem key={item.key} item={item} active={item.section === current} variant="tab" />
-      ))}
-    </nav>
-  )
-}
-
-function NavItem({ item, active, variant }: { item: Item; active: boolean; variant: 'rail' | 'tab' }) {
-  const look = variant === 'rail' ? styles.railItem : styles.tabItem
-  const inner = (
-    <>
-      <item.Icon size={variant === 'rail' ? icon.rail : icon.tab} strokeWidth={icon.outline} />
-      <span {...stylex.props(typography.railLabel)}>{item.label()}</span>
-    </>
-  )
-  return (
-    <Link to={item.to} data-nav={item.key} data-state={active ? 'active' : undefined} aria-current={active ? 'page' : undefined} {...stylex.props(look, styles.itemLink, active && styles.itemActive)}>
-      {inner}
-    </Link>
-  )
 }
 
 /** The front page's links, in this order (the human, 2026-10-01): today's deals, guided free play, the
@@ -138,7 +83,7 @@ export function LandingHeader() {
           <Account shape="landing" />
         </span>
         <button type="button" aria-label={m.nav_menu()} aria-expanded={open} data-testid="landing-menu" onClick={() => setOpen((o) => !o)} {...stylex.props(styles.menuButton)}>
-          {open ? <X size={icon.tab} strokeWidth={icon.outline} /> : <Menu size={icon.tab} strokeWidth={icon.outline} />}
+          {open ? <X size={icon.menu} strokeWidth={icon.outline} /> : <Menu size={icon.menu} strokeWidth={icon.outline} />}
         </button>
       </div>
       {open ? (
@@ -151,31 +96,6 @@ export function LandingHeader() {
           </div>
         </div>
       ) : null}
-    </header>
-  )
-}
-
-/** A sub-page's band, in its section's colour: back and home on the left, language and account on the
- *  right, the page's title centred at the bottom. */
-export function Band({ title, back, testId }: { title: string; back: '/' | '/course'; testId?: string }) {
-  return (
-    <header data-testid={testId ?? 'band'} {...stylex.props(styles.band)}>
-      <div {...stylex.props(styles.bandTop)}>
-        <div {...stylex.props(styles.bandNav)}>
-          <Link to={back} data-testid="band-back" {...stylex.props(typography.bandBack, styles.bandLink)}>
-            {m.nav_back()}
-          </Link>
-          <Link to="/" aria-label={m.nav_home_link()} {...stylex.props(styles.bandLink)}>
-            <House size={icon.bandNav} strokeWidth={icon.outline} />
-          </Link>
-        </div>
-        <div {...stylex.props(styles.bandEnd)}>
-          <LanguageSwitch />
-          <SettingsButton />
-          <Account />
-        </div>
-      </div>
-      <h1 {...stylex.props(typography.bandTitle, styles.bandTitle)}>{title}</h1>
     </header>
   )
 }
@@ -261,7 +181,7 @@ export function LanguageSwitch() {
                   setOpen(false)
                   if (!chosen) void setLocale(l)
                 }}
-                {...stylex.props(typography.appText, styles.langItem, chosen && styles.langItemChosen)}
+                {...stylex.props(typography.appLink, styles.langItem, chosen && styles.langItemChosen)}
               >
                 <Flag />
                 <span {...stylex.props(styles.langName)}>{NAME[l]}</span>
@@ -301,7 +221,7 @@ export function SettingsButton() {
   return (
     <>
       <button type="button" aria-label={m.settings_open()} title={m.settings_open()} data-testid="settings-open" onClick={() => setOpen(true)} {...stylex.props(styles.gear)}>
-        <Settings size={icon.bandNav} strokeWidth={icon.outline} />
+        <Settings size={icon.gear} strokeWidth={icon.outline} />
       </button>
       {open ? <SettingsDialog onClose={() => setOpen(false)} /> : null}
     </>
@@ -318,7 +238,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
         <div {...stylex.props(styles.dialogHead)}>
           <h2 {...stylex.props(typography.dialogTitle, styles.dialogTitle)}>{m.settings_title()}</h2>
           <button type="button" aria-label={m.settings_close()} data-testid="settings-close" onClick={onClose} {...stylex.props(styles.close)}>
-            <X size={icon.tab} strokeWidth={icon.outline} />
+            <X size={icon.menu} strokeWidth={icon.outline} />
           </button>
         </div>
         <div role="radiogroup" aria-label={m.settings_title()} {...stylex.props(styles.schemes)}>
@@ -362,11 +282,6 @@ const swatchInk = stylex.create({
   '♦': { color: suitCard.cardDiamonds },
 })
 
-/** Wraps page content that needs the space the rail and the tab bar take. */
-export function AppShell({ children }: { children: ReactNode }) {
-  return <div {...stylex.props(styles.appShell)}>{children}</div>
-}
-
 const focus = {
   outlineStyle: { default: 'none', ':focus-visible': 'solid' },
   outlineWidth: border.focus,
@@ -375,24 +290,7 @@ const focus = {
 } as const
 
 const styles = stylex.create({
-  // The rail: 120 wide, white, full height, items stacked under the brand mark.
-  rail: {
-    position: 'fixed',
-    insetBlock: 0,
-    left: 0,
-    zIndex: layer.launcher,
-    display: { default: 'flex', [bp.phone]: 'none' },
-    flexDirection: 'column',
-    alignItems: 'center',
-    width: dims.rail,
-    paddingTop: space.x16,
-    boxSizing: 'border-box',
-    backgroundColor: color.surface,
-    overflowY: 'auto',
-  },
-  railBrand: { display: 'flex', paddingBottom: space.x16, ...focus },
-  brandMark: { display: 'block', width: dims.brandMark, height: dims.brandMark, borderRadius: radii.card, flexShrink: 0 },
-  // The front page's header carries the brand larger than the rail (SKATGO-31).
+  // The header's mark (SKATGO-31).
   landingMark: {
     display: 'block',
     width: { default: dims.landingMark, [bp.phone]: dims.landingMarkPhone },
@@ -400,49 +298,6 @@ const styles = stylex.create({
     borderRadius: radii.card,
     flexShrink: 0,
   },
-  railItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.x4,
-    width: dims.railItem,
-    minHeight: dims.railItemHeight,
-    boxSizing: 'border-box',
-    paddingBlock: space.x16,
-    paddingInline: space.x6,
-    borderTopWidth: border.hair,
-    borderTopStyle: 'solid',
-    borderTopColor: color.hairline,
-    backgroundColor: color.surface,
-    color: color.slateDeep,
-    textDecoration: 'none',
-  },
-  tabBar: {
-    position: 'fixed',
-    insetInline: 0,
-    bottom: 0,
-    zIndex: layer.launcher,
-    display: { default: 'none', [bp.phone]: 'grid' },
-    gridTemplateColumns: dims.tabColumns,
-    height: dims.tabBar,
-    borderTopWidth: border.hair,
-    borderTopStyle: 'solid',
-    borderTopColor: color.hairline,
-    backgroundColor: color.surface,
-  },
-  tabItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.x2,
-    color: color.slateDeep,
-    textDecoration: 'none',
-  },
-  itemLink: { transitionProperty: 'color', transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant }, color: { default: color.slateDeep, ':hover': color.navy }, ...focus },
-  itemActive: { color: { default: color.go, ':hover': color.go } },
-
   landingHeader: {
     position: 'sticky',
     top: 0,
@@ -490,28 +345,6 @@ const styles = stylex.create({
   },
   menuLink: { paddingBlock: space.x8, color: color.navy, textDecoration: 'none', ...focus },
   menuAccount: { paddingTop: space.x8 },
-
-  band: {
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    minHeight: { default: dims.band, [bp.phone]: dims.bandPhone },
-    boxSizing: 'border-box',
-    paddingBlock: space.x16,
-    paddingLeft: { default: space.x16, [bp.phone]: space.x12 },
-    paddingRight: { default: space.x24, [bp.phone]: space.x12 },
-    backgroundColor: color.tileOrange,
-    boxShadow: elev.band,
-    color: color.onColor,
-  },
-  // On a phone the band's row holds back, home, the language, the settings gear and the account in
-  // 351px (the longest labels, German): its gaps, the gear and the language pill's padding tighten there.
-  bandTop: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: { default: space.x12, [bp.phone]: space.x8 } },
-  bandNav: { display: 'flex', alignItems: 'center', gap: { default: space.x16, [bp.phone]: space.x8 } },
-  bandLink: { display: 'inline-flex', alignItems: 'center', gap: space.x4, color: color.onColor, textDecoration: 'none', ...focus },
-  bandEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x6 } },
-  bandTitle: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: space.x10, margin: 0, color: color.onColor },
 
   switch: { position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0 },
   // The menu's button: a bordered white box with the flag and a small chevron.
@@ -641,10 +474,4 @@ const styles = stylex.create({
   swatch: { display: 'inline-flex', gap: space.x6 },
   check: { display: 'flex', color: color.go },
   checkOff: { visibility: 'hidden' },
-  appShell: {
-    minHeight: dims.screen,
-    paddingLeft: { default: dims.rail, [bp.phone]: 0 },
-    paddingBottom: { default: 0, [bp.phone]: dims.tabBar },
-    boxSizing: 'border-box',
-  },
 })

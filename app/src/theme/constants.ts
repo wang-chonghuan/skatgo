@@ -18,19 +18,14 @@ export const icon = {
   launcherStroke: 2.2,
   header: 18,
   sendStroke: 2.5,
-  // SKATGO-26: the rail's and the tab bar's icons, a lobby tile's icon, the band's, and the table's
-  // floating controls — outline icons at the design's sizes (reference.md).
-  rail: 28,
-  tab: 24,
-  tile: 48,
-  band: 28,
-  bandNav: 20,
-  option: 40,
+  // SKATGO-26: outline icons at the design's sizes (reference.md) — the header's menu and close
+  // buttons, its settings gear, and the table's floating controls.
+  menu: 24,
+  gear: 20,
   table: 24,
   outline: 1.75,
   /** An icon inside a button or beside a line of text; the finish screen's icon. */
   inline: 20,
-  finish: 48,
 }
 
 /** A lesson step slides in from the right and out to the left. */
@@ -38,6 +33,11 @@ export const stepSlide = { offset: 28, duration: 0.2 }
 
 /** Cards dealt into a fan, one after another. */
 export const deal = { rise: 24, duration: 0.22, stagger: 0.025, staggerCap: 12 }
+
+/** A card face's corner index — the rank's figures and letters — is a stroked line in the deck's
+ *  1000-unit symbol box, drawn 80 wide by the deck. SKATGO-47 draws it bolder (an SVG attribute, so not
+ *  a CSS variable). */
+export const cardIndex = { stroke: 112 }
 
 /** The learner's card rising onto the table in a play drill. */
 export const playIn = { rise: 60 }

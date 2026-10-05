@@ -39,6 +39,7 @@ import { type Card, cardId } from '~/lib/skat/cards'
 import { spokenCard } from '~/lib/skat/i18n'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
+import { cardIndex } from '../../theme/constants'
 import { color } from '../../theme/color.stylex'
 import { move, timing } from '../../theme/effects.stylex'
 import { elev, fill } from '../../theme/elevation.stylex'
@@ -91,7 +92,8 @@ const FACES: Record<string, Face> = {
 
 const COURT: readonly string[] = ['J', 'Q', 'K']
 
-// SKATGO-27: a face's suit symbols and corner index take the card's suit colour; nothing else changes.
+// SKATGO-27: a face's suit symbols and corner index take the card's suit colour, and (SKATGO-47) the
+// index is drawn bolder; nothing else changes.
 // The deck (surveyed card by card) draws them as symbols: on 7-10 and the ace, symbols `a` and `b`
 // are all there is — the index and the pips; on a court, `a` is the pip and `h` the corner letter,
 // while the figure is other symbols (`b` gold, `c` red, `d` blue, `e` its outline). The face is
@@ -117,7 +119,11 @@ function inked(node: ReactNode, keys: string[], within: boolean): ReactNode {
   if (here && node.type === 'path') {
     if (props.fill !== 'none') change.fill = 'currentColor'
     if (props.stroke) change.stroke = 'currentColor'
+    // The corner index is the one unfilled stroked line (SKATGO-47): drawn bolder than the deck's 80.
+    if (props.fill === 'none' && props.stroke) change.strokeWidth = cardIndex.stroke
   }
+  // A thicker index reaches past its symbol's box, which would clip the stroke's ends.
+  if (here && node.type === 'symbol') change.overflow = 'visible'
   if (props.children !== undefined) change.children = Children.map(props.children, (c) => inked(c, keys, here))
   return cloneElement(node, change)
 }

@@ -28,9 +28,6 @@ export const stageUnit = stylex.defineVars({
 const u = stageUnit.u
 
 export const stage = stylex.defineVars({
-  /** The band at the top for words: the info board (one row in landscape, two by two in portrait) and
-   *  the line under it for what happens in the play. Must equal the band in `stageUnit.u`. */
-  band: { default: '140px', [bp.portrait]: '212px' },
   /** The learner's card: 130u (96u in portrait), shown whole. */
   handCard: { default: `calc(${u} * 130)`, [bp.portrait]: `calc(${u} * 96)` },
   /** A card's slot in the hand at most: its card and a little gap, so a wide felt never spreads the hand

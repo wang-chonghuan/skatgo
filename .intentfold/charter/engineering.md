@@ -70,14 +70,14 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/components/skat/` | every page and widget of the course, and its own small UI kit (`ui.tsx`) |
 | `app/src/lib/ask/` | the assistant's server side: the page context it is given, the limits, the model call, and the `/api/ask` handler (with an optional session lookup for rate-limit identity) |
 | `app/src/start.ts` | Clerk's request middleware, which hands each page its session state |
-| `app/src/skat-layout.tsx` | the frame around every page, including the sign-in button and the floating assistant |
-| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/lesson/$id`, `/play` |
+| `app/src/skat-layout.tsx` | the frame around every page: the front page's header over every page but the tables (lessons included since SKATGO-47; the rail, tab bar and coloured band are gone), or the full-screen table; the legal footer and the floating assistant. The header's pieces — links, language menu, card-colour settings, sign-in — are `components/skat/frame.tsx` |
+| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/$slug` (a lesson), `/rules`, `/daily`, `/daily/play`, `/play`, `/privacy`, `/terms`; each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`) is cut from it by `.intentfold/tickets/SKATGO-23/icons.mjs` — regenerate them, never edit them |
 | `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: what seat 0 may see of a deal (`seatView`, also free play's), that view as a table, Seeger-Fabian |
 | `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36) |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
-| `app/src/components/skat/daily-table.tsx` | the tournament's button, day result and table; `/daily/play` is its full-screen page |
+| `app/src/components/skat/daily-table.tsx`, `daily-comparison.tsx` | the tournament's button, day result and table; `/daily/play` is its full-screen page. `daily-comparison.tsx` is the computer's result of each finished deal beside the player's, and the table of both that grows by deal (SKATGO-42) |
 | `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy and its per-address limits, the browser's calls, and the table free play and lesson 11 use (`GameTable` with a `server` source, hints and assistant kept) |
 | `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament; `src/free.ts` free play; `src/computers.ts` the SkatZero computer turns both share; `scripts/make-free-pool.ts` the one-off generator of free play's pool |
 
@@ -114,6 +114,13 @@ also built from the repository root. Neither project imports the other's runtime
   pick-up/Hand tables inside the deal (`daily_deals.deals`). Requests never deal: a day not yet
   prepared answers `503 day_preparing`. Only today's day is ever read by a route. The skats are tried in
   an order fixed by day, deal and seat; the stored result is what play uses, on every platform.
+- **The computer's result of each deal is worked out when the day is dealt** (SKATGO-42). SkatZero
+  plays the deal in all three seats: the player's seat gets its own bidding, prepared like the
+  computers' (its skats tried in the deal's fixed order for seat 0), and the other two play from the
+  same plans they use against the player. The summary — contract, declarer, score — and every move are
+  stored with the deal (`benchmark`). A deal the computers cannot finish fails the day's preparation.
+  A route returns a deal's result only once the player has finished that deal, shown as "AI" in the
+  player's seat. Days dealt before have none.
 - **A free-play game is a deal from a committed pool, and its state travels with the page**
   (SKATGO-40).
   - The pool holds 1,000 deals (seed `skatgo-free-pool/1`). For both computers it stores the

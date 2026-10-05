@@ -12,15 +12,14 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ClientPart, LessonPlayer } from './client-part'
-import { Band } from './frame'
 import { Rich } from './ui'
 
 /**
  * The page behind /course/$slug. Every lesson opens directly, whatever the learner has done before
  * (SKATGO-7). Rendered on the server around the player (SKATGO-29): the lesson's question as its title,
  * a short explanation of the idea — what a search engine and a first-time visitor read — then the
- * interactive lesson, which only the browser renders, and the ways on: the next lesson and the section
- * of the rules it teaches. The route has already sent an unknown or foreign slug elsewhere.
+ * interactive lesson, which only the browser renders, and the ways on: the next lesson, the section
+ * of the rules it teaches, and the course's list of lessons. The route has already sent an unknown or foreign slug elsewhere.
  */
 export function LessonPage() {
   const { slug } = useParams({ from: '/course/$slug' })
@@ -34,8 +33,8 @@ export function LessonPage() {
   const section = RULES[locale].sections.find((s) => s.id === guide.rule)
   return (
     <>
-      <Band title={guide.h1} back="/course" />
       <section data-testid="lesson-intro" {...stylex.props(styles.intro)}>
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{guide.h1}</h1>
         <p {...stylex.props(typography.panelLabel, styles.kicker)}>{m.lesson_kicker({ n: lesson.id, count: course.length, minutes: lesson.minutes })}</p>
         {guide.intro.map((text) => (
           <p key={text} {...stylex.props(typography.appText, styles.text)}>
@@ -57,6 +56,9 @@ export function LessonPage() {
             {m.lesson_rules_link({ section: section.title })}
           </Link>
         ) : null}
+        <Link to="/course" data-testid="lesson-all" {...stylex.props(typography.appBtnStrong, styles.link)}>
+          {m.lesson_all()}
+        </Link>
       </nav>
     </>
   )
@@ -75,6 +77,7 @@ const styles = stylex.create({
     paddingTop: { default: space.x32, [bp.phone]: space.x16 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
+  title: { margin: 0, color: color.navy },
   kicker: { margin: 0, color: color.slate },
   text: { margin: 0, color: color.text },
   // Two plain links, one per line: a lesson's title can be long, and a link wraps where a button cannot.

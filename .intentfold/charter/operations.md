@@ -42,8 +42,10 @@ A missing or altered model or pool stops the service at start. Its image is `nod
 (onnxruntime-node needs glibc) and carries the committed models; nothing is downloaded at build or
 run time, and onnxruntime's telemetry is off (`ORT_DISABLE_TELEMETRY`).
 The leader deals the tournament's today and tomorrow ahead, with the computers' bidding (SKATGO-39;
-logged as `daily_prepared` with its duration, or `daily_prepare_failed`): about 40 s per day on a
-laptop, about 90 s in the local Linux container; a 10-minute limit abandons it for the next hourly try.
+logged as `daily_prepared` with its duration, or `daily_prepare_failed`). Since SKATGO-42 that includes
+the computer's own play of each deal from the player's seat. A day takes about 30–35 s on a laptop and
+about 6–6.5 min on the production instance (370–380 s, about 290 MB, measured 2026-10-03). A 10-minute
+limit abandons it for the next hourly try.
 Readiness does not wait for it; until today is prepared, `/daily` answers `503 day_preparing`.
 
 **Environments**
@@ -289,6 +291,13 @@ render deploys list "$SERVICE_ID" --output json --confirm
 # board until the player names it again. Day is the Berlin date; equal nicknames that day all clear.
 render psql skatgo-multiplayer-db --confirm --output text \
   --command "UPDATE daily_entries SET nickname = NULL WHERE day = '<YYYY-MM-DD>' AND nickname = '<nickname>'"
+
+# re-deal named days (SKATGO-42): deletes those days' deals and every entry played on them, so the
+# leader deals them anew. Players' entries are lost for good: run it only for days the human named,
+# and in production only with the human's explicit go-ahead.
+# Without --yes it is a dry run printing each day's computer label and entry counts. The production
+# database takes no outside connections, so run it inside the multiplayer service as a Render one-off job.
+DATABASE_URL=… node multiplayer/scripts/redeal-days.mjs <YYYY-MM-DD>… [--yes]
 
 # custom domains and TLS: ips-render-ops cap9
 curl -s "https://api.render.com/v1/services/$SERVICE_ID/custom-domains" \

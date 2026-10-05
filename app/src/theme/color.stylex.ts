@@ -12,7 +12,6 @@ export const color = stylex.defineVars({
   page: '#F2F4F7',
   surface: '#FFFFFF',
   hairline: '#E0E5EB',
-  footer: '#364460',
 
   // Text
   text: '#29323D',
@@ -30,10 +29,6 @@ export const color = stylex.defineVars({
   // Section tiles
   tileGreen: '#00821A',
   tileOrange: '#E56F00',
-  tileIndigo: '#332AB0',
-  tileTeal: '#077794',
-  /** A section that is not open yet: the slate, not a colour of its own (derived). */
-  tileSoon: '#5D6D7D',
 
   // The card table
   feltInner: '#085435',
@@ -61,9 +56,6 @@ export const color = stylex.defineVars({
   bad: '#E52F1D',
   badSoft: '#FDE7E4',
 
-  /** ♥ and ♦ in text. */
-  suitRed: '#D6281B',
-
   // Contract tints, one per game, from the reference's bid-box tints (Grand and Null derived).
   tintClubs: '#DDE3EA',
   tintSpades: '#C9CFD6',
@@ -74,6 +66,4 @@ export const color = stylex.defineVars({
 
   // Overlays
   scrim: 'rgba(0, 0, 0, 0.5)',
-  topBar: 'rgba(249, 250, 251, 0.2)',
-  tileVeil: 'rgba(0, 0, 0, 0.2)',
 })

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-47",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-47",
+  "branch": "SKATGO-47-font-weight",
+  "base": "d36eb0d0cde9507df92d326416e57569f6ecaa45",
+  "ports": { "web": 55047, "multiplayer": 56047, "database": 57047 }
+}

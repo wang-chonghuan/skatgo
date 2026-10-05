@@ -42,7 +42,7 @@ export function RulesPage() {
           <ul {...stylex.props(styles.contentsList)}>
             {rules.sections.map((s) => (
               <li key={s.id}>
-                <a href={`#${s.anchor}`} {...stylex.props(typography.appText, styles.contentsLink)}>{s.title}</a>
+                <a href={`#${s.anchor}`} {...stylex.props(typography.appLink, styles.contentsLink)}>{s.title}</a>
               </li>
             ))}
           </ul>

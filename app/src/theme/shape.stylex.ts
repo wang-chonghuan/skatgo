@@ -28,18 +28,10 @@ export const radii = stylex.defineVars({
 })
 
 export const dims = stylex.defineVars({
-  // The app frame
-  rail: '120px',
-  railItem: '105px',
-  railItemHeight: '85px',
-  railIcon: '28px',
-  topBar: '96px',
-  topBarPhone: '64px',
-  tabBar: '64px',
+  // Controls and the header's mark
   control: '40px',
   iconButton: '44px',
   badge: '24px',
-  brandMark: '40px',
   /** The front page header's mark (SKATGO-31): the new icon's square carries white margin, so it is shown larger. */
   landingMark: '56px',
   landingMarkPhone: '44px',
@@ -51,24 +43,15 @@ export const dims = stylex.defineVars({
   landingColumn: '1140px',
   heroArt: '480px',
 
-  // Lobby
+  // The front page's tiles and hero picture
   tileArtRight: '-18px',
   tileArtBottom: '-38px',
   /** The hero's picture (app/public/hero-table.webp, the human's illustration, 1448×1086, SKATGO-33): its
    *  box keeps these proportions at every width, so the whole picture shows, never cropped. */
   heroArtRatio: '1448 / 1086',
   tileHeight: '223px',
-  tileIcon: '48px',
-  lobbyColumn: '1280px',
-  eventCard: '302px',
 
   // Sub-page
-  band: '160px',
-  bandPhone: '112px',
-  optionIcon: '40px',
-  /** The disc behind the finish screen's icon. */
-  finishDisc: '96px',
-  arrowDisc: '48px',
   pageColumn: '1287px',
   readingColumn: '860px',
   /** A table of values on the rules page (SKATGO-29): two columns, a name and a number. */
@@ -99,7 +82,6 @@ export const dims = stylex.defineVars({
   panelPhone: 'min(360px, 88vw)',
   panelTab: '28px',
   panelTabHeight: '48px',
-  plateVertical: 'auto',
   /** On a phone the board hangs from the top edge between the assistant's launcher and its mirror space. */
   boardWidthPhone: 'calc(100% - 120px)',
   /** Two rows of two at any width (SKATGO-29). */
@@ -107,9 +89,6 @@ export const dims = stylex.defineVars({
   /** In landscape the board is one row of four (SKATGO-34), so the band at the top stays low. */
   boardColumnsWide: 'repeat(4, minmax(0, auto))',
   boardWidthWide: 'min(640px, calc(100% - 144px))',
-  /** Where an opponent's last word in Reizen shows: just inside their stack. */
-  saidLeft: '124px',
-  saidLeftPhone: '52px',
   sidePanel: '450px',
   /** The side panel pinned beside the felt on a wide screen (SKATGO-34): about Funbridge's share. */
   sidePanelPinned: 'clamp(280px, 28vw, 400px)',
@@ -117,38 +96,15 @@ export const dims = stylex.defineVars({
   feltAndPanel: 'minmax(0, 1fr) auto',
   /** Room the pinned panel's tab row leaves at its right for the assistant's launcher above it. */
   launcherRoom: '60px',
-  frameBid: '403px',
-  frameBorderBid: '3px',
   frameBorderPlay: '2px',
-  plate: '180px',
   plateHeight: '28px',
   roleTag: '28px',
-  undoWidth: '60px',
-  undoHeight: '70px',
   tabTile: '56px',
-  auctionColumn: '65px',
   auctionHeight: '207px',
-  sheetCollapsed: '56px',
-  /** How far the phone's bottom sheet may open. */
-  sheetMax: '70dvh',
-  /** The felt's three columns: an opponent's stack, the centre, the other opponent's stack. */
-  feltColumns: '180px minmax(0, 1fr) 180px',
-  feltColumnsPhone: '64px minmax(0, 1fr) 64px',
-  /** The frame while it holds the action box (Reizen, the skat, the contract picker). */
-  frameAction: 'min(460px, calc(100% - 240px))',
   /** A dialog over the table is not bound by the stacks. */
   dialogWidth: 'min(560px, 100%)',
-  plateWidth: '180px',
-  plateWidthPhone: 'auto',
-  /** Where the action box starts in the frame: below the skat pile. */
-  actionOffset: '104px',
-  /** Face-down cards stacked down an edge overlap by all but a sliver. */
-  backOverlap: '-58px',
-  backOverlapPhone: '-40px',
   /** The table's least height when it sits inside a lesson card. */
   tableEmbedded: '640px',
-  /** Half a table card, to centre the learner's played card in the frame. */
-  trickHalf: '-36px',
 
   // Cards (unchanged geometry of the course's card rows and fans)
   cardXs: '34px',
@@ -172,14 +128,11 @@ export const dims = stylex.defineVars({
   /** The height a drill's trick row keeps while it is still empty. */
   cardSlotRow: '110px',
   fanRowOverlap: '-34px',
-  backSlot: '14px',
-  backSlotMin: '6px',
-  backsTail: '72px',
 
   // The assistant (SKATGO-9/11), unchanged geometry.
   launcher: '44px',
   launcherLift: '48px',
-  /** On a phone the launcher clears the 64px tab bar and the table's collapsed sheet. */
+  /** On a phone the launcher sits higher, above a lesson's sticky bar. */
   launcherLiftPhone: '80px',
   closeButton: '36px',
   windowWidth: 'min(480px, calc(100vw - 48px))',
@@ -207,7 +160,6 @@ export const dims = stylex.defineVars({
   /** The daily table of you against the AI (SKATGO-42): the deal's number in a fixed column (every row
    *  is its own grid, so the columns line up only if none sizes to its content), then two equal ones. */
   vsAiColumns: '3.5em minmax(0, 1fr) minmax(0, 1fr)',
-  lobbyColumns: '1fr 1fr 2fr',
   /** The front page's hero: the headline two thirds, the picture one third (the human, SKATGO-29). */
   heroColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
   contractColumns: 'repeat(6, 1fr)',
@@ -217,28 +169,7 @@ export const dims = stylex.defineVars({
   auctionColumns: 'repeat(3, 1fr)',
   /** The narrowest a column of bids gets (SKATGO-29): one bid chip and the column's padding. */
   auctionCell: '56px',
-  tabColumns: 'repeat(5, 1fr)',
-  /** The felt's rows: the seats and the frame, then the learner's hand. */
-  feltRows: 'minmax(0, 1fr) auto',
   square: '1 / 1',
-  column2: '2',
-  column3: '3',
-  row2: '2',
-  lobbyTiles: 'repeat(2, minmax(0, 1fr))',
-  /** The front page's sections: both group titles and all four tiles in one grid, so every tile row is
-   *  a 1fr track — and 1fr tracks in a grid of no fixed height all take the tallest one's size. Four
-   *  tiles in a row on a desk (a spacer column keeps the two groups apart), two by two on a tablet,
-   *  one by one on a phone. */
-  lobbyGridColumns: 'minmax(0, 1fr) minmax(0, 1fr) 18px minmax(0, 1fr) minmax(0, 1fr)',
-  lobbyGridColumnsMid: 'repeat(2, minmax(0, 1fr))',
-  lobbyAreas: '"ta ta . tb tb" "c p . d z"',
-  lobbyAreasMid: '"ta ta" "c p" "tb tb" "d z"',
-  lobbyAreasPhone: '"ta" "c" "p" "tb" "d" "z"',
-  lobbyRows: 'auto 1fr',
   /** Every row of a card grid the height of its tallest card (1fr rows in a grid of no fixed height). */
   equalRows: '1fr',
-  lobbyRowsMid: 'auto 1fr auto 1fr',
-  lobbyRowsPhone: 'auto 1fr 1fr auto 1fr 1fr',
-  threeColumns: 'repeat(3, minmax(0, 1fr))',
-  fullRow: '1 / -1',
 })

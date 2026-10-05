@@ -460,15 +460,15 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
             <div {...stylex.props(styles.tabs)}>
               <span data-state="active" {...stylex.props(styles.tab)}>
                 <span {...stylex.props(styles.tabTile, styles.tabTileActive)}><Spade size={icon.table} strokeWidth={icon.outline} /></span>
-                <span {...stylex.props(typography.railLabel)}>{m.table_game_tab()}</span>
+                <span {...stylex.props(typography.tabLabel)}>{m.table_game_tab()}</span>
               </span>
               <Link to="/course" {...stylex.props(styles.tab, styles.tabLink)}>
                 <span {...stylex.props(styles.tabTile)}><GraduationCap size={icon.table} strokeWidth={icon.outline} /></span>
-                <span {...stylex.props(typography.railLabel)}>{m.nav_course()}</span>
+                <span {...stylex.props(typography.tabLabel)}>{m.nav_course()}</span>
               </Link>
               <button type="button" data-testid="settings-open-table" onClick={() => setSettingsOpen(true)} {...stylex.props(typography.control, styles.tab, styles.tabLink, styles.tabButton)}>
                 <span {...stylex.props(styles.tabTile)}><Settings size={icon.table} strokeWidth={icon.outline} /></span>
-                <span {...stylex.props(typography.railLabel)}>{m.settings_open()}</span>
+                <span {...stylex.props(typography.tabLabel)}>{m.settings_open()}</span>
               </button>
             </div>
           ) : null}

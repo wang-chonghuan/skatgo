@@ -6,7 +6,7 @@ import type { RulesText } from './types'
 
 export const RULES_DE: RulesText = {
   intro: [
-    'Das sind die vollständigen Skatregeln, so wie SkatGo spielt: nach der Internationalen Skatordnung (ISkO), den offiziellen Regeln des Deutschen Skatverbands (DSkV) und der International Skat Players Association (ISPA), für drei Spieler an einem Tisch. Die Tabellen mit Augen, Grundwerten, Nullwerten und Reizwerten kommen direkt aus der Regel-Engine von SkatGo – was du hier liest, passiert also genau so, wenn du spielst.',
+    'Hier sind die Skat Regeln einfach erklärt und vollständig, so wie SkatGo spielt: nach der Internationalen Skatordnung (ISkO), den offiziellen Regeln des Deutschen Skatverbands (DSkV) und der International Skat Players Association (ISPA), für drei Spieler an einem Tisch. Die Tabellen mit Augen, Grundwerten, Nullwerten und Reizwerten kommen direkt aus der Regel-Engine von SkatGo – was du hier liest, passiert also genau so, wenn du spielst.',
     'Jeder Abschnitt endet mit einem Link zu der Lektion, in der du ihn selbst ausprobierst. Beliebte Hausregeln stehen am Ende, zusammen mit der Antwort, welche davon SkatGo verwendet.',
   ],
   sections: [
@@ -93,18 +93,24 @@ export const RULES_DE: RulesText = {
         },
         {
           kind: 'p',
-          text: '**Grand.** Nur die vier Buben sind Trumpf, in derselben Reihenfolge; alle vier Farben sind Fehlfarben. Der Grand hat den höchsten Grundwert von allen.',
+          text: '**Bedienen.** Wer ausspielt, darf jede Karte legen; die anderen müssen die ausgespielte Farbe bedienen, wenn sie können. Alle Trümpfe gelten als eine Farbe: Ein Bube bedient Trumpf, nie die Farbe, die auf ihm steht (außer im Null, wo er eine gewöhnliche Karte ist). Wer nicht bedienen kann, darf stechen oder abwerfen. Einen Zwang, den Stich zu gewinnen oder zu stechen, gibt es nicht. Der höchste Trumpf bekommt den Stich; liegt keiner darin, gewinnt die höchste Karte der ausgespielten Farbe.',
         },
+        { kind: 'p', text: 'Jedes Farbspiel und der Grand haben einen **Grundwert**, geordnet nach der Farbreihenfolge:' },
+        { kind: 'engine', table: 'baseValues' },
+        { kind: 'sub', anchor: 'grand', title: 'Grand' },
+        {
+          kind: 'p',
+          text: '**Grand.** Nur die vier Buben sind Trumpf, in derselben Reihenfolge; alle vier Farben sind Fehlfarben. Der Grand hat den höchsten Grundwert von allen; mit nur vier Trümpfen lebt er von Buben und langen Farben mit Assen und Zehnen.',
+        },
+        { kind: 'sub', anchor: 'null-ouvert', title: 'Null und Null ouvert' },
         {
           kind: 'p',
           text: '**Null.** Kein Trumpf, und Augen zählen nicht. Der Alleinspieler gewinnt, wenn er **keinen einzigen Stich** bekommt; mit dem ersten Stich hat er verloren, und das Spiel endet sofort. Jede Farbe hat ihre natürliche Reihenfolge, **A, K, D, B, 10, 9, 8, 7**: Der Bube steht zwischen Dame und Zehn.',
         },
         {
           kind: 'p',
-          text: '**Bedienen.** Wer ausspielt, darf jede Karte legen; die anderen müssen die ausgespielte Farbe bedienen, wenn sie können. Alle Trümpfe gelten als eine Farbe: Ein Bube bedient Trumpf, nie die Farbe, die auf ihm steht (außer im Null, wo er eine gewöhnliche Karte ist). Wer nicht bedienen kann, darf stechen oder abwerfen. Einen Zwang, den Stich zu gewinnen oder zu stechen, gibt es nicht. Der höchste Trumpf bekommt den Stich; liegt keiner darin, gewinnt die höchste Karte der ausgespielten Farbe.',
+          text: '**Null ouvert.** Der Alleinspieler legt seine Karten vor dem ersten Ausspiel offen auf den Tisch und darf trotzdem keinen Stich bekommen; die Gegenspieler sehen sein Blatt und spielen gezielt dagegen. Null ouvert geht nach dem Aufnehmen des Skats oder als Handspiel (Null ouvert Hand).',
         },
-        { kind: 'p', text: 'Jedes Farbspiel und der Grand haben einen **Grundwert**, geordnet nach der Farbreihenfolge:' },
-        { kind: 'engine', table: 'baseValues' },
         { kind: 'p', text: 'Null wird nicht multipliziert. Es hat vier feste Werte, je nachdem, ob es Hand, ouvert (offen) oder beides gespielt wird:' },
         { kind: 'engine', table: 'nullValues' },
       ],
@@ -137,7 +143,7 @@ export const RULES_DE: RulesText = {
         },
         {
           kind: 'p',
-          text: '**Ouvert.** Der Alleinspieler spielt mit offen aufgelegten Karten. Im Farbspiel und im Grand geht ouvert nur als Handspiel und schließt Schwarz angesagt ein; es bringt eine weitere Stufe. Null ouvert darf mit oder ohne Aufnehmen des Skats gespielt werden, zu eigenen festen Werten.',
+          text: '**Ouvert.** Der Alleinspieler spielt mit offen aufgelegten Karten. Im Farbspiel und im Grand geht ouvert nur als Handspiel und schließt Schwarz angesagt ein; es bringt eine weitere Stufe. Null ouvert hat eigene Regeln und feste Werte (siehe Null und Null ouvert).',
         },
       ],
       lesson: '8',
@@ -216,7 +222,7 @@ export const RULES_DE: RulesText = {
         },
         {
           kind: 'p',
-          text: '**Listenwertung.** Im Verein und im Ligaspiel wird meist nach dem Seeger-Fabian-System gewertet: 50 Punkte dazu für jedes gewonnene Spiel des Alleinspielers, 50 ab für jedes verlorene, und Punkte für die Gegenspieler, wenn der Alleinspieler verliert. SkatGo wertet nicht nach Seeger-Fabian: Es gibt keine +50 oder −50, nur die Spielwerte von oben.',
+          text: '**Listenwertung.** Im Verein und im Ligaspiel wird meist nach dem Seeger-Fabian-System gewertet: 50 Punkte dazu für jedes gewonnene Spiel des Alleinspielers, 50 ab für jedes verlorene, und Punkte für die Gegenspieler, wenn der Alleinspieler verliert. Bei SkatGo wird das **tägliche Turnier** nach Seeger-Fabian gewertet; am freien Spieltisch zählen nur die Spielwerte von oben, ohne +50 oder −50.',
         },
       ],
       lesson: '9',
@@ -226,22 +232,33 @@ export const RULES_DE: RulesText = {
       anchor: 'hausregeln',
       title: 'Hausregeln: Kontra, Ramsch und Bock',
       blocks: [
-        { kind: 'p', text: 'Viele Runden spielen zusätzlich eigene Regeln. Die drei häufigsten:' },
+        { kind: 'p', text: 'Viele Runden spielen zusätzlich eigene Regeln. SkatGo spielt nur nach der Skatordnung, ohne eine davon; das sind die drei häufigsten:' },
         {
           kind: 'p',
           text: '**Kontra und Re.** Glaubt ein Gegenspieler, dass der Alleinspieler verliert, sagt er **Kontra**, und das Spiel zählt doppelt. Der Alleinspieler kann mit **Re** antworten, dann verdoppelt es sich noch einmal. Bis wann man Kontra oder Re sagen darf, ist von Runde zu Runde verschieden.',
         },
         {
           kind: 'p',
-          text: '**Ramsch.** Passen alle drei, wird statt neu zu geben ein Ramsch gespielt. Meist sind nur die Buben Trumpf, jeder spielt für sich, und wer die meisten Augen bekommt, verliert. Die Abrechnung ist sehr unterschiedlich.',
-        },
-        {
-          kind: 'p',
           text: '**Bock.** Nach bestimmten Ereignissen, etwa einem Spiel, das 60 zu 60 ausgeht, einem verlorenen Spiel mit Kontra oder einem sehr hohen Spiel, folgt eine **Bockrunde**, in der jedes Spiel doppelt zählt.',
         },
+        { kind: 'sub', anchor: 'ramsch', title: 'Ramsch' },
         {
           kind: 'p',
-          text: '**Was SkatGo verwendet: keine davon.** SkatGo spielt nur nach der Skatordnung, ohne Kontra und Re, ohne Ramsch und ohne Bock. Passen alle drei, wird einfach neu gegeben.',
+          text: '**Ramsch** spielen viele Runden, wenn alle drei passen, statt neu zu geben. Die Regeln sind von Gegend zu Gegend und von Runde zu Runde verschieden; verbreitet ist diese Form:',
+        },
+        {
+          kind: 'list',
+          items: [
+            'Nur die vier **Buben** sind Trumpf, wie im Grand. Es gibt keinen Alleinspieler: **Jeder spielt für sich.**',
+            'Wer am Ende **die meisten Augen** hat, verliert und schreibt sie als Minuspunkte. Den **Skat** bekommt meist, wer den letzten Stich macht.',
+            '**Jungfrau:** Wer keinen einzigen Stich bekommt, ist Jungfrau, und das Ergebnis des Verlierers zählt doppelt.',
+            '**Durchmarsch:** Wer alle zehn Stiche macht, gewinnt den Ramsch, statt ihn zu verlieren.',
+            '**Schieben:** Vor dem ersten Ausspiel darf jeder reihum den Skat aufnehmen und zwei Karten verdeckt weitergeben; jedes Schieben verdoppelt den Wert. In vielen Runden dürfen dabei keine Buben geschoben werden.',
+          ],
+        },
+        {
+          kind: 'p',
+          text: 'Wie viel ein Ramsch zählt und welche dieser Zusätze gelten, wird vorher am Tisch vereinbart. **SkatGo spielt keinen Ramsch:** Passen alle drei, wird einfach neu gegeben.',
         },
       ],
       lesson: '9',

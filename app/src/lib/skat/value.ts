@@ -7,6 +7,14 @@ export const SUIT_BASE: Record<Suit, number> = { D: 9, H: 10, S: 11, C: 12 }
 export const GRAND_BASE = 24
 export const NULL_VALUES = { plain: 23, hand: 35, ouvert: 46, handOuvert: 59 } as const
 
+/**
+ * The highest multiplier a suit game and a Grand can reach: every matador (11 trumps in a suit game,
+ * the 4 Jacks in Grand), plus game, Hand, Schneider, Schneider announced, Schwarz, Schwarz announced
+ * and ouvert. The lowest is 2: with or without 1, game 2.
+ */
+export const MAX_MULTIPLIER = { suit: 18, grand: 11 } as const
+export const MIN_MULTIPLIER = 2
+
 /** What the declarer announces on top of the contract. Announcements are only legal in Hand games. */
 export type Declaration = {
   contract: Contract
@@ -62,8 +70,8 @@ export type SettleReason =
 /** Every valid game value from 18 up, ascending — the only numbers anyone may bid. */
 export const BID_LADDER: number[] = (() => {
   const values = new Set<number>(Object.values(NULL_VALUES))
-  for (const base of Object.values(SUIT_BASE)) for (let m = 2; m <= 18; m++) values.add(base * m)
-  for (let m = 2; m <= 11; m++) values.add(GRAND_BASE * m)
+  for (const base of Object.values(SUIT_BASE)) for (let m = MIN_MULTIPLIER; m <= MAX_MULTIPLIER.suit; m++) values.add(base * m)
+  for (let m = MIN_MULTIPLIER; m <= MAX_MULTIPLIER.grand; m++) values.add(GRAND_BASE * m)
   return [...values].filter((v) => v >= 18).sort((a, b) => a - b)
 })()
 

@@ -12,6 +12,9 @@ const SECTIONS = ['cards', 'dealing', 'bidding', 'games', 'extras', 'value', 'sc
 const words = (texts: string[]) => texts.join(' ').replace(/\*\*/g, '').split(/\s+/).filter(Boolean).length
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/
 const BANNED = /\b(soon|bald|demnächst|puzzles?|daily|täglich\w*|tournament|turnier\w*|leaderboard|rangliste)\b|coming soon/i
+// The rules page may name the daily tournament, which has shipped (SKATGO-35): its scoring is a rule of
+// SkatGo (SKATGO-50). It still promises nothing that has not.
+const UNSHIPPED = /\b(soon|bald|demnächst|puzzles?)\b|coming soon/i
 
 describe('the lesson pages', () => {
   for (const locale of locales) {
@@ -48,7 +51,7 @@ describe('the rules page', () => {
         expect(s.anchor).toMatch(SLUG)
         expect(COURSES[locale].some((l) => l.id === s.lesson), `${locale} ${s.id}`).toBe(true)
       }
-      expect(JSON.stringify(rules)).not.toMatch(BANNED)
+      expect(JSON.stringify(rules)).not.toMatch(UNSHIPPED)
     })
   }
 })

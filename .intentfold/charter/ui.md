@@ -222,7 +222,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - the sections as colour tiles, one suit each: ♣ the course, ♠ free play, each with its card art and
     a `quiet` button;
   - the questions people ask.
-- **A sub-page** (the course, a lesson, the rules, the daily tournament, the legal pages), on the
+- **A sub-page** (the course, a lesson, the rules, the bidding table, the daily tournament, the legal
+  pages), on the
   grey page: its title is the column's first element, an `<h1>` in `landingHeading`, `color.navy`;
   then its content in white option cards. A lesson keeps its "back / continue" bar sticky at the
   bottom of the screen, and ends with its ways on: the next lesson, its section of the rules, and all
@@ -238,6 +239,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 
 - **The phone step is `bp.phone`** (480), used throughout; `bp.cards` takes option cards to one column,
   `bp.hero` stacks the hero, `bp.contracts` wraps the contract picker, `bp.portrait` turns the table's stage upright, `bp.pinned` pins its side panel.
+- **Print** (`bp.print`, SKATGO-50): on paper every page leaves out the header, the footer and the
+  assistant (`skat-layout.tsx`); the bidding table prints only its title and its tables.
 - On a phone a hand of more than six cards is held as two rows, and the assistant's window becomes a
   full-screen sheet (`phoneQuery`).
 - **Every UI change is checked at desktop 1280×820 and phone 375×812.**

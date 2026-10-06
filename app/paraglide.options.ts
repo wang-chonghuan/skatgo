@@ -45,6 +45,14 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/regeln'],
       ],
     },
+    // The bidding table (SKATGO-50), a page of the rules.
+    {
+      pattern: '/rules/bidding-table',
+      localized: [
+        ['en', '/en/rules/bidding-table'],
+        ['de', '/de/regeln/reiztabelle'],
+      ],
+    },
     {
       pattern: '/daily',
       localized: [

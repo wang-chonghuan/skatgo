@@ -6,7 +6,7 @@ import type { RulesText } from './types'
 
 export const RULES_EN: RulesText = {
   intro: [
-    "These are the complete rules of Skat as SkatGo plays them: the International Skat Order (ISkO), the official rules of the German Skat Association (DSkV) and the International Skat Players Association (ISPA), for three players at one table. The tables of card points, base values, Null values and bids come straight from SkatGo's rules engine, so what you read here is exactly what happens when you play.",
+    "Here are the Skat rules explained simply and in full, as SkatGo plays them: the International Skat Order (ISkO), the official rules of the German Skat Association (DSkV) and the International Skat Players Association (ISPA), for three players at one table. The tables of card points, base values, Null values and bids come straight from SkatGo's rules engine, so what you read here is exactly what happens when you play.",
     'Each section ends with a link to the lesson that teaches it hands-on. Popular house rules are covered at the end, together with which of them SkatGo uses.',
   ],
   sections: [
@@ -93,18 +93,24 @@ export const RULES_EN: RulesText = {
         },
         {
           kind: 'p',
-          text: '**Grand.** Only the four Jacks are trumps, in the same order; all four suits are side suits. Grand has the highest base value of all.',
+          text: '**Following suit.** The leader may play any card; the others must follow the suit led if they can. All trumps count as one suit, so a Jack follows trumps, never the suit printed on it (except in Null, where it is an ordinary card). A player who cannot follow may trump or throw off anything. There is no duty to win a trick or to trump. The highest trump takes the trick; with no trump in it, the highest card of the suit led wins.',
         },
+        { kind: 'p', text: 'Each suit game and Grand has a **base value**, ranked by the suit order:' },
+        { kind: 'engine', table: 'baseValues' },
+        { kind: 'sub', anchor: 'grand', title: 'Grand' },
+        {
+          kind: 'p',
+          text: '**Grand.** Only the four Jacks are trumps, in the same order; all four suits are side suits. Grand has the highest base value of all, and with only four trumps it rewards Jacks and long side suits with Aces and 10s.',
+        },
+        { kind: 'sub', anchor: 'null-ouvert', title: 'Null and Null Ouvert' },
         {
           kind: 'p',
           text: '**Null.** No trumps, and card points do not count. The declarer wins by taking **no trick at all**; the first trick they take loses the game, which ends right there. Every suit keeps its natural order, **A, K, Q, J, 10, 9, 8, 7**, with the Jack between the Queen and the 10.',
         },
         {
           kind: 'p',
-          text: '**Following suit.** The leader may play any card; the others must follow the suit led if they can. All trumps count as one suit, so a Jack follows trumps, never the suit printed on it (except in Null, where it is an ordinary card). A player who cannot follow may trump or throw off anything. There is no duty to win a trick or to trump. The highest trump takes the trick; with no trump in it, the highest card of the suit led wins.',
+          text: '**Null Ouvert.** The declarer lays their cards face up on the table before the first lead and must still take no trick, while the defenders plan against the open hand. Null Ouvert may be played after picking up the skat or as Hand (Null Ouvert Hand).',
         },
-        { kind: 'p', text: 'Each suit game and Grand has a **base value**, ranked by the suit order:' },
-        { kind: 'engine', table: 'baseValues' },
         { kind: 'p', text: 'Null is not multiplied. It has four fixed values, depending on whether it is played Hand, Ouvert (face up), or both:' },
         { kind: 'engine', table: 'nullValues' },
       ],
@@ -137,7 +143,7 @@ export const RULES_EN: RulesText = {
         },
         {
           kind: 'p',
-          text: '**Ouvert.** The declarer plays with their cards face up. In a suit game or Grand, Ouvert is Hand only and includes announcing Schwarz, and it adds one more. Null Ouvert may be played with or without picking up the skat, at its own fixed values.',
+          text: '**Ouvert.** The declarer plays with their cards face up. In a suit game or Grand, Ouvert is Hand only and includes announcing Schwarz, and it adds one more. Null Ouvert has its own rules and fixed values (see Null and Null Ouvert).',
         },
       ],
       lesson: '8',
@@ -216,7 +222,7 @@ export const RULES_EN: RulesText = {
         },
         {
           kind: 'p',
-          text: '**List scoring.** Clubs and leagues usually use the Seeger-Fabian system, which adds 50 for each game the declarer wins, subtracts 50 for each game lost, and gives the defenders a bonus when the declarer loses. SkatGo does not use Seeger-Fabian scoring: there are no +50 or −50 bonuses, only the game values above.',
+          text: '**List scoring.** Clubs and leagues usually use the Seeger-Fabian system, which adds 50 for each game the declarer wins, subtracts 50 for each game lost, and gives the defenders a bonus when the declarer loses. At SkatGo the **daily tournament** is scored by Seeger-Fabian; at the free table only the game values above count, with no +50 or −50.',
         },
       ],
       lesson: '9',
@@ -226,22 +232,33 @@ export const RULES_EN: RulesText = {
       anchor: 'house-rules',
       title: 'House rules: Kontra, Ramsch and Bock',
       blocks: [
-        { kind: 'p', text: 'Many tables add rules of their own. The three most common:' },
+        { kind: 'p', text: 'Many tables add rules of their own. SkatGo plays the official rules only, without any of them; these are the three most common:' },
         {
           kind: 'p',
           text: '**Kontra and Re.** A defender who believes the declarer will lose says **Kontra**, and the game counts double. The declarer can answer **Re**, and it doubles again. How late each may be said differs from table to table.',
         },
         {
           kind: 'p',
-          text: '**Ramsch.** When all three pass, the table plays a Ramsch instead of dealing again. Usually only the Jacks are trumps, everyone plays for themselves, and whoever takes the most card points loses. Scoring varies a lot.',
-        },
-        {
-          kind: 'p',
           text: '**Bock.** After certain events, such as a game that ends 60 to 60, a lost game with Kontra, or a very high game, the table plays a round of **Bock** games (a Bockrunde), in which every game counts double.',
         },
+        { kind: 'sub', anchor: 'ramsch', title: 'Ramsch' },
         {
           kind: 'p',
-          text: '**What SkatGo uses: none of them.** SkatGo plays the official rules only: no Kontra or Re, no Ramsch and no Bock. When all three players pass, the cards are simply dealt again.',
+          text: '**Ramsch** is what many tables play when all three pass, instead of dealing again. Its rules differ from region to region and from table to table; a common form goes like this:',
+        },
+        {
+          kind: 'list',
+          items: [
+            'Only the four **Jacks** are trumps, as in Grand. There is no declarer: **everyone plays for themselves.**',
+            'Whoever ends with **the most card points loses** and scores them as minus points. The **skat** usually goes to whoever takes the last trick.',
+            '**Jungfrau:** a player who takes no trick at all is a Jungfrau (a virgin), and the loser’s score counts double.',
+            '**Durchmarsch:** a player who takes all ten tricks wins the Ramsch instead of losing it.',
+            '**Schieben:** before the first lead, each player in turn may pick up the skat and pass two cards on face down; every pass doubles the score. Many tables forbid passing Jacks.',
+          ],
+        },
+        {
+          kind: 'p',
+          text: 'How much a Ramsch counts, and which of these extras apply, is agreed at the table beforehand. **SkatGo does not play Ramsch:** when all three players pass, the cards are simply dealt again.',
         },
       ],
       lesson: '9',

@@ -15,6 +15,8 @@ export type RuleBlock =
   | { kind: 'list'; items: string[] }
   | { kind: 'example'; title: string; lines: string[] }
   | { kind: 'engine'; table: EngineTable }
+  /** A sub-heading with its own anchor, for a topic people look up by name: `#grand`, `#ramsch` (SKATGO-50). */
+  | { kind: 'sub'; anchor: string; title: string }
 
 export type RuleSection = {
   id: RuleSectionId

@@ -18,6 +18,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CourseIndexRouteImport } from './routes/course.index'
 import { Route as CourseSlugRouteImport } from './routes/course.$slug'
 import { Route as DailyPlayRouteImport } from './routes/daily_.play'
+import { Route as RulesBiddingTableRouteImport } from './routes/rules_.bidding-table'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const DailyPlayRoute = DailyPlayRouteImport.update({
   path: '/daily/play',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RulesBiddingTableRoute = RulesBiddingTableRouteImport.update({
+  id: '/rules_/bidding-table',
+  path: '/rules/bidding-table',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/daily/play': typeof DailyPlayRoute
+  '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/course/': typeof CourseIndexRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/daily/play': typeof DailyPlayRoute
+  '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/course': typeof CourseIndexRoute
 }
 export interface FileRoutesById {
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/daily_/play': typeof DailyPlayRoute
+  '/rules_/bidding-table': typeof RulesBiddingTableRoute
   '/course/': typeof CourseIndexRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/course/$slug'
     | '/daily/play'
+    | '/rules/bidding-table'
     | '/course/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/course/$slug'
     | '/daily/play'
+    | '/rules/bidding-table'
     | '/course'
   id:
     | '__root__'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/course/$slug'
     | '/daily_/play'
+    | '/rules_/bidding-table'
     | '/course/'
   fileRoutesById: FileRoutesById
 }
@@ -144,6 +156,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   CourseSlugRoute: typeof CourseSlugRoute
   DailyPlayRoute: typeof DailyPlayRoute
+  RulesBiddingTableRoute: typeof RulesBiddingTableRoute
   CourseIndexRoute: typeof CourseIndexRoute
 }
 
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DailyPlayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rules_/bidding-table': {
+      id: '/rules_/bidding-table'
+      path: '/rules/bidding-table'
+      fullPath: '/rules/bidding-table'
+      preLoaderRoute: typeof RulesBiddingTableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -224,6 +244,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   CourseSlugRoute: CourseSlugRoute,
   DailyPlayRoute: DailyPlayRoute,
+  RulesBiddingTableRoute: RulesBiddingTableRoute,
   CourseIndexRoute: CourseIndexRoute,
 }
 export const routeTree = rootRouteImport

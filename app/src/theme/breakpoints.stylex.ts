@@ -22,4 +22,7 @@ export const bp = stylex.defineConsts({
   /** The visitor asked for less motion (SKATGO-29): transitions become instant. Animations follow the
    *  same setting through motion's `MotionConfig reducedMotion="user"`. */
   reducedMotion: '@media (prefers-reduced-motion: reduce)',
+  /** Printing (SKATGO-50, human-approved): the header, footer and assistant are left off the paper,
+   *  and the bidding table prints only its title and tables. */
+  print: '@media print',
 })

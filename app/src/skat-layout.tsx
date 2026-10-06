@@ -4,6 +4,7 @@ import * as stylex from '@stylexjs/stylex'
 import { AskLauncher } from '~/components/skat/ask'
 import { LegalFooter } from '~/components/skat/legal-page'
 import { LandingHeader, useCardColourTheme, useFrame, useSection } from '~/components/skat/frame'
+import { bp } from './theme/breakpoints.stylex'
 import { color } from './theme/color.stylex'
 import { dims } from './theme/shape.stylex'
 import { typography } from './theme/type'
@@ -23,12 +24,16 @@ export function SkatLayout() {
   if (frame === 'landing') {
     return (
       <div {...stylex.props(typography.frame, styles.page, section === 'home' && styles.landing, cardColours)}>
-        <LandingHeader />
+        <div {...stylex.props(styles.screenOnly)}>
+          <LandingHeader />
+        </div>
         <main {...stylex.props(styles.main)}>
           <Outlet />
         </main>
-        <LegalFooter />
-        <AskLauncher />
+        <div {...stylex.props(styles.screenOnly)}>
+          <LegalFooter />
+          <AskLauncher />
+        </div>
       </div>
     )
   }
@@ -55,5 +60,8 @@ const styles = stylex.create({
   // The table is exactly one screen and never scrolls (SKATGO-29).
   table: { height: dims.screenDynamic, minHeight: dims.screenDynamic, overflow: 'hidden', backgroundColor: color.feltOuter },
   freePlay: { position: 'relative', backgroundColor: color.page },
+  // The header, footer and assistant stay off paper (SKATGO-50); on screen the wrapper is no box at all,
+  // so the header still sticks to the page.
+  screenOnly: { display: { default: 'contents', [bp.print]: 'none' } },
   main: { flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%', boxSizing: 'border-box' },
 })

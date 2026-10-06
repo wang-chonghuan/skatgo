@@ -29,7 +29,7 @@ export function RulesPage() {
   return (
     <div data-testid="rules" {...stylex.props(styles.root)}>
       <article {...stylex.props(styles.column)}>
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.rules_title()}</h1>
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.rules_h1()}</h1>
         {rules.intro.map((text) => (
           <p key={text} {...stylex.props(typography.landingBody, styles.lead)}>
             <Rich text={text} />
@@ -43,6 +43,15 @@ export function RulesPage() {
             {rules.sections.map((s) => (
               <li key={s.id}>
                 <a href={`#${s.anchor}`} {...stylex.props(typography.appLink, styles.contentsLink)}>{s.title}</a>
+                {subsOf(s.blocks).length > 0 ? (
+                  <ul {...stylex.props(styles.contentsList, styles.contentsSub)}>
+                    {subsOf(s.blocks).map((sub) => (
+                      <li key={sub.anchor}>
+                        <a href={`#${sub.anchor}`} {...stylex.props(typography.appLink, styles.contentsLink)}>{sub.title}</a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -81,7 +90,17 @@ function Ways() {
   )
 }
 
+/** A section's sub-headings, listed under it in the contents. */
+const subsOf = (blocks: RuleBlock[]) => blocks.flatMap((b) => (b.kind === 'sub' ? [b] : []))
+
 function Block({ block }: { block: RuleBlock }) {
+  if (block.kind === 'sub') {
+    return (
+      <h3 id={block.anchor} data-testid="rules-sub" {...stylex.props(typography.appBtnStrong, styles.sub)}>
+        {block.title}
+      </h3>
+    )
+  }
   if (block.kind === 'p') {
     return (
       <p {...stylex.props(typography.appText, styles.text)}>
@@ -129,6 +148,9 @@ function EngineTableView({ table }: { table: EngineTable }) {
         <p data-testid="rules-ladder" {...stylex.props(typography.appText, styles.ladder)}>
           {BID_LADDER.join(', ')}
         </p>
+        <Link to="/rules/bidding-table" data-testid="rules-bidding-table" {...stylex.props(typography.appBtnStrong, styles.lessonLink)}>
+          {m.rules_bidding_table_link()}
+        </Link>
       </figure>
     )
   }
@@ -202,6 +224,7 @@ const styles = stylex.create({
   },
   contentsTitle: { margin: 0, color: color.slate },
   contentsList: { display: 'flex', flexDirection: 'column', gap: space.x6, margin: 0, paddingInlineStart: space.x20 },
+  contentsSub: { paddingTop: space.x6 },
   contentsLink: {
     color: color.info,
     textDecoration: { default: 'none', ':hover': 'underline' },
@@ -219,6 +242,13 @@ const styles = stylex.create({
     scrollMarginTop: { default: dims.landingHeader, [bp.phone]: dims.landingHeaderPhone },
   },
   heading: { margin: 0, color: color.navy },
+  // A sub-heading is a jump target too, so it also lands below the header (SKATGO-50).
+  sub: {
+    margin: 0,
+    paddingTop: space.x8,
+    color: color.navy,
+    scrollMarginTop: { default: dims.landingHeader, [bp.phone]: dims.landingHeaderPhone },
+  },
   text: { margin: 0, color: color.text },
   list: { display: 'flex', flexDirection: 'column', gap: space.x6, margin: 0, paddingInlineStart: space.x20 },
   example: {

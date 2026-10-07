@@ -96,8 +96,9 @@ function Ways() {
 /** A section's sub-headings, listed under it in the contents. */
 const subsOf = (blocks: RuleBlock[]) => blocks.flatMap((b) => (b.kind === 'sub' ? [b] : []))
 
-/** One block of rules text; also the printable short version's (SKATGO-53). */
-export function Block({ block }: { block: RuleBlock }) {
+/** One block of rules text; also the printable short version's (SKATGO-53), whose tables run across
+ *  (`wide`) so they take a line or two of paper instead of a column. */
+export function Block({ block, wide = false }: { block: RuleBlock; wide?: boolean }) {
   if (block.kind === 'sub') {
     return (
       <h3 id={block.anchor} data-testid="rules-sub" {...stylex.props(typography.appBtnStrong, styles.sub)}>
@@ -137,14 +138,14 @@ export function Block({ block }: { block: RuleBlock }) {
       </div>
     )
   }
-  return <EngineTableView table={block.table} />
+  return <EngineTableView table={block.table} wide={wide} />
 }
 
 const SUIT_ORDER: Suit[] = ['D', 'H', 'S', 'C']
 const POINT_RANKS: Rank[] = [...RANKS].sort((a, b) => POINTS[b] - POINTS[a])
 
 /** A table whose numbers come from the rules engine (value.ts, cards.ts). */
-function EngineTableView({ table }: { table: EngineTable }) {
+function EngineTableView({ table, wide }: { table: EngineTable; wide: boolean }) {
   if (table === 'biddingLadder') {
     return (
       <figure {...stylex.props(styles.figure)}>
@@ -175,8 +176,8 @@ function EngineTableView({ table }: { table: EngineTable }) {
               [m.rules_null_hand_ouvert(), NULL_VALUES.handOuvert],
             ],
           ]
-  return (
-    <table data-testid="rules-table" data-table={table} {...stylex.props(styles.table)}>
+  const tall = (
+    <table data-testid="rules-table" data-table={table} {...stylex.props(styles.table, wide && styles.phoneOnly)}>
       <thead>
         <tr>
           {head.map((h, i) => (
@@ -196,6 +197,34 @@ function EngineTableView({ table }: { table: EngineTable }) {
       </tbody>
     </table>
   )
+  if (wide) {
+    // The same table turned on its side — the names in one row, their values under them — on paper and on
+    // a wide screen; a phone has no room across and keeps the tall one (SKATGO-53).
+    return (
+      <>
+        {tall}
+        <table data-testid="rules-table-wide" data-table={table} data-wide {...stylex.props(styles.table, styles.wide)}>
+          <tbody>
+            <tr>
+              <th scope="row" {...stylex.props(typography.panelLabel, styles.th)}>{head[0]}</th>
+              {rows.map(([name]) => (
+                <th key={String(name)} scope="col" {...stylex.props(typography.appText, styles.th, styles.across)}>
+                  <Rich text={String(name)} />
+                </th>
+              ))}
+            </tr>
+            <tr>
+              <th scope="row" {...stylex.props(typography.panelLabel, styles.td)}>{head[1]}</th>
+              {rows.map(([name, value]) => (
+                <td key={String(name)} {...stylex.props(typography.appBtnStrong, styles.td, styles.across)}>{value}</td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </>
+    )
+  }
+  return tall
 }
 
 const styles = stylex.create({
@@ -275,6 +304,9 @@ const styles = stylex.create({
   th: { paddingBlock: space.x8, paddingInline: space.x12, textAlign: 'start', color: color.slate, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
   td: { paddingBlock: space.x8, paddingInline: space.x12, textAlign: 'start', color: color.text, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
   number: { textAlign: 'end' },
+  wide: { maxWidth: 'none', display: { default: 'table', [bp.phone]: 'none' } },
+  phoneOnly: { display: { default: 'none', [bp.phone]: 'table' } },
+  across: { textAlign: 'center', color: color.text },
   // A link is no use on paper (SKATGO-53).
   screenOnly: { display: { default: 'inline', [bp.print]: 'none' } },
   lessonLink: {

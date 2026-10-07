@@ -31,7 +31,7 @@ export function RulesSummaryPage() {
           <section key={section.title} data-testid="summary-section" {...stylex.props(styles.section)}>
             <h2 {...stylex.props(typography.optionTitle, styles.title)}>{section.title}</h2>
             {section.blocks.map((block, i) => (
-              <Block key={i} block={block} />
+              <Block key={i} block={block} wide />
             ))}
           </section>
         ))}

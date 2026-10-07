@@ -32,7 +32,8 @@ and `lib/clerk-appearance.ts` — and the shell around them, which is the kit. T
 variables, which inherit into deep-chat's shadow root. Clerk's windows stay in English; the human
 chose not to add its translation package. Icons are **lucide-react** outline icons at the sizes in
 `icon` (`constants.ts`): the header's menu, language and settings controls, the table's side panel and
-edge tabs, an exercise's controls, and the assistant. Suits are the text glyphs ♣ ♠ ♥ ♦, never icons.
+edge tabs, an exercise's controls, the assistant, the comparison's open/close chevrons, and the
+download button. Suits are the text glyphs ♣ ♠ ♥ ♦, never icons.
 
 **Token registries — the only place a design value is written**
 
@@ -148,7 +149,8 @@ tabs and block buttons, `column` for an auction column, `tag` for a seat's role 
 Spacing steps are named by their px (`space.x2` … `x80`, with the reference's `x15`, `x27`, `x32`,
 `x48`, `x72`). Component dimensions — the header, the reading column (`dims.readingColumn`) and the
 wider page column (`dims.pageColumn`), controls, card sizes and slots, the table's panel and drawer,
-grid templates — are named in `dims`; the table's stage in `stage` (`table.stylex.ts`).
+grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 mm) — are named in
+`dims`; the table's stage in `stage` (`table.stylex.ts`).
 
 **Elevation and motion** (`elev`, `fill`, `pose`, `move`, `timing`, `layer`, `layerHint`)
 
@@ -192,6 +194,8 @@ grid templates — are named in `dims`; the table's stage in `stage` (`table.sty
 | `PlayingCard` | `playing-card.tsx` | one card from the public-domain deck `@letele/playing-cards`. The face's pips and corner index take the suit scheme's colour, and the corner index is drawn `cardIndex.stroke` wide (SKATGO-47, the deck's own is 80); the deck's text is removed. Sizes `xs`, `sm`, `md`, `lg`, `table`, `trick`, `fill`; states `selected`, `dimmed` (`fill.dimmed`), `glow`, `verdict` good/bad, `faceDown` (`fill.cardBack`, skatgo's own charcoal lattice) |
 | `Fan` / `CardRowView` | `card-row.tsx` | a hand held as a fan (two rows of a long hand on a phone; `data-answer` / `data-order` for scripted checks), and a labelled row of cards for reading |
 | `Shake` / `Feedback` | `exercises.tsx` | the wordless "no" after a wrong answer, and the good/bad panel that explains it |
+| `TitleWithDownload` / `PdfLink` | `print-links.tsx` | every download (SKATGO-53): the page's h1 with, beside it, the page's one `go` button — lucide's `Download` icon at `icon.inline` and "PDF herunterladen" / "Download PDF" — which moves under the title on a phone and is left off paper |
+| `PrintLinks` | `print-links.tsx` | the "Zum Ausdrucken" links to the score sheet and the short rules, on the rules page, the bidding table and the course; left off paper |
 | `VsAiTable` | `daily-comparison.tsx` | the daily tournament's comparison with the computer (SKATGO-48): one row per finished deal — the deal's number, the player's and the AI's score each with its role, and the difference, signed and bold, never `good` / `bad` — that opens to both deals told in full; a total row. Rows collapse instead of scrolling sideways; the newest opens after a deal and on `/daily` mid-day |
 | `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34) |
 
@@ -222,28 +226,31 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     know; and the human's illustration (SKATGO-33). Never on felt (Redline 4);
   - the sections as colour tiles, one suit each: ♣ the course, ♠ free play, each with its card art and
     a `quiet` button;
-  - the questions people ask.
-- **A sub-page** (the course, a lesson, the rules, the bidding table, the daily tournament, the legal
-  pages), on the
-  grey page: its title is the column's first element, an `<h1>` in `landingHeading`, `color.navy`;
-  then its content in white option cards. A lesson starts playing at once: under its title only a
+  - plain links to the rules and the course, and the questions people ask.
+- **A sub-page** (the course, a lesson, the rules, the bidding table, the score sheet, the short rules,
+  the daily tournament, the legal pages), on the grey page: its title is the column's first element, an
+  `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
+  choices (the course's lessons, the tournament's board), reading text and tables elsewhere. A
+  printable has its download beside the title (`TitleWithDownload`). A lesson starts playing at once: under its title only a
   one-line kicker and the lesson's promise, then the lesson, which keeps its "back / continue" bar
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
   lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,
   its section of the rules, and all lessons.
-- **The tables** (`/play`, `/daily/play`): the felt fills the screen and never scrolls; free play
-  keeps a reading section below it (SKATGO-44).
+- **The tables** (`/play`, `/daily/play`): the felt fills the first screen and never scrolls. Free play
+  keeps a scrollable reading section below it; the personal daily page has none (SKATGO-44).
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
-  without JavaScript. Free play keeps its full-screen table first, with a scrollable reading section
-  below; the personal daily execution page remains full-screen. Use the current lobby tokens and
-  typography for these reading sections, not hidden keyword text or new decorative containers.
+  without JavaScript, in the lobby's own tokens and typography — never hidden keyword text or new
+  decorative containers.
 
 **Responsive**
 
 - **The phone step is `bp.phone`** (480), used throughout; `bp.cards` takes option cards to one column,
   `bp.hero` stacks the hero, `bp.contracts` wraps the contract picker, `bp.portrait` turns the table's stage upright, `bp.pinned` pins its side panel.
 - **Print** (`bp.print`, SKATGO-50): on paper every page leaves out the header, the footer and the
-  assistant (`skat-layout.tsx`); the bidding table prints only its title and its tables.
+  assistant (`skat-layout.tsx`). The bidding table and the printables print only their title and their
+  tables: the score sheet on one A4 page, the short rules
+  on two, whose tables run across on paper and wide screens (a phone keeps them tall). Their PDFs are
+  these printouts (`engineering.md` Tools).
 - On a phone a hand of more than six cards is held as two rows, and the assistant's window becomes a
   full-screen sheet (`phoneQuery`).
 - **Every UI change is checked at desktop 1280×820 and phone 375×812.**

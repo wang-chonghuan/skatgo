@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-56",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "auto-merge",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-56",
+  "branch": "SKATGO-56-charter-cleanup",
+  "base": "22bfe4601f12a882120c507679564744c037f93d",
+  "ports": { "web": 55056, "multiplayer": 56056, "database": 57056 }
+}

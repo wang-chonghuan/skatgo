@@ -124,7 +124,7 @@ export const GUIDE_EN: Record<string, LessonGuide> = {
   },
   '10': {
     slug: 'how-to-play-skat-well',
-    question: 'How to Play Skat Well: Declarer and Defence Tips',
+    question: 'Skat Tips: Playing Well as Declarer and Defender',
     h1: 'Playing well: basics for declarer and defenders',
     description:
       "Skat strategy for beginners: as declarer, draw trumps before cashing your Aces; as a defender, load points onto your partner's tricks and don't lead trumps.",

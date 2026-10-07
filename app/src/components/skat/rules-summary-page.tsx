@@ -9,7 +9,7 @@ import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { PdfLink, PrintLinks, pdfOf } from './print-links'
+import { PrintLinks, TitleWithDownload, pdfOf } from './print-links'
 import { Block } from './rules-page'
 
 /**
@@ -22,10 +22,9 @@ export function RulesSummaryPage() {
   return (
     <div data-testid="rules-summary" {...stylex.props(styles.root)}>
       <article {...stylex.props(styles.column)}>
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.summary_title()}</h1>
+        <TitleWithDownload title={m.summary_title()} href={pdfOf('summary', locale)} label={m.printables_download()} />
         <div {...stylex.props(styles.screenOnly)}>
           <p {...stylex.props(typography.landingBody, styles.lead)}>{m.summary_lead()}</p>
-          <PdfLink href={pdfOf('summary', locale)} label={m.summary_download()} />
         </div>
         {SUMMARY[locale].map((section) => (
           <section key={section.title} data-testid="summary-section" {...stylex.props(styles.section)}>

@@ -9,7 +9,7 @@ import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { PdfLink, PrintLinks, pdfOf } from './print-links'
+import { PrintLinks, TitleWithDownload, pdfOf } from './print-links'
 
 /** A series at a three-player table, as clubs play it (DSkV): 36 games. */
 export const SERIES_GAMES = 36
@@ -35,11 +35,10 @@ export function ScoreSheetPage() {
   return (
     <div data-testid="score-sheet" {...stylex.props(styles.root)}>
       <article {...stylex.props(styles.column)}>
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.score_title()}</h1>
+        <TitleWithDownload title={m.score_title()} href={pdfOf('scoreSheet', locale)} label={m.printables_download()} />
         <div {...stylex.props(styles.intro)}>
           <p {...stylex.props(typography.landingBody, styles.lead)}>{m.score_lead({ games: SERIES_GAMES })}</p>
           <p {...stylex.props(typography.appText, styles.text)}>{m.score_how()}</p>
-          <PdfLink href={pdfOf('scoreSheet', locale)} label={m.score_download()} />
         </div>
 
         <table data-testid="score-list" {...stylex.props(styles.table)}>
@@ -102,7 +101,6 @@ const styles = stylex.create({
     // On paper the table's outer border needs its own room at the page's edge.
     paddingInline: { default: space.x24, [bp.phone]: space.x12, [bp.print]: space.x2 },
   },
-  title: { margin: 0, color: color.navy },
   // On paper only the title and the tables (SKATGO-53).
   intro: { display: { default: 'flex', [bp.print]: 'none' }, flexDirection: 'column', alignItems: 'flex-start', gap: space.x12 },
   ways: { display: { default: 'flex', [bp.print]: 'none' }, flexDirection: 'column', alignItems: 'flex-start', gap: space.x12 },

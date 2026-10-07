@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-53",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-53",
+  "branch": "SKATGO-53-printables",
+  "base": "ca42933df6e5912ce171d1230806bbb6bceeed68",
+  "ports": { "web": 55053, "multiplayer": 56053, "database": 57053 }
+}

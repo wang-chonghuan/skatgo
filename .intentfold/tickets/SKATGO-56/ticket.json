@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-56",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "auto-merge",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-56",
   "branch": "SKATGO-56-charter-cleanup",

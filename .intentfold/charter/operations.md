@@ -15,10 +15,10 @@ merge. Acceptance verification also uses this file, so stale commands block deli
 **Runtime**
 
 The **`web`** service is the TanStack Start server in `app/`, which renders the page
-shell and public reading content for its localized pages, and serves the built assets. Random
-exercises, cards and personal progress run in the browser. The German root is a stable 200 page;
-legacy German homepage redirects permanently to it, English remains separate, and other translated
-addresses remain unchanged (SKATGO-44). `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*` and
+shell and public reading content for its localized pages, and serves the built assets and the
+printables' PDFs under `/downloads/`, each with a canonical Link header naming its page (SKATGO-53).
+Random exercises, cards and personal progress run in the browser. The German root is a stable 200
+page, and the old German homepage address redirects permanently to it (SKATGO-44). `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*` and
 `/api/free/*`. They pass the daily tournament's and free play's requests on to `multiplayer`. Free
 play includes lesson 11's game (SKATGO-40). `/api/free/*` is limited per address to 300 new games an
 hour and 200 moves per 10 s, and answers `429 slow_down` beyond that.
@@ -74,7 +74,9 @@ diagnostic origin for DNS and TLS checks. No staging.
   environment, Frankfurt. The backend has its own service hostname and does not change DNS.
 - **Search consoles**: Google uses a verified domain property; Bing uses a separately verified site
   in the owner's existing account (SKATGO-44). Both receive the same live sitemap. Retain ownership
-  DNS records across application releases; submitting URLs is not proof of indexing.
+  DNS records across application releases; submitting URLs is not proof of indexing. Daily limits
+  (observed 2026-10-07): Google's URL Inspection takes about ten indexing requests a day before it
+  answers "Quota exceeded"; Bing's URL Submission takes 100 URLs a day.
 
 **Evidence**
 
@@ -172,7 +174,8 @@ writes them). The built server reads them from its environment, so load the file
 
 Locally `app/.env` also carries `MULTIPLAYER_URL` (the local multiplayer service,
 `http://127.0.0.1:<multiplayer-port>`) and `MULTIPLAYER_ADMISSION_KEY` (the value in
-`multiplayer/.env`); without them `/api/daily/*` and `/api/free/*` answer 503. The daily tournament,
+`multiplayer/.env`); without them `/api/daily/*` and `/api/free/*` answer 503. `POSTHOG_PROJECT_KEY`
+is optional locally: without it analytics is not loaded. The daily tournament,
 free play and lesson 11's game run locally with both services and the local database started as Build
 and tests says.
 

@@ -6,9 +6,6 @@ code changes are made, and how they land. Section shape is fixed by `.intentfold
 The dependency inventory belongs to the lockfile; generated structure belongs to its generator.
 Record here only decisions, boundaries, and commands that the repository cannot explain by itself.
 
-> Seeded 2026-09-21 by intentfold cap1 **from the repository and from how it was built** (it was
-> extracted from Parrottoon the same day), and accepted by the human as written.
-
 ## Contract
 
 **Stack**
@@ -18,9 +15,13 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   server endpoint, `POST /api/ask` — the assistant (SKATGO-9) — is answered in `app/src/server.ts` before
   the page router: it streams a contextual answer from Azure OpenAI to any visitor. A Clerk session,
   when present, identifies the learner for rate limiting but never gates the answer (SKATGO-13/14).
-  Its other server endpoints, `POST /api/daily/state` and `/api/daily/act` (SKATGO-35), are answered
-  there too: they pass the daily tournament's requests on to `multiplayer/`, naming the player — the
-  Clerk account, or else a device id from an httpOnly cookie, sent on only as its hash.
+  Its other server endpoints are answered there too and pass requests on to `multiplayer/`:
+  `/api/daily/*` (SKATGO-35), naming the player — the Clerk account, or else a device id from an
+  httpOnly cookie, sent on only as its hash — and `/api/free/*`, free play (SKATGO-40).
+- **Paraglide** (`@inlang/paraglide-js`) owns the two languages: messages in `app/messages/{en,de}.json`,
+  translated addresses in `app/paraglide.options.ts`, compiled into `app/src/paraglide/` (generated).
+- **PostHog** (`posthog-js`, SKATGO-25) counts page views and product events from the browser
+  (`app/src/lib/analytics.ts`), only when `POSTHOG_PROJECT_KEY` is set.
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
   here. Accounts are optional: neither the course nor the assistant requires one.
 - **StyleX, compiled through Astryx's build integration** (`astryxStylex()`), with Astryx's reset and
@@ -67,17 +68,18 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/skat/` | the rules engine (ISkO): cards, trick-taking, game value, settlement, the whole-game state machine, and the computer players (`ai.ts`, which also writes every hint) |
 | `app/src/lib/skat/lessons/` | the course: `content.ts` (lessons), `drills.ts` (randomised exercises whose answers the engine computes), `types.ts` |
 | `app/src/lib/skat/progress.ts` | learner progress in `localStorage` |
-| `app/src/components/skat/` | every page and widget of the course, and its own small UI kit (`ui.tsx`) |
+| `app/src/components/skat/` | every page and widget, and the product's own small UI kit (`ui.tsx`). One file per page: `entry-page.tsx` (the front page), `course-home.tsx`, `lesson-page.tsx` (around `lesson-player.tsx`), `rules-page.tsx`, `bidding-table-page.tsx`, `score-sheet-page.tsx`, `rules-summary-page.tsx`, `daily-page.tsx`, `free-play.tsx`, `legal-page.tsx` (privacy, terms and the footer), `not-found.tsx`; routes reach them only through `client-page.tsx` |
 | `app/src/lib/ask/` | the assistant's server side: the page context it is given, the limits, the model call, and the `/api/ask` handler (with an optional session lookup for rate-limit identity) |
 | `app/src/start.ts` | Clerk's request middleware, which hands each page its session state |
 | `app/src/skat-layout.tsx` | the frame around every page: the front page's header over every page but the tables (lessons included since SKATGO-47; the rail, tab bar and coloured band are gone), or the full-screen table; the legal footer and the floating assistant. The header's pieces — links, language menu, card-colour settings, sign-in — are `components/skat/frame.tsx` |
-| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/$slug` (a lesson), `/rules`, `/rules/bidding-table` (the bidding table, SKATGO-50), `/daily`, `/daily/play`, `/play`, `/privacy`, `/terms`; each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
+| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/$slug` (a lesson), `/rules`, `/rules/bidding-table` (SKATGO-50), `/rules/score-sheet` and `/rules/printable` (the printables, SKATGO-53), `/daily`, `/daily/play`, `/play`, `/privacy`, `/terms`; each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`) is cut from it by `.intentfold/tickets/SKATGO-23/icons.mjs` — regenerate them, never edit them |
 | `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: what seat 0 may see of a deal (`seatView`, also free play's), that view as a table, Seeger-Fabian |
 | `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36) |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
-| `app/src/components/skat/rules-page.tsx`, `bidding-table-page.tsx`, `app/src/lib/skat/rules/` | the rules reference and its text, with anchored sub-headings for topics looked up by name (`#grand`, `#null-ouvert`, `#ramsch`), and the bidding table (SKATGO-50). Every number on both pages — card points, base and Null values, the bid ladder, the multiplier limits — is rendered from `value.ts` and `cards.ts` |
+| `app/src/components/skat/rules-page.tsx`, `bidding-table-page.tsx`, `app/src/lib/skat/rules/` | the rules reference and its text, with anchored sub-headings for topics looked up by name (`#grand`, `#null-ouvert`, `#ramsch`), the bidding table (SKATGO-50), and the printable short version (`rules-summary-page.tsx`, text in `rules/summary.{de,en}.ts`, SKATGO-53). Every number on these pages — card points, base and Null values, the bid ladder, the multiplier limits — is rendered from `value.ts` and `cards.ts` |
+| `app/src/components/skat/score-sheet-page.tsx`, `print-links.tsx`, `app/src/lib/printables.ts`, `app/public/downloads/` | the printables (SKATGO-53): the score sheet (its Seeger-Fabian bonuses are `SEEGER_FABIAN` in `tournament.ts`); the download button and the links to the printables; which PDF belongs to which page; the committed PDFs, made by `app/scripts/make-printables.mjs` (Tools). Each PDF is served with a canonical Link header naming its page, set in `app/vite.config.ts` from `lib/printables.ts` and `lib/origin.ts` |
 | `app/src/components/skat/daily-table.tsx`, `daily-comparison.tsx` | the tournament's button, day result and table; `/daily/play` is its full-screen page. `daily-comparison.tsx` is `VsAiTable`: one collapsible row per finished deal with the player's and the computer's score and their difference, opening to both deals' full result, and a total (SKATGO-42, SKATGO-48) |
 | `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy and its per-address limits, the browser's calls, and the table free play and lesson 11 use (`GameTable` with a `server` source, hints and assistant kept) |
 | `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament; `src/free.ts` free play; `src/computers.ts` the SkatZero computer turns both share; `scripts/make-free-pool.ts` the one-off generator of free play's pool |
@@ -141,9 +143,8 @@ also built from the repository root. Neither project imports the other's runtime
     browser storage; a reload starts a new game.
   - The pool is in the public repository, so its decks are readable. This is accepted because free
     play is unranked.
-- **Split from Parrottoon on 2026-09-21**, as byte copies of its course code, theme and styles; routes
-  moved from `/skat/...` to the root. The two codebases are **not synchronised**: a change in either
-  does not reach the other.
+- **Split from Parrottoon on 2026-09-21**, as byte copies of its course code, theme and styles. The
+  two codebases are **not synchronised**: a change in either does not reach the other.
 - **Two build details are load-bearing and commented where they live**: the CSS layer order in
   `app/src/styles/app.css`, and the lightningcss targets in `app/vite.config.ts` that keep
   `light-dark()` native.
@@ -153,7 +154,7 @@ also built from the repository root. Neither project imports the other's runtime
 **Multiplayer development entry**
 
 [Multiplayer backend guide](../../multiplayer/README.md) is the primary integration
-reference and a major SKATGO-20 deliverable. It covers local startup and environment
+reference. It covers local startup and environment
 variables, SDK room creation/joining/recovery, public and private state, commands
 and receipts, disconnect/AI takeover, persistence, verification, and Render
 release/rollback. Start there when integrating or extending multiplayer; ticket
@@ -193,8 +194,6 @@ npm --prefix app run typecheck && npm --prefix app run build && npm --prefix app
   `build`, in an owned loopback preview with JavaScript disabled. No existing listener is reused.
   `test:seo` proves representative HTTP-response regressions fail and process ownership is respected.
 
-**Architecture and generation**
-
 **Search surface**
 
 From the repository root or `app/`, inspect current code without starting a server manually:
@@ -219,8 +218,10 @@ release-identity guard first. Routes, sitemap registry, lesson guides, indexabil
 patterns derive coverage without a second hand-written page list. The checker verifies visible
 SSR content, reciprocal alternates, self-canonical URLs, Googlebot/Bingbot robots, unique metadata,
 JSON-LD, assets, internal links, stable German root, proxy-safe redirects, noindex personal pages and
-404s. Empty or incomplete derivation fails. `npm run test:seo` exercises actual broken HTTP responses,
-not only validator objects. See [SEO check usage](../../../app/scripts/README.md).
+404s. A file a page links to, such as a printable's PDF, must instead name a sitemap page as its
+canonical in a Link header (SKATGO-53). Empty or incomplete derivation fails. `npm run test:seo`
+exercises actual broken HTTP responses, not only validator objects. See
+[SEO check usage](../../app/scripts/README.md).
 
 Passing proves the rendered contract, not actual indexing, Google-selected canonical, rankings,
 traffic, console configuration or DNS ownership; the command never submits indexing requests.
@@ -235,9 +236,23 @@ It includes `test/skatzero.test.ts`: the committed models match `multiplayer/ska
 an altered model is refused, and the encoder, values and choices equal SkatZero's Python driver on
 the committed fixture (`test/fixtures/skatzero-parity.json`, produced by that driver).
 
-- **Generated, never hand-edited**: `app/src/routeTree.gen.ts` (TanStack Start writes it from
-  `app/src/routes/`), and `app/src/theme/parrottoon.{css,js,d.ts}` (rebuilt from
-  `app/src/theme/parrottoonTheme.ts` — the command is in `ui.md`).
+**Generated, never hand-edited**
+
+- `app/src/routeTree.gen.ts` — TanStack Start writes it from `app/src/routes/` on build or dev.
+- `app/src/paraglide/` — Paraglide compiles it from `app/messages/` on build, dev and typecheck; it is never committed (it ignores itself).
+- `app/src/theme/parrottoon.{css,js,d.ts}` — rebuilt from `app/src/theme/parrottoonTheme.ts`; the
+  command is in `ui.md`.
+- `app/public/og/*.png` — the link-preview pictures, one per page and language, drawn from each page's
+  h1: `node .intentfold/tickets/SKATGO-50/og.mjs <running origin> <page path>…` (Playwright from app's
+  devDependencies). Redraw a page's picture when its h1 changes.
+- `app/public/downloads/*.pdf` — the printables (SKATGO-53), printed from their pages. Rerun after the
+  printables' text, the rules engine's numbers or the print styles change, and commit the PDFs:
+
+```bash
+npm --prefix app run build
+(cd app && set -a && . ./.env && set +a && PORT=<port> node .output/server/index.mjs) &
+node app/scripts/make-printables.mjs http://127.0.0.1:<port>
+```
 
 **Dependencies**
 

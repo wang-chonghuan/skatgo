@@ -1,13 +1,8 @@
 # Product
 
-Human-authored. The machine reads this as binding intent and never edits it.
-Section shape is fixed by `.intentfold/readme.md`.
-
-> Seeded 2026-09-21 by intentfold cap1. **Not derived from code** — every line below restates what
-> the human said when commissioning the course (PARROT-42 in Parrottoon, 2026-09-20) and when
-> splitting it out as skatgo.com (2026-09-21); their words are quoted where they carry the intent.
-> Anything the human has not said is left as a prompt. Correct whatever misreads you — this is the
-> file whose accuracy matters most.
+Human-authored. The machine reads this as binding intent and edits it only with the human's explicit
+approval (Redlines). Section shape is fixed by `.intentfold/readme.md`. The human's words are quoted
+where they carry the intent.
 
 ## Contract
 
@@ -28,10 +23,18 @@ it tells both deals in full — the contract, won or lost with the card points, 
 overbid, the game value, and how many card points that side took. The newest row opens after each deal
 and on the day's page mid-day (SKATGO-48).
 
+Free play at `/play`: one game at a time against the same two computer players, unranked, free and
+without an account (SKATGO-40, SKATGO-50).
+
+A rules reference: the whole rules at `/rules`, with anchors for what people look up by name (Grand,
+Null ouvert, Ramsch); the bidding table; and two printables, a score sheet and a short version of the
+rules, each also as a PDF (SKATGO-29, SKATGO-50, SKATGO-53). Every number in them is the rules
+engine's.
+
 **Who it is for**
 
-Learners from 6 to 99 (the human, 2026-09-21: 「年龄改为6-99岁」; at commissioning it was
-「12岁及其以上的包括成人用户」), who want to be able to sit down at a table with people who already play.
+Learners from 6 to 99 (the human, 2026-09-21: 「年龄改为6-99岁」), who want to be able to sit down at a
+table with people who already play.
 
 Germany is the primary market. German search entry pages and vocabulary take priority; English
 remains an independent secondary language (human, 2026-10-04, SKATGO-44: 「主要用户应该是德国的，
@@ -47,14 +50,11 @@ exposure. Neither alone proves that learners can play, and delayed search report
 
 **What this product is not**
 
-- It speaks German and English. Chinese was removed in SKATGO-28. Public URLs determine page
-  language, and learners can switch it themselves. The German homepage is stable for every browser,
-  replacing the original browser-selected homepage contract (human-authorized SKATGO-44).
-- It is the course and the daily tournament. When it was split from Parrottoon the instruction was
-  「只要课程」: none of Parrottoon's English content, and no link back to Parrottoon. The daily
-  tournament was added by the human on 2026-10-01 (SKATGO-35).
-- <Further deliberate non-goals. The most useful part of this file — it is what stops scope from
-  drifting outward one reasonable-sounding ticket at a time.>
+- It speaks German and English only. Public URLs determine page language, and learners can switch it
+  themselves. The German homepage is the same for every browser (SKATGO-44).
+- It is the course, free play, the daily tournament and the rules reference — nothing from
+  Parrottoon, from which it was split on 2026-09-21: none of Parrottoon's English content, and no link
+  back to it.
 
 ## Tools
 
@@ -62,8 +62,5 @@ exposure. Neither alone proves that learners can play, and delayed search report
 
 ## Redlines
 
-1. **<What this product must never become>** — forbidden outright. <The removed feature that must not
-   come back, the shape it must not take. Keep it detectable: name the route, the file, the
-   dependency, so crossing it is visible without judgement.>
-2. **Editing this file** — not without the human's explicit approval. Product intent is the human's
-   exclusively; the German-market and SEO corrections here were authorized in SKATGO-44.
+1. **Editing this file** — not without the human's explicit approval. Product intent is the human's
+   exclusively.

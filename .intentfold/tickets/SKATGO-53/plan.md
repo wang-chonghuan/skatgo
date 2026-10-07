@@ -41,3 +41,9 @@
   - Redline 4：新路由经 `client-page` 接入；
   - Redline 5、6、7：不涉及。
 - operations.md：不涉及。
+
+## Grill 结论并入
+
+- 第 2 题：记分表 36 行（DSkV 三人桌一轮 Serie 36 局），每行约 6 mm（`dims.scoreRow`，人已批准），36 行加 SF 结算栏放进一页 A4。
+- 第 3 题：规则摘要在「叫牌」后加「拿底牌或 Hand、扣两张」；局值那条写明倍数的组成：mit/ohne、Spiel、Hand、Schneider、Schneider angesagt、Schwarz、Schwarz angesagt、ouvert。
+- 规则页里的 `Block` 和 `EngineTableView` 导出后给摘要页复用，不再写第二份表格组件。

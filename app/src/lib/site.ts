@@ -3,7 +3,9 @@ import { type Locale, localizeHref } from '~/paraglide/runtime'
 // Site-wide facts the pages' <head> and the sitemap need: where the site lives, and how each language
 // is named to browsers and crawlers.
 
-export const SITE_URL = 'https://skatgo.com'
+import { SITE_URL } from './origin'
+
+export { SITE_URL }
 
 /** BCP 47 tag for <html lang> and hreflang. */
 export const LANG_TAG: Record<Locale, string> = { en: 'en', de: 'de' }

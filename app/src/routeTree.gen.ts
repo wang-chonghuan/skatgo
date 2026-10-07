@@ -19,6 +19,8 @@ import { Route as CourseIndexRouteImport } from './routes/course.index'
 import { Route as CourseSlugRouteImport } from './routes/course.$slug'
 import { Route as DailyPlayRouteImport } from './routes/daily_.play'
 import { Route as RulesBiddingTableRouteImport } from './routes/rules_.bidding-table'
+import { Route as RulesPrintableRouteImport } from './routes/rules_.printable'
+import { Route as RulesScoreSheetRouteImport } from './routes/rules_.score-sheet'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +72,16 @@ const RulesBiddingTableRoute = RulesBiddingTableRouteImport.update({
   path: '/rules/bidding-table',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RulesPrintableRoute = RulesPrintableRouteImport.update({
+  id: '/rules_/printable',
+  path: '/rules/printable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RulesScoreSheetRoute = RulesScoreSheetRouteImport.update({
+  id: '/rules_/score-sheet',
+  path: '/rules/score-sheet',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -81,6 +93,8 @@ export interface FileRoutesByFullPath {
   '/course/$slug': typeof CourseSlugRoute
   '/daily/play': typeof DailyPlayRoute
   '/rules/bidding-table': typeof RulesBiddingTableRoute
+  '/rules/printable': typeof RulesPrintableRoute
+  '/rules/score-sheet': typeof RulesScoreSheetRoute
   '/course/': typeof CourseIndexRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +107,8 @@ export interface FileRoutesByTo {
   '/course/$slug': typeof CourseSlugRoute
   '/daily/play': typeof DailyPlayRoute
   '/rules/bidding-table': typeof RulesBiddingTableRoute
+  '/rules/printable': typeof RulesPrintableRoute
+  '/rules/score-sheet': typeof RulesScoreSheetRoute
   '/course': typeof CourseIndexRoute
 }
 export interface FileRoutesById {
@@ -106,6 +122,8 @@ export interface FileRoutesById {
   '/course/$slug': typeof CourseSlugRoute
   '/daily_/play': typeof DailyPlayRoute
   '/rules_/bidding-table': typeof RulesBiddingTableRoute
+  '/rules_/printable': typeof RulesPrintableRoute
+  '/rules_/score-sheet': typeof RulesScoreSheetRoute
   '/course/': typeof CourseIndexRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +138,8 @@ export interface FileRouteTypes {
     | '/course/$slug'
     | '/daily/play'
     | '/rules/bidding-table'
+    | '/rules/printable'
+    | '/rules/score-sheet'
     | '/course/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +152,8 @@ export interface FileRouteTypes {
     | '/course/$slug'
     | '/daily/play'
     | '/rules/bidding-table'
+    | '/rules/printable'
+    | '/rules/score-sheet'
     | '/course'
   id:
     | '__root__'
@@ -144,6 +166,8 @@ export interface FileRouteTypes {
     | '/course/$slug'
     | '/daily_/play'
     | '/rules_/bidding-table'
+    | '/rules_/printable'
+    | '/rules_/score-sheet'
     | '/course/'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +181,8 @@ export interface RootRouteChildren {
   CourseSlugRoute: typeof CourseSlugRoute
   DailyPlayRoute: typeof DailyPlayRoute
   RulesBiddingTableRoute: typeof RulesBiddingTableRoute
+  RulesPrintableRoute: typeof RulesPrintableRoute
+  RulesScoreSheetRoute: typeof RulesScoreSheetRoute
   CourseIndexRoute: typeof CourseIndexRoute
 }
 
@@ -232,6 +258,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RulesBiddingTableRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rules_/printable': {
+      id: '/rules_/printable'
+      path: '/rules/printable'
+      fullPath: '/rules/printable'
+      preLoaderRoute: typeof RulesPrintableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rules_/score-sheet': {
+      id: '/rules_/score-sheet'
+      path: '/rules/score-sheet'
+      fullPath: '/rules/score-sheet'
+      preLoaderRoute: typeof RulesScoreSheetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -245,6 +285,8 @@ const rootRouteChildren: RootRouteChildren = {
   CourseSlugRoute: CourseSlugRoute,
   DailyPlayRoute: DailyPlayRoute,
   RulesBiddingTableRoute: RulesBiddingTableRoute,
+  RulesPrintableRoute: RulesPrintableRoute,
+  RulesScoreSheetRoute: RulesScoreSheetRoute,
   CourseIndexRoute: CourseIndexRoute,
 }
 export const routeTree = rootRouteImport

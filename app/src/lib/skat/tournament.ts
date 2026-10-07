@@ -90,14 +90,18 @@ export function gameFromView(v: SeatView): Game {
   }
 }
 
+/** Seeger-Fabian's bonuses at a three-player table: the declarer's +50 for a won game and −50 for a
+ *  lost one, and each defender's 40 when the declarer loses. The score sheet prints them (SKATGO-53). */
+export const SEEGER_FABIAN = { won: 50, lost: 50, defender: 40 } as const
+
 /** Seeger-Fabian for each seat of a finished deal: the declarer scores the game value + 50 when won,
  *  −2 × value − 50 when lost, and then each defender scores 40. A deal nobody played scores 0. */
 export function seegerFabian(g: Pick<Game, 'phase' | 'declarer' | 'result'>): [number, number, number] {
   const out: [number, number, number] = [0, 0, 0]
   if (g.phase !== 'done' || g.declarer === null || !g.result) return out
   const { won, value } = g.result
-  out[g.declarer] = won ? value + 50 : -2 * value - 50
-  if (!won) for (const s of [0, 1, 2] as Seat[]) if (s !== g.declarer) out[s] = 40
+  out[g.declarer] = won ? value + SEEGER_FABIAN.won : -2 * value - SEEGER_FABIAN.lost
+  if (!won) for (const s of [0, 1, 2] as Seat[]) if (s !== g.declarer) out[s] = SEEGER_FABIAN.defender
   return out
 }
 

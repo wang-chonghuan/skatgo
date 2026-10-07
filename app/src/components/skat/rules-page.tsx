@@ -15,6 +15,7 @@ import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { PrintLinks } from './print-links'
 import { Rich, linkLook } from './ui'
 
 /**
@@ -36,6 +37,7 @@ export function RulesPage() {
           </p>
         ))}
         <Ways />
+        <PrintLinks />
 
         <nav aria-labelledby="rules-contents" data-testid="rules-contents" {...stylex.props(styles.contents)}>
           <h2 id="rules-contents" {...stylex.props(typography.panelLabel, styles.contentsTitle)}>{m.rules_contents()}</h2>
@@ -65,6 +67,7 @@ export function RulesPage() {
               {s.blocks.map((block, i) => (
                 <Block key={i} block={block} />
               ))}
+              {s.id === 'scoring' ? <PrintLinks /> : null}
               {lesson ? (
                 <Link to="/course/$slug" params={{ slug: GUIDES[locale][lesson.id].slug }} data-testid="rules-lesson" {...stylex.props(typography.appBtnStrong, styles.lessonLink)}>
                   {m.rules_lesson_link({ n: lesson.id, title: lesson.title })}
@@ -93,7 +96,8 @@ function Ways() {
 /** A section's sub-headings, listed under it in the contents. */
 const subsOf = (blocks: RuleBlock[]) => blocks.flatMap((b) => (b.kind === 'sub' ? [b] : []))
 
-function Block({ block }: { block: RuleBlock }) {
+/** One block of rules text; also the printable short version's (SKATGO-53). */
+export function Block({ block }: { block: RuleBlock }) {
   if (block.kind === 'sub') {
     return (
       <h3 id={block.anchor} data-testid="rules-sub" {...stylex.props(typography.appBtnStrong, styles.sub)}>
@@ -148,7 +152,7 @@ function EngineTableView({ table }: { table: EngineTable }) {
         <p data-testid="rules-ladder" {...stylex.props(typography.appText, styles.ladder)}>
           {BID_LADDER.join(', ')}
         </p>
-        <Link to="/rules/bidding-table" data-testid="rules-bidding-table" {...stylex.props(typography.appBtnStrong, styles.lessonLink)}>
+        <Link to="/rules/bidding-table" data-testid="rules-bidding-table" {...stylex.props(typography.appBtnStrong, styles.lessonLink, styles.screenOnly)}>
           {m.rules_bidding_table_link()}
         </Link>
       </figure>
@@ -271,6 +275,8 @@ const styles = stylex.create({
   th: { paddingBlock: space.x8, paddingInline: space.x12, textAlign: 'start', color: color.slate, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
   td: { paddingBlock: space.x8, paddingInline: space.x12, textAlign: 'start', color: color.text, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
   number: { textAlign: 'end' },
+  // A link is no use on paper (SKATGO-53).
+  screenOnly: { display: { default: 'inline', [bp.print]: 'none' } },
   lessonLink: {
     alignSelf: 'flex-start',
     color: color.info,

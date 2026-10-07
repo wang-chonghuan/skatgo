@@ -53,6 +53,21 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/regeln/reiztabelle'],
       ],
     },
+    // The printables (SKATGO-53): the score sheet and the short version of the rules.
+    {
+      pattern: '/rules/score-sheet',
+      localized: [
+        ['en', '/en/rules/score-sheet'],
+        ['de', '/de/regeln/skatliste'],
+      ],
+    },
+    {
+      pattern: '/rules/printable',
+      localized: [
+        ['en', '/en/rules/printable'],
+        ['de', '/de/regeln/zum-ausdrucken'],
+      ],
+    },
     {
       pattern: '/daily',
       localized: [

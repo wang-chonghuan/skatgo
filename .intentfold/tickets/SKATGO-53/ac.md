@@ -4,14 +4,14 @@ The built server runs on 55053. These are static pages, so no multiplayer servic
 
 ## AC1 — Score sheet
 
-- **Check**: `/de/regeln/skatliste` and `/en/rules/score-sheet` render the table in the server HTML, read with JavaScript off. The table has the agreed columns and rows, and the Seeger-Fabian box's 50 / 40 equal the engine's `SEEGER_FABIAN`.
+- **Check**: `/de/regeln/skatliste` and `/en/rules/score-sheet` render the table in the server HTML, read with JavaScript off. The table has the agreed columns and 36 rows, and the Seeger-Fabian box's 50 / 40 equal the engine's `SEEGER_FABIAN`.
 - **Check**: print emulation shows only the title and the table(s); no header, footer, navigation, buttons or links.
 - **Check**: the PDF link answers 200 with `application/pdf`, and the PDF is one A4 page. The page count is read by counting `/Type /Page` objects in the file, since no PDF library may be added.
 - **True when** all of the above hold in both languages.
 
 ## AC2 — Rules summary
 
-- **Check**: in the server HTML of `/de/regeln/zum-ausdrucken` and `/en/rules/printable`, the card points, base values, Null values and bid ladder equal `POINTS`, `SUIT_BASE`, `GRAND_BASE`, `NULL_VALUES` and `BID_LADDER`.
+- **Check**: in the server HTML of `/de/regeln/zum-ausdrucken` and `/en/rules/printable`, the card points, base values, Null values and bid ladder equal `POINTS`, `SUIT_BASE`, `GRAND_BASE`, `NULL_VALUES` and `BID_LADDER`. The text covers picking up the skat or playing Hand and discarding two cards, and names every part of the multiplier.
 - **Check**: print emulation shows no navigation and no buttons. `page.pdf({ format: 'A4' })` of the page gives two pages or fewer, and the downloadable PDF has two pages or fewer.
 - **True when** all hold in both languages.
 

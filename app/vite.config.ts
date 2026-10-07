@@ -7,8 +7,25 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 
 import { paraglideOptions } from './paraglide.options'
+import { SITE_URL } from './src/lib/origin'
+import { PRINTABLES } from './src/lib/printables'
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url))
+
+// Each printable PDF names the page it is printed from as its canonical URL (SKATGO-53), in an HTTP Link
+// header, so search engines rank the page rather than the file. The page's address in each language is
+// the Paraglide pattern's, as everywhere else.
+function pageUrl(route: string, locale: string): string {
+  const pattern = paraglideOptions.urlPatterns?.find((p) => p.pattern === route)
+  const path = pattern?.localized.find(([l]) => l === locale)?.[1]
+  if (!path) throw new Error(`No address for ${route} in ${locale}`)
+  return `${SITE_URL}${path}`
+}
+const printableRules = Object.fromEntries(
+  Object.values(PRINTABLES).flatMap(({ route, pdf }) =>
+    Object.entries(pdf).map(([locale, file]) => [file, { headers: { link: `<${pageUrl(route, locale)}>; rel="canonical"` } }]),
+  ),
+)
 
 // Styling is StyleX only — no Tailwind, no PostCSS framework, no utility CSS.
 // `astryxStylex()` is the official Astryx build integration: it configures the
@@ -38,7 +55,7 @@ export default defineConfig(() => {
       tanstackStart(),
       // react's vite plugin must come after start's vite plugin
       viteReact(),
-      nitro(),
+      nitro({ routeRules: printableRules }),
     ],
   }
 })

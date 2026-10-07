@@ -1,6 +1,6 @@
 # SKATGO-53 grill
 
-Grill：human，由人回答，下列建议是机器的推荐。
+Grill：human（写这批问题时）。随后人授权本工单由机器自行裁决 grill（2026-10-07，原话：「grill一下53的grill」），工单 Grill 行改为 self。第 5 题属于 ui.md 红线 1，由人明确批准；其余由 pm 会话依据 charter、工单、SKATGO-49/51/52 的数据和实际观察裁决。
 
 1. **地址**：两页都放在规则下面，和叫牌表并列。
 
@@ -58,4 +58,15 @@ Grill：human，由人回答，下列建议是机器的推荐。
 
 ## 回答
 
-（待人回答）
+1. **采纳**：`/de/regeln/skatliste`、`/de/regeln/zum-ausdrucken`、`/en/rules/score-sheet`、`/en/rules/printable`。
+2. **采纳，行数改为 36**：一张表 36 行，对应德国俱乐部惯例（DSkV）三人桌一轮（Serie）36 局，俱乐部可以直接拿去用，这也是 SKATGO-54 换外链的筹码。行高随之约 6 mm（见第 5 题）。其余采纳：Spiel / Wert / 三名玩家累计列，底部 Seeger-Fabian 结算栏，50 / 40 从引擎导出的常量来（行为不变），只做三人桌。
+3. **采纳，补一条**：在「叫牌」之后加「拿底牌或 Hand、扣两张（Skat aufnehmen und drücken）」，这是核心规则，原列表漏了；「局值 = 基础值 × 倍数」那条写明倍数由 mit/ohne、Spiel、Hand、Schneider、Schwarz、各自叫出（angesagt）和 Ouvert 组成，数字从引擎来。其余按建议，两页 A4 以内。
+4. **采纳**：本地用 Playwright 按打印样式生成 4 个 PDF 提交到 `app/public/downloads/`，不加依赖；在 engineering.md Tools 里记这个脚本属于 charter 改动，只报告、不改，由人决定。
+5. **人批准**（2026-10-07，在 pm 会话中明确批准，ui.md 红线 1）：新增 `dims.scoreRow`，**36 行、约 6 mm 一行**，保证 36 行加 Seeger-Fabian 结算栏放进一页 A4。打印用小字号角色若需要，再单独问人。
+6. **采纳**：规则页、叫牌表页、课程页加入口。
+7. **采纳**：已核实 SKATGO-52 交接对照表把「Skat Punkte aufschreiben」明确留给本单，第 9 课标题是「Skat Abrechnung」，不冲突。
+8. **采纳**：4 个新页面生成预览图。
+
+## 结论
+
+全部裁决完毕（第 5 题人批准）。改进 `plan.md` / `ac.md`：记分表 36 行、行高约 6 mm；规则摘要补「拿底牌 / Hand / 扣牌」和倍数构成。其余按原稿开发。

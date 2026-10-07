@@ -54,7 +54,7 @@ export function DailyEntry() {
             <Panel>
               <section data-testid="daily-so-far" {...stylex.props(styles.result)}>
                 <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_vs_ai_title()}</h2>
-                <VsAiTable deals={status.deals} benchmarks={status.benchmarks} openLatest />
+                <VsAiTable deals={status.deals} benchmarks={status.benchmarks} auctions={status.auctions} benchmarkAuctions={status.benchmarkAuctions} openLatest />
               </section>
             </Panel>
           ) : null}
@@ -181,7 +181,7 @@ function DailyResult({ status, board, onNamed }: { status: DailyStatus; board: D
     <Panel>
       <section data-testid="daily-result" data-total={status.totals[PLAYER]} {...stylex.props(styles.result)}>
         <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_result_title()}</h2>
-        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} />
+        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} auctions={status.auctions} benchmarkAuctions={status.benchmarkAuctions} />
         {board ? <Nickname key={board.me?.nickname ?? ''} board={board} onNamed={onNamed} /> : null}
       </section>
     </Panel>
@@ -267,6 +267,8 @@ export function DailyTable() {
         totals: busy ? before.current : reply.status.totals,
         deals: reply.status.deals,
         benchmarks: reply.status.benchmarks,
+        auctions: reply.status.auctions,
+        benchmarkAuctions: reply.status.benchmarkAuctions,
       }}
     />
   )

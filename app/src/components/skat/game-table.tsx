@@ -28,7 +28,7 @@ import {
   runningPoints,
   trickWinner,
 } from '~/lib/skat/game'
-import { type DealSummary, seegerFabian } from '~/lib/skat/tournament'
+import { type Auction, type DealSummary, seegerFabian } from '~/lib/skat/tournament'
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
@@ -44,7 +44,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { VsAiTable } from './daily-comparison'
+import { DealVsAi, Fold, VsAiTable } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
@@ -96,7 +96,14 @@ export type Tournament = {
   /** The day's finished deals and, for each, the AI's result in the player's seat (SKATGO-42). */
   deals?: DealSummary[]
   benchmarks?: (DealSummary | null)[]
+  /** Each finished deal's auction, the player's and the AI's (SKATGO-57). */
+  auctions?: Auction[]
+  benchmarkAuctions?: (Auction | null)[]
 }
+
+/** What the settlement shows in the tournament (SKATGO-57): this deal against the AI first, the day so far
+ *  folded away under it. */
+type DailyAfter = { compare: ReactNode; day: ReactNode }
 
 /** A game the server owns, as free play and lesson 11 play it (SKATGO-40): the learner's moves go to
  *  `send`, `game` is what came back; hints and the assistant are as at the local table. */
@@ -264,9 +271,26 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
   // With the panel pinned open, the learner's move is made in the panel, as Funbridge's bidding box is
   // (SKATGO-34): nothing then lies over the table. Otherwise it is the drawer over the felt.
   const movesInPanel = fullScreen && pinned && panelOpen
-  // In the tournament, after each deal: the running table against the AI, the deal just played open
-  // (SKATGO-42, SKATGO-48).
-  const dailyAfter = tournament?.deals ? <VsAiTable deals={tournament.deals} benchmarks={tournament.benchmarks} openLatest /> : null
+  // In the tournament, after each deal (SKATGO-57): the deal just played against the AI, then the day so
+  // far, folded (SKATGO-42, SKATGO-48). The deal on the table is the one the server just recorded.
+  const finished = tournament?.deals?.[tournament.deal]
+  const dailyAfter: DailyAfter | null = tournament?.deals
+    ? {
+        compare: finished ? (
+          <DealVsAi
+            mine={finished}
+            ai={tournament.benchmarks?.[tournament.deal] ?? null}
+            mineAuction={tournament.auctions?.[tournament.deal]}
+            aiAuction={tournament.benchmarkAuctions?.[tournament.deal] ?? null}
+          />
+        ) : null,
+        day: (
+          <Fold label={m.daily_day_fold({ n: tournament.deals.length, of: tournament.of })} testId="daily-day-fold">
+            <VsAiTable deals={tournament.deals} benchmarks={tournament.benchmarks} auctions={tournament.auctions} benchmarkAuctions={tournament.benchmarkAuctions} />
+          </Fold>
+        ),
+      }
+    : null
 
   return (
     <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>
@@ -566,7 +590,7 @@ function ActionsFor({
   /** In the tournament: this is the day's last deal. */
   last: boolean
   /** In the tournament: the AI's result and the running table, shown once the deal is over. */
-  daily?: ReactNode
+  daily?: DailyAfter | null
 }) {
   return (
     <Actions
@@ -695,7 +719,7 @@ type ActionsProps = {
   hints: boolean
   dealScore: number | null
   last: boolean
-  daily?: ReactNode
+  daily?: DailyAfter | null
 }
 
 function Actions(p: ActionsProps) {
@@ -706,7 +730,8 @@ function Actions(p: ActionsProps) {
     return (
       <Dialog>
         <Say>{p.dealScore === null ? m.table_passed_in() : m.daily_passed_in()}</Say>
-        {p.daily}
+        {p.daily?.compare}
+        {p.daily?.day}
         <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={p.onNewGame}>
           {p.dealScore === null ? m.table_redeal() : p.last ? m.daily_see_result() : m.daily_next_deal()}
         </Btn>
@@ -880,7 +905,7 @@ function DeclarePicker({
   )
 }
 
-function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: ReactNode }) {
+function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null }) {
   const r = game.result!
   const declarer = game.declarer!
   const d = game.declaration!
@@ -900,43 +925,54 @@ function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNew
         base: r.base,
         value: r.base * r.multiplier,
       })
+  // How the game was settled, line by line: the whole settlement in free play, the details in the
+  // tournament, where the deal against the AI comes first (SKATGO-57).
+  const settlement = (
+    <>
+      <p {...stylex.props(typography.note, styles.note)}>
+        <Rich
+          text={m.result_line({
+            who: declarer === ME ? m.result_you_declared() : m.result_other_declared({ name: nameOf(declarer) }),
+            contract: contractName(d.contract),
+            bid: game.bid,
+            reason: settleReason(r.reason),
+          })}
+        />
+      </p>
+      {isNull ? null : (
+        <p data-testid="skat-result-points" {...stylex.props(typography.note, styles.note)}>
+          <Rich text={m.result_points({ declarer: r.declarerPoints, defenders: r.defenderPoints })} />
+        </p>
+      )}
+      <p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>
+      <p {...stylex.props(typography.note, styles.note)}>
+        <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score))} />
+      </p>
+      <div {...stylex.props(styles.resultSkat)}>
+        <span {...stylex.props(typography.smallBold, styles.inkLabel)}>{m.result_skat()}</span>
+        {game.skat.map((c) => <PlayingCard key={cardId(c)} card={c} size="xs" />)}
+      </div>
+    </>
+  )
   return (
     <Dialog>
     <div ref={panel} data-testid="skat-result" data-human-won={String(humanWon)} {...stylex.props(styles.declare)}>
-      <Panel tone={humanWon ? 'good' : 'bad'}>
-        <div {...stylex.props(styles.resultBody)}>
-          <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
-          <p {...stylex.props(typography.note, styles.note)}>
-            <Rich
-              text={m.result_line({
-                who: declarer === ME ? m.result_you_declared() : m.result_other_declared({ name: nameOf(declarer) }),
-                contract: contractName(d.contract),
-                bid: game.bid,
-                reason: settleReason(r.reason),
-              })}
-            />
-          </p>
-          {isNull ? null : (
-            <p data-testid="skat-result-points" {...stylex.props(typography.note, styles.note)}>
-              <Rich text={m.result_points({ declarer: r.declarerPoints, defenders: r.defenderPoints })} />
-            </p>
-          )}
-          <p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>
-          <p {...stylex.props(typography.note, styles.note)}>
-            <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score))} />
-          </p>
-          {dealScore === null ? null : (
-            <p data-testid="daily-deal-score" data-score={dealScore} {...stylex.props(typography.note, styles.note)}>
-              <Rich text={m.daily_deal_score({ score: dealScore > 0 ? `+${dealScore}` : String(dealScore) })} />
-            </p>
-          )}
-          {daily}
-          <div {...stylex.props(styles.resultSkat)}>
-            <span {...stylex.props(typography.smallBold, styles.inkLabel)}>{m.result_skat()}</span>
-            {game.skat.map((c) => <PlayingCard key={cardId(c)} card={c} size="xs" />)}
+      {daily ? (
+        <Panel>
+          <div {...stylex.props(styles.resultBody)}>
+            {daily.compare}
+            <Fold label={m.daily_details()} testId="daily-details-fold">{settlement}</Fold>
+            {daily.day}
           </div>
-        </div>
-      </Panel>
+        </Panel>
+      ) : (
+        <Panel tone={humanWon ? 'good' : 'bad'}>
+          <div {...stylex.props(styles.resultBody)}>
+            <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
+            {settlement}
+          </div>
+        </Panel>
+      )}
       <Row>
         <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={onNewGame}>
           {dealScore === null ? m.result_new_game() : last ? m.daily_see_result() : m.daily_next_deal()}

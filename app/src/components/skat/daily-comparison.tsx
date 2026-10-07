@@ -1,10 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
 import { contractName } from '~/lib/skat/i18n'
 import type { Seat } from '~/lib/skat/game'
-import { type DealSummary, PLAYER, totals } from '~/lib/skat/tournament'
+import { type Auction, type DealSummary, PLAYER, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -13,6 +13,7 @@ import { timing } from '../../theme/effects.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { Rich } from './ui'
 
 // The day against the AI (SKATGO-42, SKATGO-48): every deal the player has finished, beside the same deal
 // played by the computer in the player's seat against the same two computers — worked out when the day
@@ -26,6 +27,9 @@ import { typography } from '../../theme/type'
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 
 const NAMES = [m.name_you, m.name_lina, m.name_max] as const
+/** The seats' names in the player's deal, and in the AI's, where the AI sits in the player's seat. */
+const youNames = () => [m.name_you(), m.name_lina(), m.name_max()]
+const aiNames = () => [m.daily_ai(), m.name_lina(), m.name_max()]
 
 /** The seat's part in a deal, as a word under its score. */
 function roleOf(d: DealSummary): string {
@@ -33,11 +37,9 @@ function roleOf(d: DealSummary): string {
   return d.declarer === PLAYER ? m.daily_role_declarer() : m.daily_role_defender()
 }
 
-/** What happened on one side of a deal, as one line: declarer and game, the outcome, the seat's side. */
-function storyOf(d: DealSummary, own: string, side: (points: number) => string): string {
-  if (d.declarer === null || !d.declaration) return m.daily_passed_in_short()
-  const decl = d.declaration
-  const who = d.declarer === PLAYER ? own : NAMES[d.declarer as Seat]()
+/** The declarer and the game, the outcome with its card points, and what made it big or lost it. */
+function playedParts(d: DealSummary, who: string): string[] {
+  const decl = d.declaration!
   const game = [
     contractName(decl.contract),
     decl.hand ? 'Hand' : null,
@@ -53,14 +55,100 @@ function storyOf(d: DealSummary, own: string, side: (points: number) => string):
   if (x.schwarz) parts.push('Schwarz')
   else if (x.schneider) parts.push('Schneider')
   if (x.overbid) parts.push(m.daily_overbid())
+  return parts
+}
+
+/** What happened on one side of a deal, as one line: declarer and game, the outcome, the seat's side. */
+function storyOf(d: DealSummary, own: string, side: (points: number) => string): string {
+  if (d.declarer === null || !d.declaration) return m.daily_passed_in_short()
+  const decl = d.declaration
+  const x = d.detail!
+  const parts = playedParts(d, d.declarer === PLAYER ? own : NAMES[d.declarer as Seat]())
   parts.push(m.daily_value({ value: x.value }))
   if (decl.contract.kind !== 'null') parts.push(side(d.declarer === PLAYER ? x.declarerPoints : x.defenderPoints))
   return parts.join(' · ')
 }
 
+/** A deal's auction as one line (SKATGO-57): each seat's highest number, or pass; the declarer bold. */
+function auctionLine(a: Auction, d: DealSummary, names: string[]): string {
+  if (d.declarer === null) return m.daily_all_passed()
+  return a.map((s, seat) => {
+    const said = `${names[seat]} ${s.value > 0 ? s.value : m.daily_pass()}`
+    return seat === d.declarer ? `**${said}**` : said
+  }).join(' · ')
+}
+
+/** Every seat's Seeger-Fabian score in a deal, the player's (or the AI's) first. */
+const scoresLine = (d: DealSummary, names: string[]) => d.scores.map((s, seat) => `${names[seat]} ${signed(s)}`).join(' · ')
+
+/**
+ * One deal, the player against the AI (SKATGO-57) — what the settlement leads with: the two scores and
+ * their difference, then each side's auction, game and every seat's score, so the player sees at once
+ * whether they played it well and why. Side by side on a wide screen, one above the other on a phone.
+ */
+export function DealVsAi({ mine, ai, mineAuction, aiAuction }: { mine: DealSummary; ai: DealSummary | null; mineAuction?: Auction; aiAuction?: Auction | null }) {
+  const you = mine.scores[PLAYER]
+  const theirs = ai ? ai.scores[PLAYER] : null
+  return (
+    <section data-testid="daily-deal-vs-ai" data-you={you} data-ai={theirs ?? ''} data-diff={theirs === null ? '' : you - theirs} {...stylex.props(styles.deal)}>
+      <div {...stylex.props(styles.stats)}>
+        <Stat label={m.name_you()} value={signed(you)} testId="daily-deal-you" />
+        <Stat label={m.daily_ai()} value={theirs === null ? '–' : signed(theirs)} testId="daily-deal-ai" />
+        <Stat label={m.daily_col_diff()} value={theirs === null ? '–' : signed(you - theirs)} testId="daily-deal-diff" />
+      </div>
+      <div {...stylex.props(styles.sides)}>
+        <Side side="you" title={m.name_you()} d={mine} a={mineAuction} names={youNames()} />
+        {ai ? <Side side="ai" title={m.daily_ai()} d={ai} a={aiAuction ?? undefined} names={aiNames()} /> : null}
+      </div>
+    </section>
+  )
+}
+
+function Stat({ label, value, testId }: { label: string; value: string; testId: string }) {
+  return (
+    <span data-testid={testId} {...stylex.props(styles.stat)}>
+      <span {...stylex.props(typography.small, styles.muted)}>{label}</span>
+      <span {...stylex.props(typography.dialogTitle)}>{value}</span>
+    </span>
+  )
+}
+
+function Side({ side, title, d, a, names }: { side: 'you' | 'ai'; title: string; d: DealSummary; a?: Auction; names: string[] }) {
+  const lines: [string, string][] = [
+    [m.daily_line_bidding(), a ? auctionLine(a, d, names) : '–'],
+    [m.daily_line_game(), d.declarer === null || !d.declaration ? m.daily_passed_in_short() : playedParts(d, names[d.declarer]).join(' · ')],
+    [m.daily_line_scores(), scoresLine(d, names)],
+  ]
+  return (
+    <div data-testid="daily-deal-side" data-side={side} {...stylex.props(styles.side)}>
+      <span {...stylex.props(typography.smallBold, styles.sideTitle)}>{title}</span>
+      {lines.map(([label, text]) => (
+        <p key={label} {...stylex.props(styles.sideLine)}>
+          <span {...stylex.props(typography.micro, styles.muted)}>{label}</span>
+          <span {...stylex.props(typography.note, styles.sideText)}><Rich text={text} /></span>
+        </p>
+      ))}
+    </div>
+  )
+}
+
+/** A part of the settlement that opens on a tap (SKATGO-57): the deal's details, the day so far. */
+export function Fold({ label, testId, children }: { label: string; testId: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div data-testid={testId} data-open={open} {...stylex.props(styles.fold)}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} {...stylex.props(typography.smallBold, styles.foldButton)}>
+        <span>{label}</span>
+        {open ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />}
+      </button>
+      {open ? <div {...stylex.props(styles.foldBody)}>{children}</div> : null}
+    </div>
+  )
+}
+
 /** The running comparison: one foldable row per finished deal, the player against the AI, and the
  *  totals. `openLatest` opens the newest row — after a deal, and on the day's page while it runs. */
-export function VsAiTable({ deals, benchmarks, openLatest = false }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; openLatest?: boolean }) {
+export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, openLatest = false }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; auctions?: Auction[]; benchmarkAuctions?: (Auction | null)[]; openLatest?: boolean }) {
   const latest = deals.length - 1
   const [open, setOpen] = useState<number[]>(openLatest ? [latest] : [])
   useEffect(() => {
@@ -108,12 +196,18 @@ export function VsAiTable({ deals, benchmarks, openLatest = false }: { deals: De
                 <div id={id} data-testid="daily-vs-ai-detail" {...stylex.props(styles.detail)}>
                   <p data-side="you" {...stylex.props(styles.line)}>
                     <span {...stylex.props(typography.smallBold, styles.who)}>{m.name_you()}</span>
-                    <span {...stylex.props(typography.note)}>{storyOf(d, m.name_you(), (points) => m.daily_side_you({ points }))}</span>
+                    <span {...stylex.props(typography.note)}>
+                      {storyOf(d, m.name_you(), (points) => m.daily_side_you({ points }))}
+                      {auctions?.[i] ? <> · <Rich text={auctionLine(auctions[i], d, youNames())} /></> : null}
+                    </span>
                   </p>
                   {b ? (
                     <p data-side="ai" {...stylex.props(styles.line)}>
                       <span {...stylex.props(typography.smallBold, styles.who)}>{m.daily_ai()}</span>
-                      <span {...stylex.props(typography.note)}>{storyOf(b, m.daily_ai(), (points) => m.daily_side_ai({ points }))}</span>
+                      <span {...stylex.props(typography.note)}>
+                        {storyOf(b, m.daily_ai(), (points) => m.daily_side_ai({ points }))}
+                        {benchmarkAuctions?.[i] ? <> · <Rich text={auctionLine(benchmarkAuctions[i]!, b, aiNames())} /></> : null}
+                      </span>
                     </p>
                   ) : null}
                 </div>
@@ -136,12 +230,60 @@ function Score({ score, role }: { score: number; role: string }) {
   return (
     <span {...stylex.props(styles.cell)}>
       <span {...stylex.props(typography.appBtnStrong)}>{signed(score)}</span>
-      <span {...stylex.props(typography.micro, styles.muted)}>{role}</span>
+      <span {...stylex.props(typography.micro, styles.muted, styles.role)}>{role}</span>
     </span>
   )
 }
 
 const styles = stylex.create({
+  deal: { display: 'flex', flexDirection: 'column', gap: space.x12, color: color.navy },
+  stats: { display: 'flex', gap: space.x8 },
+  stat: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    flexGrow: 1,
+    flexBasis: 0,
+    paddingBlock: space.x8,
+    borderRadius: radii.column,
+    backgroundColor: color.page,
+    color: color.navy,
+  },
+  sides: { display: 'flex', flexDirection: { default: 'row', [bp.phone]: 'column' }, gap: space.x8 },
+  side: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x6,
+    flexGrow: 1,
+    flexBasis: 0,
+    minWidth: 0,
+    padding: space.x10,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.hairline,
+    borderRadius: radii.column,
+  },
+  sideTitle: { color: color.navy },
+  sideLine: { display: 'flex', flexDirection: 'column', margin: 0 },
+  sideText: { color: color.text, overflowWrap: 'anywhere' },
+  fold: { display: 'flex', flexDirection: 'column', borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  foldButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingBlock: space.x8,
+    paddingInline: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: color.slate,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  foldBody: { display: 'flex', flexDirection: 'column', gap: space.x6, paddingBottom: space.x8 },
   table: { display: 'flex', flexDirection: 'column', color: color.navy },
   // Deal, you, the AI, the difference: the same columns in the header, every row and the total.
   grid: {
@@ -175,6 +317,8 @@ const styles = stylex.create({
     outlineOffset: border.focusOffset,
   },
   cell: { display: 'flex', flexDirection: 'column', minWidth: 0 },
+  // A narrow column (the table inside the settlement on a phone) shortens the role, never overlaps it.
+  role: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   diff: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: space.x4 },
   end: { textAlign: 'end' },
   muted: { color: color.slate },

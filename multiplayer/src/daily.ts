@@ -7,7 +7,7 @@ import { chooseDeclaration, declarationAdvice } from '../../app/src/lib/skat/ai'
 import { actor, aiBid, deal, next, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { shuffle } from '../../app/src/lib/skat/cards'
 import {
-  DAILY_DEALS, DAILY_TIME_ZONE, PLAYER, seatView, summarize, totals, type DailyStatus, type DealSummary, type SeatView,
+  DAILY_DEALS, DAILY_TIME_ZONE, PLAYER, auctionOf, seatView, summarize, totals, type DailyStatus, type DealSummary, type SeatView,
 } from '../../app/src/lib/skat/tournament'
 import { cleanNickname } from '../../app/src/lib/skat/nickname'
 import { actionSchema, applySeatMove, computerMove, Rejected, secretEquals, secureDeck } from './model'
@@ -132,11 +132,21 @@ const boardInput = z.object({ player: player.nullable(), day: z.enum(['today', '
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
 
 /** Where the player stands. The computer's result of a deal goes with the player's own, only once the
- *  player has finished that deal (SKATGO-42); days dealt before it have none. */
-function status(day: string, e: Entry | null, specs: DealSpec[]): DailyStatus {
+ *  player has finished that deal (SKATGO-42); days dealt before it have none. Each finished deal's
+ *  auction, the player's and the computer's, is replayed from the recorded moves (SKATGO-57): nothing
+ *  more is stored, and the engine gives the same auction every time. */
+function status(day: string, e: Entry | null, specs: DealSpec[], computer: string): DailyStatus {
   const deals = e?.deals ?? []
   const benchmarks = deals.map((_, i) => specs[i]?.benchmark?.summary ?? null)
-  return { day, of: DAILY_DEALS, deal: deals.length, deals, totals: totals(deals), started: !!e, finished: !!e?.finished_at, benchmarks }
+  const auctions = deals.map((_, i) =>
+    auctionOf(computer === HEURISTIC
+      ? replay(specs[i], (e!.actions[i] ?? []) as Move[])
+      : replayLog(specs[i].dealer, specs[i].deck, (e!.actions[i] ?? []) as Logged[])))
+  const benchmarkAuctions = deals.map((_, i) => {
+    const b = specs[i]?.benchmark
+    return b ? auctionOf(replayLog(specs[i].dealer, specs[i].deck, b.log)) : null
+  })
+  return { day, of: DAILY_DEALS, deal: deals.length, deals, totals: totals(deals), started: !!e, finished: !!e?.finished_at, benchmarks, auctions, benchmarkAuctions }
 }
 
 /** The day's deals. Requests never deal: a day is dealt ahead by prepareDays; one that is not there yet
@@ -275,17 +285,17 @@ export async function dailyState(store: Store, policy: Policy, who: string, open
   return store.transaction(async c => {
     const { deals: specs, computer } = await dayOfDeals(c, day)
     let e = await entryOf(c, day, who)
-    if (!e && !open) return { status: status(day, null, specs), view: null, revision: 0 }
+    if (!e && !open) return { status: status(day, null, specs, computer), view: null, revision: 0 }
     if (!e) {
       await c.query('INSERT INTO daily_entries (day, player, actions, deals, total, created_at) VALUES ($1, $2, $3, $4, 0, $5)',
         [day, who, JSON.stringify([[]]), '[]', now])
       e = { actions: [[]], deals: [], total: 0, finished_at: null }
     }
-    if (e.finished_at || !open) return { status: status(day, e, specs), view: null, revision: 0 }
+    if (e.finished_at || !open) return { status: status(day, e, specs, computer), view: null, revision: 0 }
     const before = JSON.stringify(e)
     const g = computer === HEURISTIC ? settleEnded(specs, e, now) : await settleRecorded(specs, e, now, policy, computer)
     if (JSON.stringify(e) !== before) await save(c, day, who, e)
-    return { status: status(day, e, specs), view: g ? seatView(g) : null, revision: g ? e.actions[e.deals.length].length : 0 }
+    return { status: status(day, e, specs, computer), view: g ? seatView(g) : null, revision: g ? e.actions[e.deals.length].length : 0 }
   })
 }
 
@@ -322,7 +332,7 @@ export async function dailyAct(store: Store, policy: Policy, input: z.infer<type
     }
     await save(c, day, input.player, e)
     return {
-      status: status(day, e, specs),
+      status: status(day, e, specs, computer),
       steps: steps.map(seatView) as SeatView[],
       revision: current ? e.actions[e.deals.length].length : 0,
     }

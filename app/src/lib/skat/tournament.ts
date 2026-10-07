@@ -155,6 +155,21 @@ export function summarize(g: Game): DealSummary {
   }
 }
 
+/** What one seat said in a deal's auction (SKATGO-57): the highest number it named or held — 0 when it
+ *  passed before any — and whether it passed. The declarer is the seat that did not. */
+export type SeatBid = { value: number; passed: boolean }
+export type Auction = [SeatBid, SeatBid, SeatBid]
+
+/** A deal's auction, from the engine's own record of it. */
+export function auctionOf(g: Game): Auction {
+  const out: Auction = [{ value: 0, passed: false }, { value: 0, passed: false }, { value: 0, passed: false }]
+  for (const e of g.bidding.log) {
+    if (e.say === 'pass') out[e.seat].passed = true
+    else out[e.seat].value = Math.max(out[e.seat].value, e.value)
+  }
+  return out
+}
+
 /** Running Seeger-Fabian totals per seat over a day's finished deals. */
 export function totals(deals: DealSummary[]): [number, number, number] {
   return deals.reduce<[number, number, number]>((t, d) => [t[0] + d.scores[0], t[1] + d.scores[1], t[2] + d.scores[2]], [0, 0, 0])
@@ -175,6 +190,10 @@ export type DailyStatus = {
    *  its contract, declarer and Seeger-Fabian scores ([0] is the computer's). Null on days dealt
    *  before it. */
   benchmarks?: (DealSummary | null)[]
+  /** Each finished deal's auction, the player's (`auctions`) and the AI's (`benchmarkAuctions`)
+   *  (SKATGO-57). Not stored: the server replays each deal's recorded moves through the engine. */
+  auctions?: Auction[]
+  benchmarkAuctions?: (Auction | null)[]
 }
 
 /** What the server answers: where the player stands, the current deal as they see it (when it was

@@ -78,38 +78,53 @@ function auctionLine(a: Auction, d: DealSummary, names: string[]): string {
   }).join(' · ')
 }
 
-/** Every seat's Seeger-Fabian score in a deal, the player's (or the AI's) first. */
-const scoresLine = (d: DealSummary, names: string[]) => d.scores.map((s, seat) => `${names[seat]} ${signed(s)}`).join(' · ')
-
 /**
- * One deal, the player against the AI (SKATGO-57) — what the settlement leads with: the two scores and
- * their difference, then each side's auction, game and every seat's score, so the player sees at once
- * whether they played it well and why. Side by side on a wide screen, one above the other on a phone.
+ * One deal, the player against the AI (SKATGO-57) — what the settlement leads with: all three seats'
+ * Seeger-Fabian scores in the player's deal and in the AI's (the AI in the player's seat), and the
+ * difference on every seat, because Skat is played by three; then each side's auction and game, so the
+ * player sees at once how they did and why. The two sides sit side by side on a wide screen, one above
+ * the other on a phone.
  */
 export function DealVsAi({ mine, ai, mineAuction, aiAuction }: { mine: DealSummary; ai: DealSummary | null; mineAuction?: Auction; aiAuction?: Auction | null }) {
   const you = mine.scores[PLAYER]
   const theirs = ai ? ai.scores[PLAYER] : null
+  const seats = [m.daily_col_seat(), m.name_lina(), m.name_max()]
+  const rows: [string, string, (string | number)[]][] = [
+    ['you', m.daily_row_you(), mine.scores.map(signed)],
+    ...(ai
+      ? ([
+          ['ai', m.daily_row_ai(), ai.scores.map(signed)],
+          ['diff', m.daily_col_diff(), mine.scores.map((s, seat) => signed(s - ai.scores[seat]))],
+        ] as [string, string, string[]][])
+      : []),
+  ]
   return (
     <section data-testid="daily-deal-vs-ai" data-you={you} data-ai={theirs ?? ''} data-diff={theirs === null ? '' : you - theirs} {...stylex.props(styles.deal)}>
-      <div {...stylex.props(styles.stats)}>
-        <Stat label={m.name_you()} value={signed(you)} testId="daily-deal-you" />
-        <Stat label={m.daily_ai()} value={theirs === null ? '–' : signed(theirs)} testId="daily-deal-ai" />
-        <Stat label={m.daily_col_diff()} value={theirs === null ? '–' : signed(you - theirs)} testId="daily-deal-diff" />
-      </div>
+      <table data-testid="daily-deal-scores" {...stylex.props(styles.scores)}>
+        <thead>
+          <tr>
+            <td />
+            {seats.map((name, seat) => (
+              <th key={name} scope="col" {...stylex.props(typography.small, styles.scoreHead, seat === PLAYER && styles.own)}>{name}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(([key, label, values]) => (
+            <tr key={key} data-row={key} {...stylex.props(key === 'diff' && styles.diffRow)}>
+              <th scope="row" {...stylex.props(typography.small, styles.scoreLabel)}>{label}</th>
+              {values.map((v, seat) => (
+                <td key={seat} data-seat={seat} {...stylex.props(key === 'diff' ? typography.appBtnStrong : typography.dialogTitle, styles.scoreCell, seat === PLAYER && styles.own)}>{v}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
       <div {...stylex.props(styles.sides)}>
-        <Side side="you" title={m.name_you()} d={mine} a={mineAuction} names={youNames()} />
-        {ai ? <Side side="ai" title={m.daily_ai()} d={ai} a={aiAuction ?? undefined} names={aiNames()} /> : null}
+        <Side side="you" title={m.daily_row_you()} d={mine} a={mineAuction} names={youNames()} />
+        {ai ? <Side side="ai" title={m.daily_row_ai()} d={ai} a={aiAuction ?? undefined} names={aiNames()} /> : null}
       </div>
     </section>
-  )
-}
-
-function Stat({ label, value, testId }: { label: string; value: string; testId: string }) {
-  return (
-    <span data-testid={testId} {...stylex.props(styles.stat)}>
-      <span {...stylex.props(typography.small, styles.muted)}>{label}</span>
-      <span {...stylex.props(typography.dialogTitle)}>{value}</span>
-    </span>
   )
 }
 
@@ -117,7 +132,6 @@ function Side({ side, title, d, a, names }: { side: 'you' | 'ai'; title: string;
   const lines: [string, string][] = [
     [m.daily_line_bidding(), a ? auctionLine(a, d, names) : '–'],
     [m.daily_line_game(), d.declarer === null || !d.declaration ? m.daily_passed_in_short() : playedParts(d, names[d.declarer]).join(' · ')],
-    [m.daily_line_scores(), scoresLine(d, names)],
   ]
   return (
     <div data-testid="daily-deal-side" data-side={side} {...stylex.props(styles.side)}>
@@ -237,18 +251,14 @@ function Score({ score, role }: { score: number; role: string }) {
 
 const styles = stylex.create({
   deal: { display: 'flex', flexDirection: 'column', gap: space.x12, color: color.navy },
-  stats: { display: 'flex', gap: space.x8 },
-  stat: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    flexGrow: 1,
-    flexBasis: 0,
-    paddingBlock: space.x8,
-    borderRadius: radii.column,
-    backgroundColor: color.page,
-    color: color.navy,
-  },
+  // All three seats, the player's deal over the AI's, the difference under them.
+  scores: { width: '100%', borderCollapse: 'collapse', color: color.navy },
+  scoreHead: { paddingBottom: space.x4, textAlign: 'center', color: color.slate },
+  scoreLabel: { paddingInlineEnd: space.x8, textAlign: 'start', color: color.slate, whiteSpace: 'nowrap' },
+  scoreCell: { paddingBlock: space.x4, textAlign: 'center' },
+  // The player's seat is the one the comparison is about.
+  own: { backgroundColor: color.page },
+  diffRow: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   sides: { display: 'flex', flexDirection: { default: 'row', [bp.phone]: 'column' }, gap: space.x8 },
   side: {
     display: 'flex',

@@ -7,12 +7,12 @@ import type { LessonGuide } from '../rules/types'
 export const GUIDE_EN: Record<string, LessonGuide> = {
   '1': {
     slug: 'how-does-skat-work',
-    question: 'How Does Skat Work? Players, Cards and the Goal',
-    h1: 'How Skat works: three players, 32 cards',
+    question: 'How to Play Skat: the Skat Card Game Explained',
+    h1: 'How to play Skat, the card game for three',
     description:
-      'Skat in a nutshell: three players, a 32-card deck, ten cards each and two in the skat. One declarer plays against two defenders and needs 61 of 120 card points.',
+      'How to play Skat, the card game: three players, 32 cards, ten each and two in the skat. One declarer plays against two and needs 61 of 120 card points.',
     intro: [
-      "Skat is Germany's national card game, a trick-taking game for three players. It uses a **32-card deck**: the four suits ♣ ♠ ♥ ♦, each with 7, 8, 9, 10, Jack, Queen, King and Ace. Everyone gets **ten cards**, and the last **two** go face down in the middle. Those two are the **skat**, which gives the game its name.",
+      "The Skat card game is Germany's national card game, a trick-taking game for three players. It uses a **32-card deck**: the four suits ♣ ♠ ♥ ♦, each with 7, 8, 9, 10, Jack, Queen, King and Ace. Everyone gets **ten cards**, and the last **two** go face down in the middle. Those two are the **skat**, which gives the game its name.",
       'Every deal is **one against two**. Bidding decides who plays alone: that player is the **declarer**, gets the skat and names the game. The other two become the **defenders** and team up for that one deal. Next deal, the sides are fought out again.',
       'Then come ten tricks. The cards in them carry **card points**, 120 in the whole deck, and the declarer needs **at least 61** to win. Sixty each is not enough: exactly half is a loss. This lesson walks you through it all, with a few quick questions to check it stuck.',
     ],
@@ -124,7 +124,7 @@ export const GUIDE_EN: Record<string, LessonGuide> = {
   },
   '10': {
     slug: 'how-to-play-skat-well',
-    question: 'How to Play Skat Well: Declarer and Defence Tips',
+    question: 'Skat Tips: Playing Well as Declarer and Defender',
     h1: 'Playing well: basics for declarer and defenders',
     description:
       "Skat strategy for beginners: as declarer, draw trumps before cashing your Aces; as a defender, load points onto your partner's tricks and don't lead trumps.",

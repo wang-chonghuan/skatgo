@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-52",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-52",
+  "branch": "SKATGO-52-lesson-search",
+  "base": "1279467437887c0f9760dd2d0d804513b4c99328",
+  "ports": { "web": 55052, "multiplayer": 56052, "database": 57052 }
+}

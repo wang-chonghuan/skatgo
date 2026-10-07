@@ -286,7 +286,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
         ) : null,
         day: (
           <Fold label={m.daily_day_fold({ n: tournament.deals.length, of: tournament.of })} testId="daily-day-fold">
-            <VsAiTable deals={tournament.deals} benchmarks={tournament.benchmarks} auctions={tournament.auctions} benchmarkAuctions={tournament.benchmarkAuctions} />
+            <VsAiTable flat deals={tournament.deals} benchmarks={tournament.benchmarks} auctions={tournament.auctions} benchmarkAuctions={tournament.benchmarkAuctions} />
           </Fold>
         ),
       }
@@ -958,13 +958,12 @@ function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNew
     <Dialog>
     <div ref={panel} data-testid="skat-result" data-human-won={String(humanWon)} {...stylex.props(styles.declare)}>
       {daily ? (
-        <Panel>
-          <div {...stylex.props(styles.resultBody)}>
-            {daily.compare}
-            <Fold label={m.daily_details()} testId="daily-details-fold">{settlement}</Fold>
-            {daily.day}
-          </div>
-        </Panel>
+        // The dialog is the card: nothing inside it is boxed again (SKATGO-57).
+        <div {...stylex.props(styles.resultBody)}>
+          {daily.compare}
+          <Fold label={m.daily_details()} testId="daily-details-fold">{settlement}</Fold>
+          {daily.day}
+        </div>
       ) : (
         <Panel tone={humanWon ? 'good' : 'bad'}>
           <div {...stylex.props(styles.resultBody)}>

@@ -80,10 +80,10 @@ function auctionLine(a: Auction, d: DealSummary, names: string[]): string {
 
 /**
  * One deal, the player against the AI (SKATGO-57) — what the settlement leads with: all three seats'
- * Seeger-Fabian scores in the player's deal and in the AI's (the AI in the player's seat), and the
- * difference on every seat, because Skat is played by three; then each side's auction and game, so the
- * player sees at once how they did and why. The two sides sit side by side on a wide screen, one above
- * the other on a phone.
+ * Seeger-Fabian scores in the player's deal over the AI's (the AI in the player's seat), because Skat is
+ * played by three; then each side's auction and game, so the player sees at once how they did and why.
+ * The two sides sit side by side on a wide screen, one above the other on a phone; no cards inside the
+ * settlement, which is one already.
  */
 export function DealVsAi({ mine, ai, mineAuction, aiAuction }: { mine: DealSummary; ai: DealSummary | null; mineAuction?: Auction; aiAuction?: Auction | null }) {
   const you = mine.scores[PLAYER]
@@ -94,7 +94,6 @@ export function DealVsAi({ mine, ai, mineAuction, aiAuction }: { mine: DealSumma
     ...(ai
       ? ([
           ['ai', m.daily_row_ai(), ai.scores.map(signed)],
-          ['diff', m.daily_col_diff(), mine.scores.map((s, seat) => signed(s - ai.scores[seat]))],
         ] as [string, string, string[]][])
       : []),
   ]
@@ -111,10 +110,10 @@ export function DealVsAi({ mine, ai, mineAuction, aiAuction }: { mine: DealSumma
         </thead>
         <tbody>
           {rows.map(([key, label, values]) => (
-            <tr key={key} data-row={key} {...stylex.props(key === 'diff' && styles.diffRow)}>
+            <tr key={key} data-row={key}>
               <th scope="row" {...stylex.props(typography.small, styles.scoreLabel)}>{label}</th>
               {values.map((v, seat) => (
-                <td key={seat} data-seat={seat} {...stylex.props(key === 'diff' ? typography.appBtnStrong : typography.dialogTitle, styles.scoreCell, seat === PLAYER && styles.own)}>{v}</td>
+                <td key={seat} data-seat={seat} {...stylex.props(typography.dialogTitle, styles.scoreCell, seat === PLAYER && styles.own)}>{v}</td>
               ))}
             </tr>
           ))}
@@ -161,8 +160,9 @@ export function Fold({ label, testId, children }: { label: string; testId: strin
 }
 
 /** The running comparison: one foldable row per finished deal, the player against the AI, and the
- *  totals. `openLatest` opens the newest row — after a deal, and on the day's page while it runs. */
-export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, openLatest = false }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; auctions?: Auction[]; benchmarkAuctions?: (Auction | null)[]; openLatest?: boolean }) {
+ *  totals. `openLatest` opens the newest row — after a deal, and on the day's page while it runs.
+ *  `flat` (inside the settlement's fold, SKATGO-57): rows that do not fold again — folds never nest. */
+export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, openLatest = false, flat = false }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; auctions?: Auction[]; benchmarkAuctions?: (Auction | null)[]; openLatest?: boolean; flat?: boolean }) {
   const latest = deals.length - 1
   const [open, setOpen] = useState<number[]>(openLatest ? [latest] : [])
   useEffect(() => {
@@ -187,26 +187,36 @@ export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, open
           const diff = b ? d.scores[PLAYER] - b.scores[PLAYER] : null
           const isOpen = open.includes(i)
           const id = `daily-deal-${i}`
+          // The row's four columns; a foldable row's last one also carries its chevron.
+          const cells = (chevron: ReactNode) => (
+            <>
+              <span {...stylex.props(typography.small, styles.muted)}>{i + 1}</span>
+              <Score score={d.scores[PLAYER]} role={roleOf(d)} />
+              {b ? <Score score={b.scores[PLAYER]} role={roleOf(b)} /> : <span {...stylex.props(typography.small, styles.muted)}>–</span>}
+              <span {...stylex.props(styles.diff)}>
+                <span {...stylex.props(typography.appBtnStrong)}>{diff === null ? '–' : signed(diff)}</span>
+                {chevron}
+              </span>
+            </>
+          )
           return (
             <li key={i} data-testid="daily-vs-ai-row" data-you={d.scores[PLAYER]} data-ai={b?.scores[PLAYER] ?? ''} data-diff={diff ?? ''} {...stylex.props(styles.item)}>
-              <button
-                type="button"
-                aria-expanded={isOpen}
-                aria-controls={id}
-                aria-label={m.daily_show_deal({ n: i + 1 })}
-                data-testid="daily-vs-ai-toggle"
-                onClick={() => toggle(i)}
-                {...stylex.props(styles.grid, styles.row)}
-              >
-                <span {...stylex.props(typography.small, styles.muted)}>{i + 1}</span>
-                <Score score={d.scores[PLAYER]} role={roleOf(d)} />
-                {b ? <Score score={b.scores[PLAYER]} role={roleOf(b)} /> : <span {...stylex.props(typography.small, styles.muted)}>–</span>}
-                <span {...stylex.props(styles.diff)}>
-                  <span {...stylex.props(typography.appBtnStrong)}>{diff === null ? '–' : signed(diff)}</span>
-                  {isOpen ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />}
-                </span>
-              </button>
-              {isOpen ? (
+              {flat ? (
+                <div {...stylex.props(styles.grid, styles.flatRow)}>{cells(null)}</div>
+              ) : (
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={id}
+                  aria-label={m.daily_show_deal({ n: i + 1 })}
+                  data-testid="daily-vs-ai-toggle"
+                  onClick={() => toggle(i)}
+                  {...stylex.props(styles.grid, styles.row)}
+                >
+                  {cells(isOpen ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />)}
+                </button>
+              )}
+              {isOpen && !flat ? (
                 <div id={id} data-testid="daily-vs-ai-detail" {...stylex.props(styles.detail)}>
                   <p data-side="you" {...stylex.props(styles.line)}>
                     <span {...stylex.props(typography.smallBold, styles.who)}>{m.name_you()}</span>
@@ -258,21 +268,8 @@ const styles = stylex.create({
   scoreCell: { paddingBlock: space.x4, textAlign: 'center' },
   // The player's seat is the one the comparison is about.
   own: { backgroundColor: color.page },
-  diffRow: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
-  sides: { display: 'flex', flexDirection: { default: 'row', [bp.phone]: 'column' }, gap: space.x8 },
-  side: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x6,
-    flexGrow: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    padding: space.x10,
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: color.hairline,
-    borderRadius: radii.column,
-  },
+  sides: { display: 'flex', flexDirection: { default: 'row', [bp.phone]: 'column' }, gap: { default: space.x24, [bp.phone]: space.x12 } },
+  side: { display: 'flex', flexDirection: 'column', gap: space.x6, flexGrow: 1, flexBasis: 0, minWidth: 0 },
   sideTitle: { color: color.navy },
   sideLine: { display: 'flex', flexDirection: 'column', margin: 0 },
   sideText: { color: color.text, overflowWrap: 'anywhere' },
@@ -326,6 +323,7 @@ const styles = stylex.create({
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
+  flatRow: { paddingBlock: space.x8 },
   cell: { display: 'flex', flexDirection: 'column', minWidth: 0 },
   // A narrow column (the table inside the settlement on a phone) shortens the role, never overlaps it.
   role: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },

@@ -162,6 +162,6 @@ export async function loadInventory() {
     courseIds: courseIds(),
     locales: JSON.parse(readFileSync(new URL('project.inlang/settings.json', app), 'utf8')).locales,
     tags: constant('src/lib/site.ts', 'LANG_TAG'),
-    site: constant('src/lib/site.ts', 'SITE_URL'),
+    site: constant('src/lib/origin.ts', 'SITE_URL'),
   })
 }

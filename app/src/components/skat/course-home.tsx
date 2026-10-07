@@ -3,6 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useEffect, useState } from 'react'
 
 import { Pill, Stars, linkLook } from './ui'
+import { PrintLinks } from './print-links'
 import { track } from '~/lib/analytics'
 import { lessons } from '~/lib/skat/lessons/content'
 import { GUIDES } from '~/lib/skat/lessons/guide'
@@ -113,6 +114,7 @@ export function CourseHome() {
             )
           })}
         </ol>
+        <PrintLinks />
       </div>
     </div>
   )

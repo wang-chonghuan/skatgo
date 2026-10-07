@@ -34,6 +34,9 @@ export type RulesText = {
   sections: RuleSection[]
 }
 
+/** The printable short version of the rules (SKATGO-53): a few short sections, tables from the engine. */
+export type RulesSummary = { title: string; blocks: RuleBlock[] }[]
+
 /** A lesson's landing text: what crawlers and first-time visitors read before the interactive part. */
 export type LessonGuide = {
   /** The lesson's address in this language, lowercase ASCII with hyphens: `how-bidding-works`. */

@@ -56,6 +56,9 @@ export const dims = stylex.defineVars({
   readingColumn: '860px',
   /** A table of values on the rules page (SKATGO-29): two columns, a name and a number. */
   rulesTable: '480px',
+  /** One row of the printable score sheet: room for a handwritten number, 36 rows and the Seeger-Fabian
+   *  block on one A4 page (SKATGO-53, human-approved). */
+  scoreRow: '6mm',
 
   // The settings dialog (SKATGO-27)
   settingsWidth: 'min(420px, calc(100vw - 32px))',

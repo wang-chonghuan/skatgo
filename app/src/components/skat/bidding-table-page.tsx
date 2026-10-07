@@ -14,6 +14,7 @@ import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { PrintLinks } from './print-links'
 import { Rich, linkLook } from './ui'
 
 const SUIT_ORDER: Suit[] = ['D', 'H', 'S', 'C']
@@ -135,6 +136,7 @@ export function BiddingTablePage() {
             <Link to="/play" {...linkLook('go', 'md')}>{m.entry_game_cta()}</Link>
           </div>
         </nav>
+        <PrintLinks />
       </article>
     </div>
   )

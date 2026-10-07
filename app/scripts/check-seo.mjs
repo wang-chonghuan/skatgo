@@ -115,6 +115,7 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
     const assets = new Set()
     const linked = new Set()
     const privatePages = new Set()
+    const files = new Set()
   const snapshots = []
     for (const entry of entries) {
       assert.deepEqual(Object.keys(entry.alternates).sort(), [...locales, 'x-default'].sort(), `${entry.loc}: language coverage`)
@@ -196,6 +197,14 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
       if (urls.has(published)) continue
       const response = await request.get(url, { maxRedirects: 0 })
       assert.equal(response.status(), 200, `Internal link ${url}`)
+      // A file a page offers for download (SKATGO-53: the printables' PDFs) is not a page: instead of
+      // noindex it must name, in its Link header, the sitemap page it belongs to as canonical.
+      if (!(response.headers()['content-type'] ?? '').startsWith('text/html')) {
+        const canonical = /<([^>]+)>\s*;\s*rel="?canonical"?/.exec(response.headers().link ?? '')?.[1]
+        assert.ok(canonical && urls.has(canonical), `Linked file ${url} must declare a sitemap page as canonical`)
+        files.add(url)
+        continue
+      }
       await page.goto(url, { waitUntil: 'domcontentloaded' })
       assert.match(await page.locator('meta[name="robots"]').getAttribute('content'), /noindex/, `Non-sitemap link ${url} must declare noindex`)
       privatePages.add(url)
@@ -258,8 +267,8 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
     const sample = snapshots[0]
     assert.throws(() => validatePage({ ...sample.data, canonical: [`${site}/wrong`] }, sample.entry), /self canonical/)
     assert.throws(() => validatePage({ ...sample.data, text: '' }, sample.entry), /SSR content/)
-    const result = { pages: entries.length, privatePages: privatePages.size, assets: assets.size }
-    log(`OK SEO: ${result.pages} indexable pages, ${result.privatePages} noindex pages, ${result.assets} assets; negative controls rejected`)
+    const result = { pages: entries.length, privatePages: privatePages.size, assets: assets.size, files: files.size }
+    log(`OK SEO: ${result.pages} indexable pages, ${result.privatePages} noindex pages, ${result.assets} assets, ${result.files} linked files; negative controls rejected`)
     log('This checks rendered SEO contracts, not Google/Bing indexing, selected canonical, rankings or traffic. No console/DNS changes or indexing submissions.')
     return result
   } finally {

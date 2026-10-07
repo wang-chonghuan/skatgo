@@ -78,7 +78,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36) |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
 | `app/src/components/skat/rules-page.tsx`, `bidding-table-page.tsx`, `app/src/lib/skat/rules/` | the rules reference and its text, with anchored sub-headings for topics looked up by name (`#grand`, `#null-ouvert`, `#ramsch`), and the bidding table (SKATGO-50). Every number on both pages — card points, base and Null values, the bid ladder, the multiplier limits — is rendered from `value.ts` and `cards.ts` |
-| `app/src/components/skat/daily-table.tsx`, `daily-comparison.tsx` | the tournament's button, day result and table; `/daily/play` is its full-screen page. `daily-comparison.tsx` is the computer's result of each finished deal beside the player's, and the table of both that grows by deal (SKATGO-42) |
+| `app/src/components/skat/daily-table.tsx`, `daily-comparison.tsx` | the tournament's button, day result and table; `/daily/play` is its full-screen page. `daily-comparison.tsx` is `VsAiTable`: one collapsible row per finished deal with the player's and the computer's score and their difference, opening to both deals' full result, and a total (SKATGO-42, SKATGO-48) |
 | `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy and its per-address limits, the browser's calls, and the table free play and lesson 11 use (`GameTable` with a `server` source, hints and assistant kept) |
 | `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament; `src/free.ts` free play; `src/computers.ts` the SkatZero computer turns both share; `scripts/make-free-pool.ts` the one-off generator of free play's pool |
 
@@ -122,6 +122,11 @@ also built from the repository root. Neither project imports the other's runtime
   stored with the deal (`benchmark`). A deal the computers cannot finish fails the day's preparation.
   A route returns a deal's result only once the player has finished that deal, shown as "AI" in the
   player's seat. Days dealt before have none.
+- **A finished deal's summary carries its whole result** (SKATGO-48). `DealSummary.detail`
+  (`lib/skat/tournament.ts`, `detailOf`) holds the game value, both sides' card points, and whether
+  it was overbid, Schneider or Schwarz; it is written when the deal ends, for the player's deals and
+  the computer's alike, and read as stored. There is no replay to fill it in for older records: the
+  human ruled out compatibility code, and production's earlier days were deleted and re-dealt.
 - **A free-play game is a deal from a committed pool, and its state travels with the page**
   (SKATGO-40).
   - The pool holds 1,000 deals (seed `skatgo-free-pool/1`). For both computers it stores the

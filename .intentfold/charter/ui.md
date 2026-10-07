@@ -192,6 +192,7 @@ grid templates — are named in `dims`; the table's stage in `stage` (`table.sty
 | `PlayingCard` | `playing-card.tsx` | one card from the public-domain deck `@letele/playing-cards`. The face's pips and corner index take the suit scheme's colour, and the corner index is drawn `cardIndex.stroke` wide (SKATGO-47, the deck's own is 80); the deck's text is removed. Sizes `xs`, `sm`, `md`, `lg`, `table`, `trick`, `fill`; states `selected`, `dimmed` (`fill.dimmed`), `glow`, `verdict` good/bad, `faceDown` (`fill.cardBack`, skatgo's own charcoal lattice) |
 | `Fan` / `CardRowView` | `card-row.tsx` | a hand held as a fan (two rows of a long hand on a phone; `data-answer` / `data-order` for scripted checks), and a labelled row of cards for reading |
 | `Shake` / `Feedback` | `exercises.tsx` | the wordless "no" after a wrong answer, and the good/bad panel that explains it |
+| `VsAiTable` | `daily-comparison.tsx` | the daily tournament's comparison with the computer (SKATGO-48): one row per finished deal — the deal's number, the player's and the AI's score each with its role, and the difference, signed and bold, never `good` / `bad` — that opens to both deals told in full; a total row. Rows collapse instead of scrolling sideways; the newest opens after a deal and on `/daily` mid-day |
 | `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34) |
 
 Recurring patterns — reuse them rather than inventing a neighbour:
@@ -225,9 +226,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **A sub-page** (the course, a lesson, the rules, the bidding table, the daily tournament, the legal
   pages), on the
   grey page: its title is the column's first element, an `<h1>` in `landingHeading`, `color.navy`;
-  then its content in white option cards. A lesson keeps its "back / continue" bar sticky at the
-  bottom of the screen, and ends with its ways on: the next lesson, its section of the rules, and all
-  lessons.
+  then its content in white option cards. A lesson starts playing at once: under its title only a
+  one-line kicker and the lesson's promise, then the lesson, which keeps its "back / continue" bar
+  sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
+  lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,
+  its section of the rules, and all lessons.
 - **The tables** (`/play`, `/daily/play`): the felt fills the screen and never scrolls; free play
   keeps a reading section below it (SKATGO-44).
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible

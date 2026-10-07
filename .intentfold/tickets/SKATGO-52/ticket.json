@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-52",
   "mode": "autonomous",
-  "stage": "developing",
+  "stage": "handoff-ready",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-52",
   "branch": "SKATGO-52-lesson-search",

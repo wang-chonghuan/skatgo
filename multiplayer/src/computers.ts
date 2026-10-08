@@ -1,5 +1,5 @@
 import type { Card, Contract } from '../../app/src/lib/skat/cards'
-import { collectTrick, deal, pickUpSkat, roleOf, actor, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
+import { claimLine, collectTrick, concedable, deal, pickUpSkat, roleOf, actor, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { type Declaration, nextBid } from '../../app/src/lib/skat/value'
 import { PLAYER } from '../../app/src/lib/skat/tournament'
 import { applySeatMove } from './model'
@@ -80,14 +80,35 @@ export async function skatzeroTurn(g: Game, seat: Seat, plan: SeatPlan, policy: 
   throw new ComputerFailed('computer_unexpected_phase')
 }
 
+/** A deal already decided at an empty trick (SKATGO-59): a Null nobody can make the declarer lose any
+ *  more is given up by a computer defender; a computer declarer on lead who sees the rest is theirs
+ *  shows it. The player shows their own rest themselves. With `toEnd` every seat is a computer. */
+function decided(g: Game, toEnd: boolean): Logged | null {
+  if (g.phase !== 'play' || g.trick.length > 0 || g.declarer === null) return null
+  if (concedable(g)) {
+    const defender = ([1, 2] as Seat[]).find((s) => s !== g.declarer)!
+    return { seat: defender, move: { type: 'concede' } }
+  }
+  if ((g.declarer !== PLAYER || toEnd) && claimLine(g)) return { seat: g.declarer, move: { type: 'claim' } }
+  return null
+}
+
 /** Let the computers move until it is the player's turn or the deal is over, recording each move in
  *  `log`; `steps` collects every state left behind, for the table to show in order. Every proposed
  *  move is checked by the engine; an illegal one fails the request. With `toEnd`, a computer sits in
- *  the player's seat too and the deal is played out (SKATGO-42). */
+ *  the player's seat too and the deal is played out (SKATGO-42). A deal decided before its last card
+ *  ends there (SKATGO-59). */
 export async function advance(g: Game, log: Logged[], turn: (g: Game) => Promise<Logged[]>, steps?: Game[], toEnd = false): Promise<Game> {
   for (;;) {
     if (g.phase === 'trickEnd') {
       g = collectTrick(g)
+      steps?.push(g)
+      continue
+    }
+    const early = decided(g, toEnd)
+    if (early) {
+      g = applySeatMove(g, early.seat, early.move)
+      log.push(early)
       steps?.push(g)
       continue
     }

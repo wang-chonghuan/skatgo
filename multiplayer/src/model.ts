@@ -33,6 +33,7 @@ export const actionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('discard'), cards: z.array(card).length(2) }).strict(),
   z.object({ type: z.literal('declare'), declaration }).strict(),
   z.object({ type: z.literal('play'), card }).strict(),
+  z.object({ type: z.literal('claim') }).strict(),
 ])
 export const commandSchema = z.object({
   id: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
@@ -85,9 +86,10 @@ export function applyAction(s: Snapshot, seat: Seat, action: Command['action']):
   if (!g) throw new Rejected('not_your_turn')
   return applySeatMove(g, seat, action)
 }
-/** A seat's move through the engine, refused unless it is that seat's turn and the move is legal. */
+/** A seat's move through the engine, refused unless it is that seat's turn and the move is legal. The
+ *  defenders may give up a Null at any empty trick, whoever's lead it is (SKATGO-59). */
 export function applySeatMove(g: Game, seat: Seat, move: Move): Game {
-  if (actor(g) !== seat) throw new Rejected('not_your_turn')
+  if (move.type === 'concede' ? g.declarer === null || seat === g.declarer : actor(g) !== seat) throw new Rejected('not_your_turn')
   const next = applyMove(g, move)
   if (next === g) throw new Rejected('illegal_action')
   return next

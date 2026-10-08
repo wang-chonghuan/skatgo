@@ -53,6 +53,16 @@ Browser checks are headed, at 1280×820 and 375×812 (`isMobile`, `hasTouch`).
   - the board total equals the sum of the saved deals, deal 1's being the played-out value;
   - the reload of `/daily/play` and `/daily` shows the same.
 
+## AC5 — A computer declarer's settled game ends at once
+
+Added by grill Q3.
+
+- **Check**: build a free-play position where a computer is declarer and `restLine` holds from its own view, with a defender to move into an empty trick that the computer leads. Do the same for a computer's Null that `nullBeaten` holds for.
+- **Check**: the server's reply ends the deal: the last logged move is the computer's `claim`, or a `concede`.
+- **Check**: the result dialog shows the matching first line, and its numbers equal the engine's independent play-out.
+- **Check**: the exhaustive tests in `rest.test.ts` cover both rules for every seat as declarer.
+- **True when** all hold.
+
 ## Mechanical defence
 
 As `engineering.md` Tools names it, plus `npm --prefix multiplayer run check` (multiplayer code changes).

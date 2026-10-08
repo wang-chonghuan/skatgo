@@ -18,6 +18,7 @@ import {
   aiDeclare,
   applyMove,
   bidAction,
+  claimLine,
   collectTrick,
   deal,
   legalFor,
@@ -622,6 +623,7 @@ function ActionsFor({
         const h = playHint(game)
         if (h) setHint(h)
       }}
+      onClaim={() => dispatch({ type: 'claim' })}
       onNewGame={onNewGame}
     />
   )
@@ -715,6 +717,7 @@ type ActionsProps = {
   onDeclareHint: () => void
   onDiscardHint: () => void
   onPlayHint: () => void
+  onClaim: () => void
   onNewGame: () => void
   hints: boolean
   dealScore: number | null
@@ -813,9 +816,11 @@ function Actions(p: ActionsProps) {
     return <DeclarePicker compact={p.compact} game={game} draft={p.draft} setDraft={p.setDraft} onDeclare={p.onDeclare} onHint={p.hints ? p.onDeclareHint : undefined} />
   }
 
+  // The declarer on lead who sees the rest is theirs may show it and end the deal (SKATGO-59).
   return (
     <Row>
       <Say>{game.trick.length === 0 ? m.play_lead_any() : m.play_tap()}</Say>
+      {game.declarer === ME && claimLine(game) ? <Btn testId="skat-claim" shape="block" onClick={p.onClaim}>{m.play_claim()}</Btn> : null}
     </Row>
   )
 }
@@ -927,6 +932,11 @@ function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNew
       })
   // How the game was settled, line by line: the whole settlement in free play, the details in the
   // tournament, where the deal against the AI comes first (SKATGO-57).
+  const early = game.early ? (
+    <p data-testid="skat-result-early" data-early={game.early.kind} {...stylex.props(typography.note, styles.note)}>
+      {earlyLine(declarer, game.early)}
+    </p>
+  ) : null
   const settlement = (
     <>
       <p {...stylex.props(typography.note, styles.note)}>
@@ -960,6 +970,7 @@ function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNew
       {daily ? (
         // The dialog is the card: nothing inside it is boxed again (SKATGO-57).
         <div {...stylex.props(styles.resultBody)}>
+          {early}
           {daily.compare}
           <Fold label={m.daily_details()} testId="daily-details-fold">{settlement}</Fold>
           {daily.day}
@@ -968,6 +979,7 @@ function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNew
         <Panel tone={humanWon ? 'good' : 'bad'}>
           <div {...stylex.props(styles.resultBody)}>
             <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
+            {early}
             {settlement}
           </div>
         </Panel>
@@ -980,6 +992,17 @@ function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNew
     </div>
     </Dialog>
   )
+}
+
+/** How a deal decided before its last card ended (SKATGO-59): the rest shown, or a Null given up. */
+function earlyLine(declarer: Seat, early: NonNullable<Game['early']>): string {
+  const name = nameOf(declarer)
+  if (early.kind === 'claim') {
+    const n = 10 - early.from
+    return declarer === ME ? m.result_early_claim_you({ n }) : declarer === 1 ? m.result_early_claim_1({ name, n }) : m.result_early_claim_2({ name, n })
+  }
+  if (declarer === ME) return m.result_early_concede_you({ a: nameOf(1), b: nameOf(2) })
+  return declarer === 1 ? m.result_early_null_1({ name }) : m.result_early_null_2({ name })
 }
 
 /** "You score +30." — who wrote down what, and why it is doubled when it is. */
@@ -1234,6 +1257,8 @@ const styles = stylex.create({
     backgroundColor: color.board,
     color: color.onColor,
     textAlign: 'center',
+    // The band above is click-through; the line takes clicks again for the claim button (SKATGO-59).
+    pointerEvents: 'auto',
   },
 
   // The action drawer: white, rounded at the top, over the felt and just above the hand.

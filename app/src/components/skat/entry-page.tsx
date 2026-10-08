@@ -63,25 +63,22 @@ export function EntryPage() {
         <HeroArt />
       </section>
 
-      <div data-testid="entry-sections" {...stylex.props(styles.waysAll)}>
-        <div {...stylex.props(styles.ways)}>
-          <section data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, tileTones.course)}>
-            <Face art={COURSE_ART} title={m.entry_new_title()} text={m.entry_new_text({ count: course.length })}>
-              <Link to="/course" data-testid="entry-course" {...linkLook('quiet', 'md', 'landing')}>
-                {finished === 0 ? m.entry_new_cta() : m.course_continue({ n: next })}
-              </Link>
-              {finished > 0 ? <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span> : null}
-            </Face>
-          </section>
-          <section data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, tileTones.play)}>
-            <Face art={PLAY_ART} title={m.entry_game_title()} text={m.entry_game_text()}>
-              <Link to="/play" data-testid="entry-play" {...linkLook('quiet', 'md', 'landing')}>
-                {m.entry_game_cta()}
-              </Link>
-            </Face>
-          </section>
-        </div>
-        {/* The third tile (SKATGO-61) takes the whole row under the two, rather than half of it. */}
+      <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
+        <section data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, tileTones.course)}>
+          <Face art={COURSE_ART} title={m.entry_new_title()} text={m.entry_new_text({ count: course.length })}>
+            <Link to="/course" data-testid="entry-course" {...linkLook('quiet', 'md', 'landing')}>
+              {finished === 0 ? m.entry_new_cta() : m.course_continue({ n: next })}
+            </Link>
+            {finished > 0 ? <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span> : null}
+          </Face>
+        </section>
+        <section data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, tileTones.play)}>
+          <Face art={PLAY_ART} title={m.entry_game_title()} text={m.entry_game_text()}>
+            <Link to="/play" data-testid="entry-play" {...linkLook('quiet', 'md', 'landing')}>
+              {m.entry_game_cta()}
+            </Link>
+          </Face>
+        </section>
         <section data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, tileTones.friends)}>
           <Face art={FRIENDS_ART} title={m.entry_friends_title()} text={m.entry_friends_text()}>
             <Link to="/with-friends" data-testid="entry-friends" {...linkLook('quiet', 'md', 'landing')}>
@@ -213,7 +210,6 @@ const styles = stylex.create({
     columnGap: space.x15,
     rowGap: space.x15,
   },
-  waysAll: { display: 'flex', flexDirection: 'column', gap: space.x15 },
   // A lobby tile: its colour over its art, a shadow in its own colour, content at the bottom left.
   tile: {
     position: 'relative',

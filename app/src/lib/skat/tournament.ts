@@ -37,6 +37,8 @@ export type SeatView = {
   tricks: Game['tricks']
   result: Game['result']
   ouvertHand: Card[] | null
+  /** How a deal decided before its last card ended (SKATGO-59). */
+  early: Game['early'] | null
 }
 
 export function seatView(g: Game): SeatView {
@@ -59,6 +61,7 @@ export function seatView(g: Game): SeatView {
     tricks: g.tricks,
     result: g.result,
     ouvertHand: ouvert ? g.hands[g.declarer!] : null,
+    early: g.early ?? null,
   }
 }
 
@@ -87,6 +90,7 @@ export function gameFromView(v: SeatView): Game {
     turn: v.turn,
     tricks: v.tricks,
     result: v.result,
+    early: v.early ?? undefined,
   }
 }
 

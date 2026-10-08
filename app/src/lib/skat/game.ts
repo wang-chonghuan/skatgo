@@ -16,6 +16,7 @@ import {
   trickWinnerIndex,
 } from './cards'
 import { type Advice, advise, chooseDeclaration, maxBid } from './ai'
+import { minus, nullBeaten, restLine } from './rest'
 import { type Declaration, type Settlement, nextBid, settle } from './value'
 
 export type Seat = 0 | 1 | 2
@@ -59,6 +60,10 @@ export type Game = {
   turn: Seat
   tricks: { winner: Seat; cards: Played[] }[]
   result: (Settlement & { declarerPoints: number; defenderPoints: number }) | null
+  /** A deal decided before its last card (SKATGO-59): the declarer showed the rest, or the defenders
+   *  gave up a Null — with how many tricks had been played then. The rest is played out by the rules,
+   *  so the result is the same; this only says how it ended. */
+  early?: { kind: 'claim' | 'concede'; from: number }
 }
 
 export const forehandOf = (dealer: Seat): Seat => next(dealer)
@@ -268,6 +273,10 @@ export type Move =
   | { type: 'discard'; cards: Card[] }
   | { type: 'declare'; declaration: Declaration }
   | { type: 'play'; card: Card }
+  /** The declarer shows the rest: every remaining trick is theirs (SKATGO-59). */
+  | { type: 'claim' }
+  /** The defenders give up a Null the declarer cannot lose any more (SKATGO-59). */
+  | { type: 'concede' }
 
 /** The game after `move`, or the same object when the move is not legal now. A bid must also be the
  *  word the moment asks for: a number from the speaker, "yes" from the listener. */
@@ -288,7 +297,57 @@ export function applyMove(g: Game, move: Move): Game {
       return declare(g, move.declaration)
     case 'play':
       return playCard(g, move.card)
+    case 'claim': {
+      const line = claimLine(g)
+      if (!line) return g
+      const from = g.tricks.length
+      const declarer = g.declarer
+      const end = playOut(g, (at) => (at.turn === declarer ? line.find((c) => at.hands[declarer!].some((h) => sameCard(h, c))) ?? null : null))
+      // The line takes every trick by construction (rest.ts, proven in rest.test.ts); a claim that
+      // would not is not a claim.
+      if (end.tricks.slice(from).some((t) => t.winner !== g.declarer)) return g
+      return { ...end, early: { kind: 'claim', from } }
+    }
+    case 'concede': {
+      if (!concedable(g)) return g
+      return { ...playOut(g, () => null), early: { kind: 'concede', from: g.tricks.length } }
+    }
   }
+}
+
+/** The fewest tricks still to play for a claim to be offered: the last one is just played. */
+const CLAIM_LEFT = 2
+
+/** The declarer's line for the rest, when they are on lead at an empty trick of a suit game or a Grand
+ *  with at least two tricks to go and the rest is certain from what they can see (SKATGO-59): their
+ *  hand, the cards played, and the skat if they picked it up. */
+export function claimLine(g: Game): Card[] | null {
+  if (g.phase !== 'play' || !g.declaration || g.declarer === null || g.turn !== g.declarer || g.trick.length > 0) return null
+  if (10 - g.tricks.length < CLAIM_LEFT) return null
+  const hand = g.hands[g.declarer]
+  const gone = g.tricks.flatMap((t) => t.cards.map((p) => p.card))
+  const unseen = minus(fullDeck(), [...hand, ...gone, ...(g.pickedUp ? g.skat : [])])
+  return restLine(hand, unseen, g.declaration.contract)
+}
+
+/** A Null at an empty trick that the declarer cannot lose any more, judged on every hand (SKATGO-59). */
+export function concedable(g: Game): boolean {
+  if (g.phase !== 'play' || g.declaration?.contract.kind !== 'null' || g.declarer === null || g.trick.length > 0) return false
+  return nullBeaten(g.hands, g.declarer, g.turn)
+}
+
+/** The deal played to its end: the seat on turn plays `pick(state)`, or else its first legal card. */
+function playOut(g: Game, pick: (at: Game) => Card | null): Game {
+  let at = g
+  while (at.phase === 'play' || at.phase === 'trickEnd') {
+    if (at.phase === 'trickEnd') {
+      at = collectTrick(at)
+      continue
+    }
+    const card = pick(at) ?? legalFor(at, at.turn)[0]
+    at = playCard(at, card)
+  }
+  return at
 }
 
 /** What the heuristics would play from this seat right now — the computer's move, or the learner's hint. */

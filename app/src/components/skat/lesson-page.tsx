@@ -57,7 +57,12 @@ export function LessonPage() {
           <Link to="/course/$slug" params={{ slug: GUIDES[locale][following.id].slug }} data-testid="lesson-next" {...stylex.props(typography.appBtnStrong, styles.link)}>
             {m.lesson_next({ title: following.title })}
           </Link>
-        ) : null}
+        ) : (
+          // After the last lesson's game: the same game with friends (SKATGO-61).
+          <Link to="/with-friends" data-testid="lesson-friends" {...stylex.props(typography.appBtnStrong, styles.link)}>
+            {m.friends_link()}
+          </Link>
+        )}
         {section ? (
           <Link to="/rules" hash={section.anchor} data-testid="lesson-rules" {...stylex.props(typography.appBtnStrong, styles.link)}>
             {m.lesson_rules_link({ section: section.title })}

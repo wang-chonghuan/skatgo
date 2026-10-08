@@ -4,9 +4,11 @@ import type { ComponentProps } from 'react'
 import { DailyEntry as Entry, DailyTable as Daily } from './daily-table'
 import { FreeTable as Table } from './free-table'
 import { LessonPlayer as Player } from './lesson-player'
+import { OpenTable as Open, PrivateTable as Private } from './table-room'
 
 // The browser-only parts of the course, behind one module so the pages load them as a single lazy chunk:
-// the lesson player, the free-play table, and the daily tournament's table and button (SKATGO-35). Everything around them — titles, text, links — is rendered
+// the lesson player, the free-play table, the daily tournament's table and button (SKATGO-35), and a
+// private table with the form that opens one (SKATGO-61). Everything around them — titles, text, links — is rendered
 // on the server by the pages themselves (see ./client-page.tsx).
 //
 // Everything that animates lives in here, so this is where it learns the visitor's motion setting: a
@@ -30,3 +32,11 @@ export const DailyTable = () => (
 )
 
 export const DailyEntry = Entry
+
+export const OpenTable = Open
+
+export const PrivateTable = () => (
+  <MotionConfig reducedMotion="user">
+    <Private />
+  </MotionConfig>
+)

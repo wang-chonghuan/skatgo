@@ -75,6 +75,34 @@ export function linkLook(tone: Tone = 'go', size: Size = 'md', shape: Shape = 'p
   return stylex.props(btnType(shape, size), styles.btn, shapes[shape], sizes[size], tones[tone], shape === 'landing' && landingTones[tone], styles.link)
 }
 
+/** A one-line text field — a name, as the daily leaderboard and a private table ask for it. Enter
+ *  submits. */
+export function TextField({ id, testId, value, onChange, onEnter, invalid, autoComplete }: {
+  id: string
+  testId?: string
+  value: string
+  onChange: (value: string) => void
+  onEnter?: () => void
+  invalid?: boolean
+  autoComplete?: string
+}) {
+  return (
+    <input
+      id={id}
+      data-testid={testId}
+      type="text"
+      autoComplete={autoComplete}
+      value={value}
+      aria-invalid={invalid}
+      onChange={(e) => onChange(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') onEnter?.()
+      }}
+      {...stylex.props(typography.appText, typography.control, styles.input)}
+    />
+  )
+}
+
 /** A white card on the grey page (the design's option card), or a judged / tip panel. */
 export function Panel({ children, tone = 'card', pad = true }: { children: ReactNode; tone?: 'card' | 'tip' | 'good' | 'bad'; pad?: boolean }) {
   return <div {...stylex.props(styles.panel, panelTones[tone], pad && styles.panelPad)}>{children}</div>
@@ -129,6 +157,22 @@ const dynamic = stylex.create({
 })
 
 const styles = stylex.create({
+  input: {
+    flexGrow: 1,
+    minWidth: 0,
+    minHeight: dims.control,
+    boxSizing: 'border-box',
+    paddingBlock: space.x10,
+    paddingInline: space.x12,
+    color: color.text,
+    backgroundColor: color.surface,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: { default: color.hairline, ':focus': color.info },
+    borderRadius: radii.panel,
+    outlineStyle: 'none',
+    boxShadow: { default: 'none', ':focus': elev.focus },
+  },
   strong: { color: color.navy },
   btn: {
     display: 'inline-flex',

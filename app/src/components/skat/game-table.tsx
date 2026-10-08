@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import confetti from 'canvas-confetti'
 import { AnimatePresence, motion } from 'motion/react'
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
@@ -75,7 +75,13 @@ import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 
 const ME: Seat = 0
 /** A seat's name in the current language — read at render, so it is always the page's language. */
-const nameOf = (seat: Seat) => [m.name_you, m.name_lina, m.name_max][seat]()
+const defaultName = (seat: Seat) => [m.name_you, m.name_lina, m.name_max][seat]()
+/** The names at this table: a private table's nicknames (SKATGO-61), or null for You, Lina and Max. */
+const Names = createContext<[string, string, string] | null>(null)
+function useNameOf() {
+  const names = useContext(Names)
+  return (seat: Seat) => (names ? names[seat] : defaultName(seat))
+}
 
 export const BOT_DELAY = 850
 export const TRICK_DELAY = 1300
@@ -113,6 +119,15 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'next'> & {
   problem?: { text: string; retry?: () => void; fresh: () => void } | null
 }
 
+/** A private table (SKATGO-61): the room's deal turned so the viewer is seat 0, the people's
+ *  nicknames, and the running Seeger-Fabian totals. `next` deals the next one. No hints and no
+ *  assistant: the others at the table get none either. */
+export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'next' | 'totals'> & {
+  names: [string, string, string]
+  /** Under the result: this deal's scores and the running totals. */
+  standings: ReactNode
+}
+
 type Props = {
   /** Called once per game, when it is settled. */
   onSettled?: (info: { humanWon: boolean; humanScore: number }) => void
@@ -122,14 +137,25 @@ type Props = {
   tournament?: Tournament
   /** Play a server game with hints and the assistant (free play, lesson 11). */
   server?: ServerGame
+  /** Play at a private table (SKATGO-61). */
+  room?: RoomTable
 }
 
-export function GameTable({ onSettled, fullScreen = false, tournament, server }: Props) {
+export function GameTable(props: Props) {
+  return (
+    <Names.Provider value={props.room?.names ?? null}>
+      <Table {...props} />
+    </Names.Provider>
+  )
+}
+
+function Table({ onSettled, fullScreen = false, tournament, server, room }: Props) {
+  const nameOf = useNameOf()
   const [dealer, setDealer] = useState<Seat>(2)
   const [localGame, setGame] = useState<Game>(() => deal(2))
-  const remote = tournament ?? server
+  const remote = tournament ?? server ?? room
   const game = remote?.game ?? localGame
-  const hints = !tournament
+  const hints = !tournament && !room
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   const [picked, setPicked] = useState<Card[]>([])
   // The trick's cards that have landed (SKATGO-41). A card flies in on a layer of its own under a
@@ -200,8 +226,8 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
   // hint the tournament does not give.
   const publish = useTableSnapshot((s) => s.publish)
   useEffect(() => {
-    publish(tournament ? null : visibleTable(game, scores))
-  }, [game, scores, publish, tournament])
+    publish(tournament || room ? null : visibleTable(game, scores))
+  }, [game, scores, publish, tournament, room])
   useEffect(() => () => publish(null), [publish])
 
   /** The learner's move: to the server for a server game, through the engine here otherwise. */
@@ -304,14 +330,14 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
             learner asked for, or why a card was refused, each until it is closed. The stage keeps this
             band clear (SKATGO-34): nothing on the table reaches into it. */}
         <div data-testid="skat-top" {...stylex.props(styles.top)}>
-          <InfoBoard game={game} scores={tournament?.totals ?? scores} points={points} />
+          <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} />
           {!acting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
               {game.phase === 'trickEnd' && winner !== null ? (
                 <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} />
                 </div>
               )}
             </div>
@@ -427,7 +453,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -496,7 +522,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} />
             </section>
           ) : null}
 
@@ -538,6 +564,8 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
           <div {...stylex.props(styles.panelFoot)}>
             {fullScreen && tournament ? (
               <Link to="/daily" data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
+            ) : fullScreen && room ? (
+              <Link to="/with-friends" data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
             ) : fullScreen ? (
               <Link to="/" data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
             ) : null}
@@ -551,7 +579,7 @@ export function GameTable({ onSettled, fullScreen = false, tournament, server }:
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} />
         </div>
       ) : null}
     </div>
@@ -573,6 +601,7 @@ function ActionsFor({
   dealScore,
   last,
   daily,
+  roomAfter,
 }: {
   game: Game
   picked: Card[]
@@ -592,9 +621,12 @@ function ActionsFor({
   last: boolean
   /** In the tournament: the AI's result and the running table, shown once the deal is over. */
   daily?: DailyAfter | null
+  /** At a private table: the deal's scores and the running totals, shown once it is over. */
+  roomAfter?: ReactNode
 }) {
   return (
     <Actions
+      roomAfter={roomAfter}
       compact={compact}
       game={game}
       picked={picked}
@@ -650,6 +682,7 @@ function Stack({ seat, game }: { seat: Seat; game: Game }) {
 /** A seat plate: the role tag and the name — nothing else, so it never has to be cut short. Scores,
  *  the contract and the count are on the info board at the top of the felt. The learner's is amber. */
 function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: boolean; active: boolean }) {
+  const nameOf = useNameOf()
   const role = roleName(roleOf(seat, game.dealer))
   return (
     <div data-testid={mine ? 'skat-plate-me' : undefined} data-active={String(active)} title={role} {...stylex.props(styles.plate, mine && styles.plateMine, active && styles.plateActive)}>
@@ -662,6 +695,7 @@ function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: bo
 /** The info board across the top of the felt: what is being played, by whom, how the hand stands, and
  *  the running totals — each a small label over its value, divided by fine rules. */
 function InfoBoard({ game, scores, points }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number } }) {
+  const nameOf = useNameOf()
   const contract = game.declaration?.contract ?? null
   const playing = game.phase === 'play' || game.phase === 'trickEnd'
   const extras = `${game.declaration?.hand ? ' · Hand' : ''}${game.declaration?.ouvert ? ' · Ouvert' : ''}`
@@ -723,9 +757,11 @@ type ActionsProps = {
   dealScore: number | null
   last: boolean
   daily?: DailyAfter | null
+  roomAfter?: ReactNode
 }
 
 function Actions(p: ActionsProps) {
+  const nameOf = useNameOf()
   const { game } = p
   const who = actor(game)
 
@@ -735,15 +771,16 @@ function Actions(p: ActionsProps) {
         <Say>{p.dealScore === null ? m.table_passed_in() : m.daily_passed_in()}</Say>
         {p.daily?.compare}
         {p.daily?.day}
+        {p.roomAfter}
         <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={p.onNewGame}>
-          {p.dealScore === null ? m.table_redeal() : p.last ? m.daily_see_result() : m.daily_next_deal()}
+          {p.roomAfter ? m.daily_next_deal() : p.dealScore === null ? m.table_redeal() : p.last ? m.daily_see_result() : m.daily_next_deal()}
         </Btn>
       </Dialog>
     )
   }
 
   if (game.phase === 'done' && game.result && game.declarer !== null) {
-    return <Result game={game} onNewGame={p.onNewGame} dealScore={p.dealScore} last={p.last} daily={p.daily} />
+    return <Result game={game} onNewGame={p.onNewGame} dealScore={p.dealScore} last={p.last} daily={p.daily} roomAfter={p.roomAfter} />
   }
 
   if (who !== ME) {
@@ -910,7 +947,9 @@ function DeclarePicker({
   )
 }
 
-function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null }) {
+function Result({ game, onNewGame, dealScore, last, daily, roomAfter }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null; roomAfter?: ReactNode }) {
+  const nameOf = useNameOf()
+  const named = useContext(Names) !== null
   const r = game.result!
   const declarer = game.declarer!
   const d = game.declaration!
@@ -934,7 +973,7 @@ function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNew
   // tournament, where the deal against the AI comes first (SKATGO-57).
   const early = game.early ? (
     <p data-testid="skat-result-early" data-early={game.early.kind} {...stylex.props(typography.note, styles.note)}>
-      {earlyLine(declarer, game.early)}
+      {earlyLine(declarer, game.early, nameOf, named)}
     </p>
   ) : null
   const settlement = (
@@ -956,7 +995,7 @@ function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNew
       )}
       <p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>
       <p {...stylex.props(typography.note, styles.note)}>
-        <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score))} />
+        <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score), nameOf)} />
       </p>
       <div {...stylex.props(styles.resultSkat)}>
         <span {...stylex.props(typography.smallBold, styles.inkLabel)}>{m.result_skat()}</span>
@@ -981,12 +1020,13 @@ function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNew
             <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
             {early}
             {settlement}
+            {roomAfter}
           </div>
         </Panel>
       )}
       <Row>
         <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={onNewGame}>
-          {dealScore === null ? m.result_new_game() : last ? m.daily_see_result() : m.daily_next_deal()}
+          {roomAfter ? m.daily_next_deal() : dealScore === null ? m.result_new_game() : last ? m.daily_see_result() : m.daily_next_deal()}
         </Btn>
       </Row>
     </div>
@@ -994,19 +1034,23 @@ function Result({ game, onNewGame, dealScore, last, daily }: { game: Game; onNew
   )
 }
 
-/** How a deal decided before its last card ended (SKATGO-59): the rest shown, or a Null given up. */
-function earlyLine(declarer: Seat, early: NonNullable<Game['early']>): string {
+/** How a deal decided before its last card ended (SKATGO-59): the rest shown, or a Null given up. Lina
+ *  and Max have their own lines; at a private table (`named`) anyone's line is the same. */
+function earlyLine(declarer: Seat, early: NonNullable<Game['early']>, nameOf: (seat: Seat) => string, named: boolean): string {
   const name = nameOf(declarer)
   if (early.kind === 'claim') {
     const n = 10 - early.from
-    return declarer === ME ? m.result_early_claim_you({ n }) : declarer === 1 ? m.result_early_claim_1({ name, n }) : m.result_early_claim_2({ name, n })
+    if (declarer === ME) return m.result_early_claim_you({ n })
+    if (named) return m.result_early_claim_named({ name, n })
+    return declarer === 1 ? m.result_early_claim_1({ name, n }) : m.result_early_claim_2({ name, n })
   }
+  if (named) return declarer === ME ? m.result_early_null_you_named() : m.result_early_null_named({ name })
   if (declarer === ME) return m.result_early_concede_you({ a: nameOf(1), b: nameOf(2) })
   return declarer === 1 ? m.result_early_null_1({ name }) : m.result_early_null_2({ name })
 }
 
 /** "You score +30." — who wrote down what, and why it is doubled when it is. */
-function scoreLine(declarer: Seat, won: boolean, score: string): string {
+function scoreLine(declarer: Seat, won: boolean, score: string, nameOf: (seat: Seat) => string): string {
   if (declarer === ME) return won ? m.result_score_you({ score }) : m.result_score_lost_you({ score })
   const name = nameOf(declarer)
   return won ? m.result_score({ name, score }) : m.result_score_lost({ name, score })

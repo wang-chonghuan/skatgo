@@ -1,10 +1,11 @@
 import type { Card, Contract } from '../../app/src/lib/skat/cards'
 import { claimLine, collectTrick, concedable, deal, pickUpSkat, roleOf, actor, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { type Declaration, nextBid } from '../../app/src/lib/skat/value'
+import { declarationAdvice } from '../../app/src/lib/skat/ai'
 import { PLAYER } from '../../app/src/lib/skat/tournament'
 import { applySeatMove } from './model'
 import { type HandMode, type PickupMode, declareAfterPickup } from './skatzero/bidding'
-import type { Policy } from './skatzero/policy'
+import { type Policy, viewOf } from './skatzero/policy'
 
 // The computers of a server-owned game (the daily tournament, SKATGO-35/38/39; free play, SKATGO-40):
 // recorded moves and their replay, SkatZero's turn in the auction and at the skat, and the loop that
@@ -77,20 +78,44 @@ export async function skatzeroTurn(g: Game, seat: Seat, plan: SeatPlan, policy: 
     const d = await decide(declareAfterPickup(policy, picked.hands[seat].map(raw), position, g.bid))
     return [{ seat, move: { type: 'pickup' } }, { seat, move: { type: 'discard', cards: d.discard.map(card) } }, { seat, move: { type: 'declare', declaration: declaration(d.mode) } }]
   }
+  // A computer standing in at a private table (SKATGO-61) may find the person's skat step half done.
+  const position = POSITION[roleOf(seat, g.dealer)]
+  if (g.phase === 'skat') {
+    const d = await decide(declareAfterPickup(policy, g.hands[seat].map(raw), position, g.bid))
+    return [{ seat, move: { type: 'discard', cards: d.discard.map(card) } }, { seat, move: { type: 'declare', declaration: declaration(d.mode) } }]
+  }
+  if (g.phase === 'declare' && g.pickedUp) {
+    const d = await decide(declareAfterPickup(policy, [...g.hands[seat], ...g.skat].map(raw), position, g.bid))
+    return [{ seat, move: { type: 'declare', declaration: declaration(d.mode) } }]
+  }
+  if (g.phase === 'declare') {
+    // The person chose Hand: the plan's Hand game, or — when the plan would have picked up — the game
+    // the course's advice names for these ten cards.
+    const choice = plan.skatOrHand(g.bid)
+    const d = choice.pickup ? declarationAdvice(g.hands[seat], g.hands[seat], g.bid, true).declaration : declaration(choice.mode)
+    return [{ seat, move: { type: 'declare', declaration: d } }]
+  }
   throw new ComputerFailed('computer_unexpected_phase')
 }
 
 /** A deal already decided at an empty trick (SKATGO-59): a Null nobody can make the declarer lose any
- *  more is given up by a computer defender; a computer declarer on lead who sees the rest is theirs
- *  shows it. The player shows their own rest themselves. With `toEnd` every seat is a computer. */
-function decided(g: Game, toEnd: boolean): Logged | null {
+ *  more is given up by a defender; a computer declarer on lead who sees the rest is theirs shows it. A
+ *  person shows their own rest themselves. `computer` says which seats a computer plays. */
+export function decided(g: Game, computer: (seat: Seat) => boolean): Logged | null {
   if (g.phase !== 'play' || g.trick.length > 0 || g.declarer === null) return null
   if (concedable(g)) {
-    const defender = ([1, 2] as Seat[]).find((s) => s !== g.declarer)!
-    return { seat: defender, move: { type: 'concede' } }
+    const defenders = ([0, 1, 2] as Seat[]).filter((s) => s !== g.declarer)
+    return { seat: defenders.find(computer) ?? defenders[0], move: { type: 'concede' } }
   }
-  if ((g.declarer !== PLAYER || toEnd) && claimLine(g)) return { seat: g.declarer, move: { type: 'claim' } }
+  if (computer(g.declarer) && claimLine(g)) return { seat: g.declarer, move: { type: 'claim' } }
   return null
+}
+
+/** The computer's next decision for `seat` with SkatZero: the auction and the skat from the seat's
+ *  prepared plan, the discard and the game after a pick-up and every card from the models. */
+export async function computerTurn(g: Game, seat: Seat, plan: SeatPlan, policy: Policy): Promise<Logged[]> {
+  if (g.phase !== 'play') return skatzeroTurn(g, seat, plan, policy)
+  return [{ seat, move: { type: 'play', card: await decide(policy.choose(viewOf(g, seat))) } }]
 }
 
 /** Let the computers move until it is the player's turn or the deal is over, recording each move in
@@ -105,7 +130,7 @@ export async function advance(g: Game, log: Logged[], turn: (g: Game) => Promise
       steps?.push(g)
       continue
     }
-    const early = decided(g, toEnd)
+    const early = decided(g, (seat) => toEnd || seat !== PLAYER)
     if (early) {
       g = applySeatMove(g, early.seat, early.move)
       log.push(early)

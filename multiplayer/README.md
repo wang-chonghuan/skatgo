@@ -1,6 +1,7 @@
 # Multiplayer Backend
 
-Independent Colyseus 0.18 TypeScript service. The course frontend is unchanged.
+Independent Colyseus 0.18 TypeScript service. Its rooms are the site's private
+tables (SKATGO-61); it also runs the daily tournament and free play over HTTP.
 It imports the existing pure Skat engine, not a fork of the rules.
 
 ## Local Runtime
@@ -48,55 +49,76 @@ No Clerk, LLM or Azure configuration is needed by this service.
 
 ## Protocol
 
-This release is for trusted integration clients, not public frontend admission.
-Never embed the shared admission key in a browser bundle. A later frontend ticket
-must replace that integration boundary with server-issued short-lived admission.
+Two kinds of client come in. Trusted integration clients (the tests) send the
+admission key. Browsers — a private table on the site (SKATGO-61) — never see the key:
+the web server's `/api/room/ticket` signs a two-minute ticket with it
+(`app/src/lib/room-ticket.ts`), and the room accepts `ticket` in place of
+`admissionKey`. Both ride in the SDK's join options.
 
-Using `@colyseus/sdk`, create three independent 32-byte random hex values: admission
-key (server configuration), invite token (shared with invited participants) and
-seat token (private to each participant). Keep the seat token across client restarts.
+Using `@colyseus/sdk`, create two independent 32-byte random hex values per table —
+the invite token (shared with invited participants) and each participant's seat token
+(private). Keep the seat token across client restarts.
 
 ```ts
-const room = await client.create('skat', {
-  admissionKey, humanSeats: 3, inviteToken, seatToken,
-})
-const invited = await anotherClient.joinById(room.roomId, {
-  admissionKey, inviteToken, seatToken: anotherPrivateSeatToken,
-})
-const recovered = await client.joinById(savedRoomId, { admissionKey, seatToken })
+const room = await client.create('skat', { ticket, inviteToken, seatToken, nickname })
+const invited = await anotherClient.joinById(room.roomId, { ticket, inviteToken, seatToken: another, nickname })
+const recovered = await client.joinById(savedRoomId, { ticket, seatToken })
 ```
 
-`humanSeats` is 1, 2 or 3 and fixed at creation. The creator is seat 0 and starts
-after the selected human seats are connected; remaining seats are AI. New people
-cannot replace human or AI seats after start. There is no public room listing.
-The room ID is not an invitation or a recovery credential.
+A new seat needs a nickname, judged by the leaderboard's rules
+(`app/src/lib/skat/nickname.ts`); a seat token alone takes a seat back. Seats fill in
+the order people arrive; the creator is seat 0. The table waits in a lobby until seat
+0 sends `start`: whoever sits at it then plays, and the empty seats are computers for
+good. Nobody can join after the start. There is no public room listing. The room ID
+is not an invitation or a recovery credential.
 
-`state.publicData` is JSON with the phase, actor, public bids, declared contract,
-played tricks, result, revision, expiry and seat connectivity/control. Each
-`state.players.get(String(seat)).privateData` is a Colyseus StateView-filtered JSON
-field containing that seat's hand and known buried cards. Other players' private
-fields are absent. Ouvert's explicitly open declarer hand is public; no other
-original hands or unseen skat are published, even in a result.
+After a deal ends (`done` or `passedIn`), anyone seated sends `next` for the next
+deal, dealt by the seat after the last dealer. Each deal's Seeger-Fabian scores add
+to the table's running `scores`.
+
+The computers are SkatZero, as in free play. Each deal is drawn from free play's pool
+(`skatzero/free-pool.json.gz`) with the dealer the table needs, together with every
+seat's prepared bidding plan. A computer also stands in for a person whose seat it
+has taken over (see below), on their seat's plan. The discard and game after a
+pick-up, and every card, come from the models live. A decided deal ends early, as in
+free play (SKATGO-59).
+
+`state.publicData` is JSON (`RoomPublic` in `app/src/lib/skat/room-view.ts`):
+- the lobby or the phase, actor, turn and dealer;
+- public bids, the declared contract and the played tricks;
+- the result, the deal count and the running scores, revision and expiry;
+- each seat's nickname, connectivity and control.
+
+Each `state.players.get(String(seat)).privateData` is a Colyseus StateView-filtered
+JSON field holding that seat's hand and known buried cards. Other players' private
+fields are absent. Ouvert's explicitly open declarer hand is public while it is
+played; the skat is public once the deal is over, as at a real table. No other
+original hand is published.
 
 Send `command` with `{ id, revision, action }`. IDs are 1-80 alphanumeric, underscore
 or hyphen characters and unique per seat. Use the latest public revision.
 
 | Action | Body |
 |---|---|
-| Start | `{ type: 'start' }` |
+| Start (seat 0, lobby) | `{ type: 'start' }` |
+| Next deal (anyone seated, deal over) | `{ type: 'next' }` |
 | Bid | `{ type: 'bid', value: 'bid' \| 'hold' \| 'pass' }` |
 | Pick up skat | `{ type: 'pickup' }` |
 | Play Hand | `{ type: 'hand' }` |
 | Discard | `{ type: 'discard', cards: [card, card] }` |
 | Declare | `{ type: 'declare', declaration }` using the engine's declaration shape |
 | Play | `{ type: 'play', card }` |
+| Claim the rest (declarer) | `{ type: 'claim' }` |
 
 The server sends `receipt`: `{ id, ok: true, revision }` only after persistence, or
 `{ id, ok: false, error }`. Retry an uncertain request with the same ID/action;
 the prior receipt is returned without another transition. Reusing its ID for a
 different action is rejected. A stale revision is rejected, not silently replayed
 against a different turn. Ignore neither rejections nor the current public actor.
-Trick collection and AI turns are server-owned.
+Trick collection and computer turns are server-owned.
+
+Snapshots carry `schema: 2`. A table stored by an earlier schema is not restored and
+expires like any other.
 
 ## Disconnect and Recovery
 

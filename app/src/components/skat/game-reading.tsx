@@ -24,6 +24,7 @@ export function GameReading({ daily = false }: { daily?: boolean }) {
       <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.game_learning_title()}</h2>
       <p {...stylex.props(typography.body, styles.text)}>{m.game_learning_text()}</p>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.links)}>
+        {daily ? null : <Link to="/with-friends" data-testid="play-friends" {...stylex.props(typography.link, styles.link)}>{m.friends_link()}</Link>}
         <Link to="/rules" {...stylex.props(typography.link, styles.link)}>{m.nav_rules()}</Link>
         <Link to="/course" {...stylex.props(typography.link, styles.link)}>{m.nav_course()}</Link>
         <Link to={daily ? '/play' : '/daily'} {...stylex.props(typography.link, styles.link)}>{daily ? m.nav_play() : m.nav_daily()}</Link>
@@ -32,6 +33,9 @@ export function GameReading({ daily = false }: { daily?: boolean }) {
     </section>
   )
 }
+
+/** The look of a link in reading text, shared with the friends page (SKATGO-61). */
+export const readingLink = () => stylex.props(typography.link, styles.link)
 
 const styles = stylex.create({
   root: {

@@ -8,6 +8,7 @@ import { color } from './color.stylex'
 export const elev = stylex.defineVars({
   tileGreen: `0 5px 16px -6px ${color.tileGreen}`,
   tileOrange: `0 5px 16px -6px ${color.tileOrange}`,
+  tileRed: `0 5px 16px -6px ${color.tileRed}`,
   eventCard: '0 5px 16px -6px rgba(93, 109, 125, 0.5)',
   option: '0 5px 16px -6px rgba(0, 0, 0, 0.3)',
   optionFeatured: '0 12px 22px -6px rgba(0, 0, 0, 0.3)',

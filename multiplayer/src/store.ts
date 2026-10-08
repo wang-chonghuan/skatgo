@@ -92,7 +92,8 @@ export class Store {
   }
   async all(): Promise<Snapshot[]> {
     const { rows } = await this.pool.query(
-      'SELECT snapshot FROM multiplayer_rooms WHERE expires_at > $1 ORDER BY id', [Date.now()],
+      // A table stored by an earlier version of the snapshot is not restored; it expires like any other.
+      "SELECT snapshot FROM multiplayer_rooms WHERE expires_at > $1 AND snapshot->>'schema' = '2' ORDER BY id", [Date.now()],
     )
     return rows.map(r => r.snapshot)
   }

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-59",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-59",
+  "branch": "SKATGO-59-claim-concede",
+  "base": "4a46070469cb7672f68fb7174e0dbb0c7abf42fb",
+  "ports": { "web": 55059, "multiplayer": 56059, "database": 57059 }
+}

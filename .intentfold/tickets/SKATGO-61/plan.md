@@ -24,7 +24,7 @@
   - 入口和页面；
   - 统计事件。
 
-## 路线（按 grill 的建议；以答复为准）
+## 路线（grill 已答，结论已并入）
 
 1. **准入**：
    - 网站新增 `POST /api/room/ticket`，按地址限频，签发 2 分钟有效的准入票：admission key 做 HMAC，标签 `skatgo-room/1`。
@@ -40,21 +40,21 @@
      - 叫牌和拿底或 Hand 用牌池里存好的方案；
      - 拿底后的扣牌和定约，以及出牌，实时用 SkatZero（与自由对局相同）；
      - SKATGO-59 的认领和认输在每个空墩检查。
-   - 0 号座没有存好的叫牌方案，按 grill Q4 处理。
+   - 0 号座没有存好的叫牌方案：一次性给牌池补上座位 0 的方案（grill Q4），所有座位都用同一种叫牌方式。
    - 快照结构改了，README 的协议说明一起改。
 3. **前端**：
    - 新增依赖 `@colyseus/sdk`，版本与 multiplayer 测试用的 0.18.4 一致（engineering.md Redline 3，需要人批准）。
    - `app/src/lib/room-client.ts`：领准入票、建房或加入、监听状态、带 id 和 revision 发指令、处理回执。
    - 座位令牌按房间存在 localStorage，这是功能必需的存储；邀请令牌放在链接的 `#` 后面。
    - 路由：
-     - `/room`（`/de/raum`、`/en/room`）：介绍和「开房间」；
-     - `/room/$id`：个人页面，noindex，不进 sitemap。
+     - `/with-friends`（`/de/mit-freunden`、`/en/with-friends`）：可收录的介绍页，按钮「Privaten Tisch eröffnen」/「Open a private table」；
+     - `/table/$id`（`/de/tisch/<号>`、`/en/table/<号>`）：个人页面，noindex，不进 sitemap。
    - 大厅：座位和昵称、复制邀请链接、房主的「开局」。
    - 牌桌：复用 `GameTable`，加 `room` 来源；`lib/skat/` 里新增一个纯函数，把视图转到本人在下方；座位牌和总分用昵称。
    - 入口：
      - 打牌页的阅读区；
      - 第 11 课课后的去处；
-     - `/raum` 页。
+     - 介绍页本身。
    - 新增文案 de / en 各一套。
    - 统计事件：`room_created`、`room_joined`、`room_started`。
 4. **测试**：

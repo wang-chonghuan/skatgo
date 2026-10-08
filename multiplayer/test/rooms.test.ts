@@ -6,6 +6,8 @@ import { once } from 'node:events'
 import { Client, type Room } from '@colyseus/sdk'
 import pg from 'pg'
 import { legalPlays } from '../../app/src/lib/skat/cards'
+import { issueTicket, TICKET_MS } from '../../app/src/lib/room-ticket'
+import { seegerFabian } from '../../app/src/lib/skat/tournament'
 import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS, hash } from '../src/model'
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
@@ -88,14 +90,18 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
     await until(() => peer.public)
     return peer
   }
-  async function create(humanSeats: number) {
+  /** A table with the host in seat 0 and `people - 1` invited guests seated (SKATGO-61). */
+  async function create(people: number) {
     const secret = token(), inviteToken = token()
-    const room = await new Client(endpoint).create('skat', { admissionKey, seatToken: secret, inviteToken, humanSeats })
+    const room = await new Client(endpoint).create('skat', { admissionKey, seatToken: secret, inviteToken, nickname: 'Gastgeberin' })
     const p = await attach(room, secret, 0)
-    return { p, inviteToken }
+    const group = [p]
+    for (let seat = 1; seat < people; seat++) group.push(await join(room.roomId, token(), seat, inviteToken))
+    await until(() => p.public.seats.filter(s => s.connected).length === people)
+    return { p, group, inviteToken }
   }
   async function join(id: string, secret: string, seat: number, inviteToken?: string) {
-    return attach(await new Client(endpoint).joinById(id, { admissionKey, seatToken: secret, ...(inviteToken ? { inviteToken } : {}) }), secret, seat)
+    return attach(await new Client(endpoint).joinById(id, { admissionKey, seatToken: secret, ...(inviteToken ? { inviteToken, nickname: `Gast ${seat}` } : {}) }), secret, seat)
   }
   async function snapshot(id: string): Promise<Snapshot> {
     return (await sql.query('SELECT snapshot FROM multiplayer_rooms WHERE id=$1', [id])).rows[0].snapshot
@@ -141,34 +147,59 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
     await ready()
     await t.test('unauthorized admission creates no persistent rooms', async () => {
       await assert.rejects(new Client(endpoint).create('skat', {
-        admissionKey: token(), seatToken: token(), inviteToken: token(), humanSeats: 1,
+        admissionKey: token(), seatToken: token(), inviteToken: token(), nickname: 'Anna',
       }))
       assert.equal((await sql.query('SELECT count(*)::int AS n FROM multiplayer_rooms')).rows[0].n, 0)
     })
+    await t.test('a browser comes in with a signed ticket; a forged or expired one, or no nickname, is refused', async () => {
+      const room = await new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey), seatToken: token(), inviteToken: token(), nickname: 'Anna' })
+      const p = await attach(room, '', 0)
+      assert.equal(p.public.seats[0].nickname, 'Anna')
+      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(token()), seatToken: token(), inviteToken: token(), nickname: 'Anna' }))
+      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, Date.now() - TICKET_MS - 1000), seatToken: token(), inviteToken: token(), nickname: 'Anna' }))
+      await assert.rejects(new Client(endpoint).create('skat', { admissionKey, seatToken: token(), inviteToken: token() }))
+      await assert.rejects(new Client(endpoint).create('skat', { admissionKey, seatToken: token(), inviteToken: token(), nickname: 'skatgo.com' }))
+    })
     for (const count of [1, 2, 3]) {
-      await t.test(`${count} humans plus ${3 - count} AIs complete a legal private game`, async () => {
-        const { p, inviteToken } = await create(count)
-        const group = [p]
-        for (let seat = 1; seat < count; seat++) group.push(await join(p.room.roomId, token(), seat, inviteToken))
-        await until(() => p.public.seats.filter(s => s.connected).length === count)
-        await assert.rejects(new Client(endpoint).joinById(p.room.roomId, { admissionKey, seatToken: token(), inviteToken }))
+      await t.test(`${count} humans plus ${3 - count} computers complete a legal private game`, async () => {
+        const { p, group, inviteToken } = await create(count)
+        assert.equal(p.public.started, false)
+        assert.equal(group.at(-1)!.public.seats[count - 1].nickname, count === 1 ? 'Gastgeberin' : `Gast ${count - 1}`)
         const start = await send(p, { type: 'start' })
         assert.equal(start.ok, true)
+        await assert.rejects(new Client(endpoint).joinById(p.room.roomId, { admissionKey, seatToken: token(), inviteToken, nickname: 'Spät' }))
         const s = await snapshot(p.room.roomId)
+        assert.equal(s.humanSeats, count)
         for (const peer of group) {
           await until(() => peer.public.phase === 'bidding')
+          assert.deepEqual(peer.public.seats.map(x => x.control), [0, 1, 2].map(i => (i < count ? 'human' : 'ai')))
           assert.deepEqual(peer.private.hand, s.game!.hands[peer.seat])
           assert.deepEqual(peer.private.buried, [])
+          assert.equal(peer.public.skat, null)
           for (const seen of peer.observed) assert(!JSON.stringify(seen).includes(inviteToken))
         }
         await complete(group)
       })
     }
+    await t.test('deal after deal: the dealer moves on and every seat\'s Seeger-Fabian score runs on', async () => {
+      const { p, group } = await create(2)
+      assert((await send(p, { type: 'start' })).ok)
+      assert.equal((await send(group[1], { type: 'next' })).error, 'cannot_deal')
+      const results: PublicView[] = []
+      for (let deal = 1; deal <= 2; deal++) {
+        await until(() => group.every(x => x.public.deals === deal && x.public.phase === 'bidding'))
+        assert.equal(p.public.dealer, deal === 1 ? 2 : 0)
+        await complete(group)
+        results.push(p.public)
+        assert.deepEqual(p.public.skat?.length, 2)
+        const want = results.map(r => seegerFabian({ phase: r.phase as 'done', declarer: r.declarer, result: r.result })).reduce((a, b) => a.map((n, i) => n + b[i]) as [number, number, number])
+        for (const x of group) await until(() => JSON.stringify(x.public.scores) === JSON.stringify(want))
+        if (deal === 1) assert((await send(group[1], { type: 'next' })).ok)
+      }
+    })
     await t.test('caller, action and retry validation is transactional', async () => {
-      const { p, inviteToken } = await create(3)
-      const second = await join(p.room.roomId, token(), 1, inviteToken)
-      await join(p.room.roomId, token(), 2, inviteToken)
-      await until(() => p.public.seats.every(s => s.connected))
+      const { p, group } = await create(3)
+      const second = group[1]
       const id = randomUUID()
       const start = await send(p, { type: 'start' }, id)
       assert(start.ok)
@@ -185,10 +216,9 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       assert.equal((await sql.query('SELECT count(*)::int AS n FROM multiplayer_commands WHERE room_id=$1', [p.room.roomId])).rows[0].n, 1)
     })
     await t.test('short drop, 30-second AI takeover, and late seat recovery', async () => {
-      const { p, inviteToken } = await create(3)
-      let second = await join(p.room.roomId, token(), 1, inviteToken)
-      const third = await join(p.room.roomId, token(), 2, inviteToken)
-      await until(() => p.public.seats.every(s => s.connected))
+      const { p, group: seated } = await create(3)
+      let second = seated[1]
+      const third = seated[2]
       assert((await send(p, { type: 'start' })).ok)
       const saved = second.room.reconnectionToken
       second.room.connection.close()
@@ -229,9 +259,7 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       assert.deepEqual(await snapshot(p.room.roomId), waiting, 'AI continued after human recovery')
     })
     await t.test('skat visibility, Ouvert and illegal cards follow the rules', async () => {
-      const { p, inviteToken } = await create(3)
-      const group = [p, await join(p.room.roomId, token(), 1, inviteToken), await join(p.room.roomId, token(), 2, inviteToken)]
-      await until(() => p.public.seats.every(s => s.connected))
+      const { p, group } = await create(3)
       assert((await send(p, { type: 'start' })).ok)
       while (p.public.phase === 'bidding') {
         const mover = group.find(x => x.public.actor === x.seat)
@@ -257,9 +285,7 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       assert.deepEqual(await snapshot(p.room.roomId), before)
     })
     await t.test('all-pass auction is explicit, not a silently redealt game', async () => {
-      const { p, inviteToken } = await create(3)
-      const group = [p, await join(p.room.roomId, token(), 1, inviteToken), await join(p.room.roomId, token(), 2, inviteToken)]
-      await until(() => p.public.seats.every(s => s.connected))
+      const { p, group } = await create(3)
       assert((await send(p, { type: 'start' })).ok)
       const original = (await snapshot(p.room.roomId)).game!.originalHands
       const end = Date.now() + 10_000

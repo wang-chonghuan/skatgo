@@ -5,10 +5,10 @@ import express from 'express'
 import { z } from 'zod'
 import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, seatView } from '../../app/src/lib/skat/tournament'
-import { ComputerFailed, type Logged, type SeatPlan, advance, card, decide, replayLog, skatzeroTurn } from './computers'
+import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, replayLog } from './computers'
 import { actionSchema, applySeatMove, Rejected, secretEquals } from './model'
 import { BIDS, type HandMode } from './skatzero/bidding'
-import { type Policy, viewOf } from './skatzero/policy'
+import type { Policy } from './skatzero/policy'
 
 // Free play and lesson 11 on the server (SKATGO-40). A game is a deal drawn from a pool prepared
 // offline (scripts/make-free-pool.ts: both computers' SkatZero bidding worked out in advance), played by
@@ -23,7 +23,9 @@ const TOKEN_LABEL = 'skatgo-free/1'
 /** How long a game's token stays good. */
 const TOKEN_MS = 24 * 60 * 60 * 1000
 
-type Pool = { version: string; deals: { dealer: Seat; deck: string; computers: Record<'1' | '2', { maxBid: number; decisions: string }> }[] }
+/** The pool: each deal's deck and dealer, and every seat's SkatZero bidding (`computers`, keyed by
+ *  seat; free play uses seats 1 and 2, a private table any of them — SKATGO-61). */
+export type Pool = { version: string; deals: { dealer: Seat; deck: string; computers: Record<'0' | '1' | '2', { maxBid: number; decisions: string }> }[] }
 type Manifest = { freePool: { name: string; bytes: number; sha256: string; deals: number } }
 
 /** The pool, checked against the manifest (size, SHA-256, count) and against the bid list it was
@@ -41,7 +43,7 @@ export async function loadPool(dir: URL): Promise<Pool> {
 
 const HAND_CODE: Record<string, HandMode> = { C: 'CH', S: 'SH', H: 'HH', D: 'DH', G: 'GH', N: 'NH', O: 'NOH' }
 
-function plan(p: { maxBid: number; decisions: string }): SeatPlan {
+export function plan(p: { maxBid: number; decisions: string }): SeatPlan {
   return {
     maxBid: p.maxBid,
     skatOrHand: (bid) => {
@@ -77,15 +79,14 @@ export function open(key: Buffer, token: string): Token {
   }
 }
 
-const deckOf = (s: string) => s.split(' ').map(card)
+export const deckOf = (s: string) => s.split(' ').map(card)
 
 /** The computers' moves until it is the player's turn: SkatZero's prepared plans for the auction and the
  *  skat, its cards from the models. */
 function turn(policy: Policy, plans: Record<'1' | '2', SeatPlan>) {
-  return async (g: Game): Promise<Logged[]> => {
+  return (g: Game): Promise<Logged[]> => {
     const seat = actor(g)!
-    if (g.phase !== 'play') return skatzeroTurn(g, seat, plans[String(seat) as '1' | '2'], policy)
-    return [{ seat, move: { type: 'play', card: await decide(policy.choose(viewOf(g, seat))) } }]
+    return computerTurn(g, seat, plans[String(seat) as '1' | '2'], policy)
   }
 }
 

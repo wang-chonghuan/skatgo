@@ -1,23 +1,43 @@
 import { Room, ServerError, type Client } from '@colyseus/core'
 import { StateView } from '@colyseus/schema'
 import { z } from 'zod'
-import { actor, type Seat } from '../../app/src/lib/skat/game'
+import { randomInt } from 'node:crypto'
+import { actor, collectTrick, type Seat } from '../../app/src/lib/skat/game'
+import { cleanNickname } from '../../app/src/lib/skat/nickname'
+import { ticketValid } from '../../app/src/lib/room-ticket'
+import { computerTurn, decided, type Logged } from './computers'
+import { deckOf, plan, type Pool } from './free'
 import {
-  applyAction, commandSchema, computerMove, GRACE_MS, hash, privateView, publicView,
-  Rejected, secretEquals, tokenSchema, TTL_MS, type Snapshot,
+  applyAction, applySeatMove, commandSchema, GRACE_MS, hash, privateView, publicView,
+  Rejected, scoreEnded, secretEquals, tokenSchema, TTL_MS, type PoolDeal, type Snapshot,
 } from './model'
+import type { Policy } from './skatzero/policy'
 import { MatchState, PlayerState } from './state'
 import { Store } from './store'
 
 export const RESTORE = Symbol('trusted-restore')
+/** Who may come in: a trusted integration client with the admission key, or a browser with a ticket
+ *  the web server signed with it (SKATGO-61). A new seat needs a nickname; a seat token alone takes a
+ *  seat back. */
 const admission = z.object({
-  admissionKey: z.string().min(32).max(256),
+  admissionKey: z.string().min(32).max(256).optional(),
+  ticket: z.string().max(200).optional(),
   seatToken: tokenSchema,
   inviteToken: tokenSchema.optional(),
-  humanSeats: z.number().int().min(1).max(3).optional(),
+  nickname: z.string().max(200).optional(),
 }).strict()
 
-export function makeRoom(store: Store, key: string, ready: () => boolean, aiDelay: number) {
+export function makeRoom(store: Store, key: string, ready: () => boolean, aiDelay: number, policy: () => Policy | null, pool: () => Pool | null) {
+  const admitted = (o: z.infer<typeof admission>) =>
+    (o.admissionKey !== undefined && secretEquals(o.admissionKey, key)) || ticketValid(key, o.ticket)
+  /** A deal from free play's pool with this dealer, every seat's bidding with it. */
+  const pick = (dealer: Seat): PoolDeal => {
+    const p = pool()
+    if (!p) throw new Rejected('not_ready')
+    const ids = p.deals.flatMap((d, i) => (d.dealer === dealer ? [i] : []))
+    const d = p.deals[ids[randomInt(ids.length)]]
+    return { dealer: d.dealer, deck: deckOf(d.deck), plans: d.computers }
+  }
   return class SkatRoom extends Room<{ state: InstanceType<typeof MatchState> }> {
     state = new MatchState()
     autoDispose = false
@@ -46,15 +66,17 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         this.snapshot = restored.snapshot
       } else {
         const o = admission.parse(options)
-        if (!ready() || !secretEquals(o.admissionKey, key)) throw new ServerError(403, 'admission_denied')
-        if (!o.inviteToken || !o.humanSeats) throw new ServerError(400, 'creation_options_required')
+        if (!ready() || !admitted(o)) throw new ServerError(403, 'admission_denied')
+        const nickname = cleanNickname(o.nickname ?? '')
+        if (!o.inviteToken) throw new ServerError(400, 'creation_options_required')
+        if (!nickname) throw new ServerError(400, 'nickname_refused')
         this.snapshot = {
-          schema: 1, id: this.roomId, revision: 0, humanSeats: o.humanSeats,
-          inviteHash: hash(o.inviteToken), game: null, expiresAt: Date.now() + TTL_MS,
-          nextActionAt: Date.now(),
+          schema: 2, id: this.roomId, revision: 0, humanSeats: 0,
+          inviteHash: hash(o.inviteToken), game: null, plans: null, deals: 0, scored: 0, scores: [0, 0, 0],
+          expiresAt: Date.now() + TTL_MS, nextActionAt: Date.now(),
           seats: Array.from({ length: 3 }, (_, i) => ({
             tokenHash: i === 0 ? hash(o.seatToken) : null, session: null,
-            disconnectedAt: null, autopilot: i >= o.humanSeats!,
+            disconnectedAt: null, autopilot: false, nickname: i === 0 ? nickname : null,
           })),
         }
         await store.create(this.snapshot)
@@ -72,7 +94,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
     }
     onAuth(_client: Client, options: unknown) {
       const parsed = admission.safeParse(options)
-      if (!ready() || !parsed.success || !secretEquals(parsed.data.admissionKey, key)) {
+      if (!ready() || !parsed.success || !admitted(parsed.data)) {
         throw new ServerError(403, 'admission_denied')
       }
       return parsed.data
@@ -83,9 +105,13 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           const tokenHash = hash(auth.seatToken)
           let seat = s.seats.findIndex(p => p.tokenHash === tokenHash)
           if (seat < 0) {
-            if (s.game || !auth.inviteToken || hash(auth.inviteToken) !== s.inviteHash) throw new Rejected('invite_denied')
-            seat = s.seats.findIndex((p, i) => i < s.humanSeats && !p.tokenHash)
+            if (!auth.inviteToken || hash(auth.inviteToken) !== s.inviteHash) throw new Rejected('invite_denied')
+            if (s.humanSeats > 0) throw new Rejected('room_started')
+            seat = s.seats.findIndex(p => !p.tokenHash)
             if (seat < 0) throw new Rejected('room_full')
+            const nickname = cleanNickname(auth.nickname ?? '')
+            if (!nickname) throw new Rejected('nickname_refused')
+            s.seats[seat].nickname = nickname
           }
           const p = s.seats[seat]
           if (p.session) throw new Rejected('seat_already_connected')
@@ -170,7 +196,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           return { changed: false, value: prior.rows[0].receipt }
         }
         if (cmd.revision !== s.revision) throw new Rejected('stale_revision')
-        s.game = applyAction(s, seat, cmd.action)
+        applyAction(s, seat, cmd.action, pick)
         s.nextActionAt = Date.now() + aiDelay
         s.expiresAt = Date.now() + TTL_MS
         const receipt = { id: cmd.id, ok: true, revision: s.revision + 1 }
@@ -200,8 +226,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
       for (const p of s.seats) {
         if (p.disconnectedAt !== null && !p.autopilot) deadlines.push(p.disconnectedAt + GRACE_MS)
       }
-      const turn = s.game ? actor(s.game) : null
-      if (s.game?.phase === 'trickEnd' || (turn !== null && s.seats[turn].autopilot)) deadlines.push(s.nextActionAt)
+      if (s.game && this.computerDue(s)) deadlines.push(s.nextActionAt)
       this.timer = setTimeout(() => {
         this.enqueue(() => this.advance()).catch(e => {
           if (e instanceof Rejected && e.message === 'room_expired') void this.expire()
@@ -218,7 +243,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
     private async advance() {
       if (!ready()) { this.retry(); return }
       await this.flushDrops()
-      const result = await store.change(this.roomId, s => {
+      const result = await store.change(this.roomId, async s => {
         let changed = false
         const now = Date.now()
         for (const p of s.seats) {
@@ -227,20 +252,38 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             changed = true
           }
         }
-        const turn = s.game ? actor(s.game) : null
-        if (s.game && now >= s.nextActionAt &&
-          (s.game.phase === 'trickEnd' || (turn !== null && s.seats[turn].autopilot))) {
-          const next = computerMove(s.game)
-          if (next !== s.game) {
-            s.game = next
-            s.nextActionAt = now + aiDelay
-            s.expiresAt = now + TTL_MS
-            changed = true
+        if (s.game && now >= s.nextActionAt && this.computerDue(s)) {
+          // The computers' moves (SKATGO-61): the trick collected, a decided deal ended, or SkatZero's
+          // turn for a computer's seat — from the deal's prepared plan, or a person's seat while a
+          // computer stands in for them.
+          const g = s.game
+          let moves: Logged[] = []
+          if (g.phase === 'trickEnd') s.game = collectTrick(g)
+          else {
+            const early = decided(g, seat => s.seats[seat].autopilot)
+            const turn = actor(g)
+            if (early) moves = [early]
+            else if (turn !== null && s.plans) moves = await computerTurn(g, turn, plan(s.plans[String(turn) as '0' | '1' | '2']), policy()!)
+            for (const l of moves) s.game = applySeatMove(s.game, l.seat, l.move)
           }
+          scoreEnded(s)
+          s.nextActionAt = now + aiDelay
+          s.expiresAt = now + TTL_MS
+          changed = true
         }
         return { changed, value: null }
       })
       this.publish(result.snapshot)
+    }
+    /** Whether the table waits for the computers: a trick to collect, a deal already decided, or a
+     *  computer's seat on turn. */
+    private computerDue(s: Snapshot): boolean {
+      const g = s.game
+      if (!g) return false
+      if (g.phase === 'trickEnd') return true
+      if (decided(g, seat => s.seats[seat].autopilot)) return true
+      const turn = actor(g)
+      return turn !== null && s.seats[turn].autopilot
     }
     private async expire() {
       this.disposed = true

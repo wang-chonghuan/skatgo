@@ -55,7 +55,7 @@ const server = new Server({
   gracefullyShutdown: false,
   greet: false,
 })
-server.define('skat', makeRoom(store, key, () => ready && !stopping, aiDelay))
+server.define('skat', makeRoom(store, key, () => ready && !stopping, aiDelay, () => policy, () => pool))
 await server.listen(port, '0.0.0.0')
 let election: ReturnType<typeof setTimeout>
 async function elect() {

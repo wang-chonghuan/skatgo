@@ -4,7 +4,7 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import { nitro } from 'nitro/vite'
 import { fileURLToPath } from 'node:url'
-import { defineConfig } from 'vite'
+import { type Plugin, defineConfig } from 'vite'
 
 import { paraglideOptions } from './paraglide.options'
 import { SITE_URL } from './src/lib/origin'
@@ -26,6 +26,51 @@ const printableRules = Object.fromEntries(
     Object.entries(pdf).map(([locale, file]) => [file, { headers: { link: `<${pageUrl(route, locale)}>; rel="canonical"` } }]),
   ),
 )
+
+// A private table's client (SKATGO-61) brings @colyseus/schema and msgpackr into the browser. Both
+// take Node's Buffer when there is one and a Uint8Array otherwise — `typeof Buffer !== 'undefined'`,
+// directly or through msgpackr's `hasNodeBuffer` — which is harmless in a browser. The client-bundle
+// check (scripts/check-client-bundle.mjs) accepts such a test only in the `globalThis.Buffer` form,
+// and the check is not loosened (engineering.md Redline 7), so those reviewed, guarded uses are
+// written in that form at build time; what they do is unchanged. The human chose this on 2026-10-08.
+//
+// Only the uses reviewed then are touched, and their number is pinned per file: a library update that
+// adds, removes or moves one fails the build until it is reviewed again. Anything else — msgpackr's
+// Node-only stream helpers, for one, with their unguarded Buffer.concat — is left as written for the
+// check to catch, should it ever reach the browser.
+const GUARDED_BUFFER: Record<string, [RegExp, string, number][]> = {
+  '@colyseus/schema/build/index.mjs': [
+    [/typeof Buffer\b/g, 'typeof globalThis.Buffer', 1],
+    [/(?<![.\w$])Buffer\.byteLength\b/g, 'globalThis.Buffer.byteLength', 2],
+  ],
+  'msgpackr/pack.js': [
+    [/typeof Buffer\b/g, 'typeof globalThis.Buffer', 1],
+    [/(?<![.\w$])Buffer\.allocUnsafeSlow\b/g, 'globalThis.Buffer.allocUnsafeSlow', 1],
+    [/\? Buffer :/g, '? globalThis.Buffer :', 1],
+    [/(?<![.\w$])Buffer\.from\b/g, 'globalThis.Buffer.from', 3],
+  ],
+  'msgpackr/unpack.js': [
+    [/typeof Buffer\b/g, 'typeof globalThis.Buffer', 1],
+    [/(?<![.\w$])Buffer\.from\b/g, 'globalThis.Buffer.from', 1],
+  ],
+}
+function guardedBuffer(): Plugin {
+  return {
+    name: 'skatgo-guarded-buffer',
+    enforce: 'pre',
+    transform(code, id) {
+      const file = Object.keys(GUARDED_BUFFER).find((f) => id.split('?')[0].endsWith(`/node_modules/${f}`))
+      if (!file) return null
+      let out = code
+      for (const [pattern, guarded, count] of GUARDED_BUFFER[file]) {
+        const found = (out.match(pattern) ?? []).length
+        if (found !== count) throw new Error(`${file}: ${found} uses of ${pattern}, ${count} reviewed — review the library's Buffer uses again (vite.config.ts)`)
+        out = out.replace(pattern, guarded)
+      }
+      return { code: out, map: null }
+    },
+  }
+}
 
 // Styling is StyleX only — no Tailwind, no PostCSS framework, no utility CSS.
 // `astryxStylex()` is the official Astryx build integration: it configures the
@@ -49,6 +94,7 @@ export default defineConfig(() => {
     // theme stylesheet, and StyleX's internal one, for the compiled atoms.
     css: { lightningcss: { targets: LIGHTNINGCSS_TARGETS } },
     plugins: [
+      guardedBuffer(),
       // i18n (SKATGO-1) — see paraglide.options.ts.
       paraglideVitePlugin(paraglideOptions),
       ...astryxStylex({ rootDir: ROOT, lightningcssTargets: LIGHTNINGCSS_TARGETS }),

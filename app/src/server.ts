@@ -3,6 +3,7 @@ import handler from '@tanstack/react-start/server-entry'
 import { handleAsk } from './lib/ask/handler'
 import { handleDaily } from './lib/daily-handler'
 import { handleFree } from './lib/free-handler'
+import { handleRoom } from './lib/room-handler'
 import { chooseLocale } from './lib/locale'
 import { movedTo } from './lib/moved'
 import { buildSitemap } from './lib/sitemap'
@@ -29,14 +30,15 @@ defineCustomServerStrategy('custom-skatgo', {
 // The assistant's endpoint (SKATGO-9) is answered here, before the middleware and outside the page
 // router: it is a server route, not a page — no language prefix, no redirect, and nothing that reads
 // the page route tree has to know about it. The daily tournament's endpoints (SKATGO-35,
-// lib/daily-handler.ts) and free play's (SKATGO-40, lib/free-handler.ts) are answered here for the same
-// reason.
+// lib/daily-handler.ts), free play's (SKATGO-40, lib/free-handler.ts) and a private table's admission
+// (SKATGO-61, lib/room-handler.ts) are answered here for the same reason.
 export default {
   fetch(req: Request): Promise<Response> {
     const url = new URL(req.url)
     if (url.pathname === '/api/ask') return handleAsk(req)
     if (url.pathname.startsWith('/api/daily/')) return handleDaily(req)
     if (url.pathname.startsWith('/api/free/')) return handleFree(req)
+    if (url.pathname.startsWith('/api/room/')) return Promise.resolve(handleRoom(req))
     const moved = movedTo(url.pathname, url.search)
     // Keep the public scheme when TLS terminates at the reverse proxy.
     if (moved) return Promise.resolve(new Response(null, { status: 301, headers: { location: moved } }))

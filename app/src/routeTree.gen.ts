@@ -15,12 +15,14 @@ import { Route as PlayRouteImport } from './routes/play'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RulesRouteImport } from './routes/rules'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as WithFriendsRouteImport } from './routes/with-friends'
 import { Route as CourseIndexRouteImport } from './routes/course.index'
 import { Route as CourseSlugRouteImport } from './routes/course.$slug'
 import { Route as DailyPlayRouteImport } from './routes/daily_.play'
 import { Route as RulesBiddingTableRouteImport } from './routes/rules_.bidding-table'
 import { Route as RulesPrintableRouteImport } from './routes/rules_.printable'
 import { Route as RulesScoreSheetRouteImport } from './routes/rules_.score-sheet'
+import { Route as TableIdRouteImport } from './routes/table.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -50,6 +52,11 @@ const RulesRoute = RulesRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WithFriendsRoute = WithFriendsRouteImport.update({
+  id: '/with-friends',
+  path: '/with-friends',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CourseIndexRoute = CourseIndexRouteImport.update({
@@ -82,6 +89,11 @@ const RulesScoreSheetRoute = RulesScoreSheetRouteImport.update({
   path: '/rules/score-sheet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TableIdRoute = TableIdRouteImport.update({
+  id: '/table/$id',
+  path: '/table/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -90,11 +102,13 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/rules': typeof RulesRoute
   '/terms': typeof TermsRoute
+  '/with-friends': typeof WithFriendsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/daily/play': typeof DailyPlayRoute
   '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/rules/printable': typeof RulesPrintableRoute
   '/rules/score-sheet': typeof RulesScoreSheetRoute
+  '/table/$id': typeof TableIdRoute
   '/course/': typeof CourseIndexRoute
 }
 export interface FileRoutesByTo {
@@ -104,11 +118,13 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/rules': typeof RulesRoute
   '/terms': typeof TermsRoute
+  '/with-friends': typeof WithFriendsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/daily/play': typeof DailyPlayRoute
   '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/rules/printable': typeof RulesPrintableRoute
   '/rules/score-sheet': typeof RulesScoreSheetRoute
+  '/table/$id': typeof TableIdRoute
   '/course': typeof CourseIndexRoute
 }
 export interface FileRoutesById {
@@ -119,11 +135,13 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/rules': typeof RulesRoute
   '/terms': typeof TermsRoute
+  '/with-friends': typeof WithFriendsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/daily_/play': typeof DailyPlayRoute
   '/rules_/bidding-table': typeof RulesBiddingTableRoute
   '/rules_/printable': typeof RulesPrintableRoute
   '/rules_/score-sheet': typeof RulesScoreSheetRoute
+  '/table/$id': typeof TableIdRoute
   '/course/': typeof CourseIndexRoute
 }
 export interface FileRouteTypes {
@@ -135,11 +153,13 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/rules'
     | '/terms'
+    | '/with-friends'
     | '/course/$slug'
     | '/daily/play'
     | '/rules/bidding-table'
     | '/rules/printable'
     | '/rules/score-sheet'
+    | '/table/$id'
     | '/course/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -149,11 +169,13 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/rules'
     | '/terms'
+    | '/with-friends'
     | '/course/$slug'
     | '/daily/play'
     | '/rules/bidding-table'
     | '/rules/printable'
     | '/rules/score-sheet'
+    | '/table/$id'
     | '/course'
   id:
     | '__root__'
@@ -163,11 +185,13 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/rules'
     | '/terms'
+    | '/with-friends'
     | '/course/$slug'
     | '/daily_/play'
     | '/rules_/bidding-table'
     | '/rules_/printable'
     | '/rules_/score-sheet'
+    | '/table/$id'
     | '/course/'
   fileRoutesById: FileRoutesById
 }
@@ -178,11 +202,13 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   RulesRoute: typeof RulesRoute
   TermsRoute: typeof TermsRoute
+  WithFriendsRoute: typeof WithFriendsRoute
   CourseSlugRoute: typeof CourseSlugRoute
   DailyPlayRoute: typeof DailyPlayRoute
   RulesBiddingTableRoute: typeof RulesBiddingTableRoute
   RulesPrintableRoute: typeof RulesPrintableRoute
   RulesScoreSheetRoute: typeof RulesScoreSheetRoute
+  TableIdRoute: typeof TableIdRoute
   CourseIndexRoute: typeof CourseIndexRoute
 }
 
@@ -230,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/with-friends': {
+      id: '/with-friends'
+      path: '/with-friends'
+      fullPath: '/with-friends'
+      preLoaderRoute: typeof WithFriendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/course/': {
       id: '/course/'
       path: '/course'
@@ -272,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RulesScoreSheetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/table/$id': {
+      id: '/table/$id'
+      path: '/table/$id'
+      fullPath: '/table/$id'
+      preLoaderRoute: typeof TableIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -282,11 +322,13 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   RulesRoute: RulesRoute,
   TermsRoute: TermsRoute,
+  WithFriendsRoute: WithFriendsRoute,
   CourseSlugRoute: CourseSlugRoute,
   DailyPlayRoute: DailyPlayRoute,
   RulesBiddingTableRoute: RulesBiddingTableRoute,
   RulesPrintableRoute: RulesPrintableRoute,
   RulesScoreSheetRoute: RulesScoreSheetRoute,
+  TableIdRoute: TableIdRoute,
   CourseIndexRoute: CourseIndexRoute,
 }
 export const routeTree = rootRouteImport

@@ -89,6 +89,22 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/spielen'],
       ],
     },
+    // Skat with friends and a private table (SKATGO-61): the Skat table a German player sits at is a
+    // "Tisch".
+    {
+      pattern: '/with-friends',
+      localized: [
+        ['en', '/en/with-friends'],
+        ['de', '/de/mit-freunden'],
+      ],
+    },
+    {
+      pattern: '/table/:id',
+      localized: [
+        ['en', '/en/table/:id'],
+        ['de', '/de/tisch/:id'],
+      ],
+    },
     {
       pattern: '/privacy',
       localized: [

@@ -16,6 +16,8 @@ export const LessonPlayer = lazy(() => pages().then((mod) => ({ default: mod.Les
 export const FreeTable = lazy(() => pages().then((mod) => ({ default: mod.FreeTable })))
 export const DailyTable = lazy(() => pages().then((mod) => ({ default: mod.DailyTable })))
 export const DailyEntry = lazy(() => pages().then((mod) => ({ default: mod.DailyEntry })))
+export const OpenTable = lazy(() => pages().then((mod) => ({ default: mod.OpenTable })))
+export const PrivateTable = lazy(() => pages().then((mod) => ({ default: mod.PrivateTable })))
 
 /** Renders `children` in the browser only; `fallback` (or "dealing the cards…") until then. */
 export function ClientPart({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {

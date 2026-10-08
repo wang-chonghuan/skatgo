@@ -31,6 +31,8 @@ type Section = 'home' | 'daily' | 'course' | 'rules' | 'play'
 export function sectionOf(pathname: string): Section {
   // The tournament's table wears the table's frame (SKATGO-35).
   if (pathname.startsWith('/daily/play')) return 'play'
+  // So does a private table, its lobby included (SKATGO-61).
+  if (pathname.startsWith('/table/')) return 'play'
   if (pathname.startsWith('/daily')) return 'daily'
   if (pathname.startsWith('/course')) return 'course'
   if (pathname.startsWith('/rules')) return 'rules'

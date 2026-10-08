@@ -108,7 +108,7 @@ export function deriveInventory({ routes, pages, guides, courseIds, lessonPath, 
   assert.ok(locales.includes('de') && locales.includes('en'), 'German and English must remain independent')
   const staticRoutes = routes.filter((path) => !path.includes('$'))
   assert.deepEqual([...pages].sort(), [...staticRoutes].sort(), 'Sitemap page registry / file route coverage')
-  for (const path of privatePaths) assert.ok(staticRoutes.includes(path), `Private page has no route: ${path}`)
+  for (const path of privatePaths) assert.ok(routes.includes(path), `Private page has no route: ${path}`)
   const ids = Object.keys(guides[locales[0]] ?? {})
   assert.ok(ids.length > 0, 'Derived no lesson guides')
   for (const locale of locales) {
@@ -117,7 +117,9 @@ export function deriveInventory({ routes, pages, guides, courseIds, lessonPath, 
     assert.ok(tags[locale], `${locale}: missing language tag`)
   }
   const lessons = ids.map((id) => Object.fromEntries(locales.map((locale) => [locale, lessonPath(id, locale)])))
-  const dynamic = routes.filter((path) => path.includes('$'))
+  // A private route with a parameter (a private table, SKATGO-61) has no source-backed targets: it is
+  // checked as personal, at one sample address.
+  const dynamic = routes.filter((path) => path.includes('$') && !privatePaths.includes(path))
   assert.ok(dynamic.length > 0, 'Derived no lesson routes')
   const matchRoute = (path, route) => new URLPattern(route.replace(/\$([A-Za-z0-9_]+)/g, ':$1'), site).test(new URL(path, site))
   for (const route of dynamic) {
@@ -149,7 +151,7 @@ export function deriveInventory({ routes, pages, guides, courseIds, lessonPath, 
   assert.equal(new Set(entries.map((entry) => entry.loc)).size, entries.length, 'Independent page/language URLs must not collapse')
   return {
     site, locales, tags, entries,
-    privateEntries: privatePaths.map(same).flatMap(entriesFor),
+    privateEntries: privatePaths.map((path) => same(path.replace(/\$[A-Za-z0-9_]+/g, 'sample'))).flatMap(entriesFor),
     lessonEntries: lessons.flatMap(entriesFor),
   }
 }

@@ -7,6 +7,7 @@ import {
 } from '../../app/src/lib/skat/game'
 import { declarationAdvice } from '../../app/src/lib/skat/ai'
 import { seegerFabian } from '../../app/src/lib/skat/tournament'
+import type { RoomPrivate, RoomPublic } from '../../app/src/lib/skat/room-view'
 
 export const GRACE_MS = 30_000
 export const TTL_MS = 24 * 60 * 60 * 1000
@@ -152,7 +153,7 @@ export function computerMove(g: Game): Game {
   if (g.phase === 'trickEnd') return collectTrick(g)
   return g
 }
-export function publicView(s: Snapshot) {
+export function publicView(s: Snapshot): RoomPublic {
   const g = s.game
   const started = s.humanSeats > 0
   return {
@@ -166,7 +167,7 @@ export function publicView(s: Snapshot) {
       reconnectUntil: p.disconnectedAt === null ? null : p.disconnectedAt + GRACE_MS,
       cardCount: g?.hands[i].length ?? 0,
     })),
-    phase: g?.phase ?? 'lobby', actor: g ? actor(g) : null,
+    phase: g?.phase ?? 'lobby', actor: g ? actor(g) : null, turn: g?.turn ?? 0,
     dealer: g?.dealer ?? 2, bidding: g?.bidding ?? null, declarer: g?.declarer ?? null,
     bid: g?.bid ?? 0, pickedUp: g?.pickedUp ?? false, declaration: g?.declaration ?? null,
     trick: g?.trick ?? [], tricks: g?.tricks ?? [], result: g?.result ?? null,
@@ -176,7 +177,7 @@ export function publicView(s: Snapshot) {
     early: g?.early ?? null,
   }
 }
-export function privateView(s: Snapshot, seat: number) {
+export function privateView(s: Snapshot, seat: number): RoomPrivate {
   return {
     seat, hand: s.game?.hands[seat] ?? [],
     buried: s.game?.declarer === seat && s.game.pickedUp ? s.game.skat : [],

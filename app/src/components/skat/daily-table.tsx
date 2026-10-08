@@ -8,12 +8,11 @@ import { type DailyBoard, type DailyReply, type DailyStatus, PLAYER, type SeatVi
 import { m } from '~/paraglide/messages'
 import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
-import { elev } from '../../theme/elevation.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { VsAiTable } from './daily-comparison'
 import { BOT_DELAY, GameTable, TRICK_DELAY } from './game-table'
-import { Btn, Panel, linkLook } from './ui'
+import { Btn, Panel, TextField, linkLook } from './ui'
 
 // The daily tournament in the browser (SKATGO-35, SKATGO-36): the button on /daily that starts or
 // continues the day, the day's result once all 12 deals are played with the nickname that puts it on
@@ -153,19 +152,7 @@ function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }
       )}
       <label htmlFor={id} {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_nick_label()}</label>
       <div {...stylex.props(styles.nickRow)}>
-        <input
-          id={id}
-          data-testid="daily-nickname"
-          type="text"
-          autoComplete="nickname"
-          value={value}
-          aria-invalid={refused}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !saving) void save()
-          }}
-          {...stylex.props(typography.appText, typography.control, styles.input)}
-        />
+        <TextField id={id} testId="daily-nickname" autoComplete="nickname" value={value} invalid={refused} onChange={setValue} onEnter={() => { if (!saving) void save() }} />
         <Btn testId="daily-nickname-save" disabled={saving || value.trim() === ''} onClick={() => void save()}>
           {me.nickname ? m.daily_nick_save() : m.daily_nick_join()}
         </Btn>
@@ -300,22 +287,6 @@ const styles = stylex.create({
   gap: { marginTop: space.x16 },
   nickForm: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x8 },
   nickRow: { display: 'flex', alignItems: 'center', gap: space.x10, flexWrap: 'wrap' },
-  input: {
-    flexGrow: 1,
-    minWidth: 0,
-    minHeight: dims.control,
-    boxSizing: 'border-box',
-    paddingBlock: space.x10,
-    paddingInline: space.x12,
-    color: color.text,
-    backgroundColor: color.surface,
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: { default: color.hairline, ':focus': color.info },
-    borderRadius: radii.panel,
-    outlineStyle: 'none',
-    boxShadow: { default: 'none', ':focus': elev.focus },
-  },
   refused: { margin: 0, color: color.bad },
   result: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   rows: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },

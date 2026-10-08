@@ -23,7 +23,7 @@ const NOTHING_DONE: Record<string, LessonRecord> = {}
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
 // tournament as the headline and its one green call to action (the way into the course is the header's
 // and the course tile's — the human, 2026-10-01), a picture, and a strip of facts — then the two other ways into Skat as the app's colour tiles, one suit
-// each (♣ the course, ♠ free play), and the questions people ask (SKATGO-29). The hero's copy leads the
+// each (♣ the course, ♠ free play, ♥ a private table with friends — SKATGO-61), and the questions people ask (SKATGO-29). The hero's copy leads the
 // tournament itself (the human, 2026-09-30: 「文案先行」).
 //
 // Every picture here is skatgo's own: the public-domain deck the course plays with, fanned on felt, and
@@ -63,19 +63,29 @@ export function EntryPage() {
         <HeroArt />
       </section>
 
-      <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
-        <section data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, tileTones.course)}>
-          <Face art={COURSE_ART} title={m.entry_new_title()} text={m.entry_new_text({ count: course.length })}>
-            <Link to="/course" data-testid="entry-course" {...linkLook('quiet', 'md', 'landing')}>
-              {finished === 0 ? m.entry_new_cta() : m.course_continue({ n: next })}
-            </Link>
-            {finished > 0 ? <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span> : null}
-          </Face>
-        </section>
-        <section data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, tileTones.play)}>
-          <Face art={PLAY_ART} title={m.entry_game_title()} text={m.entry_game_text()}>
-            <Link to="/play" data-testid="entry-play" {...linkLook('quiet', 'md', 'landing')}>
-              {m.entry_game_cta()}
+      <div data-testid="entry-sections" {...stylex.props(styles.waysAll)}>
+        <div {...stylex.props(styles.ways)}>
+          <section data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, tileTones.course)}>
+            <Face art={COURSE_ART} title={m.entry_new_title()} text={m.entry_new_text({ count: course.length })}>
+              <Link to="/course" data-testid="entry-course" {...linkLook('quiet', 'md', 'landing')}>
+                {finished === 0 ? m.entry_new_cta() : m.course_continue({ n: next })}
+              </Link>
+              {finished > 0 ? <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span> : null}
+            </Face>
+          </section>
+          <section data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, tileTones.play)}>
+            <Face art={PLAY_ART} title={m.entry_game_title()} text={m.entry_game_text()}>
+              <Link to="/play" data-testid="entry-play" {...linkLook('quiet', 'md', 'landing')}>
+                {m.entry_game_cta()}
+              </Link>
+            </Face>
+          </section>
+        </div>
+        {/* The third tile (SKATGO-61) takes the whole row under the two, rather than half of it. */}
+        <section data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, tileTones.friends)}>
+          <Face art={FRIENDS_ART} title={m.entry_friends_title()} text={m.entry_friends_text()}>
+            <Link to="/with-friends" data-testid="entry-friends" {...linkLook('quiet', 'md', 'landing')}>
+              {m.table_open()}
             </Link>
           </Face>
         </section>
@@ -108,6 +118,7 @@ const heroClick = (button: 'primary') => track('hero_cta_click', { state: 'A', v
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
 const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
 const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
+const FRIENDS_ART = [card('H', 'A'), card('H', '10'), card('H', 'K')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
 /** The hero's picture: three players at a club-shaped table (the human's illustration, SKATGO-33), shown whole. */
@@ -152,6 +163,7 @@ const fanPose = stylex.create({
 const tileTones = stylex.create({
   course: { backgroundColor: color.tileOrange, boxShadow: elev.tileOrange },
   play: { backgroundColor: color.tileGreen, boxShadow: elev.tileGreen },
+  friends: { backgroundColor: color.tileRed, boxShadow: elev.tileRed },
 })
 
 const styles = stylex.create({
@@ -201,6 +213,7 @@ const styles = stylex.create({
     columnGap: space.x15,
     rowGap: space.x15,
   },
+  waysAll: { display: 'flex', flexDirection: 'column', gap: space.x15 },
   // A lobby tile: its colour over its art, a shadow in its own colour, content at the bottom left.
   tile: {
     position: 'relative',

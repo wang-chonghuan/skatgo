@@ -16,7 +16,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { PlayingCard } from './playing-card'
-import { Pill, linkLook } from './ui'
+import { linkLook, stillLook } from './ui'
 
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
@@ -86,11 +86,11 @@ export function EntryPage() {
             </Link>
           </Face>
         </section>
-        {/* Practice (SKATGO-69): not there yet, so the tile leads nowhere — no link, nothing that reacts
-            to the pointer — and says so with a fact, not a button. */}
+        {/* Practice (SKATGO-69): not there yet, so the tile leads nowhere. Its "coming soon" looks like the
+            other tiles' buttons but is no link and does not answer the pointer (`stillLook`). */}
         <section data-testid="entry-card" data-section="practice" {...stylex.props(styles.tile, tileTones.practice)}>
           <Face art={PRACTICE_ART} title={m.entry_practice_title()} text={m.entry_practice_text()}>
-            <Pill tone="quiet">{m.entry_practice_soon()}</Pill>
+            <span data-testid="entry-practice-soon" {...stillLook('quiet', 'md', 'landing')}>{m.entry_practice_soon()}</span>
           </Face>
         </section>
       </div>

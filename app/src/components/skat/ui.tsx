@@ -75,6 +75,13 @@ export function linkLook(tone: Tone = 'go', size: Size = 'md', shape: Shape = 'p
   return stylex.props(btnType(shape, size), styles.btn, shapes[shape], sizes[size], tones[tone], shape === 'landing' && landingTones[tone], styles.link)
 }
 
+/** A button's look on something that does nothing yet (SKATGO-69: a tile's "coming soon"): the same shape,
+ *  size and colours as `linkLook`, with nothing that answers the pointer — no hand, no brightening, no
+ *  press. */
+export function stillLook(tone: Tone = 'go', size: Size = 'md', shape: Shape = 'pill') {
+  return stylex.props(btnType(shape, size), styles.btn, shapes[shape], sizes[size], tones[tone], shape === 'landing' && landingTones[tone], styles.still)
+}
+
 /** A one-line text field — a name, as the daily leaderboard and a private table ask for it. Enter
  *  submits. */
 export function TextField({ id, testId, value, onChange, onEnter, invalid, autoComplete }: {
@@ -198,6 +205,7 @@ const styles = stylex.create({
   },
   grow: { flexGrow: 1 },
   link: { textDecoration: 'none' },
+  still: { cursor: 'default', filter: 'none', transform: move.rest, userSelect: 'none' },
   btnDisabled: { opacity: opacity.disabled, cursor: 'not-allowed', boxShadow: 'none', filter: 'none' },
   panel: { borderRadius: radii.option, borderWidth: border.hair, borderStyle: 'solid' },
   panelPad: { padding: { default: space.x24, [bp.phone]: space.x16 } },

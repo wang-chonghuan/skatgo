@@ -72,11 +72,8 @@ export function LandingHeader() {
     <header data-testid="landing-header" {...stylex.props(styles.landingHeader)}>
       <Link to="/" {...stylex.props(typography.landingHeading, styles.landingBrand)}>
         <img src="/logo-96.png" alt="" {...stylex.props(styles.landingMark)} />
-        {/* The site's address beside the mark (SKATGO-69); a phone has room for the name only. */}
-        <span {...stylex.props(typography.landingBrand)}>
-          {m.site_name()}
-          <span {...stylex.props(styles.domain)}>{m.site_domain()}</span>
-        </span>
+        {/* The site's address beside the mark (SKATGO-69). */}
+        <span {...stylex.props(typography.landingBrand)}>{m.site_name()}{m.site_domain()}</span>
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
         {HEADER_LINKS.map((l) => (
@@ -171,7 +168,10 @@ export function LanguageSwitch() {
         {...stylex.props(styles.langButton)}
       >
         <Current />
-        <ChevronDown size={icon.inline} strokeWidth={icon.outline} />
+        {/* A phone shows the flag only: the header needs the room for the site's name (SKATGO-69). */}
+        <span {...stylex.props(styles.langChevron)}>
+          <ChevronDown size={icon.inline} strokeWidth={icon.outline} />
+        </span>
       </button>
       {open ? (
         <div role="menu" aria-label={m.language_label()} data-testid="language-menu" {...stylex.props(styles.langMenu)}>
@@ -369,9 +369,10 @@ const styles = stylex.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: space.x16,
+    // A phone's header is tighter, so "SkatGo.com" fits beside the controls (SKATGO-69).
+    gap: { default: space.x16, [bp.phone]: space.x8 },
     height: { default: dims.landingHeader, [bp.phone]: dims.landingHeaderPhone },
-    paddingInline: space.x20,
+    paddingInline: { default: space.x20, [bp.phone]: space.x12 },
     boxSizing: 'border-box',
     backgroundColor: color.surface,
     boxShadow: elev.landingHeader,
@@ -381,9 +382,8 @@ const styles = stylex.create({
   landingLink: { color: { default: color.slate, ':hover': color.navy }, textDecoration: 'none', ...focus },
   // Not there yet (SKATGO-69): greyed, and nothing answers the pointer.
   soon: { opacity: opacity.disabled, cursor: 'default', color: color.slate },
-  landingEnd: { display: 'flex', alignItems: 'center', gap: space.x12 },
+  landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x8 } },
   desktopOnly: { display: { default: 'inline-flex', [bp.headerMenu]: 'none' } },
-  domain: { display: { default: 'inline', [bp.phone]: 'none' } },
   menuButton: {
     display: { default: 'none', [bp.headerMenu]: 'inline-flex' },
     alignItems: 'center',
@@ -430,6 +430,7 @@ const styles = stylex.create({
     cursor: 'pointer',
     ...focus,
   },
+  langChevron: { display: { default: 'inline-flex', [bp.phone]: 'none' } },
   // The open card of languages, under the button's right edge.
   langMenu: {
     position: 'absolute',

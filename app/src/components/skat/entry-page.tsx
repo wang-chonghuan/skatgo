@@ -16,7 +16,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { PlayingCard } from './playing-card'
-import { linkLook } from './ui'
+import { Pill, linkLook } from './ui'
 
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
@@ -86,6 +86,13 @@ export function EntryPage() {
             </Link>
           </Face>
         </section>
+        {/* Practice (SKATGO-69): not there yet, so the tile leads nowhere — no link, nothing that reacts
+            to the pointer — and says so with a fact, not a button. */}
+        <section data-testid="entry-card" data-section="practice" {...stylex.props(styles.tile, tileTones.practice)}>
+          <Face art={PRACTICE_ART} title={m.entry_practice_title()} text={m.entry_practice_text()}>
+            <Pill tone="amber">{m.entry_practice_soon()}</Pill>
+          </Face>
+        </section>
       </div>
 
       <nav aria-label={m.game_learning_title()} {...stylex.props(styles.actions)}>
@@ -116,6 +123,7 @@ const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
 const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
 const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
 const FRIENDS_ART = [card('H', 'A'), card('H', '10'), card('H', 'K')]
+const PRACTICE_ART = [card('D', 'A'), card('D', '10'), card('D', 'K')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
 /** The hero's picture: three players at a club-shaped table (the human's illustration, SKATGO-33), shown whole. */
@@ -161,6 +169,7 @@ const tileTones = stylex.create({
   course: { backgroundColor: color.tileOrange, boxShadow: elev.tileOrange },
   play: { backgroundColor: color.tileGreen, boxShadow: elev.tileGreen },
   friends: { backgroundColor: color.tileRed, boxShadow: elev.tileRed },
+  practice: { backgroundColor: color.tileNavy, boxShadow: elev.tileNavy },
 })
 
 const styles = stylex.create({

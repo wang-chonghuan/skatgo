@@ -6,6 +6,9 @@ import * as stylex from '@stylexjs/stylex'
 export const bp = stylex.defineConsts({
   /** The phone step, used throughout. */
   phone: '@media (max-width: 480px)',
+  /** Too narrow for the header's five links beside the logo and its controls (SKATGO-69): they fold
+   *  into the menu, as on a phone. */
+  headerMenu: '@media (max-width: 1099px)',
   /** The contract picker wraps from six columns to three. */
   contracts: '@media (max-width: 600px)',
   /** The course map's hero stacks. */

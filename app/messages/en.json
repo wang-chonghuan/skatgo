@@ -312,7 +312,7 @@
   "play_about_text": "The computers take the other two seats. After the last trick, see the settlement and start another round. Suit games, Grand and Null are all part of the game. When you are unsure, ask for a hint at the table. Free play is separate from the daily leaderboard; reloading starts a new game.",
   "game_learning_title": "Learn Skat and look up the rules",
   "game_learning_text": "New to Skat? The free course takes you through the cards, trump order, bidding and scoring, step by step. Practise with cards and finish with a complete game. The Skat rules cover contracts, following suit, game values and examples you can return to while learning.",
-  "daily_static_lead": "Free and without signing up. Everyone plays the same cards against the same computer opponents. New deals arrive at midnight in Berlin.",
+  "daily_static_lead": "Free and without signing up. Everyone plays the same cards against the same computer opponents. New deals arrive at midnight in Berlin. After each deal, see how many points the AI scored in your seat.",
   "daily_about_title": "The same cards for everyone",
   "daily_about_intro": "In the daily Skat tournament you play {deals} deals against two computer opponents. Every participant receives the same cards and takes the same seat, so you can compare what you made of each hand. Continue your round on the same device; with an account, it belongs to your account. Each player has one round per day.",
   "daily_scoring_title": "Scoring and leaderboard",

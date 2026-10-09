@@ -312,7 +312,7 @@
   "play_about_text": "Die Computer übernehmen die beiden anderen Plätze. Nach dem letzten Stich siehst du die Abrechnung und kannst eine neue Runde starten. Farbspiel, Grand und Null gehören zum Spiel. Wenn du unsicher bist, kannst du am Tisch einen Hinweis aufrufen. Freies Spielen ist nicht Teil der täglichen Rangliste; ein Neuladen beginnt ein neues Spiel.",
   "game_learning_title": "Skat lernen und Regeln nachschlagen",
   "game_learning_text": "Neu beim Skat? Im kostenlosen Kurs lernst du Schritt für Schritt die Karten, die Trumpfreihenfolge, das Reizen und die Abrechnung. Du übst mit Karten und spielst zum Schluss eine vollständige Partie. In den Skatregeln findest du die Spielarten, das Bedienen, den Spielwert und Beispiele zum Nachlesen.",
-  "daily_static_lead": "Kostenlos und ohne Anmeldung. Alle spielen dieselben Karten gegen dieselben Computergegner. Neue Spiele gibt es um Mitternacht in Berlin.",
+  "daily_static_lead": "Kostenlos und ohne Anmeldung. Alle spielen dieselben Karten gegen dieselben Computergegner. Neue Spiele gibt es um Mitternacht in Berlin. Nach jedem Spiel siehst du, wie viele Punkte die AI auf deinem Platz geholt hat.",
   "daily_about_title": "Gleiche Karten für alle",
   "daily_about_intro": "Im täglichen Skat-Turnier spielst du {deals} Spiele gegen zwei Computergegner. Alle Teilnehmer erhalten dieselben Karten und sitzen auf demselben Platz. So kannst du vergleichen, was du aus einer Hand gemacht hast. Deine Runde kannst du auf demselben Gerät fortsetzen; mit einem Konto wird sie deinem Konto zugeordnet. Jeder Spieler hat eine Runde pro Tag.",
   "daily_scoring_title": "Abrechnung und Rangliste",

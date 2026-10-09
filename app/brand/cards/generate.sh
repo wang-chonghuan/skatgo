@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Generates one card image with the Azure OpenAI image model (SKATGO-66): the prompt is the shared style,
-# then the format for its kind, then the image's own subject. Every call is logged in calls.log; the
+# then the format for its kind, then the image's own subject. Every call is logged in calls.txt; the
 # helper writes <name>.png.json beside the master with the prompt, parameters and the PNG's SHA-256 (no
 # credential).
 #
@@ -26,7 +26,7 @@ background=transparent; [ "$kind" = back ] && background=opaque
 status=ok
 python3 "$helper" --prompt-file "$prompt" --output "$here/masters/$name.png" --size "$size" --quality high \
   --background "$background" --retries 0 --force ${refs[@]+"${refs[@]}"} >/dev/null || status=failed
-echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $name $kind $size high refs=$# $status" >> "$here/calls.log"
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $name $kind $size high refs=$# $status" >> "$here/calls.txt"
 # The master is kept as lossless WebP (pixel for pixel the model's PNG, `-exact`); the PNG itself stays on
 # this machine, outside git, in the repository's ignored .intentfold/tmp/card-masters-png/.
 if [ "$status" = ok ]; then

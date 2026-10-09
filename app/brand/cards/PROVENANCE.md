@@ -13,7 +13,7 @@ SKATGO-66, generated 2026-10-09.
   - `_court-top.txt`, `_full.txt`, `_symbol.txt`, `_back.txt`: one per kind of image.
   - `<name>.txt`: each image's own subject.
   - `generate.sh` joins them in that order.
-- `calls.log`: every call to the model, including failed ones (Azure server errors), in order.
+- `calls.txt`: every call to the model, including failed ones (Azure server errors), in order.
 - `generate.sh`: the command that made each image.
 
 The served files in `app/public/cards/` are cut from `masters/` by `app/scripts/make-card-images.mjs`.

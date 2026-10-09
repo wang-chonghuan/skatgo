@@ -127,8 +127,8 @@ function HeroArt() {
   )
 }
 
-/** A tile's face: three of skatgo's cards in the corner under the tile's colour, and the title, one line
- *  and the foot at the bottom left. */
+/** A tile's face: three of skatgo's cards in the corner under the tile's colour, the title and its text at
+ *  the top left, and the foot at the bottom left. */
 function Face({ art, title, text, children }: { art: Card[]; title: string; text: string; children: ReactNode }) {
   return (
     <>
@@ -210,12 +210,12 @@ const styles = stylex.create({
     columnGap: space.x15,
     rowGap: space.x15,
   },
-  // A lobby tile: its colour over its art, a shadow in its own colour, content at the bottom left.
+  // A lobby tile: its colour over its art, a shadow in its own colour, its title and text at the top left
+  // and its button at the bottom, so tiles side by side line up whatever their text's length (SKATGO-69).
   tile: {
     position: 'relative',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'flex-end',
     minHeight: dims.tileHeight,
     boxSizing: 'border-box',
     padding: space.x27,
@@ -234,10 +234,10 @@ const styles = stylex.create({
   },
   artCard: { display: 'block', marginInline: dims.fanRowOverlap, transformOrigin: 'bottom center' },
   veil: { position: 'absolute', inset: 0, backgroundColor: 'inherit', opacity: veil.tile, pointerEvents: 'none' },
-  body: { position: 'relative', display: 'flex', flexDirection: 'column', gap: space.x8 },
+  body: { position: 'relative', display: 'flex', flexDirection: 'column', flexGrow: 1, gap: space.x8 },
   tileTitle: { margin: 0, color: color.onColor },
   tileText: { margin: 0, color: color.onColor },
-  foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, paddingTop: space.x8 },
+  foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, marginTop: 'auto', paddingTop: space.x8 },
   aside: { color: color.onColor },
   readingLink: { color: color.info, textDecoration: 'underline' },
 

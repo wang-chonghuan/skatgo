@@ -79,18 +79,18 @@ export function EntryPage() {
             </Link>
           </Face>
         </section>
-        <section data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, tileTones.friends)}>
-          <Face art={FRIENDS_ART} title={m.entry_friends_title()} text={m.entry_friends_text()}>
-            <Link to="/with-friends" data-testid="entry-friends" {...linkLook('quiet', 'md', 'landing')}>
-              {m.table_open()}
-            </Link>
-          </Face>
-        </section>
         {/* Practice (SKATGO-69): not there yet, so the tile leads nowhere. Its "coming soon" looks like the
             other tiles' buttons but is no link and does not answer the pointer (`stillLook`). */}
         <section data-testid="entry-card" data-section="practice" {...stylex.props(styles.tile, tileTones.practice)}>
           <Face art={PRACTICE_ART} title={m.entry_practice_title()} text={m.entry_practice_text()}>
             <span data-testid="entry-practice-soon" {...stillLook('quiet', 'md', 'landing')}>{m.entry_practice_soon()}</span>
+          </Face>
+        </section>
+        <section data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, tileTones.friends)}>
+          <Face art={FRIENDS_ART} title={m.entry_friends_title()} text={m.entry_friends_text()}>
+            <Link to="/with-friends" data-testid="entry-friends" {...linkLook('quiet', 'md', 'landing')}>
+              {m.table_open()}
+            </Link>
           </Face>
         </section>
       </div>

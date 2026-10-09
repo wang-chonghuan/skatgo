@@ -97,6 +97,8 @@ export const dims = stylex.defineVars({
   frameBorderPlay: '2px',
   plateHeight: '28px',
   roleTag: '28px',
+  /** The tap-to-collect hand (SKATGO-72). */
+  tapHand: '48px',
   tabTile: '56px',
   auctionHeight: '207px',
   /** A dialog over the table is not bound by the stacks. */

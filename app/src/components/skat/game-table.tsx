@@ -2,6 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import confetti from 'canvas-confetti'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
@@ -33,7 +34,7 @@ import { type Auction, type DealSummary, seegerFabian } from '~/lib/skat/tournam
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Pointer, Settings, Spade, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Settings, Spade, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -414,8 +415,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             </>
           )}
 
-          {/* A finished trick stays until the player taps it away (SKATGO-72): anywhere in the frame
-              will do, and a hand in its bottom-right corner says so. */}
+          {/* A finished trick stays until the player taps it away (SKATGO-72): anywhere on the screen
+              will do, and a hand in the frame's bottom-right corner says so. */}
           {game.phase === 'trickEnd' ? <Collect onCollect={collect} /> : null}
 
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
@@ -686,21 +687,30 @@ function Stack({ seat, game }: { seat: Seat; game: Game }) {
   )
 }
 
-/** The tap that takes a finished trick off the table (SKATGO-72): the whole frame, with a hand in its
- *  corner breathing gently — still for a player who asked for less motion. */
+/** The tap that takes a finished trick off the table (SKATGO-72): a tap anywhere on the screen, said
+ *  by a blinking hand in the frame's corner — still for a player who asked for less motion. */
 function Collect({ onCollect }: { onCollect: () => void }) {
   const still = useReducedMotion()
   return (
-    <button type="button" data-testid="skat-collect" aria-label={m.table_collect()} onClick={onCollect} {...stylex.props(styles.collect)}>
-      <motion.span
+    <>
+      <motion.svg
         aria-hidden="true"
-        animate={still ? undefined : tapHint.pulse}
+        data-testid="skat-collect-hand"
+        viewBox={tapHint.view}
+        animate={still ? undefined : tapHint.blink}
         transition={tapHint.transition}
         {...stylex.props(styles.collectHand)}
       >
-        <Pointer size={tapHint.size} strokeWidth={tapHint.stroke} {...stylex.props(styles.collectIcon)} />
-      </motion.span>
-    </button>
+        <path d={tapHint.hand} strokeWidth={tapHint.stroke} strokeLinejoin="round" {...stylex.props(styles.collectSkin)} />
+        {tapHint.lines.map((d) => (
+          <path key={d} d={d} fill="none" strokeWidth={tapHint.stroke} strokeLinecap="round" {...stylex.props(styles.collectLine)} />
+        ))}
+      </motion.svg>
+      {createPortal(
+        <button type="button" data-testid="skat-collect" aria-label={m.table_collect()} onClick={onCollect} {...stylex.props(styles.collect)} />,
+        document.body,
+      )}
+    </>
   )
 }
 
@@ -1224,20 +1234,28 @@ const styles = stylex.create({
   roleTagDeclarer: { backgroundColor: color.tileRed },
   plateText: { whiteSpace: 'nowrap' },
 
+  // The whole screen takes the tap; the hand only shows where (SKATGO-72).
   collect: {
-    position: 'absolute',
+    position: 'fixed',
     inset: 0,
-    display: 'flex',
-    alignItems: 'flex-end',
-    justifyContent: 'flex-end',
-    padding: space.x8,
+    zIndex: layer.window,
+    padding: 0,
     borderWidth: 0,
     backgroundColor: 'transparent',
     cursor: 'pointer',
     WebkitTapHighlightColor: 'transparent',
   },
-  collectHand: { display: 'flex' },
-  collectIcon: { fill: color.onColor, stroke: color.plate },
+  collectHand: {
+    position: 'absolute',
+    right: space.x4,
+    bottom: space.x4,
+    width: dims.tapHand,
+    height: dims.tapHand,
+    overflow: 'visible',
+    pointerEvents: 'none',
+  },
+  collectSkin: { fill: color.tapSkin, stroke: color.navy },
+  collectLine: { stroke: color.navy },
 
   // In the frame's top corners (SKATGO-34): the action drawer rises from the bottom.
   saidChip: { position: 'absolute', top: space.x12 },

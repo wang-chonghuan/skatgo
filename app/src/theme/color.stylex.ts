@@ -48,6 +48,9 @@ export const color = stylex.defineVars({
   boardLine: 'rgba(255, 255, 255, 0.14)',
   onColorSoft: 'rgba(255, 255, 255, 0.72)',
   roleTag: '#007A28',
+  /** The hand that asks for a tap to collect the trick (SKATGO-72); its outline is `navy`. The human
+   *  asked for a skin-coloured hand, 2026-10-10. */
+  tapSkin: '#F6C4A0',
   auctionHead: '#639B3D',
   /** The active tab tile in the side panel (derived from the action green). */
   tabActive: '#6FDDA2',

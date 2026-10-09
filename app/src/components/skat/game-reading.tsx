@@ -9,25 +9,21 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 
-/** Public game facts, separate from browser-only cards, scores and player state. */
-export function GameReading({ daily = false }: { daily?: boolean }) {
+/** The daily tournament's public facts under its page, separate from browser-only cards, scores and
+ *  player state. Free play's table has none since SKATGO-69: a table is one screen. */
+export function GameReading() {
   return (
     <section data-testid="game-reading" {...stylex.props(styles.root)}>
-      {daily ? (
-        <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.daily_about_title()}</h2>
-      ) : (
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.play_title()}</h1>
-      )}
-      <p {...stylex.props(typography.body, styles.text)}>{daily ? m.daily_about_intro({ deals: DAILY_DEALS }) : m.play_about_intro()}</p>
-      <h2 {...stylex.props(typography.optionTitle, styles.title)}>{daily ? m.daily_scoring_title() : m.play_about_title()}</h2>
-      <p {...stylex.props(typography.body, styles.text)}>{daily ? m.daily_scoring_text() : m.play_about_text()}</p>
+      <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.daily_about_title()}</h2>
+      <p {...stylex.props(typography.body, styles.text)}>{m.daily_about_intro({ deals: DAILY_DEALS })}</p>
+      <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.daily_scoring_title()}</h2>
+      <p {...stylex.props(typography.body, styles.text)}>{m.daily_scoring_text()}</p>
       <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.game_learning_title()}</h2>
       <p {...stylex.props(typography.body, styles.text)}>{m.game_learning_text()}</p>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.links)}>
-        {daily ? null : <Link to="/with-friends" data-testid="play-friends" {...stylex.props(typography.link, styles.link)}>{m.friends_link()}</Link>}
         <Link to="/rules" {...stylex.props(typography.link, styles.link)}>{m.nav_rules()}</Link>
         <Link to="/course" {...stylex.props(typography.link, styles.link)}>{m.nav_course()}</Link>
-        <Link to={daily ? '/play' : '/daily'} {...stylex.props(typography.link, styles.link)}>{daily ? m.nav_play() : m.nav_daily()}</Link>
+        <Link to="/play" {...stylex.props(typography.link, styles.link)}>{m.nav_play()}</Link>
         <Link to="/" {...stylex.props(typography.link, styles.link)}>{m.nav_home_link()}</Link>
       </nav>
     </section>

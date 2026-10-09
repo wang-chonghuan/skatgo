@@ -1,4 +1,4 @@
-import { Outlet, useRouterState } from '@tanstack/react-router'
+import { Outlet } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
 import { AskLauncher } from '~/components/skat/ask'
@@ -18,7 +18,6 @@ import { typography } from './theme/type'
 export function SkatLayout() {
   const frame = useFrame()
   const section = useSection()
-  const freePlay = useRouterState({ select: (s) => s.location.pathname === '/play' })
   if (frame === 'landing') {
     return (
       <div {...stylex.props(typography.frame, styles.page, section === 'home' && styles.landing)}>
@@ -36,7 +35,7 @@ export function SkatLayout() {
     )
   }
   return (
-    <div {...stylex.props(typography.frame, styles.page, freePlay ? styles.freePlay : styles.table)}>
+    <div {...stylex.props(typography.frame, styles.page, styles.table)}>
       <main {...stylex.props(styles.main)}>
         <Outlet />
       </main>
@@ -57,7 +56,6 @@ const styles = stylex.create({
   landing: { backgroundColor: color.surface },
   // The table is exactly one screen and never scrolls (SKATGO-29).
   table: { height: dims.screenDynamic, minHeight: dims.screenDynamic, overflow: 'hidden', backgroundColor: color.feltOuter },
-  freePlay: { position: 'relative', backgroundColor: color.page },
   // The header, footer and assistant stay off paper (SKATGO-50); on screen the wrapper is no box at all,
   // so the header still sticks to the page.
   screenOnly: { display: { default: 'contents', [bp.print]: 'none' } },

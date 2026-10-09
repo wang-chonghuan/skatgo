@@ -237,8 +237,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
   lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,
   its section of the rules, and all lessons.
-- **The tables** (`/play`, `/daily/play`): the felt fills the first screen and never scrolls. Free play
-  keeps a scrollable reading section below it; the personal daily page has none (SKATGO-44).
+- **The tables** (`/play`, `/daily/play`, a private table): the felt fills the screen and never scrolls;
+  nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a
+  standard web-app table. Free play's search entry is the front page.
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
   without JavaScript, in the lobby's own tokens and typography — never hidden keyword text or new
   decorative containers.

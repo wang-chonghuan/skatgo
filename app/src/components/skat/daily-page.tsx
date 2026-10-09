@@ -40,7 +40,7 @@ export function DailyPage() {
           <DailyEntry waiting={start} />
         </ClientPart>
       </section>
-      <GameReading daily />
+      <GameReading />
     </div>
   )
 }

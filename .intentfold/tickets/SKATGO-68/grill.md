@@ -34,3 +34,8 @@ There is no other new value.
   - Where two cards overlap side by side, the right one's top-left corner lies inside the left one, so the right one must lie higher by at least the number's height.
   - The three cards therefore step up from left to right: Lina's lowest, yours one step up, Max's highest.
   - **Approved by the human** (ui.md Redline 1): two new values in `table.stylex.ts`, `stage.trickSecond` and `stage.trickThird`, the second and third steps' tops.
+- **The suit under the number too, less covering** (the human, 2026-10-09):
+  - First: 「台阶还可以，但是遮挡的有点多，数字下面的符号也被遮挡了」.
+  - The steps grow to the whole corner index, number and suit: 50u, 37u in portrait.
+  - An attempt that also spread the cards past the frame was rejected: 「错了，纵向上可以了，横向上，你不用上中间那张牌漏出来那么多」. The sideways positions stay as in rework 1.
+  - Only the two approved step values changed.

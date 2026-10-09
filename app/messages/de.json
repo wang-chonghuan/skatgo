@@ -1,6 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_name": "SkatGo",
+  "site_domain": ".com",
   "og_locale": "de_DE",
   "loading": "Karten werden gegeben …",
   "language_label": "Sprache",

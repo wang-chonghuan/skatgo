@@ -72,7 +72,11 @@ export function LandingHeader() {
     <header data-testid="landing-header" {...stylex.props(styles.landingHeader)}>
       <Link to="/" {...stylex.props(typography.landingHeading, styles.landingBrand)}>
         <img src="/logo-96.png" alt="" {...stylex.props(styles.landingMark)} />
-        <span {...stylex.props(typography.landingBrand)}>{m.site_name()}</span>
+        {/* The site's address beside the mark (SKATGO-69); a phone has room for the name only. */}
+        <span {...stylex.props(typography.landingBrand)}>
+          {m.site_name()}
+          <span {...stylex.props(styles.domain)}>{m.site_domain()}</span>
+        </span>
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
         {HEADER_LINKS.map((l) => (
@@ -379,6 +383,7 @@ const styles = stylex.create({
   soon: { opacity: opacity.disabled, cursor: 'default', color: color.slate },
   landingEnd: { display: 'flex', alignItems: 'center', gap: space.x12 },
   desktopOnly: { display: { default: 'inline-flex', [bp.headerMenu]: 'none' } },
+  domain: { display: { default: 'inline', [bp.phone]: 'none' } },
   menuButton: {
     display: { default: 'none', [bp.headerMenu]: 'inline-flex' },
     alignItems: 'center',

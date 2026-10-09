@@ -43,8 +43,9 @@ A missing or altered model or pool stops the service at start. Its image is `nod
 run time, and onnxruntime's telemetry is off (`ORT_DISABLE_TELEMETRY`).
 The leader deals the tournament's today and tomorrow ahead, with the computers' bidding (SKATGO-39;
 logged as `daily_prepared` with its duration, or `daily_prepare_failed`). Since SKATGO-42 that includes
-the computer's own play of each deal from the player's seat. A day takes about 30–35 s on a laptop and
-about 6–6.5 min on the production instance (370–380 s, about 290 MB, measured 2026-10-03). A 10-minute
+the computer's own play of each deal from the player's seat. A day of 6 deals (SKATGO-62) takes about
+15–16 s on a laptop and about 3 min on the production instance (177–191 s, about 285 MB, measured
+2026-10-09). A 10-minute
 limit abandons it for the next hourly try.
 Readiness does not wait for it; until today is prepared, `/daily` answers `503 day_preparing`.
 

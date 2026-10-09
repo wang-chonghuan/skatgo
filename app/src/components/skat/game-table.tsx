@@ -557,7 +557,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             {contract ? <Pill tone="amber">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : null}
             {game.declarer !== null ? <Pill tone="quiet">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
             {game.phase === 'play' || game.phase === 'trickEnd' ? (
-              <Pill tone="quiet">{m.table_trick_count({ n: Math.min(10, game.tricks.length + 1), declarer: points.declarer, defenders: points.defenders })}</Pill>
+              <>
+                <Pill tone="quiet">{m.info_tricks({ n: Math.min(10, game.tricks.length + 1) })}</Pill>
+                <Pill tone="quiet">{m.table_points({ declarer: points.declarer, defenders: points.defenders })}</Pill>
+              </>
             ) : null}
           </div>
 

@@ -115,8 +115,12 @@ export function Tip({ children }: { children: ReactNode }) {
 
 /** A short fact, never an action: white on the page, dark on the felt, amber for whose turn it is. */
 export function Pill({ children, tone = 'quiet' }: { children: ReactNode; tone?: 'quiet' | 'go' | 'good' | 'dark' | 'amber' }) {
-  return <span {...stylex.props(typography.appBtn, styles.pill, pillTones[tone])}>{children}</span>
+  return <span {...stylex.props(typography.appBtn, styles.pill, pillTones[tone])}>{typeof children === 'string' ? keepParts(children) : children}</span>
 }
+
+/** A fact made of parts ("Alleinspieler: Max · gereizt bis 18") breaks only after a " · ", never inside a
+ *  part or before the dot (SKATGO-58). */
+const keepParts = (text: string) => text.split(' · ').map((part) => part.replace(/ /g, '\u00A0')).join('\u00A0· ')
 
 export function ProgressBar({ value, label }: { value: number; label: string }) {
   const pct = Math.round(Math.max(0, Math.min(1, value)) * 100)
@@ -197,15 +201,20 @@ const styles = stylex.create({
   btnDisabled: { opacity: opacity.disabled, cursor: 'not-allowed', boxShadow: 'none', filter: 'none' },
   panel: { borderRadius: radii.option, borderWidth: border.hair, borderStyle: 'solid' },
   panelPad: { padding: { default: space.x24, [bp.phone]: space.x16 } },
+  // A pill is never wider than where it sits (SKATGO-58): a fact too long for its row wraps inside the
+  // pill instead of running out of the panel. A short one looks as it always did.
   pill: {
     display: 'inline-flex',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: space.x6,
     boxSizing: 'border-box',
+    maxWidth: '100%',
     minHeight: dims.control,
     paddingInline: space.x16,
+    paddingBlock: space.x6,
     borderRadius: radii.pill,
-    whiteSpace: 'nowrap',
+    textAlign: 'center',
   },
   track: { height: space.x10, borderRadius: radii.round, backgroundColor: color.hairline, overflow: 'hidden' },
   fill: {

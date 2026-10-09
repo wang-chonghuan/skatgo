@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-66",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-66",
   "branch": "SKATGO-66-card-decks",

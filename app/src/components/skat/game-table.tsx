@@ -420,7 +420,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
           {game.phase === 'trickEnd' ? <Collect onCollect={collect} /> : null}
 
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
-              learner's orange one under the bottom edge. */}
+              learner's under the bottom edge, all alike (SKATGO-72). */}
           {([1, 2] as Seat[]).map((seat) => (
             <div key={seat} data-testid={`skat-seat-${seat}`} {...stylex.props(styles.plateSlot, seat === 1 ? styles.plateSlotLeft : styles.plateSlotRight)}>
               <Plate seat={seat} game={game} active={who === seat} />
@@ -715,14 +715,15 @@ function Collect({ onCollect }: { onCollect: () => void }) {
 }
 
 /** A seat plate: the role tag and the name — nothing else, so it never has to be cut short. Scores,
- *  the contract and the count are on the info board at the top of the felt. The learner's is amber. */
+ *  the contract and the count are on the info board at the top of the felt. The learner's looks like
+ *  the others' (SKATGO-72). */
 function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: boolean; active: boolean }) {
   const nameOf = useNameOf()
   const role = roleName(roleOf(seat, game.dealer))
   // The declarer's tag turns red once the auction has made them declarer (SKATGO-72).
   const declarer = game.declarer === seat
   return (
-    <div data-testid={mine ? 'skat-plate-me' : undefined} data-active={String(active)} title={role} {...stylex.props(styles.plate, mine && styles.plateMine, active && styles.plateActive)}>
+    <div data-testid={mine ? 'skat-plate-me' : undefined} data-active={String(active)} title={role} {...stylex.props(styles.plate, active && styles.plateActive)}>
       <span aria-hidden="true" data-declarer={String(declarer)} {...stylex.props(typography.roleTag, styles.roleTag, declarer && styles.roleTagDeclarer)}>{role.slice(0, 1).toUpperCase()}</span>
       <span {...stylex.props(typography.plateName, styles.plateText)}>{nameOf(seat)}</span>
     </div>
@@ -1218,7 +1219,6 @@ const styles = stylex.create({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
   },
-  plateMine: { backgroundColor: color.amber, color: color.plate },
   plateActive: { borderColor: color.gold },
   roleTag: {
     display: 'flex',

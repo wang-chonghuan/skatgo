@@ -63,7 +63,7 @@ export function dayOf(now: number): string {
 }
 
 /** A day's deals: fresh crypto-shuffled decks; the first dealer is random, then the deal passes
- *  clockwise, so the player sits in each position four times. */
+ *  clockwise, so the player sits in each position equally often (twice in six deals). */
 export function dealDay(): DealSpec[] {
   let dealer = randomInt(3) as Seat
   return Array.from({ length: DAILY_DEALS }, () => {

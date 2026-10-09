@@ -7,8 +7,8 @@ import type { Card } from './cards'
 import type { Bidding, Game, Phase, Played, Seat } from './game'
 import type { Declaration } from './value'
 
-/** Deals in one day's tournament. */
-export const DAILY_DEALS = 12
+/** Deals in one day's tournament (six since SKATGO-62: a day is a short round, not an evening). */
+export const DAILY_DEALS = 6
 
 /** New deals start at midnight in this time zone. */
 export const DAILY_TIME_ZONE = 'Europe/Berlin'

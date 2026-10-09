@@ -13,6 +13,7 @@ import { space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ClientPart, DailyEntry, DailyTable } from './client-part'
+import { DayDeals } from './daily-comparison'
 import { GameReading } from './game-reading'
 import { linkLook } from './ui'
 
@@ -30,6 +31,14 @@ export function DailyPage() {
     return () => clearInterval(tick)
   }, [])
   const left = now ? untilNextDeals(now) : null
+  // What the server renders in place of the visitor's own day (SKATGO-63): all of the day's deals, none
+  // played yet, and the way in. The browser shows the same until it knows where the visitor stands.
+  const start = (
+    <div {...stylex.props(styles.stack)}>
+      <DayDeals of={DAILY_DEALS} />
+      <Link to="/daily/play" {...linkLook('go', 'lg', 'landing')}>{m.daily_cta()}</Link>
+    </div>
+  )
   return (
     <div data-testid="daily" {...stylex.props(styles.root)}>
       <section {...stylex.props(styles.column)}>
@@ -40,8 +49,8 @@ export function DailyPage() {
             {m.daily_lead({ date: dailyDate(now, LANG_TAG[getLocale()]), countdown: m.daily_countdown(left) })}
           </p>
         ) : null}
-        <ClientPart fallback={<Link to="/daily/play" {...linkLook('go', 'lg', 'landing')}>{m.daily_cta()}</Link>}>
-          <DailyEntry />
+        <ClientPart fallback={start}>
+          <DailyEntry waiting={start} />
         </ClientPart>
       </section>
       <GameReading daily />
@@ -89,6 +98,7 @@ const styles = stylex.create({
     paddingBlock: { default: space.x32, [bp.phone]: space.x16 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
+  stack: { display: 'flex', flexDirection: 'column', gap: space.x24 },
   title: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.navy },
 })

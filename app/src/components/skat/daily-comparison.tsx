@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 
 import { contractName } from '~/lib/skat/i18n'
 import type { Seat } from '~/lib/skat/game'
-import { type Auction, type DealSummary, PLAYER, totals } from '~/lib/skat/tournament'
+import { type Auction, type DailyStatus, type DealSummary, PLAYER, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -13,7 +13,7 @@ import { timing } from '../../theme/effects.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { Rich } from './ui'
+import { Panel, Rich } from './ui'
 
 // The day against the AI (SKATGO-42, SKATGO-48): every deal the player has finished, beside the same deal
 // played by the computer in the player's seat against the same two computers — worked out when the day
@@ -159,22 +159,49 @@ export function Fold({ label, testId, children }: { label: string; testId: strin
   )
 }
 
+/**
+ * The day's deals on /daily while the day runs (SKATGO-63): every one of them, so a visitor sees at a
+ * glance how many there are — the finished ones against the AI, the rest by number only. Without a
+ * status (on the server, and while it loads) every deal is still to play.
+ */
+export function DayDeals({ of, status }: { of: number; status?: DailyStatus }) {
+  return (
+    <Panel>
+      <section data-testid="daily-so-far" {...stylex.props(styles.day)}>
+        <h2 {...stylex.props(typography.panelLabel, styles.dayTitle)}>{m.daily_play_title()}</h2>
+        <VsAiTable
+          deals={status?.deals ?? []}
+          benchmarks={status?.benchmarks}
+          auctions={status?.auctions}
+          benchmarkAuctions={status?.benchmarkAuctions}
+          of={of}
+          current={status?.started ? status.deal : null}
+          openLatest
+        />
+      </section>
+    </Panel>
+  )
+}
+
 /** The running comparison: one foldable row per finished deal, the player against the AI, and the
  *  totals. `openLatest` opens the newest row — after a deal, and on the day's page while it runs.
- *  `flat` (inside the settlement's fold, SKATGO-57): rows that do not fold again — folds never nest. */
-export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, openLatest = false, flat = false }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; auctions?: Auction[]; benchmarkAuctions?: (Auction | null)[]; openLatest?: boolean; flat?: boolean }) {
+ *  `flat` (inside the settlement's fold, SKATGO-57): rows that do not fold again — folds never nest.
+ *  `of` (SKATGO-63): the day's number of deals; those not finished follow as rows of their number and
+ *  whether they are `current` or still to play — nothing of their cards, which every player shares. */
+export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, openLatest = false, flat = false, of, current = null }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; auctions?: Auction[]; benchmarkAuctions?: (Auction | null)[]; openLatest?: boolean; flat?: boolean; of?: number; current?: number | null }) {
   const latest = deals.length - 1
   const [open, setOpen] = useState<number[]>(openLatest ? [latest] : [])
   useEffect(() => {
     if (openLatest) setOpen([latest])
   }, [openLatest, latest])
-  if (deals.length === 0) return null
+  if (deals.length === 0 && !of) return null
+  const ahead = Array.from({ length: Math.max(0, (of ?? 0) - deals.length) }, (_, k) => deals.length + k)
   const ai = deals.map((_, i) => benchmarks?.[i] ?? null)
   const you = totals(deals)[PLAYER]
   const aiTotal = ai.every((b) => b) ? totals(ai as DealSummary[])[PLAYER] : null
   const toggle = (i: number) => setOpen((o) => (o.includes(i) ? o.filter((j) => j !== i) : [...o, i]))
   return (
-    <div data-testid="daily-vs-ai" data-rows={deals.length} {...stylex.props(styles.table)}>
+    <div data-testid="daily-vs-ai" data-rows={deals.length} data-of={of ?? deals.length} {...stylex.props(styles.table)}>
       <div aria-hidden="true" {...stylex.props(styles.grid, styles.head)}>
         <span {...stylex.props(typography.small)}>{m.daily_col_deal()}</span>
         <span {...stylex.props(typography.small)}>{m.name_you()}</span>
@@ -239,13 +266,23 @@ export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, open
             </li>
           )
         })}
+        {ahead.map((i) => (
+          <li key={i} data-testid="daily-vs-ai-ahead" data-state={i === current ? 'current' : 'open'} {...stylex.props(styles.item)}>
+            <div {...stylex.props(styles.grid, styles.flatRow)}>
+              <span {...stylex.props(typography.small, styles.muted)}>{i + 1}</span>
+              <span {...stylex.props(typography.small, styles.muted)}>{i === current ? m.daily_deal_current() : m.daily_deal_open()}</span>
+              <span {...stylex.props(typography.small, styles.muted)}>–</span>
+              <span {...stylex.props(typography.small, styles.muted, styles.end)}>–</span>
+            </div>
+          </li>
+        ))}
       </ol>
-      <div data-testid="daily-vs-ai-total" data-you={you} data-ai={aiTotal ?? ''} data-diff={aiTotal === null ? '' : you - aiTotal} {...stylex.props(styles.grid, styles.total)}>
+      {deals.length === 0 ? null : <div data-testid="daily-vs-ai-total" data-you={you} data-ai={aiTotal ?? ''} data-diff={aiTotal === null ? '' : you - aiTotal} {...stylex.props(styles.grid, styles.total)}>
         <span {...stylex.props(typography.smallBold)}>{m.daily_total()}</span>
         <span {...stylex.props(typography.appBtnStrong)}>{signed(you)}</span>
         <span {...stylex.props(typography.appBtnStrong)}>{aiTotal === null ? '–' : signed(aiTotal)}</span>
         <span {...stylex.props(typography.appBtnStrong, styles.end)}>{aiTotal === null ? '–' : signed(you - aiTotal)}</span>
-      </div>
+      </div>}
     </div>
   )
 }
@@ -260,6 +297,8 @@ function Score({ score, role }: { score: number; role: string }) {
 }
 
 const styles = stylex.create({
+  day: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  dayTitle: { margin: 0, color: color.navy },
   deal: { display: 'flex', flexDirection: 'column', gap: space.x12, color: color.navy },
   // All three seats, the player's deal over the AI's, the difference under them.
   scores: { width: '100%', borderCollapse: 'collapse', color: color.navy },

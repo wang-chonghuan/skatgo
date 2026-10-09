@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-68",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-68",
   "branch": "SKATGO-68-trick-overlap",

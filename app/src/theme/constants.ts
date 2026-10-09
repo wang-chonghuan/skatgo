@@ -62,7 +62,7 @@ export const tapHint = {
   /** The hand's silhouette, filled. */
   hand: 'M178.5 303.5 V79 A32 32 0 0 1 242.5 79 V215 A33 33 0 0 1 308.5 215 V226 A32.5 32.5 0 0 1 373.5 226 V243.5 A32.5 32.5 0 0 1 438.5 243.5 V410 C438.5 461 400 503 356 503 H236 C205 503 180 485 166 456 L70 273 C88 256 102 251 115 251 C130 252 141 259 151 271 Z',
   /** The lines between the fingers, and the arc over the fingertip. */
-  lines: ['M242.5 215 V276', 'M308.5 226 V316', 'M373.5 243.5 V266', 'M142 76 A68 68 0 0 1 278 76'],
+  lines: ['M242.5 215 V276', 'M308.5 226 V271', 'M373.5 243.5 V266', 'M142 76 A68 68 0 0 1 278 76'],
   blink: { opacity: [1, 0.25, 1] },
   transition: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' as const },
 }

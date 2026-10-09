@@ -140,9 +140,9 @@ export const GUIDE_DE: Record<string, LessonGuide> = {
     question: 'Skat üben: eine ganze Partie zum Abschluss',
     h1: 'Skat üben im Abschlussspiel: eine ganze Partie',
     description:
-      'Skat üben in einer kompletten Partie gegen zwei Computergegner: Reizen, Skat, Ansagen, zehn Stiche und Abrechnung, mit Tipps, wann immer du willst.',
+      'Skat üben in einer kompletten Partie gegen zwei KI-Gegner: Reizen, Skat, Ansagen, zehn Stiche und Abrechnung, mit Tipps, wann immer du willst.',
     intro: [
-      'Jetzt geht es an den Tisch, und du kannst Skat üben. Diese Lektion ist **ein komplettes Spiel** gegen zwei Computergegner, vom ersten Reizwert bis zur Abrechnung. Du reizt mit, und gewinnst du das Reizen, nimmst du den Skat auf oder spielst Hand, drückst zwei Karten und sagst dein Spiel an. Dann folgen zehn Stiche, und das Ergebnis wird so abgerechnet wie an einem echten Skattisch.',
+      'Jetzt geht es an den Tisch, und du kannst Skat üben. Diese Lektion ist **ein komplettes Spiel** gegen zwei KI-Gegner, vom ersten Reizwert bis zur Abrechnung. Du reizt mit, und gewinnst du das Reizen, nimmst du den Skat auf oder spielst Hand, drückst zwei Karten und sagst dein Spiel an. Dann folgen zehn Stiche, und das Ergebnis wird so abgerechnet wie an einem echten Skattisch.',
       'Vorher gibt es einen kurzen Spickzettel: Augen, Trumpfreihenfolge, Bedienen, Grundwerte, wie sich der Spielwert zusammensetzt und wer wen reizt. Während des Spiels kannst du jederzeit einen **Tipp** holen; er nennt dir eine Karte und sagt dir, warum.',
       'Ob gewonnen oder verloren: Wenn das Spiel vorbei ist, hast du die Lektion geschafft. Aus einem verlorenen Spiel lernst du mehr als aus einem gewonnenen, und danach bist du bereit für einen echten Skattisch.',
     ],

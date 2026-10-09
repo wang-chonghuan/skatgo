@@ -33,7 +33,7 @@ export const LESSONS_DE: Lesson[] = [
           'Skat ist ein Stichspiel für drei Personen, und in Deutschland kennt es fast jeder. Es hat nur 32 Karten, ein Spiel dauert zehn Minuten – und trotzdem braucht man Rechnen, Gedächtnis und Mut zugleich.',
           'Das Besondere: In jedem Spiel heißt es **einer gegen zwei**. Wer allein spielt, ist der **Alleinspieler**; die anderen beiden tun sich für dieses Spiel als **Gegenspieler** zusammen. Wer im nächsten Spiel allein spielt? Das wird neu ausgereizt.',
         ],
-        tip: 'Der Kurs hat 11 Lektionen. Jede erklärt erst und lässt dich dann üben, und in der letzten spielst du eine ganze Partie gegen zwei Computergegner – danach bist du bereit für einen echten Skattisch.',
+        tip: 'Der Kurs hat 11 Lektionen. Jede erklärt erst und lässt dich dann üben, und in der letzten spielst du eine ganze Partie gegen zwei KI-Gegner – danach bist du bereit für einen echten Skattisch.',
       },
       {
         kind: 'teach',
@@ -541,7 +541,7 @@ export const LESSONS_DE: Lesson[] = [
   {
     id: '11',
     title: 'Abschlussspiel: an den Tisch!',
-    promise: 'Eine komplette Partie gegen zwei Computergegner spielen. Danach kannst du Skat.',
+    promise: 'Eine komplette Partie gegen zwei KI-Gegner spielen. Danach kannst du Skat.',
     minutes: 3,
     steps: [
       {

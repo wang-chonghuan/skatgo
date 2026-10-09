@@ -14,7 +14,7 @@ exercises that are judged on the spot and explain every wrong answer. Overall pr
 the course map, and the last lesson is a whole game against two computer players. The aim, in the
 human's words: 「只要进度走完，就能短时间把skat学会，学到可以和已经会的人打牌的水平」.
 
-A daily Skat tournament at `/daily`: every day the same 12 deals for every player, each played
+A daily Skat tournament at `/daily`: every day the same 6 deals for every player (SKATGO-62), each played
 against two computer players and scored by Seeger-Fabian; one entry per player per day; scores are
 the server's, from the cards actually played. After each deal the player sees how the computer, named "AI", played the same deal
 from their seat (SKATGO-42), in a table of both that grows by one row per deal, also on the day's page

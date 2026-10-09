@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-62",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-62",
+  "branch": "SKATGO-62-six-deals",
+  "base": "2453e4319e76e91b554668089160582d626587ac",
+  "ports": { "web": 55062, "multiplayer": 56062, "database": 57062 }
+}

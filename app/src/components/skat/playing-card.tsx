@@ -1,45 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
-import {
-  C7,
-  C8,
-  C9,
-  C10,
-  Cj,
-  Cq,
-  Ck,
-  Ca,
-  S7,
-  S8,
-  S9,
-  S10,
-  Sj,
-  Sq,
-  Sk,
-  Sa,
-  H7,
-  H8,
-  H9,
-  H10,
-  Hj,
-  Hq,
-  Hk,
-  Ha,
-  D7,
-  D8,
-  D9,
-  D10,
-  Dj,
-  Dq,
-  Dk,
-  Da,
-} from '@letele/playing-cards'
-import { Children, type ComponentType, type ReactNode, type SVGProps, cloneElement, isValidElement } from 'react'
 
-import { type Card, cardId } from '~/lib/skat/cards'
+import { type Card, type Rank, type Suit, cardId } from '~/lib/skat/cards'
 import { spokenCard } from '~/lib/skat/i18n'
 import { m } from '~/paraglide/messages'
+import { type Deck, useDeck } from '~/lib/skat/settings'
 import { bp } from '../../theme/breakpoints.stylex'
-import { cardIndex } from '../../theme/constants'
 import { color } from '../../theme/color.stylex'
 import { move, timing } from '../../theme/effects.stylex'
 import { elev, fill } from '../../theme/elevation.stylex'
@@ -47,99 +12,145 @@ import { border } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { suit } from '../../theme/suits.stylex'
+import { CAP, GLYPHS } from './card-glyphs'
 
-// One playing card. The faces are Adrian Kennard's public-domain SVG deck (via
-// @letele/playing-cards) — a learner who is about to sit down with real people should practise on
-// cards that look like the ones they will be dealt, court figures and all.
+// One playing card, by default in the Turnierblatt German Skat tournaments use (SKATGO-66): French suits in
+// the four German colours (the suit's colour from theme/suits.stylex.ts), the court figures drawn for skatgo
+// (app/brand/cards, PROVENANCE.md) and served from /cards. The corner letters are the tournament deck's
+// B / D / K / A, or J / Q / K / A when the learner chose that deck in the settings. The settings also
+// offer the German-suited deck (Eichel, Grün, Herz, Schellen; Unter, Ober, König, Daus): the same layout
+// with the German suit symbols as pips, its own courts and the Daus pictures, and K / O / U / A.
+//
+// The face is one SVG in a 500 × 700 box, drawn here: the corner index (the rank as Bebas Neue outlines
+// over the suit pip, top left and turned bottom right), then the pips of 7–10 in their traditional places,
+// the ace's single large pip, or a court's double-headed figure inside a frame notched for the index.
+// The index is paths, never text: SVG text is page text, and a search engine reads it (SKATGO-29).
 
-type Face = ComponentType<SVGProps<SVGSVGElement>>
-// Named imports, not the namespace: the package also carries 2–6 and the jokers, which a Skat deck
-// never uses, and importing the namespace would ship all of them.
-const FACES: Record<string, Face> = {
-  C7,
-  C8,
-  C9,
-  C10,
-  Cj,
-  Cq,
-  Ck,
-  Ca,
-  S7,
-  S8,
-  S9,
-  S10,
-  Sj,
-  Sq,
-  Sk,
-  Sa,
-  H7,
-  H8,
-  H9,
-  H10,
-  Hj,
-  Hq,
-  Hk,
-  Ha,
-  D7,
-  D8,
-  D9,
-  D10,
-  Dj,
-  Dq,
-  Dk,
-  Da,
+const W = 500
+const H = 700
+
+/** The pips, each in a 100 × 100 box, filled with the suit's colour. */
+const circle = (cx: number, cy: number, r: number) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`
+const PIPS: Record<Suit, string> = {
+  H: 'M50 94C34 78 2 58 2 30C2 13 15 2 29 2C39 2 46 8 50 17C54 8 61 2 71 2C85 2 98 13 98 30C98 58 66 78 50 94Z',
+  D: 'M50 0C60 18 74 36 90 50C74 64 60 82 50 100C40 82 26 64 10 50C26 36 40 18 50 0Z',
+  S: 'M50 2C62 22 98 40 98 64C98 79 87 88 74 88C64 88 57 83 53 76C54 87 59 94 68 100H32C41 94 46 87 47 76C43 83 36 88 26 88C13 88 2 79 2 64C2 40 38 22 50 2Z',
+  C: `${circle(50, 27, 23)}${circle(25, 60, 23)}${circle(75, 60, 23)}M50 34L30 62H70ZM47 58C47 78 42 91 32 100H68C58 91 53 78 53 58Z`,
 }
 
-const COURT: readonly string[] = ['J', 'Q', 'K']
-
-// SKATGO-27: a face's suit symbols and corner index take the card's suit colour, and (SKATGO-47) the
-// index is drawn bolder; nothing else changes.
-// The deck (surveyed card by card) draws them as symbols: on 7-10 and the ace, symbols `a` and `b`
-// are all there is — the index and the pips; on a court, `a` is the pip and `h` the corner letter,
-// while the figure is other symbols (`b` gold, `c` red, `d` blue, `e` its outline). The face is
-// rendered with those two symbols' fill and stroke set to `currentColor`, which the card's `color`
-// (its suit, from theme/suits.stylex.ts) supplies. Done on the element tree, not by a stylesheet:
-// a selector cannot reach the copies a <use> renders, and a tree rewrite is the same on the server
-// and in the browser.
-const INK_PIP = ['a', 'b']
-const INK_COURT = ['a', 'h']
-
-function inked(node: ReactNode, keys: string[], within: boolean): ReactNode {
-  if (!isValidElement(node)) return node
-  // The deck's Ace of Spades carries its maker's address as SVG text ("www.me.uk /cards/"). SVG text is
-  // page text — a search engine read it into the front page (SKATGO-29). The deck is CC0, so no credit
-  // is owed; no face draws any other text.
-  if (node.type === 'text') return null
-  const props = node.props as { id?: unknown; fill?: unknown; stroke?: unknown; children?: ReactNode }
-  const here = within || (node.type === 'symbol' && typeof props.id === 'string' && keys.some((k) => (props.id as string).endsWith(`_svg__${k}`)))
-  const change: Record<string, unknown> = {}
-  // The deck frames every face with a black-stroked rect; clipped by the card's rounded corners it reads
-  // as an uneven black edge. The card's white face and its shadow already draw the edge.
-  if (node.type === 'rect' && props.stroke) change.stroke = 'none'
-  if (here && node.type === 'path') {
-    if (props.fill !== 'none') change.fill = 'currentColor'
-    if (props.stroke) change.stroke = 'currentColor'
-    // The corner index is the one unfilled stroked line (SKATGO-47): drawn bolder than the deck's 80.
-    if (props.fill === 'none' && props.stroke) change.strokeWidth = cardIndex.stroke
-  }
-  // A thicker index reaches past its symbol's box, which would clip the stroke's ends.
-  if (here && node.type === 'symbol') change.overflow = 'visible'
-  if (props.children !== undefined) change.children = Children.map(props.children, (c) => inked(c, keys, here))
-  return cloneElement(node, change)
+/** What the corner says for each rank in each deck: official Skat's B / D / K / A, J / Q / K / A, or
+ *  the German deck's Unter, Ober, König and Daus. */
+const LETTERS: Record<Deck, Partial<Record<Rank, string>>> = {
+  tournament: { J: 'B', Q: 'D', K: 'K', A: 'A' },
+  german: { J: 'U', Q: 'O', K: 'K', A: 'A' },
+  jqk: { J: 'J', Q: 'Q', K: 'K', A: 'A' },
+}
+/** The German deck's court pictures are named by its own ranks. */
+const GERMAN_COURT: Partial<Record<Rank, string>> = { J: 'U', Q: 'O', K: 'K' }
+export function indexOf(rank: Rank, deck: Deck): string {
+  return LETTERS[deck][rank] ?? rank
 }
 
-/** The deck's face with its suit symbols and corner index in the card's colour. */
-function InkedFace({ face, court, ...rest }: { face: Face; court: boolean } & SVGProps<SVGSVGElement>) {
-  // The deck's faces are plain function components (svgr output, no hooks), so calling one yields its
-  // element tree to rewrite.
-  const draw = face as (p: SVGProps<SVGSVGElement>) => ReactNode
-  const drawn = draw({ ...rest, 'aria-hidden': true, focusable: 'false' })
-  return <>{inked(drawn, court ? INK_COURT : INK_PIP, false)}</>
+// The index: its letters LETTER tall from the top, the pip under them, centred on INDEX_X.
+const LETTER = 84
+const INDEX_X = 46
+const INDEX_TOP = 28
+const INDEX_PIP = 50
+/** The corner the index keeps to itself: the court frame steps around it. */
+const NOTCH_W = 96
+const NOTCH_H = INDEX_TOP + LETTER + 14 + INDEX_PIP + 14
+/** The court frame and the half of it each figure fills (the court images are cut to this shape). */
+const FRAME = { x: 26, y: 26, w: 448, h: 648 }
+/** The frame's hairline, in the face's units: it scales with the card like the rest of the drawing. */
+const FRAME_LINE = 2
+
+/** A pip: the French suit's path in the suit's colour, or the German deck's own symbol picture. */
+function Pip({ s, x, y, size, turned, german }: { s: Suit; x: number; y: number; size: number; turned?: boolean; german?: boolean }) {
+  const turn = turned ? ` rotate(180 ${x} ${y})` : ''
+  if (german) return <image href={`/cards/german/sym-${s}.webp`} x={x - size / 2} y={y - size / 2} width={size} height={size} preserveAspectRatio="xMidYMid meet" transform={turn.trim() || undefined} />
+  const k = size / 100
+  return <path d={PIPS[s]} transform={`translate(${x} ${y})${turned ? ' rotate(180)' : ''} scale(${k}) translate(-50 -50)`} />
 }
 
-/** The library names a card by suit letter plus lower-case rank: `Cj`, `H10`, `Sa`. */
-function faceOf(card: Card): Face {
-  return FACES[`${card.suit}${card.rank.toLowerCase()}`]
+function Index({ letters, s, german }: { letters: string; s: Suit; german: boolean }) {
+  const k = LETTER / CAP
+  const width = [...letters].reduce((n, ch) => n + GLYPHS[ch].w, 0)
+  let x = INDEX_X / k - width / 2
+  return (
+    <g>
+      <g transform={`translate(0 ${INDEX_TOP}) scale(${k})`}>
+        {[...letters].map((ch) => {
+          const at = x
+          x += GLYPHS[ch].w
+          return <path key={at} d={GLYPHS[ch].d} transform={`translate(${at} 0)`} />
+        })}
+      </g>
+      <Pip s={s} x={INDEX_X} y={INDEX_TOP + LETTER + 14 + INDEX_PIP / 2} size={INDEX_PIP} german={german} />
+    </g>
+  )
+}
+
+// The pips' places on 7–10, as (x, y) of each pip's centre; a pip below the middle is turned, as printed.
+const L = 160
+const R = 340
+const C = 250
+const ROWS3 = [118, 350, 582]
+const ROWS4 = [118, 273, 427, 582]
+const LAYOUT: Partial<Record<Rank, [number, number][]>> = {
+  '7': [...ROWS3.flatMap((y): [number, number][] => [[L, y], [R, y]]), [C, 234]],
+  '8': [...ROWS3.flatMap((y): [number, number][] => [[L, y], [R, y]]), [C, 234], [C, 466]],
+  '9': [...ROWS4.flatMap((y): [number, number][] => [[L, y], [R, y]]), [C, 350]],
+  '10': [...ROWS4.flatMap((y): [number, number][] => [[L, y], [R, y]]), [C, 196], [C, 504]],
+}
+const PIP = 84
+/** The German symbols are pictures with a margin of their own: drawn a little larger to look the same. */
+const GERMAN_PIP = 96
+const ACE = 230
+/** Where the German Daus picture sits, clear of the two indices. */
+const DAUS = { x: 70, y: 80, w: 360, h: 540 }
+
+/** The court frame: the card's inside, less the two corners the index keeps. */
+const FRAME_PATH = [
+  `M${NOTCH_W} ${FRAME.y}H${FRAME.x + FRAME.w}V${H - NOTCH_H}H${W - NOTCH_W}V${FRAME.y + FRAME.h}`,
+  `H${FRAME.x}V${NOTCH_H}H${NOTCH_W}Z`,
+].join('')
+
+function Court({ c, german }: { c: Card; german: boolean }) {
+  const id = `court-${german ? 'german' : 'french'}-${c.suit}${c.rank}`
+  const href = german ? `/cards/german/${c.suit}-${GERMAN_COURT[c.rank]}.webp` : `/cards/french/${c.suit}-${c.rank}.webp`
+  const half = FRAME.h / 2
+  // Each half reaches a unit past the middle, so no seam shows where they meet.
+  const top = <image href={href} x={FRAME.x} y={FRAME.y} width={FRAME.w} height={half + 1} preserveAspectRatio="xMidYMax meet" />
+  return (
+    <g>
+      <clipPath id={id}>
+        <path d={FRAME_PATH} />
+      </clipPath>
+      <g clipPath={`url(#${id})`}>
+        {top}
+        <g transform={`rotate(180 ${W / 2} ${H / 2})`}>{top}</g>
+      </g>
+      <path d={FRAME_PATH} strokeWidth={FRAME_LINE} {...stylex.props(styles.frame)} />
+    </g>
+  )
+}
+
+/** The face of `c`: index, then pips, the ace (the German Daus picture), or the court. The letters and a
+ *  French pip take the card's colour (`currentColor`). */
+function Face({ c, letters, german }: { c: Card; letters: string; german: boolean }) {
+  const places = LAYOUT[c.rank]
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false" fill="currentColor" {...stylex.props(styles.face)}>
+      {places ? places.map(([x, y]) => <Pip key={`${x}-${y}`} s={c.suit} x={x} y={y} size={german ? GERMAN_PIP : PIP} turned={y > H / 2} german={german} />) : null}
+      {c.rank === 'A' && german ? <image href={`/cards/german/${c.suit}-A.webp`} x={DAUS.x} y={DAUS.y} width={DAUS.w} height={DAUS.h} preserveAspectRatio="xMidYMid meet" /> : null}
+      {c.rank === 'A' && !german ? <Pip s={c.suit} x={W / 2} y={H / 2} size={ACE} /> : null}
+      {places || c.rank === 'A' ? null : <Court c={c} german={german} />}
+      <Index letters={letters} s={c.suit} german={german} />
+      <g transform={`rotate(180 ${W / 2} ${H / 2})`}>
+        <Index letters={letters} s={c.suit} german={german} />
+      </g>
+    </svg>
+  )
 }
 
 export type CardSize = 'xs' | 'sm' | 'md' | 'lg' | 'table' | 'trick' | 'fill'
@@ -163,20 +174,25 @@ type Props = {
 }
 
 export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glow, verdict, legal, data, onClick }: Props) {
-  const Face = faceOf(card)
-  // The back is drawn here rather than taken from the deck: the library's back is a flat grey, and
-  // a face-down card is most of what the learner sees of their opponents. It is skatgo's own design
-  // (SKATGO-26): a fine light lattice on charcoal inside a white frame.
+  const deckChoice = useDeck()
+  const german = deckChoice === 'german'
+  const letters = indexOf(card.rank, deckChoice)
+  // The back is skatgo's own (SKATGO-66): a charcoal and white ornament inside a white frame.
   const body = faceDown ? (
-    <span {...stylex.props(styles.back)} />
+    <span {...stylex.props(styles.back)}>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" focusable="false" {...stylex.props(styles.face)}>
+        <image href="/cards/back.webp" width={W} height={H} preserveAspectRatio="xMidYMid slice" />
+      </svg>
+    </span>
   ) : (
-    <InkedFace face={Face} court={COURT.includes(card.rank)} {...stylex.props(styles.face)} />
+    <Face c={card} letters={letters} german={german} />
   )
+  const deck = faceDown ? undefined : { 'data-deck': german ? 'german' : 'french', 'data-index': letters }
   // `clickable` first: it sets the resting and hover transform, and `selected` must win over both.
   const look = stylex.props(
     styles.card,
     sizes[size],
-    // The suit's colour, which app.css hands to the face's pips and indices (SKATGO-27).
+    // The suit's colour, which the face's pips and index take as `currentColor`.
     !faceDown && suitInk[card.suit],
     onClick ? styles.clickable : null,
     selected && styles.selected,
@@ -187,7 +203,7 @@ export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glo
   )
   if (!onClick) {
     return (
-      <div data-card={faceDown ? 'back' : cardId(card)} role="img" aria-label={faceDown ? m.card_back() : spokenCard(card)} {...look}>
+      <div data-card={faceDown ? 'back' : cardId(card)} {...deck} role="img" aria-label={faceDown ? m.card_back() : spokenCard(card)} {...look}>
         {body}
       </div>
     )
@@ -196,6 +212,7 @@ export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glo
     <button
       type="button"
       data-card={cardId(card)}
+      {...deck}
       data-legal={legal === undefined ? undefined : String(legal)}
       data-selected={selected ? 'true' : undefined}
       aria-label={spokenCard(card)}
@@ -234,9 +251,10 @@ const styles = stylex.create({
     borderStyle: 'solid',
     borderColor: color.surface,
     borderRadius: 'inherit',
-    backgroundColor: color.cardBack,
-    backgroundImage: fill.cardBack,
+    overflow: 'hidden',
   },
+  // The court frame's hairline.
+  frame: { fill: 'none', stroke: color.slate },
   clickable: {
     cursor: 'pointer',
     transform: { default: move.rest, ':hover': move.cardHover },
@@ -255,7 +273,7 @@ const styles = stylex.create({
   bad: { boxShadow: elev.verdictBad },
 })
 
-// Each suit's colour on a card face, from the chosen scheme (theme/suits.stylex.ts).
+// Each suit's colour on a card face (theme/suits.stylex.ts).
 const suitInk = stylex.create({
   C: { color: suit.cardClubs },
   S: { color: suit.cardSpades },

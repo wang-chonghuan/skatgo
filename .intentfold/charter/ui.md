@@ -43,11 +43,11 @@ breakpoint of its own; `check-design-tokens.mjs` (Tools) fails the build otherwi
 | File | Exports | Owns |
 |---|---|---|
 | `color.stylex.ts` | `color` | the palette (`defineVars`) |
-| `suits.stylex.ts` | `suit`, `fourColours`, `twoColours` | the suits' colours in the three schemes the learner chooses between (SKATGO-27) |
+| `suits.stylex.ts` | `suit` | the suits' colours: the French deck's four-colour tournament colouring (SKATGO-27, SKATGO-66) |
 | `breakpoints.stylex.ts` | `bp` | media-query keys (`defineConsts` — a media query cannot read a variable) |
 | `scale.stylex.ts` | `space`, `border`, `opacity`, `layer` | spacing, border widths, opacity, stacking |
 | `shape.stylex.ts` | `radii`, `dims` | corner radii; component dimensions and geometry |
-| `elevation.stylex.ts` | `elev`, `fill`, `pose`, `veil` | shadows, fills (the felt, the card back, filters), transforms of the card art and the table, a tile's veil |
+| `elevation.stylex.ts` | `elev`, `fill`, `pose`, `veil` | shadows, fills (the felt, filters), transforms of the card art and the table, a tile's veil |
 | `effects.stylex.ts` | `move`, `timing`, `layerHint` | where a thing rests, is pressed or rises; CSS transition timing; the compositing hint for things that move (SKATGO-41) |
 | `table.stylex.ts` | `stageUnit`, `stage` | the card table's stage, measured in one unit that follows the felt's room (SKATGO-34) |
 | `type.stylex.ts` | `family`, `fontSize`, `weight`, `leading` | typography primitives — used only by `type.ts` |
@@ -86,20 +86,19 @@ fixed light palette, not a light/dark pair.
 | `info` | links in text, the hint button, the focus ring |
 | `stop` | leaving the table |
 | `tileGreen`, `tileOrange` | the front page's section tiles: ♠ free play, ♣ the course |
-| `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `cardBack`, `cardBackLight`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
+| `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | a right / wrong answer: border / fill — and nothing else |
 | `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
 | `scrim` | the dim behind a dialog |
 
 The browser's toolbar colour on phones is `themeColor` (`constants.ts`), the header's white.
 
-**Suit colours** (`suits.stylex.ts`, SKATGO-27)
+**Suit colours** (`suits.stylex.ts`, SKATGO-27, SKATGO-66)
 
-Three schemes, chosen in the header's settings: German Skat (the default — ♣ black, ♠ green, ♥ red,
-♦ gold), four colours, and two colours as the deck is printed. `suit.card*` colours a card face's pips
-and corner index; `suit.text*` colours a suit glyph in running text, where a black suit takes the
-text's own colour so it stays legible on white and on felt. The chosen theme is applied on the frame's
-root after mount.
+One colouring, the four-colour tournament colouring of the French-suited deck: ♣ black, ♠ green, ♥ red,
+♦ gold. There is no choice of colours (SKATGO-66). `suit.card*` colours a card face's pips and corner
+index; `suit.text*` colours a suit glyph in running text, where a black suit takes the text's own
+colour so it stays legible on white and on felt.
 
 **Typography** (`type.stylex.ts`, `type.ts`)
 
@@ -185,13 +184,13 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `Pill` | tone `quiet`, `go`, `good`, `dark`, `amber` | short facts, never actions |
 | `ProgressBar` | `value`, `label` | progress through a lesson |
 | `Stars` | `n` of 3 | a lesson's result |
-| `Rich` | — | every piece of course text: renders `**bold**` and each suit glyph in its scheme colour |
+| `Rich` | — | every piece of course text: renders `**bold**` and each suit glyph in its suit's colour |
 
 **Components — the course's and the table's widgets**
 
 | Widget | File | What it is |
 |---|---|---|
-| `PlayingCard` | `playing-card.tsx` | one card from the public-domain deck `@letele/playing-cards`. The face's pips and corner index take the suit scheme's colour, and the corner index is drawn `cardIndex.stroke` wide (SKATGO-47, the deck's own is 80); the deck's text is removed. Sizes `xs`, `sm`, `md`, `lg`, `table`, `trick`, `fill`; states `selected`, `dimmed` (`fill.dimmed`), `glow`, `verdict` good/bad, `faceDown` (`fill.cardBack`, skatgo's own charcoal lattice) |
+| `PlayingCard` | `playing-card.tsx` | one card, by default of the Turnierblatt (the German Skat association's tournament deck: French suits in German colours, SKATGO-66), drawn as one SVG: the corner index top left and turned bottom right — the rank as Bebas Neue outlines (`card-glyphs.ts`, never text, which a search engine would read), in every language official Skat's B / D / K / A, or J / Q / K / A when the learner chose that deck in the settings, over the suit's pip; the pips of 7–10 in their traditional places; the ace's one large pip; a court's double-headed figure in a frame notched for the index. Pips and index take the suit's colour. The settings also offer the Deutsches Blatt: the same layout with the German suit symbols (pictures) as pips, its own courts (Unter, Ober, König) and Daus pictures, and K / O / U / A. The court figures, Daus, German symbols and the back are skatgo's own pictures (`app/brand/cards`, served from `/cards`). Sizes `xs`, `sm`, `md`, `lg`, `table`, `trick`, `fill`; states `selected`, `dimmed` (`fill.dimmed`), `glow`, `verdict` good/bad, `faceDown` (the charcoal and white ornament in a white frame) |
 | `Fan` / `CardRowView` | `card-row.tsx` | a hand held as a fan (two rows of a long hand on a phone; `data-answer` / `data-order` for scripted checks), and a labelled row of cards for reading |
 | `Shake` / `Feedback` | `exercises.tsx` | the wordless "no" after a wrong answer, and the good/bad panel that explains it |
 | `TitleWithDownload` / `PdfLink` | `print-links.tsx` | every download (SKATGO-53): the page's h1 with, beside it, the page's one `go` button — lucide's `Download` icon at `icon.inline` and "PDF herunterladen" / "Download PDF" — which moves under the title on a phone and is left off paper |
@@ -205,7 +204,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   a lesson card's states: `next` (a `go` border), `done` (`goodSoft`), open.
 - **Choice tile** — a white tile with a `border.tile` in `hairline` that turns `go` on hover; chosen,
   right and wrong as the `go`, `good` and `bad` tokens say. Answer options, contracts and the settings'
-  schemes are this.
+  decks are this.
 
 **Frames and pages**
 
@@ -214,8 +213,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - the SkatGo mark (`dims.landingMark`) and name (`landingBrand`);
   - the four links, in this order (the human, 2026-10-01): the daily tournament, free play, the
     course, the rules;
-  - on the right, the language menu (a flag button opening a card of flags), the card-colour settings
-    gear, and sign-in or the account.
+  - on the right, the language menu (a flag button opening a card of flags), the settings gear (the
+    choice of deck: the Turnierblatt by default, the Deutsches Blatt, or the Turnierblatt with English
+    letters J / Q / K / A — SKATGO-66), and sign-in
+    or the account.
 
   On a phone the links and the account fold into a menu. Under the page sits the legal footer. The
   header is the same on every page; it shows no current-page highlight (its links carry

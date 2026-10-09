@@ -1,0 +1,35 @@
+{
+  "schema": "n-azure/image-generation@1",
+  "created_at": "2026-10-09T16:02:01.659136+00:00",
+  "api_version": "preview",
+  "model": "gpt-image-2",
+  "mode": "edit",
+  "auth_method": "api-key",
+  "prompt": "An original illustration of a court figure for a traditional European playing card, drawn fresh in the spirit of 19th-century card patterns.\n\nDrawing: clean flat colour areas with bold, even, dark outlines of one consistent weight. No gradients, shading, texture, paper grain or engraving hatching. Simple, clear shapes and a calm, frontal, symmetrical pose, so the figure stays readable when the whole card is only 60 pixels wide.\n\nColour: a balanced palette of royal blue, forest green, golden yellow, deep red, black, white and a warm skin tone. No single colour dominates the costume; the colours are distributed evenly across the figure.\n\nBackground: fully transparent.\n\nNever include text, letters, numbers, signatures, corner indices, a card border or a frame. This is an original drawing, not a copy or tracing of any existing commercial deck.\n\nFormat: the upper half of a double-headed court card, landscape. The figure is shown from the top of its headwear down to the waist, centred, with its shoulders, sleeves and garments spreading across the whole width of the picture. Everything the figure holds stays inside the picture; nothing is cut off at the left, right or top edge. The figure is cut by a straight horizontal line exactly at the bottom edge of the picture, so the picture can be mirrored at that edge. Nothing below the cut: no legs, no ground, no shadow.\n\nSubject: the Queen (Dame) of Spades (Pik) of a French-suited deck (as Skat players in Germany use it). A crowned queen in a helmet-like crown, holding a short sceptre upright close to her shoulder. A clear green spade emblem on her gown identifies the suit.",
+  "references": [
+    {
+      "path": "masters/french-H-K.png",
+      "bytes": 2354606,
+      "sha256": "caa5d8e6cd43be42f4d91a07402175630e32212144206b7cdb3281683085dffa"
+    },
+    {
+      "path": "masters/french-H-J.png",
+      "bytes": 2306725,
+      "sha256": "bffe78b0a242569eb6bae41c06106511cd5293709a268821bba566c9379067cb"
+    }
+  ],
+  "request": {
+    "size": "1536x1024",
+    "quality": "high",
+    "background": "transparent",
+    "output_format": "png",
+    "n": 1
+  },
+  "output": {
+    "path": "masters/french-S-Q.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2497752,
+    "sha256": "4fed762b3fcc9c1b4498a94470ec19efa9eb7d8dc1bf8e0bef3a57a9f6f0bea9"
+  }
+}

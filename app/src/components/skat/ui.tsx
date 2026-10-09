@@ -22,8 +22,8 @@ import { typography } from '../../theme/type'
 
 const SUIT_GLYPHS = /([♣♠♥♦])/
 
-/** Inline text with the course's two conventions: **bold**, and each suit symbol in its colour from
- *  the chosen scheme (SKATGO-27). */
+/** Inline text with the course's two conventions: **bold**, and each suit symbol in its colour
+ *  (SKATGO-27). */
 export function Rich({ text }: { text: string }) {
   return (
     <>
@@ -144,7 +144,7 @@ function btnType(shape: Shape, size: Size) {
 
 type Glyph = '♣' | '♠' | '♥' | '♦'
 
-/** A suit symbol in text, in the chosen scheme's text colour. */
+/** A suit symbol in text, in its suit's text colour. */
 export const suitText = stylex.create({
   '♣': { color: suit.textClubs },
   '♠': { color: suit.textSpades },

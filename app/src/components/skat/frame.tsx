@@ -4,8 +4,8 @@ import * as stylex from '@stylexjs/stylex'
 import { Check, ChevronDown, Menu, Settings, X } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 
-import { type CardColours, useSettings } from '~/lib/skat/settings'
 import { LANG_TAG } from '~/lib/site'
+import { type Deck, useSettings } from '~/lib/skat/settings'
 import { m } from '~/paraglide/messages'
 import { type Locale, getLocale, locales, setLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
@@ -15,14 +15,13 @@ import { timing } from '../../theme/effects.stylex'
 import { elev } from '../../theme/elevation.stylex'
 import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
-import { suit as suitCard, fourColours, twoColours } from '../../theme/suits.stylex'
 import { FlagDE, FlagUS } from '../../theme/flags'
 import { typography } from '../../theme/type'
 import { Btn, suitText } from './ui'
 
 // The frame pieces of the lobby design (SKATGO-26, reference.md): the public site's white header over
-// every page but the tables (SKATGO-43, SKATGO-47), with the language menu, the card-colour settings
-// and the account. Navigation carries only what skatgo
+// every page but the tables (SKATGO-43, SKATGO-47), with the language menu, the deck settings and the account. Navigation
+// carries only what skatgo
 // has (SKATGO-29: nothing announced).
 
 type Section = 'home' | 'daily' | 'course' | 'rules' | 'play'
@@ -197,27 +196,16 @@ export function LanguageSwitch() {
   )
 }
 
-// --- Card colours (SKATGO-27) --------------------------------------------------------------------
+// --- The deck (SKATGO-66) --------------------------------------------------------------------------
 
-const SCHEMES: { key: CardColours; label: () => string }[] = [
-  { key: 'german', label: () => m.scheme_german() },
-  { key: 'four', label: () => m.scheme_four() },
-  { key: 'two', label: () => m.scheme_two() },
+/** The decks, the default first; each shows its corner letters. */
+const DECKS: { key: Deck; label: () => string; letters: string }[] = [
+  { key: 'tournament', label: () => m.deck_tournament(), letters: 'B · D · K · A' },
+  { key: 'german', label: () => m.deck_german(), letters: 'U · O · K · A' },
+  { key: 'jqk', label: () => m.deck_jqk(), letters: 'J · Q · K · A' },
 ]
-const THEMES = { german: null, four: fourColours, two: twoColours }
 
-/**
- * The chosen scheme's theme, for the frame's root. Null until after mount: the server and the first
- * client render use the default (German), so the markup hydrates; a stored choice applies at once after.
- */
-export function useCardColourTheme() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  const chosen = useSettings((s) => s.cardColours)
-  return mounted ? THEMES[chosen] : null
-}
-
-/** The gear beside the language menu: opens the card-colour choice. */
+/** The gear beside the language menu: opens the choice of deck. */
 export function SettingsButton() {
   const [open, setOpen] = useState(false)
   return (
@@ -230,10 +218,10 @@ export function SettingsButton() {
   )
 }
 
-/** The three schemes, each shown as its four suits in its own colours; choosing applies at once. */
+/** The choice of deck; choosing applies at once, to every card on the page. */
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
-  const chosen = useSettings((s) => s.cardColours)
-  const choose = useSettings((s) => s.setCardColours)
+  const chosen = useSettings((s) => s.deck)
+  const choose = useSettings((s) => s.setDeck)
   return (
     <div data-testid="settings-dialog" {...stylex.props(styles.scrim)} onClick={onClose}>
       <div role="dialog" aria-modal="true" aria-label={m.settings_title()} onClick={(e) => e.stopPropagation()} {...stylex.props(styles.dialog)}>
@@ -243,26 +231,22 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             <X size={icon.menu} strokeWidth={icon.outline} />
           </button>
         </div>
-        <div role="radiogroup" aria-label={m.settings_title()} {...stylex.props(styles.schemes)}>
-          {SCHEMES.map((scheme) => {
-            const on = scheme.key === chosen
-            const theme = THEMES[scheme.key]
+        <div role="radiogroup" aria-label={m.settings_title()} {...stylex.props(styles.decks)}>
+          {DECKS.map((deck) => {
+            const on = deck.key === chosen
             return (
               <button
-                key={scheme.key}
+                key={deck.key}
                 type="button"
                 role="radio"
                 aria-checked={on}
-                data-testid={`scheme-${scheme.key}`}
-                onClick={() => choose(scheme.key)}
-                {...stylex.props(typography.appBtnStrong, styles.scheme, on && styles.schemeOn)}
+                data-testid={`deck-${deck.key}`}
+                onClick={() => choose(deck.key)}
+                {...stylex.props(typography.appBtnStrong, styles.deck, on && styles.deckOn)}
               >
-                <span {...stylex.props(styles.schemeName)}>{scheme.label()}</span>
-                {/* The swatch wears its own scheme, whatever the page's is. */}
-                <span aria-hidden="true" {...stylex.props(typography.dialogTitle, styles.swatch, theme)}>
-                  {(['♣', '♠', '♥', '♦'] as const).map((g) => (
-                    <span key={g} {...stylex.props(swatchInk[g])}>{g}</span>
-                  ))}
+                <span {...stylex.props(styles.deckName)}>
+                  <span>{deck.label()}</span>
+                  <span {...stylex.props(typography.small, styles.deckLetters)}>{deck.letters}</span>
                 </span>
                 <span aria-hidden="true" {...stylex.props(styles.check, !on && styles.checkOff)}>
                   <Check size={icon.inline} strokeWidth={icon.outline} />
@@ -276,14 +260,6 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   )
 }
 
-// A swatch shows the scheme's card colours (on the white dialog, exactly as on a card face).
-const swatchInk = stylex.create({
-  '♣': { color: suitCard.cardClubs },
-  '♠': { color: suitCard.cardSpades },
-  '♥': { color: suitCard.cardHearts },
-  '♦': { color: suitCard.cardDiamonds },
-})
-
 const focus = {
   outlineStyle: { default: 'none', ':focus-visible': 'solid' },
   outlineWidth: border.focus,
@@ -292,6 +268,84 @@ const focus = {
 } as const
 
 const styles = stylex.create({
+  // The deck settings (SKATGO-66): the gear, its dialog and the choice tiles.
+  gear: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    width: { default: dims.control, [bp.phone]: space.x32 },
+    height: { default: dims.control, [bp.phone]: space.x32 },
+    padding: 0,
+    borderWidth: 0,
+    borderRadius: radii.round,
+    backgroundColor: color.surface,
+    color: color.navy,
+    boxShadow: elev.option,
+    cursor: 'pointer',
+    ...focus,
+  },
+  scrim: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: layer.window,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: space.x16,
+    backgroundColor: color.scrim,
+  },
+  dialog: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x16,
+    width: dims.settingsWidth,
+    boxSizing: 'border-box',
+    padding: space.x24,
+    borderRadius: radii.dialog,
+    backgroundColor: color.surface,
+    boxShadow: elev.panel,
+    color: color.text,
+  },
+  dialogHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12 },
+  dialogTitle: { margin: 0, color: color.navy },
+  close: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: dims.control,
+    height: dims.control,
+    padding: 0,
+    borderWidth: 0,
+    borderRadius: radii.round,
+    backgroundColor: { default: 'transparent', ':hover': color.page },
+    color: color.navy,
+    cursor: 'pointer',
+    ...focus,
+  },
+  decks: { display: 'flex', flexDirection: 'column', gap: space.x10 },
+  deck: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: space.x12,
+    minHeight: space.x48,
+    paddingBlock: space.x8,
+    paddingInline: space.x16,
+    borderRadius: radii.panel,
+    borderWidth: border.tile,
+    borderStyle: 'solid',
+    borderColor: { default: color.hairline, ':hover': color.go },
+    backgroundColor: color.surface,
+    color: color.navy,
+    textAlign: 'left',
+    cursor: 'pointer',
+    ...focus,
+  },
+  deckOn: { borderColor: color.go, backgroundColor: color.goodSoft },
+  deckName: { display: 'flex', flexDirection: 'column', gap: space.x2, flexGrow: 1 },
+  deckLetters: { color: color.slate },
+  check: { display: 'flex', color: color.go },
+  checkOff: { visibility: 'hidden' },
   // The header's mark (SKATGO-31).
   landingMark: {
     display: 'block',
@@ -400,80 +454,4 @@ const styles = stylex.create({
   langItemChosen: { backgroundColor: color.page },
   langName: { flexGrow: 1 },
 
-  gear: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: { default: dims.control, [bp.phone]: space.x32 },
-    height: { default: dims.control, [bp.phone]: space.x32 },
-    padding: 0,
-    borderWidth: 0,
-    borderRadius: radii.round,
-    backgroundColor: color.surface,
-    color: color.navy,
-    boxShadow: elev.option,
-    cursor: 'pointer',
-    ...focus,
-  },
-  scrim: {
-    position: 'fixed',
-    inset: 0,
-    zIndex: layer.window,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: space.x16,
-    backgroundColor: color.scrim,
-  },
-  dialog: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x16,
-    width: dims.settingsWidth,
-    boxSizing: 'border-box',
-    padding: space.x24,
-    borderRadius: radii.dialog,
-    backgroundColor: color.surface,
-    boxShadow: elev.panel,
-    color: color.text,
-  },
-  dialogHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12 },
-  dialogTitle: { margin: 0, color: color.navy },
-  close: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: dims.control,
-    height: dims.control,
-    padding: 0,
-    borderWidth: 0,
-    borderRadius: radii.round,
-    backgroundColor: { default: 'transparent', ':hover': color.page },
-    color: color.navy,
-    cursor: 'pointer',
-    ...focus,
-  },
-  schemes: { display: 'flex', flexDirection: 'column', gap: space.x10 },
-  scheme: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: space.x12,
-    minHeight: space.x48,
-    paddingInline: space.x16,
-    borderRadius: radii.panel,
-    borderWidth: border.tile,
-    borderStyle: 'solid',
-    borderColor: { default: color.hairline, ':hover': color.go },
-    backgroundColor: color.surface,
-    color: color.navy,
-    textAlign: 'left',
-    cursor: 'pointer',
-    ...focus,
-  },
-  schemeOn: { borderColor: color.go, backgroundColor: color.goodSoft },
-  schemeName: { flexGrow: 1 },
-  swatch: { display: 'inline-flex', gap: space.x6 },
-  check: { display: 'flex', color: color.go },
-  checkOff: { visibility: 'hidden' },
 })

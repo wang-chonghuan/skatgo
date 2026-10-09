@@ -1,26 +1,39 @@
+import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
-// The learner's display preferences (SKATGO-27), kept in this browser like the progress, under a key
-// of their own so a change here can never touch the progress.
+// The learner's display preferences, kept in this browser like the progress, under a key of their own so
+// a change here can never touch the progress. SKATGO-66: the deck the cards are drawn in. The default is
+// the Turnierblatt, the German Skat association's tournament deck (French suits in German colours,
+// B / D / K / A); `german` is the Deutsches Blatt; `jqk` is the Turnierblatt with the English letters
+// J / Q / K / A, which official Skat does not use. (v1 held the card colours SKATGO-66 removed.)
 
-export type CardColours = 'german' | 'four' | 'two'
+export type Deck = 'tournament' | 'german' | 'jqk'
 
 type SettingsState = {
-  cardColours: CardColours
-  setCardColours: (c: CardColours) => void
+  deck: Deck
+  setDeck: (d: Deck) => void
 }
 
 export const useSettings = create<SettingsState>()(
   persist(
     (set) => ({
-      cardColours: 'german',
-      setCardColours: (cardColours) => set({ cardColours }),
+      deck: 'tournament',
+      setDeck: (deck) => set({ deck }),
     }),
     {
-      name: 'skatgo.settings.v1',
+      name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ cardColours: s.cardColours }),
+      partialize: (s) => ({ deck: s.deck }),
     },
   ),
 )
+
+/** The deck to draw in: the default on the server and in the first browser render, so the markup
+ *  hydrates; a stored choice applies at once after mount. */
+export function useDeck(): Deck {
+  const stored = useSettings((s) => s.deck)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  return mounted ? stored : 'tournament'
+}

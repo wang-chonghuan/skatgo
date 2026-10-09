@@ -50,8 +50,7 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   play the same SkatZero computers on the server, their bidding taken from a committed pool of deals
   (`multiplayer/skatzero/free-pool.json.gz`, label `skatzero@1fe5cab`). Rooms and hints keep the
   heuristics.
-- Course libraries: `motion` (animation), `@letele/playing-cards` (public-domain card faces),
-  `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
+- Course libraries: `motion` (animation), `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
   assistant's chat window).
 
 **Structure**
@@ -75,6 +74,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/$slug` (a lesson), `/rules`, `/rules/bidding-table` (SKATGO-50), `/rules/score-sheet` and `/rules/printable` (the printables, SKATGO-53), `/daily`, `/daily/play`, `/play`, `/privacy`, `/terms`; each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`) is cut from it by `.intentfold/tickets/SKATGO-23/icons.mjs` — regenerate them, never edit them |
+| `app/brand/cards/`, `app/public/cards/` | the playing cards' pictures (SKATGO-66): the court figures of both decks, the German Daus and suit symbols, and the back, generated with Azure OpenAI `gpt-image-2` by `generate.sh` from `prompts/`, each call in `calls.txt` and each master's request beside it (`masters/*.png.json`); the masters are lossless WebP, pixel for pixel the model's PNGs, which stay out of git; `PROVENANCE.md` says how and that no commercial deck was copied. The served WebP files are cut from the masters by `app/scripts/make-card-images.mjs` — regenerate them, never edit them. |
 | `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: what seat 0 may see of a deal (`seatView`, also free play's), that view as a table, Seeger-Fabian |
 | `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36) |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
@@ -253,6 +253,14 @@ npm --prefix app run build
 (cd app && set -a && . ./.env && set +a && PORT=<port> node .output/server/index.mjs) &
 node app/scripts/make-printables.mjs http://127.0.0.1:<port>
 ```
+
+- `app/public/cards/*.webp` — the playing cards' served pictures (SKATGO-66), cut from
+  `app/brand/cards/masters/` by `node app/scripts/make-card-images.mjs` (needs `cwebp`). Rerun after a
+  master changes.
+- `app/src/components/skat/card-glyphs.ts` — the cards' corner-index outlines, extracted from Bebas Neue
+  (OFL, `github.com/google/fonts` `ofl/bebasneue`) by `python3 app/scripts/extract-card-glyphs.py
+  <BebasNeue-Regular.ttf> > app/src/components/skat/card-glyphs.ts` (needs fontTools, not an app
+  dependency).
 
 **Dependencies**
 

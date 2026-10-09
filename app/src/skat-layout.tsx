@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 
 import { AskLauncher } from '~/components/skat/ask'
 import { LegalFooter } from '~/components/skat/legal-page'
-import { LandingHeader, useCardColourTheme, useFrame, useSection } from '~/components/skat/frame'
+import { LandingHeader, useFrame, useSection } from '~/components/skat/frame'
 import { bp } from './theme/breakpoints.stylex'
 import { color } from './theme/color.stylex'
 import { dims } from './theme/shape.stylex'
@@ -19,11 +19,9 @@ export function SkatLayout() {
   const frame = useFrame()
   const section = useSection()
   const freePlay = useRouterState({ select: (s) => s.location.pathname === '/play' })
-  // The learner's card colours (SKATGO-27): every suit colour below reads theme/suits.stylex.ts.
-  const cardColours = useCardColourTheme()
   if (frame === 'landing') {
     return (
-      <div {...stylex.props(typography.frame, styles.page, section === 'home' && styles.landing, cardColours)}>
+      <div {...stylex.props(typography.frame, styles.page, section === 'home' && styles.landing)}>
         <div {...stylex.props(styles.screenOnly)}>
           <LandingHeader />
         </div>
@@ -38,7 +36,7 @@ export function SkatLayout() {
     )
   }
   return (
-    <div {...stylex.props(typography.frame, styles.page, freePlay ? styles.freePlay : styles.table, cardColours)}>
+    <div {...stylex.props(typography.frame, styles.page, freePlay ? styles.freePlay : styles.table)}>
       <main {...stylex.props(styles.main)}>
         <Outlet />
       </main>

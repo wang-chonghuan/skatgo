@@ -1,0 +1,24 @@
+{
+  "schema": "n-azure/image-generation@1",
+  "created_at": "2026-10-09T16:17:21.210966+00:00",
+  "api_version": "preview",
+  "model": "gpt-image-2",
+  "mode": "generation",
+  "auth_method": "api-key",
+  "prompt": "An original illustration of a court figure for a traditional European playing card, drawn fresh in the spirit of 19th-century card patterns.\n\nDrawing: clean flat colour areas with bold, even, dark outlines of one consistent weight. No gradients, shading, texture, paper grain or engraving hatching. Simple, clear shapes and a calm, frontal, symmetrical pose, so the figure stays readable when the whole card is only 60 pixels wide.\n\nColour: a balanced palette of royal blue, forest green, golden yellow, deep red, black, white and a warm skin tone. No single colour dominates the costume; the colours are distributed evenly across the figure.\n\nBackground: fully transparent.\n\nNever include text, letters, numbers, signatures, corner indices, a card border or a frame. This is an original drawing, not a copy or tracing of any existing commercial deck.\n\nFormat: portrait, the back of a playing card, used for every card of both decks. A symmetrical traditional ornament (a fine lattice or interlace with a central rosette), point-symmetric so it looks the same when the card is turned, covering the whole picture edge to edge. Only two colours: dark charcoal grey and white. No figures, no suit symbols, no text, no logo. Opaque background. This overrides the palette and the transparent background above.\n\nSubject: the card back.",
+  "references": [],
+  "request": {
+    "size": "1024x1536",
+    "quality": "high",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "output": {
+    "path": "masters/back.png",
+    "width": 1024,
+    "height": 1536,
+    "bytes": 2508551,
+    "sha256": "6966b4b868413875bc8aa127540a9dd1d0d3a70241a835cda1541dd774ed9b3b"
+  }
+}

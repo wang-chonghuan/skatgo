@@ -184,6 +184,7 @@
   "table_thinking_bid": "{name} is thinking about the bidding…",
   "table_thinking_play": "{name} is playing…",
   "table_thinking_skat": "{name} is looking at the skat and choosing a game…",
+  "table_collect": "Collect the trick",
   "table_collecting": "Collecting the trick…",
   "bid_forehand_alone": "The other two passed. You are forehand: you can take the game at 18, or let the deal be void.",
   "bid_take_18": "18 — I'll play",

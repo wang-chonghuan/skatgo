@@ -11,7 +11,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { DayDeals, VsAiTable } from './daily-comparison'
-import { BOT_DELAY, GameTable, TRICK_DELAY } from './game-table'
+import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, TextField, linkLook } from './ui'
 
 // The daily tournament in the browser (SKATGO-35, SKATGO-36): the button on /daily that starts or
@@ -180,6 +180,8 @@ export function DailyTable() {
   const [reply, setReply] = useState<DailyReply | null>(null)
   const [shown, setShown] = useState<SeatView | null>(null)
   const [queue, setQueue] = useState<SeatView[]>([])
+  /** The finished trick the player has tapped away (SKATGO-72): until then the steps after it wait. */
+  const [collected, setCollected] = useState<SeatView | null>(null)
   const [sending, setSending] = useState(false)
   const [failed, setFailed] = useState(false)
   /** The deal on the table: it stays put while its settlement is shown, after the server moved on. */
@@ -203,15 +205,18 @@ export function DailyTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // The computers' moves arrive all at once; show them one by one, a trick lingering as at the table.
+  // The computers' moves arrive all at once; show them one by one, a finished trick staying until it
+  // is tapped away.
   useEffect(() => {
     if (queue.length === 0) return
+    const held = shown?.phase === 'trickEnd'
+    if (held && collected !== shown) return
     const t = setTimeout(() => {
       setShown(queue[0])
       setQueue((q) => q.slice(1))
-    }, shown?.phase === 'trickEnd' ? TRICK_DELAY : BOT_DELAY)
+    }, held ? 0 : BOT_DELAY)
     return () => clearTimeout(t)
-  }, [queue, shown])
+  }, [queue, shown, collected])
 
   async function send(move: Move) {
     if (!reply) return
@@ -246,6 +251,7 @@ export function DailyTable() {
         game,
         busy,
         send: (move) => void send(move),
+        collect: () => setCollected(shown),
         next: () => (reply.status.finished ? onLeave() : void load()),
         deal,
         of: reply.status.of,

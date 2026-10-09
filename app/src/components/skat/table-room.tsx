@@ -16,7 +16,7 @@ import { fill } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { GameTable, TRICK_DELAY } from './game-table'
+import { GameTable } from './game-table'
 import { Btn, Panel, TextField, linkLook } from './ui'
 
 // A private table in the browser (SKATGO-61): opening one, the lobby while people arrive, and the
@@ -83,6 +83,8 @@ export function PrivateTable() {
   const [stage, setStage] = useState<Stage>({ kind: 'connecting' })
   const [shown, setShown] = useState<TableState | null>(null)
   const [queue, setQueue] = useState<TableState[]>([])
+  /** The finished trick the player has tapped away (SKATGO-72): until then the states after it wait, on this screen only. */
+  const [collected, setCollected] = useState<TableState | null>(null)
   const [sending, setSending] = useState(false)
   const latest = useRef<TableState | null>(null)
   const room = useRef<Room | null>(null)
@@ -137,16 +139,13 @@ export function PrivateTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
-  // States arrive as they happen; a finished trick stays on the table for a beat, as at every table.
+  // States arrive as they happen; a finished trick stays on this screen until it is tapped away.
   useEffect(() => {
     if (queue.length === 0) return
-    const wait = shown?.pub.phase === 'trickEnd' ? TRICK_DELAY : 0
-    const t = setTimeout(() => {
-      setShown(queue[0])
-      setQueue((q) => q.slice(1))
-    }, wait)
-    return () => clearTimeout(t)
-  }, [queue, shown])
+    if (shown?.pub.phase === 'trickEnd' && collected !== shown) return
+    setShown(queue[0])
+    setQueue((q) => q.slice(1))
+  }, [queue, shown, collected])
 
   const send = (action: Move | { type: 'start' } | { type: 'next' }) => {
     const r = room.current
@@ -170,7 +169,7 @@ export function PrivateTable() {
     track('room_started', { humans: shown.pub.seats.filter((s) => s.kind === 'human').length })
     send({ type: 'start' })
   }} />
-  return <Playing state={shown} busy={sending || queue.length > 0} send={send} />
+  return <Playing state={shown} busy={sending || queue.length > 0} send={send} collect={() => setCollected(shown)} />
 }
 
 /** A seat's name as the viewer reads it: a person's nickname (the viewer is "you"), Lina or Max for a
@@ -184,7 +183,7 @@ function seatNames(state: TableState): [string, string, string] {
   }) as [string, string, string]
 }
 
-function Playing({ state, busy, send }: { state: TableState; busy: boolean; send: (a: Move | { type: 'next' }) => void }) {
+function Playing({ state, busy, send, collect }: { state: TableState; busy: boolean; send: (a: Move | { type: 'next' }) => void; collect: () => void }) {
   const game = useMemo(() => roomGame(state.pub, state.mine), [state])
   const names = seatNames(state)
   const me = state.mine.seat
@@ -200,7 +199,7 @@ function Playing({ state, busy, send }: { state: TableState; busy: boolean; send
   ) : null
   return (
     <div data-testid="table-room" data-seat={me} data-revision={state.pub.revision} data-deals={state.pub.deals} data-dealer={state.pub.dealer} data-phase={state.pub.phase} data-controls={state.pub.seats.map((x) => x.control).join(',')} {...stylex.props(styles.play)}>
-      <GameTable fullScreen room={{ game, busy, send: (move) => send(move), next: () => send({ type: 'next' }), names, totals, standings }} />
+      <GameTable fullScreen room={{ game, busy, send: (move) => send(move), collect, next: () => send({ type: 'next' }), names, totals, standings }} />
     </div>
   )
 }

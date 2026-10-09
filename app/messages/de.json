@@ -184,6 +184,7 @@
   "table_thinking_bid": "{name} überlegt beim Reizen …",
   "table_thinking_play": "{name} spielt …",
   "table_thinking_skat": "{name} nimmt den Skat auf und sagt an …",
+  "table_collect": "Stich einsammeln",
   "table_collecting": "Stich wird eingesammelt …",
   "bid_forehand_alone": "Die anderen beiden haben gepasst. Du sitzt in Vorhand: Du kannst das Spiel für 18 übernehmen oder es einpassen.",
   "bid_take_18": "18 – ich spiele",

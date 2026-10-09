@@ -1,7 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import confetti from 'canvas-confetti'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
@@ -37,7 +38,7 @@ import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Settings, Spade, X
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { confettiBurst, drawer, icon, pinnedQuery, trick } from '../../theme/constants'
+import { confettiBurst, drawer, icon, pinnedQuery, tapHint, trick } from '../../theme/constants'
 import { layerHint, move, timing } from '../../theme/effects.stylex'
 import { elev, fill, pose } from '../../theme/elevation.stylex'
 import { border, layer, opacity, space } from '../../theme/scale.stylex'
@@ -84,7 +85,6 @@ function useNameOf() {
 }
 
 export const BOT_DELAY = 850
-export const TRICK_DELAY = 1300
 
 /** A deal the server owns (the daily tournament, SKATGO-35). Nobody at this table plays for the
  *  computers, and there are no hints: the learner's moves go to `send`, and `game` is what came back. */
@@ -93,6 +93,8 @@ export type Tournament = {
   /** A move is on its way, or the computers' replies are still being shown one by one. */
   busy: boolean
   send: (move: Move) => void
+  /** A finished trick stays on the table until the player taps it away (SKATGO-72). */
+  collect: () => void
   /** After a deal: on to the next one, or to the day's result after the last. */
   next: () => void
   /** The deal on the table, 0-based, of `of`. */
@@ -114,7 +116,7 @@ type DailyAfter = { compare: ReactNode; day: ReactNode }
 
 /** A game the server owns, as free play and lesson 11 play it (SKATGO-40): the learner's moves go to
  *  `send`, `game` is what came back; hints and the assistant are as at the local table. */
-export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'next'> & {
+export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'> & {
   /** The server could not be reached or refused: said plainly, with a way on (SKATGO-40 Q6). */
   problem?: { text: string; retry?: () => void; fresh: () => void } | null
 }
@@ -122,7 +124,7 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'next'> & {
 /** A private table (SKATGO-61): the room's deal turned so the viewer is seat 0, the people's
  *  nicknames, and the running Seeger-Fabian totals. `next` deals the next one. No hints and no
  *  assistant: the others at the table get none either. */
-export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'next' | 'totals'> & {
+export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next' | 'totals'> & {
   names: [string, string, string]
   /** Under the result: this deal's scores and the running totals. */
   standings: ReactNode
@@ -173,15 +175,14 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   const contract = game.declaration?.contract ?? null
   const myTurn = who === ME
 
+  // A finished trick waits on the table for the player's tap (SKATGO-72).
+  const collect = remote ? remote.collect : () => setGame((g) => (g.phase === 'trickEnd' ? collectTrick(g) : g))
+
   // The computers move on a timer. The updater re-checks the state it is handed, so a timer that
   // fires late (or twice, under StrictMode) cannot move for the wrong player. A tournament's computers
   // play at the server.
   useEffect(() => {
-    if (remote) return
-    if (game.phase === 'trickEnd') {
-      const t = setTimeout(() => setGame((g) => collectTrick(g)), TRICK_DELAY)
-      return () => clearTimeout(t)
-    }
+    if (remote || game.phase === 'trickEnd') return
     if (who === null || who === ME) return
     const t = setTimeout(() => {
       setGame((g) => {
@@ -414,8 +415,12 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             </>
           )}
 
+          {/* A finished trick stays until the player taps it away (SKATGO-72): anywhere on the screen
+              will do, and a hand in the frame's bottom-right corner says so. */}
+          {game.phase === 'trickEnd' ? <Collect onCollect={collect} /> : null}
+
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
-              learner's orange one under the bottom edge. */}
+              learner's under the bottom edge, all alike (SKATGO-72). */}
           {([1, 2] as Seat[]).map((seat) => (
             <div key={seat} data-testid={`skat-seat-${seat}`} {...stylex.props(styles.plateSlot, seat === 1 ? styles.plateSlotLeft : styles.plateSlotRight)}>
               <Plate seat={seat} game={game} active={who === seat} />
@@ -682,14 +687,44 @@ function Stack({ seat, game }: { seat: Seat; game: Game }) {
   )
 }
 
+/** The tap that takes a finished trick off the table (SKATGO-72): a tap anywhere on the screen, said
+ *  by a blinking hand in the frame's corner — still for a player who asked for less motion. */
+function Collect({ onCollect }: { onCollect: () => void }) {
+  const still = useReducedMotion()
+  return (
+    <>
+      <motion.svg
+        aria-hidden="true"
+        data-testid="skat-collect-hand"
+        viewBox={tapHint.view}
+        animate={still ? undefined : tapHint.blink}
+        transition={tapHint.transition}
+        {...stylex.props(styles.collectHand)}
+      >
+        <path d={tapHint.hand} strokeWidth={tapHint.stroke} strokeLinejoin="round" {...stylex.props(styles.collectSkin)} />
+        {tapHint.lines.map((d) => (
+          <path key={d} d={d} fill="none" strokeWidth={tapHint.stroke} strokeLinecap="round" {...stylex.props(styles.collectLine)} />
+        ))}
+      </motion.svg>
+      {createPortal(
+        <button type="button" data-testid="skat-collect" aria-label={m.table_collect()} onClick={onCollect} {...stylex.props(styles.collect)} />,
+        document.body,
+      )}
+    </>
+  )
+}
+
 /** A seat plate: the role tag and the name — nothing else, so it never has to be cut short. Scores,
- *  the contract and the count are on the info board at the top of the felt. The learner's is amber. */
+ *  the contract and the count are on the info board at the top of the felt. The learner's looks like
+ *  the others' (SKATGO-72). */
 function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: boolean; active: boolean }) {
   const nameOf = useNameOf()
   const role = roleName(roleOf(seat, game.dealer))
+  // The declarer's tag turns red once the auction has made them declarer (SKATGO-72).
+  const declarer = game.declarer === seat
   return (
-    <div data-testid={mine ? 'skat-plate-me' : undefined} data-active={String(active)} title={role} {...stylex.props(styles.plate, mine && styles.plateMine, active && styles.plateActive)}>
-      <span aria-hidden="true" {...stylex.props(typography.roleTag, styles.roleTag)}>{role.slice(0, 1).toUpperCase()}</span>
+    <div data-testid={mine ? 'skat-plate-me' : undefined} data-active={String(active)} title={role} {...stylex.props(styles.plate, active && styles.plateActive)}>
+      <span aria-hidden="true" data-declarer={String(declarer)} {...stylex.props(typography.roleTag, styles.roleTag, declarer && styles.roleTagDeclarer)}>{role.slice(0, 1).toUpperCase()}</span>
       <span {...stylex.props(typography.plateName, styles.plateText)}>{nameOf(seat)}</span>
     </div>
   )
@@ -1184,7 +1219,6 @@ const styles = stylex.create({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
   },
-  plateMine: { backgroundColor: color.amber, color: color.plate },
   plateActive: { borderColor: color.gold },
   roleTag: {
     display: 'flex',
@@ -1197,7 +1231,31 @@ const styles = stylex.create({
     backgroundColor: color.roleTag,
     color: color.onColor,
   },
+  roleTagDeclarer: { backgroundColor: color.tileRed },
   plateText: { whiteSpace: 'nowrap' },
+
+  // The whole screen takes the tap; the hand only shows where (SKATGO-72).
+  collect: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: layer.window,
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+    WebkitTapHighlightColor: 'transparent',
+  },
+  collectHand: {
+    position: 'absolute',
+    right: space.x4,
+    bottom: space.x4,
+    width: dims.tapHand,
+    height: dims.tapHand,
+    overflow: 'visible',
+    pointerEvents: 'none',
+  },
+  collectSkin: { fill: color.tapSkin, stroke: color.navy },
+  collectLine: { stroke: color.navy },
 
   // In the frame's top corners (SKATGO-34): the action drawer rises from the bottom.
   saidChip: { position: 'absolute', top: space.x12 },

@@ -53,6 +53,20 @@ export const trick = {
   from: { 1: { x: -170, y: 0 }, 2: { x: 170, y: 0 } },
 } as const
 
+/** The hand that says a finished trick waits for the player's tap (SKATGO-72): drawn after the human's
+ *  pick (Flaticon's "Tap" by Kiranshastry, redrawn here, not copied) — a skin-coloured hand pointing up,
+ *  an arc over the fingertip, blinking, as the human asked (「照着png画个svg吧」「闪烁即可」). */
+export const tapHint = {
+  view: '-12 -12 536 536',
+  stroke: 17,
+  /** The hand's silhouette, filled. */
+  hand: 'M178.5 303.5 V79 A32 32 0 0 1 242.5 79 V215 A33 33 0 0 1 308.5 215 V226 A32.5 32.5 0 0 1 373.5 226 V243.5 A32.5 32.5 0 0 1 438.5 243.5 V410 C438.5 461 400 503 356 503 H236 C205 503 180 485 166 456 L70 273 C88 256 102 251 115 251 C130 252 141 259 151 271 Z',
+  /** The lines between the fingers, and the arc over the fingertip. */
+  lines: ['M242.5 215 V276', 'M308.5 226 V271', 'M373.5 243.5 V266', 'M142 76 A68 68 0 0 1 278 76'],
+  blink: { opacity: [1, 0.25, 1] },
+  transition: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' as const },
+}
+
 /** The finish screen's emoji springing in. */
 export const finish = { spring: { type: 'spring', stiffness: 260, damping: 16 }, fromScale: 0.4 } as const
 

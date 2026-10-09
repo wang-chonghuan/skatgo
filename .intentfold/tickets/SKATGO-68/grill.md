@@ -27,3 +27,10 @@ Batch 1, written before asking. Decision-maker: the human.
 There is no other new value.
 
 **Answer:** approved (the human, 2026-10-09; ui.md Redline 1, recorded on the ticket).
+
+## Changed after the first delivery
+
+- **Every card's top-left number in the open, whatever the order** (the human, 2026-10-09): 「这个设计基本上完美。但是最好在任何情况，都能让左上角的数字漏出来，否则我要从右下角倒着看才行。可能你没必要让两张牌的顶部在一条线上？思考一下」.
+  - Where two cards overlap side by side, the right one's top-left corner lies inside the left one, so the right one must lie higher by at least the number's height.
+  - The three cards therefore step up from left to right: Lina's lowest, yours one step up, Max's highest.
+  - **Approved by the human** (ui.md Redline 1): two new values in `table.stylex.ts`, `stage.trickSecond` and `stage.trickThird`, the second and third steps' tops.

@@ -65,10 +65,10 @@ export const dims = stylex.defineVars({
 
   // The table
   /** The trick in the frame (SKATGO-68): its cards as big as the hand's, overlapping, each toward who
-   *  played it. Both opponents' cards `trickEdge` from the frame's top and `trickSideInset` from their
-   *  side of the frame (one value, so the two can never differ), never closer than 18px, which clears the
-   *  seat plate lying on that edge when the stage makes the frame small (SKATGO-34); the learner's
-   *  centred, `trickSideInset` above the bottom edge and its plate. */
+   *  played it, stepping up from left to right (`stage.trickSecond`, `stage.trickThird`). Max's, the
+   *  highest, `trickEdge` from the frame's top; both opponents' cards `trickSideInset` from their side of
+   *  the frame (one value, so the two can never differ), never closer than 18px, which clears the seat
+   *  plate lying on that edge when the stage makes the frame small (SKATGO-34); the learner's centred. */
   trickEdge: '2%',
   trickSideInset: 'max(9%, 18px)',
   /** The words over the frame: as wide as the table allows. */

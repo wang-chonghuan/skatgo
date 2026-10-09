@@ -59,6 +59,15 @@ export const stage = stylex.defineVars({
   stackSlotHeight: { default: `calc(${u} * 100)`, [bp.portrait]: `calc(${u} * 90)` },
   /** Each sideways card shows 12u (13u) of the one beneath. */
   stackStep: { default: `calc(${u} * -88)`, [bp.portrait]: `calc(${u} * -77)` },
+  /** The trick's steps (SKATGO-68): its cards are as big as the hand's and overlap, so each card to the
+   *  right lies one step higher than the one to its left — a step is a little more than a card's corner
+   *  number is tall (34u, 25u in portrait: the number takes 16% of a 182u / 134u card) — and every card's
+   *  top-left number stays in the open whatever was played last. The first step (Max's) is `dims.trickEdge`
+   *  (2%) under the frame's top; these are the second (the learner's) and the third (Lina's). On the
+   *  smallest stage (a phone held sideways) the third card's bottom edge reaches a few pixels under the
+   *  learner's plate, which lies on top: the numbers come first. */
+  trickSecond: { default: `calc(2% + ${u} * 34)`, [bp.portrait]: `calc(2% + ${u} * 25)` },
+  trickThird: { default: `calc(2% + ${u} * 68)`, [bp.portrait]: `calc(2% + ${u} * 50)` },
   /** How far a stack runs off the felt's edge: 82u of it shows (46u). */
   stackInset: { default: `calc(${u} * -58)`, [bp.portrait]: `calc(${u} * -80)` },
 })

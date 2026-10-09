@@ -1546,13 +1546,12 @@ const contractTint = stylex.create({
 })
 
 // The three places a played card lands in the frame (SKATGO-68): as big as the hand's cards, so they
-// overlap, each toward who played it — both opponents' cards level at the top, each on their own side;
-// the learner's at the bottom, centred, as far from the bottom edge as the side cards from theirs, which
-// clears the learner's plate on a small stage too. Cards enter in play order, so a later one lies on top. Whatever
-// lies over it, every card keeps one whole corner index in the open: Lina's its top left, Max's and the
-// learner's their bottom right.
+// overlap, each toward who played it — Lina's on the left, the learner's in the middle, Max's on the right
+// — and each one step higher than the card to its left, so its top-left number shows above that card's
+// top edge. Cards enter in play order, so a later one lies on top, and whatever was played last, every
+// card's top-left number stays in the open.
 const positions = stylex.create({
-  0: { left: 0, right: 0, marginInline: 'auto', bottom: dims.trickSideInset },
-  1: { left: dims.trickSideInset, top: dims.trickEdge },
+  0: { left: 0, right: 0, marginInline: 'auto', top: stage.trickSecond },
+  1: { left: dims.trickSideInset, top: stage.trickThird },
   2: { right: dims.trickSideInset, top: dims.trickEdge },
 })

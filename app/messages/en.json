@@ -169,7 +169,7 @@
   "table_trick_other": "{name} takes the trick",
   "table_bidding": "Bidding",
   "table_declarer": "Declarer: {name} · bid {bid}",
-  "table_trick_count": "Trick {n} of 10 · declarer {declarer} · defenders {defenders}",
+  "table_points": "Card points: declarer {declarer} · defenders {defenders}",
   "table_declarer_word": "declarer",
   "table_defender_word": "defender",
   "table_total": "Score {n}",

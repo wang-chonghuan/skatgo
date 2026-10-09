@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-58",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-58",
+  "branch": "SKATGO-58-panel-pill",
+  "base": "4a46070469cb7672f68fb7174e0dbb0c7abf42fb",
+  "ports": { "web": 55058, "multiplayer": 56058, "database": 57058 }
+}

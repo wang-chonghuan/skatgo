@@ -378,7 +378,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
           {(game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'passedIn') && game.skat.length > 0 ? (
             <div {...stylex.props(styles.skatPile)}>
-              {/* The skat lies in the frame like a played card: the same size as the trick's cards. */}
+              {/* The skat lies in the frame like a played card: as big as a card in the hand (SKATGO-68). */}
               <div {...stylex.props(styles.skatCards)}>
                 {game.skat.map((c, i) => (
                   <span key={i} {...stylex.props(styles.frameCard)}>
@@ -421,7 +421,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
               <Plate seat={seat} game={game} active={who === seat} />
             </div>
           ))}
-          <div {...stylex.props(styles.plateSlot, styles.plateSlotBottom)}>
+          <div data-testid="skat-seat-0" {...stylex.props(styles.plateSlot, styles.plateSlotBottom)}>
             <Plate seat={ME} game={game} mine active={myTurn} />
           </div>
 
@@ -1285,10 +1285,10 @@ const styles = stylex.create({
   // The skat and its label, in the frame's middle.
   skatPile: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6, width: '100%' },
   skatCards: { display: 'flex', justifyContent: 'center', gap: space.x6, width: '100%' },
-  // A card lying in the frame — the skat or a played card — is always 26% of the frame's width.
-  frameCard: { display: 'block', width: dims.trickCard },
+  // A card lying in the frame — the skat or a played card — is as big as a card in the hand (SKATGO-68).
+  frameCard: { display: 'block', width: stage.handCard },
   goldLabel: { color: color.amber },
-  trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: dims.trickCard },
+  trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: stage.handCard },
   // A card in the trick (SKATGO-41): the flying box is a layer of its own until the card lands, then
   // the face is.
   layered: { willChange: layerHint.moving },
@@ -1545,10 +1545,14 @@ const contractTint = stylex.create({
   null: { backgroundColor: color.tintNull },
 })
 
-// The three places a played card lands in the frame, in the reference's proportions: both opponents'
-// cards level near the top, each on their own side; the learner's lower, centred.
+// The three places a played card lands in the frame (SKATGO-68): as big as the hand's cards, so they
+// overlap, each toward who played it — both opponents' cards level at the top, each on their own side;
+// the learner's at the bottom, centred, as far from the bottom edge as the side cards from theirs, which
+// clears the learner's plate on a small stage too. Cards enter in play order, so a later one lies on top. Whatever
+// lies over it, every card keeps one whole corner index in the open: Lina's its top left, Max's and the
+// learner's their bottom right.
 const positions = stylex.create({
-  0: { left: dims.trickMineLeft, top: dims.trickMineTop },
-  1: { left: dims.trickSideInset, top: dims.trickSideTop },
-  2: { right: dims.trickSideInset, top: dims.trickSideTop },
+  0: { left: 0, right: 0, marginInline: 'auto', bottom: dims.trickSideInset },
+  1: { left: dims.trickSideInset, top: dims.trickEdge },
+  2: { right: dims.trickSideInset, top: dims.trickEdge },
 })

@@ -1,11 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
-import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 
-import { DAILY_DEALS, dailyDate, untilNextDeals } from '~/lib/daily'
-import { LANG_TAG } from '~/lib/site'
+import { DAILY_DEALS } from '~/lib/daily'
 import { m } from '~/paraglide/messages'
-import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { fill } from '../../theme/elevation.stylex'
@@ -18,19 +15,11 @@ import { GameReading } from './game-reading'
 import { linkLook } from './ui'
 
 /**
- * The daily Skat tournament's page (SKATGO-29, SKATGO-35): its title, today's date and the time until
- * the next deals, and the way to play — start, continue, or, once the day is played, its result. Rendered
- * on the server; the date and the countdown depend on the moment, so they are filled in after mount
- * rather than disagreeing with the server's, and where the visitor stands today is the browser's to ask.
+ * The daily Skat tournament's page (SKATGO-29, SKATGO-35): its title and lead, the day's deals, and the
+ * way to play — start, continue, or, once the day is played, its result. Rendered on the server; where the
+ * visitor stands today is the browser's to ask.
  */
 export function DailyPage() {
-  const [now, setNow] = useState<Date | null>(null)
-  useEffect(() => {
-    setNow(new Date())
-    const tick = setInterval(() => setNow(new Date()), 30_000)
-    return () => clearInterval(tick)
-  }, [])
-  const left = now ? untilNextDeals(now) : null
   // What the server renders in place of the visitor's own day (SKATGO-63): all of the day's deals, none
   // played yet, and the way in. The browser shows the same until it knows where the visitor stands.
   const start = (
@@ -44,11 +33,6 @@ export function DailyPage() {
       <section {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.daily_title({ deals: DAILY_DEALS })}</h1>
         <p data-testid="daily-lead" {...stylex.props(typography.landingBody, styles.lead)}>{m.daily_static_lead()}</p>
-        {now && left ? (
-          <p {...stylex.props(typography.appText, styles.lead)}>
-            {m.daily_lead({ date: dailyDate(now, LANG_TAG[getLocale()]), countdown: m.daily_countdown(left) })}
-          </p>
-        ) : null}
         <ClientPart fallback={start}>
           <DailyEntry waiting={start} />
         </ClientPart>

@@ -1,10 +1,9 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { Check, ChevronDown, Menu, Settings, X } from 'lucide-react'
+import { Check, ChevronDown, Menu, X } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 
-import { type CardColours, useSettings } from '~/lib/skat/settings'
 import { LANG_TAG } from '~/lib/site'
 import { m } from '~/paraglide/messages'
 import { type Locale, getLocale, locales, setLocale } from '~/paraglide/runtime'
@@ -15,14 +14,13 @@ import { timing } from '../../theme/effects.stylex'
 import { elev } from '../../theme/elevation.stylex'
 import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
-import { suit as suitCard, fourColours, twoColours } from '../../theme/suits.stylex'
 import { FlagDE, FlagUS } from '../../theme/flags'
 import { typography } from '../../theme/type'
 import { Btn, suitText } from './ui'
 
 // The frame pieces of the lobby design (SKATGO-26, reference.md): the public site's white header over
-// every page but the tables (SKATGO-43, SKATGO-47), with the language menu, the card-colour settings
-// and the account. Navigation carries only what skatgo
+// every page but the tables (SKATGO-43, SKATGO-47), with the language menu and the account. Navigation
+// carries only what skatgo
 // has (SKATGO-29: nothing announced).
 
 type Section = 'home' | 'daily' | 'course' | 'rules' | 'play'
@@ -80,7 +78,6 @@ export function LandingHeader() {
       </nav>
       <div {...stylex.props(styles.landingEnd)}>
         <LanguageSwitch />
-        <SettingsButton />
         <span {...stylex.props(styles.desktopOnly)}>
           <Account shape="landing" />
         </span>
@@ -196,93 +193,6 @@ export function LanguageSwitch() {
     </span>
   )
 }
-
-// --- Card colours (SKATGO-27) --------------------------------------------------------------------
-
-const SCHEMES: { key: CardColours; label: () => string }[] = [
-  { key: 'german', label: () => m.scheme_german() },
-  { key: 'four', label: () => m.scheme_four() },
-  { key: 'two', label: () => m.scheme_two() },
-]
-const THEMES = { german: null, four: fourColours, two: twoColours }
-
-/**
- * The chosen scheme's theme, for the frame's root. Null until after mount: the server and the first
- * client render use the default (German), so the markup hydrates; a stored choice applies at once after.
- */
-export function useCardColourTheme() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  const chosen = useSettings((s) => s.cardColours)
-  return mounted ? THEMES[chosen] : null
-}
-
-/** The gear beside the language menu: opens the card-colour choice. */
-export function SettingsButton() {
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <button type="button" aria-label={m.settings_open()} title={m.settings_open()} data-testid="settings-open" onClick={() => setOpen(true)} {...stylex.props(styles.gear)}>
-        <Settings size={icon.gear} strokeWidth={icon.outline} />
-      </button>
-      {open ? <SettingsDialog onClose={() => setOpen(false)} /> : null}
-    </>
-  )
-}
-
-/** The three schemes, each shown as its four suits in its own colours; choosing applies at once. */
-export function SettingsDialog({ onClose }: { onClose: () => void }) {
-  const chosen = useSettings((s) => s.cardColours)
-  const choose = useSettings((s) => s.setCardColours)
-  return (
-    <div data-testid="settings-dialog" {...stylex.props(styles.scrim)} onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={m.settings_title()} onClick={(e) => e.stopPropagation()} {...stylex.props(styles.dialog)}>
-        <div {...stylex.props(styles.dialogHead)}>
-          <h2 {...stylex.props(typography.dialogTitle, styles.dialogTitle)}>{m.settings_title()}</h2>
-          <button type="button" aria-label={m.settings_close()} data-testid="settings-close" onClick={onClose} {...stylex.props(styles.close)}>
-            <X size={icon.menu} strokeWidth={icon.outline} />
-          </button>
-        </div>
-        <div role="radiogroup" aria-label={m.settings_title()} {...stylex.props(styles.schemes)}>
-          {SCHEMES.map((scheme) => {
-            const on = scheme.key === chosen
-            const theme = THEMES[scheme.key]
-            return (
-              <button
-                key={scheme.key}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                data-testid={`scheme-${scheme.key}`}
-                onClick={() => choose(scheme.key)}
-                {...stylex.props(typography.appBtnStrong, styles.scheme, on && styles.schemeOn)}
-              >
-                <span {...stylex.props(styles.schemeName)}>{scheme.label()}</span>
-                {/* The swatch wears its own scheme, whatever the page's is. */}
-                <span aria-hidden="true" {...stylex.props(typography.dialogTitle, styles.swatch, theme)}>
-                  {(['♣', '♠', '♥', '♦'] as const).map((g) => (
-                    <span key={g} {...stylex.props(swatchInk[g])}>{g}</span>
-                  ))}
-                </span>
-                <span aria-hidden="true" {...stylex.props(styles.check, !on && styles.checkOff)}>
-                  <Check size={icon.inline} strokeWidth={icon.outline} />
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// A swatch shows the scheme's card colours (on the white dialog, exactly as on a card face).
-const swatchInk = stylex.create({
-  '♣': { color: suitCard.cardClubs },
-  '♠': { color: suitCard.cardSpades },
-  '♥': { color: suitCard.cardHearts },
-  '♦': { color: suitCard.cardDiamonds },
-})
 
 const focus = {
   outlineStyle: { default: 'none', ':focus-visible': 'solid' },
@@ -400,80 +310,4 @@ const styles = stylex.create({
   langItemChosen: { backgroundColor: color.page },
   langName: { flexGrow: 1 },
 
-  gear: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: { default: dims.control, [bp.phone]: space.x32 },
-    height: { default: dims.control, [bp.phone]: space.x32 },
-    padding: 0,
-    borderWidth: 0,
-    borderRadius: radii.round,
-    backgroundColor: color.surface,
-    color: color.navy,
-    boxShadow: elev.option,
-    cursor: 'pointer',
-    ...focus,
-  },
-  scrim: {
-    position: 'fixed',
-    inset: 0,
-    zIndex: layer.window,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: space.x16,
-    backgroundColor: color.scrim,
-  },
-  dialog: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x16,
-    width: dims.settingsWidth,
-    boxSizing: 'border-box',
-    padding: space.x24,
-    borderRadius: radii.dialog,
-    backgroundColor: color.surface,
-    boxShadow: elev.panel,
-    color: color.text,
-  },
-  dialogHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12 },
-  dialogTitle: { margin: 0, color: color.navy },
-  close: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: dims.control,
-    height: dims.control,
-    padding: 0,
-    borderWidth: 0,
-    borderRadius: radii.round,
-    backgroundColor: { default: 'transparent', ':hover': color.page },
-    color: color.navy,
-    cursor: 'pointer',
-    ...focus,
-  },
-  schemes: { display: 'flex', flexDirection: 'column', gap: space.x10 },
-  scheme: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: space.x12,
-    minHeight: space.x48,
-    paddingInline: space.x16,
-    borderRadius: radii.panel,
-    borderWidth: border.tile,
-    borderStyle: 'solid',
-    borderColor: { default: color.hairline, ':hover': color.go },
-    backgroundColor: color.surface,
-    color: color.navy,
-    textAlign: 'left',
-    cursor: 'pointer',
-    ...focus,
-  },
-  schemeOn: { borderColor: color.go, backgroundColor: color.goodSoft },
-  schemeName: { flexGrow: 1 },
-  swatch: { display: 'inline-flex', gap: space.x6 },
-  check: { display: 'flex', color: color.go },
-  checkOff: { visibility: 'hidden' },
 })

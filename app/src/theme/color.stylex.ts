@@ -39,9 +39,6 @@ export const color = stylex.defineVars({
   gold: '#EDA010',
   amber: '#FF9E10',
   plate: '#252525',
-  /** skatgo's card back: charcoal (derived). */
-  cardBack: '#34373C',
-  cardBackLight: '#4A4E55',
   /** The hint tab on the felt's edge. */
   hintTab: 'rgba(37, 37, 37, 0.85)',
   /** The info board over the felt, and its dividers (derived). */

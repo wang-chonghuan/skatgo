@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-66",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-66",
+  "branch": "SKATGO-66-card-decks",
+  "base": "dbda241",
+  "ports": { "web": 55066, "multiplayer": 56066, "database": 57066 }
+}

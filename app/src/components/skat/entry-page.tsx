@@ -90,7 +90,7 @@ export function EntryPage() {
             to the pointer — and says so with a fact, not a button. */}
         <section data-testid="entry-card" data-section="practice" {...stylex.props(styles.tile, tileTones.practice)}>
           <Face art={PRACTICE_ART} title={m.entry_practice_title()} text={m.entry_practice_text()}>
-            <Pill tone="amber">{m.entry_practice_soon()}</Pill>
+            <Pill tone="quiet">{m.entry_practice_soon()}</Pill>
           </Face>
         </section>
       </div>

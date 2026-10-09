@@ -39,3 +39,6 @@ There is no other new value.
   - The steps grow to the whole corner index, number and suit: 50u, 37u in portrait.
   - An attempt that also spread the cards past the frame was rejected: 「错了，纵向上可以了，横向上，你不用上中间那张牌漏出来那么多」. The sideways positions stay as in rework 1.
   - Only the two approved step values changed.
+- **Centred in the frame's height** (the human, 2026-10-09): 「三张牌最上面的牌的上边距，和最下面牌的下边距，应该一样，目前太靠上了」.
+  - The three tops are measured from the frame's middle: `stage.trickFirst` (it replaces `dims.trickEdge`), `trickSecond`, `trickThird`.
+  - Taken as the human's approval for these registry changes, since the request is about exactly these values.

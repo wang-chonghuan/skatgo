@@ -64,12 +64,10 @@ export const dims = stylex.defineVars({
   settingsWidth: 'min(420px, calc(100vw - 32px))',
 
   // The table
-  /** The trick in the frame (SKATGO-68): its cards as big as the hand's, overlapping, each toward who
-   *  played it, stepping up from left to right (`stage.trickSecond`, `stage.trickThird`). Max's, the
-   *  highest, `trickEdge` from the frame's top; both opponents' cards `trickSideInset` from their side of
-   *  the frame (one value, so the two can never differ), never closer than 18px, which clears the seat
-   *  plate lying on that edge when the stage makes the frame small (SKATGO-34); the learner's centred. */
-  trickEdge: '2%',
+  /** The trick in the frame (SKATGO-68): both opponents' cards `trickSideInset` from their side of the
+   *  frame (one value, so the two can never differ), never closer than 18px, which clears the seat plate
+   *  lying on that edge when the stage makes the frame small (SKATGO-34); the learner's centred. How high
+   *  each lies is the stage's (`stage.trickFirst`, `trickSecond`, `trickThird`). */
   trickSideInset: 'max(9%, 18px)',
   /** The words over the frame: as wide as the table allows. */
   tipWidth: 'min(460px, calc(100vw - 32px))',

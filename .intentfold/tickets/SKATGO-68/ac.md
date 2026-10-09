@@ -10,4 +10,6 @@ Local web 55068, multiplayer 56068, database 57068. Headed Playwright at desktop
    - The page has no horizontal scroll.
    - The skat during bidding is hand-sized and inside the frame.
 
+5. **Rework 3: centred in the frame's height.** The top card's distance from the frame's top equals the bottom card's distance from its bottom (±2 px).
+
 Mechanical defence per `engineering.md` Tools.

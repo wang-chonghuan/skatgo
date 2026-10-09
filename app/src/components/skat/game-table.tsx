@@ -1553,5 +1553,5 @@ const contractTint = stylex.create({
 const positions = stylex.create({
   0: { left: 0, right: 0, marginInline: 'auto', top: stage.trickSecond },
   1: { left: dims.trickSideInset, top: stage.trickThird },
-  2: { right: dims.trickSideInset, top: dims.trickEdge },
+  2: { right: dims.trickSideInset, top: stage.trickFirst },
 })

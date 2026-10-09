@@ -62,12 +62,14 @@ export const stage = stylex.defineVars({
   /** The trick's steps (SKATGO-68): its cards are as big as the hand's and overlap, so each card to the
    *  right lies one step higher than the one to its left — a step is a little more than a card's corner
    *  index is tall (50u, 37u in portrait: the number and the suit under it take 25% of a 182u / 134u
-   *  card) — and every card's top-left number and suit stay in the open whatever was played last. The first step (Max's) is `dims.trickEdge`
-   *  (2%) under the frame's top; these are the second (the learner's) and the third (Lina's). On the
-   *  smallest stage (a phone held sideways) the third card's bottom edge reaches a few pixels under the
-   *  learner's plate, which lies on top: the numbers come first. */
-  trickSecond: { default: `calc(2% + ${u} * 50)`, [bp.portrait]: `calc(2% + ${u} * 37)` },
-  trickThird: { default: `calc(2% + ${u} * 100)`, [bp.portrait]: `calc(2% + ${u} * 74)` },
+   *  card) — and every card's top-left number and suit stay in the open whatever was played last. The
+   *  three cards, two steps and a card tall (282u, 208u in portrait), sit in the middle of the frame's
+   *  height: the top card as far from the frame's top as the bottom card from its bottom (the human),
+   *  measured from the frame's middle so its border cannot tip the balance. These are the tops of the
+   *  first card (Max's), the second (the learner's) and the third (Lina's). */
+  trickFirst: { default: `calc(50% - ${u} * 141)`, [bp.portrait]: `calc(50% - ${u} * 104)` },
+  trickSecond: { default: `calc(50% - ${u} * 91)`, [bp.portrait]: `calc(50% - ${u} * 67)` },
+  trickThird: { default: `calc(50% - ${u} * 41)`, [bp.portrait]: `calc(50% - ${u} * 30)` },
   /** How far a stack runs off the felt's edge: 82u of it shows (46u). */
   stackInset: { default: `calc(${u} * -58)`, [bp.portrait]: `calc(${u} * -80)` },
 })

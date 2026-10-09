@@ -4,9 +4,9 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 
 // The learner's display preferences, kept in this browser like the progress, under a key of their own so
 // a change here can never touch the progress. SKATGO-66: the deck the cards are drawn in. The default is
-// the German tournament Skat deck (French suits, four colours, B / D / K / A); `german` is the
-// German-suited deck; `jqk` is the tournament deck with the international letters J / Q / K / A, which
-// official Skat does not use. (v1 held the card colours SKATGO-66 removed.)
+// the Turnierblatt, the German Skat association's tournament deck (French suits in German colours,
+// B / D / K / A); `german` is the Deutsches Blatt; `jqk` is the Turnierblatt with the English letters
+// J / Q / K / A, which official Skat does not use. (v1 held the card colours SKATGO-66 removed.)
 
 export type Deck = 'tournament' | 'german' | 'jqk'
 

@@ -14,8 +14,8 @@ import { stage } from '../../theme/table.stylex'
 import { suit } from '../../theme/suits.stylex'
 import { CAP, GLYPHS } from './card-glyphs'
 
-// One playing card, in the French-suited deck German Skat players use (SKATGO-66): the four-colour
-// tournament colouring (the suit's colour from theme/suits.stylex.ts), the court figures drawn for skatgo
+// One playing card, by default in the Turnierblatt German Skat tournaments use (SKATGO-66): French suits in
+// the four German colours (the suit's colour from theme/suits.stylex.ts), the court figures drawn for skatgo
 // (app/brand/cards, PROVENANCE.md) and served from /cards. The corner letters are the tournament deck's
 // B / D / K / A, or J / Q / K / A when the learner chose that deck in the settings. The settings also
 // offer the German-suited deck (Eichel, Grün, Herz, Schellen; Unter, Ober, König, Daus): the same layout

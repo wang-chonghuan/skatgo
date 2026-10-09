@@ -16,7 +16,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { PlayingCard } from './playing-card'
-import { linkLook } from './ui'
+import { linkLook, stillLook } from './ui'
 
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
@@ -51,7 +51,7 @@ export function EntryPage() {
             </div>
             {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). */}
             <ul data-testid="entry-points" {...stylex.props(styles.points)}>
-              {[m.entry_point_free(), m.entry_point_no_signup(), m.entry_point_midnight()].map((point) => (
+              {[m.entry_point_free(), m.entry_point_no_signup(), m.entry_point_ai()].map((point) => (
                 <li key={point} {...stylex.props(typography.appText, styles.point)}>
                   <span aria-hidden="true" {...stylex.props(styles.check)}>✓</span>
                   {point}
@@ -77,6 +77,13 @@ export function EntryPage() {
             <Link to="/play" data-testid="entry-play" {...linkLook('quiet', 'md', 'landing')}>
               {m.entry_game_cta()}
             </Link>
+          </Face>
+        </section>
+        {/* Practice (SKATGO-69): not there yet, so the tile leads nowhere. Its "coming soon" looks like the
+            other tiles' buttons but is no link and does not answer the pointer (`stillLook`). */}
+        <section data-testid="entry-card" data-section="practice" {...stylex.props(styles.tile, tileTones.practice)}>
+          <Face art={PRACTICE_ART} title={m.entry_practice_title()} text={m.entry_practice_text()}>
+            <span data-testid="entry-practice-soon" {...stillLook('quiet', 'md', 'landing')}>{m.entry_practice_soon()}</span>
           </Face>
         </section>
         <section data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, tileTones.friends)}>
@@ -116,6 +123,7 @@ const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
 const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
 const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
 const FRIENDS_ART = [card('H', 'A'), card('H', '10'), card('H', 'K')]
+const PRACTICE_ART = [card('D', 'A'), card('D', '10'), card('D', 'K')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
 /** The hero's picture: three players at a club-shaped table (the human's illustration, SKATGO-33), shown whole. */
@@ -127,8 +135,8 @@ function HeroArt() {
   )
 }
 
-/** A tile's face: three of skatgo's cards in the corner under the tile's colour, and the title, one line
- *  and the foot at the bottom left. */
+/** A tile's face: three of skatgo's cards in the corner under the tile's colour, the title and its text at
+ *  the top left, and the foot at the bottom left. */
 function Face({ art, title, text, children }: { art: Card[]; title: string; text: string; children: ReactNode }) {
   return (
     <>
@@ -161,6 +169,7 @@ const tileTones = stylex.create({
   course: { backgroundColor: color.tileOrange, boxShadow: elev.tileOrange },
   play: { backgroundColor: color.tileGreen, boxShadow: elev.tileGreen },
   friends: { backgroundColor: color.tileRed, boxShadow: elev.tileRed },
+  practice: { backgroundColor: color.tileNavy, boxShadow: elev.tileNavy },
 })
 
 const styles = stylex.create({
@@ -210,12 +219,12 @@ const styles = stylex.create({
     columnGap: space.x15,
     rowGap: space.x15,
   },
-  // A lobby tile: its colour over its art, a shadow in its own colour, content at the bottom left.
+  // A lobby tile: its colour over its art, a shadow in its own colour, its title and text at the top left
+  // and its button at the bottom, so tiles side by side line up whatever their text's length (SKATGO-69).
   tile: {
     position: 'relative',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'flex-end',
     minHeight: dims.tileHeight,
     boxSizing: 'border-box',
     padding: space.x27,
@@ -234,10 +243,10 @@ const styles = stylex.create({
   },
   artCard: { display: 'block', marginInline: dims.fanRowOverlap, transformOrigin: 'bottom center' },
   veil: { position: 'absolute', inset: 0, backgroundColor: 'inherit', opacity: veil.tile, pointerEvents: 'none' },
-  body: { position: 'relative', display: 'flex', flexDirection: 'column', gap: space.x8 },
+  body: { position: 'relative', display: 'flex', flexDirection: 'column', flexGrow: 1, gap: space.x8 },
   tileTitle: { margin: 0, color: color.onColor },
   tileText: { margin: 0, color: color.onColor },
-  foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, paddingTop: space.x8 },
+  foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, marginTop: 'auto', paddingTop: space.x8 },
   aside: { color: color.onColor },
   readingLink: { color: color.info, textDecoration: 'underline' },
 

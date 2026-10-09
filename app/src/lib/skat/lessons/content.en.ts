@@ -33,7 +33,7 @@ export const LESSONS_EN: Lesson[] = [
           'Skat is a trick-taking game for three players, and in Germany almost everyone knows it. It uses only 32 cards and a deal takes ten minutes, yet it tests your counting, your memory and your nerve all at once.',
           'The special thing: every deal is **one player against two**. The one who goes it alone is the **declarer**; the other two team up for that deal as the **defenders**. Who is declarer next time? That is fought out again.',
         ],
-        tip: 'The course has 11 lessons. Each one explains, then lets you practise, and the last one is a whole game against two computer opponents — after that you are ready for a real table.',
+        tip: 'The course has 11 lessons. Each one explains, then lets you practise, and the last one is a whole game against two AI opponents — after that you are ready for a real table.',
       },
       {
         kind: 'teach',
@@ -538,7 +538,7 @@ export const LESSONS_EN: Lesson[] = [
   {
     id: '11',
     title: 'Graduation game: take a seat!',
-    promise: 'Play a complete game against two computer opponents. After that, you can play Skat.',
+    promise: 'Play a complete game against two AI opponents. After that, you can play Skat.',
     minutes: 3,
     steps: [
       {

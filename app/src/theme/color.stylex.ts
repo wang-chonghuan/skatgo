@@ -32,6 +32,8 @@ export const color = stylex.defineVars({
   /** Skat with friends (SKATGO-61): a step deeper than `stop`, as the green tile is than `go`.
    *  Approved by the human, 2026-10-08. */
   tileRed: '#C8281A',
+  /** Practice, coming soon (SKATGO-69): the slogan's navy (`navy`), the human's choice, 2026-10-09. */
+  tileNavy: '#022657',
 
   // The card table
   feltInner: '#085435',

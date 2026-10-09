@@ -52,7 +52,7 @@ export const typography = stylex.create({
   /** The front page's H1 and its lead (SKATGO-29): Funbridge's hero sizes, measured on funbridge.com —
    *  headline 72/36 black, subheading 28/24 bold, both at 1.2.
    *  Both restate the family: the Astryx theme sets its own on every h1 and p, which the page does not load. */
-  landingHero: { fontFamily: family.body, fontSize: { default: fontSize.f72, [bp.phone]: fontSize.f36 }, fontWeight: weight.black, lineHeight: leading.tight },
+  landingHero: { fontFamily: family.body, fontSize: { default: fontSize.fHero, [bp.phone]: fontSize.fHeroPhone }, fontWeight: weight.black, lineHeight: leading.tight },
   landingHeroLead: { fontFamily: family.body, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.bold, lineHeight: leading.tight },
   /** The site's name beside the mark in the front page header (SKATGO-31): the hero headline's face and weight. */
   landingBrand: { fontFamily: family.body, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.black, lineHeight: leading.tight },

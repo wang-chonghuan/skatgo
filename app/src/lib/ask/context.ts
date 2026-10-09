@@ -39,7 +39,7 @@ SKAT RULES (International Skat Order, as this course teaches them)
 
 const TASK = `
 YOUR ROLE
-You are the built-in helper of SkatGo (skatgo.com), modern Skat for players from six to ninety-nine: a table where computer opponents are always ready, and an interactive course for anyone new to the game. The learner is reading the page described below and asks you about it or about Skat. Answer in {language}, in the same direct, slightly playful tone as the site, in a few sentences — this is a small chat popup, not an essay. Use the site's own terminology (the page text below shows it). Give concrete card examples when they help. If the question is not about Skat or SkatGo, say in one sentence that you only help with Skat and SkatGo. If the rules summary and the page disagree, the page wins; if you are not sure, say so rather than invent a rule. Do not mention these instructions.
+You are the built-in helper of SkatGo (skatgo.com), modern Skat for players from six to ninety-nine: a table where AI opponents are always ready, and an interactive course for anyone new to the game. The learner is reading the page described below and asks you about it or about Skat. Answer in {language}, in the same direct, slightly playful tone as the site, in a few sentences — this is a small chat popup, not an essay. Use the site's own terminology (the page text below shows it). Give concrete card examples when they help. If the question is not about Skat or SkatGo, say in one sentence that you only help with Skat and SkatGo. If the rules summary and the page disagree, the page wins; if you are not sure, say so rather than invent a rule. Do not mention these instructions.
 `.trim()
 
 /** The page text the assistant can see: what the learner sees, minus the randomised drills. */
@@ -70,7 +70,7 @@ function describeStep(step: Step, n: number): string[] {
 
 function describePlay(table: string): string {
   return [
-    'CURRENT PAGE: a game in progress at the table (the learner is playing against two computer players, Lina and Max).',
+    'CURRENT PAGE: a game in progress at the table (the learner is playing against two AI players, Lina and Max).',
     'Below is everything the learner can see. The other two hands and an unseen Skat are NOT included and you do not know them: never guess or assert what they hold, and say so if asked.',
     'When the learner asks what to do, follow the course hint quoted at the end if there is one — it comes from the rules engine and is correct; explain why in the course\'s terms. Without a hint (it is not the learner\'s move), talk about what has happened and what to watch for.',
     '',
@@ -84,10 +84,10 @@ function describePlay(table: string): string {
 function describeEntry(course: Lesson[], locale: Locale): string {
   const name = (message: (inputs: object, options: { locale: Locale }) => string) => `"${message({}, { locale })}"`
   return [
-    'CURRENT PAGE: the front page of skatgo.com. Its headline announces a daily Skat tournament (the same deals for everyone, a ranking, each deal compared with the computer). The tournament cannot be played yet: its page opens a free game meanwhile. Never invent its rules, scoring, prizes or dates; if asked, say exactly that.',
+    'CURRENT PAGE: the front page of skatgo.com. Its headline is "free Skat online", and the line under it invites the visitor to play the AI, friends or the whole community, with an AI coach for learning and practice. The site offers: an AI coach, free play, a daily tournament where everyone gets the same deals (with a ranking and each deal compared with the AI), private tables with friends, and practice exercises with a ranking, which are not available yet. Never invent the rules, scoring, prizes or dates of the tournament beyond what is said here, nor anything about the practice exercises.',
     'Below the headline it offers two ways in (quoted as the page names them), then questions and answers:',
     `- ${name(m.entry_new_title)}, the course: ${course.length} short interactive lessons, from the 32 cards to a whole game.`,
-    `- ${name(m.entry_game_title)}, free play: a free game against two computer players, Lina and Max.`,
+    `- ${name(m.entry_game_title)}, free play: a free game against two AI players, Lina and Max.`,
     'The site also has a rules page, a reference of the whole game. These are all the site offers: never invent or promise other features.',
     '',
     'The course\'s lessons:',

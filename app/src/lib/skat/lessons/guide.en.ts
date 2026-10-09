@@ -140,9 +140,9 @@ export const GUIDE_EN: Record<string, LessonGuide> = {
     question: 'Ready for a Real Game? Play a Full Deal of Skat',
     h1: 'Graduation game: play a whole deal of Skat',
     description:
-      'Put it all together in one complete game of Skat against two computer opponents: bidding, the skat, announcing, ten tricks and scoring, with hints on hand.',
+      'Put it all together in one complete game of Skat against two AI opponents: bidding, the skat, announcing, ten tricks and scoring, with hints on hand.',
     intro: [
-      'Time to take a seat. This lesson is one **complete deal** against two computer opponents, from the first bid to the final score. You bid, and if you win the bidding you pick up the skat or play Hand, put two cards away and announce your game. Then come ten tricks, and the result is settled just as a real table would settle it.',
+      'Time to take a seat. This lesson is one **complete deal** against two AI opponents, from the first bid to the final score. You bid, and if you win the bidding you pick up the skat or play Hand, put two cards away and announce your game. Then come ten tricks, and the result is settled just as a real table would settle it.',
       'A short cheat sheet comes first: card points, the trump order, following suit, base values, how a game value is built and who bids to whom. During play you can ask for a **hint** whenever you are unsure; it names a card and says why.',
       'Win or lose, finishing the game completes the lesson. A lost game teaches you more than a won one, and after this you are ready for a real Skat table.',
     ],

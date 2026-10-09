@@ -1,7 +1,7 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { Check, ChevronDown, Menu, Settings, X } from 'lucide-react'
+import { Check, Menu, Settings, X } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { LANG_TAG } from '~/lib/site'
@@ -55,27 +55,31 @@ export function useFrame() {
 
 /** The front page's links, in this order (the human, 2026-10-01): today's deals, guided free play, the
  *  course, the rules. No separate "Play" button beside them. */
-const HEADER_LINKS: { to: '/daily' | '/play' | '/course' | '/rules'; label: () => string }[] = [
+// The header's links, in the human's order (SKATGO-69): the tournament, learning, free play, a private table,
+// then puzzles, which are not there yet: shown greyed, leading nowhere.
+const HEADER_LINKS: { to: '/daily' | '/course' | '/play' | '/with-friends'; label: () => string }[] = [
   { to: '/daily', label: () => m.nav_header_daily() },
+  { to: '/course', label: () => m.nav_header_learn() },
   { to: '/play', label: () => m.nav_header_free() },
-  { to: '/course', label: () => m.nav_course() },
-  { to: '/rules', label: () => m.nav_rules() },
+  { to: '/with-friends', label: () => m.nav_header_friends() },
 ]
 
 /** The front page's header: the public site's white bar, also over the tournament, the course and the
- *  rules (SKATGO-43). On a phone the links fold into a menu. */
+ *  rules (SKATGO-43). Below 1100px wide the links fold into a menu (SKATGO-69). */
 export function LandingHeader() {
   const [open, setOpen] = useState(false)
   return (
     <header data-testid="landing-header" {...stylex.props(styles.landingHeader)}>
       <Link to="/" {...stylex.props(typography.landingHeading, styles.landingBrand)}>
         <img src="/logo-96.png" alt="" {...stylex.props(styles.landingMark)} />
-        <span {...stylex.props(typography.landingBrand)}>{m.site_name()}</span>
+        {/* The site's address beside the mark (SKATGO-69). */}
+        <span {...stylex.props(typography.landingBrand)}>{m.site_name()}{m.site_domain()}</span>
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
         {HEADER_LINKS.map((l) => (
           <Link key={l.to} to={l.to} data-nav={l.to} {...stylex.props(typography.landingNav, styles.landingLink)}>{l.label()}</Link>
         ))}
+        <span data-nav="puzzles" {...stylex.props(typography.landingNav, styles.landingLink, styles.soon)}>{m.nav_header_puzzles()}</span>
       </nav>
       <div {...stylex.props(styles.landingEnd)}>
         <LanguageSwitch />
@@ -92,6 +96,7 @@ export function LandingHeader() {
           {HEADER_LINKS.map((l) => (
             <Link key={l.to} to={l.to} onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{l.label()}</Link>
           ))}
+          <span data-nav="puzzles" {...stylex.props(typography.landingNav, styles.menuLink, styles.soon)}>{m.nav_header_puzzles()}</span>
           <div {...stylex.props(styles.menuAccount)}>
             <Account />
           </div>
@@ -163,7 +168,6 @@ export function LanguageSwitch() {
         {...stylex.props(styles.langButton)}
       >
         <Current />
-        <ChevronDown size={icon.inline} strokeWidth={icon.outline} />
       </button>
       {open ? (
         <div role="menu" aria-label={m.language_label()} data-testid="language-menu" {...stylex.props(styles.langMenu)}>
@@ -361,20 +365,23 @@ const styles = stylex.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: space.x16,
+    // A phone's header is tighter, so "SkatGo.com" fits beside the controls (SKATGO-69).
+    gap: { default: space.x16, [bp.phone]: space.x8 },
     height: { default: dims.landingHeader, [bp.phone]: dims.landingHeaderPhone },
-    paddingInline: space.x20,
+    paddingInline: { default: space.x20, [bp.phone]: space.x12 },
     boxSizing: 'border-box',
     backgroundColor: color.surface,
     boxShadow: elev.landingHeader,
   },
   landingBrand: { display: 'flex', alignItems: 'center', gap: space.x10, color: color.navy, textDecoration: 'none', ...focus },
-  landingNav: { display: { default: 'flex', [bp.phone]: 'none' }, alignItems: 'center', gap: space.x32 },
+  landingNav: { display: { default: 'flex', [bp.headerMenu]: 'none' }, alignItems: 'center', gap: space.x32 },
   landingLink: { color: { default: color.slate, ':hover': color.navy }, textDecoration: 'none', ...focus },
-  landingEnd: { display: 'flex', alignItems: 'center', gap: space.x12 },
-  desktopOnly: { display: { default: 'inline-flex', [bp.phone]: 'none' } },
+  // Not there yet (SKATGO-69): greyed, and nothing answers the pointer.
+  soon: { opacity: opacity.disabled, cursor: 'default', color: color.slate },
+  landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x8 } },
+  desktopOnly: { display: { default: 'inline-flex', [bp.headerMenu]: 'none' } },
   menuButton: {
-    display: { default: 'none', [bp.phone]: 'inline-flex' },
+    display: { default: 'none', [bp.headerMenu]: 'inline-flex' },
     alignItems: 'center',
     justifyContent: 'center',
     width: dims.iconButton,

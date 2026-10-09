@@ -52,7 +52,9 @@ describe('sitemap.xml', () => {
     expect(sitemap).not.toContain(`<loc>${SITE_URL}/de</loc>`)
     expect(sitemap).toContain(`<loc>${SITE_URL}/de/kurs</loc>`)
     expect(sitemap).toContain(`<loc>${SITE_URL}/de/regeln</loc>`)
-    expect(sitemap).toContain(`<loc>${SITE_URL}/de/spielen</loc>`)
+    expect(sitemap).toContain(`<loc>${SITE_URL}/de/taeglich</loc>`)
+    // Free play's table is an app screen, not a search entry (SKATGO-69).
+    expect(sitemap).not.toContain(`<loc>${SITE_URL}/de/spielen</loc>`)
     expect(sitemap).not.toContain('/de/course')
   })
 

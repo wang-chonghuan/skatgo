@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-69",
+  "mode": "open",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-69",
+  "branch": "SKATGO-69-ui-fixes",
+  "base": "91f2a3d",
+  "ports": { "web": 55069, "multiplayer": 56069, "database": 57069 }
+}

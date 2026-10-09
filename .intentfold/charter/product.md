@@ -21,7 +21,9 @@ from their seat (SKATGO-42), in a table of both that grows by one row per deal, 
 and its result. Each row gives both Seeger-Fabian scores with each side's role and the difference; opened,
 it tells both deals in full — the contract, won or lost with the card points, Schneider, Schwarz or
 overbid, the game value, and how many card points that side took. The newest row opens after each deal
-and on the day's page mid-day (SKATGO-48).
+and on the day's page mid-day (SKATGO-48). The day's page lists all of the day's deals from the start
+(SKATGO-63): the finished ones in that comparison, the rest by number as in progress or not yet played,
+never with their cards.
 
 Free play at `/play`: one game at a time against the same two computer players, unranked, free and
 without an account (SKATGO-40, SKATGO-50).

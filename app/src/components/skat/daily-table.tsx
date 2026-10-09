@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { type DailyError, dailyAct, dailyBoard, dailyName, dailyState, isError } from '~/lib/daily-api'
 import type { Move } from '~/lib/skat/game'
@@ -10,7 +10,7 @@ import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { VsAiTable } from './daily-comparison'
+import { DayDeals, VsAiTable } from './daily-comparison'
 import { BOT_DELAY, GameTable, TRICK_DELAY } from './game-table'
 import { Btn, Panel, TextField, linkLook } from './ui'
 
@@ -25,8 +25,9 @@ const signed = (n: number) => (n > 0 ? `+${n}` : String(n))
 
 type Which = 'today' | 'yesterday'
 
-/** The start / continue link to the table, or the day's result once it is played; then the board. */
-export function DailyEntry() {
+/** The day's deals and the start / continue link to the table, or the day's result once it is played;
+ *  then the board. `waiting` stands in while the status loads: the server's rendering of the same. */
+export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
   const [status, setStatus] = useState<DailyStatus | DailyError | null>(null)
   const [which, setWhich] = useState<Which>('today')
   const [boards, setBoards] = useState<Partial<Record<Which, DailyBoard | DailyError>>>({})
@@ -39,7 +40,7 @@ export function DailyEntry() {
     setWhich(w)
     if (!boards[w]) loadBoard(w)
   }
-  if (!status) return null
+  if (!status) return waiting ?? null
   if ('error' in status) return <p data-testid="daily-unavailable" {...stylex.props(typography.appText, styles.text)}>{m.daily_unavailable()}</p>
   const today = boards.today && !isError(boards.today) ? boards.today : null
   return (
@@ -48,18 +49,15 @@ export function DailyEntry() {
         <DailyResult status={status} board={today} onNamed={() => loadBoard('today')} />
       ) : (
         <div {...stylex.props(styles.stack)}>
-          {/* The day so far against the AI (SKATGO-42), so a reload shows it at once. */}
-          {status.deals.length > 0 ? (
-            <Panel>
-              <section data-testid="daily-so-far" {...stylex.props(styles.result)}>
-                <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_vs_ai_title()}</h2>
-                <VsAiTable deals={status.deals} benchmarks={status.benchmarks} auctions={status.auctions} benchmarkAuctions={status.benchmarkAuctions} openLatest />
-              </section>
-            </Panel>
-          ) : null}
-          <Link to="/daily/play" data-testid="daily-cta" {...linkLook('go', 'lg', 'landing')}>
-            {status.started ? m.daily_continue({ n: status.deal + 1, of: status.of }) : m.daily_cta()}
-          </Link>
+          {/* The way in first, its own width so it reads as a button (SKATGO-63). */}
+          <div {...stylex.props(styles.action)}>
+            <Link to="/daily/play" data-testid="daily-cta" {...linkLook('go', 'lg', 'landing')}>
+              {status.started ? m.daily_continue({ n: status.deal + 1, of: status.of }) : m.daily_cta()}
+            </Link>
+          </div>
+          {/* Every deal of the day (SKATGO-63), the finished ones against the AI (SKATGO-42), so a reload
+              shows the day so far at once. */}
+          <DayDeals of={status.of} status={status} />
         </div>
       )}
       <Leaderboard which={which} board={boards[which] ?? null} onShow={show} />
@@ -264,6 +262,8 @@ export function DailyTable() {
 const styles = stylex.create({
   text: { margin: 0, color: color.navy },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x24 },
+  // A row of its own, so the button keeps its width instead of stretching across the column.
+  action: { display: 'flex' },
   boardHead: { display: 'flex', alignItems: 'center', gap: space.x8 },
   switch: {
     minHeight: dims.control,

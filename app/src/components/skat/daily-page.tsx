@@ -1,11 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
-import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 
-import { DAILY_DEALS, dailyDate, untilNextDeals } from '~/lib/daily'
-import { LANG_TAG } from '~/lib/site'
+import { DAILY_DEALS } from '~/lib/daily'
 import { m } from '~/paraglide/messages'
-import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { fill } from '../../theme/elevation.stylex'
@@ -13,35 +10,34 @@ import { space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ClientPart, DailyEntry, DailyTable } from './client-part'
+import { DayDeals } from './daily-comparison'
 import { GameReading } from './game-reading'
 import { linkLook } from './ui'
 
 /**
- * The daily Skat tournament's page (SKATGO-29, SKATGO-35): its title, today's date and the time until
- * the next deals, and the way to play — start, continue, or, once the day is played, its result. Rendered
- * on the server; the date and the countdown depend on the moment, so they are filled in after mount
- * rather than disagreeing with the server's, and where the visitor stands today is the browser's to ask.
+ * The daily Skat tournament's page (SKATGO-29, SKATGO-35): its title and lead, the day's deals, and the
+ * way to play — start, continue, or, once the day is played, its result. Rendered on the server; where the
+ * visitor stands today is the browser's to ask.
  */
 export function DailyPage() {
-  const [now, setNow] = useState<Date | null>(null)
-  useEffect(() => {
-    setNow(new Date())
-    const tick = setInterval(() => setNow(new Date()), 30_000)
-    return () => clearInterval(tick)
-  }, [])
-  const left = now ? untilNextDeals(now) : null
+  // What the server renders in place of the visitor's own day (SKATGO-63): the way in, its own width so it
+  // reads as a button, over all of the day's deals, none played yet. The browser shows the same until it
+  // knows where the visitor stands.
+  const start = (
+    <div {...stylex.props(styles.stack)}>
+      <div {...stylex.props(styles.action)}>
+        <Link to="/daily/play" {...linkLook('go', 'lg', 'landing')}>{m.daily_cta()}</Link>
+      </div>
+      <DayDeals of={DAILY_DEALS} />
+    </div>
+  )
   return (
     <div data-testid="daily" {...stylex.props(styles.root)}>
       <section {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.daily_title({ deals: DAILY_DEALS })}</h1>
         <p data-testid="daily-lead" {...stylex.props(typography.landingBody, styles.lead)}>{m.daily_static_lead()}</p>
-        {now && left ? (
-          <p {...stylex.props(typography.appText, styles.lead)}>
-            {m.daily_lead({ date: dailyDate(now, LANG_TAG[getLocale()]), countdown: m.daily_countdown(left) })}
-          </p>
-        ) : null}
-        <ClientPart fallback={<Link to="/daily/play" {...linkLook('go', 'lg', 'landing')}>{m.daily_cta()}</Link>}>
-          <DailyEntry />
+        <ClientPart fallback={start}>
+          <DailyEntry waiting={start} />
         </ClientPart>
       </section>
       <GameReading daily />
@@ -89,6 +85,9 @@ const styles = stylex.create({
     paddingBlock: { default: space.x32, [bp.phone]: space.x16 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
+  stack: { display: 'flex', flexDirection: 'column', gap: space.x24 },
+  // A row of its own, so the button keeps its width instead of stretching across the column.
+  action: { display: 'flex' },
   title: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.navy },
 })

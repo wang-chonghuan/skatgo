@@ -39,6 +39,10 @@ export const fontSize = stylex.defineVars({
   f25: '25px',
   f26_95: '26.95px',
   f72: '72px',
+  /** The front page's headline (SKATGO-69): as large as fits one line of „Skat online kostenlos", up to
+   *  66px (36px on a phone), following the screen's width so it never breaks. The human, 2026-10-09. */
+  fHero: 'min(66px, 5.2vw)',
+  fHeroPhone: 'min(36px, 8.6vw)',
 })
 
 /** Only the weights the page loads (routes/__root.tsx): 400 to 900. */

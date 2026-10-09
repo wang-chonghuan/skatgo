@@ -31,7 +31,7 @@ What the product controls is what it hands them — tokens only, in `components/
 and `lib/clerk-appearance.ts` — and the shell around them, which is the kit. Tokens reach them as CSS
 variables, which inherit into deep-chat's shadow root. Clerk's windows stay in English; the human
 chose not to add its translation package. Icons are **lucide-react** outline icons at the sizes in
-`icon` (`constants.ts`): the header's menu and language controls, the table's side panel and
+`icon` (`constants.ts`): the header's menu, language and settings controls, the table's side panel and
 edge tabs, an exercise's controls, the assistant, the comparison's open/close chevrons, and the
 download button. Suits are the text glyphs ♣ ♠ ♥ ♦, never icons.
 
@@ -190,7 +190,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 
 | Widget | File | What it is |
 |---|---|---|
-| `PlayingCard` | `playing-card.tsx` | one card of the French-suited deck German Skat players use (SKATGO-66), drawn as one SVG: the corner index top left and turned bottom right — the rank as Bebas Neue outlines (`card-glyphs.ts`, never text, which a search engine would read), B / D / K / A on German pages and J / Q / K / A on English ones, over the suit's pip; the pips of 7–10 in their traditional places; the ace's one large pip; a court's double-headed figure in a frame notched for the index. Pips and index take the suit's colour. The court figures and the back are skatgo's own pictures (`app/brand/cards`, served from `/cards`). Sizes `xs`, `sm`, `md`, `lg`, `table`, `trick`, `fill`; states `selected`, `dimmed` (`fill.dimmed`), `glow`, `verdict` good/bad, `faceDown` (the charcoal and white ornament in a white frame) |
+| `PlayingCard` | `playing-card.tsx` | one card of the French-suited deck German Skat players use (SKATGO-66), drawn as one SVG: the corner index top left and turned bottom right — the rank as Bebas Neue outlines (`card-glyphs.ts`, never text, which a search engine would read), in every language official Skat's B / D / K / A, or J / Q / K / A when the learner chose that deck in the settings, over the suit's pip; the pips of 7–10 in their traditional places; the ace's one large pip; a court's double-headed figure in a frame notched for the index. Pips and index take the suit's colour. The court figures and the back are skatgo's own pictures (`app/brand/cards`, served from `/cards`). Sizes `xs`, `sm`, `md`, `lg`, `table`, `trick`, `fill`; states `selected`, `dimmed` (`fill.dimmed`), `glow`, `verdict` good/bad, `faceDown` (the charcoal and white ornament in a white frame) |
 | `Fan` / `CardRowView` | `card-row.tsx` | a hand held as a fan (two rows of a long hand on a phone; `data-answer` / `data-order` for scripted checks), and a labelled row of cards for reading |
 | `Shake` / `Feedback` | `exercises.tsx` | the wordless "no" after a wrong answer, and the good/bad panel that explains it |
 | `TitleWithDownload` / `PdfLink` | `print-links.tsx` | every download (SKATGO-53): the page's h1 with, beside it, the page's one `go` button — lucide's `Download` icon at `icon.inline` and "PDF herunterladen" / "Download PDF" — which moves under the title on a phone and is left off paper |
@@ -203,7 +203,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **Option card** — a white `radii.option` card with `elev.option`, `optionTitle` over `optionDesc`;
   a lesson card's states: `next` (a `go` border), `done` (`goodSoft`), open.
 - **Choice tile** — a white tile with a `border.tile` in `hairline` that turns `go` on hover; chosen,
-  right and wrong as the `go`, `good` and `bad` tokens say. Answer options and contracts are this.
+  right and wrong as the `go`, `good` and `bad` tokens say. Answer options, contracts and the settings'
+  decks are this.
 
 **Frames and pages**
 
@@ -212,8 +213,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - the SkatGo mark (`dims.landingMark`) and name (`landingBrand`);
   - the four links, in this order (the human, 2026-10-01): the daily tournament, free play, the
     course, the rules;
-  - on the right, the language menu (a flag button opening a card of flags), and sign-in or the
-    account.
+  - on the right, the language menu (a flag button opening a card of flags), the settings gear (the
+    choice of deck: the German tournament deck by default, or J / Q / K / A — SKATGO-66), and sign-in
+    or the account.
 
   On a phone the links and the account fold into a menu. Under the page sits the legal footer. The
   header is the same on every page; it shows no current-page highlight (its links carry

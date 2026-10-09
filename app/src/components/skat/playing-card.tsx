@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { type Card, type Rank, type Suit, cardId } from '~/lib/skat/cards'
 import { spokenCard } from '~/lib/skat/i18n'
 import { m } from '~/paraglide/messages'
-import { getLocale } from '~/paraglide/runtime'
+import { type Deck, useDeck } from '~/lib/skat/settings'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { move, timing } from '../../theme/effects.stylex'
@@ -16,7 +16,8 @@ import { CAP, GLYPHS } from './card-glyphs'
 
 // One playing card, in the French-suited deck German Skat players use (SKATGO-66): the four-colour
 // tournament colouring (the suit's colour from theme/suits.stylex.ts), the court figures drawn for skatgo
-// (app/brand/cards, PROVENANCE.md) and served from /cards, the corner letters the page's language uses.
+// (app/brand/cards, PROVENANCE.md) and served from /cards. The corner letters are the tournament deck's
+// B / D / K / A, or J / Q / K / A when the learner chose that deck in the settings.
 //
 // The face is one SVG in a 500 × 700 box, drawn here: the corner index (the rank as Bebas Neue outlines
 // over the suit pip, top left and turned bottom right), then the pips of 7–10 in their traditional places,
@@ -35,13 +36,13 @@ const PIPS: Record<Suit, string> = {
   C: `${circle(50, 27, 23)}${circle(25, 60, 23)}${circle(75, 60, 23)}M50 34L30 62H70ZM47 58C47 78 42 91 32 100H68C58 91 53 78 53 58Z`,
 }
 
-/** What the corner says for each rank, by language: German Skat's B / D / K / A, English J / Q / K / A. */
-const LETTERS: Record<string, Partial<Record<Rank, string>>> = {
-  de: { J: 'B', Q: 'D', K: 'K', A: 'A' },
-  en: { J: 'J', Q: 'Q', K: 'K', A: 'A' },
+/** What the corner says for each rank in each deck: official Skat's B / D / K / A, or J / Q / K / A. */
+const LETTERS: Record<Deck, Partial<Record<Rank, string>>> = {
+  tournament: { J: 'B', Q: 'D', K: 'K', A: 'A' },
+  jqk: { J: 'J', Q: 'Q', K: 'K', A: 'A' },
 }
-export function indexOf(rank: Rank, locale: string): string {
-  return LETTERS[locale]?.[rank] ?? LETTERS.en[rank] ?? rank
+export function indexOf(rank: Rank, deck: Deck): string {
+  return LETTERS[deck][rank] ?? rank
 }
 
 // The index: its letters LETTER tall from the top, the pip under them, centred on INDEX_X.
@@ -158,7 +159,7 @@ type Props = {
 }
 
 export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glow, verdict, legal, data, onClick }: Props) {
-  const letters = indexOf(card.rank, getLocale())
+  const letters = indexOf(card.rank, useDeck())
   // The back is skatgo's own (SKATGO-66): a charcoal and white ornament inside a white frame.
   const body = faceDown ? (
     <span {...stylex.props(styles.back)}>

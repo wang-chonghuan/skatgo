@@ -33,7 +33,7 @@ import { type Auction, type DealSummary, seegerFabian } from '~/lib/skat/tournam
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Spade, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Settings, Spade, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -46,6 +46,7 @@ import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
 import { DealVsAi, Fold, VsAiTable } from './daily-comparison'
+import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 
@@ -290,6 +291,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
     query.addEventListener('change', change)
     return () => query.removeEventListener('change', change)
   }, [fullScreen])
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
   const acting = inFrameActions && myTurn
   const dialog = game.phase === 'passedIn' || game.phase === 'done'
@@ -511,6 +513,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
                 <span {...stylex.props(styles.tabTile)}><GraduationCap size={icon.table} strokeWidth={icon.outline} /></span>
                 <span {...stylex.props(typography.tabLabel)}>{m.nav_course()}</span>
               </Link>
+              <button type="button" data-testid="settings-open-table" onClick={() => setSettingsOpen(true)} {...stylex.props(typography.control, styles.tab, styles.tabLink, styles.tabButton)}>
+                <span {...stylex.props(styles.tabTile)}><Settings size={icon.table} strokeWidth={icon.outline} /></span>
+                <span {...stylex.props(typography.tabLabel)}>{m.settings_open()}</span>
+              </button>
             </div>
           ) : null}
 
@@ -567,6 +573,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
         </div>
       </aside>
 
+      {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
 
       {/* The settlement and a passed-in deal are dialogs over the whole table, outside the panel, which
           on a phone is a drawer that slides. */}
@@ -1410,6 +1417,7 @@ const styles = stylex.create({
   tabLink: { outlineStyle: { default: 'none', ':focus-visible': 'solid' }, outlineWidth: border.focus, outlineColor: color.info },
   tabTile: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: dims.tabTile, height: dims.tabTile, borderRadius: radii.panel, backgroundColor: color.hairline, color: color.navy },
   tabTileActive: { backgroundColor: color.tabActive },
+  tabButton: { padding: 0, borderWidth: 0, backgroundColor: 'transparent', cursor: 'pointer' },
   history: { display: 'flex', flexDirection: 'column', gap: space.x8 },
   // The learner's move in the pinned panel: first under the tabs, on white like the drawer.
   panelMoves: {

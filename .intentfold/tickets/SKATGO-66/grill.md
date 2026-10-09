@@ -89,3 +89,8 @@ The index must be paths, not text (search engines read SVG text).
   - Every prompt was rewritten from scratch, and all 6 samples were regenerated without reference images.
   - The costumes now use a balanced palette. The suit is shown by its emblem, not by a costume mainly in the suit's colour.
 - Earlier on the samples: 「你不觉得留白太多吗」, 「主要是那个U，留白太多，还有D」. Pictures are now trimmed to the figure and fitted head to waist, and the prompts ask the figure to fill the width.
+- **Q6 overturned and the corner letters changed** (the human, 2026-10-09, after the first delivery): 「字母为啥换成J了，默认的套应该是德国正规skat比赛的套，可选的套是另一个，就这样。J的那个字母如果不正规，就作为第三个套，还是恢复那个选牌的地方」.
+  - The letters no longer follow the language. The default is the German tournament deck's B / D / K / A everywhere.
+  - J / Q / K / A becomes an optional deck.
+  - The gear is back as the choice of deck. SKATGO-67 adds the German deck.
+  - The ticket's scope and AC 4 were updated, with a comment.

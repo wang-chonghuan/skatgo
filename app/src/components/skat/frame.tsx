@@ -1,7 +1,7 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { Check, ChevronDown, Menu, Settings, X } from 'lucide-react'
+import { Check, Menu, Settings, X } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { LANG_TAG } from '~/lib/site'
@@ -168,10 +168,6 @@ export function LanguageSwitch() {
         {...stylex.props(styles.langButton)}
       >
         <Current />
-        {/* A phone shows the flag only: the header needs the room for the site's name (SKATGO-69). */}
-        <span {...stylex.props(styles.langChevron)}>
-          <ChevronDown size={icon.inline} strokeWidth={icon.outline} />
-        </span>
       </button>
       {open ? (
         <div role="menu" aria-label={m.language_label()} data-testid="language-menu" {...stylex.props(styles.langMenu)}>
@@ -430,7 +426,6 @@ const styles = stylex.create({
     cursor: 'pointer',
     ...focus,
   },
-  langChevron: { display: { default: 'inline-flex', [bp.phone]: 'none' } },
   // The open card of languages, under the button's right edge.
   langMenu: {
     position: 'absolute',

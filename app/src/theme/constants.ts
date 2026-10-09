@@ -53,6 +53,15 @@ export const trick = {
   from: { 1: { x: -170, y: 0 }, 2: { x: 170, y: 0 } },
 } as const
 
+/** The hand that says a finished trick waits for the player's tap (SKATGO-72): in the gold frame's
+ *  corner, breathing gently, as the human asked (「稍微闪动」). */
+export const tapHint = {
+  size: 40,
+  stroke: 1.5,
+  pulse: { opacity: [1, 0.5, 1], scale: [1, 0.9, 1] },
+  transition: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' as const },
+}
+
 /** The finish screen's emoji springing in. */
 export const finish = { spring: { type: 'spring', stiffness: 260, damping: 16 }, fromScale: 0.4 } as const
 

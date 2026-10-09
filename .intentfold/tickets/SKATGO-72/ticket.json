@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-72",
+  "mode": "open",
+  "stage": "setup-complete",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-72",
+  "branch": "SKATGO-72-tap-collect",
+  "base": "fa560e0",
+  "ports": { "web": 55072, "multiplayer": 56072, "database": 57072 }
+}

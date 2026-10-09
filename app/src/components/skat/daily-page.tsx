@@ -20,12 +20,15 @@ import { linkLook } from './ui'
  * visitor stands today is the browser's to ask.
  */
 export function DailyPage() {
-  // What the server renders in place of the visitor's own day (SKATGO-63): all of the day's deals, none
-  // played yet, and the way in. The browser shows the same until it knows where the visitor stands.
+  // What the server renders in place of the visitor's own day (SKATGO-63): the way in, its own width so it
+  // reads as a button, over all of the day's deals, none played yet. The browser shows the same until it
+  // knows where the visitor stands.
   const start = (
     <div {...stylex.props(styles.stack)}>
+      <div {...stylex.props(styles.action)}>
+        <Link to="/daily/play" {...linkLook('go', 'lg', 'landing')}>{m.daily_cta()}</Link>
+      </div>
       <DayDeals of={DAILY_DEALS} />
-      <Link to="/daily/play" {...linkLook('go', 'lg', 'landing')}>{m.daily_cta()}</Link>
     </div>
   )
   return (
@@ -83,6 +86,8 @@ const styles = stylex.create({
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x24 },
+  // A row of its own, so the button keeps its width instead of stretching across the column.
+  action: { display: 'flex' },
   title: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.navy },
 })

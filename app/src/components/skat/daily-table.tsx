@@ -49,12 +49,15 @@ export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
         <DailyResult status={status} board={today} onNamed={() => loadBoard('today')} />
       ) : (
         <div {...stylex.props(styles.stack)}>
+          {/* The way in first, its own width so it reads as a button (SKATGO-63). */}
+          <div {...stylex.props(styles.action)}>
+            <Link to="/daily/play" data-testid="daily-cta" {...linkLook('go', 'lg', 'landing')}>
+              {status.started ? m.daily_continue({ n: status.deal + 1, of: status.of }) : m.daily_cta()}
+            </Link>
+          </div>
           {/* Every deal of the day (SKATGO-63), the finished ones against the AI (SKATGO-42), so a reload
               shows the day so far at once. */}
           <DayDeals of={status.of} status={status} />
-          <Link to="/daily/play" data-testid="daily-cta" {...linkLook('go', 'lg', 'landing')}>
-            {status.started ? m.daily_continue({ n: status.deal + 1, of: status.of }) : m.daily_cta()}
-          </Link>
         </div>
       )}
       <Leaderboard which={which} board={boards[which] ?? null} onShow={show} />
@@ -259,6 +262,8 @@ export function DailyTable() {
 const styles = stylex.create({
   text: { margin: 0, color: color.navy },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x24 },
+  // A row of its own, so the button keeps its width instead of stretching across the column.
+  action: { display: 'flex' },
   boardHead: { display: 'flex', alignItems: 'center', gap: space.x8 },
   switch: {
     minHeight: dims.control,

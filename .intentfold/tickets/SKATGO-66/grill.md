@@ -94,3 +94,7 @@ The index must be paths, not text (search engines read SVG text).
   - J / Q / K / A becomes an optional deck.
   - The gear is back as the choice of deck. SKATGO-67 adds the German deck.
   - The ticket's scope and AC 4 were updated, with a comment.
+- **The German deck in this ticket** (the human, 2026-10-09): 「德国那套呢，也必须显示出来」.
+  - The settings offer three decks: the tournament deck (default), the German-suited deck, and J / Q / K / A.
+  - The German deck follows the overview the human confirmed: German courts and Daus, the German symbols as pips, K / O / U / A.
+  - This takes SKATGO-67's main content into this ticket; what remains of SKATGO-67 is for the human to decide.

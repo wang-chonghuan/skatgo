@@ -17,7 +17,9 @@ import { CAP, GLYPHS } from './card-glyphs'
 // One playing card, in the French-suited deck German Skat players use (SKATGO-66): the four-colour
 // tournament colouring (the suit's colour from theme/suits.stylex.ts), the court figures drawn for skatgo
 // (app/brand/cards, PROVENANCE.md) and served from /cards. The corner letters are the tournament deck's
-// B / D / K / A, or J / Q / K / A when the learner chose that deck in the settings.
+// B / D / K / A, or J / Q / K / A when the learner chose that deck in the settings. The settings also
+// offer the German-suited deck (Eichel, Grün, Herz, Schellen; Unter, Ober, König, Daus): the same layout
+// with the German suit symbols as pips, its own courts and the Daus pictures, and K / O / U / A.
 //
 // The face is one SVG in a 500 × 700 box, drawn here: the corner index (the rank as Bebas Neue outlines
 // over the suit pip, top left and turned bottom right), then the pips of 7–10 in their traditional places,
@@ -36,11 +38,15 @@ const PIPS: Record<Suit, string> = {
   C: `${circle(50, 27, 23)}${circle(25, 60, 23)}${circle(75, 60, 23)}M50 34L30 62H70ZM47 58C47 78 42 91 32 100H68C58 91 53 78 53 58Z`,
 }
 
-/** What the corner says for each rank in each deck: official Skat's B / D / K / A, or J / Q / K / A. */
+/** What the corner says for each rank in each deck: official Skat's B / D / K / A, J / Q / K / A, or
+ *  the German deck's Unter, Ober, König and Daus. */
 const LETTERS: Record<Deck, Partial<Record<Rank, string>>> = {
   tournament: { J: 'B', Q: 'D', K: 'K', A: 'A' },
+  german: { J: 'U', Q: 'O', K: 'K', A: 'A' },
   jqk: { J: 'J', Q: 'Q', K: 'K', A: 'A' },
 }
+/** The German deck's court pictures are named by its own ranks. */
+const GERMAN_COURT: Partial<Record<Rank, string>> = { J: 'U', Q: 'O', K: 'K' }
 export function indexOf(rank: Rank, deck: Deck): string {
   return LETTERS[deck][rank] ?? rank
 }
@@ -58,12 +64,15 @@ const FRAME = { x: 26, y: 26, w: 448, h: 648 }
 /** The frame's hairline, in the face's units: it scales with the card like the rest of the drawing. */
 const FRAME_LINE = 2
 
-function Pip({ s, x, y, size, turned }: { s: Suit; x: number; y: number; size: number; turned?: boolean }) {
+/** A pip: the French suit's path in the suit's colour, or the German deck's own symbol picture. */
+function Pip({ s, x, y, size, turned, german }: { s: Suit; x: number; y: number; size: number; turned?: boolean; german?: boolean }) {
+  const turn = turned ? ` rotate(180 ${x} ${y})` : ''
+  if (german) return <image href={`/cards/german/sym-${s}.webp`} x={x - size / 2} y={y - size / 2} width={size} height={size} preserveAspectRatio="xMidYMid meet" transform={turn.trim() || undefined} />
   const k = size / 100
   return <path d={PIPS[s]} transform={`translate(${x} ${y})${turned ? ' rotate(180)' : ''} scale(${k}) translate(-50 -50)`} />
 }
 
-function Index({ letters, s }: { letters: string; s: Suit }) {
+function Index({ letters, s, german }: { letters: string; s: Suit; german: boolean }) {
   const k = LETTER / CAP
   const width = [...letters].reduce((n, ch) => n + GLYPHS[ch].w, 0)
   let x = INDEX_X / k - width / 2
@@ -76,7 +85,7 @@ function Index({ letters, s }: { letters: string; s: Suit }) {
           return <path key={at} d={GLYPHS[ch].d} transform={`translate(${at} 0)`} />
         })}
       </g>
-      <Pip s={s} x={INDEX_X} y={INDEX_TOP + LETTER + 14 + INDEX_PIP / 2} size={INDEX_PIP} />
+      <Pip s={s} x={INDEX_X} y={INDEX_TOP + LETTER + 14 + INDEX_PIP / 2} size={INDEX_PIP} german={german} />
     </g>
   )
 }
@@ -94,7 +103,11 @@ const LAYOUT: Partial<Record<Rank, [number, number][]>> = {
   '10': [...ROWS4.flatMap((y): [number, number][] => [[L, y], [R, y]]), [C, 196], [C, 504]],
 }
 const PIP = 84
+/** The German symbols are pictures with a margin of their own: drawn a little larger to look the same. */
+const GERMAN_PIP = 96
 const ACE = 230
+/** Where the German Daus picture sits, clear of the two indices. */
+const DAUS = { x: 70, y: 80, w: 360, h: 540 }
 
 /** The court frame: the card's inside, less the two corners the index keeps. */
 const FRAME_PATH = [
@@ -102,9 +115,9 @@ const FRAME_PATH = [
   `H${FRAME.x}V${NOTCH_H}H${NOTCH_W}Z`,
 ].join('')
 
-function Court({ c }: { c: Card }) {
-  const id = `court-${c.suit}${c.rank}`
-  const href = `/cards/french/${c.suit}-${c.rank}.webp`
+function Court({ c, german }: { c: Card; german: boolean }) {
+  const id = `court-${german ? 'german' : 'french'}-${c.suit}${c.rank}`
+  const href = german ? `/cards/german/${c.suit}-${GERMAN_COURT[c.rank]}.webp` : `/cards/french/${c.suit}-${c.rank}.webp`
   const half = FRAME.h / 2
   // Each half reaches a unit past the middle, so no seam shows where they meet.
   const top = <image href={href} x={FRAME.x} y={FRAME.y} width={FRAME.w} height={half + 1} preserveAspectRatio="xMidYMax meet" />
@@ -122,17 +135,19 @@ function Court({ c }: { c: Card }) {
   )
 }
 
-/** The face of `c`: index, then pips, the ace, or the court. Colour comes from the card (`currentColor`). */
-function Face({ c, letters }: { c: Card; letters: string }) {
+/** The face of `c`: index, then pips, the ace (the German Daus picture), or the court. The letters and a
+ *  French pip take the card's colour (`currentColor`). */
+function Face({ c, letters, german }: { c: Card; letters: string; german: boolean }) {
   const places = LAYOUT[c.rank]
   return (
     <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false" fill="currentColor" {...stylex.props(styles.face)}>
-      {places ? places.map(([x, y]) => <Pip key={`${x}-${y}`} s={c.suit} x={x} y={y} size={PIP} turned={y > H / 2} />) : null}
-      {c.rank === 'A' ? <Pip s={c.suit} x={W / 2} y={H / 2} size={ACE} /> : null}
-      {places || c.rank === 'A' ? null : <Court c={c} />}
-      <Index letters={letters} s={c.suit} />
+      {places ? places.map(([x, y]) => <Pip key={`${x}-${y}`} s={c.suit} x={x} y={y} size={german ? GERMAN_PIP : PIP} turned={y > H / 2} german={german} />) : null}
+      {c.rank === 'A' && german ? <image href={`/cards/german/${c.suit}-A.webp`} x={DAUS.x} y={DAUS.y} width={DAUS.w} height={DAUS.h} preserveAspectRatio="xMidYMid meet" /> : null}
+      {c.rank === 'A' && !german ? <Pip s={c.suit} x={W / 2} y={H / 2} size={ACE} /> : null}
+      {places || c.rank === 'A' ? null : <Court c={c} german={german} />}
+      <Index letters={letters} s={c.suit} german={german} />
       <g transform={`rotate(180 ${W / 2} ${H / 2})`}>
-        <Index letters={letters} s={c.suit} />
+        <Index letters={letters} s={c.suit} german={german} />
       </g>
     </svg>
   )
@@ -159,7 +174,9 @@ type Props = {
 }
 
 export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glow, verdict, legal, data, onClick }: Props) {
-  const letters = indexOf(card.rank, useDeck())
+  const deckChoice = useDeck()
+  const german = deckChoice === 'german'
+  const letters = indexOf(card.rank, deckChoice)
   // The back is skatgo's own (SKATGO-66): a charcoal and white ornament inside a white frame.
   const body = faceDown ? (
     <span {...stylex.props(styles.back)}>
@@ -168,9 +185,9 @@ export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glo
       </svg>
     </span>
   ) : (
-    <Face c={card} letters={letters} />
+    <Face c={card} letters={letters} german={german} />
   )
-  const deck = faceDown ? undefined : { 'data-deck': 'french', 'data-index': letters }
+  const deck = faceDown ? undefined : { 'data-deck': german ? 'german' : 'french', 'data-index': letters }
   // `clickable` first: it sets the resting and hover transform, and `selected` must win over both.
   const look = stylex.props(
     styles.card,

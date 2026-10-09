@@ -198,9 +198,10 @@ export function LanguageSwitch() {
 
 // --- The deck (SKATGO-66) --------------------------------------------------------------------------
 
-/** The decks, the default first; each shows its corner letters. SKATGO-67 adds the German deck. */
+/** The decks, the default first; each shows its corner letters. */
 const DECKS: { key: Deck; label: () => string; letters: string }[] = [
   { key: 'tournament', label: () => m.deck_tournament(), letters: 'B · D · K · A' },
+  { key: 'german', label: () => m.deck_german(), letters: 'U · O · K · A' },
   { key: 'jqk', label: () => m.deck_jqk(), letters: 'J · Q · K · A' },
 ]
 

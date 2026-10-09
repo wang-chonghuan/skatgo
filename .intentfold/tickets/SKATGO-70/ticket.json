@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-70",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-70",
+  "branch": "SKATGO-70-logo-refresh",
+  "base": "91f2a3d7378c5625b6b772a00494d9acae58af09",
+  "ports": { "web": 55070, "multiplayer": 56070, "database": 57070 }
+}

@@ -84,7 +84,7 @@ function describePlay(table: string): string {
 function describeEntry(course: Lesson[], locale: Locale): string {
   const name = (message: (inputs: object, options: { locale: Locale }) => string) => `"${message({}, { locale })}"`
   return [
-    'CURRENT PAGE: the front page of skatgo.com. Its headline announces a daily Skat tournament (the same deals for everyone, a ranking, each deal compared with the AI). The tournament cannot be played yet: its page opens a free game meanwhile. Never invent its rules, scoring, prizes or dates; if asked, say exactly that.',
+    'CURRENT PAGE: the front page of skatgo.com. Its headline is "free Skat", and the line under it names what the site offers: an AI coach, free play, a daily tournament where everyone gets the same deals (with a ranking and each deal compared with the AI), private tables with friends, and practice exercises with a ranking, which are not available yet. Never invent the rules, scoring, prizes or dates of the tournament beyond what is said here, nor anything about the practice exercises.',
     'Below the headline it offers two ways in (quoted as the page names them), then questions and answers:',
     `- ${name(m.entry_new_title)}, the course: ${course.length} short interactive lessons, from the 32 cards to a whole game.`,
     `- ${name(m.entry_game_title)}, free play: a free game against two AI players, Lina and Max.`,

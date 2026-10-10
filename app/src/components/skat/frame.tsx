@@ -368,7 +368,7 @@ const styles = stylex.create({
   scrim: {
     position: 'fixed',
     inset: 0,
-    zIndex: layer.window,
+    zIndex: layer.modal,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

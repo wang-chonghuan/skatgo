@@ -240,6 +240,21 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
     }
   }, [game, onSettled, revealing])
 
+  // A hint or a refusal lies over everything at the table, and a tap anywhere puts it away (SKATGO-75).
+  // The listener is added after the tap that opened it, so that tap does not close it again.
+  useEffect(() => {
+    if (!hint && !refusal) return
+    const close = () => {
+      setHint(null)
+      setRefusal(null)
+    }
+    const t = setTimeout(() => document.addEventListener('pointerdown', close, true))
+    return () => {
+      clearTimeout(t)
+      document.removeEventListener('pointerdown', close, true)
+    }
+  }, [hint, refusal])
+
   // Anything said about the previous state is stale once the state moves on.
   useEffect(() => {
     setHint(null)
@@ -380,7 +395,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             what happens in the play (whose move, who is thinking, who took the trick), a hint the
             learner asked for, or why a card was refused, each until it is closed. The stage keeps this
             band clear (SKATGO-34): nothing on the table reaches into it. */}
-        <div data-testid="skat-top" {...stylex.props(styles.top)}>
+        <div data-testid="skat-top" {...stylex.props(styles.top, (hint !== null || refusal !== null) && styles.topTip)}>
           <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} />
           {!acting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
@@ -1357,6 +1372,7 @@ const styles = stylex.create({
     gap: space.x8,
     pointerEvents: 'none',
   },
+  topTip: { zIndex: layer.tip },
   // The line under the board for what happens in the play: inside the stage's band.
   wordsLine: { display: 'flex', justifyContent: 'center', maxWidth: dims.tipWidth },
   messages: {

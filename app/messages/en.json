@@ -33,6 +33,7 @@
   "settings_tap_collect": "Tap to collect each trick",
   "settings_tap_collect_on": "On: each trick stays until you tap.",
   "settings_tap_collect_off": "Off: each trick is collected after a short pause.",
+  "panel_back": "Back",
   "settings_close": "Close",
   "deck_tournament": "Tournament deck (French suits, four colours)",
   "deck_german": "German-suited deck (acorns, leaves, hearts, bells)",

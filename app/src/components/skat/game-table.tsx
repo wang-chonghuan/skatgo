@@ -35,7 +35,7 @@ import { type Auction, type DealSummary, seegerFabian } from '~/lib/skat/tournam
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, Settings, Spade, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -50,6 +50,7 @@ import { Fan, flightId } from './card-row'
 import { DealVsAi, Fold, VsAiTable } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
+import { RulesInPanel } from './rules-page'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 
 // A whole game of Skat against two computer players. All rules live in ~/lib/skat/game; this file
@@ -358,6 +359,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
     return () => query.removeEventListener('change', change)
   }, [fullScreen])
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // The side panel shows the game, or the rules with a way back (SKATGO-75).
+  const [panelView, setPanelView] = useState<'game' | 'rules'>('game')
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
   const acting = inFrameActions && myTurn
   const dialog = game.phase === 'passedIn' || (game.phase === 'done' && !revealing)
@@ -577,17 +580,29 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
         data-pinned={String(fullScreen && pinned)}
         {...stylex.props(styles.panel, fullScreen && styles.panelFull, fullScreen && panelOpen && styles.panelOpen, fullScreen && !panelOpen && styles.panelShut)}
       >
-        <div {...stylex.props(styles.panelBody, fullScreen && styles.panelBodyFull)}>
+        {fullScreen && panelView === 'rules' ? (
+          <div key="rules" data-testid="skat-panel-rules" {...stylex.props(styles.panelBody, styles.panelBodyFull)}>
+            <div {...stylex.props(styles.panelBackRow)}>
+              <button type="button" data-testid="skat-panel-back" onClick={() => setPanelView('game')} {...stylex.props(typography.appBtnStrong, styles.panelBack)}>
+                <ChevronLeft size={icon.inline} strokeWidth={icon.outline} />
+                {m.panel_back()}
+              </button>
+              <h2 {...stylex.props(typography.panelLabel, styles.panelTitle)}>{m.nav_rules()}</h2>
+            </div>
+            <RulesInPanel />
+          </div>
+        ) : (
+        <div key="game" {...stylex.props(styles.panelBody, fullScreen && styles.panelBodyFull)}>
           {fullScreen ? (
             <div {...stylex.props(styles.tabs)}>
               <span data-state="active" {...stylex.props(styles.tab)}>
                 <span {...stylex.props(styles.tabTile, styles.tabTileActive)}><Spade size={icon.table} strokeWidth={icon.outline} /></span>
                 <span {...stylex.props(typography.tabLabel)}>{m.table_game_tab()}</span>
               </span>
-              <Link to="/course" {...stylex.props(styles.tab, styles.tabLink)}>
-                <span {...stylex.props(styles.tabTile)}><GraduationCap size={icon.table} strokeWidth={icon.outline} /></span>
-                <span {...stylex.props(typography.tabLabel)}>{m.nav_course()}</span>
-              </Link>
+              <button type="button" data-testid="skat-panel-rules-open" onClick={() => setPanelView('rules')} {...stylex.props(typography.control, styles.tab, styles.tabLink, styles.tabButton)}>
+                <span {...stylex.props(styles.tabTile)}><BookOpen size={icon.table} strokeWidth={icon.outline} /></span>
+                <span {...stylex.props(typography.tabLabel)}>{m.nav_rules()}</span>
+              </button>
               <button type="button" data-testid="settings-open-table" onClick={() => setSettingsOpen(true)} {...stylex.props(typography.control, styles.tab, styles.tabLink, styles.tabButton)}>
                 <span {...stylex.props(styles.tabTile)}><Settings size={icon.table} strokeWidth={icon.outline} /></span>
                 <span {...stylex.props(typography.tabLabel)}>{m.settings_open()}</span>
@@ -649,6 +664,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             ) : null}
           </div>
         </div>
+        )}
       </aside>
 
       {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
@@ -1570,8 +1586,12 @@ const styles = stylex.create({
   // The body keeps its width while a pinned panel folds, so nothing inside reflows on the way.
   panelBodyFull: { width: { default: '100%', [bp.pinned]: dims.sidePanelPinned }, height: '100%' },
   // Pinned, the panel's top right corner is under the assistant's launcher: the tabs leave it room.
-  tabs: { display: 'flex', justifyContent: 'space-around', paddingBottom: space.x16, paddingRight: { default: 0, [bp.pinned]: dims.launcherRoom }, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
-  tab: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4, color: color.slateDeep, textDecoration: 'none' },
+  // Three equal columns, each tab centred in its own (SKATGO-75).
+  tabs: { display: 'grid', gridTemplateColumns: dims.panelTabs, paddingBottom: space.x16, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
+  tab: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifySelf: 'center', gap: space.x4, color: color.slateDeep, textDecoration: 'none' },
+  // The rules in the panel (SKATGO-75): a way back to the game above them.
+  panelBackRow: { display: 'grid', gridTemplateColumns: dims.panelBackRow, alignItems: 'center', gap: space.x8 },
+  panelBack: { display: 'inline-flex', alignItems: 'center', gap: space.x4, padding: 0, borderWidth: 0, backgroundColor: 'transparent', color: color.info, cursor: 'pointer' },
   tabLink: { outlineStyle: { default: 'none', ':focus-visible': 'solid' }, outlineWidth: border.focus, outlineColor: color.info },
   tabTile: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: dims.tabTile, height: dims.tabTile, borderRadius: radii.panel, backgroundColor: color.hairline, color: color.navy },
   tabTileActive: { backgroundColor: color.tabActive },

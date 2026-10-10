@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-78",
+  "mode": "open",
+  "stage": "setup-complete",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-78",
+  "branch": "SKATGO-78-rules-bd",
+  "base": "600226f",
+  "ports": { "web": 55078 }
+}

@@ -52,14 +52,14 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const onSolved = useCallback(() => setSolvedSteps((s) => new Set(s).add(index)), [index])
   const onMistake = useCallback(() => setMistakes((m) => m + 1), [])
 
-  // Events (SKATGO-29): a lesson started, and a lesson finished, by its number.
-  useEffect(() => track('lesson_start', { lesson: Number(lesson.id) }), [lesson.id])
+  // Events (SKATGO-29, SKATGO-74): a lesson started, and a lesson finished, by its number.
+  useEffect(() => track('lesson_started', { lesson: Number(lesson.id) }), [lesson.id])
 
   function advance() {
     if (!canContinue) return
     if (isLast) {
       setRecord(complete(lesson.id, mistakes))
-      track('lesson_complete', { lesson: Number(lesson.id) })
+      track('lesson_completed', { lesson: Number(lesson.id) })
       return
     }
     setIndex(index + 1)
@@ -105,6 +105,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
               <h2 {...stylex.props(typography.dialogTitle, styles.gameTitle)}>{step.title}</h2>
               {step.body.map((p, i) => <p key={i} {...stylex.props(typography.bodySmall, styles.gamePara)}><Rich text={p} /></p>)}
               <ServerTable
+                mode="lesson"
                 onSettled={({ humanWon, humanScore }) => {
                   recordGame(humanWon, humanScore)
                   onSolved()
@@ -149,7 +150,7 @@ function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) 
             {m.done_next_lesson({ title: following.title })}
           </Link>
         ) : (
-          <Link to="/play" data-testid="skat-course-done-play" onClick={() => track('course_complete_cta_click')} {...linkLook('go', 'lg', 'block')}>
+          <Link to="/play" data-testid="skat-course-done-play" onClick={() => track('course_complete_cta_clicked')} {...linkLook('go', 'lg', 'block')}>
             {m.entry_game_cta()}
           </Link>
         )}

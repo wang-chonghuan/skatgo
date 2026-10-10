@@ -3,6 +3,7 @@ import { DeepChat } from 'deep-chat-react'
 import { ArrowUp } from 'lucide-react'
 import { type ComponentProps, memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
+import { track } from '~/lib/analytics'
 import { type ChatMessage, historyForRequest } from '~/lib/ask/conversation'
 import { LIMITS } from '~/lib/ask/limits'
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
@@ -144,6 +145,7 @@ export default function AskThread({ page, history, onMessage, signal }: AskThrea
           const active = () => !controller.signal.aborted
           // Opening the stream at once turns the send button into Stop for the whole wait.
           signals.onOpen()
+          track('assistant_asked', { context: current.page })
           void (async () => {
             try {
               const response = await fetch('/api/ask', {

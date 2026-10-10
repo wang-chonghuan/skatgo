@@ -33,12 +33,53 @@ export function isPublishedSite(hostname: string): boolean {
 }
 
 /**
- * A product event (SKATGO-29), with the page's language and path added to its properties. It goes to
- * PostHog once PostHog has started — only on the published site (components/product-analytics.tsx) —
- * and is also announced on the window as a `skatgo:track` event, which is how a local check observes
- * it without PostHog.
+ * The tracking plan (SKATGO-74): every product event the site sends, with its properties. Nothing
+ * else reaches PostHog but its own page views and page leaves; clicks are not captured
+ * (components/product-analytics.tsx). An event marks a step in a visitor's journey, once — a game
+ * started or finished, never a bid or a card. Names are `object_action`, the action in the past tense;
+ * what differs between occasions goes in the properties, not the name.
  */
-export function track(event: string, props: Record<string, string | number> = {}) {
+export type ProductEvents = {
+  /** The front page's main button was pressed. */
+  home_cta_clicked: { button: 'primary' }
+  /** A lesson was opened, by its number. */
+  lesson_started: { lesson: number }
+  /** A lesson's last step was done. */
+  lesson_completed: { lesson: number }
+  /** The button to free play that a finished course offers was pressed, on the course page or after
+   *  the last lesson. */
+  course_complete_cta_clicked: Empty
+  /** A game against the computers was dealt: free play, or lesson 11's game. */
+  game_started: { mode: GameMode }
+  /** That game was settled. `score` is the learner's game value as declarer, 0 as a defender. */
+  game_finished: { mode: GameMode; won: boolean; score: number }
+  /** Today's tournament was entered: its start button pressed while none of the day's deals was open. */
+  daily_started: Empty
+  /** Today's last deal was finished. */
+  daily_finished: { total: number }
+  /** Today's finished entry was put on the leaderboard under a nickname, or renamed. */
+  daily_nickname_set: Empty
+  /** A private table was opened. */
+  room_created: Empty
+  /** A seat at someone's private table was taken. */
+  room_joined: Empty
+  /** The private table's first deal was started, with this many people seated. */
+  room_started: { humans: number }
+  /** A question went to the assistant, from this kind of page. */
+  assistant_asked: { context: 'entry' | 'home' | 'lesson' | 'play' }
+}
+export type GameMode = 'free' | 'lesson'
+type Empty = Record<string, never>
+
+/**
+ * Sends one event of the tracking plan, with the page's language and path added to its properties. It
+ * goes to PostHog once PostHog has started — only on the published site — and is also announced on
+ * the window as a `skatgo:track` event, which is how a local check observes it without PostHog.
+ */
+export function track<E extends keyof ProductEvents>(
+  event: E,
+  ...[props]: ProductEvents[E] extends Empty ? [] : [ProductEvents[E]]
+) {
   if (typeof window === 'undefined') return
   const detail = { event, props: { locale: getLocale(), page: window.location.pathname, ...props } }
   window.dispatchEvent(new CustomEvent('skatgo:track', { detail }))

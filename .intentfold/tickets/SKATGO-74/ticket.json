@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-74",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-74",
+  "branch": "SKATGO-74-posthog-key-events",
+  "base": "3282b0b",
+  "ports": { "web": 55074, "multiplayer": 56074, "database": 57074 }
+}

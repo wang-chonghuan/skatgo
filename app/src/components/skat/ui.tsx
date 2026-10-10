@@ -126,8 +126,10 @@ export function Pill({ children, tone = 'quiet' }: { children: ReactNode; tone?:
 }
 
 /** A fact made of parts ("Alleinspieler: Max · gereizt bis 18") breaks only after a " · ", never inside a
- *  part or before the dot (SKATGO-58). */
-const keepParts = (text: string) => text.split(' · ').map((part) => part.replace(/ /g, '\u00A0')).join('\u00A0· ')
+ *  part or before the dot (SKATGO-58). A sentence of one part wraps between words like any text, so a
+ *  long one never runs out past the screen's edge (SKATGO-65). */
+const keepParts = (text: string) =>
+  text.includes(' · ') ? text.split(' · ').map((part) => part.replace(/ /g, '\u00A0')).join('\u00A0· ') : text
 
 export function ProgressBar({ value, label }: { value: number; label: string }) {
   const pct = Math.round(Math.max(0, Math.min(1, value)) * 100)

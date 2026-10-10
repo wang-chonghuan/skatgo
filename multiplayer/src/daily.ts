@@ -178,8 +178,9 @@ export function skatOrder(day: string, deal: number, seat: Seat, size: DailySize
   return shuffle(SKAT_PAIRS, rand)
 }
 
-/** How long one tournament's preparation may take before it is abandoned for a later retry (grill Q5). */
-const PREPARE_MS = 10 * 60 * 1000
+/** How long one tournament's preparation may take before it is abandoned for a later retry (grill Q5): an
+ *  hour (SKATGO-77, the human: 「上限设置为1小时即可，别画地为牢」). Only one preparation runs at a time. */
+const PREPARE_MS = 60 * 60 * 1000
 
 /** Deal `day`'s tournament of `size` deals and work out both computers' bidding for them, unless it is
  *  already dealt. Runs in the leader; yields between steps, so the service keeps answering while it works. */

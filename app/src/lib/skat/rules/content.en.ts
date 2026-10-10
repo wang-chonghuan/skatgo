@@ -17,17 +17,17 @@ export const RULES_EN: RulesText = {
       blocks: [
         {
           kind: 'p',
-          text: 'Skat is played with **32 cards**: the four suits clubs ♣, spades ♠, hearts ♥ and diamonds ♦, each with Ace, 10, King, Queen, Jack, 9, 8 and 7. That is an ordinary French-suited deck without the 2s to 6s. Some regions use a German-suited deck (acorns, leaves, hearts and bells, with Ober and Unter for Queen and Jack); the rules are the same.',
+          text: 'Skat is played with **32 cards**: the four suits clubs ♣, spades ♠, hearts ♥ and diamonds ♦, each with Ace, 10, King, Dame, Bube, 9, 8 and 7. The **Bube (B)** is the Jack (J) of an international deck and the **Dame (D)** the Queen (Q); Skat tables call them Bube and Dame, as the tournament deck prints them. That is an ordinary French-suited deck without the 2s to 6s. Some regions use a German-suited deck (acorns, leaves, hearts and bells, with Ober and Unter for Dame and Bube); the rules are the same.',
         },
         {
           kind: 'p',
-          text: "The suits have a fixed order, highest first: **♣ ♠ ♥ ♦**. It ranks the four Jacks against each other and sets the suits' base values.",
+          text: "The suits have a fixed order, highest first: **♣ ♠ ♥ ♦**. It ranks the four Buben against each other and sets the suits' base values.",
         },
         { kind: 'p', text: 'Every card carries **card points**. Only five ranks score; the 9, 8 and 7 are blanks:' },
         { kind: 'engine', table: 'cardPoints' },
         {
           kind: 'p',
-          text: 'Each suit holds 30 card points, so the deck holds **120**. Card points decide suit games and Grand; in Null they do not count. Note that the **10 ranks above the King**: a side suit runs A, 10, K, Q, 9, 8, 7, without the Jack, which is a trump.',
+          text: 'Each suit holds 30 card points, so the deck holds **120**. Card points decide suit games and Grand; in Null they do not count. Note that the **10 ranks above the King**: a side suit runs A, 10, K, D, 9, 8, 7, without the Bube, which is a trump.',
         },
       ],
       lesson: '2',
@@ -89,23 +89,23 @@ export const RULES_EN: RulesText = {
       blocks: [
         {
           kind: 'p',
-          text: '**Suit games.** One suit is trumps. The four Jacks are always the four highest trumps, in the order **♣J, ♠J, ♥J, ♦J**, followed by the Ace, 10, King, Queen, 9, 8 and 7 of the trump suit: **eleven trumps**. The other three suits keep seven cards each, ranked A, 10, K, Q, 9, 8, 7.',
+          text: '**Suit games.** One suit is trumps. The four Buben are always the four highest trumps, in the order **♣B, ♠B, ♥B, ♦B**, followed by the Ace, 10, King, Dame, 9, 8 and 7 of the trump suit: **eleven trumps**. The other three suits keep seven cards each, ranked A, 10, K, D, 9, 8, 7.',
         },
         {
           kind: 'p',
-          text: '**Following suit.** The leader may play any card; the others must follow the suit led if they can. All trumps count as one suit, so a Jack follows trumps, never the suit printed on it (except in Null, where it is an ordinary card). A player who cannot follow may trump or throw off anything. There is no duty to win a trick or to trump. The highest trump takes the trick; with no trump in it, the highest card of the suit led wins.',
+          text: '**Following suit.** The leader may play any card; the others must follow the suit led if they can. All trumps count as one suit, so a Bube follows trumps, never the suit printed on it (except in Null, where it is an ordinary card). A player who cannot follow may trump or throw off anything. There is no duty to win a trick or to trump. The highest trump takes the trick; with no trump in it, the highest card of the suit led wins.',
         },
         { kind: 'p', text: 'Each suit game and Grand has a **base value**, ranked by the suit order:' },
         { kind: 'engine', table: 'baseValues' },
         { kind: 'sub', anchor: 'grand', title: 'Grand' },
         {
           kind: 'p',
-          text: '**Grand.** Only the four Jacks are trumps, in the same order; all four suits are side suits. Grand has the highest base value of all, and with only four trumps it rewards Jacks and long side suits with Aces and 10s.',
+          text: '**Grand.** Only the four Buben are trumps, in the same order; all four suits are side suits. Grand has the highest base value of all, and with only four trumps it rewards Buben and long side suits with Aces and 10s.',
         },
         { kind: 'sub', anchor: 'null-ouvert', title: 'Null and Null Ouvert' },
         {
           kind: 'p',
-          text: '**Null.** No trumps, and card points do not count. The declarer wins by taking **no trick at all**; the first trick they take loses the game, which ends right there. Every suit keeps its natural order, **A, K, Q, J, 10, 9, 8, 7**, with the Jack between the Queen and the 10.',
+          text: '**Null.** No trumps, and card points do not count. The declarer wins by taking **no trick at all**; the first trick they take loses the game, which ends right there. Every suit keeps its natural order, **A, K, D, B, 10, 9, 8, 7**, with the Bube between the Dame and the 10.',
         },
         {
           kind: 'p',
@@ -164,28 +164,28 @@ export const RULES_EN: RulesText = {
         },
         {
           kind: 'p',
-          text: "**Counting matadors.** Line up the trumps from the top: ♣J, ♠J, ♥J, ♦J, then the trump suit from the Ace down (in Grand, only the Jacks). Holding the ♣J, count the trumps you hold in an unbroken run from it: you play **with** that many. Lacking it, count the trumps missing above your highest: you play **without** that many. Both are worth the same. Matadors are counted over the declarer's ten cards **plus the skat**, in Hand games too, where the true count only shows after play.",
+          text: "**Counting matadors.** Line up the trumps from the top: ♣B, ♠B, ♥B, ♦B, then the trump suit from the Ace down (in Grand, only the Buben). Holding the ♣B, count the trumps you hold in an unbroken run from it: you play **with** that many. Lacking it, count the trumps missing above your highest: you play **without** that many. Both are worth the same. Matadors are counted over the declarer's ten cards **plus the skat**, in Hand games too, where the true count only shows after play.",
         },
         {
           kind: 'example',
           title: 'Clubs, with 2',
-          lines: ['The declarer holds ♣J and ♠J but not ♥J.', 'With 2, game 3.', 'Clubs 12 × 3 = **36**.'],
+          lines: ['The declarer holds ♣B and ♠B but not ♥B.', 'With 2, game 3.', 'Clubs 12 × 3 = **36**.'],
         },
         {
           kind: 'example',
           title: 'Grand Hand, without 3',
-          lines: ['The highest Jack in hand and skat is the ♦J.', 'Without 3, game 4, Hand 5.', 'Grand 24 × 5 = **120**.'],
+          lines: ['The highest Bube in hand and skat is the ♦B.', 'Without 3, game 4, Hand 5.', 'Grand 24 × 5 = **120**.'],
         },
         {
           kind: 'p',
-          text: '**Overbid (überreizt).** After play the game value is checked against the bid. If it is lower, the game is lost whatever the card points, and it is scored at the **smallest multiple of the base value that reaches the bid**. It happens most often in Hand games, when a Jack in the skat changes the matadors.',
+          text: '**Overbid (überreizt).** After play the game value is checked against the bid. If it is lower, the game is lost whatever the card points, and it is scored at the **smallest multiple of the base value that reaches the bid**. It happens most often in Hand games, when a Bube in the skat changes the matadors.',
         },
         {
           kind: 'example',
           title: 'Overbid: Spades Hand',
           lines: [
-            "Bid 44. The declarer's highest Jack is the ♥J: without 2, game 3, Hand 4, Spades 11 × 4 = 44.",
-            'After play the skat holds the ♣J: with 1, game 2, Hand 3, 11 × 3 = 33. Less than 44.',
+            "Bid 44. The declarer's highest Bube is the ♥B: without 2, game 3, Hand 4, Spades 11 × 4 = 44.",
+            'After play the skat holds the ♣B: with 1, game 2, Hand 3, 11 × 3 = 33. Less than 44.',
             'Lost, scored at 44, the smallest multiple of 11 that reaches the bid: −2 × 44 = **−88**.',
           ],
         },
@@ -249,11 +249,11 @@ export const RULES_EN: RulesText = {
         {
           kind: 'list',
           items: [
-            'Only the four **Jacks** are trumps, as in Grand. There is no declarer: **everyone plays for themselves.**',
+            'Only the four **Buben** are trumps, as in Grand. There is no declarer: **everyone plays for themselves.**',
             'Whoever ends with **the most card points loses** and scores them as minus points. The **skat** usually goes to whoever takes the last trick.',
             '**Jungfrau:** a player who takes no trick at all is a Jungfrau (a virgin), and the loser’s score counts double.',
             '**Durchmarsch:** a player who takes all ten tricks wins the Ramsch instead of losing it.',
-            '**Schieben:** before the first lead, each player in turn may pick up the skat and pass two cards on face down; every pass doubles the score. Many tables forbid passing Jacks.',
+            '**Schieben:** before the first lead, each player in turn may pick up the skat and pass two cards on face down; every pass doubles the score. Many tables forbid passing Buben.',
           ],
         },
         {

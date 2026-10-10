@@ -417,11 +417,13 @@ const styles = stylex.create({
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
-  // At the table the launcher waits at the felt's top right, clear of the hand and the panel's buttons.
+  // At the table the launcher floats at the felt's top left (SKATGO-75), clear of the info board, the hand
+  // and the side panel; elsewhere it sits at the bottom right.
   launcherAtTable: {
     position: 'absolute',
     top: { default: space.x16, [bp.phone]: space.x8 },
-    right: { default: space.x16, [bp.phone]: space.x8 },
+    left: { default: space.x16, [bp.phone]: space.x8 },
+    right: 'auto',
     bottom: 'auto',
   },
   panel: {

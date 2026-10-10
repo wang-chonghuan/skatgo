@@ -83,6 +83,25 @@ export function RulesPage() {
   )
 }
 
+/** The rules in the table's side panel (SKATGO-75): the same sections as the page, read without leaving
+ *  the game — no introduction (it speaks of the page's lesson links), no ways on, no print links, no
+ *  lesson links: nothing that would take the learner away. */
+export function RulesInPanel() {
+  const rules = RULES[getLocale()]
+  return (
+    <div data-testid="rules-panel" {...stylex.props(styles.panelColumn)}>
+      {rules.sections.map((s) => (
+        <section key={s.id} data-section={s.id} {...stylex.props(styles.panelSection)}>
+          <h3 {...stylex.props(typography.optionTitle, styles.heading)}>{s.title}</h3>
+          {s.blocks.map((block, i) => (
+            <Block key={i} block={block} />
+          ))}
+        </section>
+      ))}
+    </div>
+  )
+}
+
 /** The page's two ways on: the course, and the table. */
 function Ways() {
   return (
@@ -267,6 +286,8 @@ const styles = stylex.create({
     outlineOffset: border.focusOffset,
   },
   // A jump from the contents lands below the header, which stays on top (SKATGO-43).
+  panelColumn: { display: 'flex', flexDirection: 'column', gap: space.x16 },
+  panelSection: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   section: {
     display: 'flex',
     flexDirection: 'column',

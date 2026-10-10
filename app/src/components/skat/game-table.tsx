@@ -8,6 +8,7 @@ import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortH
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { visibleTable } from '~/lib/skat/table-view'
+import { useTapToCollect } from '~/lib/skat/settings'
 import { cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
 import {
   type Game,
@@ -34,7 +35,7 @@ import { type Auction, type DealSummary, seegerFabian } from '~/lib/skat/tournam
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, GraduationCap, Lightbulb, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, Settings, Spade, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -49,6 +50,7 @@ import { Fan, flightId } from './card-row'
 import { DealVsAi, Fold, VsAiTable } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
+import { RulesInPanel } from './rules-page'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 
 // A whole game of Skat against two computer players. All rules live in ~/lib/skat/game; this file
@@ -85,6 +87,9 @@ function useNameOf() {
 }
 
 export const BOT_DELAY = 850
+/** How long a finished trick stays before it goes by itself (SKATGO-75): long enough to see who took
+ *  it, short enough not to hold up the game — about what online card tables commonly use. */
+export const TRICK_PAUSE = 1200
 
 /** A deal the server owns (the daily tournament, SKATGO-35). Nobody at this table plays for the
  *  computers, and there are no hints: the learner's moves go to `send`, and `game` is what came back. */
@@ -186,8 +191,17 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   const contract = game.declaration?.contract ?? null
   const myTurn = who === ME
 
-  // A finished trick waits on the table for the player's tap (SKATGO-72).
+  // A finished trick goes by itself after a short pause, or — when the learner chose so in the settings —
+  // waits for their tap (SKATGO-72, SKATGO-75).
   const collect = remote ? remote.collect : () => setGame((g) => (g.phase === 'trickEnd' ? collectTrick(g) : g))
+  const tapToCollect = useTapToCollect()
+  useEffect(() => {
+    if (game.phase !== 'trickEnd' || tapToCollect) return
+    const t = setTimeout(collect, TRICK_PAUSE)
+    return () => clearTimeout(t)
+    // Once per finished trick on the table.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game, tapToCollect])
 
   // The computers move on a timer. The updater re-checks the state it is handed, so a timer that
   // fires late (or twice, under StrictMode) cannot move for the wrong player. A tournament's computers
@@ -226,6 +240,21 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
       void confetti(confettiBurst.game)
     }
   }, [game, onSettled, revealing])
+
+  // A hint or a refusal lies over everything at the table, and a tap anywhere puts it away (SKATGO-75).
+  // The listener is added after the tap that opened it, so that tap does not close it again.
+  useEffect(() => {
+    if (!hint && !refusal) return
+    const close = () => {
+      setHint(null)
+      setRefusal(null)
+    }
+    const t = setTimeout(() => document.addEventListener('pointerdown', close, true))
+    return () => {
+      clearTimeout(t)
+      document.removeEventListener('pointerdown', close, true)
+    }
+  }, [hint, refusal])
 
   // Anything said about the previous state is stale once the state moves on.
   useEffect(() => {
@@ -277,6 +306,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   const winner = trickWinner(game)
 
   function onCard(card: Card) {
+    // A card tapped while the trick waits to go takes it at once, and is played if the learner leads.
+    if (game.phase === 'trickEnd') return onCollect(card)
     if (game.phase === 'skat' && game.declarer === ME && game.pickedUp) {
       setPicked((p) => (p.some((c) => sameCard(c, card)) ? p.filter((c) => !sameCard(c, card)) : p.length < 2 ? [...p, card] : p))
       return
@@ -328,6 +359,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
     return () => query.removeEventListener('change', change)
   }, [fullScreen])
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // The side panel shows the game, or the rules with a way back (SKATGO-75).
+  const [panelView, setPanelView] = useState<'game' | 'rules'>('game')
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
   const acting = inFrameActions && myTurn
   const dialog = game.phase === 'passedIn' || (game.phase === 'done' && !revealing)
@@ -365,7 +398,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             what happens in the play (whose move, who is thinking, who took the trick), a hint the
             learner asked for, or why a card was refused, each until it is closed. The stage keeps this
             band clear (SKATGO-34): nothing on the table reaches into it. */}
-        <div data-testid="skat-top" {...stylex.props(styles.top)}>
+        <div data-testid="skat-top" {...stylex.props(styles.top, (hint !== null || refusal !== null) && styles.topTip)}>
           <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} />
           {!acting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
@@ -456,7 +489,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
 
           {/* A finished trick stays until the player taps it away (SKATGO-72): anywhere on the screen
               will do, and a hand in the frame's bottom-right corner says so. */}
-          {game.phase === 'trickEnd' ? <Collect hand={myHand} onCollect={onCollect} /> : null}
+          {game.phase === 'trickEnd' && tapToCollect ? <Collect hand={myHand} onCollect={onCollect} /> : null}
           {revealing ? <Collect hand={[]} onCollect={() => setRevealed(game)} /> : null}
 
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
@@ -547,17 +580,29 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
         data-pinned={String(fullScreen && pinned)}
         {...stylex.props(styles.panel, fullScreen && styles.panelFull, fullScreen && panelOpen && styles.panelOpen, fullScreen && !panelOpen && styles.panelShut)}
       >
-        <div {...stylex.props(styles.panelBody, fullScreen && styles.panelBodyFull)}>
+        {fullScreen && panelView === 'rules' ? (
+          <div key="rules" data-testid="skat-panel-rules" {...stylex.props(styles.panelBody, styles.panelBodyFull)}>
+            <div {...stylex.props(styles.panelBackRow)}>
+              <button type="button" data-testid="skat-panel-back" onClick={() => setPanelView('game')} {...stylex.props(typography.appBtnStrong, styles.panelBack)}>
+                <ChevronLeft size={icon.inline} strokeWidth={icon.outline} />
+                {m.panel_back()}
+              </button>
+              <h2 {...stylex.props(typography.panelLabel, styles.panelTitle)}>{m.nav_rules()}</h2>
+            </div>
+            <RulesInPanel />
+          </div>
+        ) : (
+        <div key="game" {...stylex.props(styles.panelBody, fullScreen && styles.panelBodyFull)}>
           {fullScreen ? (
             <div {...stylex.props(styles.tabs)}>
               <span data-state="active" {...stylex.props(styles.tab)}>
                 <span {...stylex.props(styles.tabTile, styles.tabTileActive)}><Spade size={icon.table} strokeWidth={icon.outline} /></span>
                 <span {...stylex.props(typography.tabLabel)}>{m.table_game_tab()}</span>
               </span>
-              <Link to="/course" {...stylex.props(styles.tab, styles.tabLink)}>
-                <span {...stylex.props(styles.tabTile)}><GraduationCap size={icon.table} strokeWidth={icon.outline} /></span>
-                <span {...stylex.props(typography.tabLabel)}>{m.nav_course()}</span>
-              </Link>
+              <button type="button" data-testid="skat-panel-rules-open" onClick={() => setPanelView('rules')} {...stylex.props(typography.control, styles.tab, styles.tabLink, styles.tabButton)}>
+                <span {...stylex.props(styles.tabTile)}><BookOpen size={icon.table} strokeWidth={icon.outline} /></span>
+                <span {...stylex.props(typography.tabLabel)}>{m.nav_rules()}</span>
+              </button>
               <button type="button" data-testid="settings-open-table" onClick={() => setSettingsOpen(true)} {...stylex.props(typography.control, styles.tab, styles.tabLink, styles.tabButton)}>
                 <span {...stylex.props(styles.tabTile)}><Settings size={icon.table} strokeWidth={icon.outline} /></span>
                 <span {...stylex.props(typography.tabLabel)}>{m.settings_open()}</span>
@@ -619,6 +664,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             ) : null}
           </div>
         </div>
+        )}
       </aside>
 
       {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
@@ -1342,6 +1388,7 @@ const styles = stylex.create({
     gap: space.x8,
     pointerEvents: 'none',
   },
+  topTip: { zIndex: layer.tip },
   // The line under the board for what happens in the play: inside the stage's band.
   wordsLine: { display: 'flex', justifyContent: 'center', maxWidth: dims.tipWidth },
   messages: {
@@ -1539,8 +1586,12 @@ const styles = stylex.create({
   // The body keeps its width while a pinned panel folds, so nothing inside reflows on the way.
   panelBodyFull: { width: { default: '100%', [bp.pinned]: dims.sidePanelPinned }, height: '100%' },
   // Pinned, the panel's top right corner is under the assistant's launcher: the tabs leave it room.
-  tabs: { display: 'flex', justifyContent: 'space-around', paddingBottom: space.x16, paddingRight: { default: 0, [bp.pinned]: dims.launcherRoom }, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
-  tab: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4, color: color.slateDeep, textDecoration: 'none' },
+  // Three equal columns, each tab centred in its own (SKATGO-75).
+  tabs: { display: 'grid', gridTemplateColumns: dims.panelTabs, paddingBottom: space.x16, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
+  tab: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifySelf: 'center', gap: space.x4, color: color.slateDeep, textDecoration: 'none' },
+  // The rules in the panel (SKATGO-75): a way back to the game above them.
+  panelBackRow: { display: 'grid', gridTemplateColumns: dims.panelBackRow, alignItems: 'center', gap: space.x8 },
+  panelBack: { display: 'inline-flex', alignItems: 'center', gap: space.x4, padding: 0, borderWidth: 0, backgroundColor: 'transparent', color: color.info, cursor: 'pointer' },
   tabLink: { outlineStyle: { default: 'none', ':focus-visible': 'solid' }, outlineWidth: border.focus, outlineColor: color.info },
   tabTile: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: dims.tabTile, height: dims.tabTile, borderRadius: radii.panel, backgroundColor: color.hairline, color: color.navy },
   tabTileActive: { backgroundColor: color.tabActive },

@@ -61,4 +61,8 @@ export const layer = stylex.defineVars({
   backdrop: '-1',
   launcher: '40',
   window: '41',
+  /** A hint or a refusal at the table (SKATGO-75): over the drawers and the side panel that ask for it. */
+  tip: '42',
+  /** The settings (SKATGO-75): over everything, the table's tips included. */
+  modal: '50',
 })

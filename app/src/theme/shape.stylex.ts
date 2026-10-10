@@ -94,6 +94,10 @@ export const dims = stylex.defineVars({
   feltAndPanel: 'minmax(0, 1fr) auto',
   /** Room the pinned panel's tab row leaves at its right for the assistant's launcher above it. */
   launcherRoom: '60px',
+  /** The side panel's three tabs, in equal columns (SKATGO-75). */
+  panelTabs: 'repeat(3, minmax(0, 1fr))',
+  /** The panel's rules view: the way back, then the title centred in what is left (SKATGO-75). */
+  panelBackRow: 'auto 1fr auto',
   frameBorderPlay: '2px',
   plateHeight: '28px',
   roleTag: '28px',

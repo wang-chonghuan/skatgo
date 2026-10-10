@@ -2,8 +2,9 @@
 // holds the two languages to that). Terms follow everyday English Skat usage — pagat.com and the
 // English Wikipedia, the official ISPA wording where it is also the common one: declarer, defenders,
 // forehand / middlehand / rearhand, trick, skat, matadors "with / without", card points. The German
-// words every Skat table uses (Grand, Null, Hand, Schneider, Schwarz, Ouvert) stay German. Decisions
-// and sources: .intentfold/tickets/SKATGO-1/terms.md.
+// words every Skat table uses (Grand, Null, Hand, Schneider, Schwarz, Ouvert) stay German, and so do
+// the Bube and the Dame, cited as on the tournament deck (♣B, ♠D); lesson 1 names their international
+// letters J and Q once (SKATGO-76). Decisions and sources: .intentfold/tickets/SKATGO-1/terms.md.
 
 import { cards } from '../cards'
 import {
@@ -38,7 +39,10 @@ export const LESSONS_EN: Lesson[] = [
       {
         kind: 'teach',
         title: '32 cards',
-        body: ['Take an ordinary deck, remove the 2s to 6s and the jokers, and what is left is a Skat deck: four suits ♣ ♠ ♥ ♦, each with the eight cards **7, 8, 9, 10, J, Q, K, A**.'],
+        body: [
+          'Take an ordinary deck, remove the 2s to 6s and the jokers, and what is left is a Skat deck: four suits ♣ ♠ ♥ ♦, each with the eight cards **7, 8, 9, 10, B, D, K, A**.',
+          'B and D are the German letters printed on the tournament deck you play with here: **B is the Bube**, the Jack (**J**) of an international deck, and **D is the Dame**, the Queen (**Q**). At a German Skat table you will hear Bube and Dame, so this course uses them too (plural: Buben, Damen).',
+        ],
         rows: [{ label: 'All eight cards of one suit', cards: cards('H:7 8 9 10 J Q K A') }],
       },
       {
@@ -57,14 +61,15 @@ export const LESSONS_EN: Lesson[] = [
           '**① Bidding**: the three players bid against each other; the highest bidder becomes declarer.',
           '**② Announcing**: the declarer picks up the skat, puts two cards away, and announces what the game will be (which suit is trumps, and so on).',
           '**③ Playing**: everyone plays one card in turn; three cards make a **trick**, and the highest card takes it. There are 10 tricks.',
-          '**④ Counting**: cards have point values, **120** in the whole deck. The declarer wins with **at least 61** card points in the tricks they took — just over half.',
+          '**④ Counting**: some cards are worth **card points**: A 11, 10 10, K 4, D 3, B 2; the 7, 8 and 9 are worth nothing. That is 30 per suit, so the whole deck holds **120**. The declarer wins with **at least 61** card points in the tricks they took — just over half.',
         ],
+        rows: [{ label: 'Card points of one suit: 30 · four suits: 120', cards: cards('S:A 10 K Q J'), captions: ['11', '10', '4', '3', '2'] }],
         tip: '60 each? The declarer loses. The declarer needs "more than half"; half is not enough.',
       },
       { kind: 'choice', prompt: 'How many cards are in a Skat deck?', options: ['52', '36', '32', '24'], answer: 2, explain: 'Four suits × eight cards (7 to A) = 32 cards.' },
       { kind: 'choice', prompt: 'How are the sides formed in a deal?', options: ['Everyone plays for themselves', '1 declarer against 2 defenders', '2 against 2, with one watching', 'Fixed partners'], answer: 1, explain: 'In every deal the declarer plays alone against the other two. Partners are never fixed — next deal it might be you going it alone.' },
       { kind: 'choice', prompt: 'After the deal, how many cards lie face down in the skat?', options: ['1 card', '2 cards', '3 cards', '4 cards'], answer: 1, explain: '10 + 10 + 10 + **2** = 32. Those 2 skat cards belong to the declarer.' },
-      { kind: 'choice', prompt: 'There are 120 card points in the deck. How many does the declarer need to win?', options: ['60', '61', '90', '100'], answer: 1, explain: '61 — just over half. 60 : 60 is a loss for the declarer.', hint: 'Think "more than half" — is exactly half enough?' },
+      { kind: 'choice', prompt: 'All the card points in the deck add up to 120. How many does the declarer need to win?', options: ['60', '61', '90', '100'], answer: 1, explain: '61 — just over half. 60 : 60 is a loss for the declarer.', hint: 'Think "more than half" — is exactly half enough?' },
     ],
   },
   {
@@ -76,28 +81,28 @@ export const LESSONS_EN: Lesson[] = [
       {
         kind: 'teach',
         title: 'Only five kinds of card score',
-        body: ['When you win a trick, what you win is not "a trick" but the **card points** of its three cards. Only A, 10, K, Q and J are worth anything; 7, 8 and 9 score nothing and are called **blanks**.'],
+        body: ['When you win a trick, what you win is not "a trick" but the **card points** of its three cards. Only A, 10, K, D and B are worth anything; 7, 8 and 9 score nothing and are called **blanks**.'],
         rows: [{ cards: cards('S:A 10 K Q J 9 8 7'), captions: ['11', '10', '4', '3', '2', '0', '0', '0'] }],
-        tip: 'Memorise: A, 10, K, Q, J are worth **11, 10, 4, 3, 2**. Every suit has these five cards, adding up to 30 points; four suits make **120** — the 120 points of the whole deck from lesson 1.',
+        tip: 'Memorise: A, 10, K, D, B are worth **11, 10, 4, 3, 2**. Every suit has these five cards, adding up to 30 points; four suits make **120** — the 120 points of the whole deck from lesson 1.',
       },
       {
         kind: 'teach',
         title: 'Careful: the 10 beats the King',
         body: [
-          'In Skat the **10 is the second-highest card**, right below the Ace — in points and in rank. A side suit ranks from high to low: **A, 10, K, Q, 9, 8, 7**.',
-          '(Where did the Jack go? The Jacks are special — they are trumps. Next lesson.)',
+          'In Skat the **10 is the second-highest card**, right below the Ace — in points and in rank. A side suit ranks from high to low: **A, 10, K, D, 9, 8, 7**.',
+          '(Where did the Bube go? The Buben are special — they are trumps. Next lesson.)',
         ],
         rows: [{ label: 'A side suit from high to low', cards: cards('D:A 10 K Q 9 8 7') }],
         tip: 'The classic beginner mistake: trying to beat a 10 with a King. It does not work.',
       },
-      { kind: 'choice', prompt: 'Which of these cards is worth the most points?', options: ['K', 'Q', '10', 'J'], answer: 2, explain: 'The 10 is worth 10 points, second only to the Ace\'s 11. The King is worth just 4.' },
+      { kind: 'choice', prompt: 'Which of these cards is worth the most points?', options: ['K', 'D', '10', 'B'], answer: 2, explain: 'The 10 is worth 10 points, second only to the Ace\'s 11. The King is worth just 4.' },
       ...times(4, countPointsDrill),
       { kind: 'choice', prompt: 'What is the most a single trick can be worth?', options: ['22', '30', '32', '33'], answer: 3, explain: 'Three Aces: 11 + 11 + 11 = **33** points. Impossible? Someone leads an Ace, the other two happen to have none of that suit and each throw an Ace of another suit on it — when a defender loads points onto a partner\'s trick, this really happens.', hint: 'The three cards need not be the same suit: a player without the suit that was led may play any card.' },
     ],
   },
   {
     id: '3',
-    title: 'Trumps and the four Jacks',
+    title: 'Trumps and the four Buben',
     promise: 'Recognise the trumps in any game, and which one beats which.',
     minutes: 1,
     steps: [
@@ -110,22 +115,22 @@ export const LESSONS_EN: Lesson[] = [
       },
       {
         kind: 'teach',
-        title: 'The four Jacks: always on top',
+        title: 'The four Buben: always on top',
         body: [
-          "Skat's most famous rule: **the four Jacks are always trumps, and they are the four highest trumps**, whichever suit the declarer chooses.",
-          'Among themselves the Jacks rank by suit: **♣J > ♠J > ♥J > ♦J**. The ♣J is the highest card in the game; Germans call it "der Alte" — "the old one".',
+          "Skat's most famous rule: **the four Buben are always trumps, and they are the four highest trumps**, whichever suit the declarer chooses.",
+          'Among themselves the Buben rank by suit: **♣B > ♠B > ♥B > ♦B**. The ♣B is the highest card in the game; Germans call it "der Alte" — "the old one".',
         ],
         rows: [{ label: 'Highest → lowest', cards: cards('C:J | S:J | H:J | D:J'), captions: ['1st', '2nd', '3rd', '4th'] }],
-        tip: 'The suit order ♣ ♠ ♥ ♦ keeps coming back: it ranks the Jacks, and it ranks the suits\' base values too.',
+        tip: 'The suit order ♣ ♠ ♥ ♦ keeps coming back: it ranks the Buben, and it ranks the suits\' base values too.',
       },
       {
         kind: 'teach',
         title: 'Hearts as trumps: 11 trumps',
-        body: ['Say the declarer announces "Hearts". Then there are **11 trumps**: the four Jacks, plus the A, 10, K, Q, 9, 8, 7 of hearts. From high to low:'],
+        body: ['Say the declarer announces "Hearts". Then there are **11 trumps**: the four Buben, plus the A, 10, K, D, 9, 8, 7 of hearts. From high to low:'],
         rows: [{ cards: cards('C:J | S:J | H:J | D:J | H:A 10 K Q 9 8 7') }],
-        tip: 'The ♥J ranks third not because it is a heart but because it is a Jack. Likewise, in a hearts game the ♣J is **not a club** — it is a trump.',
+        tip: 'The ♥B ranks third not because it is a heart but because it is a Bube. Likewise, in a hearts game the ♣B is **not a club** — it is a trump.',
       },
-      { kind: 'choice', prompt: 'How many trumps are there in a suit game?', options: ['8', '10', '11', '12'], answer: 2, explain: '4 Jacks + the other 7 cards of the trump suit (A 10 K Q 9 8 7) = **11**. Each of the three side suits keeps 7 cards.' },
+      { kind: 'choice', prompt: 'How many trumps are there in a suit game?', options: ['8', '10', '11', '12'], answer: 2, explain: '4 Buben + the other 7 cards of the trump suit (A 10 K D 9 8 7) = **11**. Each of the three side suits keeps 7 cards.' },
       ...times(3, () => pickTrumpsDrill()),
       ...times(3, () => orderDrill()),
     ],
@@ -153,12 +158,12 @@ export const LESSONS_EN: Lesson[] = [
       },
       {
         kind: 'teach',
-        title: 'A Jack is not its printed suit — it is a trump',
+        title: 'A Bube is not its printed suit — it is a trump',
         body: [
-          'Lesson 3 said: the four Jacks are always trumps. So when you follow, a Jack does **not belong to the suit printed on it** — it belongs to the trumps.',
+          'Lesson 3 said: the four Buben are always trumps. So when you follow, a Bube does **not belong to the suit printed on it** — it belongs to the trumps.',
           'In the game below **Hearts are trumps**. You hold the same four cards twice; only the lead changes:',
-          '**♣A led (a club)** → only a real club, the ♣7, may be played. The ♣J shows a club, but it is a trump and cannot follow clubs.',
-          '**♥A led (a trump)** → your trumps are the ♣J and the ♥9, and you must play one of them.',
+          '**♣A led (a club)** → only a real club, the ♣7, may be played. The ♣B shows a club, but it is a trump and cannot follow clubs.',
+          '**♥A led (a trump)** → your trumps are the ♣B and the ♥9, and you must play one of them.',
         ],
         rows: [
           { label: 'When the ♣A is led', cards: cards('C:J 7 | H:9 | D:K'), follow: { contract: { kind: 'suit', trump: 'H' }, lead: cards('C:A')[0] } },
@@ -173,7 +178,7 @@ export const LESSONS_EN: Lesson[] = [
         hand: cards('C:J 7 | H:9 | D:A K'),
         trick: cards('C:A'),
         trickBy: ['Opponent'],
-        explain: 'Your only real club is ♣7, so that is the only card you may play. The ♣J is a trump, not a club.',
+        explain: 'Your only real club is ♣7, so that is the only card you may play. The ♣B is a trump, not a club.',
       },
       {
         kind: 'teach',
@@ -202,7 +207,7 @@ export const LESSONS_EN: Lesson[] = [
   {
     id: '5',
     title: 'Grand and Null',
-    promise: 'Play the two other kinds of game: Grand, where only the Jacks are trumps, and Null, where you must not take a single trick.',
+    promise: 'Play the two other kinds of game: Grand, where only the Buben are trumps, and Null, where you must not take a single trick.',
     minutes: 2,
     steps: [
       {
@@ -211,16 +216,16 @@ export const LESSONS_EN: Lesson[] = [
         body: [
           'The declarer can choose more than the four suits. There are three kinds of game:',
           '**Suit games** — one of ♦ ♥ ♠ ♣ is trumps (the last two lessons).',
-          '**Grand** — only the four Jacks are trumps.',
+          '**Grand** — only the four Buben are trumps.',
           '**Null** — no trumps at all, and the declarer\'s aim is turned upside down: take no trick.',
         ],
       },
       {
         kind: 'teach',
-        title: 'Grand: only the Jacks rule',
+        title: 'Grand: only the Buben rule',
         body: [
-          'In Grand (said the French way, roughly "grahn") the only trumps are the four Jacks **♣J ♠J ♥J ♦J**. All four suits are side suits, each ranked A, 10, K, Q, 9, 8, 7.',
-          'The goal stays the same: the declarer needs 61. Grand is the most valuable game — play it when you hold many Jacks and Aces.',
+          'In Grand (said the French way, roughly "grahn") the only trumps are the four Buben **♣B ♠B ♥B ♦B**. All four suits are side suits, each ranked A, 10, K, D, 9, 8, 7.',
+          'The goal stays the same: the declarer needs 61. Grand is the most valuable game — play it when you hold many Buben and Aces.',
         ],
         rows: [{ label: 'All the trumps in Grand', cards: cards('C:J | S:J | H:J | D:J') }],
       },
@@ -231,7 +236,7 @@ export const LESSONS_EN: Lesson[] = [
         title: 'Null: take nothing',
         body: [
           'Null turns everything around: **the moment the declarer takes any trick, they lose**. Only a declarer who takes no trick at all wins. Card points mean nothing in Null.',
-          'Null has **no trumps**: each Jack goes back to its own suit as an ordinary card. And the ranking goes back to the "natural" one: **A, K, Q, J, 10, 9, 8, 7** — the 10 drops below the Jack.',
+          'Null has **no trumps**: each Bube goes back to its own suit as an ordinary card. And the ranking goes back to the "natural" one: **A, K, D, B, 10, 9, 8, 7** — the 10 drops below the Bube.',
         ],
         rows: [{ label: 'One suit in Null, high to low', cards: cards('S:A K Q J 10 9 8 7') }],
         tip: 'A hand full of 7s, 8s and 9s? Don\'t sigh — it might be a beautiful Null.',
@@ -246,7 +251,7 @@ export const LESSONS_EN: Lesson[] = [
         trick: cards('C:9'),
         trickBy: ['Defender'],
         best: cards('C:8'),
-        whyNot: 'Allowed, but not the best. The ♣Q is higher than the ♣9 — you might win the trick and lose the game on the spot. The ♣7 is safe, but it wastes a chance to get rid of a higher card.',
+        whyNot: 'Allowed, but not the best. The ♣D is higher than the ♣9 — you might win the trick and lose the game on the spot. The ♣7 is safe, but it wastes a chance to get rid of a higher card.',
         explain: 'Play **the highest card that is still below the table**: the ♣8 ducks this trick and keeps the ♣7 as your life-saver for later.',
       },
     ],
@@ -269,16 +274,16 @@ export const LESSONS_EN: Lesson[] = [
       },
       {
         kind: 'teach',
-        title: 'Matadors: count down from ♣J',
+        title: 'Matadors: count down from ♣B',
         body: [
-          'Line up the trumps from high to low: ♣J, ♠J, ♥J, ♦J, then A, 10, K… of the trump suit.',
-          '**You hold ♣J** → count how many trumps you hold **in an unbroken run** from it downwards: you are "**with** that many". ♣J ♠J but no ♥J = with 2.',
-          "**You don't hold ♣J** → count how many trumps in a row you are **missing** from the top: you are \"**without** that many\". Missing ♣J ♠J, holding ♥J = without 2.",
+          'Line up the trumps from high to low: ♣B, ♠B, ♥B, ♦B, then A, 10, K… of the trump suit.',
+          '**You hold ♣B** → count how many trumps you hold **in an unbroken run** from it downwards: you are "**with** that many". ♣B ♠B but no ♥B = with 2.',
+          "**You don't hold ♣B** → count how many trumps in a row you are **missing** from the top: you are \"**without** that many\". Missing ♣B ♠B, holding ♥B = without 2.",
           '"With" and "without" are worth exactly the same. And when you count, **the skat counts as the declarer\'s cards too**.',
         ],
         rows: [
-          { label: 'With 2 (broken at ♥J)', cards: cards('C:J | S:J | D:J | H:A') },
-          { label: 'Without 2 (holding starts at ♥J)', cards: cards('H:J | D:J | H:A 10') },
+          { label: 'With 2 (broken at ♥B)', cards: cards('C:J | S:J | D:J | H:A') },
+          { label: 'Without 2 (holding starts at ♥B)', cards: cards('H:J | D:J | H:A 10') },
         ],
       },
       {
@@ -286,8 +291,8 @@ export const LESSONS_EN: Lesson[] = [
         title: 'Multiplier = matadors + 1 + extras',
         body: [
           'Multiplier = the number of matadors, **+1** (for playing at all — "game"), plus any extras (Hand, Schneider… lessons 8 and 9).',
-          'Example: you play Hearts holding ♣J ♠J but not ♥J. With 2, game 3. Hearts has base value 10 → **10 × 3 = 30**.',
-          'Example: you play Clubs without a single Jack; your highest trump is ♣A. Without 4, game 5 → **12 × 5 = 60**.',
+          'Example: you play Hearts holding ♣B ♠B but not ♥B. With 2, game 3. Hearts has base value 10 → **10 × 3 = 30**.',
+          'Example: you play Clubs without a single Bube; your highest trump is ♣A. Without 4, game 5 → **12 × 5 = 60**.',
         ],
         tip: 'At the table you count it out loud just like this: "With 2, game 3, times 10: thirty."',
       },
@@ -352,8 +357,8 @@ export const LESSONS_EN: Lesson[] = [
         title: 'What is worth bidding?',
         body: [
           'Rough guidelines (on average the skat improves your hand by about one card):',
-          '**Suit game**: at least 5 trumps (Jacks included), plus an Ace or two on the side.',
-          '**Grand**: at least two or three Jacks (ideally ♣J), plus two or three Aces.',
+          '**Suit game**: at least 5 trumps (Buben included), plus an Ace or two on the side.',
+          '**Grand**: at least two or three Buben (ideally ♣B), plus two or three Aces.',
           '**Null**: a 7 or an 8 at the bottom of every suit, and no lonely high cards.',
           'Nothing fits? Then pass and play defence with a clear mind — when the defenders win, you win too.',
         ],
@@ -401,16 +406,16 @@ export const LESSONS_EN: Lesson[] = [
         body: [
           'Hand good enough already? You can announce **Hand**: you **leave the skat where it is** and play with the 10 cards you were dealt. The reward: **+1** to the multiplier.',
           'The skat is still yours: its points count for you after play, and **it counts when you count your matadors**.',
-          'That is exactly the risk of Hand: a Jack hidden in the skat can quietly change your matadors.',
+          'That is exactly the risk of Hand: a Bube hidden in the skat can quietly change your matadors.',
         ],
       },
       {
         kind: 'choice',
-        prompt: 'Your highest trump is the ♥J (no ♣J, no ♠J), so you play Spades Hand "without 2": 11 × (2 + 1 + 1) = 44, and you bid 44. After play the skat is turned over — and it holds the **♣J**. What now?',
+        prompt: 'Your highest trump is the ♥B (no ♣B, no ♠B), so you play Spades Hand "without 2": 11 × (2 + 1 + 1) = 44, and you bid 44. After play the skat is turned over — and it holds the **♣B**. What now?',
         options: ['Nothing changes: still 44', 'It becomes "with 1": 11 × 3 = 33 — you overbid', 'It becomes "with 3" — worth more', "The skat doesn't count, so it doesn't matter"],
         answer: 1,
-        explain: 'The skat counts as the declarer\'s. With the ♣J you are "with", but the ♠J is not yours, so only "with 1": multiplier 1 + 1 + 1 = 3, game value 33 < your bid of 44 — an **overbid**, and the game is lost. Playing a Hand game "without", always leave some margin.',
-        hint: 'The ♣J is yours now. Counting down from ♣J, how many trumps in a row do you hold?',
+        explain: 'The skat counts as the declarer\'s. With the ♣B you are "with", but the ♠B is not yours, so only "with 1": multiplier 1 + 1 + 1 = 3, game value 33 < your bid of 44 — an **overbid**, and the game is lost. Playing a Hand game "without", always leave some margin.',
+        hint: 'The ♣B is yours now. Counting down from ♣B, how many trumps in a row do you hold?',
       },
       { kind: 'choice', prompt: 'In a Hand game, who gets the points of the two unseen skat cards in the end?', options: ['The defenders', 'The declarer', 'Whoever wins the last trick', 'Nobody — they don\'t count'], answer: 1, explain: 'The skat always belongs to the declarer, looked at or not.' },
     ],
@@ -485,8 +490,8 @@ export const LESSONS_EN: Lesson[] = [
         hand: cards('C:J | S:J | H:A 10 9 | S:A 10 | C:7 | D:8 7'),
         trick: [],
         best: cards('C:J | S:J'),
-        whyNot: 'Too early. The opponents still hold 6 trumps, and your Ace could easily be trumped by a small one. Draw trumps with your high Jacks first.',
-        explain: 'Nobody can beat the ♣J, so leading it wins for sure and pulls two of the opponents\' trumps. Then the ♠J, the ♥A… once the opponents are out of trumps, the ♠A and ♠10 are 21 free points.',
+        whyNot: 'Too early. The opponents still hold 6 trumps, and your Ace could easily be trumped by a small one. Draw trumps with your high Buben first.',
+        explain: 'Nobody can beat the ♣B, so leading it wins for sure and pulls two of the opponents\' trumps. Then the ♠B, the ♥A… once the opponents are out of trumps, the ♠A and ♠10 are 21 free points.',
       },
       {
         kind: 'teach',
@@ -511,13 +516,13 @@ export const LESSONS_EN: Lesson[] = [
       },
       {
         kind: 'play',
-        prompt: 'Game: **Clubs ♣**, and you are a defender. The declarer leads ♣J, your partner follows with ♣9. You must follow with a trump — which one?',
+        prompt: 'Game: **Clubs ♣**, and you are a defender. The declarer leads ♣B, your partner follows with ♣9. You must follow with a trump — which one?',
         contract: { kind: 'suit', trump: 'C' },
         hand: cards('C:10 8 | D:A | H:7'),
         trick: cards('C:J 9'),
         trickBy: ['Declarer', 'Partner'],
         best: cards('C:8'),
-        whyNot: 'The ♣J is the highest card in the game: the declarer has won this trick. The ♣10 would just hand over 10 points.',
+        whyNot: 'The ♣B is the highest card in the game: the declarer has won this trick. The ♣10 would just hand over 10 points.',
         explain: "If you can't win, play low. Keep the ♣10 — it may still take a trick later.",
       },
       {
@@ -529,7 +534,7 @@ export const LESSONS_EN: Lesson[] = [
         trickBy: ['Defender', 'Defender'],
         best: cards('H:7'),
         whyNot: "There are 21 points on the table — take them! And since you play last, nobody can beat you afterwards: your smallest trump is enough. Keep the big ones.",
-        explain: 'When you play last, win with the smallest card that is "just enough". The ♥7 takes 21 points and the ♥J stays in your hand for later.',
+        explain: 'When you play last, win with the smallest card that is "just enough". The ♥7 takes 21 points and the ♥B stays in your hand for later.',
       },
       { kind: 'choice', prompt: 'Hearts game, you are the declarer with 6 trumps. 3 trumps have been played so far, 2 of them by the opponents. How many trumps do the opponents still have?', options: ['2', '3', '4', '5'], answer: 1, explain: 'There are 11 trumps. You hold 6, so the opponents started with 5; they have played 2, so **3** are left.', hint: '11 trumps − your 6 = how many did the opponents start with?' },
       { kind: 'choice', prompt: 'What should a defender usually **not** lead?', options: ['A side-suit Ace', 'A trump', 'A small card of a short suit', "A suit your partner has shown"], answer: 1, explain: "Leading trumps draws them for the declarer. A defender's trumps are for trumping the declarer's Aces and 10s." },
@@ -545,9 +550,9 @@ export const LESSONS_EN: Lesson[] = [
         kind: 'teach',
         title: 'Cheat sheet for the table',
         body: [
-          '**Card points** A 11 · 10 10 · K 4 · Q 3 · J 2 | declarer needs **61**',
-          '**Trumps** ♣J ♠J ♥J ♦J, then the trump suit A 10 K Q 9 8 7',
-          '**Following** follow suit if you can; a Jack is a trump, not the suit printed on it',
+          '**Card points** A 11 · 10 10 · K 4 · D 3 · B 2 | declarer needs **61**',
+          '**Trumps** ♣B ♠B ♥B ♦B, then the trump suit A 10 K D 9 8 7',
+          '**Following** follow suit if you can; a Bube is a trump, not the suit printed on it',
           '**Base values** ♦9 ♥10 ♠11 ♣12 Grand 24 | Null 23/35/46/59',
           '**Game value** base value × (matadors + 1 + extras)',
           '**Bidding** middlehand → forehand, rearhand → the winner; bid only up to your own game value',

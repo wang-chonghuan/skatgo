@@ -1,9 +1,9 @@
 // Der Kurs auf Deutsch — dieselben elf Lektionen, Karten und Antworten wie content.en.ts
 // (lessons.test.ts hält beide Sprachen daran fest). Begriffe nach der Internationalen Skatordnung
 // (DSkV): Alleinspieler, Gegenspieler, Vorhand / Mittelhand / Hinterhand, Stich, Augen, reizen,
-// drücken, Spitzen „mit / ohne“. Karten werden mit den deutschen Buchstaben zitiert (♣B = Kreuz-Bube,
-// ♠D = Pik-Dame); die abgebildeten Karten tragen englische Indizes (J, Q), was Lektion 1 einmal
-// erklärt. Entscheidungen und Quellen: .intentfold/tickets/SKATGO-1/terms.md.
+// drücken, Spitzen „mit / ohne“. Karten werden wie auf dem Turnierblatt zitiert (♣B = Kreuz-Bube,
+// ♠D = Pik-Dame); Lektion 1 nennt einmal die internationalen Buchstaben J und Q dazu (SKATGO-76).
+// Entscheidungen und Quellen: .intentfold/tickets/SKATGO-1/terms.md.
 
 import { cards } from '../cards'
 import {
@@ -40,7 +40,8 @@ export const LESSONS_DE: Lesson[] = [
         title: '32 Karten',
         body: [
           'Nimm aus einem normalen Kartenspiel die 2 bis 6 und die Joker heraus, dann bleibt ein Skatblatt übrig: vier Farben ♣ ♠ ♥ ♦ mit je acht Karten **7, 8, 9, 10, Bube, Dame, König, Ass**.',
-          'Kurz geschrieben: **7, 8, 9, 10, B, D, K, A**. Die Karten in diesem Kurs tragen englische Buchstaben – beim Buben steht **J**, bei der Dame **Q**. Auf einem deutschen Turnierblatt steht dort **B** und **D**; im Text schreiben wir es deshalb so, wie man es am Tisch sagt.',
+          'Kurz geschrieben: **7, 8, 9, 10, B, D, K, A** – so steht es auch auf den Karten des deutschen Turnierblatts, mit dem hier gespielt wird.',
+          'Auf einem internationalen Kartenspiel (Poker, Bridge) steht beim Buben **J** (Jack) und bei der Dame **Q** (Queen). Gemeint sind dieselben Karten: **B = J**, **D = Q**; König und Ass heißen dort auch **K** und **A**.',
         ],
         rows: [{ label: 'Alle acht Karten einer Farbe', cards: cards('H:7 8 9 10 J Q K A') }],
       },
@@ -60,14 +61,15 @@ export const LESSONS_DE: Lesson[] = [
           '**① Reizen**: Die drei bieten gegeneinander; wer am höchsten reizt, wird Alleinspieler.',
           '**② Ansagen**: Der Alleinspieler nimmt den Skat auf, drückt zwei Karten und sagt an, was gespielt wird (welche Farbe Trumpf ist und so weiter).',
           '**③ Spielen**: Reihum legt jeder eine Karte; drei Karten sind ein **Stich**, die höchste bekommt ihn. Es gibt 10 Stiche.',
-          '**④ Zählen**: Die Karten haben **Augen**, im ganzen Blatt **120**. Der Alleinspieler gewinnt mit **mindestens 61 Augen** – also knapp mehr als der Hälfte.',
+          '**④ Zählen**: Manche Karten zählen **Augen**: Ass 11, Zehn 10, König 4, Dame 3, Bube 2; 7, 8 und 9 zählen nichts. Das sind 30 Augen pro Farbe, im ganzen Blatt also **120**. Der Alleinspieler gewinnt mit **mindestens 61 Augen** – also knapp mehr als der Hälfte.',
         ],
+        rows: [{ label: 'Augen einer Farbe: 30 · vier Farben: 120', cards: cards('S:A 10 K Q J'), captions: ['11', '10', '4', '3', '2'] }],
         tip: '60 zu 60? Dann verliert der Alleinspieler. Er braucht „mehr als die Hälfte“; genau die Hälfte reicht nicht.',
       },
       { kind: 'choice', prompt: 'Wie viele Karten hat ein Skatblatt?', options: ['52', '36', '32', '24'], answer: 2, explain: 'Vier Farben × acht Karten (7 bis Ass) = 32 Karten.' },
       { kind: 'choice', prompt: 'Wie werden die Seiten in einem Spiel gebildet?', options: ['Jeder spielt für sich', '1 Alleinspieler gegen 2 Gegenspieler', '2 gegen 2, einer schaut zu', 'Feste Partner'], answer: 1, explain: 'In jedem Spiel spielt der Alleinspieler gegen die beiden anderen. Feste Partner gibt es nicht – im nächsten Spiel spielst vielleicht du allein.' },
       { kind: 'choice', prompt: 'Wie viele Karten liegen nach dem Geben verdeckt im Skat?', options: ['1 Karte', '2 Karten', '3 Karten', '4 Karten'], answer: 1, explain: '10 + 10 + 10 + **2** = 32. Diese 2 Karten gehören dem Alleinspieler.' },
-      { kind: 'choice', prompt: 'Das Blatt hat 120 Augen. Wie viele braucht der Alleinspieler mindestens zum Gewinnen?', options: ['60', '61', '90', '100'], answer: 1, explain: '61 – knapp mehr als die Hälfte. Bei 60 : 60 verliert der Alleinspieler.', hint: 'Denk an „mehr als die Hälfte“ – reicht genau die Hälfte?' },
+      { kind: 'choice', prompt: 'Alle Augen im Blatt ergeben zusammen 120. Wie viele braucht der Alleinspieler mindestens zum Gewinnen?', options: ['60', '61', '90', '100'], answer: 1, explain: '61 – knapp mehr als die Hälfte. Bei 60 : 60 verliert der Alleinspieler.', hint: 'Denk an „mehr als die Hälfte“ – reicht genau die Hälfte?' },
     ],
   },
   {

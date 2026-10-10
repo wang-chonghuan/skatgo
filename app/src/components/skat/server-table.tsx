@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { type GameMode, track } from '~/lib/analytics'
 import { type FreeError, freeAct, freeNew, isFreeError } from '~/lib/free-api'
 import type { Move } from '~/lib/skat/game'
 import { type SeatView, gameFromView } from '~/lib/skat/tournament'
@@ -15,14 +16,17 @@ import { Btn, Panel } from './ui'
 // against SkatZero's computers. The page holds the game's token in memory only — no cookie, no
 // storage — so a reload starts a new game, as before. The server answers each move with every state
 // the table passed through, and the table shows them one by one on its own beats. Hints and the
-// assistant work as at the local table: they read only what this seat may see.
+// assistant work as at the local table: they read only what this seat may see. A game's start and
+// finish are its only events (SKATGO-74): never a bid or a card.
 
 type Failure = { text: string; retry?: () => void }
 
 const problemText = (e: FreeError) =>
   e.error === 'slow_down' ? m.free_slow_down() : e.error === 'game_expired' || e.error === 'invalid_game' ? m.free_expired() : m.free_unreachable()
 
-export function ServerTable({ fullScreen = false, onSettled }: { fullScreen?: boolean; onSettled?: (info: { humanWon: boolean; humanScore: number }) => void }) {
+type Settled = { humanWon: boolean; humanScore: number }
+
+export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: GameMode; fullScreen?: boolean; onSettled?: (info: Settled) => void }) {
   const [token, setToken] = useState<string | null>(null)
   const [revision, setRevision] = useState(0)
   const [shown, setShown] = useState<SeatView | null>(null)
@@ -47,6 +51,7 @@ export function ServerTable({ fullScreen = false, onSettled }: { fullScreen?: bo
     const r = await freeNew()
     setSending(false)
     if (isFreeError(r)) return setFailure({ text: problemText(r), retry: () => void start() })
+    track('game_started', { mode })
     take(r.steps, r)
   }
 
@@ -100,7 +105,10 @@ export function ServerTable({ fullScreen = false, onSettled }: { fullScreen?: bo
   return (
     <GameTable
       fullScreen={fullScreen}
-      onSettled={onSettled}
+      onSettled={(info: Settled) => {
+        track('game_finished', { mode, won: info.humanWon, score: info.humanScore })
+        onSettled?.(info)
+      }}
       server={{
         game,
         busy: sending || queue.length > 0,

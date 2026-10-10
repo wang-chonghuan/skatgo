@@ -5,5 +5,5 @@ import { useProgress } from '~/lib/skat/progress'
  *  computers (SKATGO-40); every settled game goes into the learner's tally. */
 export function FreeTable() {
   const recordGame = useProgress((s) => s.recordGame)
-  return <ServerTable fullScreen onSettled={({ humanWon, humanScore }) => recordGame(humanWon, humanScore)} />
+  return <ServerTable mode="free" fullScreen onSettled={({ humanWon, humanScore }) => recordGame(humanWon, humanScore)} />
 }

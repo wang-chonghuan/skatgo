@@ -115,8 +115,8 @@ export function EntryPage() {
   )
 }
 
-/** The hero is always in its first state until Duplicate exists (SKATGO-29, grill Q1), with one headline. */
-const heroClick = (button: 'primary') => track('hero_cta_click', { state: 'A', variant: 'default', button })
+/** The hero's one button (SKATGO-29; renamed by SKATGO-74's tracking plan). */
+const heroClick = (button: 'primary') => track('home_cta_clicked', { button })
 
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })

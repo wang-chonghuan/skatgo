@@ -79,7 +79,7 @@ export function CourseHome() {
                   </Link>
                 </>
               ) : (
-                <Link to="/play" data-testid="skat-free-play" onClick={() => track('course_complete_cta_click')} {...linkLook('go', 'md')}>
+                <Link to="/play" data-testid="skat-free-play" onClick={() => track('course_complete_cta_clicked')} {...linkLook('go', 'md')}>
                   {m.entry_game_cta()}
                 </Link>
               )}

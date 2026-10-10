@@ -2,6 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
 
+import { track } from '~/lib/analytics'
 import { type DailyError, dailyAct, dailyBoard, dailyName, dailyState, isError } from '~/lib/daily-api'
 import type { Move } from '~/lib/skat/game'
 import { type DailyBoard, type DailyReply, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
@@ -51,7 +52,7 @@ export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
         <div {...stylex.props(styles.stack)}>
           {/* The way in first, its own width so it reads as a button (SKATGO-63). */}
           <div {...stylex.props(styles.action)}>
-            <Link to="/daily/play" data-testid="daily-cta" {...linkLook('go', 'lg', 'landing')}>
+            <Link to="/daily/play" data-testid="daily-cta" onClick={() => { if (!status.started) track('daily_started') }} {...linkLook('go', 'lg', 'landing')}>
               {status.started ? m.daily_continue({ n: status.deal + 1, of: status.of }) : m.daily_cta()}
             </Link>
           </div>
@@ -129,6 +130,7 @@ function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }
     const r = await dailyName(value)
     setSaving(false)
     if (isError(r)) return setRefused(true)
+    track('daily_nickname_set')
     setRefused(false)
     setEditing(false)
     onNamed()
@@ -230,6 +232,7 @@ export function DailyTable() {
     // things stand. A deal never restarts; the same cards come back as they were left.
     if (isError(r)) return r.error === 'day_over' ? onLeave() : void load()
     if (!r.steps?.length) return void load()
+    if (r.status.finished && !reply.status.finished) track('daily_finished', { total: r.status.totals[PLAYER] })
     setReply(r)
     setShown(r.steps[0])
     setQueue(r.steps.slice(1))

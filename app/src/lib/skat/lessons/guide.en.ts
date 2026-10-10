@@ -12,7 +12,7 @@ export const GUIDE_EN: Record<string, LessonGuide> = {
     description:
       'How to play Skat, the card game: three players, 32 cards, ten each and two in the skat. One declarer plays against two and needs 61 of 120 card points.',
     intro: [
-      "The Skat card game is Germany's national card game, a trick-taking game for three players. It uses a **32-card deck**: the four suits ♣ ♠ ♥ ♦, each with 7, 8, 9, 10, Jack, Queen, King and Ace. Everyone gets **ten cards**, and the last **two** go face down in the middle. Those two are the **skat**, which gives the game its name.",
+      "The Skat card game is Germany's national card game, a trick-taking game for three players. It uses a **32-card deck**: the four suits ♣ ♠ ♥ ♦, each with 7, 8, 9, 10, Bube (the Jack), Dame (the Queen), King and Ace. Everyone gets **ten cards**, and the last **two** go face down in the middle. Those two are the **skat**, which gives the game its name.",
       'Every deal is **one against two**. Bidding decides who plays alone: that player is the **declarer**, gets the skat and names the game. The other two become the **defenders** and team up for that one deal. Next deal, the sides are fought out again.',
       'Then come ten tricks. The cards in them carry **card points**, 120 in the whole deck, and the declarer needs **at least 61** to win. Sixty each is not enough: exactly half is a loss. This lesson walks you through it all, with a few quick questions to check it stuck.',
     ],
@@ -23,24 +23,24 @@ export const GUIDE_EN: Record<string, LessonGuide> = {
     question: 'What Are the Card Values in Skat?',
     h1: 'Card values in Skat: which cards count',
     description:
-      'Skat card points explained: Ace 11, ten 10, King 4, Queen 3, Jack 2, while 7, 8 and 9 score nothing. Why the 10 outranks the King, and how 120 points add up.',
+      'Skat card points explained: Ace 11, ten 10, King 4, Dame (Queen) 3, Bube (Jack) 2, while 7, 8 and 9 score nothing. Why the 10 outranks the King, and how 120 points add up.',
     intro: [
-      "When you win a trick in Skat, you don't score the trick itself. You score the **card points** of the three cards in it. Only five kinds of card count: **Ace 11, ten 10, King 4, Queen 3, Jack 2**. The 7, 8 and 9 are worth nothing and are called blanks.",
+      "When you win a trick in Skat, you don't score the trick itself. You score the **card points** of the three cards in it. Only five kinds of card count: **Ace 11, ten 10, King 4, Dame 3, Bube 2**. The 7, 8 and 9 are worth nothing and are called blanks.",
       'Each suit holds 30 points, so the whole deck holds **120**, and the declarer needs 61 of them. That makes counting the real skill of the game: one trick with an Ace and a ten is worth more than three tricks full of blanks.',
-      'One surprise for newcomers: the **10 ranks second**, right below the Ace and above the King, in points and in trick-taking power alike. A side suit runs A, 10, K, Q, 9, 8, 7 from high to low. Here you practise adding up tricks until you can do it at a glance.',
+      'One surprise for newcomers: the **10 ranks second**, right below the Ace and above the King, in points and in trick-taking power alike. A side suit runs A, 10, K, D, 9, 8, 7 from high to low. Here you practise adding up tricks until you can do it at a glance.',
     ],
     rule: 'cards',
   },
   '3': {
     slug: 'what-is-trump-in-skat',
-    question: 'What Is Trump in Skat? The Jacks and Trump Order',
-    h1: 'Trumps in Skat and the four Jacks',
+    question: 'What Is Trump in Skat? The Buben (Jacks) and Trump Order',
+    h1: 'Trumps in Skat and the four Buben (Jacks)',
     description:
-      'In Skat the four Jacks are always the highest trumps: ♣J, ♠J, ♥J, ♦J. Then come the A, 10, K, Q, 9, 8, 7 of the trump suit, eleven trumps in a suit game.',
+      'In Skat the four Buben (the Jacks) are always the highest trumps: ♣B, ♠B, ♥B, ♦B. Then come the A, 10, K, D, 9, 8, 7 of the trump suit, eleven trumps in a suit game.',
     intro: [
       'When the declarer names a suit as **trumps**, every card of that suit beats every card of the other suits. A trump 7 takes a side-suit Ace. That is the whole privilege of trumps, and it decides most deals.',
-      "Skat's most famous rule sits on top of that: **the four Jacks are always trumps, and they are the four highest**, whatever suit is chosen. Among themselves they rank ♣J, ♠J, ♥J, ♦J, and the ♣J is the highest card in the game. Below the Jacks come the Ace, 10, King, Queen, 9, 8 and 7 of the trump suit, so a suit game has **eleven trumps**.",
-      'The catch: a Jack no longer belongs to the suit printed on it. In a hearts game the ♣J is not a club; it is a trump. In this lesson you pick out the trumps of a hand and put them in order until the ranking feels natural.',
+      "Skat's most famous rule sits on top of that: **the four Buben are always trumps, and they are the four highest**, whatever suit is chosen. Among themselves they rank ♣B, ♠B, ♥B, ♦B, and the ♣B is the highest card in the game. Below the Buben come the Ace, 10, King, Dame, 9, 8 and 7 of the trump suit, so a suit game has **eleven trumps**.",
+      'The catch: a Bube no longer belongs to the suit printed on it. In a hearts game the ♣B is not a club; it is a trump. In this lesson you pick out the trumps of a hand and put them in order until the ranking feels natural.',
     ],
     rule: 'games',
   },
@@ -49,10 +49,10 @@ export const GUIDE_EN: Record<string, LessonGuide> = {
     question: 'Must You Follow Suit in Skat? Who Wins a Trick',
     h1: 'Following suit and winning tricks in Skat',
     description:
-      'The Skat rule for following suit: play the suit that was led if you can, Jacks count as trumps, and the highest trump or highest card of the led suit wins.',
+      'The Skat rule for following suit: play the suit that was led if you can, Buben count as trumps, and the highest trump or highest card of the led suit wins.',
     intro: [
       'Each trick starts with a **lead**. The suit of that first card is the suit of the trick, and the other two players follow clockwise. The rule is strict: **if you hold a card of the suit that was led, you must play one**. Which one is up to you, and there is no duty to play higher.',
-      "Only when you have none of the led suit may you play anything: **trump** it to win, or **throw off** a card you don't need. Trumps count as one suit, so the Jacks follow trumps, never the suit printed on them. That is the most common beginner mistake, and this lesson tackles it head on.",
+      "Only when you have none of the led suit may you play anything: **trump** it to win, or **throw off** a card you don't need. Trumps count as one suit, so the Buben follow trumps, never the suit printed on them. That is the most common beginner mistake, and this lesson tackles it head on.",
       'Who takes the trick? If anyone played a trump, the highest trump wins. If not, the highest card of the suit that was led wins; a card of another suit never does. The winner collects the three cards and leads to the next trick.',
     ],
     rule: 'games',
@@ -62,11 +62,11 @@ export const GUIDE_EN: Record<string, LessonGuide> = {
     question: 'What Are Grand and Null in Skat?',
     h1: 'Grand and Null: the other two Skat games',
     description:
-      'Besides the four suit games, Skat has Grand, where only the four Jacks are trumps, and Null, where the declarer must not take a single trick. How each works.',
+      'Besides the four suit games, Skat has Grand, where only the four Buben are trumps, and Null, where the declarer must not take a single trick. How each works.',
     intro: [
       'The declarer is not limited to naming a suit. Skat has three kinds of game: **suit games**, where one suit is trumps, **Grand** and **Null**.',
-      'In **Grand** only the four Jacks are trumps, ♣J ♠J ♥J ♦J. All four suits become side suits, each ranked A, 10, K, Q, 9, 8, 7. The declarer still needs 61 card points. Grand is the most valuable game, so it wants plenty of Jacks and Aces.',
-      "**Null** turns everything upside down. There are no trumps, card points don't matter, and the declarer wins only by taking **no trick at all**: the first trick they take loses the game on the spot. The Jacks go back to their own suits, and the order becomes A, K, Q, J, 10, 9, 8, 7, so the 10 drops below the Jack. A hand full of 7s and 8s can make a lovely Null. Here you practise tricks in both games.",
+      'In **Grand** only the four Buben are trumps, ♣B ♠B ♥B ♦B. All four suits become side suits, each ranked A, 10, K, D, 9, 8, 7. The declarer still needs 61 card points. Grand is the most valuable game, so it wants plenty of Buben and Aces.',
+      "**Null** turns everything upside down. There are no trumps, card points don't matter, and the declarer wins only by taking **no trick at all**: the first trick they take loses the game on the spot. The Buben go back to their own suits, and the order becomes A, K, D, B, 10, 9, 8, 7, so the 10 drops below the Bube. A hand full of 7s and 8s can make a lovely Null. Here you practise tricks in both games.",
     ],
     rule: 'games',
   },
@@ -75,11 +75,11 @@ export const GUIDE_EN: Record<string, LessonGuide> = {
     question: 'How to Calculate the Game Value in Skat',
     h1: 'How to work out what a Skat game is worth',
     description:
-      'Skat game value is base value × multiplier. Learn the base values, how to count matadors "with" or "without" from the ♣J, and how game and extras add up.',
+      'Skat game value is base value × multiplier. Learn the base values, how to count matadors "with" or "without" from the ♣B, and how game and extras add up.',
     intro: [
       'Every Skat game has a **value**, and bidding is nothing but naming values, so this is the sum to know: **base value × multiplier**. The base value depends on the game: ♦ Diamonds 9, ♥ Hearts 10, ♠ Spades 11, ♣ Clubs 12, Grand 24. Null is different and has fixed values of its own.',
-      "The multiplier starts with the **matadors**. Line up the trumps from the ♣J down. Hold the ♣J, and you are **with** as many trumps as you hold in an unbroken run; lack it, and you are **without** as many as you are missing from the top. Both count the same, and the skat counts as the declarer's cards.",
-      'Then add **1 for game**, plus any extras such as Hand or Schneider. Holding ♣J ♠J but not ♥J in a hearts game: with 2, game 3, 10 × 3 = **30**. You practise counting until it is quick.',
+      "The multiplier starts with the **matadors**. Line up the trumps from the ♣B down. Hold the ♣B, and you are **with** as many trumps as you hold in an unbroken run; lack it, and you are **without** as many as you are missing from the top. Both count the same, and the skat counts as the declarer's cards.",
+      'Then add **1 for game**, plus any extras such as Hand or Schneider. Holding ♣B ♠B but not ♥B in a hearts game: with 2, game 3, 10 × 3 = **30**. You practise counting until it is quick.',
     ],
     rule: 'value',
   },
@@ -105,7 +105,7 @@ export const GUIDE_EN: Record<string, LessonGuide> = {
     intro: [
       'Win the bidding and the two face-down skat cards are yours. Usually you **pick them up**, so you hold twelve cards, then **put any two away face down** before naming your game. The discarded cards take no part in play, but their card points count for you: points in the bank before the first trick.',
       'Which two? Three rules of thumb: bank points by putting away a lone 10 that an Ace could catch; make a suit **void** so you can trump it later; and never throw away trumps or Aces.',
-      'If your hand is strong enough already, you can play **Hand**: leave the skat untouched and play the ten cards you were dealt, for one extra step on the multiplier. The skat still counts for you, including when matadors are counted. That is the risk: a Jack hidden there can change your game value after play.',
+      'If your hand is strong enough already, you can play **Hand**: leave the skat untouched and play the ten cards you were dealt, for one extra step on the multiplier. The skat still counts for you, including when matadors are counted. That is the risk: a Bube hidden there can change your game value after play.',
     ],
     rule: 'extras',
   },

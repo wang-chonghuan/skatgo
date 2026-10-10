@@ -1,9 +1,9 @@
 // Der Kurs auf Deutsch — dieselben elf Lektionen, Karten und Antworten wie content.en.ts
 // (lessons.test.ts hält beide Sprachen daran fest). Begriffe nach der Internationalen Skatordnung
 // (DSkV): Alleinspieler, Gegenspieler, Vorhand / Mittelhand / Hinterhand, Stich, Augen, reizen,
-// drücken, Spitzen „mit / ohne“. Karten werden mit den deutschen Buchstaben zitiert (♣B = Kreuz-Bube,
-// ♠D = Pik-Dame); die abgebildeten Karten tragen englische Indizes (J, Q), was Lektion 1 einmal
-// erklärt. Entscheidungen und Quellen: .intentfold/tickets/SKATGO-1/terms.md.
+// drücken, Spitzen „mit / ohne“. Karten werden wie auf dem Turnierblatt zitiert (♣B = Kreuz-Bube,
+// ♠D = Pik-Dame); Lektion 1 nennt einmal die internationalen Buchstaben J und Q dazu (SKATGO-76).
+// Entscheidungen und Quellen: .intentfold/tickets/SKATGO-1/terms.md.
 
 import { cards } from '../cards'
 import {
@@ -40,7 +40,8 @@ export const LESSONS_DE: Lesson[] = [
         title: '32 Karten',
         body: [
           'Nimm aus einem normalen Kartenspiel die 2 bis 6 und die Joker heraus, dann bleibt ein Skatblatt übrig: vier Farben ♣ ♠ ♥ ♦ mit je acht Karten **7, 8, 9, 10, Bube, Dame, König, Ass**.',
-          'Kurz geschrieben: **7, 8, 9, 10, B, D, K, A**. Die Karten in diesem Kurs tragen englische Buchstaben – beim Buben steht **J**, bei der Dame **Q**. Auf einem deutschen Turnierblatt steht dort **B** und **D**; im Text schreiben wir es deshalb so, wie man es am Tisch sagt.',
+          'Kurz geschrieben: **7, 8, 9, 10, B, D, K, A** – so steht es auch auf den Karten des deutschen Turnierblatts, mit dem hier gespielt wird.',
+          'Auf einem internationalen Kartenspiel (Poker, Bridge) steht beim Buben **J** (Jack) und bei der Dame **Q** (Queen). Gemeint sind dieselben Karten: **B = J**, **D = Q**; König und Ass heißen dort auch **K** und **A**.',
         ],
         rows: [{ label: 'Alle acht Karten einer Farbe', cards: cards('H:7 8 9 10 J Q K A') }],
       },

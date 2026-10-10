@@ -50,6 +50,9 @@ export const pose = stylex.defineVars({
   rest: 'translateY(0)',
   /** An opponent's card, turned on its side inside its landscape slot. */
   sideways: 'translate(-50%, -50%) rotate(90deg)',
+  /** The right opponent's card laid open (SKATGO-65): turned the other way, so its index sits on the
+   *  part that shows, at the stack's open edge. */
+  sidewaysOpen: 'translate(-50%, -50%) rotate(-90deg)',
   /** Seat plates lying along the frame's left and right edges, and the learner's under its bottom edge. */
   plateLeft: 'translate(-50%, -50%) rotate(-90deg)',
   plateRight: 'translate(50%, -50%) rotate(90deg)',

@@ -411,7 +411,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
         {/* Both opponents' hands: the same cards as the learner's, turned sideways and stacked down the
             left and right edges, running off the felt so only part of each shows (SKATGO-26). */}
         {([1, 2] as Seat[]).map((seat) => (
-          <Stack key={seat} seat={seat} game={game} shown={rest ? [] : undefined} />
+          <Stack key={seat} seat={seat} game={game} shown={rest?.[seat]} />
         ))}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
@@ -457,18 +457,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
           {/* A finished trick stays until the player taps it away (SKATGO-72): anywhere on the screen
               will do, and a hand in the frame's bottom-right corner says so. */}
           {game.phase === 'trickEnd' ? <Collect hand={myHand} onCollect={onCollect} /> : null}
-          {/* A deal decided early (SKATGO-65): both opponents' remaining cards, face up in the frame, each
-              under its owner's name; the learner's are in the hand below. */}
-          {rest && contract ? (
-            <div data-testid="skat-reveal-cards" {...stylex.props(styles.revealPile)}>
-              {([1, 2] as Seat[]).map((seat) => (
-                <div key={seat} data-testid={`skat-reveal-${seat}`} {...stylex.props(styles.revealSeat)}>
-                  <span {...stylex.props(typography.plateName, styles.revealName)}>{nameOf(seat)}</span>
-                  <Fan cards={sortHand(rest[seat], contract)} size="sm" row />
-                </div>
-              ))}
-            </div>
-          ) : null}
           {revealing ? <Collect hand={[]} onCollect={() => setRevealed(game)} /> : null}
 
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
@@ -724,15 +712,18 @@ function ActionsFor({
 /** An opponent's hand: the same card as the learner's, turned sideways, stacked down the felt's edge
  *  and running off it — face up for an Ouvert declarer, face down otherwise. */
 function Stack({ seat, game, shown }: { seat: Seat; game: Game; shown?: Card[] }) {
-  // `shown`: given while a deal decided early is laid open (SKATGO-65) — the cards are in the frame then.
+  // `shown`: the cards this seat held when the deal was decided early, laid open in place (SKATGO-65).
+  // On the right, an open card is turned the other way and each covers the top of the one under it,
+  // so every card's index is on the part that shows.
   const open = !!shown || (game.declarer === seat && game.declaration?.ouvert && (game.phase === 'play' || game.phase === 'trickEnd'))
   const held = shown ?? game.hands[seat]
   const cards = open && game.declaration ? sortHand(held, game.declaration.contract) : held
+  const flip = open && seat === 2
   return (
-    <div data-testid={`skat-stack-${seat}`} aria-hidden={open ? undefined : 'true'} {...stylex.props(styles.stack, seat === 1 ? styles.stackLeft : styles.stackRight)}>
-      {cards.map((c, i) => (
-        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot)}>
-          <span {...stylex.props(styles.sideCard)}>
+    <div data-testid={`skat-stack-${seat}`} aria-hidden={open ? undefined : 'true'} {...stylex.props(styles.stack, seat === 1 ? styles.stackLeft : styles.stackRight, flip && styles.stackOpenRight)}>
+      {(flip ? [...cards].reverse() : cards).map((c, i) => (
+        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot, flip && styles.sideSlotOpenRight)}>
+          <span {...stylex.props(styles.sideCard, flip && styles.sideCardOpenRight)}>
             <PlayingCard card={c} faceDown={!open} size="fill" />
           </span>
         </div>
@@ -1249,6 +1240,11 @@ const styles = stylex.create({
     marginTop: { default: stage.stackStep, ':first-child': 0 },
   },
   sideCard: { position: 'absolute', top: dims.half, left: dims.half, display: 'block', width: stage.stackCard, transform: pose.sideways },
+  // The right opponent's cards laid open (SKATGO-65): listed bottom-up, each over the top of the one
+  // below, turned so the index shows.
+  stackOpenRight: { flexDirection: 'column-reverse' },
+  sideSlotOpenRight: { marginTop: 0, marginBottom: { default: stage.stackStep, ':first-child': 0 } },
+  sideCardOpenRight: { transform: pose.sidewaysOpen },
 
   frame: {
     position: 'absolute',
@@ -1416,9 +1412,6 @@ const styles = stylex.create({
   // A card lying in the frame — the skat or a played card — is as big as a card in the hand (SKATGO-68).
   frameCard: { display: 'block', width: stage.handCard },
   goldLabel: { color: color.amber },
-  revealPile: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x12, width: '100%' },
-  revealSeat: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4, width: '100%' },
-  revealName: { color: color.onColor },
   trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: stage.handCard },
   // A card in the trick (SKATGO-41): the flying box is a layer of its own until the card lands, then
   // the face is.

@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
-import { DAILY_DEALS } from '~/lib/daily'
+import { DAILY_LENGTHS } from '~/lib/daily'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -15,7 +15,7 @@ export function GameReading() {
   return (
     <section data-testid="game-reading" {...stylex.props(styles.root)}>
       <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.daily_about_title()}</h2>
-      <p {...stylex.props(typography.body, styles.text)}>{m.daily_about_intro({ deals: DAILY_DEALS })}</p>
+      <p {...stylex.props(typography.body, styles.text)}>{m.daily_about_intro(DAILY_LENGTHS)}</p>
       <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.daily_scoring_title()}</h2>
       <p {...stylex.props(typography.body, styles.text)}>{m.daily_scoring_text()}</p>
       <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.game_learning_title()}</h2>

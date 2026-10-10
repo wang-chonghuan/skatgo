@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { ClientPage } from '~/components/skat/client-page'
 import { faq } from '~/lib/faq'
-import { DAILY_DEALS } from '~/lib/daily'
+import { DAILY_LENGTHS } from '~/lib/daily'
 import { organization, pageHead, samePath } from '~/lib/head'
 import { SITE_URL, localizedUrl } from '~/lib/site'
 import { m } from '~/paraglide/messages'
@@ -12,7 +12,7 @@ export const Route = createFileRoute('/')({
   head: () =>
     pageHead({
       title: m.home_meta_title(),
-      description: m.home_meta_description({ deals: DAILY_DEALS }),
+      description: m.home_meta_description(DAILY_LENGTHS),
       paths: samePath('/'),
       image: 'home',
       jsonLd: [

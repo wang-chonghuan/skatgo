@@ -5,7 +5,8 @@
 //   DATABASE_URL=… node multiplayer/scripts/redeal-days.mjs 2026-10-03 2026-10-04          (dry run)
 //   DATABASE_URL=… node multiplayer/scripts/redeal-days.mjs 2026-10-03 2026-10-04 --yes    (delete)
 //
-// Prints, per day, the deals' computer label and how many entries and finished entries it has.
+// Prints, per day, each tournament's computer label and how many entries and finished entries it has
+// (two tournaments a day, 6 and 12 deals, since SKATGO-77).
 import pg from 'pg'
 
 const yes = process.argv.includes('--yes')
@@ -23,9 +24,14 @@ const c = await pool.connect()
 try {
   await c.query('BEGIN')
   for (const day of days) {
-    const deals = await c.query('SELECT computer FROM daily_deals WHERE day = $1 FOR UPDATE', [day])
-    const entries = await c.query('SELECT count(*)::int AS n, count(finished_at)::int AS finished FROM daily_entries WHERE day = $1', [day])
-    const before = { day, dealt: deals.rowCount === 1, computer: deals.rows[0]?.computer ?? null, ...entries.rows[0] }
+    const deals = await c.query('SELECT size, computer FROM daily_deals WHERE day = $1 ORDER BY size FOR UPDATE', [day])
+    const entries = await c.query(
+      'SELECT size, count(*)::int AS n, count(finished_at)::int AS finished FROM daily_entries WHERE day = $1 GROUP BY size', [day])
+    const tournaments = deals.rows.map((d) => {
+      const e = entries.rows.find((x) => x.size === d.size)
+      return { size: d.size, computer: d.computer, n: e?.n ?? 0, finished: e?.finished ?? 0 }
+    })
+    const before = { day, tournaments }
     if (yes) {
       const e = await c.query('DELETE FROM daily_entries WHERE day = $1', [day])
       const d = await c.query('DELETE FROM daily_deals WHERE day = $1', [day])

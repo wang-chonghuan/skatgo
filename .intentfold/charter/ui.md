@@ -195,7 +195,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `Shake` / `Feedback` | `exercises.tsx` | the wordless "no" after a wrong answer, and the good/bad panel that explains it |
 | `TitleWithDownload` / `PdfLink` | `print-links.tsx` | every download (SKATGO-53): the page's h1 with, beside it, the page's one `go` button — lucide's `Download` icon at `icon.inline` and "PDF herunterladen" / "Download PDF" — which moves under the title on a phone and is left off paper |
 | `PrintLinks` | `print-links.tsx` | the "Zum Ausdrucken" links to the score sheet and the short rules, on the rules page, the bidding table and the course; left off paper |
-| `VsAiTable` | `daily-comparison.tsx` | the daily tournament's comparison with the computer (SKATGO-48): one row per finished deal — the deal's number, the player's and the AI's score each with its role, and the difference, signed and bold, never `good` / `bad` — that opens to both deals told in full; a total row. Rows collapse instead of scrolling sideways; the newest opens after a deal and on `/daily` mid-day. On `/daily` while the day runs (`DayDeals`, "Die Spiele von heute", also rendered on the server; SKATGO-63) every deal of the day has a row: the ones not finished follow by number, "läuft" for the one being played and "offen" for the rest, with nothing of their cards; the total row appears once a deal is finished |
+| `VsAiTable` | `daily-comparison.tsx` | the daily tournament's comparison with the computer (SKATGO-48): one row per finished deal — the deal's number, the player's and the AI's score each with its role, and the difference, signed and bold, never `good` / `bad` — that opens to both deals told in full; a total row. Rows collapse instead of scrolling sideways; the newest opens after a deal and on `/daily` mid-day. On `/daily` while the day runs (`DayDeals`, "Die Spiele von heute", also rendered on the server; SKATGO-63) every deal of the chosen tournament has a row: the ones not finished follow by number, "läuft" for the one being played and "offen" for the rest, with nothing of their cards; the total row appears once a deal is finished |
 | `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards and the skat are as big as the hand's; the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68) |
 
 Recurring patterns — reuse them rather than inventing a neighbour:
@@ -231,7 +231,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **A sub-page** (the course, a lesson, the rules, the bidding table, the score sheet, the short rules,
   the daily tournament, the legal pages), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
-  choices (the course's lessons, the tournament's board), reading text and tables elsewhere. A
+  choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
+  tournament's page puts a switch of two pills under its lead, "6 Spiele | 12 Spiele" (SKATGO-77; the
+  same pills as its board's "Heute | Gestern", `Toggle` in `daily-page.tsx`), 6 chosen first; under it
+  everything is the chosen tournament's: its one `go` button, its deals, its result and its board. A
   printable has its download beside the title (`TitleWithDownload`). A lesson starts playing at once: under its title only a
   one-line kicker and the lesson's promise, then the lesson, which keeps its "back / continue" bar
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the

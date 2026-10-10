@@ -7,8 +7,16 @@ import type { Card } from './cards'
 import type { Bidding, Game, Phase, Played, Seat } from './game'
 import type { Declaration } from './value'
 
-/** Deals in one day's tournament (six since SKATGO-62: a day is a short round, not an evening). */
-export const DAILY_DEALS = 6
+/** The day's tournaments, by their number of deals (SKATGO-77): a short round of six (SKATGO-62: a
+ *  day is a short round, not an evening) and a longer one of twelve. Each has its own deals and board. */
+export const DAILY_SIZES = [6, 12] as const
+export type DailySize = (typeof DAILY_SIZES)[number]
+
+/** The tournament a player is shown first, and the one every entry before SKATGO-77 belongs to. */
+export const DAILY_DEALS: DailySize = 6
+
+/** A requested tournament size, or the first one when it names none of them. */
+export const dailySize = (n: unknown): DailySize => (DAILY_SIZES as readonly unknown[]).includes(n) ? (n as DailySize) : DAILY_DEALS
 
 /** New deals start at midnight in this time zone. */
 export const DAILY_TIME_ZONE = 'Europe/Berlin'
@@ -183,7 +191,8 @@ export function totals(deals: DealSummary[]): [number, number, number] {
 export type DailyStatus = {
   /** The tournament day, YYYY-MM-DD in Berlin. */
   day: string
-  of: number
+  /** Which of the day's tournaments, by its number of deals (SKATGO-77). */
+  of: DailySize
   /** The deal being played (0-based); equals `deals.length` until the day is finished. */
   deal: number
   deals: DealSummary[]

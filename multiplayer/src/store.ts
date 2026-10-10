@@ -42,6 +42,24 @@ export class Store {
         );
         ALTER TABLE daily_entries ADD COLUMN IF NOT EXISTS nickname text;
         ALTER TABLE daily_deals ADD COLUMN IF NOT EXISTS computer text NOT NULL DEFAULT 'heuristic';
+        -- A day has one tournament per size (SKATGO-77). Everything stored before is the six-deal one;
+        -- the default also keeps a previous version's writes right while a deploy overlaps.
+        ALTER TABLE daily_deals ADD COLUMN IF NOT EXISTS size integer NOT NULL DEFAULT 6;
+        ALTER TABLE daily_entries ADD COLUMN IF NOT EXISTS size integer NOT NULL DEFAULT 6;
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_index i JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
+             WHERE i.indrelid = 'daily_deals'::regclass AND i.indisprimary AND a.attname = 'size'
+          ) THEN
+            ALTER TABLE daily_entries DROP CONSTRAINT daily_entries_day_fkey;
+            ALTER TABLE daily_entries DROP CONSTRAINT daily_entries_pkey;
+            ALTER TABLE daily_deals DROP CONSTRAINT daily_deals_pkey;
+            ALTER TABLE daily_deals ADD PRIMARY KEY (day, size);
+            ALTER TABLE daily_entries ADD PRIMARY KEY (day, size, player);
+            ALTER TABLE daily_entries ADD FOREIGN KEY (day, size) REFERENCES daily_deals (day, size);
+          END IF;
+        END $$;
       `)
       await c.query('COMMIT')
     } catch (e) {

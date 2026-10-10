@@ -30,7 +30,7 @@ describe('track', () => {
 
   it('sends an event without properties as just the language and the path', () => {
     const seen = fakeWindow('localhost')
-    track('daily_started')
+    track('daily_nickname_set')
     expect(seen).toHaveLength(1)
     expect(Object.keys(seen[0].props).sort()).toEqual(['locale', 'page'])
   })

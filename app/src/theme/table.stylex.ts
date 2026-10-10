@@ -59,6 +59,9 @@ export const stage = stylex.defineVars({
   stackSlotHeight: { default: `calc(${u} * 100)`, [bp.portrait]: `calc(${u} * 90)` },
   /** Each sideways card shows 12u (13u) of the one beneath. */
   stackStep: { default: `calc(${u} * -88)`, [bp.portrait]: `calc(${u} * -77)` },
+  /** The step between cards laid open when a deal is decided early (SKATGO-65): 32u of each shows (30u
+   *  in portrait), so each card reads clearly. */
+  stackStepOpen: { default: `calc(${u} * -68)`, [bp.portrait]: `calc(${u} * -60)` },
   /** The trick's steps (SKATGO-68): its cards are as big as the hand's and overlap, so each card to the
    *  right lies one step higher than the one to its left — a step is a little more than a card's corner
    *  index is tall (50u, 37u in portrait: the number and the suit under it take 25% of a 182u / 134u

@@ -1,23 +1,25 @@
 import * as stylex from '@stylexjs/stylex'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { type DailyError, dailyAct, dailyBoard, dailyName, dailyState, isError } from '~/lib/daily-api'
 import type { Move } from '~/lib/skat/game'
-import { type DailyBoard, type DailyReply, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
+import { DAILY_DEALS, type DailyBoard, type DailyReply, type DailySize, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
-import { dims, radii } from '../../theme/shape.stylex'
+import { radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { DayDeals, VsAiTable } from './daily-comparison'
+import { Toggle, sizeSearch } from './daily-page'
 import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, TextField, linkLook } from './ui'
 
 // The daily tournament in the browser (SKATGO-35, SKATGO-36): the button on /daily that starts or
-// continues the day, the day's result once all 12 deals are played with the nickname that puts it on
-// the leaderboard, the leaderboard itself, and the table for a deal the server owns. The
+// continues the day, the day's result once all its deals are played with the nickname that puts it on
+// the leaderboard, the leaderboard itself, and the table for a deal the server owns. Each is about one of
+// the day's tournaments, named by its number of deals (SKATGO-77). The
 // server answers each move with every state the table passed through — the learner's move, then each
 // computer move and trick — and the table shows them one by one on its own beats, as if the computers
 // were thinking here.
@@ -28,13 +30,13 @@ type Which = 'today' | 'yesterday'
 
 /** The day's deals and the start / continue link to the table, or the day's result once it is played;
  *  then the board. `waiting` stands in while the status loads: the server's rendering of the same. */
-export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
+export function DailyEntry({ size, waiting }: { size: DailySize; waiting?: ReactNode }) {
   const [status, setStatus] = useState<DailyStatus | DailyError | null>(null)
   const [which, setWhich] = useState<Which>('today')
   const [boards, setBoards] = useState<Partial<Record<Which, DailyBoard | DailyError>>>({})
-  const loadBoard = (w: Which) => void dailyBoard(w).then((b) => setBoards((all) => ({ ...all, [w]: b })))
+  const loadBoard = (w: Which) => void dailyBoard(size, w).then((b) => setBoards((all) => ({ ...all, [w]: b })))
   useEffect(() => {
-    void dailyState(false).then((r) => setStatus(isError(r) ? r : r.status))
+    void dailyState(size, false).then((r) => setStatus(isError(r) ? r : r.status))
     loadBoard('today')
   }, [])
   function show(w: Which) {
@@ -47,12 +49,12 @@ export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
   return (
     <div {...stylex.props(styles.stack)}>
       {status.finished ? (
-        <DailyResult status={status} board={today} onNamed={() => loadBoard('today')} />
+        <DailyResult size={size} status={status} board={today} onNamed={() => loadBoard('today')} />
       ) : (
         <div {...stylex.props(styles.stack)}>
           {/* The way in first, its own width so it reads as a button (SKATGO-63). */}
           <div {...stylex.props(styles.action)}>
-            <Link to="/daily/play" data-testid="daily-cta" onClick={() => { if (!status.started) track('daily_started') }} {...linkLook('go', 'lg', 'landing')}>
+            <Link to="/daily/play" search={sizeSearch(size)} data-testid="daily-cta" onClick={() => { if (!status.started) track('daily_started', { deals: size }) }} {...linkLook('go', 'lg', 'landing')}>
               {status.started ? m.daily_continue({ n: status.deal + 1, of: status.of }) : m.daily_cta()}
             </Link>
           </div>
@@ -75,16 +77,9 @@ function Leaderboard({ which, board, onShow }: { which: Which; board: DailyBoard
         <div {...stylex.props(styles.boardHead)}>
           <h2 {...stylex.props(typography.panelLabel, styles.text, styles.what)}>{m.daily_board_title()}</h2>
           {(['today', 'yesterday'] as Which[]).map((w) => (
-            <button
-              key={w}
-              type="button"
-              data-testid={`daily-board-${w}`}
-              aria-pressed={which === w}
-              onClick={() => onShow(w)}
-              {...stylex.props(typography.toggle, styles.switch, which === w && styles.switchOn)}
-            >
+            <Toggle key={w} testId={`daily-board-${w}`} pressed={which === w} onClick={() => onShow(w)}>
               {w === 'today' ? m.daily_board_today() : m.daily_board_yesterday()}
-            </button>
+            </Toggle>
           ))}
         </div>
         {board === null ? null : isError(board) ? (
@@ -117,7 +112,7 @@ function Leaderboard({ which, board, onShow }: { which: Which; board: DailyBoard
 }
 
 /** The nickname that puts a finished day on the board: offered, shown, or changed until midnight. */
-function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }) {
+function Nickname({ size, board, onNamed }: { size: DailySize; board: DailyBoard; onNamed: () => void }) {
   const me = board.me
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(me?.nickname ?? board.lastNickname ?? '')
@@ -127,7 +122,7 @@ function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }
   if (!me?.finished) return null
   async function save() {
     setSaving(true)
-    const r = await dailyName(value)
+    const r = await dailyName(size, value)
     setSaving(false)
     if (isError(r)) return setRefused(true)
     track('daily_nickname_set')
@@ -162,23 +157,25 @@ function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }
   )
 }
 
-/** The day's 12 deals and the total, as the server recorded them, and the nickname for the board. */
-function DailyResult({ status, board, onNamed }: { status: DailyStatus; board: DailyBoard | null; onNamed: () => void }) {
+/** The tournament's deals and the total, as the server recorded them, and the nickname for the board. */
+function DailyResult({ size, status, board, onNamed }: { size: DailySize; status: DailyStatus; board: DailyBoard | null; onNamed: () => void }) {
   return (
     <Panel>
       <section data-testid="daily-result" data-total={status.totals[PLAYER]} {...stylex.props(styles.result)}>
         <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_result_title()}</h2>
         <VsAiTable deals={status.deals} benchmarks={status.benchmarks} auctions={status.auctions} benchmarkAuctions={status.benchmarkAuctions} />
-        {board ? <Nickname key={board.me?.nickname ?? ''} board={board} onNamed={onNamed} /> : null}
+        {board ? <Nickname key={board.me?.nickname ?? ''} size={size} board={board} onNamed={onNamed} /> : null}
       </section>
     </Panel>
   )
 }
 
-/** The table for the day's current deal. After the last deal, or when the day is over, back to /daily. */
+/** The table for the current deal of one of the day's tournaments. After its last deal, or when the day
+ *  is over, back to that tournament on /daily. */
 export function DailyTable() {
+  const size = useSearch({ from: '/daily_/play' }).deals ?? DAILY_DEALS
   const navigate = useNavigate()
-  const onLeave = () => void navigate({ to: '/daily' })
+  const onLeave = () => void navigate({ to: '/daily', search: sizeSearch(size) })
   const [reply, setReply] = useState<DailyReply | null>(null)
   const [shown, setShown] = useState<SeatView | null>(null)
   const [queue, setQueue] = useState<SeatView[]>([])
@@ -193,7 +190,7 @@ export function DailyTable() {
   const before = useRef<[number, number, number]>([0, 0, 0])
 
   async function load() {
-    const r = await dailyState(true)
+    const r = await dailyState(size, true)
     if (isError(r)) return setFailed(true)
     if (r.status.finished || !r.view) return onLeave()
     setFailed(false)
@@ -226,13 +223,13 @@ export function DailyTable() {
     if (!reply) return
     setSending(true)
     before.current = reply.status.totals
-    const r = await dailyAct({ day: reply.status.day, deal, revision: reply.revision }, move)
+    const r = await dailyAct(size, { day: reply.status.day, deal, revision: reply.revision }, move)
     setSending(false)
     // Refused — a new day began, or this page is behind another tab: take the server's word for where
     // things stand. A deal never restarts; the same cards come back as they were left.
     if (isError(r)) return r.error === 'day_over' ? onLeave() : void load()
     if (!r.steps?.length) return void load()
-    if (r.status.finished && !reply.status.finished) track('daily_finished', { total: r.status.totals[PLAYER] })
+    if (r.status.finished && !reply.status.finished) track('daily_finished', { deals: size, total: r.status.totals[PLAYER] })
     setReply(r)
     setShown(r.steps[0])
     setQueue(r.steps.slice(1))
@@ -276,22 +273,6 @@ const styles = stylex.create({
   // A row of its own, so the button keeps its width instead of stretching across the column.
   action: { display: 'flex' },
   boardHead: { display: 'flex', alignItems: 'center', gap: space.x8 },
-  switch: {
-    minHeight: dims.control,
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: color.hairline,
-    backgroundColor: color.surface,
-    color: color.navy,
-    borderRadius: radii.pill,
-    paddingInline: space.x16,
-    cursor: 'pointer',
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.info,
-    outlineOffset: border.focusOffset,
-  },
-  switchOn: { backgroundColor: color.goodSoft, borderColor: color.go },
   rank: { minWidth: space.x24 },
   boardRow: { paddingInline: space.x8 },
   mine: { backgroundColor: color.goodSoft, borderRadius: radii.column },

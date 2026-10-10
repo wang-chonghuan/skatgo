@@ -53,10 +53,11 @@ export type ProductEvents = {
   game_started: { mode: GameMode }
   /** That game was settled. `score` is the learner's game value as declarer, 0 as a defender. */
   game_finished: { mode: GameMode; won: boolean; score: number }
-  /** Today's tournament was entered: its start button pressed while none of the day's deals was open. */
-  daily_started: Empty
-  /** Today's last deal was finished. */
-  daily_finished: { total: number }
+  /** One of today's tournaments was entered: its start button pressed while none of its deals was open.
+   *  `deals` says which (SKATGO-77). */
+  daily_started: { deals: number }
+  /** A tournament's last deal today was finished. */
+  daily_finished: { deals: number; total: number }
   /** Today's finished entry was put on the leaderboard under a nickname, or renamed. */
   daily_nickname_set: Empty
   /** A private table was opened. */

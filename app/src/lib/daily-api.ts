@@ -1,5 +1,5 @@
 import type { Move } from '~/lib/skat/game'
-import type { DailyBoard, DailyReply } from '~/lib/skat/tournament'
+import type { DailyBoard, DailyReply, DailySize } from '~/lib/skat/tournament'
 
 // The browser's side of the daily tournament (SKATGO-35, SKATGO-36): its requests to /api/daily
 // (lib/daily-handler.ts). Who is playing travels in the session or the tournament's own cookie, never
@@ -17,16 +17,18 @@ async function post<T extends object>(op: 'state' | 'act' | 'name' | 'board', bo
   }
 }
 
+// Every call names which of the day's tournaments it is about, by its number of deals (SKATGO-77).
+
 /** Where the player stands today; `open` also opens the current deal and returns it. */
-export const dailyState = (open: boolean) => post<DailyReply>('state', { open })
+export const dailyState = (size: DailySize, open: boolean) => post<DailyReply>('state', { size, open })
 
 /** One move in the current deal, quoting the day, the deal and how many moves came before it. */
-export const dailyAct = (at: { day: string; deal: number; revision: number }, action: Move) => post<DailyReply>('act', { ...at, action })
+export const dailyAct = (size: DailySize, at: { day: string; deal: number; revision: number }, action: Move) => post<DailyReply>('act', { size, ...at, action })
 
 /** Put today's finished entry on the board under `nickname`, or change it. */
-export const dailyName = (nickname: string) => post<{ nickname: string }>('name', { nickname })
+export const dailyName = (size: DailySize, nickname: string) => post<{ nickname: string }>('name', { size, nickname })
 
 /** Today's leaderboard, or yesterday's final one. */
-export const dailyBoard = (day: 'today' | 'yesterday') => post<DailyBoard>('board', { day })
+export const dailyBoard = (size: DailySize, day: 'today' | 'yesterday') => post<DailyBoard>('board', { size, day })
 
 export const isError = <T extends object>(r: T | DailyError): r is DailyError => 'error' in r

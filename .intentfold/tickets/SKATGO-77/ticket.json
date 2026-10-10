@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-77",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-77",
+  "branch": "SKATGO-77-daily-twelve-deals",
+  "base": "c783c132748338dabf74af9e8fc04c040357ee43",
+  "ports": { "web": 55077, "multiplayer": 56077, "database": 57077 }
+}

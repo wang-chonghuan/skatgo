@@ -14,15 +14,18 @@ exercises that are judged on the spot and explain every wrong answer. Overall pr
 the course map, and the last lesson is a whole game against two computer players. The aim, in the
 human's words: 「只要进度走完，就能短时间把skat学会，学到可以和已经会的人打牌的水平」.
 
-A daily Skat tournament at `/daily`: every day the same 6 deals for every player (SKATGO-62), each played
-against two computer players and scored by Seeger-Fabian; one entry per player per day; scores are
-the server's, from the cards actually played. After each deal the player sees how the computer, named "AI", played the same deal
-from their seat (SKATGO-42), in a table of both that grows by one row per deal, also on the day's page
-and its result. Each row gives both Seeger-Fabian scores with each side's role and the difference; opened,
+A daily Skat tournament at `/daily`, in two lengths (SKATGO-77): every day the same 6 deals for every
+player (SKATGO-62), shown first, and separately the same 12 deals for every player; each deal played
+against two computer players and scored by Seeger-Fabian; one entry per player per tournament per day,
+and a leaderboard for each tournament; scores are the server's, from the cards actually played. A
+player who sees too many deals ahead does not start, so the short one leads (the human, 2026-10-10:
+「用户看到太多，就不想打了」). After each deal the player sees how the computer, named "AI", played the same deal
+from their seat (SKATGO-42), in a table of both that grows by one row per deal, also on the tournament's
+page and its result. Each row gives both Seeger-Fabian scores with each side's role and the difference; opened,
 it tells both deals in full — the contract, won or lost with the card points, Schneider, Schwarz or
 overbid, the game value, and how many card points that side took. The newest row opens after each deal
-and on the day's page mid-day (SKATGO-48). The day's page lists all of the day's deals from the start
-(SKATGO-63): the finished ones in that comparison, the rest by number as in progress or not yet played,
+and on the tournament's page mid-day (SKATGO-48). The page lists all of the chosen tournament's deals
+from the start (SKATGO-63): the finished ones in that comparison, the rest by number as in progress or not yet played,
 never with their cards.
 
 Free play at `/play`: one game at a time against the same two computer players, unranked, free and

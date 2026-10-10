@@ -41,13 +41,16 @@ The service is ready only once two things are in place:
 A missing or altered model or pool stops the service at start. Its image is `node:24-slim`
 (onnxruntime-node needs glibc) and carries the committed models; nothing is downloaded at build or
 run time, and onnxruntime's telemetry is off (`ORT_DISABLE_TELEMETRY`).
-The leader deals the tournament's today and tomorrow ahead, with the computers' bidding (SKATGO-39;
-logged as `daily_prepared` with its duration, or `daily_prepare_failed`). Since SKATGO-42 that includes
-the computer's own play of each deal from the player's seat. A day of 6 deals (SKATGO-62) takes about
-15–16 s on a laptop and about 3 min on the production instance (177–191 s, about 285 MB, measured
-2026-10-09). A 10-minute
-limit abandons it for the next hourly try.
-Readiness does not wait for it; until today is prepared, `/daily` answers `503 day_preparing`.
+The leader deals each tournament of today and tomorrow ahead, one at a time, with the computers'
+bidding (SKATGO-39; logged as `daily_prepared` with its day, size and duration, or
+`daily_prepare_failed`). Since SKATGO-42 that includes the computer's own play of each deal from the
+player's seat. The 6-deal tournament (SKATGO-62) takes about 15–16 s on a laptop and about 3 min on the
+production instance (177–191 s, about 285 MB, measured 2026-10-09); the 12-deal one (SKATGO-77) about
+30 s on a laptop (measured 2026-10-10), so about 6 min on production by the same ratio. A preparation
+still running after an hour is abandoned for the next hourly try (SKATGO-77).
+Readiness does not wait for it; until a tournament of today is prepared, its `/daily` requests answer
+`503 day_preparing`. When a release adds a tournament, the first start prepares it, so it answers that
+way for its preparation time while the others play on.
 
 **Environments**
 
@@ -291,16 +294,18 @@ render services --output json --confirm
 render logs --resources "$SERVICE_ID" --limit 100 --output text --confirm
 render deploys list "$SERVICE_ID" --output json --confirm
 
-# clear a nickname from a day's leaderboard (SKATGO-36): the entry and its score stay; it leaves the
-# board until the player names it again. Day is the Berlin date; equal nicknames that day all clear.
+# clear a nickname from a day's leaderboards (SKATGO-36): the entry and its score stay; it leaves the
+# board until the player names it again. Day is the Berlin date; equal nicknames that day all clear, in
+# both tournaments — add `AND size = 6` or `AND size = 12` for one (SKATGO-77).
 render psql skatgo-multiplayer-db --confirm --output text \
   --command "UPDATE daily_entries SET nickname = NULL WHERE day = '<YYYY-MM-DD>' AND nickname = '<nickname>'"
 
-# re-deal named days (SKATGO-42): deletes those days' deals and every entry played on them, so the
-# leader deals them anew. Players' entries are lost for good: run it only for days the human named,
-# and in production only with the human's explicit go-ahead.
-# Without --yes it is a dry run printing each day's computer label and entry counts. The production
-# database takes no outside connections, so run it inside the multiplayer service as a Render one-off job.
+# re-deal named days (SKATGO-42): deletes those days' deals, both tournaments', and every entry played
+# on them, so the leader deals them anew. Players' entries are lost for good: run it only for days the
+# human named, and in production only with the human's explicit go-ahead.
+# Without --yes it is a dry run printing, per tournament of each day, its computer label and entry
+# counts. The production database takes no outside connections, so run it inside the multiplayer
+# service as a Render one-off job.
 DATABASE_URL=… node multiplayer/scripts/redeal-days.mjs <YYYY-MM-DD>… [--yes]
 
 # custom domains and TLS: ips-render-ops cap9

@@ -1,10 +1,14 @@
 {
   "ticket": "SKATGO-75",
   "mode": "open",
-  "stage": "setup-complete",
-  "finish": "review",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-75",
   "branch": "SKATGO-75-settings",
   "base": "5426156",
-  "ports": { "web": 55075, "multiplayer": 56075, "database": 57075 }
+  "ports": {
+    "web": 55075,
+    "multiplayer": 56075,
+    "database": 57075
+  }
 }

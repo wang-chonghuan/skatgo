@@ -722,7 +722,7 @@ function Stack({ seat, game, shown }: { seat: Seat; game: Game; shown?: Card[] }
   return (
     <div data-testid={`skat-stack-${seat}`} aria-hidden={open ? undefined : 'true'} {...stylex.props(styles.stack, seat === 1 ? styles.stackLeft : styles.stackRight, flip && styles.stackOpenRight)}>
       {(flip ? [...cards].reverse() : cards).map((c, i) => (
-        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot, flip && styles.sideSlotOpenRight)}>
+        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot, shown && styles.sideSlotSpread, flip && styles.sideSlotOpenRight, flip && shown && styles.sideSlotSpreadRight)}>
           <span {...stylex.props(styles.sideCard, flip && styles.sideCardOpenRight)}>
             <PlayingCard card={c} faceDown={!open} size="fill" />
           </span>
@@ -1244,6 +1244,9 @@ const styles = stylex.create({
   // below, turned so the index shows.
   stackOpenRight: { flexDirection: 'column-reverse' },
   sideSlotOpenRight: { marginTop: 0, marginBottom: { default: stage.stackStep, ':first-child': 0 } },
+  // Laid open after an early end, the cards are spread wider so each reads (SKATGO-65).
+  sideSlotSpread: { marginTop: { default: stage.stackStepOpen, ':first-child': 0 } },
+  sideSlotSpreadRight: { marginTop: 0, marginBottom: { default: stage.stackStepOpen, ':first-child': 0 } },
   sideCardOpenRight: { transform: pose.sidewaysOpen },
 
   frame: {

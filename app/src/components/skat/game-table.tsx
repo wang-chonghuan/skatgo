@@ -8,6 +8,7 @@ import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortH
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { visibleTable } from '~/lib/skat/table-view'
+import { useTapToCollect } from '~/lib/skat/settings'
 import { cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
 import {
   type Game,
@@ -85,6 +86,9 @@ function useNameOf() {
 }
 
 export const BOT_DELAY = 850
+/** How long a finished trick stays before it goes by itself (SKATGO-75): long enough to see who took
+ *  it, short enough not to hold up the game — about what online card tables commonly use. */
+export const TRICK_PAUSE = 1200
 
 /** A deal the server owns (the daily tournament, SKATGO-35). Nobody at this table plays for the
  *  computers, and there are no hints: the learner's moves go to `send`, and `game` is what came back. */
@@ -186,8 +190,17 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   const contract = game.declaration?.contract ?? null
   const myTurn = who === ME
 
-  // A finished trick waits on the table for the player's tap (SKATGO-72).
+  // A finished trick goes by itself after a short pause, or — when the learner chose so in the settings —
+  // waits for their tap (SKATGO-72, SKATGO-75).
   const collect = remote ? remote.collect : () => setGame((g) => (g.phase === 'trickEnd' ? collectTrick(g) : g))
+  const tapToCollect = useTapToCollect()
+  useEffect(() => {
+    if (game.phase !== 'trickEnd' || tapToCollect) return
+    const t = setTimeout(collect, TRICK_PAUSE)
+    return () => clearTimeout(t)
+    // Once per finished trick on the table.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game, tapToCollect])
 
   // The computers move on a timer. The updater re-checks the state it is handed, so a timer that
   // fires late (or twice, under StrictMode) cannot move for the wrong player. A tournament's computers
@@ -277,6 +290,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   const winner = trickWinner(game)
 
   function onCard(card: Card) {
+    // A card tapped while the trick waits to go takes it at once, and is played if the learner leads.
+    if (game.phase === 'trickEnd') return onCollect(card)
     if (game.phase === 'skat' && game.declarer === ME && game.pickedUp) {
       setPicked((p) => (p.some((c) => sameCard(c, card)) ? p.filter((c) => !sameCard(c, card)) : p.length < 2 ? [...p, card] : p))
       return
@@ -456,7 +471,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
 
           {/* A finished trick stays until the player taps it away (SKATGO-72): anywhere on the screen
               will do, and a hand in the frame's bottom-right corner says so. */}
-          {game.phase === 'trickEnd' ? <Collect hand={myHand} onCollect={onCollect} /> : null}
+          {game.phase === 'trickEnd' && tapToCollect ? <Collect hand={myHand} onCollect={onCollect} /> : null}
           {revealing ? <Collect hand={[]} onCollect={() => setRevealed(game)} /> : null}
 
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the

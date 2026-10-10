@@ -3,6 +3,7 @@ import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { Check, Menu, Settings, X } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { LANG_TAG } from '~/lib/site'
 import { type Deck, useSettings } from '~/lib/skat/settings'
@@ -222,45 +223,120 @@ export function SettingsButton() {
   )
 }
 
-/** The choice of deck; choosing applies at once, to every card on the page. */
+/** The settings (SKATGO-66, SKATGO-75): the deck, how a finished trick goes, and the language. A choice
+ *  applies at once — the language reloads the page in it, as the header's menu does, so both always show
+ *  the same one. While it is open the page behind it neither scrolls nor takes a touch: the dialog lies
+ *  on `body`, and everything else there is inert. */
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const chosen = useSettings((s) => s.deck)
   const choose = useSettings((s) => s.setDeck)
-  return (
-    <div data-testid="settings-dialog" {...stylex.props(styles.scrim)} onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={m.settings_title()} onClick={(e) => e.stopPropagation()} {...stylex.props(styles.dialog)}>
+  const tapToCollect = useSettings((s) => s.tapToCollect)
+  const setTapToCollect = useSettings((s) => s.setTapToCollect)
+  const current = getLocale()
+  const box = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const html = document.documentElement
+    const overflow = html.style.overflow
+    html.style.overflow = 'hidden'
+    const others = [...document.body.children].filter((el) => el !== box.current && !el.hasAttribute('inert'))
+    for (const el of others) el.setAttribute('inert', '')
+    const escape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', escape)
+    return () => {
+      html.style.overflow = overflow
+      for (const el of others) el.removeAttribute('inert')
+      document.removeEventListener('keydown', escape)
+    }
+  }, [onClose])
+  return createPortal(
+    <div ref={box} data-testid="settings-dialog" {...stylex.props(styles.scrim)} onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-label={m.settings_open()} onClick={(e) => e.stopPropagation()} {...stylex.props(styles.dialog)}>
         <div {...stylex.props(styles.dialogHead)}>
-          <h2 {...stylex.props(typography.dialogTitle, styles.dialogTitle)}>{m.settings_title()}</h2>
+          <h2 {...stylex.props(typography.dialogTitle, styles.dialogTitle)}>{m.settings_open()}</h2>
           <button type="button" aria-label={m.settings_close()} data-testid="settings-close" onClick={onClose} {...stylex.props(styles.close)}>
             <X size={icon.menu} strokeWidth={icon.outline} />
           </button>
         </div>
-        <div role="radiogroup" aria-label={m.settings_title()} {...stylex.props(styles.decks)}>
-          {DECKS.map((deck) => {
-            const on = deck.key === chosen
-            return (
-              <button
-                key={deck.key}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                data-testid={`deck-${deck.key}`}
-                onClick={() => choose(deck.key)}
-                {...stylex.props(typography.appBtnStrong, styles.deck, on && styles.deckOn)}
-              >
-                <span {...stylex.props(styles.deckName)}>
-                  <span>{deck.label()}</span>
-                  <span {...stylex.props(typography.small, styles.deckLetters)}>{deck.letters}</span>
-                </span>
-                <span aria-hidden="true" {...stylex.props(styles.check, !on && styles.checkOff)}>
-                  <Check size={icon.inline} strokeWidth={icon.outline} />
-                </span>
-              </button>
-            )
-          })}
-        </div>
+        <section {...stylex.props(styles.section)}>
+          <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_title()}</h3>
+          <div role="radiogroup" aria-label={m.settings_title()} {...stylex.props(styles.decks)}>
+            {DECKS.map((deck) => {
+              const on = deck.key === chosen
+              return (
+                <button
+                  key={deck.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  data-testid={`deck-${deck.key}`}
+                  onClick={() => choose(deck.key)}
+                  {...stylex.props(typography.appBtnStrong, styles.deck, on && styles.deckOn)}
+                >
+                  <span {...stylex.props(styles.deckName)}>
+                    <span>{deck.label()}</span>
+                    <span {...stylex.props(typography.small, styles.deckLetters)}>{deck.letters}</span>
+                  </span>
+                  <span aria-hidden="true" {...stylex.props(styles.check, !on && styles.checkOff)}>
+                    <Check size={icon.inline} strokeWidth={icon.outline} />
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+        <section {...stylex.props(styles.section)}>
+          <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_tricks()}</h3>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={tapToCollect}
+            data-testid="settings-tap-collect"
+            onClick={() => setTapToCollect(!tapToCollect)}
+            {...stylex.props(typography.appBtnStrong, styles.deck, tapToCollect && styles.deckOn)}
+          >
+            <span {...stylex.props(styles.deckName)}>
+              <span>{m.settings_tap_collect()}</span>
+              <span {...stylex.props(typography.small, styles.deckLetters)}>{tapToCollect ? m.settings_tap_collect_on() : m.settings_tap_collect_off()}</span>
+            </span>
+            <span aria-hidden="true" {...stylex.props(styles.check, !tapToCollect && styles.checkOff)}>
+              <Check size={icon.inline} strokeWidth={icon.outline} />
+            </span>
+          </button>
+        </section>
+        <section {...stylex.props(styles.section)}>
+          <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.language_label()}</h3>
+          <div role="radiogroup" aria-label={m.language_label()} {...stylex.props(styles.decks)}>
+            {locales.map((l) => {
+              const Flag = FLAG[l]
+              const on = l === current
+              return (
+                <button
+                  key={l}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  lang={LANG_TAG[l]}
+                  data-testid={`settings-locale-${l}`}
+                  onClick={() => {
+                    if (!on) void setLocale(l)
+                  }}
+                  {...stylex.props(typography.appBtnStrong, styles.deck, on && styles.deckOn)}
+                >
+                  <Flag />
+                  <span {...stylex.props(styles.deckName)}>{NAME[l]}</span>
+                  <span aria-hidden="true" {...stylex.props(styles.check, !on && styles.checkOff)}>
+                    <Check size={icon.inline} strokeWidth={icon.outline} />
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -298,12 +374,19 @@ const styles = stylex.create({
     justifyContent: 'center',
     padding: space.x16,
     backgroundColor: color.scrim,
+    overscrollBehavior: 'contain',
+    touchAction: 'none',
   },
   dialog: {
     display: 'flex',
     flexDirection: 'column',
     gap: space.x16,
     width: dims.settingsWidth,
+    // A phone held sideways is shorter than the settings: they scroll inside the dialog, never the page.
+    maxHeight: '100%',
+    overflowY: 'auto',
+    overscrollBehavior: 'contain',
+    touchAction: 'pan-y',
     boxSizing: 'border-box',
     padding: space.x24,
     borderRadius: radii.dialog,
@@ -328,6 +411,8 @@ const styles = stylex.create({
     ...focus,
   },
   decks: { display: 'flex', flexDirection: 'column', gap: space.x10 },
+  section: { display: 'flex', flexDirection: 'column', gap: space.x8 },
+  sectionTitle: { margin: 0, color: color.slate, textTransform: 'uppercase' },
   deck: {
     display: 'flex',
     alignItems: 'center',

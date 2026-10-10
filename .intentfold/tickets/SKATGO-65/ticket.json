@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-65",
+  "mode": "open",
+  "stage": "setup-complete",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-65",
+  "branch": "SKATGO-65-reveal-rest",
+  "base": "3282b0b",
+  "ports": { "web": 55065, "multiplayer": 56065, "database": 57065 }
+}

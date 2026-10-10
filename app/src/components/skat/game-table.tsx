@@ -160,6 +160,11 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   // with the computers' replies, replaces it when it comes. Until then the table shows `pending`.
   const [pending, setPending] = useState<{ from: Game; game: Game } | null>(null)
   const game = remote ? (pending && pending.from === remote.game ? pending.game : remote.game) : localGame
+  // A deal decided early (SKATGO-59) first shows everyone's remaining cards, face up, until the learner
+  // taps (SKATGO-65): the game they are judged on is `revealed`, then the settlement follows.
+  const [revealed, setRevealed] = useState<Game | null>(null)
+  const revealing = game.phase === 'done' && !!game.early && revealed !== game
+  const rest = revealing ? restHands(game) : null
   // A card tapped while a finished trick waits: the trick goes, and the card follows at once if the
   // learner is on lead (SKATGO-73).
   const [intent, setIntent] = useState<Card | null>(null)
@@ -207,7 +212,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   }, [game, who, remote])
 
   useEffect(() => {
-    if (game.phase !== 'done' || !game.result || game.declarer === null || settledFor.current === game) return
+    if (game.phase !== 'done' || !game.result || game.declarer === null || settledFor.current === game || revealing) return
     settledFor.current = game
     const { result, declarer } = game
     setScores((s) => {
@@ -220,7 +225,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
     if (humanWon) {
       void confetti(confettiBurst.game)
     }
-  }, [game, onSettled])
+  }, [game, onSettled, revealing])
 
   // Anything said about the previous state is stale once the state moves on.
   useEffect(() => {
@@ -325,7 +330,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   const [settingsOpen, setSettingsOpen] = useState(false)
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
   const acting = inFrameActions && myTurn
-  const dialog = game.phase === 'passedIn' || game.phase === 'done'
+  const dialog = game.phase === 'passedIn' || (game.phase === 'done' && !revealing)
   // With the panel pinned open, the learner's move is made in the panel, as Funbridge's bidding box is
   // (SKATGO-34): nothing then lies over the table. Otherwise it is the drawer over the felt.
   const movesInPanel = fullScreen && pinned && panelOpen
@@ -366,6 +371,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
               {game.phase === 'trickEnd' && winner !== null ? (
                 <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
+              ) : revealing && game.declarer !== null && game.early ? (
+                <span data-testid="skat-reveal" data-early={game.early.kind}>
+                  <Pill tone="amber">{earlyLine(game.declarer, game.early, nameOf, room !== undefined)}</Pill>
+                </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
                   <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} />
@@ -402,7 +411,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
         {/* Both opponents' hands: the same cards as the learner's, turned sideways and stacked down the
             left and right edges, running off the felt so only part of each shows (SKATGO-26). */}
         {([1, 2] as Seat[]).map((seat) => (
-          <Stack key={seat} seat={seat} game={game} />
+          <Stack key={seat} seat={seat} game={game} shown={rest ? [] : undefined} />
         ))}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
@@ -448,6 +457,19 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
           {/* A finished trick stays until the player taps it away (SKATGO-72): anywhere on the screen
               will do, and a hand in the frame's bottom-right corner says so. */}
           {game.phase === 'trickEnd' ? <Collect hand={myHand} onCollect={onCollect} /> : null}
+          {/* A deal decided early (SKATGO-65): both opponents' remaining cards, face up in the frame, each
+              under its owner's name; the learner's are in the hand below. */}
+          {rest && contract ? (
+            <div data-testid="skat-reveal-cards" {...stylex.props(styles.revealPile)}>
+              {([1, 2] as Seat[]).map((seat) => (
+                <div key={seat} data-testid={`skat-reveal-${seat}`} {...stylex.props(styles.revealSeat)}>
+                  <span {...stylex.props(typography.plateName, styles.revealName)}>{nameOf(seat)}</span>
+                  <Fan cards={sortHand(rest[seat], contract)} size="sm" row />
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {revealing ? <Collect hand={[]} onCollect={() => setRevealed(game)} /> : null}
 
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
               learner's under the bottom edge, all alike (SKATGO-72). */}
@@ -520,7 +542,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
           <Fan
             flight
             testId="skat-hand"
-            cards={myHand}
+            cards={rest && contract ? sortHand(rest[ME], contract) : myHand}
             size="table"
             row
             onPick={onCard}
@@ -701,9 +723,11 @@ function ActionsFor({
 
 /** An opponent's hand: the same card as the learner's, turned sideways, stacked down the felt's edge
  *  and running off it — face up for an Ouvert declarer, face down otherwise. */
-function Stack({ seat, game }: { seat: Seat; game: Game }) {
-  const open = game.declarer === seat && game.declaration?.ouvert && (game.phase === 'play' || game.phase === 'trickEnd')
-  const cards = open ? sortHand(game.hands[seat], game.declaration!.contract) : game.hands[seat]
+function Stack({ seat, game, shown }: { seat: Seat; game: Game; shown?: Card[] }) {
+  // `shown`: given while a deal decided early is laid open (SKATGO-65) — the cards are in the frame then.
+  const open = !!shown || (game.declarer === seat && game.declaration?.ouvert && (game.phase === 'play' || game.phase === 'trickEnd'))
+  const held = shown ?? game.hands[seat]
+  const cards = open && game.declaration ? sortHand(held, game.declaration.contract) : held
   return (
     <div data-testid={`skat-stack-${seat}`} aria-hidden={open ? undefined : 'true'} {...stylex.props(styles.stack, seat === 1 ? styles.stackLeft : styles.stackRight)}>
       {cards.map((c, i) => (
@@ -715,6 +739,14 @@ function Stack({ seat, game }: { seat: Seat; game: Game }) {
       ))}
     </div>
   )
+}
+
+/** Each seat's cards when the deal was decided early (SKATGO-65): the rest was played out by the rules
+ *  from trick `early.from` on, so those tricks hold exactly what everyone had left. */
+function restHands(g: Game): [Card[], Card[], Card[]] {
+  const from = g.early?.from ?? g.tricks.length
+  const played = g.tricks.slice(from).flatMap((t) => t.cards)
+  return [0, 1, 2].map((seat) => played.filter((p) => p.seat === seat).map((p) => p.card)) as [Card[], Card[], Card[]]
 }
 
 /** The tap that takes a finished trick off the table (SKATGO-72): a tap anywhere on the screen, said
@@ -1384,6 +1416,9 @@ const styles = stylex.create({
   // A card lying in the frame — the skat or a played card — is as big as a card in the hand (SKATGO-68).
   frameCard: { display: 'block', width: stage.handCard },
   goldLabel: { color: color.amber },
+  revealPile: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x12, width: '100%' },
+  revealSeat: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4, width: '100%' },
+  revealName: { color: color.onColor },
   trickCard: { position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: stage.handCard },
   // A card in the trick (SKATGO-41): the flying box is a layer of its own until the card lands, then
   // the face is.

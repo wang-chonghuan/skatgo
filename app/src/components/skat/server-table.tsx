@@ -27,8 +27,9 @@ export function ServerTable({ fullScreen = false, onSettled }: { fullScreen?: bo
   const [revision, setRevision] = useState(0)
   const [shown, setShown] = useState<SeatView | null>(null)
   const [queue, setQueue] = useState<SeatView[]>([])
-  /** The finished trick the player has tapped away (SKATGO-72): until then the steps after it wait. */
-  const [collected, setCollected] = useState<SeatView | null>(null)
+  /** The player has tapped the finished trick away (SKATGO-72) — perhaps before its state arrived, the
+   *  player's own card being shown at once (SKATGO-73). Until then the steps after it wait. */
+  const [release, setRelease] = useState(false)
   const [sending, setSending] = useState(false)
   const [failure, setFailure] = useState<Failure | null>(null)
   const started = useRef(false)
@@ -75,13 +76,14 @@ export function ServerTable({ fullScreen = false, onSettled }: { fullScreen?: bo
   useEffect(() => {
     if (queue.length === 0) return
     const held = shown?.phase === 'trickEnd'
-    if (held && collected !== shown) return
+    if (held && !release) return
     const t = setTimeout(() => {
+      if (held) setRelease(false)
       setShown(queue[0])
       setQueue((q) => q.slice(1))
     }, held ? 0 : BOT_DELAY)
     return () => clearTimeout(t)
-  }, [queue, shown, collected])
+  }, [queue, shown, release])
 
   const game = useMemo(() => (shown ? gameFromView(shown) : null), [shown])
   if (!game) {
@@ -103,7 +105,7 @@ export function ServerTable({ fullScreen = false, onSettled }: { fullScreen?: bo
         game,
         busy: sending || queue.length > 0,
         send: (move) => void send(move),
-        collect: () => setCollected(shown),
+        collect: () => setRelease(true),
         next: () => void start(),
         problem: failure ? { text: failure.text, retry: failure.retry, fresh: () => void start() } : null,
       }}

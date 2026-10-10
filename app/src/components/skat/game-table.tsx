@@ -156,7 +156,13 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   const [dealer, setDealer] = useState<Seat>(2)
   const [localGame, setGame] = useState<Game>(() => deal(2))
   const remote = tournament ?? server ?? room
-  const game = remote?.game ?? localGame
+  // The learner's own card goes on the table the moment it is tapped (SKATGO-73); the server's answer,
+  // with the computers' replies, replaces it when it comes. Until then the table shows `pending`.
+  const [pending, setPending] = useState<{ from: Game; game: Game } | null>(null)
+  const game = remote ? (pending && pending.from === remote.game ? pending.game : remote.game) : localGame
+  // A card tapped while a finished trick waits: the trick goes, and the card follows at once if the
+  // learner is on lead (SKATGO-73).
+  const [intent, setIntent] = useState<Card | null>(null)
   const hints = !tournament && !room
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   const [picked, setPicked] = useState<Card[]>([])
@@ -234,7 +240,21 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   /** The learner's move: to the server for a server game, through the engine here otherwise. */
   function dispatch(move: Move) {
     if (!remote) return setGame((g) => applyMove(g, move))
-    if (!remote.busy) remote.send(move)
+    if (remote.busy) return
+    if (move.type === 'play') setPending({ from: remote.game, game: playCard(remote.game, move.card) })
+    remote.send(move)
+  }
+
+  // A move the server answered without a new state (refused, or not reached): the card goes back.
+  const remoteBusy = remote?.busy ?? false
+  useEffect(() => {
+    if (pending && remote && !remoteBusy && pending.from === remote.game) setPending(null)
+  }, [pending, remote, remoteBusy])
+
+  /** A tap while a finished trick waits: on a card in the hand, that card is played next if it can be. */
+  function onCollect(card: Card | null) {
+    setIntent(card)
+    collect()
   }
 
   function newGame() {
@@ -263,6 +283,16 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
     }
     dispatch({ type: 'play', card })
   }
+
+  // The card tapped while the trick waited is played once the trick has gone — if the learner is on
+  // lead then; otherwise it is forgotten (SKATGO-73).
+  useEffect(() => {
+    if (!intent || game.phase === 'trickEnd') return
+    setIntent(null)
+    if (myTurn && legal?.some((c) => sameCard(c, intent))) onCard(intent)
+    // Only when the table moves on.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game])
 
   function showPlayHint() {
     const h = playHint(game)
@@ -417,7 +447,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
 
           {/* A finished trick stays until the player taps it away (SKATGO-72): anywhere on the screen
               will do, and a hand in the frame's bottom-right corner says so. */}
-          {game.phase === 'trickEnd' ? <Collect onCollect={collect} /> : null}
+          {game.phase === 'trickEnd' ? <Collect hand={myHand} onCollect={onCollect} /> : null}
 
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
               learner's under the bottom edge, all alike (SKATGO-72). */}
@@ -689,8 +719,13 @@ function Stack({ seat, game }: { seat: Seat; game: Game }) {
 
 /** The tap that takes a finished trick off the table (SKATGO-72): a tap anywhere on the screen, said
  *  by a blinking hand in the frame's corner — still for a player who asked for less motion. */
-function Collect({ onCollect }: { onCollect: () => void }) {
+function Collect({ hand, onCollect }: { hand: Card[]; onCollect: (card: Card | null) => void }) {
   const still = useReducedMotion()
+  // The tap lands on the cover; a card of the learner's under it is found by where it landed.
+  const tapped = (x: number, y: number) => {
+    const id = document.elementsFromPoint(x, y).find((el) => el.closest('[data-testid=skat-hand]') && el.closest('[data-card]'))?.closest('[data-card]')?.getAttribute('data-card')
+    return hand.find((c) => cardId(c) === id) ?? null
+  }
   return (
     <>
       <motion.svg
@@ -707,7 +742,7 @@ function Collect({ onCollect }: { onCollect: () => void }) {
         ))}
       </motion.svg>
       {createPortal(
-        <button type="button" data-testid="skat-collect" aria-label={m.table_collect()} onClick={onCollect} {...stylex.props(styles.collect)} />,
+        <button type="button" data-testid="skat-collect" aria-label={m.table_collect()} onClick={(e) => onCollect(tapped(e.clientX, e.clientY))} {...stylex.props(styles.collect)} />,
         document.body,
       )}
     </>

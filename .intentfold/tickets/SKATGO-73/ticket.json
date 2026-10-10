@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-73",
+  "mode": "open",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-73",
+  "branch": "SKATGO-73-instant-play",
+  "base": "493e3b9",
+  "ports": { "web": 55073, "multiplayer": 56073, "database": 57073 }
+}

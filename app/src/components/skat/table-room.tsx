@@ -83,8 +83,10 @@ export function PrivateTable() {
   const [stage, setStage] = useState<Stage>({ kind: 'connecting' })
   const [shown, setShown] = useState<TableState | null>(null)
   const [queue, setQueue] = useState<TableState[]>([])
-  /** The finished trick the player has tapped away (SKATGO-72): until then the states after it wait, on this screen only. */
-  const [collected, setCollected] = useState<TableState | null>(null)
+  /** The player has tapped the finished trick away (SKATGO-72) — perhaps before its state arrived, the
+   *  player's own card being shown at once (SKATGO-73). Until then the states after it wait, on this
+   *  screen only. */
+  const [release, setRelease] = useState(false)
   const [sending, setSending] = useState(false)
   const latest = useRef<TableState | null>(null)
   const room = useRef<Room | null>(null)
@@ -142,10 +144,12 @@ export function PrivateTable() {
   // States arrive as they happen; a finished trick stays on this screen until it is tapped away.
   useEffect(() => {
     if (queue.length === 0) return
-    if (shown?.pub.phase === 'trickEnd' && collected !== shown) return
+    const held = shown?.pub.phase === 'trickEnd'
+    if (held && !release) return
+    if (held) setRelease(false)
     setShown(queue[0])
     setQueue((q) => q.slice(1))
-  }, [queue, shown, collected])
+  }, [queue, shown, release])
 
   const send = (action: Move | { type: 'start' } | { type: 'next' }) => {
     const r = room.current
@@ -169,7 +173,7 @@ export function PrivateTable() {
     track('room_started', { humans: shown.pub.seats.filter((s) => s.kind === 'human').length })
     send({ type: 'start' })
   }} />
-  return <Playing state={shown} busy={sending || queue.length > 0} send={send} collect={() => setCollected(shown)} />
+  return <Playing state={shown} busy={sending || queue.length > 0} send={send} collect={() => setRelease(true)} />
 }
 
 /** A seat's name as the viewer reads it: a person's nickname (the viewer is "you"), Lina or Max for a

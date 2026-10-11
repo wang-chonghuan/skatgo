@@ -105,6 +105,8 @@ export type Tournament = {
   /** The deal on the table, 0-based, of `of`. */
   deal: number
   of: number
+  /** The tournament day, so the deal just finished can be reviewed (SKATGO-79). */
+  day: string
   /** Seeger-Fabian totals per seat over the day's finished deals. */
   totals: [number, number, number]
   /** The day's finished deals and, for each, the AI's result in the player's seat (SKATGO-42). */
@@ -378,6 +380,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             ai={tournament.benchmarks?.[tournament.deal] ?? null}
             mineAuction={tournament.auctions?.[tournament.deal]}
             aiAuction={tournament.benchmarkAuctions?.[tournament.deal] ?? null}
+            review={{ size: tournament.of, deal: tournament.deal, day: tournament.day }}
           />
         ) : null,
         day: (

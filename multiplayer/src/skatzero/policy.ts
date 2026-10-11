@@ -61,6 +61,9 @@ export type Policy = {
   choose: (v: PlayerView) => Promise<Card>
   /** The net's value for each legal card (before any lookahead), in hand order. */
   values: (v: PlayerView) => Promise<{ card: Card; value: number }[]>
+  /** Each legal card's value as `choose` weighs it — after its one-step lookahead — in hand order
+   *  (SKATGO-79: how far a played card fell below the best one). */
+  ranked: (v: PlayerView) => Promise<{ card: Card; value: number }[]>
   /** The declarer model's raw values for a SkatZero-space state (bidding, SKATGO-39). */
   score: (gametype: 'D' | 'G' | 'N', s: ZState) => Promise<{ candidates: ZCard[]; values: Float32Array }>
   /** SkatZero's bidding tables (bidding/data/*.npy), verified against the manifest. */
@@ -108,8 +111,8 @@ export async function loadPolicy(dir: URL): Promise<Policy> {
     return new Map(e.candidates.map((c, i) => [c, values[i]]))
   }
 
-  /** The measured driver's choice: first maximum, after the one-step lookahead. */
-  async function chooseZ(gametype: 'D' | 'G' | 'N', s: ZState, contract: Contract, swap: (c: ZCard) => Card): Promise<ZCard> {
+  /** Every legal card's value as the measured driver weighs it, after the one-step lookahead. */
+  async function weighed(gametype: 'D' | 'G' | 'N', s: ZState, contract: Contract, swap: (c: ZCard) => Card): Promise<Map<ZCard, number>> {
     let values = await evaluate(gametype, s)
     const inTrick = s.trace.length % 3
     if (gametype !== 'N' && inTrick === 2 && s.hand.length > 1) {
@@ -128,6 +131,12 @@ export async function loadPolicy(dir: URL): Promise<Policy> {
       }
       values = looked
     }
+    return values
+  }
+
+  /** The measured driver's choice: first maximum, after the one-step lookahead. */
+  async function chooseZ(gametype: 'D' | 'G' | 'N', s: ZState, contract: Contract, swap: (c: ZCard) => Card): Promise<ZCard> {
+    const values = await weighed(gametype, s, contract, swap)
     let best: ZCard | null = null
     let top = -Infinity
     for (const [card, value] of values) if (value > top) [best, top] = [card, value]
@@ -138,6 +147,11 @@ export async function loadPolicy(dir: URL): Promise<Policy> {
   async function values(v: PlayerView) {
     const { gametype, state, toProduct } = toZ(v)
     return [...(await evaluate(gametype, state))].map(([c, value]) => ({ card: toProduct(c), value }))
+  }
+
+  async function ranked(v: PlayerView) {
+    const { gametype, state, toProduct } = toZ(v)
+    return [...(await weighed(gametype, state, v.contract, toProduct))].map(([c, value]) => ({ card: toProduct(c), value }))
   }
 
   async function choose(v: PlayerView): Promise<Card> {
@@ -157,7 +171,7 @@ export async function loadPolicy(dir: URL): Promise<Policy> {
   }
 
   const tables = await loadBiddingTables(dir)
-  return { choose, values, score, tables, release: async () => { for (const s of sessions.values()) await s.release() } }
+  return { choose, values, ranked, score, tables, release: async () => { for (const s of sessions.values()) await s.release() } }
 }
 
 /**

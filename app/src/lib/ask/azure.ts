@@ -25,7 +25,7 @@ const DEFAULT_EFFORT = 'medium'
  * ordinary error response); the pieces then follow. `signal` aborts the call — the reader leaving, or
  * the whole-answer time limit, which covers the stream too.
  */
-export async function openModelStream(system: string, messages: ChatMessage[], signal: AbortSignal): Promise<ModelStream> {
+export async function openModelStream(system: string, messages: ChatMessage[], signal: AbortSignal, tokens: number = LIMITS.answerTokens): Promise<ModelStream> {
   const base = process.env.LLM_BASE_URL
   const key = process.env.LLM_API_KEY
   if (!base || !key) return { ok: false, status: 'unconfigured' }
@@ -37,7 +37,7 @@ export async function openModelStream(system: string, messages: ChatMessage[], s
       body: JSON.stringify({
         model: process.env.LLM_MODEL || DEFAULT_MODEL,
         reasoning_effort: process.env.LLM_EFFORT || DEFAULT_EFFORT,
-        max_completion_tokens: LIMITS.answerTokens,
+        max_completion_tokens: tokens,
         messages: [{ role: 'system', content: system }, ...messages],
         stream: true,
       }),

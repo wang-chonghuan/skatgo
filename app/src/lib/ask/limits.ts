@@ -15,6 +15,9 @@ export const LIMITS = {
   messages: 6,
   /** Tokens the model may spend on one answer. */
   answerTokens: 700,
+  /** Tokens for a deal's review (SKATGO-79): its reasoning alone measured 175–512 on a short prompt, and
+   *  they count against the cap — at 700 a longer deal sometimes left no room for the answer. */
+  reviewTokens: 2000,
   /** How long one call to the model may take. */
   timeoutMs: 30_000,
 } as const

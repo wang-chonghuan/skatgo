@@ -2,12 +2,12 @@ import { createHash, randomInt } from 'node:crypto'
 import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
-import type { Card } from '../../app/src/lib/skat/cards'
+import { type Card, sameCard, shuffle } from '../../app/src/lib/skat/cards'
 import { chooseDeclaration, declarationAdvice } from '../../app/src/lib/skat/ai'
-import { actor, aiBid, deal, next, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
-import { shuffle } from '../../app/src/lib/skat/cards'
+import { actor, aiBid, collectTrick, deal, next, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import {
-  DAILY_DEALS, DAILY_SIZES, DAILY_TIME_ZONE, PLAYER, auctionOf, seatView, summarize, totals, type DailySize, type DailyStatus, type DealSummary,
+  DAILY_DEALS, DAILY_SIZES, DAILY_TIME_ZONE, PLAYER, auctionOf, saldo, seatView, summarize, totals, type DailySize, type DailyStatus,
+  type DealReview, type DealSummary, type WorstCard,
   type SeatView,
 } from '../../app/src/lib/skat/tournament'
 import { cleanNickname } from '../../app/src/lib/skat/nickname'
@@ -134,6 +134,7 @@ const actInput = z.object({
 }).strict()
 const nameInput = z.object({ player, size, nickname: z.string().max(200) }).strict()
 const boardInput = z.object({ player: player.nullable(), size, day: z.enum(['today', 'yesterday']) }).strict()
+const reviewInput = z.object({ player, size, deal: z.number().int().min(0).max(Math.max(...DAILY_SIZES) - 1) }).strict()
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
 
 /** Where the player stands. The computer's result of a deal goes with the player's own, only once the
@@ -386,20 +387,24 @@ export async function dailyName(store: Store, who: string, size: DailySize, raw:
 const BOARD_ROWS = 100
 
 /**
- * A tournament's leaderboard for a day (SKATGO-36, one per size since SKATGO-77): the finished entries that have a nickname, by Seeger-Fabian total;
- * equal totals share a rank and the next rank skips (1, 1, 3). Only nicknames and totals leave here —
+ * A tournament's leaderboard for a day (SKATGO-36, one per size since SKATGO-77): the finished entries
+ * that have a nickname, by Saldo (SKATGO-79: how far each is ahead of their two opponents, worked out from
+ * the stored deals, so entries finished before it rank the same way); equal Saldo share a rank and the
+ * next rank skips (1, 1, 3), the earlier finish listed first. Only nicknames and totals leave here —
  * never a player id. For the asking player: their own standing (a finished player without a nickname
  * sees the rank they would have), and the nickname they last used on an earlier day.
  */
 export async function dailyBoard(store: Store, who: string | null, size: DailySize, which: 'today' | 'yesterday', now = Date.now()) {
   const day = which === 'today' ? dayOf(now) : dayBefore(dayOf(now))
-  const { rows } = await store.pool.query(
-    `SELECT player, nickname, total FROM daily_entries
-      WHERE day = $1 AND size = $2 AND finished_at IS NOT NULL AND nickname IS NOT NULL
-      ORDER BY total DESC, finished_at ASC`, [day, size])
+  const { rows: found } = await store.pool.query(
+    `SELECT player, nickname, total, deals, finished_at FROM daily_entries
+      WHERE day = $1 AND size = $2 AND finished_at IS NOT NULL AND nickname IS NOT NULL`, [day, size])
+  const rows = found
+    .map((r) => ({ ...r, saldo: saldo(totals(r.deals as DealSummary[])) }))
+    .sort((a, b) => b.saldo - a.saldo || Number(a.finished_at) - Number(b.finished_at))
   const ranked = rows.map((r, i) => ({
-    rank: i === 0 || rows[i - 1].total !== r.total ? i + 1 : 0,
-    nickname: r.nickname as string, total: r.total as number, me: r.player === who,
+    rank: i === 0 || rows[i - 1].saldo !== r.saldo ? i + 1 : 0,
+    nickname: r.nickname as string, total: r.total as number, saldo: r.saldo, me: r.player === who,
   }))
   for (let i = 1; i < ranked.length; i++) if (ranked[i].rank === 0) ranked[i].rank = ranked[i - 1].rank
   const mine = ranked.findIndex(r => r.me)
@@ -408,17 +413,75 @@ export async function dailyBoard(store: Store, who: string | null, size: DailySi
   let lastNickname: string | null = null
   if (who) {
     const own = await store.pool.query(
-      'SELECT nickname, total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, size, who])
+      'SELECT nickname, total, deals, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, size, who])
     const e = own.rows[0]
     if (e) {
-      const rank = 1 + ranked.filter(r => r.total > e.total).length
-      me = { finished: !!e.finished_at, total: e.total as number, nickname: e.nickname as string | null, rank: e.finished_at ? rank : null }
+      const mine = saldo(totals(e.deals as DealSummary[]))
+      const rank = 1 + ranked.filter(r => r.saldo > mine).length
+      me = { finished: !!e.finished_at, total: e.total as number, saldo: mine, nickname: e.nickname as string | null, rank: e.finished_at ? rank : null }
     }
     const last = await store.pool.query(
       'SELECT nickname FROM daily_entries WHERE player = $1 AND nickname IS NOT NULL ORDER BY day DESC LIMIT 1', [who])
     lastNickname = last.rows[0]?.nickname ?? null
   }
   return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, lastNickname }
+}
+
+/**
+ * The review of one deal the player has finished (SKATGO-79): the deal replayed from their recorded moves,
+ * and at each card they played with a choice, every legal card valued by SkatZero as it weighs its own
+ * choice; the worst card is the one furthest below the best. Only the player's own hand and the trick as
+ * it stood go into it — nothing they could not see — with the deal's result beside the AI's.
+ */
+export async function dailyReview(store: Store, policy: Policy, who: string, size: DailySize, index: number, now = Date.now()): Promise<DealReview> {
+  const day = dayOf(now)
+  const { rows: dealt } = await store.pool.query('SELECT deals, computer FROM daily_deals WHERE day = $1 AND size = $2', [day, size])
+  if (!dealt[0]) throw new DayPreparing(day)
+  const { rows: entered } = await store.pool.query(
+    'SELECT actions, deals FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, size, who])
+  const e = entered[0] as Pick<Entry, 'actions' | 'deals'> | undefined
+  if (!e || index >= e.deals.length) throw new Rejected('not_finished')
+  const spec = (dealt[0].deals as DealSpec[])[index]
+  const actions = e.actions[index] ?? []
+  // Every card the player played, with the deal as it stood just before.
+  const plays: { g: Game; card: Card }[] = []
+  let g: Game
+  if (dealt[0].computer === HEURISTIC) {
+    g = untilPlayer(deal(spec.dealer, spec.deck))
+    for (const move of actions as Move[]) {
+      if (move.type === 'play') plays.push({ g, card: move.card })
+      g = untilPlayer(applySeatMove(g, PLAYER, move))
+    }
+  } else {
+    g = deal(spec.dealer, spec.deck)
+    for (const { seat, move } of actions as Logged[]) {
+      if (g.phase === 'trickEnd') g = collectTrick(g)
+      if (seat === PLAYER && move.type === 'play') plays.push({ g, card: move.card })
+      g = applySeatMove(g, seat, move)
+    }
+  }
+  let worst: WorstCard | null = null
+  for (const { g: before, card } of plays) {
+    const ranked = await policy.ranked(viewOf(before, PLAYER))
+    if (ranked.length < 2) continue
+    const best = ranked.reduce((a, b) => (b.value > a.value ? b : a))
+    const played = ranked.find((r) => sameCard(r.card, card))
+    if (!played) continue
+    const loss = best.value - played.value
+    if (loss > 0 && (!worst || loss > worst.loss)) {
+      worst = { trick: before.tricks.length + 1, hand: before.hands[PLAYER], table: before.trick, played: card, best: best.card, loss }
+    }
+  }
+  const b = spec.benchmark
+  return {
+    deal: index,
+    bid: g.bid,
+    mine: e.deals[index],
+    ai: b?.summary ?? null,
+    auction: auctionOf(g),
+    aiAuction: b ? auctionOf(replayLog(spec.dealer, spec.deck, b.log)) : null,
+    worst,
+  }
 }
 
 /** The routes, behind the admission key. */
@@ -461,6 +524,10 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
   router.post('/board', run(async body => {
     const i = boardInput.parse(body)
     return dailyBoard(store, i.player, i.size, i.day)
+  }))
+  router.post('/review', run(async body => {
+    const i = reviewInput.parse(body)
+    return dailyReview(store, policy()!, i.player, i.size, i.deal)
   }))
   router.post('/claim', run(async body => {
     const i = claimInput.parse(body)

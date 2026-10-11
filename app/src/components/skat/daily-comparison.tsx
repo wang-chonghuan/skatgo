@@ -2,9 +2,9 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
-import { contractName } from '~/lib/skat/i18n'
-import type { Seat } from '~/lib/skat/game'
-import { type Auction, type DailyStatus, type DealSummary, PLAYER, totals } from '~/lib/skat/tournament'
+import { dailyReview, isError } from '~/lib/daily-api'
+import { cardLabel, contractName } from '~/lib/skat/i18n'
+import { type Auction, type DailyStatus, type DealReview, type DealSummary, PLAYER, dailySize, saldo, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -13,20 +13,21 @@ import { timing } from '../../theme/effects.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { Panel, Rich } from './ui'
+import { Btn, Panel, Rich } from './ui'
 
 // The day against the AI (SKATGO-42, SKATGO-48): every deal the player has finished, beside the same deal
 // played by the computer in the player's seat against the same two computers — worked out when the day
 // was dealt, and shown only once the player has finished that deal.
 //
-// A row compares the seat's Seeger-Fabian scores and their difference; opened, it says what happened on
-// each side — who declared what, won or lost by how many card points, at what game value, and what the
-// seat's side took — because a defender's score alone (0 or 40) says nothing about the deal. The rows
-// fold so the table fits a phone without scrolling sideways.
+// Since SKATGO-79 every comparison is a score sheet: all three seats' Seeger-Fabian scores, the player's
+// deal over the AI's, and each side's Saldo — how far that seat is ahead of the two opponents — because a
+// seat's own score says nothing about how it did against the table. The player is navy and the AI orange,
+// two of the theme's own colours (the human: 「当前的主题色就是：橙色，红色，海军蓝，绿色」), so the two
+// lines are told apart at a glance; neither colour judges. A day's row gives both Saldo and opens to its
+// sheet; the rows fold so the table fits a phone without scrolling sideways.
 
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 
-const NAMES = [m.name_you, m.name_lina, m.name_max] as const
 /** The seats' names in the player's deal, and in the AI's, where the AI sits in the player's seat. */
 const youNames = () => [m.name_you(), m.name_lina(), m.name_max()]
 const aiNames = () => [m.daily_ai(), m.name_lina(), m.name_max()]
@@ -58,17 +59,6 @@ function playedParts(d: DealSummary, who: string): string[] {
   return parts
 }
 
-/** What happened on one side of a deal, as one line: declarer and game, the outcome, the seat's side. */
-function storyOf(d: DealSummary, own: string, side: (points: number) => string): string {
-  if (d.declarer === null || !d.declaration) return m.daily_passed_in_short()
-  const decl = d.declaration
-  const x = d.detail!
-  const parts = playedParts(d, d.declarer === PLAYER ? own : NAMES[d.declarer as Seat]())
-  parts.push(m.daily_value({ value: x.value }))
-  if (decl.contract.kind !== 'null') parts.push(side(d.declarer === PLAYER ? x.declarerPoints : x.defenderPoints))
-  return parts.join(' · ')
-}
-
 /** A deal's auction as one line (SKATGO-57): each seat's highest number, or pass; the declarer bold. */
 function auctionLine(a: Auction, d: DealSummary, names: string[]): string {
   if (d.declarer === null) return m.daily_all_passed()
@@ -78,63 +68,147 @@ function auctionLine(a: Auction, d: DealSummary, names: string[]): string {
   }).join(' · ')
 }
 
-/**
- * One deal, the player against the AI (SKATGO-57) — what the settlement leads with: all three seats'
- * Seeger-Fabian scores in the player's deal over the AI's (the AI in the player's seat), because Skat is
- * played by three; then each side's auction and game, so the player sees at once how they did and why.
- * The two sides sit side by side on a wide screen, one above the other on a phone; no cards inside the
- * settlement, which is one already.
- */
-export function DealVsAi({ mine, ai, mineAuction, aiAuction }: { mine: DealSummary; ai: DealSummary | null; mineAuction?: Auction; aiAuction?: Auction | null }) {
-  const you = mine.scores[PLAYER]
-  const theirs = ai ? ai.scores[PLAYER] : null
-  const seats = [m.daily_col_seat(), m.name_lina(), m.name_max()]
-  const rows: [string, string, (string | number)[]][] = [
-    ['you', m.daily_row_you(), mine.scores.map(signed)],
-    ...(ai
-      ? ([
-          ['ai', m.daily_row_ai(), ai.scores.map(signed)],
-        ] as [string, string, string[]][])
-      : []),
-  ]
+type Scores = readonly [number, number, number]
+type Side = 'you' | 'ai'
+
+/** Whose line it is: the player in navy, the AI in orange (SKATGO-79). */
+function Who({ side }: { side: Side }) {
   return (
-    <section data-testid="daily-deal-vs-ai" data-you={you} data-ai={theirs ?? ''} data-diff={theirs === null ? '' : you - theirs} {...stylex.props(styles.deal)}>
-      <table data-testid="daily-deal-scores" {...stylex.props(styles.scores)}>
+    <span data-who={side} {...stylex.props(typography.badge, styles.whoTag, side === 'you' ? styles.whoYou : styles.whoAi)}>
+      {side === 'you' ? m.name_you() : m.daily_ai()}
+    </span>
+  )
+}
+
+/**
+ * A score sheet (SKATGO-79): the three seats' Seeger-Fabian scores — of one deal, or a tournament's totals
+ * — the player's line over the AI's, with each line's Saldo, the number that says how they did against the
+ * table, largest. The AI's line is missing on days dealt before it played them.
+ */
+export function ScoreSheet({ mine, ai, testId }: { mine: Scores; ai: Scores | null; testId: string }) {
+  const seats = [m.daily_col_seat(), m.name_lina(), m.name_max()]
+  const lines: [Side, Scores][] = ai ? [['you', mine], ['ai', ai]] : [['you', mine]]
+  return (
+    <div {...stylex.props(styles.sheet)}>
+      <table data-testid={testId} {...stylex.props(styles.scores)}>
         <thead>
           <tr>
             <td />
             {seats.map((name, seat) => (
               <th key={name} scope="col" {...stylex.props(typography.small, styles.scoreHead, seat === PLAYER && styles.own)}>{name}</th>
             ))}
+            <th scope="col" {...stylex.props(typography.smallBold, styles.scoreHead, styles.saldo)}>{m.daily_saldo()}</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map(([key, label, values]) => (
-            <tr key={key} data-row={key}>
-              <th scope="row" {...stylex.props(typography.small, styles.scoreLabel)}>{label}</th>
-              {values.map((v, seat) => (
-                <td key={seat} data-seat={seat} {...stylex.props(typography.dialogTitle, styles.scoreCell, seat === PLAYER && styles.own)}>{v}</td>
+          {lines.map(([side, scores]) => (
+            <tr key={side} data-row={side} data-scores={scores.join(',')} data-saldo={saldo(scores)}>
+              <th scope="row" {...stylex.props(styles.scoreLabel)}><Who side={side} /></th>
+              {scores.map((v, seat) => (
+                <td key={seat} data-seat={seat} {...stylex.props(typography.appBtnStrong, styles.scoreCell, seat === PLAYER && styles.own)}>{signed(v)}</td>
               ))}
+              <td data-testid="daily-saldo" {...stylex.props(typography.dialogTitle, styles.scoreCell, styles.saldo)}>{signed(saldo(scores))}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div {...stylex.props(styles.sides)}>
-        <Side side="you" title={m.daily_row_you()} d={mine} a={mineAuction} names={youNames()} />
-        {ai ? <Side side="ai" title={m.daily_row_ai()} d={ai} a={aiAuction ?? undefined} names={aiNames()} /> : null}
+      <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_saldo_note()}</p>
+    </div>
+  )
+}
+
+/** Where a finished deal's review is asked for: the tournament and the deal, on the day it was played. */
+export type ReviewOf = { size: number; deal: number; day: string }
+
+/** Reviews already fetched on this page, so reopening a deal does not ask again. */
+const reviewed = new Map<string, { review: DealReview; text: string | null }>()
+
+/**
+ * The player's worst card in a finished deal, only when asked (SKATGO-79, the human: 「做成一个按钮，不用
+ * 每次自动显示」): the trick, the card played and SkatZero's, and the assistant's model's few sentences on
+ * why — or the word that every card was SkatZero's own choice.
+ */
+export function DealReviewButton({ size, deal, day }: ReviewOf) {
+  const key = `${day}|${size}|${deal}`
+  const [got, setGot] = useState(reviewed.get(key) ?? null)
+  const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle')
+  async function ask() {
+    setState('loading')
+    const r = await dailyReview(dailySize(size), deal)
+    if (isError(r)) return setState('failed')
+    reviewed.set(key, r)
+    setGot(r)
+  }
+  if (got) {
+    const w = got.review.worst
+    return (
+      <div
+        data-testid="daily-review-result"
+        data-trick={w?.trick ?? ''}
+        data-played={w ? `${w.played.suit}${w.played.rank}` : ''}
+        data-best={w ? `${w.best.suit}${w.best.rank}` : ''}
+        {...stylex.props(styles.review)}
+      >
+        <p {...stylex.props(typography.note, styles.reviewLine)}>
+          <Rich text={w ? m.daily_review_card({ trick: w.trick, played: cardLabel(w.played), best: cardLabel(w.best) }) : m.daily_review_clean()} />
+        </p>
+        {w ? (
+          got.text ? (
+            <p data-testid="daily-review-text" {...stylex.props(typography.note, styles.reviewText)}>
+              <span {...stylex.props(typography.smallBold, styles.reviewLabel)}>{m.daily_review_ai()}</span> {got.text}
+            </p>
+          ) : (
+            <p {...stylex.props(typography.note, styles.muted)}>{m.daily_review_no_text()}</p>
+          )
+        ) : null}
       </div>
+    )
+  }
+  if (state === 'loading') return <p data-testid="daily-review-loading" {...stylex.props(typography.loading, styles.muted)}>{m.daily_review_loading()}</p>
+  return (
+    <div {...stylex.props(styles.reviewAsk)}>
+      <Btn testId="daily-review" tone="quiet" size="sm" onClick={() => void ask()}>{m.daily_review()}</Btn>
+      {state === 'failed' ? <p role="alert" {...stylex.props(typography.note, styles.muted)}>{m.daily_review_failed()}</p> : null}
+    </div>
+  )
+}
+
+/**
+ * One deal, the player against the AI (SKATGO-57, a score sheet since SKATGO-79) — what the settlement
+ * leads with: the three seats' scores in the player's deal over the AI's and each Saldo; then each side's
+ * auction and game, so the player sees at once how they did and why; then, when the deal is a finished
+ * one of today's, the way to its worst card. The sides sit side by side on a wide screen, one above the
+ * other on a phone; no cards inside the settlement, which is one already.
+ */
+export function DealVsAi({ mine, ai, mineAuction, aiAuction, review }: { mine: DealSummary; ai: DealSummary | null; mineAuction?: Auction; aiAuction?: Auction | null; review?: ReviewOf }) {
+  const played = mine.declarer !== null
+  return (
+    <section
+      data-testid="daily-deal-vs-ai"
+      data-you={mine.scores[PLAYER]}
+      data-ai={ai ? ai.scores[PLAYER] : ''}
+      data-saldo-you={saldo(mine.scores)}
+      data-saldo-ai={ai ? saldo(ai.scores) : ''}
+      {...stylex.props(styles.deal)}
+    >
+      <ScoreSheet testId="daily-deal-scores" mine={mine.scores} ai={ai ? ai.scores : null} />
+      <div {...stylex.props(styles.sides)}>
+        <SideStory side="you" d={mine} a={mineAuction} names={youNames()} />
+        {ai ? <SideStory side="ai" d={ai} a={aiAuction ?? undefined} names={aiNames()} /> : null}
+      </div>
+      {review && played ? <DealReviewButton {...review} /> : null}
     </section>
   )
 }
 
-function Side({ side, title, d, a, names }: { side: 'you' | 'ai'; title: string; d: DealSummary; a?: Auction; names: string[] }) {
+function SideStory({ side, d, a, names }: { side: Side; d: DealSummary; a?: Auction; names: string[] }) {
   const lines: [string, string][] = [
     [m.daily_line_bidding(), a ? auctionLine(a, d, names) : '–'],
     [m.daily_line_game(), d.declarer === null || !d.declaration ? m.daily_passed_in_short() : playedParts(d, names[d.declarer]).join(' · ')],
   ]
   return (
     <div data-testid="daily-deal-side" data-side={side} {...stylex.props(styles.side)}>
-      <span {...stylex.props(typography.smallBold, styles.sideTitle)}>{title}</span>
+      <span><Who side={side} /></span>
       {lines.map(([label, text]) => (
         <p key={label} {...stylex.props(styles.sideLine)}>
           <span {...stylex.props(typography.micro, styles.muted)}>{label}</span>
@@ -176,6 +250,7 @@ export function DayDeals({ of, status }: { of: number; status?: DailyStatus }) {
           benchmarkAuctions={status?.benchmarkAuctions}
           of={of}
           current={status?.started ? status.deal : null}
+          review={status ? { size: of, day: status.day } : undefined}
           openLatest
         />
       </section>
@@ -183,12 +258,14 @@ export function DayDeals({ of, status }: { of: number; status?: DailyStatus }) {
   )
 }
 
-/** The running comparison: one foldable row per finished deal, the player against the AI, and the
- *  totals. `openLatest` opens the newest row — after a deal, and on the day's page while it runs.
- *  `flat` (inside the settlement's fold, SKATGO-57): rows that do not fold again — folds never nest.
+/** The running comparison: one foldable row per finished deal, the player's Saldo against the AI's
+ *  (SKATGO-79), opening to that deal's score sheet; under the rows the score sheet of the whole
+ *  tournament so far. `openLatest` opens the newest row — after a deal, and on the day's page while it
+ *  runs. `flat` (inside the settlement's fold, SKATGO-57): rows that do not fold again — folds never nest.
  *  `of` (SKATGO-63): the day's number of deals; those not finished follow as rows of their number and
- *  whether they are `current` or still to play — nothing of their cards, which every player shares. */
-export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, openLatest = false, flat = false, of, current = null }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; auctions?: Auction[]; benchmarkAuctions?: (Auction | null)[]; openLatest?: boolean; flat?: boolean; of?: number; current?: number | null }) {
+ *  whether they are `current` or still to play — nothing of their cards, which every player shares.
+ *  `review`: the tournament and day whose finished deals may be reviewed. */
+export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, openLatest = false, flat = false, of, current = null, review }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; auctions?: Auction[]; benchmarkAuctions?: (Auction | null)[]; openLatest?: boolean; flat?: boolean; of?: number; current?: number | null; review?: Omit<ReviewOf, 'deal'> }) {
   const latest = deals.length - 1
   const [open, setOpen] = useState<number[]>(openLatest ? [latest] : [])
   useEffect(() => {
@@ -197,37 +274,32 @@ export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, open
   if (deals.length === 0 && !of) return null
   const ahead = Array.from({ length: Math.max(0, (of ?? 0) - deals.length) }, (_, k) => deals.length + k)
   const ai = deals.map((_, i) => benchmarks?.[i] ?? null)
-  const you = totals(deals)[PLAYER]
-  const aiTotal = ai.every((b) => b) ? totals(ai as DealSummary[])[PLAYER] : null
+  const aiTotals = ai.every((b) => b) ? totals(ai as DealSummary[]) : null
   const toggle = (i: number) => setOpen((o) => (o.includes(i) ? o.filter((j) => j !== i) : [...o, i]))
   return (
     <div data-testid="daily-vs-ai" data-rows={deals.length} data-of={of ?? deals.length} {...stylex.props(styles.table)}>
       <div aria-hidden="true" {...stylex.props(styles.grid, styles.head)}>
         <span {...stylex.props(typography.small)}>{m.daily_col_deal()}</span>
-        <span {...stylex.props(typography.small)}>{m.name_you()}</span>
-        <span {...stylex.props(typography.small)}>{m.daily_ai()}</span>
-        <span {...stylex.props(typography.small, styles.end)}>{m.daily_col_diff()}</span>
+        <span {...stylex.props(styles.headWho)}><Who side="you" /><span {...stylex.props(typography.micro)}>{m.daily_saldo()}</span></span>
+        <span {...stylex.props(styles.headWho)}><Who side="ai" /><span {...stylex.props(typography.micro)}>{m.daily_saldo()}</span></span>
+        <span />
       </div>
       <ol {...stylex.props(styles.list)}>
         {deals.map((d, i) => {
           const b = ai[i]
-          const diff = b ? d.scores[PLAYER] - b.scores[PLAYER] : null
           const isOpen = open.includes(i)
           const id = `daily-deal-${i}`
-          // The row's four columns; a foldable row's last one also carries its chevron.
+          // The row's four columns; a foldable row's last one carries its chevron.
           const cells = (chevron: ReactNode) => (
             <>
               <span {...stylex.props(typography.small, styles.muted)}>{i + 1}</span>
-              <Score score={d.scores[PLAYER]} role={roleOf(d)} />
-              {b ? <Score score={b.scores[PLAYER]} role={roleOf(b)} /> : <span {...stylex.props(typography.small, styles.muted)}>–</span>}
-              <span {...stylex.props(styles.diff)}>
-                <span {...stylex.props(typography.appBtnStrong)}>{diff === null ? '–' : signed(diff)}</span>
-                {chevron}
-              </span>
+              <Score score={saldo(d.scores)} role={roleOf(d)} />
+              {b ? <Score score={saldo(b.scores)} role={roleOf(b)} /> : <span {...stylex.props(typography.small, styles.muted)}>–</span>}
+              <span {...stylex.props(styles.chevron)}>{chevron}</span>
             </>
           )
           return (
-            <li key={i} data-testid="daily-vs-ai-row" data-you={d.scores[PLAYER]} data-ai={b?.scores[PLAYER] ?? ''} data-diff={diff ?? ''} {...stylex.props(styles.item)}>
+            <li key={i} data-testid="daily-vs-ai-row" data-you={saldo(d.scores)} data-ai={b ? saldo(b.scores) : ''} {...stylex.props(styles.item)}>
               {flat ? (
                 <div {...stylex.props(styles.grid, styles.flatRow)}>{cells(null)}</div>
               ) : (
@@ -245,22 +317,7 @@ export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, open
               )}
               {isOpen && !flat ? (
                 <div id={id} data-testid="daily-vs-ai-detail" {...stylex.props(styles.detail)}>
-                  <p data-side="you" {...stylex.props(styles.line)}>
-                    <span {...stylex.props(typography.smallBold, styles.who)}>{m.name_you()}</span>
-                    <span {...stylex.props(typography.note)}>
-                      {storyOf(d, m.name_you(), (points) => m.daily_side_you({ points }))}
-                      {auctions?.[i] ? <> · <Rich text={auctionLine(auctions[i], d, youNames())} /></> : null}
-                    </span>
-                  </p>
-                  {b ? (
-                    <p data-side="ai" {...stylex.props(styles.line)}>
-                      <span {...stylex.props(typography.smallBold, styles.who)}>{m.daily_ai()}</span>
-                      <span {...stylex.props(typography.note)}>
-                        {storyOf(b, m.daily_ai(), (points) => m.daily_side_ai({ points }))}
-                        {benchmarkAuctions?.[i] ? <> · <Rich text={auctionLine(benchmarkAuctions[i]!, b, aiNames())} /></> : null}
-                      </span>
-                    </p>
-                  ) : null}
+                  <DealVsAi mine={d} ai={b} mineAuction={auctions?.[i]} aiAuction={benchmarkAuctions?.[i] ?? null} review={review ? { ...review, deal: i } : undefined} />
                 </div>
               ) : null}
             </li>
@@ -272,17 +329,17 @@ export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, open
               <span {...stylex.props(typography.small, styles.muted)}>{i + 1}</span>
               <span {...stylex.props(typography.small, styles.muted)}>{i === current ? m.daily_deal_current() : m.daily_deal_open()}</span>
               <span {...stylex.props(typography.small, styles.muted)}>–</span>
-              <span {...stylex.props(typography.small, styles.muted, styles.end)}>–</span>
+              <span />
             </div>
           </li>
         ))}
       </ol>
-      {deals.length === 0 ? null : <div data-testid="daily-vs-ai-total" data-you={you} data-ai={aiTotal ?? ''} data-diff={aiTotal === null ? '' : you - aiTotal} {...stylex.props(styles.grid, styles.total)}>
-        <span {...stylex.props(typography.smallBold)}>{m.daily_total()}</span>
-        <span {...stylex.props(typography.appBtnStrong)}>{signed(you)}</span>
-        <span {...stylex.props(typography.appBtnStrong)}>{aiTotal === null ? '–' : signed(aiTotal)}</span>
-        <span {...stylex.props(typography.appBtnStrong, styles.end)}>{aiTotal === null ? '–' : signed(you - aiTotal)}</span>
-      </div>}
+      {deals.length === 0 ? null : (
+        <div data-testid="daily-vs-ai-total" data-you={saldo(totals(deals))} data-ai={aiTotals ? saldo(aiTotals) : ''} {...stylex.props(styles.total)}>
+          <span {...stylex.props(typography.smallBold)}>{m.daily_total()}</span>
+          <ScoreSheet testId="daily-total-scores" mine={totals(deals)} ai={aiTotals} />
+        </div>
+      )}
     </div>
   )
 }
@@ -307,9 +364,20 @@ const styles = stylex.create({
   scoreCell: { paddingBlock: space.x4, textAlign: 'center' },
   // The player's seat is the one the comparison is about.
   own: { backgroundColor: color.page },
+  // Saldo, set off from the seats: the number the sheet is read for.
+  saldo: { paddingInlineStart: space.x8, borderInlineStartWidth: border.hair, borderInlineStartStyle: 'solid', borderInlineStartColor: color.hairline, textAlign: 'end' },
+  sheet: { display: 'flex', flexDirection: 'column', gap: space.x4 },
+  sheetNote: { margin: 0 },
+  whoTag: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.onColor },
+  whoYou: { backgroundColor: color.navy },
+  whoAi: { backgroundColor: color.tileOrange },
+  review: { display: 'flex', flexDirection: 'column', gap: space.x6, padding: space.x10, borderRadius: radii.column, backgroundColor: color.page },
+  reviewLine: { margin: 0, color: color.navy },
+  reviewText: { margin: 0, color: color.text },
+  reviewLabel: { color: color.navy },
+  reviewAsk: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: space.x6 },
   sides: { display: 'flex', flexDirection: { default: 'row', [bp.phone]: 'column' }, gap: { default: space.x24, [bp.phone]: space.x12 } },
   side: { display: 'flex', flexDirection: 'column', gap: space.x6, flexGrow: 1, flexBasis: 0, minWidth: 0 },
-  sideTitle: { color: color.navy },
   sideLine: { display: 'flex', flexDirection: 'column', margin: 0 },
   sideText: { color: color.text, overflowWrap: 'anywhere' },
   fold: { display: 'flex', flexDirection: 'column', borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
@@ -366,7 +434,8 @@ const styles = stylex.create({
   cell: { display: 'flex', flexDirection: 'column', minWidth: 0 },
   // A narrow column (the table inside the settlement on a phone) shortens the role, never overlaps it.
   role: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  diff: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: space.x4 },
+  chevron: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end' },
+  headWho: { display: 'flex', alignItems: 'center', gap: space.x6 },
   end: { textAlign: 'end' },
   muted: { color: color.slate },
   detail: {
@@ -378,9 +447,10 @@ const styles = stylex.create({
     borderRadius: radii.column,
     backgroundColor: color.page,
   },
-  line: { display: 'flex', gap: space.x8, margin: 0, color: color.text },
-  who: { flexShrink: 0, color: color.navy },
   total: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x6,
     paddingTop: space.x8,
     borderTopWidth: border.tile,
     borderTopStyle: 'solid',

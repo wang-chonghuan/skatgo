@@ -1,7 +1,12 @@
+import { isLocale } from '~/lib/ask/context'
+import { admit } from '~/lib/ask/limits'
+import { explainReview } from '~/lib/daily-review'
 import { signedInUser } from '~/lib/session'
+import type { DealReview } from '~/lib/skat/tournament'
 
-// POST /api/daily/state, /act, /name and /board — the daily tournament's only way in from the browser
-// (SKATGO-35, SKATGO-36: a finished player's nickname, and the leaderboard). The tournament itself runs in the multiplayer service, which owns the cards and the
+// POST /api/daily/state, /act, /name, /board and /review — the daily tournament's only way in from the
+// browser (SKATGO-35, SKATGO-36: a finished player's nickname, and the leaderboard; SKATGO-79: a finished
+// deal's worst card, which the service finds, explained here by the assistant's model). The tournament itself runs in the multiplayer service, which owns the cards and the
 // scores; this handler only says who is playing and passes the request on with the service's key.
 //
 // Who is playing: the signed-in account, or else this device — a random id in an httpOnly cookie,
@@ -16,7 +21,7 @@ const COOKIE = 'skatgo_daily'
 const COOKIE_PATH = '/api/daily'
 /** 400 days, the longest a browser keeps a cookie. */
 const COOKIE_MAX_AGE = 400 * 24 * 60 * 60
-const OPS = new Set(['state', 'act', 'name', 'board'])
+const OPS = new Set(['state', 'act', 'name', 'board', 'review'])
 
 const json = (status: number, body: object, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } })
@@ -53,7 +58,7 @@ export async function handleDaily(request: Request): Promise<Response> {
   const playing = op === 'act' || (op === 'state' && (body as { open?: unknown }).open === true)
   // Looking at the board needs no player: a visitor nobody knows yet asks as nobody.
   const player = userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null
-  if (op === 'name' && !player) return json(409, { error: 'not_finished' })
+  if ((op === 'name' || op === 'review') && !player) return json(409, { error: 'not_finished' })
 
   const call = (path: string, payload: object) =>
     fetch(new URL(`/daily/${path}`, base), {
@@ -65,6 +70,7 @@ export async function handleDaily(request: Request): Promise<Response> {
 
   try {
     if (userId && known && (op === 'state' || op === 'board')) await call('claim', { from: anon, to: `user:${userId}` })
+    if (op === 'review') return await review(call, body as { locale?: unknown }, player!)
     const upstream = await call(op, { ...body, player })
     const headers: Record<string, string> = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
     // A guest without the cookie who only looks is a stranger the service has never seen: "not
@@ -76,4 +82,18 @@ export async function handleDaily(request: Request): Promise<Response> {
   } catch {
     return json(503, { error: 'unavailable' })
   }
+}
+
+/** A finished deal's review (SKATGO-79): the worst card from the service, and a few sentences on it from
+ *  the assistant's model in the page's language — counted against the same per-visitor and daily limits
+ *  as the assistant. Without the sentences (limited, or the model unavailable) the card is still shown. */
+async function review(call: (path: string, payload: object) => Promise<Response>, body: { locale?: unknown }, player: string): Promise<Response> {
+  const { locale, ...rest } = body
+  const upstream = await call('review', { ...rest, player })
+  if (!upstream.ok) return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
+  const found = (await upstream.json()) as DealReview
+  if (!found.worst) return json(200, { review: found, text: null })
+  const limited = admit(player) !== null
+  const text = limited ? null : await explainReview(found, isLocale(locale) ? locale : 'de')
+  return json(200, { review: found, text, limited })
 }

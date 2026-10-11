@@ -1,19 +1,19 @@
 import { type ChatMessage, openModelStream } from '~/lib/ask/azure'
 import { LIMITS } from '~/lib/ask/limits'
-import { type Card, type Contract, effectiveSuit, fullDeck, legalPlays, pointsOf, sameCard, strength, trickWinnerIndex, trumpSequence } from '~/lib/skat/cards'
+import { type Card, type Contract, effectiveSuit, fullDeck, pointsOf, sameCard, strength, trickWinnerIndex, trumpSequence } from '~/lib/skat/cards'
 import type { Played, Seat } from '~/lib/skat/game'
 import { type DealReview, type DealSummary, PLAYER } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import type { Locale } from '~/paraglide/runtime'
 
 // The words of a deal's review (SKATGO-79): the multiplayer service finds the player's worst card with
-// SkatZero; this asks the assistant's model — `gpt-5.6-luna`, at high effort here (the human: 「用luna
-// high」) where the assistant itself stays at medium — for two or three sentences on why it was worse
-// than SkatZero's card. The model never decides which card was worst, and it is not left to work the game
-// out either: the rules engine gives it everything the player could know when they chose the card — the
-// tricks so far, who has shown out of which suit, the score, the hand and the legal cards, the higher cards
-// of the same suit still out — and, kept apart, what only became known afterwards (the human: 「你要给它足够
-// 的信息」). To the player SkatZero is "the AI": its name is never shown, nor given to the model.
+// SkatZero; this asks the assistant's model (`gpt-5.6-luna`, medium — the human's choice) for two or three
+// sentences on why it was worse than SkatZero's card. The model never decides which card was worst, and it
+// is not left to work the trick out: the rules engine gives it the few facts that decide a card's worth —
+// who holds the trick and who is still to play, the higher cards of the same suit still out, whether the
+// kept card would rule its suit, how the trick went — and no more (the human, after trying the whole game at
+// high effort: 「不用给太多东西，给的多了它也分析不出来」). To the player SkatZero is "the AI": its name is never
+// shown, nor given to the model.
 
 /** A card in words: "Pik-Zehn", "Ten of Spades". */
 function cardWords(c: Card, locale: Locale): string {
@@ -69,13 +69,12 @@ export function reviewPrompt(r: DealReview, locale: Locale): { system: string; m
       )
   const rules = isNull
     ? say(
-        'Nullspiel: kein Trumpf, Augen zählen nicht. In jeder Farbe von hoch nach niedrig: Ass, König, Dame, Bube, 10, 9, 8, 7. Der Alleinspieler verliert, sobald er einen Stich bekommt; die Gegenspieler wollen ihm einen Stich aufzwingen.',
-        'Null game: no trumps, card points do not count. In every suit from high to low: Ace, King, Queen, Jack, 10, 9, 8, 7. The declarer loses as soon as they take a trick; the defenders try to force one on them.',
+        'Nullspiel: kein Trumpf, Augen zählen nicht; in jeder Farbe von hoch nach niedrig: Ass, König, Dame, Bube, 10, 9, 8, 7. Der Alleinspieler verliert, sobald er einen Stich bekommt; die Gegenspieler wollen ihm einen Stich aufzwingen.',
+        'Null game: no trumps, card points do not count; in every suit from high to low: Ace, King, Queen, Jack, 10, 9, 8, 7. The declarer loses as soon as they take a trick; the defenders try to force one on them.',
       )
-    : say(
-        `Trumpf von hoch nach niedrig: ${cardsWords(order('T', contract), locale)}. In den anderen Farben: Ass, 10, König, Dame, 9, 8, 7. Augen: Ass 11, 10 10, König 4, Dame 3, Bube 2, sonst 0.`,
-        `Trumps from high to low: ${cardsWords(order('T', contract), locale)}. In the other suits: Ace, 10, King, Queen, 9, 8, 7. Points: Ace 11, 10 10, King 4, Queen 3, Jack 2, the rest 0.`,
-      )
+    : contract.kind === 'grand'
+      ? say('Trumpf sind nur die vier Buben. Augen: Ass 11, 10 10, König 4, Dame 3, Bube 2.', 'Only the four jacks are trumps. Points: Ace 11, 10 10, King 4, Queen 3, Jack 2.')
+      : say(`Trumpf sind die vier Buben und ${contractWords(contract, locale)}. Augen: Ass 11, 10 10, König 4, Dame 3, Bube 2.`, `Trumps are the four jacks and ${contractWords(contract, locale)}. Points: Ace 11, 10 10, King 4, Queen 3, Jack 2.`)
 
   /** Cards of a trick in the order played, with who could not follow (and trumped or threw off). */
   const playWords = (cards: Played[]) => {
@@ -99,24 +98,6 @@ export function reviewPrompt(r: DealReview, locale: Locale): { system: string; m
 
   // What the player could know when they chose the card.
   const before = r.tricks.slice(0, w.trick - 1)
-  const history = before.map((t, i) => say(`Stich ${i + 1}: ${playWords(t.cards)} – ${taken(t.cards)}.`, `Trick ${i + 1}: ${playWords(t.cards)} — ${taken(t.cards)}.`))
-  let ownPoints = 0
-  let otherPoints = 0
-  for (const t of before) {
-    if (own(takerOf(t.cards))) ownPoints += pointsOf(cardsIn(t.cards))
-    else otherPoints += pointsOf(cardsIn(t.cards))
-  }
-  const shownOut = new Map<Seat, Set<string>>()
-  for (const cards of [...before.map((t) => t.cards), w.table]) {
-    if (!cards.length) continue
-    const lead = effectiveSuit(cards[0].card, contract)
-    for (const p of cards.slice(1)) {
-      if (p.seat === PLAYER || effectiveSuit(p.card, contract) === lead) continue
-      shownOut.set(p.seat, (shownOut.get(p.seat) ?? new Set()).add(suitName(lead)))
-    }
-  }
-  const voids = [...shownOut].map(([seat, suits]) => say(`${name(seat)} hat kein ${[...suits].join(' und kein ')} mehr`, `${name(seat)} has no ${[...suits].join(' and no ')} left`))
-  const legal = legalPlays(w.hand, cardsIn(w.table), contract)
   // Where the player knew each card to be: their hand, the cards played, the skat a declarer put away.
   const played = [...before.flatMap((t) => cardsIn(t.cards)), ...cardsIn(w.table)]
   const known = [...w.hand, ...played, ...(declarer === PLAYER && !r.mine.declaration.hand ? r.skat : [])]
@@ -153,9 +134,6 @@ export function reviewPrompt(r: DealReview, locale: Locale): { system: string; m
       ]
     : []
   const knewThen = [
-    ...history,
-    history.length ? say(`Augen bis dahin: Partei des Spielers ${ownPoints}, Gegenseite ${otherPoints}.`, `Points so far: the player's side ${ownPoints}, the other side ${otherPoints}.`) : '',
-    voids.length ? say(`Bekannt: ${voids.join('; ')}.`, `Known: ${voids.join('; ')}.`) : '',
     say(
       `Stich ${w.trick}: ${w.table.length ? `vor dem Spieler gespielt: ${playWords(w.table)}.` : 'Der Spieler spielt aus.'}`,
       `Trick ${w.trick}: ${w.table.length ? `played before the player: ${playWords(w.table)}.` : 'The player leads.'}`,
@@ -167,10 +145,17 @@ export function reviewPrompt(r: DealReview, locale: Locale): { system: string; m
     last
       ? say('Nach dem Spieler spielt in diesem Stich niemand mehr.', 'No one plays after the player in this trick.')
       : say(`Nach dem Spieler spielen in diesem Stich noch: ${stillToPlay.map(name).join(' und ')}.`, `Still to play after the player in this trick: ${stillToPlay.map(name).join(' and ')}.`),
-    say(`Hand des Spielers: ${cardsWords(w.hand, locale)}. Erlaubt: ${cardsWords(legal, locale)}.`, `The player's hand: ${cardsWords(w.hand, locale)}. Allowed: ${cardsWords(legal, locale)}.`),
+    say(`Hand des Spielers: ${cardsWords(w.hand, locale)}.`, `The player's hand: ${cardsWords(w.hand, locale)}.`),
     say(`Gespielt: ${cardWords(w.played, locale)}. Die AI hätte gespielt: ${cardWords(w.best, locale)}.`, `Played: ${cardWords(w.played, locale)}. The AI would have played: ${cardWords(w.best, locale)}.`),
     outWords(w.played),
     outWords(w.best),
+    // What each card puts at stake if the other side takes it — the comparison the model does not make.
+    isNull
+      ? ''
+      : say(
+          `Wird die Karte von der Gegenseite gestochen, gehen ihre Augen dorthin: ${cardWords(w.played, locale)} hat ${pointsOf([w.played])} Augen, ${cardWords(w.best, locale)} hat ${pointsOf([w.best])} Augen.`,
+          `If the other side takes the card, its points go to them: ${cardWords(w.played, locale)} is worth ${pointsOf([w.played])} points, ${cardWords(w.best, locale)} ${pointsOf([w.best])} points.`,
+        ),
     keptRules
       ? say(`Mit ${cardWords(w.best, locale)} hätte der Spieler ${cardWords(w.played, locale)} behalten, dann die höchste ${suitName(effectiveSuit(w.played, contract))}-Karte im Spiel.`, `With ${cardWords(w.best, locale)} the player would have kept ${cardWords(w.played, locale)}, then the highest ${suitName(effectiveSuit(w.played, contract))} card in play.`)
       : '',
@@ -199,8 +184,8 @@ export function reviewPrompt(r: DealReview, locale: Locale): { system: string; m
     ...after,
   ]
   const system = say(
-    'Du bist der Skat-Trainer von SkatGo. Antworte auf Deutsch, in zwei bis drei kurzen Sätzen, ohne Markdown und ohne Aufzählung. Erkläre aus Sicht des Spielers im Moment seiner Entscheidung – mit dem, was er da wissen konnte –, warum die Karte der AI besser war als seine. Was erst danach bekannt wurde, ist nicht der Grund; nenne es höchstens, um zu sagen, dass es diesmal gut oder schlecht ausging. Prüfe die üblichen Gründe an den Fakten: Ist eine Karte, die die eigene schlägt, noch draußen, kann sie überstochen werden und ihre Augen verlieren; Augen in einen Stich der eigenen Partei zu schmieren ist gut, in einen Stich der Gegenseite schlecht; einen Trumpf oder eine hohe Karte für später behalten; den Partner nicht überstechen; Farben, die ein Spieler nicht mehr hat. Stütze dich nur auf die Fakten und die Skatregeln: nenne keine Karte und keine Kartenverteilung, die nicht aus den Fakten folgt. Nenne den Unterschied nur dann eine Feinheit, wenn die Fakten sagen, dass es die einzige Abweichung war. Duze den Spieler und nutze die Begriffe einer Skatrunde (Stich, Trumpf, Augen, bedienen, stechen, schmieren, Alleinspieler, Gegenspieler).',
-    "You are SkatGo's Skat coach. Answer in English only, whatever language the terms are in, in two or three short sentences, with no Markdown and no lists. Explain from the player's point of view at the moment of the decision — with what they could know then — why the AI's card was better than theirs. What only became known afterwards is not the reason; mention it at most to say it went well or badly this time. Test the usual reasons against the facts: if a card that beats the player's is still out, it can be taken and its points lost; points thrown into a trick of the player's own side are good, into the other side's bad; keeping a trump or a high card for later; not overtaking the partner; suits a player has shown out of. Use only the facts and the rules of Skat: name no card and no distribution of cards that does not follow from the facts. Call the difference a fine point only where the facts say it was the only place the player played differently. Address the player as you; keep the German Skat terms Grand, Null, Hand and Ouvert.",
+    'Du bist der Skat-Trainer von SkatGo. Antworte auf Deutsch, in zwei bis drei kurzen Sätzen, ohne Markdown und ohne Aufzählung. Erkläre aus Sicht des Spielers im Moment seiner Entscheidung, warum die Karte der AI besser war als seine. Was erst danach bekannt wurde, ist nicht der Grund; nenne es höchstens, um zu sagen, dass es diesmal gut oder schlecht ausging. Typische Gründe: Ist eine Karte, die die eigene schlägt, noch draußen, kann sie überstochen werden; Augen in einen Stich der eigenen Partei zu schmieren ist gut, in einen Stich der Gegenseite schlecht; eine hohe Karte oder einen Trumpf für später behalten. Stütze dich nur auf die Fakten: nenne keine Karte, die dort nicht steht, und vergleiche Karten nur so, wie die Fakten es sagen. Nenne den Unterschied nur dann eine Feinheit, wenn die Fakten sagen, dass es die einzige Abweichung war. Duze den Spieler und nutze die Begriffe einer Skatrunde.',
+    "You are SkatGo's Skat coach. Answer in English only, whatever language the terms are in, in two or three short sentences, with no Markdown and no lists. Explain from the player's point of view at the moment of the decision why the AI's card was better than theirs. What only became known afterwards is not the reason; mention it at most to say it went well or badly this time. Usual reasons: if a card that beats the player's is still out, it can be taken; points thrown into a trick of the player's own side are good, into the other side's bad; keeping a high card or a trump for later. Use only the facts: name no card that is not in them, and compare cards only as the facts do. Call the difference a fine point only where the facts say it was the only place the player played differently. Address the player as you; keep the German Skat terms Grand, Null, Hand and Ouvert.",
   )
   return { system, messages: [{ role: 'user', content: facts.filter(Boolean).join('\n') }] }
 }
@@ -221,8 +206,8 @@ function resultWords(d: DealSummary, locale: Locale): string {
 export async function explainReview(r: DealReview, locale: Locale): Promise<string | null> {
   const prompt = reviewPrompt(r, locale)
   if (!prompt) return null
-  const signal = AbortSignal.timeout(LIMITS.reviewTimeoutMs)
-  const stream = await openModelStream(prompt.system, prompt.messages, signal, LIMITS.reviewTokens, 'high')
+  const signal = AbortSignal.timeout(LIMITS.timeoutMs)
+  const stream = await openModelStream(prompt.system, prompt.messages, signal, LIMITS.reviewTokens)
   if (!stream.ok) return null
   let text = ''
   try {

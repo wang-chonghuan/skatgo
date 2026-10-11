@@ -1,4 +1,4 @@
-import { type Card, type Contract, sameCard } from '../../app/src/lib/skat/cards'
+import { type Card, type Contract, sameCard, sortHand } from '../../app/src/lib/skat/cards'
 import { claimLine, collectTrick, concedable, deal, pickUpSkat, roleOf, actor, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { type Declaration, nextBid } from '../../app/src/lib/skat/value'
 import { declarationAdvice } from '../../app/src/lib/skat/ai'
@@ -78,6 +78,8 @@ export function reviewOf(end: Game, judged: Judged, rest: Partial<DealReview> = 
     tricks: g.early ? g.tricks.slice(0, g.early.from) : g.tricks,
     skat: g.skat,
     early: g.early ?? null,
+    // Every card the player played, the rest of a claimed deal included: their hand when the play began.
+    hand: sortHand(g.tricks.flatMap((t) => t.cards).filter((p) => p.seat === PLAYER).map((p) => p.card), g.declaration?.contract ?? null),
     ...rest,
   }
 }

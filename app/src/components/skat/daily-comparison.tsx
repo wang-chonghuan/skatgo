@@ -136,7 +136,7 @@ export function ScoreSheet({ mine, ai, lines, testId }: { mine: Scores; ai: Scor
  * took it with how many card points. The player's own cards are bold; `highlight` marks a trick (the
  * worst card's). Tricks a claim or a concession left unplayed are not rows, only a line under them.
  */
-export function TrickReplay({ tricks, names, skat, highlight = null, early = null }: { tricks: Game['tricks']; names: string[]; skat?: Card[]; highlight?: number | null; early?: Game['early'] | null }) {
+export function TrickReplay({ tricks, names, skat, hand, highlight = null, early = null }: { tricks: Game['tricks']; names: string[]; skat?: Card[]; hand?: Card[]; highlight?: number | null; early?: Game['early'] | null }) {
   const played = early ? tricks.slice(0, early.from) : tricks
   return (
     <div {...stylex.props(styles.replay)}>
@@ -164,6 +164,12 @@ export function TrickReplay({ tricks, names, skat, highlight = null, early = nul
         </tbody>
       </table>
       {early ? <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_replay_rest({ n: 10 - early.from })}</p> : null}
+      {/* The player's hand when the play began, under the record (the human: 「下面要显示一个打这幅牌前玩家手里的牌」). */}
+      {hand?.length ? (
+        <p data-testid="daily-replay-hand" {...stylex.props(typography.small, styles.sheetNote)}>
+          <span {...stylex.props(styles.muted)}>{m.daily_replay_hand()}</span> <Rich text={hand.map(cardLabel).join(' ')} />
+        </p>
+      ) : null}
       {skat?.length ? (
         <p {...stylex.props(typography.small, styles.sheetNote)}>
           <span {...stylex.props(styles.muted)}>{m.result_skat()}</span> <Rich text={skat.map(cardLabel).join(' ')} />
@@ -186,7 +192,7 @@ export const dailyAsk = (size: number, deal: number): AskReview => (explain) => 
 /** What this page already fetched, so reopening a deal does not ask again: explained reviews, and the
  *  deals fetched for their replay alone. */
 const reviewed = new Map<string, Reviewed>()
-const replays = new Map<string, Pick<DealReview, 'tricks' | 'skat' | 'early'>>()
+const replays = new Map<string, Pick<DealReview, 'tricks' | 'skat' | 'early' | 'hand'>>()
 
 /**
  * A finished deal's play record, open (SKATGO-79, the human: 「本次牌谱要显示出来，不要折叠，用专业名词说
@@ -205,7 +211,7 @@ export function DealAnalysis({ testId = 'daily-play-record', ...rest }: Analysis
 }
 
 type AnalysisProps = {
-  deal?: Pick<DealReview, 'tricks' | 'skat' | 'early'>
+  deal?: Pick<DealReview, 'tricks' | 'skat' | 'early' | 'hand'>
   names?: string[]
   ask: AskReview
   cacheKey?: string
@@ -271,7 +277,7 @@ function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
         </div>
       )}
       {shown ? (
-        <TrickReplay tricks={shown.tricks} names={names ?? youNames()} skat={shown.skat} highlight={w?.trick ?? null} early={shown.early} />
+        <TrickReplay tricks={shown.tricks} names={names ?? youNames()} skat={shown.skat} hand={shown.hand} highlight={w?.trick ?? null} early={shown.early} />
       ) : (
         <p {...stylex.props(typography.note, styles.muted)}>{unavailable ? m.daily_review_failed() : m.loading()}</p>
       )}

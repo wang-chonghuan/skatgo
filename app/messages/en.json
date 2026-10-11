@@ -462,6 +462,7 @@
   "daily_replay_winner": "Won by",
   "daily_replay_points": "{name} · {points}",
   "daily_replay_rest": "The other {n} tricks were not played out.",
+  "daily_replay_hand": "Your hand at the start of play:",
   "daily_unavailable": "Today's tournament can't be reached right now. Try again in a moment.",
   "daily_retry": "Try again",
   "daily_saldo": "Saldo",

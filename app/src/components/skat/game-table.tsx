@@ -378,7 +378,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
         compare: finished ? <DealVsAi mine={finished} ai={tournament.benchmarks?.[tournament.deal] ?? null} /> : null,
         analysis: finished && finished.declarer !== null ? (
           <DealAnalysis
-            deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null }}
+            deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null, hand: startHand(game) }}
             names={[nameOf(0), nameOf(1), nameOf(2)]}
             ask={dailyAsk(tournament.of, tournament.deal)}
             cacheKey={`${tournament.day}|${tournament.of}|${tournament.deal}`}
@@ -788,6 +788,10 @@ function Stack({ seat, game, shown }: { seat: Seat; game: Game; shown?: Card[] }
     </div>
   )
 }
+
+/** The player's ten cards when the play began (SKATGO-79): every card they played, the rest of a claimed
+ *  deal included, sorted for the game — shown under the play record. */
+const startHand = (g: Game): Card[] => sortHand(g.tricks.flatMap((t) => t.cards).filter((p) => p.seat === ME).map((p) => p.card), g.declaration?.contract ?? null)
 
 /** Each seat's cards when the deal was decided early (SKATGO-65): the rest was played out by the rules
  *  from trick `early.from` on, so those tricks hold exactly what everyone had left. */
@@ -1210,7 +1214,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
           {next}
           <DealAnalysis
             testId="free-play-record"
-            deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null }}
+            deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null, hand: startHand(game) }}
             names={[nameOf(0), nameOf(1), nameOf(2)]}
             ask={() => freeReview()}
             footer={<p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>}

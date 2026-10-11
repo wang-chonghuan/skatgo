@@ -462,6 +462,7 @@
   "daily_replay_winner": "Stich an",
   "daily_replay_points": "{name} · {points}",
   "daily_replay_rest": "Die übrigen {n} Stiche wurden nicht mehr ausgespielt.",
+  "daily_replay_hand": "Deine Hand zu Spielbeginn:",
   "daily_unavailable": "Das Turnier von heute ist gerade nicht erreichbar. Versuch es gleich noch einmal.",
   "daily_retry": "Nochmal versuchen",
   "daily_saldo": "Saldo",

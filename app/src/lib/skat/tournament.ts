@@ -220,6 +220,8 @@ export type DealReview = {
   tricks: Game['tricks']
   skat: Card[]
   early: Game['early'] | null
+  /** The player's ten cards when the play began, sorted for the game (SKATGO-79). */
+  hand: Card[]
 }
 
 /** Where a player stands in a day. */

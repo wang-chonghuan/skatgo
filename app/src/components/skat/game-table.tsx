@@ -1197,7 +1197,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
         </div>
       ) : freeReview ? (
         // Free play (SKATGO-79): what the game was and who wrote what, the way on, then the play record
-        // with the AI's cards on request, the skat and the sum.
+        // with the AI's cards, the skat and the sum.
         <>
           <Panel tone={humanWon ? 'good' : 'bad'}>
             <div {...stylex.props(styles.resultBody)}>

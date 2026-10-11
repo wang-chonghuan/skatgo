@@ -15,7 +15,7 @@ import { timing } from '../../theme/effects.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { Btn, Panel, Rich } from './ui'
+import { Panel, Rich } from './ui'
 
 // The day against the AI (SKATGO-42, SKATGO-48): every deal the player has finished, beside the same deal
 // played by the computer in the player's seat against the same two computers — worked out when the day
@@ -133,9 +133,10 @@ export function ScoreSheet({ mine, ai, lines, testId }: { mine: Scores; ai: Scor
  * A deal replayed trick by trick (SKATGO-79, the human: 「10墩，每墩谁出了什么（有时序）然后谁赢了，一个10行的
  * 表格」): each trick's three cards in the order they were played, each under its player's name, and who
  * took it with how many card points; under each trick, the player's hand as it was before it (「每trick都要
- * 显示打这个trick前我手里的牌」). The player's own cards are bold. `differs`, once asked for, puts the AI's
- * card under the player's wherever it would have played another, and marks the trick of the furthest. Tricks
- * a claim or a concession left unplayed are not rows, only a line under them.
+ * 显示打这个trick前我手里的牌」). The player's own cards are bold. `differs` puts the AI's card under the
+ * player's wherever it would have played another — card first, so the column stays cards (the human:
+ * 「AI和AI打的牌，换个位置，这样纵向就都是牌了」) — and marks the trick of the furthest. Tricks a claim or a
+ * concession left unplayed are not rows, only a line under them.
  */
 export function TrickReplay({ tricks, names, skat, hand, differs = null, early = null }: { tricks: Game['tricks']; names: string[]; skat?: Card[]; hand?: Card[]; differs?: Differ[] | null; early?: Game['early'] | null }) {
   const played = early ? tricks.slice(0, early.from) : tricks
@@ -168,7 +169,8 @@ export function TrickReplay({ tricks, names, skat, hand, differs = null, early =
                     <span {...stylex.props(p.seat === PLAYER ? typography.smallBold : typography.small, styles.replayCard)}><Rich text={cardLabel(p.card)} /></span>
                     {p.seat === PLAYER && best ? (
                       <span data-testid="daily-replay-ai" data-card={`${best.suit}${best.rank}`} {...stylex.props(typography.small, styles.replayAi)}>
-                        <Who side="ai" /> <Rich text={cardLabel(best)} />
+                        <Rich text={cardLabel(best)} />
+                        <span {...stylex.props(typography.badge, styles.whoTag, styles.whoHint)}>{m.daily_ai()}</span>
                       </span>
                     ) : null}
                   </td>
@@ -203,19 +205,16 @@ export type AskReview = () => Promise<DealReview | { error: string }>
 /** A deal of one of today's tournaments, reviewed through /api/daily. */
 export const dailyAsk = (size: number, deal: number): AskReview => () => dailyReview(dailySize(size), deal)
 
-/** What this page already fetched, so reopening a deal does not ask again — and the deals whose AI cards
- *  were asked for, which stay shown. */
+/** What this page already fetched, so reopening a deal does not ask again. */
 const reviews = new Map<string, DealReview>()
-const opened = new Set<string>()
 
 /**
  * A finished deal's play record, open (SKATGO-79, the human: 「本次牌谱要显示出来，不要折叠，用专业名词说
- * 这个牌谱」): the way to the AI's cards — where it would have played another than the player, the move most
- * worth improving first — on top, only when asked (「做成一个按钮，不用每次自动显示」); then the deal trick
- * by trick with the player's hand before each, the AI's cards in it once asked for, the skat, and `footer`
- * (free play's sum). Every word of it is SkatZero's choice and the rules engine's record — no model
- * explains it (the human: 「解读太麻烦了」). `deal` is the deal when the page has it (the settlement);
- * otherwise it is fetched.
+ * 这个牌谱」): the move most worth improving in one line on top, then the deal trick by trick with the
+ * player's hand before each and the AI's card wherever it would have played another — at once, with no
+ * button (the human: 「不需要按钮就直接打开」) — the skat, and `footer` (free play's sum). Every word of it is
+ * SkatZero's choice and the rules engine's record; no model explains it (the human: 「解读太麻烦了」). `deal`
+ * is the deal when the page has it (the settlement), shown while the AI's cards are fetched.
  */
 export function DealAnalysis({ testId = 'daily-play-record', ...rest }: AnalysisProps & { testId?: string }) {
   return (
@@ -236,32 +235,19 @@ type AnalysisProps = {
 
 function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
   const [review, setReview] = useState<DealReview | null>(cacheKey ? (reviews.get(cacheKey) ?? null) : null)
-  const [open, setOpen] = useState(cacheKey ? opened.has(cacheKey) : false)
-  const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle')
-  const [unavailable, setUnavailable] = useState(false)
-  const record = deal ?? review
-  async function fetchReview(): Promise<DealReview | null> {
-    const r = await ask()
-    if ('error' in r) return null
-    if (cacheKey) reviews.set(cacheKey, r)
-    setReview(r)
-    return r
-  }
+  const [failed, setFailed] = useState(false)
   useEffect(() => {
-    if (record) return
-    void fetchReview().then((r) => setUnavailable(!r))
+    if (review) return
+    void ask().then((r) => {
+      if ('error' in r) return setFailed(true)
+      if (cacheKey) reviews.set(cacheKey, r)
+      setReview(r)
+    })
     // Once, when the record is shown.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  async function reveal() {
-    if (!review) {
-      setState('loading')
-      if (!(await fetchReview())) return setState('failed')
-    }
-    if (cacheKey) opened.add(cacheKey)
-    setOpen(true)
-  }
-  const differs = open && review ? review.differs : null
+  const record = deal ?? review
+  const differs = review?.differs ?? null
   const w = differs?.[0] ?? null
   return (
     <div {...stylex.props(styles.analysis)}>
@@ -279,19 +265,13 @@ function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
           </p>
           {w ? <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_review_marks()}</p> : null}
         </div>
-      ) : state === 'loading' ? (
-        <p data-testid="daily-review-loading" {...stylex.props(typography.loading, styles.muted)}>{m.daily_review_loading()}</p>
-      ) : (
-        <div {...stylex.props(styles.reviewAsk)}>
-          {/* The hint's blue, so it is seen beside the green way on (the human: 「用更明显的颜色，我怕人不点」). */}
-          <Btn testId="daily-review" tone="info" size="md" onClick={() => void reveal()}>{m.daily_review()}</Btn>
-          {state === 'failed' ? <p role="alert" {...stylex.props(typography.note, styles.muted)}>{m.daily_review_failed()}</p> : null}
-        </div>
-      )}
+      ) : failed ? (
+        <p role="alert" {...stylex.props(typography.note, styles.muted)}>{m.daily_review_failed()}</p>
+      ) : null}
       {record ? (
         <TrickReplay tricks={record.tricks} names={names ?? youNames()} skat={record.skat} hand={record.hand} differs={differs} early={record.early} />
-      ) : (
-        <p {...stylex.props(typography.note, styles.muted)}>{unavailable ? m.daily_review_failed() : m.loading()}</p>
+      ) : failed ? null : (
+        <p {...stylex.props(typography.note, styles.muted)}>{m.loading()}</p>
       )}
       {footer}
     </div>
@@ -478,16 +458,17 @@ const styles = stylex.create({
   replayCell: { paddingBlock: space.x4, paddingInlineEnd: space.x6, verticalAlign: 'top' },
   replayName: { display: 'block' },
   replayCard: { display: 'block', color: color.navy },
-  // The AI's card under the player's, tagged as the score sheet tags its line.
+  // The AI's card under the player's, its tag after it.
   replayAi: { display: 'flex', alignItems: 'center', gap: space.x4, marginTop: space.x2, color: color.navy, whiteSpace: 'nowrap' },
   // The hand before the trick, quiet under its row.
   replayHand: { paddingBottom: space.x6, color: color.navy, overflowWrap: 'anywhere' },
   whoTag: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.onColor },
   whoYou: { backgroundColor: color.navy },
   whoAi: { backgroundColor: color.tileOrange },
+  // The AI's card in the play record: the hint's blue (the human: 「橙色的AI标记，换成蓝色的」).
+  whoHint: { backgroundColor: color.info },
   review: { display: 'flex', flexDirection: 'column', gap: space.x6, padding: space.x10, borderRadius: radii.column, backgroundColor: color.page },
   reviewLine: { margin: 0, color: color.navy },
-  reviewAsk: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: space.x6 },
   table: { display: 'flex', flexDirection: 'column', color: color.navy },
   // Deal, you, the AI, the difference: the same columns in the header, every row and the total.
   grid: {

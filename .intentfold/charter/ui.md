@@ -234,9 +234,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the daily tournament, the legal pages), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
-  tournament's page puts a switch of two pills under its lead, "6 Spiele | 12 Spiele" (SKATGO-77; the
-  same pills as its board's "Heute | Gestern", `Toggle` in `daily-page.tsx`), 6 chosen first; under it
-  everything is the chosen tournament's: its one `go` button, its deals, its result and its board. A
+  tournament's page puts a switch of two pills under its lead, "6 Spiele | 12 Spiele" (SKATGO-77,
+  `Toggle` in `daily-page.tsx`), 6 chosen first; under it everything is the chosen tournament's: its one
+  `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",
+  "Gestern", or the weekday and date — and steps through the last seven days with two round arrow
+  buttons at the right, earlier on the left, the one at the end of the range spent (SKATGO-80). A
   printable has its download beside the title (`TitleWithDownload`). A lesson starts playing at once: under its title only a
   one-line kicker and the lesson's promise, then the lesson, which keeps its "back / continue" bar
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the

@@ -6,7 +6,7 @@ import { type Card, shuffle } from '../../app/src/lib/skat/cards'
 import { chooseDeclaration, declarationAdvice } from '../../app/src/lib/skat/ai'
 import { actor, aiBid, deal, next, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import {
-  DAILY_DEALS, DAILY_SIZES, DAILY_TIME_ZONE, PLAYER, auctionOf, saldo, seatView, summarize, totals, type DailySize, type DailyStatus,
+  BOARD_DAYS, DAILY_DEALS, DAILY_SIZES, DAILY_TIME_ZONE, PLAYER, auctionOf, saldo, seatView, summarize, totals, type DailySize, type DailyStatus,
   type DealReview, type DealSummary,
   type SeatView,
 } from '../../app/src/lib/skat/tournament'
@@ -133,7 +133,10 @@ const actInput = z.object({
   action: actionSchema,
 }).strict()
 const nameInput = z.object({ player, size, nickname: z.string().max(200) }).strict()
-const boardInput = z.object({ player: player.nullable(), size, day: z.enum(['today', 'yesterday']) }).strict()
+// The board's day: how many days back, today 0 (SKATGO-80); `today` and `yesterday` are how pages before it ask.
+const boardInput = z.object({
+  player: player.nullable(), size, day: z.union([z.enum(['today', 'yesterday']), z.number().int().min(0).max(BOARD_DAYS - 1)]),
+}).strict()
 const reviewInput = z.object({ player, size, deal: z.number().int().min(0).max(Math.max(...DAILY_SIZES) - 1) }).strict()
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
 
@@ -387,7 +390,8 @@ export async function dailyName(store: Store, who: string, size: DailySize, raw:
 const BOARD_ROWS = 100
 
 /**
- * A tournament's leaderboard for a day (SKATGO-36, one per size since SKATGO-77): the finished entries
+ * A tournament's leaderboard for a day (SKATGO-36, one per size since SKATGO-77; today or one of the six
+ * days before, SKATGO-80): the finished entries
  * that have a nickname, by Saldo (SKATGO-79: how far each is ahead of their two opponents, worked out from
  * the stored deals, so entries finished before it rank the same way); equal Saldo share a rank and the
  * next rank skips (1, 1, 3), the earlier finish listed first. Only nicknames and totals leave here —
@@ -397,8 +401,10 @@ const BOARD_ROWS = 100
  * same for every player — shown to everyone, its total only (the human: 「都显示，只在leader board上显示
  * 总成绩即可」); null when a deal of that day has none.
  */
-export async function dailyBoard(store: Store, who: string | null, size: DailySize, which: 'today' | 'yesterday', now = Date.now()) {
-  const day = which === 'today' ? dayOf(now) : dayBefore(dayOf(now))
+export async function dailyBoard(store: Store, who: string | null, size: DailySize, which: 'today' | 'yesterday' | number, now = Date.now()) {
+  const back = which === 'today' ? 0 : which === 'yesterday' ? 1 : which
+  let day = dayOf(now)
+  for (let i = 0; i < back; i++) day = dayBefore(day)
   const { rows: found } = await store.pool.query(
     `SELECT player, nickname, total, deals, finished_at FROM daily_entries
       WHERE day = $1 AND size = $2 AND finished_at IS NOT NULL AND nickname IS NOT NULL`, [day, size])

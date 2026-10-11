@@ -125,7 +125,8 @@ also built from the repository root. Neither project imports the other's runtime
   at start, then hourly; one preparation at a time, abandoned after an hour — SKATGO-77),
   computing in slices that yield to the event loop, and stores each computer's highest bid and its
   pick-up/Hand tables inside the deal (`daily_deals.deals`). Requests never deal: a day not yet
-  prepared answers `503 day_preparing`. Only today's day is ever read by a route. The skats are tried in
+  prepared answers `503 day_preparing`. Only today's day is ever played or reviewed by a route; the
+  leaderboard reads today's or one of the six days before (`BOARD_DAYS`, SKATGO-80). The skats are tried in
   an order fixed by day, deal and seat (and size, for the 12-deal tournament); the stored result is what
   play uses, on every platform.
 - **The computer's result of each deal is worked out when the day is dealt** (SKATGO-42). SkatZero

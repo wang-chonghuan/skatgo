@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-81",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-81",
+  "branch": "SKATGO-81-punkte-board",
+  "base": "a6e74b4641be2c51fd919200caaeb8e4bc93bf37",
+  "ports": { "web": 55081, "multiplayer": 56081, "database": 57081 }
+}

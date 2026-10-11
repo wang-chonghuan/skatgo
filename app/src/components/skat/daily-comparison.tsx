@@ -22,11 +22,12 @@ import { Panel, Rich } from './ui'
 // was dealt, and shown only once the player has finished that deal.
 //
 // Since SKATGO-79 every comparison is a score sheet: all three seats' Seeger-Fabian scores, the player's
-// deal over the AI's, and each side's Saldo — how far that seat is ahead of the two opponents — because a
-// seat's own score says nothing about how it did against the table. The player is navy and the AI the
+// deal over the AI's, and each side's Saldo — how far that seat is ahead of the two opponents — beside
+// them for reference. What is compared and ranked is the player's own Seeger-Fabian score, the standard
+// German players know (SKATGO-81, the human: 「按他们习惯的标准来」). The player is navy and the AI the
 // app's blue, its one "AI" tag wherever the AI is named (SKATGO-80, the human: 「AI标志都用app里那个蓝色的
-// Ai标志」), so the two lines are told apart at a glance; neither colour judges. A day's row gives both Saldo and opens to its
-// sheet; the rows fold so the table fits a phone without scrolling sideways.
+// Ai标志」), so the two lines are told apart at a glance; neither colour judges. A day's row gives both
+// scores and opens to its sheet; the rows fold so the table fits a phone without scrolling sideways.
 
 export const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 
@@ -84,8 +85,9 @@ export function Who({ side }: { side: Side }) {
 
 /**
  * A score sheet (SKATGO-79): the three seats' Seeger-Fabian scores — of one deal, or a tournament's totals
- * — the player's line over the AI's, with each line's Saldo, the number that says how they did against the
- * table, largest. `lines` puts what the deal was under each row; what Saldo means opens from its heading.
+ * — the player's line over the AI's, the player's own seat marked, with each line's Saldo last for reference
+ * (SKATGO-81: the scores themselves are what is ranked). `lines` puts what the deal was under each row;
+ * what Saldo means opens from its heading.
  * The AI's line is missing on days dealt before it played them.
  */
 export function ScoreSheet({ mine, ai, lines, testId }: { mine: Scores; ai: Scores | null; lines?: { you: string; ai: string | null }; testId: string }) {
@@ -115,7 +117,7 @@ export function ScoreSheet({ mine, ai, lines, testId }: { mine: Scores; ai: Scor
               {scores.map((v, seat) => (
                 <td key={seat} data-seat={seat} {...stylex.props(typography.appBtnStrong, styles.scoreCell, seat === PLAYER && styles.own)}>{signed(v)}</td>
               ))}
-              <td data-testid="daily-saldo" {...stylex.props(typography.dialogTitle, styles.scoreCell, styles.saldo)}>{signed(saldo(scores))}</td>
+              <td data-testid="daily-saldo" {...stylex.props(typography.appBtnStrong, styles.scoreCell, styles.saldo)}>{signed(saldo(scores))}</td>
             </tr>
             {line ? (
               <tr>
@@ -322,8 +324,8 @@ export function DayDeals({ of, status }: { of: number; status?: DailyStatus }) {
   )
 }
 
-/** The running comparison on /daily: one foldable row per finished deal, the player's Saldo against the
- *  AI's (SKATGO-79), opening to that deal's score sheet and its analysis; under the rows the score sheet
+/** The running comparison on /daily: one foldable row per finished deal, the player's Seeger-Fabian score
+ *  against the AI's in their seat (SKATGO-81), opening to that deal's score sheet and its analysis; under the rows the score sheet
  *  of the whole tournament so far. `openLatest` opens the newest row, on the day's page while it runs.
  *  `of` (SKATGO-63): the day's number of deals; those not finished follow as rows of their number and
  *  whether they are `current` or still to play — nothing of their cards, which every player shares.
@@ -343,8 +345,8 @@ export function VsAiTable({ deals, benchmarks, openLatest = false, of, current =
     <div data-testid="daily-vs-ai" data-rows={deals.length} data-of={of ?? deals.length} {...stylex.props(styles.table)}>
       <div aria-hidden="true" {...stylex.props(styles.grid, styles.head)}>
         <span {...stylex.props(typography.small)}>{m.daily_col_deal()}</span>
-        <span {...stylex.props(styles.headWho)}><Who side="you" /><span {...stylex.props(typography.micro)}>{m.daily_saldo()}</span></span>
-        <span {...stylex.props(styles.headWho)}><Who side="ai" /><span {...stylex.props(typography.micro)}>{m.daily_saldo()}</span></span>
+        <span {...stylex.props(styles.headWho)}><Who side="you" /><span {...stylex.props(typography.micro)}>{m.daily_points()}</span></span>
+        <span {...stylex.props(styles.headWho)}><Who side="ai" /><span {...stylex.props(typography.micro)}>{m.daily_points()}</span></span>
         <span />
       </div>
       <ol {...stylex.props(styles.list)}>
@@ -356,13 +358,13 @@ export function VsAiTable({ deals, benchmarks, openLatest = false, of, current =
           const cells = (chevron: ReactNode) => (
             <>
               <span {...stylex.props(typography.small, styles.muted)}>{i + 1}</span>
-              <Score score={saldo(d.scores)} role={roleOf(d)} />
-              {b ? <Score score={saldo(b.scores)} role={roleOf(b)} /> : <span {...stylex.props(typography.small, styles.muted)}>–</span>}
+              <Score score={d.scores[PLAYER]} role={roleOf(d)} />
+              {b ? <Score score={b.scores[PLAYER]} role={roleOf(b)} /> : <span {...stylex.props(typography.small, styles.muted)}>–</span>}
               <span {...stylex.props(styles.chevron)}>{chevron}</span>
             </>
           )
           return (
-            <li key={i} data-testid="daily-vs-ai-row" data-you={saldo(d.scores)} data-ai={b ? saldo(b.scores) : ''} {...stylex.props(styles.item)}>
+            <li key={i} data-testid="daily-vs-ai-row" data-you={d.scores[PLAYER]} data-ai={b ? b.scores[PLAYER] : ''} {...stylex.props(styles.item)}>
               <button
                 type="button"
                 aria-expanded={isOpen}
@@ -397,7 +399,7 @@ export function VsAiTable({ deals, benchmarks, openLatest = false, of, current =
         ))}
       </ol>
       {deals.length === 0 ? null : (
-        <div data-testid="daily-vs-ai-total" data-you={saldo(totals(deals))} data-ai={aiTotals ? saldo(aiTotals) : ''} {...stylex.props(styles.total)}>
+        <div data-testid="daily-vs-ai-total" data-you={totals(deals)[PLAYER]} data-ai={aiTotals ? aiTotals[PLAYER] : ''} {...stylex.props(styles.total)}>
           <span {...stylex.props(typography.smallBold)}>{m.daily_total()}</span>
           <ScoreSheet testId="daily-total-scores" mine={totals(deals)} ai={aiTotals} />
         </div>
@@ -426,7 +428,7 @@ const styles = stylex.create({
   scoreCell: { paddingBlock: space.x4, textAlign: 'center' },
   // The player's seat is the one the comparison is about.
   own: { backgroundColor: color.page },
-  // Saldo, set off from the seats: the number the sheet is read for.
+  // Saldo, set off from the seats: a reference beside them, no larger than they are (SKATGO-81).
   saldo: { paddingInlineStart: space.x8, borderInlineStartWidth: border.hair, borderInlineStartStyle: 'solid', borderInlineStartColor: color.hairline, textAlign: 'end' },
   sheet: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   sheetNote: { margin: 0 },

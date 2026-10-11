@@ -31,7 +31,7 @@ import {
   runningPoints,
   trickWinner,
 } from '~/lib/skat/game'
-import { type DealSummary, saldo, seegerFabian, summarize, totals } from '~/lib/skat/tournament'
+import { type DealSummary, seegerFabian, summarize, totals } from '~/lib/skat/tournament'
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
@@ -387,8 +387,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
         day: (
           <p data-testid="daily-after" {...stylex.props(typography.note, styles.note)}>
             {aiSoFar?.every((b) => b)
-              ? m.daily_after({ n: tournament.deals.length, of: tournament.of, you: signed(saldo(totals(tournament.deals))), ai: signed(saldo(totals(aiSoFar as DealSummary[]))) })
-              : m.daily_after_solo({ n: tournament.deals.length, of: tournament.of, you: signed(saldo(totals(tournament.deals))) })}
+              ? m.daily_after({ n: tournament.deals.length, of: tournament.of, you: signed(totals(tournament.deals)[ME]), ai: signed(totals(aiSoFar as DealSummary[])[ME]) })
+              : m.daily_after_solo({ n: tournament.deals.length, of: tournament.of, you: signed(totals(tournament.deals)[ME]) })}
           </p>
         ),
       }

@@ -6,7 +6,7 @@ import { type Card, shuffle } from '../../app/src/lib/skat/cards'
 import { chooseDeclaration, declarationAdvice } from '../../app/src/lib/skat/ai'
 import { actor, aiBid, deal, next, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import {
-  BOARD_DAYS, DAILY_DEALS, DAILY_SIZES, DAILY_TIME_ZONE, PLAYER, auctionOf, saldo, seatView, summarize, totals, type DailySize, type DailyStatus,
+  BOARD_DAYS, DAILY_DEALS, DAILY_SIZES, DAILY_TIME_ZONE, PLAYER, auctionOf, seatView, summarize, totals, type DailySize, type DailyStatus,
   type DealReview, type DealSummary,
   type SeatView,
 } from '../../app/src/lib/skat/tournament'
@@ -392,12 +392,12 @@ const BOARD_ROWS = 100
 /**
  * A tournament's leaderboard for a day (SKATGO-36, one per size since SKATGO-77; today or one of the six
  * days before, SKATGO-80): the finished entries
- * that have a nickname, by Saldo (SKATGO-79: how far each is ahead of their two opponents, worked out from
- * the stored deals, so entries finished before it rank the same way); equal Saldo share a rank and the
- * next rank skips (1, 1, 3), the earlier finish listed first. Only nicknames and totals leave here —
+ * that have a nickname, by their Seeger-Fabian total, the standard German players know (SKATGO-81, the
+ * human: 「按他们习惯的标准来」; SKATGO-79's Saldo stays only in the score sheet); equal totals share a rank
+ * and the next rank skips (1, 1, 3), the earlier finish listed first. Only nicknames and totals leave here —
  * never a player id. For the asking player: their own standing (a finished player without a nickname
  * sees the rank they would have), and the nickname they last used on an earlier day. `ai` (SKATGO-80): the
- * AI's Saldo over the tournament — its play from the player's seat, worked out when the day was dealt, the
+ * AI's total over the tournament — its play from the player's seat, worked out when the day was dealt, the
  * same for every player — shown to everyone, its total only (the human: 「都显示，只在leader board上显示
  * 总成绩即可」); null when a deal of that day has none.
  */
@@ -406,14 +406,12 @@ export async function dailyBoard(store: Store, who: string | null, size: DailySi
   let day = dayOf(now)
   for (let i = 0; i < back; i++) day = dayBefore(day)
   const { rows: found } = await store.pool.query(
-    `SELECT player, nickname, total, deals, finished_at FROM daily_entries
+    `SELECT player, nickname, total, finished_at FROM daily_entries
       WHERE day = $1 AND size = $2 AND finished_at IS NOT NULL AND nickname IS NOT NULL`, [day, size])
-  const rows = found
-    .map((r) => ({ ...r, saldo: saldo(totals(r.deals as DealSummary[])) }))
-    .sort((a, b) => b.saldo - a.saldo || Number(a.finished_at) - Number(b.finished_at))
+  const rows = found.sort((a, b) => b.total - a.total || Number(a.finished_at) - Number(b.finished_at))
   const ranked = rows.map((r, i) => ({
-    rank: i === 0 || rows[i - 1].saldo !== r.saldo ? i + 1 : 0,
-    nickname: r.nickname as string, total: r.total as number, saldo: r.saldo, me: r.player === who,
+    rank: i === 0 || rows[i - 1].total !== r.total ? i + 1 : 0,
+    nickname: r.nickname as string, total: r.total as number, me: r.player === who,
   }))
   for (let i = 1; i < ranked.length; i++) if (ranked[i].rank === 0) ranked[i].rank = ranked[i - 1].rank
   const mine = ranked.findIndex(r => r.me)
@@ -422,12 +420,11 @@ export async function dailyBoard(store: Store, who: string | null, size: DailySi
   let lastNickname: string | null = null
   if (who) {
     const own = await store.pool.query(
-      'SELECT nickname, total, deals, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, size, who])
+      'SELECT nickname, total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, size, who])
     const e = own.rows[0]
     if (e) {
-      const mine = saldo(totals(e.deals as DealSummary[]))
-      const rank = 1 + ranked.filter(r => r.saldo > mine).length
-      me = { finished: !!e.finished_at, total: e.total as number, saldo: mine, nickname: e.nickname as string | null, rank: e.finished_at ? rank : null }
+      const rank = 1 + ranked.filter(r => r.total > e.total).length
+      me = { finished: !!e.finished_at, total: e.total as number, nickname: e.nickname as string | null, rank: e.finished_at ? rank : null }
     }
     const last = await store.pool.query(
       'SELECT nickname FROM daily_entries WHERE player = $1 AND nickname IS NOT NULL ORDER BY day DESC LIMIT 1', [who])
@@ -435,7 +432,7 @@ export async function dailyBoard(store: Store, who: string | null, size: DailySi
   }
   const { rows: dealt } = await store.pool.query('SELECT deals FROM daily_deals WHERE day = $1 AND size = $2', [day, size])
   const played = ((dealt[0]?.deals ?? []) as DealSpec[]).map((spec) => spec.benchmark?.summary)
-  const ai = played.length > 0 && played.every((b) => b) ? { saldo: saldo(totals(played as DealSummary[])) } : null
+  const ai = played.length > 0 && played.every((b) => b) ? { total: totals(played as DealSummary[])[PLAYER] } : null
   return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, lastNickname, ai }
 }
 

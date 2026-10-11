@@ -70,9 +70,9 @@ export function DailyEntry({ size, waiting }: { size: DailySize; waiting?: React
   )
 }
 
-/** A board line: a player's row, or the AI's Saldo (SKATGO-80). */
+/** A board line: a player's row, or the AI's total (SKATGO-80). */
 type Line = { row: BoardRow } | { ai: number }
-const saldoOf = (l: Line) => ('ai' in l ? l.ai : l.row.saldo)
+const totalOf = (l: Line) => ('ai' in l ? l.ai : l.row.total)
 
 /** The name of the board's day: today, yesterday, or its weekday and date in the page's language. */
 function dayName(back: number, day: string | undefined): string {
@@ -83,21 +83,21 @@ function dayName(back: number, day: string | undefined): string {
   return new Intl.DateTimeFormat(getLocale(), { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`))
 }
 
-/** A day's leaderboard: nicknames and Saldo, the player's own row marked; today's or one of the six days
+/** A day's leaderboard: nicknames and Seeger-Fabian totals (SKATGO-81), the player's own row marked; today's or one of the six days
  *  before, stepped through with the two arrows beside the day's name (SKATGO-80, the human: 「要保留显示最近
- *  7天的」). The AI stands among the players by its Saldo, after any player with the same, taking no rank
+ *  7天的」). The AI stands among the players by its total, after any player with the same, taking no rank
  *  (SKATGO-80); when it falls below the rows shown it follows them, with the player's own row. With nobody
  *  on the board yet it stands there alone, under the line that says so. */
 function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard | DailyError | null; onShow: (back: number) => void }) {
   const shown = board && !isError(board) ? board : null
   const rows = shown?.rows ?? []
-  const ai = shown?.ai?.saldo ?? null
+  const ai = shown?.ai?.total ?? null
   const cut = rows.length < (shown?.total ?? 0)
-  const at = ai === null ? -1 : rows.findIndex((r) => r.saldo < ai)
+  const at = ai === null ? -1 : rows.findIndex((r) => r.total < ai)
   const lines: Line[] = rows.map((row) => ({ row }))
   if (ai !== null && (at >= 0 || !cut)) lines.splice(at >= 0 ? at : lines.length, 0, { ai })
   const below: Line[] = [...(shown?.own ? [{ row: shown.own }] : []), ...(ai !== null && at < 0 && cut ? [{ ai }] : [])]
-  below.sort((a, b) => saldoOf(b) - saldoOf(a) || ('ai' in a ? 1 : 0) - ('ai' in b ? 1 : 0))
+  below.sort((a, b) => totalOf(b) - totalOf(a) || ('ai' in a ? 1 : 0) - ('ai' in b ? 1 : 0))
   return (
     <Panel>
       <section data-testid="daily-board" data-day={shown?.day} {...stylex.props(styles.result)}>
@@ -123,15 +123,15 @@ function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard 
             ) : null}
             {lines.length + below.length > 0 ? (
               <ol {...stylex.props(styles.rows)}>
-                {/* What the number is (SKATGO-79): the board ranks by Saldo, not by a player's own total. */}
+                {/* What the number is: the Seeger-Fabian total, by which the board ranks (SKATGO-81). */}
                 <li aria-hidden="true" {...stylex.props(typography.micro, styles.boardHeadRow, styles.muted)}>
                   <span {...stylex.props(styles.what)} />
-                  <span>{m.daily_saldo()}</span>
+                  <span>{m.daily_points()}</span>
                 </li>
                 {[...lines, ...below].map((l, i) => {
                   const apart = i === lines.length
                   return 'ai' in l ? (
-                    <li key="ai" data-testid="daily-board-ai" data-saldo={l.ai} {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap)}>
+                    <li key="ai" data-testid="daily-board-ai" data-total={l.ai} {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap)}>
                       <span {...stylex.props(styles.rank)} />
                       <span {...stylex.props(styles.what)}><Who side="ai" /></span>
                       <span {...stylex.props(styles.score)}>{signed(l.ai)}</span>
@@ -142,13 +142,12 @@ function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard 
                       data-testid="daily-board-row"
                       data-rank={l.row.rank}
                       data-total={l.row.total}
-                      data-saldo={l.row.saldo}
                       data-me={l.row.me ? 'true' : undefined}
                       {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap, l.row.me && styles.mine)}
                     >
                       <span {...stylex.props(styles.muted, styles.rank)}>{l.row.rank}</span>
                       <span data-testid="daily-board-name" {...stylex.props(styles.what)}>{l.row.nickname}</span>
-                      <span {...stylex.props(styles.score)}>{signed(l.row.saldo)}</span>
+                      <span {...stylex.props(styles.score)}>{signed(l.row.total)}</span>
                     </li>
                   )
                 })}
@@ -192,7 +191,7 @@ function Nickname({ size, board, onNamed }: { size: DailySize; board: DailyBoard
     <div {...stylex.props(styles.nickForm)}>
       {me.nickname ? null : (
         <p data-testid="daily-would-be" data-rank={me.rank ?? undefined} {...stylex.props(typography.appText, styles.text)}>
-          {m.daily_would_be({ total: signed(me.saldo), rank: me.rank ?? 1 })}
+          {m.daily_would_be({ total: signed(me.total), rank: me.rank ?? 1 })}
         </p>
       )}
       <label htmlFor={id} {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_nick_label()}</label>

@@ -259,7 +259,7 @@ export type DailyReply = {
 
 /** One row of a day's leaderboard (SKATGO-36): a nickname, its Saldo — what ranks it since SKATGO-79 —
  *  and its own total, never who is behind it. */
-export type BoardRow = { rank: number; nickname: string; total: number; saldo: number; me: boolean }
+export type BoardRow = { rank: number; nickname: string; total: number; me: boolean }
 
 /** A day's leaderboard, and where the asking player stands on it. */
 export type DailyBoard = {
@@ -271,9 +271,10 @@ export type DailyBoard = {
   /** Entries on the board in all, beyond the rows shown. */
   total: number
   /** The asking player's entry that day: a finished player without a nickname gets the rank they would have. */
-  me: { finished: boolean; total: number; saldo: number; nickname: string | null; rank: number | null } | null
+  me: { finished: boolean; total: number; nickname: string | null; rank: number | null } | null
   /** The nickname the player last used, to offer again. */
   lastNickname: string | null
-  /** The AI's Saldo over the tournament that day, for everyone (SKATGO-80); null for a day it did not play. */
-  ai: { saldo: number } | null
+  /** The AI's Seeger-Fabian total over the tournament that day, from the player's seat, for everyone
+   *  (SKATGO-80, SKATGO-81); null for a day it did not play. */
+  ai: { total: number } | null
 }

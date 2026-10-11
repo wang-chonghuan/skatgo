@@ -251,14 +251,6 @@ function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
           <p {...stylex.props(typography.note, styles.reviewLine)}>
             <Rich text={w ? m.daily_review_card({ trick: w.trick, played: cardLabel(w.played), best: cardLabel(w.best) }) : m.daily_review_clean()} />
           </p>
-          {/* How near the rest came, with no line drawn: the plays that were the AI's own, and the others
-              ranked (SKATGO-79). */}
-          {w ? (
-            <p data-testid="daily-review-agreed" data-agreed={got.review.agreed} data-choices={got.review.choices} {...stylex.props(typography.note, styles.muted)}>
-              {m.daily_review_agreed({ agreed: got.review.agreed, choices: got.review.choices })}
-              {got.review.differs.length > 1 ? ` ${m.daily_review_differs({ list: [...got.review.differs].sort((x, y) => x - y).join(', '), worst: w.trick })}` : ''}
-            </p>
-          ) : null}
           {w ? (
             got.text ? (
               <p data-testid="daily-review-text" {...stylex.props(typography.note, styles.reviewText)}>
@@ -273,7 +265,8 @@ function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
         <p data-testid="daily-review-loading" {...stylex.props(typography.loading, styles.muted)}>{m.daily_review_loading()}</p>
       ) : (
         <div {...stylex.props(styles.reviewAsk)}>
-          <Btn testId="daily-review" tone="quiet" size="sm" onClick={() => void explain()}>{m.daily_review()}</Btn>
+          {/* The hint's blue, so it is seen beside the green way on (the human: 「用更明显的颜色，我怕人不点」). */}
+          <Btn testId="daily-review" tone="info" size="md" onClick={() => void explain()}>{m.daily_review()}</Btn>
           {state === 'failed' ? <p role="alert" {...stylex.props(typography.note, styles.muted)}>{m.daily_review_failed()}</p> : null}
         </div>
       )}

@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-80",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-80",
   "branch": "SKATGO-80-board-ai",

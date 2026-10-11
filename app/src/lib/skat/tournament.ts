@@ -12,6 +12,10 @@ import type { Declaration } from './value'
 export const DAILY_SIZES = [6, 12] as const
 export type DailySize = (typeof DAILY_SIZES)[number]
 
+/** How many days back a leaderboard can be looked at, today included (SKATGO-80, the human: 「要保留显示最近7天
+ *  的」). */
+export const BOARD_DAYS = 7
+
 /** The tournament a player is shown first, and the one every entry before SKATGO-77 belongs to. */
 export const DAILY_DEALS: DailySize = 6
 
@@ -270,4 +274,6 @@ export type DailyBoard = {
   me: { finished: boolean; total: number; saldo: number; nickname: string | null; rank: number | null } | null
   /** The nickname the player last used, to offer again. */
   lastNickname: string | null
+  /** The AI's Saldo over the tournament that day, for everyone (SKATGO-80); null for a day it did not play. */
+  ai: { saldo: number } | null
 }

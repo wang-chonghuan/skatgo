@@ -21,8 +21,12 @@ tournament per day; scores are the server's, from the cards actually played. A p
 deals ahead does not start, so the short one leads (the human, 2026-10-10: 「用户看到太多，就不想打了」).
 A seat's own score says nothing about how it did against the table, so results are read by **Saldo**:
 (the seat − Lina) + (the seat − Noah), per deal and per tournament (SKATGO-79, the human: 「我的分数减去
-我的两个对手的分数」). Each tournament has a leaderboard, ranked by the tournament's Saldo; every entry,
-those from before SKATGO-79 included, stands by its own Saldo.
+我的两个对手的分数」). Each tournament has a leaderboard per day, which can be looked at for seven days, today's included
+(SKATGO-80, the human: 「要保留显示最近7天的」), ranked by the tournament's Saldo; every entry,
+those from before SKATGO-79 included, stands by its own Saldo. The AI stands on it too, for everyone,
+today's board included: its Saldo over the tournament among the players', after any player with the
+same, taking no rank — its total only, never a deal (SKATGO-80, the human: 「都显示，只在leader board上
+显示总成绩即可」).
 
 After each deal the player sees how the computer, named "AI", played the same deal from their seat
 (SKATGO-42): a score sheet of all three seats' scores, the player's deal over the AI's, each with its

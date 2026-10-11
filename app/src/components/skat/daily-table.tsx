@@ -1,18 +1,21 @@
 import * as stylex from '@stylexjs/stylex'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { type DailyError, dailyAct, dailyBoard, dailyName, dailyState, isError } from '~/lib/daily-api'
 import type { Move } from '~/lib/skat/game'
-import { DAILY_DEALS, type DailyBoard, type DailyReply, type DailySize, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
+import { BOARD_DAYS, type BoardRow, DAILY_DEALS, DAILY_TIME_ZONE, type DailyBoard, type DailyReply, type DailySize, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
+import { getLocale } from '~/paraglide/runtime'
 import { color } from '../../theme/color.stylex'
-import { border, space } from '../../theme/scale.stylex'
-import { radii } from '../../theme/shape.stylex'
+import { icon } from '../../theme/constants'
+import { border, opacity, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { DayDeals, VsAiTable } from './daily-comparison'
-import { Toggle, sizeSearch } from './daily-page'
+import { DayDeals, VsAiTable, Who } from './daily-comparison'
+import { sizeSearch } from './daily-page'
 import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, TextField, linkLook } from './ui'
 
@@ -26,30 +29,29 @@ import { Btn, Panel, TextField, linkLook } from './ui'
 
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n))
 
-type Which = 'today' | 'yesterday'
-
 /** The day's deals and the start / continue link to the table, or the day's result once it is played;
  *  then the board. `waiting` stands in while the status loads: the server's rendering of the same. */
 export function DailyEntry({ size, waiting }: { size: DailySize; waiting?: ReactNode }) {
   const [status, setStatus] = useState<DailyStatus | DailyError | null>(null)
-  const [which, setWhich] = useState<Which>('today')
-  const [boards, setBoards] = useState<Partial<Record<Which, DailyBoard | DailyError>>>({})
-  const loadBoard = (w: Which) => void dailyBoard(size, w).then((b) => setBoards((all) => ({ ...all, [w]: b })))
+  // The board's day, how many days before today (SKATGO-80: the last `BOARD_DAYS`), and the boards fetched.
+  const [back, setBack] = useState(0)
+  const [boards, setBoards] = useState<Partial<Record<number, DailyBoard | DailyError>>>({})
+  const loadBoard = (b: number) => void dailyBoard(size, b).then((r) => setBoards((all) => ({ ...all, [b]: r })))
   useEffect(() => {
     void dailyState(size, false).then((r) => setStatus(isError(r) ? r : r.status))
-    loadBoard('today')
+    loadBoard(0)
   }, [])
-  function show(w: Which) {
-    setWhich(w)
-    if (!boards[w]) loadBoard(w)
+  function show(b: number) {
+    setBack(b)
+    if (!boards[b]) loadBoard(b)
   }
   if (!status) return waiting ?? null
   if ('error' in status) return <p data-testid="daily-unavailable" {...stylex.props(typography.appText, styles.text)}>{m.daily_unavailable()}</p>
-  const today = boards.today && !isError(boards.today) ? boards.today : null
+  const today = boards[0] && !isError(boards[0]) ? boards[0] : null
   return (
     <div {...stylex.props(styles.stack)}>
       {status.finished ? (
-        <DailyResult size={size} status={status} board={today} onNamed={() => loadBoard('today')} />
+        <DailyResult size={size} status={status} board={today} onNamed={() => loadBoard(0)} />
       ) : (
         <div {...stylex.props(styles.stack)}>
           {/* The way in first, its own width so it reads as a button (SKATGO-63). */}
@@ -63,54 +65,96 @@ export function DailyEntry({ size, waiting }: { size: DailySize; waiting?: React
           <DayDeals of={status.of} status={status} />
         </div>
       )}
-      <Leaderboard which={which} board={boards[which] ?? null} onShow={show} />
+      <Leaderboard back={back} board={boards[back] ?? null} onShow={show} />
     </div>
   )
 }
 
-/** A day's leaderboard: nicknames and totals, the player's own row marked; today's or yesterday's. */
-function Leaderboard({ which, board, onShow }: { which: Which; board: DailyBoard | DailyError | null; onShow: (w: Which) => void }) {
-  const rows = board && !isError(board) ? board.rows : []
+/** A board line: a player's row, or the AI's Saldo (SKATGO-80). */
+type Line = { row: BoardRow } | { ai: number }
+const saldoOf = (l: Line) => ('ai' in l ? l.ai : l.row.saldo)
+
+/** The name of the board's day: today, yesterday, or its weekday and date in the page's language. */
+function dayName(back: number, day: string | undefined): string {
+  if (back === 0) return m.daily_board_today()
+  if (back === 1) return m.daily_board_yesterday()
+  // Before the board has come, the day counted back in Berlin, where the tournament's days are.
+  const date = day ?? new Date(Date.parse(`${new Intl.DateTimeFormat('en-CA', { timeZone: DAILY_TIME_ZONE }).format(new Date())}T00:00:00Z`) - back * 86_400_000).toISOString().slice(0, 10)
+  return new Intl.DateTimeFormat(getLocale(), { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`))
+}
+
+/** A day's leaderboard: nicknames and Saldo, the player's own row marked; today's or one of the six days
+ *  before, stepped through with the two arrows beside the day's name (SKATGO-80, the human: 「要保留显示最近
+ *  7天的」). The AI stands among the players by its Saldo, after any player with the same, taking no rank
+ *  (SKATGO-80); when it falls below the rows shown it follows them, with the player's own row. With nobody
+ *  on the board yet it stands there alone, under the line that says so. */
+function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard | DailyError | null; onShow: (back: number) => void }) {
+  const shown = board && !isError(board) ? board : null
+  const rows = shown?.rows ?? []
+  const ai = shown?.ai?.saldo ?? null
+  const cut = rows.length < (shown?.total ?? 0)
+  const at = ai === null ? -1 : rows.findIndex((r) => r.saldo < ai)
+  const lines: Line[] = rows.map((row) => ({ row }))
+  if (ai !== null && (at >= 0 || !cut)) lines.splice(at >= 0 ? at : lines.length, 0, { ai })
+  const below: Line[] = [...(shown?.own ? [{ row: shown.own }] : []), ...(ai !== null && at < 0 && cut ? [{ ai }] : [])]
+  below.sort((a, b) => saldoOf(b) - saldoOf(a) || ('ai' in a ? 1 : 0) - ('ai' in b ? 1 : 0))
   return (
     <Panel>
-      <section data-testid="daily-board" data-day={board && !isError(board) ? board.day : undefined} {...stylex.props(styles.result)}>
+      <section data-testid="daily-board" data-day={shown?.day} {...stylex.props(styles.result)}>
         <div {...stylex.props(styles.boardHead)}>
-          <h2 {...stylex.props(typography.panelLabel, styles.text, styles.what)}>{m.daily_board_title()}</h2>
-          {(['today', 'yesterday'] as Which[]).map((w) => (
-            <Toggle key={w} testId={`daily-board-${w}`} pressed={which === w} onClick={() => onShow(w)}>
-              {w === 'today' ? m.daily_board_today() : m.daily_board_yesterday()}
-            </Toggle>
-          ))}
+          <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_board_title()}</h2>
+          <span data-testid="daily-board-day" data-back={back} {...stylex.props(typography.toggle, styles.text, styles.what)}>{dayName(back, shown?.day)}</span>
+          {/* Earlier on the left, later on the right; both stay where they are while the day's name changes. */}
+          <button type="button" data-testid="daily-board-earlier" aria-label={m.daily_board_earlier()} title={m.daily_board_earlier()} disabled={back >= BOARD_DAYS - 1} onClick={() => onShow(back + 1)} {...stylex.props(styles.step, back >= BOARD_DAYS - 1 && styles.stepOff)}>
+            <ChevronLeft aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+          </button>
+          <button type="button" data-testid="daily-board-later" aria-label={m.daily_board_later()} title={m.daily_board_later()} disabled={back === 0} onClick={() => onShow(back - 1)} {...stylex.props(styles.step, back === 0 && styles.stepOff)}>
+            <ChevronRight aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+          </button>
         </div>
         {board === null ? null : isError(board) ? (
           <p {...stylex.props(typography.appText, styles.muted)}>{m.daily_unavailable()}</p>
-        ) : rows.length === 0 ? (
-          <p data-testid="daily-board-empty" {...stylex.props(typography.appText, styles.muted)}>
-            {which === 'today' ? m.daily_board_empty_today() : m.daily_board_empty_yesterday()}
-          </p>
         ) : (
-          <ol {...stylex.props(styles.rows)}>
-            {/* What the number is (SKATGO-79): the board ranks by Saldo, not by a player's own total. */}
-            <li aria-hidden="true" {...stylex.props(typography.micro, styles.boardHeadRow, styles.muted)}>
-              <span {...stylex.props(styles.what)} />
-              <span>{m.daily_saldo()}</span>
-            </li>
-            {[...rows, ...(board.own ? [board.own] : [])].map((r, i) => (
-              <li
-                key={i}
-                data-testid="daily-board-row"
-                data-rank={r.rank}
-                data-total={r.total}
-                data-saldo={r.saldo}
-                data-me={r.me ? 'true' : undefined}
-                {...stylex.props(typography.appText, styles.row, styles.boardRow, i === rows.length && styles.gap, r.me && styles.mine)}
-              >
-                <span {...stylex.props(styles.muted, styles.rank)}>{r.rank}</span>
-                <span data-testid="daily-board-name" {...stylex.props(styles.what)}>{r.nickname}</span>
-                <span {...stylex.props(styles.score)}>{signed(r.saldo)}</span>
-              </li>
-            ))}
-          </ol>
+          <>
+            {rows.length === 0 ? (
+              <p data-testid="daily-board-empty" {...stylex.props(typography.appText, styles.muted)}>
+                {back === 0 ? m.daily_board_empty_today() : back === 1 ? m.daily_board_empty_yesterday() : m.daily_board_empty_day()}
+              </p>
+            ) : null}
+            {lines.length + below.length > 0 ? (
+              <ol {...stylex.props(styles.rows)}>
+                {/* What the number is (SKATGO-79): the board ranks by Saldo, not by a player's own total. */}
+                <li aria-hidden="true" {...stylex.props(typography.micro, styles.boardHeadRow, styles.muted)}>
+                  <span {...stylex.props(styles.what)} />
+                  <span>{m.daily_saldo()}</span>
+                </li>
+                {[...lines, ...below].map((l, i) => {
+                  const apart = i === lines.length
+                  return 'ai' in l ? (
+                    <li key="ai" data-testid="daily-board-ai" data-saldo={l.ai} {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap)}>
+                      <span {...stylex.props(styles.rank)} />
+                      <span {...stylex.props(styles.what)}><Who side="ai" /></span>
+                      <span {...stylex.props(styles.score)}>{signed(l.ai)}</span>
+                    </li>
+                  ) : (
+                    <li
+                      key={i}
+                      data-testid="daily-board-row"
+                      data-rank={l.row.rank}
+                      data-total={l.row.total}
+                      data-saldo={l.row.saldo}
+                      data-me={l.row.me ? 'true' : undefined}
+                      {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap, l.row.me && styles.mine)}
+                    >
+                      <span {...stylex.props(styles.muted, styles.rank)}>{l.row.rank}</span>
+                      <span data-testid="daily-board-name" {...stylex.props(styles.what)}>{l.row.nickname}</span>
+                      <span {...stylex.props(styles.score)}>{signed(l.row.saldo)}</span>
+                    </li>
+                  )
+                })}
+              </ol>
+            ) : null}
+          </>
         )}
       </section>
     </Panel>
@@ -278,6 +322,28 @@ const styles = stylex.create({
   // A row of its own, so the button keeps its width instead of stretching across the column.
   action: { display: 'flex' },
   boardHead: { display: 'flex', alignItems: 'center', gap: space.x8 },
+  // The board's day arrows: round, the size of a control, quiet until hovered; spent at the last day.
+  step: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    width: dims.control,
+    height: dims.control,
+    padding: 0,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.hairline,
+    borderRadius: radii.pill,
+    backgroundColor: { default: color.surface, ':hover': color.page },
+    color: color.navy,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  stepOff: { opacity: opacity.iconDisabled, cursor: 'not-allowed', backgroundColor: { default: color.surface, ':hover': color.surface } },
   rank: { minWidth: space.x24 },
   boardHeadRow: { display: 'flex', paddingInline: space.x8, paddingBottom: space.x4 },
   boardRow: { paddingInline: space.x8 },

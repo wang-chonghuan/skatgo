@@ -28,8 +28,8 @@ export const dailyAct = (size: DailySize, at: { day: string; deal: number; revis
 /** Put today's finished entry on the board under `nickname`, or change it. */
 export const dailyName = (size: DailySize, nickname: string) => post<{ nickname: string }>('name', { size, nickname })
 
-/** Today's leaderboard, or yesterday's final one. */
-export const dailyBoard = (size: DailySize, day: 'today' | 'yesterday') => post<DailyBoard>('board', { size, day })
+/** A day's leaderboard, `back` days before today (0: today's; up to `BOARD_DAYS` − 1, SKATGO-80). */
+export const dailyBoard = (size: DailySize, back: number) => post<DailyBoard>('board', { size, day: back })
 
 /** A finished deal trick by trick, with SkatZero's card wherever the player's was not (SKATGO-79). */
 export const dailyReview = (size: DailySize, deal: number) => post<DealReview>('review', { size, deal })

@@ -39,8 +39,9 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   nickname a finished player put on the leaderboard — SKATGO-36), both keyed by the day and the
   tournament's `size`; rows from before SKATGO-77 are the 6-deal tournament. Every route names the size
   (none means 6). Each tournament's leaderboard is computed from those rows on request, ranked by the
-  tournament's Saldo (`saldo` in `lib/skat/tournament.ts`, SKATGO-79), ties to the earlier finish. The
-  web service is its only client.
+  tournament's Saldo (`saldo` in `lib/skat/tournament.ts`, SKATGO-79), ties to the earlier finish, with
+  the AI's Saldo beside it, from the deals' stored `benchmark` (SKATGO-80). The web service is its only
+  client.
 - **The tournament's computers play their cards with SkatZero** (SKATGO-38): nine pinned ONNX models
   from github.com/Jimboom7/SkatZero `1fe5cab` (MIT), committed under `multiplayer/skatzero/` with a
   hash manifest and run by `onnxruntime-node` (exact version, human-approved 2026-10-02) — in
@@ -124,7 +125,8 @@ also built from the repository root. Neither project imports the other's runtime
   at start, then hourly; one preparation at a time, abandoned after an hour — SKATGO-77),
   computing in slices that yield to the event loop, and stores each computer's highest bid and its
   pick-up/Hand tables inside the deal (`daily_deals.deals`). Requests never deal: a day not yet
-  prepared answers `503 day_preparing`. Only today's day is ever read by a route. The skats are tried in
+  prepared answers `503 day_preparing`. Only today's day is ever played or reviewed by a route; the
+  leaderboard reads today's or one of the six days before (`BOARD_DAYS`, SKATGO-80). The skats are tried in
   an order fixed by day, deal and seat (and size, for the 12-deal tournament); the stored result is what
   play uses, on every platform.
 - **The computer's result of each deal is worked out when the day is dealt** (SKATGO-42). SkatZero
@@ -133,7 +135,8 @@ also built from the repository root. Neither project imports the other's runtime
   same plans they use against the player. The summary — contract, declarer, score — and every move are
   stored with the deal (`benchmark`). A deal the computers cannot finish fails its tournament's preparation.
   A route returns a deal's result only once the player has finished that deal, shown as "AI" in the
-  player's seat. Days dealt before have none.
+  player's seat. The one exception is the leaderboard (SKATGO-80, the human): it shows everyone the AI's
+  Saldo over the tournament, today's too — the total only, never a deal. Days dealt before have none.
 - **A finished deal's summary carries its whole result** (SKATGO-48). `DealSummary.detail`
   (`lib/skat/tournament.ts`, `detailOf`) holds the game value, both sides' card points, and whether
   it was overbid, Schneider or Schwarz; it is written when the deal ends, for the player's deals and

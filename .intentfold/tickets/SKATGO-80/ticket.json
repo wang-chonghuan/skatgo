@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-80",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-80",
+  "branch": "SKATGO-80-board-ai",
+  "base": "dafd01d501889e5f7f53fd9dfcbb403535b08e18",
+  "ports": { "web": 55080, "multiplayer": 56080, "database": 57080 }
+}

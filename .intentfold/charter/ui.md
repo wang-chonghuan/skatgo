@@ -83,11 +83,11 @@ fixed light palette, not a light/dark pair.
 | `page`, `surface`, `hairline` | the page, white surfaces, rules and borders |
 | `text`, `navy`, `slate`, `slateDeep`, `onColor` | body text, titles and links, secondary text, a darker slate (the slate button), text on colour or felt |
 | `go` | the one call to action, and the current state; `goLanding` is the public site's own green on its landing buttons |
-| `info` | links in text, the hint button, the focus ring, and the "AI" tag after the AI's card in a play record (SKATGO-79) |
+| `info` | links in text, the hint button, the focus ring, and the "AI" tag wherever the AI is named — a score sheet, the play record, the leaderboard (SKATGO-79, SKATGO-80, the human: 「AI标志都用app里那个蓝色的Ai标志」) |
 | `stop` | leaving the table |
-| `tileGreen`, `tileOrange` | the front page's section tiles: ♠ free play, ♣ the course; `tileOrange` also tags the AI's line in a score sheet, as `navy` tags the player's (SKATGO-79, the human: 「当前的主题色就是：橙色，红色，海军蓝，绿色」) |
+| `tileGreen`, `tileOrange` | the front page's section tiles: ♠ free play, ♣ the course |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
-| `good` / `goodSoft`, `bad` / `badSoft` | a right / wrong answer: border / fill; and `badSoft` behind the play record's trick most worth improving (SKATGO-79, the human: 「本app常用那种粉红的背景」) — nothing else |
+| `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); the play record's trick most worth improving (`badSoft`, SKATGO-79, the human: 「本app常用那种粉红的背景」). `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson, the learner's message in the assistant |
 | `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
 | `scrim` | the dim behind a dialog |
 
@@ -195,7 +195,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `Shake` / `Feedback` | `exercises.tsx` | the wordless "no" after a wrong answer, and the good/bad panel that explains it |
 | `TitleWithDownload` / `PdfLink` | `print-links.tsx` | every download (SKATGO-53): the page's h1 with, beside it, the page's one `go` button — lucide's `Download` icon at `icon.inline` and "PDF herunterladen" / "Download PDF" — which moves under the title on a phone and is left off paper |
 | `PrintLinks` | `print-links.tsx` | the "Zum Ausdrucken" links to the score sheet and the short rules, on the rules page, the bidding table and the course; left off paper |
-| `ScoreSheet` | `daily-comparison.tsx` | a score sheet (SKATGO-79): the three seats' Seeger-Fabian scores of one deal or of a tournament, the player's line, tagged "Du" in `navy`, over the AI's, tagged "AI" in `tileOrange`; each line's Saldo last, largest and set off by a rule, its heading "Saldo ?" opening what it means; under a deal's line, what that deal was. The AI's line is left out for days dealt before it played them |
+| `ScoreSheet` | `daily-comparison.tsx` | a score sheet (SKATGO-79): the three seats' Seeger-Fabian scores of one deal or of a tournament, the player's line, tagged "Du" in `navy`, over the AI's, tagged "AI" in `info`; each line's Saldo last, largest and set off by a rule, its heading "Saldo ?" opening what it means; under a deal's line, what that deal was. The AI's line is left out for days dealt before it played them |
 | `VsAiTable` | `daily-comparison.tsx` | the daily tournament's comparison with the computer (SKATGO-48, SKATGO-79): one row per finished deal — the deal's number, the player's and the AI's Saldo each with its role, signed, never `good` / `bad` — that opens to the deal's `ScoreSheet` and play record; under the rows, the tournament's `ScoreSheet`. Rows collapse instead of scrolling sideways; the newest opens after a deal and on `/daily` mid-day. On `/daily` while the day runs (`DayDeals`, "Die Spiele von heute", also rendered on the server; SKATGO-63) every deal of the chosen tournament has a row: the ones not finished follow by number, "läuft" for the one being played and "offen" for the rest, with nothing of their cards; the total appears once a deal is finished |
 | `DealAnalysis` / `TrickReplay` | `daily-comparison.tsx` | a finished deal's play record, "Spielverlauf" (SKATGO-79), after a daily deal, on a `/daily` row and after a free game; open, never folded, with no button. On top, in one line, the player's card that fell furthest below the AI's choice and the AI's card. Then a row per trick: its three cards in the order played, each under its player's name, the player's own bold, and who took the trick with its card points; under each row, the player's hand before that trick. Wherever the AI would have played another card, that card stands under the player's, in the same column, with an `info` "AI" tag after it; the furthest trick's rows are `badSoft`. Under the tricks, a line for those left unplayed when the deal was decided early, and the skat |
 | `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards and the skat are as big as the hand's; the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68). An open hand at the side — an Ouvert declarer's, or the cards laid open when a deal is decided early — is spread at `stage.stackStepOpen`, wider than a closed one, so every card reads (SKATGO-79) |
@@ -234,9 +234,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the daily tournament, the legal pages), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
-  tournament's page puts a switch of two pills under its lead, "6 Spiele | 12 Spiele" (SKATGO-77; the
-  same pills as its board's "Heute | Gestern", `Toggle` in `daily-page.tsx`), 6 chosen first; under it
-  everything is the chosen tournament's: its one `go` button, its deals, its result and its board. A
+  tournament's page puts a switch of two pills under its lead, "6 Spiele | 12 Spiele" (SKATGO-77,
+  `Toggle` in `daily-page.tsx`), 6 chosen first; under it everything is the chosen tournament's: its one
+  `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",
+  "Gestern", or the weekday and date — and steps through the last seven days with two round arrow
+  buttons at the right, earlier on the left, the one at the end of the range spent (SKATGO-80). A
   printable has its download beside the title (`TitleWithDownload`). A lesson starts playing at once: under its title only a
   one-line kicker and the lesson's promise, then the lesson, which keeps its "back / continue" bar
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the

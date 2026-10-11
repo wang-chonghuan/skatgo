@@ -47,7 +47,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { DealVsAi, Fold, VsAiTable } from './daily-comparison'
+import { DealVsAi, Fold, TrickReplay, VsAiTable } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
@@ -1156,7 +1156,11 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter }: { game: 
         <div {...stylex.props(styles.resultBody)}>
           {early}
           {daily.compare}
-          <Fold label={m.daily_details()} testId="daily-details-fold">{settlement}</Fold>
+          {/* The deal trick by trick (SKATGO-79) — what the worst card's trick is read against — where
+              the free table shows the settlement's lines. */}
+          <Fold label={m.daily_replay()} testId="daily-replay-fold">
+            <TrickReplay tricks={game.tricks} names={[nameOf(0), nameOf(1), nameOf(2)]} skat={game.skat} early={game.early ?? null} />
+          </Fold>
           {daily.day}
         </div>
       ) : (

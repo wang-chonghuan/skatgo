@@ -209,6 +209,11 @@ export type DealReview = {
   auction: Auction
   aiAuction: Auction | null
   worst: WorstCard | null
+  /** The deal trick by trick as it was played — the tricks claimed or given up (`early`) left out — and
+   *  the skat, for the replay the worst card is read against. */
+  tricks: Game['tricks']
+  skat: Card[]
+  early: Game['early'] | null
 }
 
 /** Where a player stands in a day. */

@@ -473,6 +473,7 @@ export async function dailyReview(store: Store, policy: Policy, who: string, siz
     }
   }
   const b = spec.benchmark
+  const end = g.phase === 'trickEnd' ? collectTrick(g) : g
   return {
     deal: index,
     bid: g.bid,
@@ -481,6 +482,9 @@ export async function dailyReview(store: Store, policy: Policy, who: string, siz
     auction: auctionOf(g),
     aiAuction: b ? auctionOf(replayLog(spec.dealer, spec.deck, b.log)) : null,
     worst,
+    tricks: end.early ? end.tricks.slice(0, end.early.from) : end.tricks,
+    skat: end.skat,
+    early: end.early ?? null,
   }
 }
 

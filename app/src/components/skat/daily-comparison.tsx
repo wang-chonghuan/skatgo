@@ -3,6 +3,8 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { dailyReview, isError } from '~/lib/daily-api'
+import { type Card, pointsOf } from '~/lib/skat/cards'
+import type { Game } from '~/lib/skat/game'
 import { cardLabel, contractName } from '~/lib/skat/i18n'
 import { type Auction, type DailyStatus, type DealReview, type DealSummary, PLAYER, dailySize, saldo, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -117,6 +119,49 @@ export function ScoreSheet({ mine, ai, testId }: { mine: Scores; ai: Scores | nu
   )
 }
 
+/**
+ * A deal replayed trick by trick (SKATGO-79, the human: 「10墩，每墩谁出了什么（有时序）然后谁赢了，一个10行的
+ * 表格」): each trick's three cards in the order they were played, each under its player's name, and who
+ * took it with how many card points. The player's own cards are bold; `highlight` marks a trick (the
+ * worst card's). Tricks a claim or a concession left unplayed are not rows, only a line under them.
+ */
+export function TrickReplay({ tricks, names, skat, highlight = null, early = null }: { tricks: Game['tricks']; names: string[]; skat?: Card[]; highlight?: number | null; early?: Game['early'] | null }) {
+  const played = early ? tricks.slice(0, early.from) : tricks
+  return (
+    <div {...stylex.props(styles.replay)}>
+      <table data-testid="daily-replay" data-tricks={played.length} {...stylex.props(styles.replayTable)}>
+        <thead>
+          <tr>
+            <th scope="col" {...stylex.props(typography.micro, styles.replayHead)}>{m.daily_replay_trick()}</th>
+            {[1, 2, 3].map((n) => <th key={n} scope="col" {...stylex.props(typography.micro, styles.replayHead)}>{n}.</th>)}
+            <th scope="col" {...stylex.props(typography.micro, styles.replayHead, styles.end)}>{m.daily_replay_winner()}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {played.map((t, i) => (
+            <tr key={i} data-trick={i + 1} data-winner={t.winner} data-highlight={highlight === i + 1 ? 'true' : undefined} {...stylex.props(styles.replayRow, highlight === i + 1 && styles.replayMarked)}>
+              <td {...stylex.props(typography.small, styles.muted, styles.replayCell)}>{i + 1}</td>
+              {t.cards.map((p, k) => (
+                <td key={k} data-seat={p.seat} {...stylex.props(styles.replayCell)}>
+                  <span {...stylex.props(typography.micro, styles.muted, styles.replayName)}>{names[p.seat]}</span>
+                  <span {...stylex.props(p.seat === PLAYER ? typography.smallBold : typography.small, styles.replayCard)}><Rich text={cardLabel(p.card)} /></span>
+                </td>
+              ))}
+              <td {...stylex.props(typography.small, styles.replayCell, styles.end)}>{m.daily_replay_points({ name: names[t.winner], points: pointsOf(t.cards.map((p) => p.card)) })}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {early ? <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_replay_rest({ n: 10 - early.from })}</p> : null}
+      {skat?.length ? (
+        <p {...stylex.props(typography.small, styles.sheetNote)}>
+          <span {...stylex.props(styles.muted)}>{m.result_skat()}</span> <Rich text={skat.map(cardLabel).join(' ')} />
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
 /** Where a finished deal's review is asked for: the tournament and the deal, on the day it was played. */
 export type ReviewOf = { size: number; deal: number; day: string }
 
@@ -128,7 +173,7 @@ const reviewed = new Map<string, { review: DealReview; text: string | null }>()
  * 每次自动显示」): the trick, the card played and SkatZero's, and the assistant's model's few sentences on
  * why — or the word that every card was SkatZero's own choice.
  */
-export function DealReviewButton({ size, deal, day }: ReviewOf) {
+export function DealReviewButton({ size, deal, day, replay = false }: ReviewOf & { replay?: boolean }) {
   const key = `${day}|${size}|${deal}`
   const [got, setGot] = useState(reviewed.get(key) ?? null)
   const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle')
@@ -161,6 +206,9 @@ export function DealReviewButton({ size, deal, day }: ReviewOf) {
             <p {...stylex.props(typography.note, styles.muted)}>{m.daily_review_no_text()}</p>
           )
         ) : null}
+        {/* Where the page has no replay of its own (/daily), the deal comes with the review, the worst
+            card's trick marked. */}
+        {replay ? <TrickReplay tricks={got.review.tricks} names={youNames()} skat={got.review.skat} highlight={w?.trick ?? null} early={got.review.early} /> : null}
       </div>
     )
   }
@@ -180,7 +228,7 @@ export function DealReviewButton({ size, deal, day }: ReviewOf) {
  * one of today's, the way to its worst card. The sides sit side by side on a wide screen, one above the
  * other on a phone; no cards inside the settlement, which is one already.
  */
-export function DealVsAi({ mine, ai, mineAuction, aiAuction, review }: { mine: DealSummary; ai: DealSummary | null; mineAuction?: Auction; aiAuction?: Auction | null; review?: ReviewOf }) {
+export function DealVsAi({ mine, ai, mineAuction, aiAuction, review }: { mine: DealSummary; ai: DealSummary | null; mineAuction?: Auction; aiAuction?: Auction | null; review?: ReviewOf & { replay?: boolean } }) {
   const played = mine.declarer !== null
   return (
     <section
@@ -317,7 +365,7 @@ export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, open
               )}
               {isOpen && !flat ? (
                 <div id={id} data-testid="daily-vs-ai-detail" {...stylex.props(styles.detail)}>
-                  <DealVsAi mine={d} ai={b} mineAuction={auctions?.[i]} aiAuction={benchmarkAuctions?.[i] ?? null} review={review ? { ...review, deal: i } : undefined} />
+                  <DealVsAi mine={d} ai={b} mineAuction={auctions?.[i]} aiAuction={benchmarkAuctions?.[i] ?? null} review={review ? { ...review, deal: i, replay: true } : undefined} />
                 </div>
               ) : null}
             </li>
@@ -368,6 +416,15 @@ const styles = stylex.create({
   saldo: { paddingInlineStart: space.x8, borderInlineStartWidth: border.hair, borderInlineStartStyle: 'solid', borderInlineStartColor: color.hairline, textAlign: 'end' },
   sheet: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   sheetNote: { margin: 0 },
+  replay: { display: 'flex', flexDirection: 'column', gap: space.x6 },
+  replayTable: { width: '100%', borderCollapse: 'collapse', color: color.navy },
+  replayHead: { paddingBottom: space.x4, textAlign: 'start', color: color.slate },
+  replayRow: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  // The worst card's trick: the row the explanation talks about.
+  replayMarked: { backgroundColor: color.surface, borderInlineStartWidth: border.frame, borderInlineStartStyle: 'solid', borderInlineStartColor: color.navy },
+  replayCell: { paddingBlock: space.x4, paddingInlineEnd: space.x6, verticalAlign: 'top' },
+  replayName: { display: 'block' },
+  replayCard: { display: 'block', color: color.navy },
   whoTag: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.onColor },
   whoYou: { backgroundColor: color.navy },
   whoAi: { backgroundColor: color.tileOrange },

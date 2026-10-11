@@ -869,8 +869,9 @@ function InfoBoard({ game, scores, points }: { game: Game; scores: [number, numb
       </div>
       <div data-testid="skat-info-points" {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_points()}</span>
-        {/* The declarer's card points on red, as the declarer's seat tag is (SKATGO-72), so which number is
-            whose reads at a glance (SKATGO-79, the human: 「庄家的数字用红色，否则用户分不清」). */}
+        {/* The declarer's card points in the board's amber, as the player's total is beside them, so which
+            number is whose reads at a glance (SKATGO-79, the human: 「庄家的数字…否则用户分不清」, then
+            「显示橙色的算了，就跟计分牌里du的颜色一样」). */}
         <span {...stylex.props(typography.infoNumber, styles.boardValue)}>
           {playing ? (
             <>
@@ -1495,7 +1496,7 @@ const styles = stylex.create({
   boardLabel: { color: color.amber, whiteSpace: 'nowrap' },
   boardValue: { color: color.onColor, whiteSpace: 'nowrap' },
   boardMine: { color: color.amber },
-  boardDeclarer: { paddingInline: space.x4, borderRadius: radii.tag, backgroundColor: color.tileRed, color: color.onColor },
+  boardDeclarer: { color: color.amber },
   boardSub: { color: color.onColorSoft, whiteSpace: 'nowrap', minHeight: space.x12 },
   totals: { display: 'flex', gap: space.x12 },
   total: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x2 },

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-79",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-79",
+  "branch": "SKATGO-79-scoresheet-saldo",
+  "base": "d27de365dbdec425443c279f00031a8321e23a77",
+  "ports": { "web": 55079, "multiplayer": 56079, "database": 57079 }
+}

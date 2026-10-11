@@ -163,7 +163,7 @@ describe('a whole game between three computers', () => {
 })
 
 describe('the declaration hints (SKATGO-8)', () => {
-  // The hints must say what Lina and Max would do: same contract ranking, no announcements, and the
+  // The hints must say what Lina and Noah would do: same contract ranking, no announcements, and the
   // skat always picked up — otherwise the table teaches one game and the computers play another.
   it('recommend the contract the computers announce when the learner kept what they keep', () => {
     for (let n = 0; n < 400; n++) {

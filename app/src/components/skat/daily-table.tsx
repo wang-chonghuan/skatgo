@@ -90,18 +90,24 @@ function Leaderboard({ which, board, onShow }: { which: Which; board: DailyBoard
           </p>
         ) : (
           <ol {...stylex.props(styles.rows)}>
+            {/* What the number is (SKATGO-79): the board ranks by Saldo, not by a player's own total. */}
+            <li aria-hidden="true" {...stylex.props(typography.micro, styles.boardHeadRow, styles.muted)}>
+              <span {...stylex.props(styles.what)} />
+              <span>{m.daily_saldo()}</span>
+            </li>
             {[...rows, ...(board.own ? [board.own] : [])].map((r, i) => (
               <li
                 key={i}
                 data-testid="daily-board-row"
                 data-rank={r.rank}
                 data-total={r.total}
+                data-saldo={r.saldo}
                 data-me={r.me ? 'true' : undefined}
                 {...stylex.props(typography.appText, styles.row, styles.boardRow, i === rows.length && styles.gap, r.me && styles.mine)}
               >
                 <span {...stylex.props(styles.muted, styles.rank)}>{r.rank}</span>
                 <span data-testid="daily-board-name" {...stylex.props(styles.what)}>{r.nickname}</span>
-                <span {...stylex.props(styles.score)}>{signed(r.total)}</span>
+                <span {...stylex.props(styles.score)}>{signed(r.saldo)}</span>
               </li>
             ))}
           </ol>
@@ -142,7 +148,7 @@ function Nickname({ size, board, onNamed }: { size: DailySize; board: DailyBoard
     <div {...stylex.props(styles.nickForm)}>
       {me.nickname ? null : (
         <p data-testid="daily-would-be" data-rank={me.rank ?? undefined} {...stylex.props(typography.appText, styles.text)}>
-          {m.daily_would_be({ total: signed(me.total), rank: me.rank ?? 1 })}
+          {m.daily_would_be({ total: signed(me.saldo), rank: me.rank ?? 1 })}
         </p>
       )}
       <label htmlFor={id} {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_nick_label()}</label>
@@ -163,7 +169,7 @@ function DailyResult({ size, status, board, onNamed }: { size: DailySize; status
     <Panel>
       <section data-testid="daily-result" data-total={status.totals[PLAYER]} {...stylex.props(styles.result)}>
         <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_result_title()}</h2>
-        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} auctions={status.auctions} benchmarkAuctions={status.benchmarkAuctions} />
+        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} analysis={{ size, day: status.day }} />
         {board ? <Nickname key={board.me?.nickname ?? ''} size={size} board={board} onNamed={onNamed} /> : null}
       </section>
     </Panel>
@@ -257,11 +263,10 @@ export function DailyTable() {
         next: () => (reply.status.finished ? onLeave() : void load()),
         deal,
         of: reply.status.of,
+        day: reply.status.day,
         totals: busy ? before.current : reply.status.totals,
         deals: reply.status.deals,
         benchmarks: reply.status.benchmarks,
-        auctions: reply.status.auctions,
-        benchmarkAuctions: reply.status.benchmarkAuctions,
       }}
     />
   )
@@ -274,6 +279,7 @@ const styles = stylex.create({
   action: { display: 'flex' },
   boardHead: { display: 'flex', alignItems: 'center', gap: space.x8 },
   rank: { minWidth: space.x24 },
+  boardHeadRow: { display: 'flex', paddingInline: space.x8, paddingBottom: space.x4 },
   boardRow: { paddingInline: space.x8 },
   mine: { backgroundColor: color.goodSoft, borderRadius: radii.column },
   gap: { marginTop: space.x16 },

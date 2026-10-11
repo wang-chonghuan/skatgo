@@ -1,8 +1,10 @@
 import { signedInUser } from '~/lib/session'
 
-// POST /api/daily/state, /act, /name and /board — the daily tournament's only way in from the browser
-// (SKATGO-35, SKATGO-36: a finished player's nickname, and the leaderboard). The tournament itself runs in the multiplayer service, which owns the cards and the
-// scores; this handler only says who is playing and passes the request on with the service's key.
+// POST /api/daily/state, /act, /name, /board and /review — the daily tournament's only way in from the
+// browser (SKATGO-35, SKATGO-36: a finished player's nickname, and the leaderboard; SKATGO-79: a finished
+// deal's replay with SkatZero's card wherever the player's was not). The tournament itself runs in the
+// multiplayer service, which owns the cards and the scores; this handler only says who is playing and
+// passes the request on with the service's key.
 //
 // Who is playing: the signed-in account, or else this device — a random id in an httpOnly cookie,
 // stored at the service only as its hash. The cookie is strictly necessary and nothing else: it is
@@ -16,7 +18,7 @@ const COOKIE = 'skatgo_daily'
 const COOKIE_PATH = '/api/daily'
 /** 400 days, the longest a browser keeps a cookie. */
 const COOKIE_MAX_AGE = 400 * 24 * 60 * 60
-const OPS = new Set(['state', 'act', 'name', 'board'])
+const OPS = new Set(['state', 'act', 'name', 'board', 'review'])
 
 const json = (status: number, body: object, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } })
@@ -53,7 +55,7 @@ export async function handleDaily(request: Request): Promise<Response> {
   const playing = op === 'act' || (op === 'state' && (body as { open?: unknown }).open === true)
   // Looking at the board needs no player: a visitor nobody knows yet asks as nobody.
   const player = userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null
-  if (op === 'name' && !player) return json(409, { error: 'not_finished' })
+  if ((op === 'name' || op === 'review') && !player) return json(409, { error: 'not_finished' })
 
   const call = (path: string, payload: object) =>
     fetch(new URL(`/daily/${path}`, base), {

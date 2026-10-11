@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom'
 import { LANG_TAG } from '~/lib/site'
 import { type Deck, useSettings } from '~/lib/skat/settings'
 import { m } from '~/paraglide/messages'
+import { carryGame } from '~/lib/free-api'
 import { type Locale, getLocale, locales, setLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -185,7 +186,10 @@ export function LanguageSwitch() {
                 data-locale={l}
                 onClick={() => {
                   setOpen(false)
-                  if (!chosen) void setLocale(l)
+                  if (!chosen) {
+                    carryGame()
+                    void setLocale(l)
+                  }
                 }}
                 {...stylex.props(typography.appLink, styles.langItem, chosen && styles.langItemChosen)}
               >
@@ -320,7 +324,10 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
                   lang={LANG_TAG[l]}
                   data-testid={`settings-locale-${l}`}
                   onClick={() => {
-                    if (!on) void setLocale(l)
+                    if (!on) {
+                      carryGame()
+                      void setLocale(l)
+                    }
                   }}
                   {...stylex.props(typography.appBtnStrong, styles.deck, on && styles.deckOn)}
                 >

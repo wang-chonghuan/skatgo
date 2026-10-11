@@ -5,7 +5,7 @@ import express from 'express'
 import { z } from 'zod'
 import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, seatView } from '../../app/src/lib/skat/tournament'
-import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, replayLog } from './computers'
+import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
 import { actionSchema, applySeatMove, Rejected, secretEquals } from './model'
 import { BIDS, type HandMode } from './skatzero/bidding'
 import type { Policy } from './skatzero/policy'
@@ -132,13 +132,18 @@ export function freeRoutes(admissionKey: string, ready: () => boolean, policy: (
   }))
 
   const actInput = z.object({ token: z.string().max(20_000), revision: z.number().int().nonnegative(), action: actionSchema }).strict()
+  /** A game's token opened and checked: this pool's, a deal it has, and not older than its lifetime. */
+  function opened(token: string): { p: Pool; t: Token } {
+    const p = pool()!
+    const t = open(key, token)
+    if (t.v !== 1 || t.pool !== p.version || !(t.id >= 0 && t.id < p.deals.length)) throw new Rejected('game_expired')
+    if (Date.now() - t.t > TOKEN_MS) throw new Rejected('game_expired')
+    return { p, t }
+  }
   router.post('/act', run(async (body) => {
     const i = actInput.parse(body)
     if (i.action.type === 'start') throw new Rejected('illegal_action')
-    const p = pool()!
-    const t = open(key, i.token)
-    if (t.v !== 1 || t.pool !== p.version || !(t.id >= 0 && t.id < p.deals.length)) throw new Rejected('game_expired')
-    if (Date.now() - t.t > TOKEN_MS) throw new Rejected('game_expired')
+    const { p, t } = opened(i.token)
     if (i.revision !== t.log.length) throw new Rejected('stale_revision')
     const d = p.deals[t.id]
     let g = replayLog(d.dealer, deckOf(d.deck), t.log)
@@ -148,6 +153,27 @@ export function freeRoutes(admissionKey: string, ready: () => boolean, policy: (
     return reply(p, t.id, t.t, t.log, g, [g])
   }))
 
+  const tokenInput = z.object({ token: z.string().max(20_000) }).strict()
+  // A game as it stands, from its token (SKATGO-79): the page carries the token across a change of
+  // language, which loads the page anew, and takes the game up where it was. No computer is asked.
+  router.post('/resume', run(async (body) => {
+    const i = tokenInput.parse(body)
+    const { p, t } = opened(i.token)
+    const d = p.deals[t.id]
+    const g = replayLog(d.dealer, deckOf(d.deck), t.log)
+    return { token: i.token, steps: [seatView(g)], revision: t.log.length, computer: p.version }
+  }))
+  // A finished game's replay and where SkatZero would have played another card (SKATGO-79), from the
+  // game's own token: nothing is stored.
+  router.post('/review', run(async (body) => {
+    const i = tokenInput.parse(body)
+    const { p, t } = opened(i.token)
+    const d = p.deals[t.id]
+    const deck = deckOf(d.deck)
+    const end = replayLog(d.dealer, deck, t.log)
+    if (end.phase !== 'done') throw new Rejected('not_finished')
+    return reviewOf(end, await judgePlays(policy()!, playsOf(d.dealer, deck, t.log)))
+  }))
   router.use((_err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     res.status(400).json({ error: 'invalid_request' })
   })

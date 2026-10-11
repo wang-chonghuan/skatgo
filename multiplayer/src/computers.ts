@@ -1,8 +1,8 @@
-import type { Card, Contract } from '../../app/src/lib/skat/cards'
+import { type Card, type Contract, sameCard, sortHand } from '../../app/src/lib/skat/cards'
 import { claimLine, collectTrick, concedable, deal, pickUpSkat, roleOf, actor, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { type Declaration, nextBid } from '../../app/src/lib/skat/value'
 import { declarationAdvice } from '../../app/src/lib/skat/ai'
-import { PLAYER } from '../../app/src/lib/skat/tournament'
+import { type DealReview, PLAYER, auctionOf, summarize, type Differ } from '../../app/src/lib/skat/tournament'
 import { applySeatMove } from './model'
 import { type HandMode, type PickupMode, declareAfterPickup } from './skatzero/bidding'
 import { type Policy, viewOf } from './skatzero/policy'
@@ -26,6 +26,57 @@ export function decide<T>(work: Promise<T>): Promise<T> {
   return Promise.race([work, late]).finally(() => clearTimeout(timer)).catch((e) => {
     throw e instanceof ComputerFailed ? e : new ComputerFailed(e instanceof Error ? e.message : 'decision_failed')
   })
+}
+
+/** Each card seat 0 played in a recorded deal, with the deal as it stood just before it (SKATGO-79). */
+export function playsOf(dealer: Seat, deck: Card[], log: Logged[]): { g: Game; card: Card }[] {
+  const plays: { g: Game; card: Card }[] = []
+  let g = deal(dealer, deck)
+  for (const { seat, move } of log) {
+    if (g.phase === 'trickEnd') g = collectTrick(g)
+    if (seat === PLAYER && move.type === 'play') plays.push({ g, card: move.card })
+    g = applySeatMove(g, seat, move)
+  }
+  return plays
+}
+
+/** The player's plays against SkatZero's (SKATGO-79): at each play with a choice, every legal card valued
+ *  by SkatZero as it weighs its own choice. The plays whose card was not the best are ranked by how far it
+ *  fell below, with no line drawn anywhere (the human): the first is the worst. */
+export async function judgePlays(policy: Policy, plays: { g: Game; card: Card }[]): Promise<Pick<DealReview, 'differs'>> {
+  const differs: Differ[] = []
+  for (const { g, card } of plays) {
+    const ranked = await policy.ranked(viewOf(g, PLAYER))
+    if (ranked.length < 2) continue
+    const best = ranked.reduce((a, b) => (b.value > a.value ? b : a))
+    const played = ranked.find((r) => sameCard(r.card, card))
+    if (!played) continue
+    const loss = best.value - played.value
+    if (loss > 0) differs.push({ trick: g.tricks.length + 1, played: card, best: best.card, loss })
+  }
+  differs.sort((a, b) => b.loss - a.loss)
+  return { differs }
+}
+
+/** A finished deal's review without another side to compare (free play, SKATGO-79): its result, auction,
+ *  how its cards compare with SkatZero's, and its replay. */
+export function reviewOf(end: Game, judged: Pick<DealReview, 'differs'>, rest: Partial<DealReview> = {}): DealReview {
+  const g = end.phase === 'trickEnd' ? collectTrick(end) : end
+  return {
+    deal: 0,
+    bid: g.bid,
+    mine: summarize(g),
+    ai: null,
+    auction: auctionOf(g),
+    aiAuction: null,
+    ...judged,
+    tricks: g.early ? g.tricks.slice(0, g.early.from) : g.tricks,
+    skat: g.skat,
+    early: g.early ?? null,
+    // Every card the player played, the rest of a claimed deal included: their hand when the play began.
+    hand: sortHand(g.tricks.flatMap((t) => t.cards).filter((p) => p.seat === PLAYER).map((p) => p.card), g.declaration?.contract ?? null),
+    ...rest,
+  }
 }
 
 /** A deal as it stands after its recorded moves; finished tricks are collected by rule. No computer is

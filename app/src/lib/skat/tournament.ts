@@ -187,6 +187,40 @@ export function totals(deals: DealSummary[]): [number, number, number] {
   return deals.reduce<[number, number, number]>((t, d) => [t[0] + d.scores[0], t[1] + d.scores[1], t[2] + d.scores[2]], [0, 0, 0])
 }
 
+/** How far a seat is ahead of the other two (SKATGO-79, the human: 「能看出我比对手强多少」): its
+ *  score less each other seat's, added — (own − one) + (own − other). 0 when all three are level; the
+ *  three seats' Saldo add up to 0. Of one deal's scores, or of a tournament's totals. */
+export function saldo(scores: readonly [number, number, number], seat: Seat = PLAYER): number {
+  return 3 * scores[seat] - (scores[0] + scores[1] + scores[2])
+}
+
+/** A card the player played where SkatZero would have played another (SKATGO-79): at each of their plays
+ *  SkatZero values every legal card, and this is one whose card fell below the best one. `trick` counts
+ *  from 1; `loss` is how far below, in SkatZero's own values. */
+export type Differ = { trick: number; played: Card; best: Card; loss: number }
+
+/** What the review of one finished deal works from: the deal as the player played it, the AI's in the
+ *  same seat, and where the player's cards were not the AI's. */
+export type DealReview = {
+  deal: number
+  bid: number
+  mine: DealSummary
+  ai: DealSummary | null
+  auction: Auction
+  aiAuction: Auction | null
+  /** Every play where the player's card was not SkatZero's, the furthest below its best first — the first is
+   *  the move most worth improving (the human: no threshold, 「通过10墩排序的方式，选出最差的」); empty
+   *  when every card was SkatZero's own choice. */
+  differs: Differ[]
+  /** The deal trick by trick as it was played — the tricks claimed or given up (`early`) left out — and
+   *  the skat, for the replay the AI's cards are read against. */
+  tricks: Game['tricks']
+  skat: Card[]
+  early: Game['early'] | null
+  /** The player's ten cards when the play began, sorted for the game (SKATGO-79). */
+  hand: Card[]
+}
+
 /** Where a player stands in a day. */
 export type DailyStatus = {
   /** The tournament day, YYYY-MM-DD in Berlin. */
@@ -219,8 +253,9 @@ export type DailyReply = {
   revision: number
 }
 
-/** One row of a day's leaderboard (SKATGO-36): a nickname and its total, never who is behind it. */
-export type BoardRow = { rank: number; nickname: string; total: number; me: boolean }
+/** One row of a day's leaderboard (SKATGO-36): a nickname, its Saldo — what ranks it since SKATGO-79 —
+ *  and its own total, never who is behind it. */
+export type BoardRow = { rank: number; nickname: string; total: number; saldo: number; me: boolean }
 
 /** A day's leaderboard, and where the asking player stands on it. */
 export type DailyBoard = {
@@ -232,7 +267,7 @@ export type DailyBoard = {
   /** Entries on the board in all, beyond the rows shown. */
   total: number
   /** The asking player's entry that day: a finished player without a nickname gets the rank they would have. */
-  me: { finished: boolean; total: number; nickname: string | null; rank: number | null } | null
+  me: { finished: boolean; total: number; saldo: number; nickname: string | null; rank: number | null } | null
   /** The nickname the player last used, to offer again. */
   lastNickname: string | null
 }

@@ -176,7 +176,7 @@ export function PrivateTable() {
   return <Playing state={shown} busy={sending || queue.length > 0} send={send} collect={() => setRelease(true)} />
 }
 
-/** A seat's name as the viewer reads it: a person's nickname (the viewer is "you"), Lina or Max for a
+/** A seat's name as the viewer reads it: a person's nickname (the viewer is "you"), Lina or Noah for a
  *  computer's seat, marked when a computer plays it. */
 function seatNames(state: TableState): [string, string, string] {
   const me = state.mine.seat

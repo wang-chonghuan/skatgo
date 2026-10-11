@@ -38,8 +38,9 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   player's entry (`daily_entries`: the human's moves per deal, per-deal summaries, the total, and the
   nickname a finished player put on the leaderboard — SKATGO-36), both keyed by the day and the
   tournament's `size`; rows from before SKATGO-77 are the 6-deal tournament. Every route names the size
-  (none means 6). Each tournament's leaderboard is computed from those rows on request. The web service
-  is its only client.
+  (none means 6). Each tournament's leaderboard is computed from those rows on request, ranked by the
+  tournament's Saldo (`saldo` in `lib/skat/tournament.ts`, SKATGO-79), ties to the earlier finish. The
+  web service is its only client.
 - **The tournament's computers play their cards with SkatZero** (SKATGO-38): nine pinned ONNX models
   from github.com/Jimboom7/SkatZero `1fe5cab` (MIT), committed under `multiplayer/skatzero/` with a
   hash manifest and run by `onnxruntime-node` (exact version, human-approved 2026-10-02) — in
@@ -52,7 +53,11 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   never features, in bidding or card play. Since SKATGO-40 free play (`/play`) and lesson 11's game
   play the same SkatZero computers on the server, their bidding taken from a committed pool of deals
   (`multiplayer/skatzero/free-pool.json.gz`, label `skatzero@1fe5cab`). Rooms and hints keep the
-  heuristics.
+  heuristics. Since SKATGO-79 SkatZero also reviews a finished deal for its play record: at each of the
+  player's plays it values every legal card as it weighs its own choice (`Policy.ranked`), and
+  `judgePlays` in `src/computers.ts` keeps the plays whose card fell below its best, furthest first
+  (`DealReview.differs`). `/daily/review` and `/free/review` work it out on request and store nothing.
+  No language model judges or explains play.
 - Course libraries: `motion` (animation), `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
   assistant's chat window).
 
@@ -78,13 +83,13 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`) is cut from it by `.intentfold/tickets/SKATGO-23/icons.mjs` — regenerate them, never edit them |
 | `app/brand/cards/`, `app/public/cards/` | the playing cards' pictures (SKATGO-66): the court figures of both decks, the German Daus and suit symbols, and the back, generated with Azure OpenAI `gpt-image-2` by `generate.sh` from `prompts/`, each call in `calls.txt` and each master's request beside it (`masters/*.png.json`); the masters are lossless WebP, pixel for pixel the model's PNGs, which stay out of git; `PROVENANCE.md` says how and that no commercial deck was copied. The served WebP files are cut from the masters by `app/scripts/make-card-images.mjs` — regenerate them, never edit them. |
-| `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: the day's tournaments by size (`DAILY_SIZES`, SKATGO-77), what seat 0 may see of a deal (`seatView`, also free play's), that view as a table, Seeger-Fabian |
+| `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: the day's tournaments by size (`DAILY_SIZES`, SKATGO-77), what seat 0 may see of a deal (`seatView`, also free play's), that view as a table, Seeger-Fabian, Saldo (`saldo`), and a finished deal's review (`DealReview`, SKATGO-79) |
 | `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36) |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
 | `app/src/components/skat/rules-page.tsx`, `bidding-table-page.tsx`, `app/src/lib/skat/rules/` | the rules reference and its text, with anchored sub-headings for topics looked up by name (`#grand`, `#null-ouvert`, `#ramsch`), the bidding table (SKATGO-50), and the printable short version (`rules-summary-page.tsx`, text in `rules/summary.{de,en}.ts`, SKATGO-53). Every number on these pages — card points, base and Null values, the bid ladder, the multiplier limits — is rendered from `value.ts` and `cards.ts` |
 | `app/src/components/skat/score-sheet-page.tsx`, `print-links.tsx`, `app/src/lib/printables.ts`, `app/public/downloads/` | the printables (SKATGO-53): the score sheet (its Seeger-Fabian bonuses are `SEEGER_FABIAN` in `tournament.ts`); the download button and the links to the printables; which PDF belongs to which page; the committed PDFs, made by `app/scripts/make-printables.mjs` (Tools). Each PDF is served with a canonical Link header naming its page, set in `app/vite.config.ts` from `lib/printables.ts` and `lib/origin.ts` |
-| `app/src/components/skat/daily-page.tsx`, `daily-table.tsx`, `daily-comparison.tsx` | `/daily` with its switch between the two tournaments (SKATGO-77); each tournament's button, result, board and table; `/daily/play` is its full-screen page. `daily-comparison.tsx` is `VsAiTable`: one collapsible row per finished deal with the player's and the computer's score and their difference, opening to both deals' full result, and a total (SKATGO-42, SKATGO-48) |
-| `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy and its per-address limits, the browser's calls, and the table free play and lesson 11 use (`GameTable` with a `server` source, hints and assistant kept) |
+| `app/src/components/skat/daily-page.tsx`, `daily-table.tsx`, `daily-comparison.tsx` | `/daily` with its switch between the two tournaments (SKATGO-77); each tournament's button, result, board and table; `/daily/play` is its full-screen page. `daily-comparison.tsx` holds `ScoreSheet`, `VsAiTable` (one collapsible row per finished deal with the player's and the computer's Saldo, opening to the deal's score sheet and play record, and the tournament's score sheet — SKATGO-42, SKATGO-48, SKATGO-79) and the play record (`DealAnalysis`, `TrickReplay`), which free play's result uses too |
+| `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy (`new`, `act`, `resume`, `review`) and its per-address limits, the browser's calls and the game carried across a change of language (SKATGO-79), and the table free play and lesson 11 use (`GameTable` with a `server` source, hints and assistant kept) |
 | `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament; `src/free.ts` free play; `src/computers.ts` the SkatZero computer turns both share; `scripts/make-free-pool.ts` the one-off generator of free play's pool |
 
 **Key decisions**
@@ -146,6 +151,9 @@ also built from the repository root. Neither project imports the other's runtime
     version, the start time and every move, the computers' included.
   - Replay runs the engine only; a computer is asked only for new moves. There is no cookie and no
     browser storage; a reload starts a new game.
+  - A change of language reloads the page, so the token goes with it in the URL fragment
+    (`#game=…`, never sent to a server), leaves the address at once, and `/free/resume` takes the game
+    up from it (SKATGO-79).
   - The pool is in the public repository, so its decks are readable. This is accepted because free
     play is unranked.
 - **Split from Parrottoon on 2026-09-21**, as byte copies of its course code, theme and styles. The

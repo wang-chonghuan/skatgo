@@ -1,4 +1,6 @@
-// POST /api/free/new and /api/free/act — free play and lesson 11 on the server (SKATGO-40). The game
+// POST /api/free/new, /act, /resume and /review — free play and lesson 11 on the server (SKATGO-40;
+// SKATGO-79: /resume takes a game up from its token after a change of language, /review is a finished
+// game's replay with SkatZero's card wherever the player's was not). The game
 // runs in the multiplayer service; this handler only passes requests on with the service's key and
 // keeps the door from being run through: per address, at most FREE_LIMITS new games an hour and
 // moves per ten seconds (a classroom or a family often shares one address, so the limits are wide).
@@ -41,11 +43,11 @@ function clientIp(request: Request): string {
 export async function handleFree(request: Request): Promise<Response> {
   if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const op = new URL(request.url).pathname.slice('/api/free/'.length)
-  if (op !== 'new' && op !== 'act') return json(404, { error: 'not found' })
+  if (op !== 'new' && op !== 'act' && op !== 'resume' && op !== 'review') return json(404, { error: 'not found' })
   const base = process.env.MULTIPLAYER_URL
   const key = process.env.MULTIPLAYER_ADMISSION_KEY
   if (!base || !key) return json(503, { error: 'unavailable' })
-  if (!admitFree(op, clientIp(request))) return json(429, { error: 'slow_down' })
+  if (!admitFree(op === 'new' ? 'new' : 'act', clientIp(request))) return json(429, { error: 'slow_down' })
   let body: unknown
   try {
     body = op === 'new' ? {} : await request.json()

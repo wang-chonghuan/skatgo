@@ -466,7 +466,7 @@
   "daily_retry": "Try again",
   "daily_saldo": "Saldo",
   "daily_saldo_note": "Saldo = (seat − Lina) + (seat − Noah): how far that seat is ahead of both opponents.",
-  "daily_review": "Where could you have done better?",
+  "daily_review": "Where could I have done better?",
   "daily_after": "After {n} of {of} deals: Saldo {you} · AI {ai}",
   "daily_after_solo": "After {n} of {of} deals: Saldo {you}",
   "daily_review_loading": "The AI is analysing the deal…",

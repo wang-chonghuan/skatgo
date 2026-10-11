@@ -79,7 +79,7 @@ import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 const ME: Seat = 0
 /** A seat's name in the current language — read at render, so it is always the page's language. */
 const defaultName = (seat: Seat) => [m.name_you, m.name_lina, m.name_max][seat]()
-/** The names at this table: a private table's nicknames (SKATGO-61), or null for You, Lina and Max. */
+/** The names at this table: a private table's nicknames (SKATGO-61), or null for You, Lina and Noah. */
 const Names = createContext<[string, string, string] | null>(null)
 function useNameOf() {
   const names = useContext(Names)
@@ -1234,7 +1234,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
 }
 
 /** How a deal decided before its last card ended (SKATGO-59): the rest shown, or a Null given up. Lina
- *  and Max have their own lines; at a private table (`named`) anyone's line is the same. */
+ *  and Noah have their own lines; at a private table (`named`) anyone's line is the same. */
 function earlyLine(declarer: Seat, early: NonNullable<Game['early']>, nameOf: (seat: Seat) => string, named: boolean): string {
   const name = nameOf(declarer)
   if (early.kind === 'claim') {
@@ -1781,7 +1781,7 @@ const contractTint = stylex.create({
 })
 
 // The three places a played card lands in the frame (SKATGO-68): as big as the hand's cards, so they
-// overlap, each toward who played it — Lina's on the left, the learner's in the middle, Max's on the right
+// overlap, each toward who played it — Lina's on the left, the learner's in the middle, Noah's on the right
 // — and each one step higher than the card to its left, so its top-left number and suit show above that
 // card's top edge. Cards enter in play order, so a later one lies on top, and whatever was played last,
 // every card's top-left number and suit stay in the open.

@@ -77,7 +77,7 @@ export function reviewPrompt(r: DealReview, locale: Locale): { system: string; m
   const side = (s: Seat) =>
     s === declarer ? (de ? 'Alleinspieler' : 'declarer') : declarer === PLAYER ? (de ? 'Gegenspieler' : 'defender') : de ? 'deine Partei' : 'your side'
   const sides = declarer === PLAYER
-    ? de ? 'Der Spieler ist Alleinspieler gegen Lina und Max.' : 'The player is the declarer against Lina and Max.'
+    ? de ? 'Der Spieler ist Alleinspieler gegen Lina und Noah.' : 'The player is the declarer against Lina and Noah.'
     : de ? `Alleinspieler ist ${seatName(declarer, locale)}. Der Spieler ist Gegenspieler zusammen mit seinem Partner ${seatName(partner, locale)}.` : `${seatName(declarer, locale)} is the declarer. The player defends together with their partner ${seatName(partner, locale)}.`
   const trick = r.tricks[w.trick - 1]
   const before = w.table.map((p) => `${seatName(p.seat, locale)} ${cardWords(p.card, locale)}`).join(', ')

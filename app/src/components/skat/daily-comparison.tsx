@@ -453,8 +453,9 @@ const styles = stylex.create({
   replayTable: { width: '100%', borderCollapse: 'collapse', color: color.navy },
   replayHead: { paddingBottom: space.x4, textAlign: 'start', color: color.slate },
   replayRow: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
-  // The worst card's trick: the row the explanation talks about.
-  replayMarked: { backgroundColor: color.surface, borderInlineStartWidth: border.frame, borderInlineStartStyle: 'solid', borderInlineStartColor: color.navy },
+  // The trick of the move most worth improving: the row the explanation talks about, on the app's pink
+  // (the human: 「那一行标红背景，就是本app常用那种粉红的背景」).
+  replayMarked: { backgroundColor: color.badSoft },
   replayCell: { paddingBlock: space.x4, paddingInlineEnd: space.x6, verticalAlign: 'top' },
   replayName: { display: 'block' },
   replayCard: { display: 'block', color: color.navy },

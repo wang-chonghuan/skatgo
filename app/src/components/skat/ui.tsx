@@ -125,7 +125,7 @@ export function Pill({ children, tone = 'quiet' }: { children: ReactNode; tone?:
   return <span {...stylex.props(typography.appBtn, styles.pill, pillTones[tone])}>{typeof children === 'string' ? keepParts(children) : children}</span>
 }
 
-/** A fact made of parts ("Alleinspieler: Max · gereizt bis 18") breaks only after a " · ", never inside a
+/** A fact made of parts ("Alleinspieler: Noah · gereizt bis 18") breaks only after a " · ", never inside a
  *  part or before the dot (SKATGO-58). A sentence of one part wraps between words like any text, so a
  *  long one never runs out past the screen's edge (SKATGO-65). */
 const keepParts = (text: string) =>

@@ -17,9 +17,10 @@ export const SUMMARY_EN: RulesSummary = [
       {
         kind: 'list',
         items: [
-          'The four **Jacks** are always the highest trumps: ♣J, ♠J, ♥J, ♦J. In a suit game the trump suit follows with A, 10, K, Q, 9, 8, 7 – eleven trumps. In Grand only the Jacks are trumps.',
-          'Side suits run A, 10, K, Q, 9, 8, 7. Null has no trumps, and every suit runs A, K, Q, J, 10, 9, 8, 7.',
-          'You must **follow** the suit led; trumps count as one suit, so a Jack follows trumps. If you cannot follow, you may trump or throw off. The highest trump wins the trick, otherwise the highest card of the suit led.',
+          '**B = J** (Bube = Jack) and **D = Q** (Dame = Queen); K and A are the same as in an international deck.',
+          'The four **Buben** are always the highest trumps: ♣B, ♠B, ♥B, ♦B. In a suit game the trump suit follows with A, 10, K, D, 9, 8, 7 – eleven trumps. In Grand only the Buben are trumps.',
+          'Side suits run A, 10, K, D, 9, 8, 7. Null has no trumps, and every suit runs A, K, D, B, 10, 9, 8, 7.',
+          'You must **follow** the suit led; trumps count as one suit, so a Bube follows trumps. If you cannot follow, you may trump or throw off. The highest trump wins the trick, otherwise the highest card of the suit led.',
         ],
       },
     ],
@@ -40,7 +41,7 @@ export const SUMMARY_EN: RulesSummary = [
   {
     title: 'Games and game value',
     blocks: [
-      { kind: 'p', text: "**Game value = base value × multiplier.** The multiplier is: matadors **with** or **without** so many (from ♣J down, counted over hand and skat) + 1 for **game** + 1 each for **Hand**, **Schneider**, **Schneider announced**, **Schwarz**, **Schwarz announced** and **Ouvert**. The base values:" },
+      { kind: 'p', text: "**Game value = base value × multiplier.** The multiplier is: matadors **with** or **without** so many (from ♣B down, counted over hand and skat) + 1 for **game** + 1 each for **Hand**, **Schneider**, **Schneider announced**, **Schwarz**, **Schwarz announced** and **Ouvert**. The base values:" },
       { kind: 'engine', table: 'baseValues' },
       { kind: 'p', text: '**Null** is not multiplied: the declarer must take no trick, at fixed values:' },
       { kind: 'engine', table: 'nullValues' },

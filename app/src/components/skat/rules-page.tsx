@@ -85,11 +85,15 @@ export function RulesPage() {
 
 /** The rules in the table's side panel (SKATGO-75): the same sections as the page, read without leaving
  *  the game — no introduction (it speaks of the page's lesson links), no ways on, no print links, no
- *  lesson links: nothing that would take the learner away. */
+ *  lesson links: nothing that would take the learner away. The one link, to the Skat-Tricks (SKATGO-82),
+ *  opens beside the table in a new tab, so the game stays where it is. */
 export function RulesInPanel() {
   const rules = RULES[getLocale()]
   return (
     <div data-testid="rules-panel" {...stylex.props(styles.panelColumn)}>
+      <Link to="/skat-tricks" target="_blank" rel="noopener" data-testid="rules-panel-tricks" {...stylex.props(typography.appLink, styles.lessonLink)}>
+        {m.tricks_title()}
+      </Link>
       {rules.sections.map((s) => (
         <section key={s.id} data-section={s.id} {...stylex.props(styles.panelSection)}>
           <h3 {...stylex.props(typography.optionTitle, styles.heading)}>{s.title}</h3>

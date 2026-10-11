@@ -16,7 +16,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { PlayingCard } from './playing-card'
-import { linkLook, stillLook } from './ui'
+import { linkLook } from './ui'
 
 const NOTHING_DONE: Record<string, LessonRecord> = {}
 
@@ -79,11 +79,13 @@ export function EntryPage() {
             </Link>
           </Face>
         </section>
-        {/* Practice (SKATGO-69): not there yet, so the tile leads nowhere. Its "coming soon" looks like the
-            other tiles' buttons but is no link and does not answer the pointer (`stillLook`). */}
-        <section data-testid="entry-card" data-section="practice" {...stylex.props(styles.tile, tileTones.practice)}>
+        {/* The tricks (SKATGO-82): the tile that held the puzzles' place, renamed for what the section is now —
+            articles first, practice later — and leading to it. */}
+        <section data-testid="entry-card" data-section="tricks" {...stylex.props(styles.tile, tileTones.practice)}>
           <Face art={PRACTICE_ART} title={m.entry_practice_title()} text={m.entry_practice_text()}>
-            <span data-testid="entry-practice-soon" {...stillLook('quiet', 'md', 'landing')}>{m.entry_practice_soon()}</span>
+            <Link to="/skat-tricks" data-testid="entry-tricks" {...linkLook('quiet', 'md', 'landing')}>
+              {m.entry_practice_cta()}
+            </Link>
           </Face>
         </section>
         <section data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, tileTones.friends)}>

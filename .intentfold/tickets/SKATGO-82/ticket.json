@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-82",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-82",
+  "branch": "SKATGO-82-skat-tricks",
+  "base": "4314c794c07dd39541497da8355fc5e51af0fe12",
+  "ports": { "web": 55082, "multiplayer": 56082, "database": 57082 }
+}

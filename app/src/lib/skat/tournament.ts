@@ -209,6 +209,12 @@ export type DealReview = {
   auction: Auction
   aiAuction: Auction | null
   worst: WorstCard | null
+  /** How the player's cards compare with SkatZero's (SKATGO-79, the human: no threshold — 「通过10墩排序的方式，选出最差的」):
+   *  the plays they had a choice in, those where they played SkatZero's own card, and the tricks of the
+   *  others, the furthest from SkatZero's first. */
+  choices: number
+  agreed: number
+  differs: number[]
   /** The deal trick by trick as it was played — the tricks claimed or given up (`early`) left out — and
    *  the skat, for the replay the worst card is read against. */
   tricks: Game['tricks']

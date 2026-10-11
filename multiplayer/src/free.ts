@@ -5,7 +5,7 @@ import express from 'express'
 import { z } from 'zod'
 import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, seatView } from '../../app/src/lib/skat/tournament'
-import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, playsOf, replayLog, reviewOf, worstCard } from './computers'
+import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
 import { actionSchema, applySeatMove, Rejected, secretEquals } from './model'
 import { BIDS, type HandMode } from './skatzero/bidding'
 import type { Policy } from './skatzero/policy'
@@ -160,7 +160,7 @@ export function freeRoutes(admissionKey: string, ready: () => boolean, policy: (
     const deck = deckOf(d.deck)
     const end = replayLog(d.dealer, deck, t.log)
     if (end.phase !== 'done') throw new Rejected('not_finished')
-    return reviewOf(end, await worstCard(policy()!, playsOf(d.dealer, deck, t.log)))
+    return reviewOf(end, await judgePlays(policy()!, playsOf(d.dealer, deck, t.log)))
   }))
   router.use((_err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     res.status(400).json({ error: 'invalid_request' })

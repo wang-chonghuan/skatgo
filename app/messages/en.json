@@ -471,6 +471,8 @@
   "daily_after_solo": "After {n} of {of} deals: Saldo {you}",
   "daily_review_loading": "The AI is analysing the deal…",
   "daily_review_card": "Trick {trick}: you played {played} — {best} was better.",
+  "daily_review_agreed": "In {agreed} of the {choices} tricks where you had a choice, you played the same card as the AI.",
+  "daily_review_differs": "Different from the AI in tricks {list} — most clearly in trick {worst}.",
   "daily_review_clean": "Every card you played was the AI’s choice too.",
   "daily_review_ai": "AI analysis",
   "daily_review_no_text": "The explanation isn’t available right now.",

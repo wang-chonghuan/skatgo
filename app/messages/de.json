@@ -471,6 +471,8 @@
   "daily_after_solo": "Nach {n} von {of} Spielen: Saldo {you}",
   "daily_review_loading": "Die AI analysiert das Spiel …",
   "daily_review_card": "{trick}. Stich: Du hast {played} gespielt – besser war {best}.",
+  "daily_review_agreed": "In {agreed} von {choices} Stichen, in denen du wählen konntest, hast du dieselbe Karte gespielt wie die AI.",
+  "daily_review_differs": "Anders als die AI in Stich {list} – am deutlichsten in Stich {worst}.",
   "daily_review_clean": "Jede deiner Karten war auch die Wahl der AI.",
   "daily_review_ai": "AI-Analyse",
   "daily_review_no_text": "Die Erklärung ist gerade nicht verfügbar.",

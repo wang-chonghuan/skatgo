@@ -14,7 +14,7 @@ import { cleanNickname } from '../../app/src/lib/skat/nickname'
 import { actionSchema, applySeatMove, computerMove, Rejected, secretEquals, secureDeck } from './model'
 import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
 import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzero/bidding'
-import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, playsOf, raw, replayLog, reviewOf, skatzeroTurn, worstCard } from './computers'
+import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, judgePlays, playsOf, raw, replayLog, reviewOf, skatzeroTurn } from './computers'
 import type { Store } from './store'
 
 // The daily tournament (SKATGO-35). Every day has one tournament per size — 6 deals and 12 (SKATGO-77) —
@@ -458,7 +458,7 @@ export async function dailyReview(store: Store, policy: Policy, who: string, siz
     end = replayLog(spec.dealer, spec.deck, actions as Logged[])
   }
   const b = spec.benchmark
-  return reviewOf(end, await worstCard(policy, plays), {
+  return reviewOf(end, await judgePlays(policy, plays), {
     deal: index,
     mine: e.deals[index],
     ai: b?.summary ?? null,

@@ -40,28 +40,32 @@ export function playsOf(dealer: Seat, deck: Card[], log: Logged[]): { g: Game; c
   return plays
 }
 
-/** The player's worst card among their plays (SKATGO-79): at each play with a choice, every legal card
- *  valued by SkatZero as it weighs its own choice; the worst is the one furthest below the best. Null
- *  when every card was SkatZero's own choice. */
-export async function worstCard(policy: Policy, plays: { g: Game; card: Card }[]): Promise<WorstCard | null> {
-  let worst: WorstCard | null = null
+/** The player's plays against SkatZero's (SKATGO-79): at each play with a choice, every legal card valued
+ *  by SkatZero as it weighs its own choice. The plays are ranked by how far the card fell below the best
+ *  one, with no line drawn anywhere (the human): the worst is the first — null when every card was
+ *  SkatZero's own choice — and the count of plays that were tells how near the rest came. */
+export type Judged = Pick<DealReview, 'worst' | 'choices' | 'agreed' | 'differs'>
+
+export async function judgePlays(policy: Policy, plays: { g: Game; card: Card }[]): Promise<Judged> {
+  const off: WorstCard[] = []
+  let choices = 0
   for (const { g, card } of plays) {
     const ranked = await policy.ranked(viewOf(g, PLAYER))
     if (ranked.length < 2) continue
+    choices++
     const best = ranked.reduce((a, b) => (b.value > a.value ? b : a))
     const played = ranked.find((r) => sameCard(r.card, card))
     if (!played) continue
     const loss = best.value - played.value
-    if (loss > 0 && (!worst || loss > worst.loss)) {
-      worst = { trick: g.tricks.length + 1, hand: g.hands[PLAYER], table: g.trick, played: card, best: best.card, loss }
-    }
+    if (loss > 0) off.push({ trick: g.tricks.length + 1, hand: g.hands[PLAYER], table: g.trick, played: card, best: best.card, loss })
   }
-  return worst
+  off.sort((a, b) => b.loss - a.loss)
+  return { worst: off[0] ?? null, choices, agreed: choices - off.length, differs: off.map((w) => w.trick) }
 }
 
 /** A finished deal's review without another side to compare (free play, SKATGO-79): its result, auction,
- *  worst card and replay. */
-export function reviewOf(end: Game, worst: WorstCard | null, rest: Partial<DealReview> = {}): DealReview {
+ *  how its cards compare with SkatZero's, and its replay. */
+export function reviewOf(end: Game, judged: Judged, rest: Partial<DealReview> = {}): DealReview {
   const g = end.phase === 'trickEnd' ? collectTrick(end) : end
   return {
     deal: 0,
@@ -70,7 +74,7 @@ export function reviewOf(end: Game, worst: WorstCard | null, rest: Partial<DealR
     ai: null,
     auction: auctionOf(g),
     aiAuction: null,
-    worst,
+    ...judged,
     tricks: g.early ? g.tricks.slice(0, g.early.from) : g.tricks,
     skat: g.skat,
     early: g.early ?? null,

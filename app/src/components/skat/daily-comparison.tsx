@@ -251,6 +251,14 @@ function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
           <p {...stylex.props(typography.note, styles.reviewLine)}>
             <Rich text={w ? m.daily_review_card({ trick: w.trick, played: cardLabel(w.played), best: cardLabel(w.best) }) : m.daily_review_clean()} />
           </p>
+          {/* How near the rest came, with no line drawn: the plays that were the AI's own, and the others
+              ranked (SKATGO-79). */}
+          {w ? (
+            <p data-testid="daily-review-agreed" data-agreed={got.review.agreed} data-choices={got.review.choices} {...stylex.props(typography.note, styles.muted)}>
+              {m.daily_review_agreed({ agreed: got.review.agreed, choices: got.review.choices })}
+              {got.review.differs.length > 1 ? ` ${m.daily_review_differs({ list: [...got.review.differs].sort((x, y) => x - y).join(', '), worst: w.trick })}` : ''}
+            </p>
+          ) : null}
           {w ? (
             got.text ? (
               <p data-testid="daily-review-text" {...stylex.props(typography.note, styles.reviewText)}>

@@ -869,7 +869,18 @@ function InfoBoard({ game, scores, points }: { game: Game; scores: [number, numb
       </div>
       <div data-testid="skat-info-points" {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_points()}</span>
-        <span {...stylex.props(typography.infoNumber, styles.boardValue)}>{playing ? `${points.declarer} : ${points.defenders}` : '—'}</span>
+        {/* The declarer's card points on red, as the declarer's seat tag is (SKATGO-72), so which number is
+            whose reads at a glance (SKATGO-79, the human: 「庄家的数字用红色，否则用户分不清」). */}
+        <span {...stylex.props(typography.infoNumber, styles.boardValue)}>
+          {playing ? (
+            <>
+              <span data-testid="skat-info-points-declarer" {...stylex.props(styles.boardDeclarer)}>{points.declarer}</span>
+              {` : ${points.defenders}`}
+            </>
+          ) : (
+            '—'
+          )}
+        </span>
         <span {...stylex.props(typography.infoSub, styles.boardSub)}>{playing ? m.info_tricks({ n: Math.min(10, game.tricks.length + 1) }) : ''}</span>
       </div>
       <div data-testid="skat-info-totals" {...stylex.props(styles.boardCell)}>
@@ -1484,6 +1495,7 @@ const styles = stylex.create({
   boardLabel: { color: color.amber, whiteSpace: 'nowrap' },
   boardValue: { color: color.onColor, whiteSpace: 'nowrap' },
   boardMine: { color: color.amber },
+  boardDeclarer: { paddingInline: space.x4, borderRadius: radii.tag, backgroundColor: color.tileRed, color: color.onColor },
   boardSub: { color: color.onColorSoft, whiteSpace: 'nowrap', minHeight: space.x12 },
   totals: { display: 'flex', gap: space.x12 },
   total: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x2 },

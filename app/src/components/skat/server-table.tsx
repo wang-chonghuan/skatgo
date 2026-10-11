@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { type GameMode, track } from '~/lib/analytics'
-import { type FreeError, freeAct, freeNew, freeReview, isFreeError } from '~/lib/free-api'
+import { type FreeError, freeAct, freeNew, freeResume, freeReview, holdGame, isFreeError, takeCarriedGame } from '~/lib/free-api'
 import type { Move } from '~/lib/skat/game'
 import { type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -68,10 +68,26 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     take(r.steps, r)
   }
 
+  /** A game carried here across a change of language (SKATGO-79): taken up where it was, or, when its
+   *  token is no longer good, a new one. */
+  async function resume(carried: string) {
+    setSending(true)
+    const r = await freeResume(carried)
+    setSending(false)
+    if (isFreeError(r)) return void start()
+    take(r.steps, r)
+  }
+  // Free play's game goes along when the language changes; lesson 11 starts its game again with its step.
+  useEffect(() => {
+    if (mode !== 'free') return
+    holdGame(token)
+    return () => holdGame(null)
+  }, [mode, token])
   useEffect(() => {
     if (started.current) return
     started.current = true
-    void start()
+    const carried = mode === 'free' ? takeCarriedGame() : null
+    void (carried ? resume(carried) : start())
     // Once, when the table opens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

@@ -1,173 +1,228 @@
 import { type ChatMessage, openModelStream } from '~/lib/ask/azure'
 import { LIMITS } from '~/lib/ask/limits'
-import { type Card, type Contract, effectiveSuit, fullDeck, pointsOf, sameCard, strength, trickWinnerIndex } from '~/lib/skat/cards'
+import { type Card, type Contract, effectiveSuit, fullDeck, legalPlays, pointsOf, sameCard, strength, trickWinnerIndex, trumpSequence } from '~/lib/skat/cards'
 import type { Played, Seat } from '~/lib/skat/game'
 import { type DealReview, type DealSummary, PLAYER } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import type { Locale } from '~/paraglide/runtime'
 
 // The words of a deal's review (SKATGO-79): the multiplayer service finds the player's worst card with
-// SkatZero; this asks the assistant's model (`gpt-5.6-luna`, medium — the human's choice) for two or three
-// sentences on why it was worse than SkatZero's card. The model is given only the facts the service
-// found, in the page's language, and explains them; it never decides which card was worst. To the player
-// SkatZero is "the AI" — its name is never shown, nor given to the model (the human, SKATGO-79).
+// SkatZero; this asks the assistant's model — `gpt-5.6-luna`, at high effort here (the human: 「用luna
+// high」) where the assistant itself stays at medium — for two or three sentences on why it was worse
+// than SkatZero's card. The model never decides which card was worst, and it is not left to work the game
+// out either: the rules engine gives it everything the player could know when they chose the card — the
+// tricks so far, who has shown out of which suit, the score, the hand and the legal cards, the higher cards
+// of the same suit still out — and, kept apart, what only became known afterwards (the human: 「你要给它足够
+// 的信息」). To the player SkatZero is "the AI": its name is never shown, nor given to the model.
 
 /** A card in words: "Pik-Zehn", "Ten of Spades". */
 function cardWords(c: Card, locale: Locale): string {
   const o = { locale }
-  const suit = { C: m.suit_clubs, S: m.suit_spades, H: m.suit_hearts, D: m.suit_diamonds }[c.suit]({}, o)
+  const suit = suitWords(c.suit, locale)
   const rank = { A: m.rank_name_ace, K: m.rank_name_king, Q: m.rank_name_queen, J: m.rank_name_jack }[c.rank as 'A' | 'K' | 'Q' | 'J']?.({}, o) ?? c.rank
   return m.card_spoken({ suit, rank }, o)
 }
 
+const cardsWords = (cards: Card[], locale: Locale) => cards.map((c) => cardWords(c, locale)).join(', ')
+
+const suitWords = (s: Card['suit'], locale: Locale) => ({ C: m.suit_clubs, S: m.suit_spades, H: m.suit_hearts, D: m.suit_diamonds })[s]({}, { locale })
+
 function contractWords(c: Contract, locale: Locale): string {
   if (c.kind === 'grand') return 'Grand'
   if (c.kind === 'null') return 'Null'
-  return { C: m.suit_clubs, S: m.suit_spades, H: m.suit_hearts, D: m.suit_diamonds }[c.trump]({}, { locale })
+  return suitWords(c.trump, locale)
 }
 
 const seatName = (s: Seat, locale: Locale) => [m.name_you, m.name_lina, m.name_max][s]({}, { locale })
 
-/** One side's deal as a line: the game, who declared it, won or lost with the card points, the seat's score. */
-function dealLine(d: DealSummary, who: string, locale: Locale): string {
-  const de = locale === 'de'
-  if (d.declarer === null || !d.declaration) return de ? `${who}: alle haben gepasst.` : `${who}: everyone passed.`
-  const x = d.detail
-  const game = `${contractWords(d.declaration.contract, locale)}${d.declaration.hand ? ' Hand' : ''}${d.declaration.ouvert ? ' Ouvert' : ''}`
-  const declarer = d.declarer === PLAYER ? who : seatName(d.declarer, locale)
-  const points = x && d.declaration.contract.kind !== 'null' ? ` ${x.declarerPoints}:${x.defenderPoints}` : ''
-  const outcome = de ? (d.won ? 'gewonnen' : 'verloren') : d.won ? 'won' : 'lost'
-  return de
-    ? `${who}: ${game}, Alleinspieler ${declarer}, ${outcome}${points}; Punkte auf diesem Platz ${d.scores[PLAYER]}.`
-    : `${who}: ${game}, declarer ${declarer}, ${outcome}${points}; score in this seat ${d.scores[PLAYER]}.`
+/** A suit's cards in this game from highest to lowest; trumps count as one suit ('T'). */
+function order(suit: Card['suit'] | 'T', contract: Contract): Card[] {
+  if (suit === 'T') return trumpSequence(contract)
+  return fullDeck()
+    .filter((c) => effectiveSuit(c, contract) === suit)
+    .sort((a, b) => strength(b, contract) - strength(a, contract))
 }
 
-/** Which cards are trumps in a contract, in words — and for Null, what the game is about. */
-function trumpWords(c: Contract, locale: Locale): string {
-  const de = locale === 'de'
-  if (c.kind === 'null') {
-    return de
-      ? 'Nullspiel: kein Trumpf, Augen zählen nicht; in jeder Farbe gilt die Reihenfolge A, K, D, B, 10, 9, 8, 7. Der Alleinspieler verliert, sobald er einen Stich bekommt; die Gegenspieler wollen ihm einen Stich aufzwingen. Behaupte nichts darüber, welche Karte die höchste ihrer Farbe ist.'
-      : 'Null game: no trumps, card points do not count; in every suit the order is A, K, Q, J, 10, 9, 8, 7. The declarer loses as soon as they take a trick; the defenders try to force one on them. Claim nothing about which card is the highest of its suit.'
-  }
-  if (c.kind === 'grand') return de ? 'Trumpf sind nur die vier Buben.' : 'Only the four jacks are trumps.'
-  return de ? `Trumpf sind die vier Buben und ${contractWords(c, locale)}.` : `Trumps are the four jacks and ${contractWords(c, locale)}.`
-}
-
-/** A trick's three cards in playing order, its taker, and — outside Null — its card points. */
-function trickWords(cards: Played[], contract: Contract, side: (s: Seat) => string, locale: Locale): string {
-  const de = locale === 'de'
-  const taker = cards[trickWinnerIndex(cards.map((p) => p.card), contract)].seat
-  const order = cards.map((p) => `${seatName(p.seat, locale)} ${cardWords(p.card, locale)}`).join(', ')
-  const points = contract.kind === 'null' ? '' : de ? ` mit ${pointsOf(cards.map((p) => p.card))} Augen` : ` with ${pointsOf(cards.map((p) => p.card))} points`
-  return de ? `${order} – ${seatName(taker, locale)} (${side(taker)}) bekommt den Stich${points}` : `${order} — ${seatName(taker, locale)} (${side(taker)}) takes the trick${points}`
-}
-
-/** Whether a card would be the highest of its suit (trumps counting as one) still unplayed once `gone`
- *  have been played — the rules engine's word on which card would rule the suit afterwards. */
-function highestLeft(card: Card, gone: Card[], contract: Contract): boolean {
-  const suit = effectiveSuit(card, contract)
-  return !fullDeck().some((c) => !sameCard(c, card) && !gone.some((g) => sameCard(g, c)) && effectiveSuit(c, contract) === suit && strength(c, contract) > strength(card, contract))
-}
-
-/** The suit a card rules, in words: "die höchste noch nicht gespielte Kreuz-Karte", "the highest trump left". */
-function rulesWords(card: Card, contract: Contract, locale: Locale): string {
-  const de = locale === 'de'
-  if (effectiveSuit(card, contract) === 'T') return de ? 'der höchste noch nicht gespielte Trumpf' : 'the highest trump not yet played'
-  const suit = contractWords({ kind: 'suit', trump: card.suit }, locale)
-  return de ? `die höchste noch nicht gespielte ${suit}-Karte` : `the highest ${suit} card not yet played`
-}
-
-/** The facts the model explains, and how it is to answer. Null when there is no worst card. It is given
- *  every fact a sentence could need — the two sides, the trumps (or what Null is about), how the trick
- *  really ended, and, when the player was the last to play it, how it would have ended with SkatZero's
- *  card — because a model left to work out a trick, or who is whose partner, gets it wrong. */
+/** The facts the model explains, and how it is to answer. Null when there is no worst card. */
 export function reviewPrompt(r: DealReview, locale: Locale): { system: string; messages: ChatMessage[] } | null {
   const w = r.worst
   if (!w || !r.mine.declaration || r.mine.declarer === null) return null
-  const de = locale === 'de'
+  const say = (german: string, english: string) => (locale === 'de' ? german : english)
   const declarer = r.mine.declarer
   const contract = r.mine.declaration.contract
+  const isNull = contract.kind === 'null'
   const partner = ([1, 2] as Seat[]).find((s) => s !== declarer)!
+  const own = (s: Seat) => (declarer === PLAYER ? s === PLAYER : s !== declarer)
+  const name = (s: Seat) => seatName(s, locale)
   const side = (s: Seat) =>
-    s === declarer ? (de ? 'Alleinspieler' : 'declarer') : declarer === PLAYER ? (de ? 'Gegenspieler' : 'defender') : de ? 'deine Partei' : 'your side'
+    s === declarer ? say('Alleinspieler', 'declarer') : declarer === PLAYER ? say('Gegenspieler', 'defender') : say('Partei des Spielers', "the player's side")
+  const suitName = (suit: Card['suit'] | 'T') => (suit === 'T' ? say('Trumpf', 'trumps') : suitWords(suit, locale))
+  const cardsIn = (cards: Played[]) => cards.map((p) => p.card)
+
+  // The game.
+  const game = `${contractWords(contract, locale)}${r.mine.declaration.hand ? ' Hand' : ''}${r.mine.declaration.ouvert ? ' Ouvert' : ''}`
   const sides = declarer === PLAYER
-    ? de ? 'Der Spieler ist Alleinspieler gegen Lina und Noah.' : 'The player is the declarer against Lina and Noah.'
-    : de ? `Alleinspieler ist ${seatName(declarer, locale)}. Der Spieler ist Gegenspieler zusammen mit seinem Partner ${seatName(partner, locale)}.` : `${seatName(declarer, locale)} is the declarer. The player defends together with their partner ${seatName(partner, locale)}.`
-  const trick = r.tricks[w.trick - 1]
-  const before = w.table.map((p) => `${seatName(p.seat, locale)} ${cardWords(p.card, locale)}`).join(', ')
-  // Only a last card's trick is decided by it; otherwise the others' answer to SkatZero's card is unknown.
+    ? say(`Der Spieler ist Alleinspieler gegen ${name(1)} und ${name(2)}.`, `The player is the declarer against ${name(1)} and ${name(2)}.`)
+    : say(
+        `Alleinspieler ist ${name(declarer)}. Der Spieler spielt zusammen mit seinem Partner ${name(partner)} gegen ${name(declarer)}.`,
+        `${name(declarer)} is the declarer. The player defends together with their partner ${name(partner)} against ${name(declarer)}.`,
+      )
+  const rules = isNull
+    ? say(
+        'Nullspiel: kein Trumpf, Augen zählen nicht. In jeder Farbe von hoch nach niedrig: Ass, König, Dame, Bube, 10, 9, 8, 7. Der Alleinspieler verliert, sobald er einen Stich bekommt; die Gegenspieler wollen ihm einen Stich aufzwingen.',
+        'Null game: no trumps, card points do not count. In every suit from high to low: Ace, King, Queen, Jack, 10, 9, 8, 7. The declarer loses as soon as they take a trick; the defenders try to force one on them.',
+      )
+    : say(
+        `Trumpf von hoch nach niedrig: ${cardsWords(order('T', contract), locale)}. In den anderen Farben: Ass, 10, König, Dame, 9, 8, 7. Augen: Ass 11, 10 10, König 4, Dame 3, Bube 2, sonst 0.`,
+        `Trumps from high to low: ${cardsWords(order('T', contract), locale)}. In the other suits: Ace, 10, King, Queen, 9, 8, 7. Points: Ace 11, 10 10, King 4, Queen 3, Jack 2, the rest 0.`,
+      )
+
+  /** Cards of a trick in the order played, with who could not follow (and trumped or threw off). */
+  const playWords = (cards: Played[]) => {
+    const lead = effectiveSuit(cards[0].card, contract)
+    return cards
+      .map((p, i) => {
+        const suit = effectiveSuit(p.card, contract)
+        const note = i === 0 || suit === lead ? '' : suit === 'T'
+          ? say(` (bedient ${suitName(lead)} nicht und sticht)`, ` (cannot follow ${suitName(lead)}, trumps)`)
+          : say(` (bedient ${suitName(lead)} nicht und wirft ab)`, ` (cannot follow ${suitName(lead)}, throws off)`)
+        return `${name(p.seat)} ${cardWords(p.card, locale)}${note}`
+      })
+      .join(', ')
+  }
+  const takerOf = (cards: Played[]) => cards[trickWinnerIndex(cardsIn(cards), contract)].seat
+  const taken = (cards: Played[]) => {
+    const taker = takerOf(cards)
+    const points = isNull ? '' : say(` mit ${pointsOf(cardsIn(cards))} Augen`, ` with ${pointsOf(cardsIn(cards))} points`)
+    return say(`${name(taker)} (${side(taker)}) bekommt den Stich${points}`, `${name(taker)} (${side(taker)}) takes the trick${points}`)
+  }
+
+  // What the player could know when they chose the card.
+  const before = r.tricks.slice(0, w.trick - 1)
+  const history = before.map((t, i) => say(`Stich ${i + 1}: ${playWords(t.cards)} – ${taken(t.cards)}.`, `Trick ${i + 1}: ${playWords(t.cards)} — ${taken(t.cards)}.`))
+  let ownPoints = 0
+  let otherPoints = 0
+  for (const t of before) {
+    if (own(takerOf(t.cards))) ownPoints += pointsOf(cardsIn(t.cards))
+    else otherPoints += pointsOf(cardsIn(t.cards))
+  }
+  const shownOut = new Map<Seat, Set<string>>()
+  for (const cards of [...before.map((t) => t.cards), w.table]) {
+    if (!cards.length) continue
+    const lead = effectiveSuit(cards[0].card, contract)
+    for (const p of cards.slice(1)) {
+      if (p.seat === PLAYER || effectiveSuit(p.card, contract) === lead) continue
+      shownOut.set(p.seat, (shownOut.get(p.seat) ?? new Set()).add(suitName(lead)))
+    }
+  }
+  const voids = [...shownOut].map(([seat, suits]) => say(`${name(seat)} hat kein ${[...suits].join(' und kein ')} mehr`, `${name(seat)} has no ${[...suits].join(' and no ')} left`))
+  const legal = legalPlays(w.hand, cardsIn(w.table), contract)
+  // Where the player knew each card to be: their hand, the cards played, the skat a declarer put away.
+  const played = [...before.flatMap((t) => cardsIn(t.cards)), ...cardsIn(w.table)]
+  const known = [...w.hand, ...played, ...(declarer === PLAYER && !r.mine.declaration.hand ? r.skat : [])]
+  const higherOut = (card: Card) => order(effectiveSuit(card, contract), contract).filter((c) => strength(c, contract) > strength(card, contract) && !known.some((k) => sameCard(k, c)))
+  const where = declarer === PLAYER
+    ? say(`bei ${name(1)} oder ${name(2)}`, `with ${name(1)} or ${name(2)}`)
+    : say(`bei ${name(1)}, ${name(2)} oder im Skat – wo genau, wusste der Spieler nicht`, `with ${name(1)}, ${name(2)} or in the skat — the player did not know where`)
+  const outWords = (card: Card) => {
+    const out = higherOut(card)
+    const suit = effectiveSuit(card, contract)
+    // A card no one beats in its own suit can still be trumped by a player who has none of it left.
+    const trumpable = !isNull && suit !== 'T'
+      ? say(` Wer kein ${suitName(suit)} mehr hat, kann ${cardWords(card, locale)} mit Trumpf stechen.`, ` A player with no ${suitName(suit)} left can trump ${cardWords(card, locale)}.`)
+      : ''
+    return (out.length
+      ? say(`In seiner Farbe höher als ${cardWords(card, locale)} und noch draußen: ${cardsWords(out, locale)} (${where}).`, `Higher than ${cardWords(card, locale)} in its suit and still out: ${cardsWords(out, locale)} (${where}).`)
+      : say(`In seiner Farbe schlägt keine Karte mehr ${cardWords(card, locale)}.`, `No card left in its suit beats ${cardWords(card, locale)}.`)) + trumpable
+  }
+  // With the AI's card the played one would have stayed in the hand: whether it would then rule its suit.
+  const keptRules = !isNull && !fullDeck().some(
+    (c) => !sameCard(c, w.played) && !sameCard(c, w.best) && !played.some((g) => sameCard(g, c)) && effectiveSuit(c, contract) === effectiveSuit(w.played, contract) && strength(c, contract) > strength(w.played, contract),
+  )
+  // The last card of a trick decides it: both ways are then known before choosing.
   const last = w.table.length === 2
-  const instead = last
-    ? de ? `Mit ${cardWords(w.best, locale)} statt dessen: ${trickWords([...w.table, { seat: PLAYER, card: w.best }], contract, side, locale)}.` : `With ${cardWords(w.best, locale)} instead: ${trickWords([...w.table, { seat: PLAYER, card: w.best }], contract, side, locale)}.`
-    : de ? `Nach dem Spieler kamen noch Karten in den Stich; wie sie auf ${cardWords(w.best, locale)} geantwortet hätten, ist nicht bekannt.` : `Cards were still to come after the player's; how they would have answered ${cardWords(w.best, locale)} is not known.`
-  const game = `${contractWords(contract, locale)}${r.mine.declaration.hand ? ' Hand' : ''}`
-  // Which card would rule its suit after this trick — the reason a card is worth keeping, which the model
-  // would otherwise guess at. Not in Null, where the low cards are what count.
-  // Worked out from what was known at that moment, with the AI's card played instead: the tricks before,
-  // the cards already in this one, and that card — the played one kept. Cards still to come after the
-  // player's would have been answers to another card, so they do not count.
-  const goneInstead = [...r.tricks.slice(0, w.trick - 1).flatMap((t) => t.cards.map((p) => p.card)), ...w.table.map((p) => p.card), w.best]
-  const ruling: string[] = []
-  // When both ways the trick is the player's side's, more card points in it are theirs: say so, or the
-  // model reads "fewer points with the AI's card" as the reason.
-  const ownSide = (s: Seat) => (declarer === PLAYER ? s === PLAYER : s !== declarer)
-  const takerWith = (card: Card) => {
-    const plays = [...w.table, { seat: PLAYER as Seat, card }]
-    return plays[trickWinnerIndex(plays.map((p) => p.card), contract)].seat
-  }
-  if (last && contract.kind !== 'null' && ownSide(takerWith(w.played)) && ownSide(takerWith(w.best))) {
-    ruling.push(de
-      ? 'Beide Male bekommt die Partei des Spielers den Stich: Die Augen darin zählen für sie, mehr Augen sind hier also kein Nachteil – der Unterschied liegt woanders.'
-      : "Either way the player's side takes the trick: its points count for them, so more points here are no drawback — the difference lies elsewhere.")
-  }
-  if (contract.kind !== 'null' && highestLeft(w.played, goneInstead, contract)) {
-    ruling.push(de
-      ? `Mit ${cardWords(w.best, locale)} hätte der Spieler ${cardWords(w.played, locale)} behalten – zu diesem Zeitpunkt ${rulesWords(w.played, contract, locale)}.`
-      : `With ${cardWords(w.best, locale)} the player would have kept ${cardWords(w.played, locale)} — at that moment ${rulesWords(w.played, contract, locale)}.`)
-  }
-  // Whether this was the one place the player left the AI's line — a fact, not a line drawn on a value.
-  const only = r.differs.length === 1
-  const agreed = de
-    ? `In ${r.agreed} von ${r.choices} Stichen, in denen der Spieler wählen konnte, spielte er dieselbe Karte wie die AI. ${only ? 'Dies war die einzige Stelle, an der er anders spielte.' : `Er spielte in ${r.differs.length} Stichen anders; hier am deutlichsten.`}`
-    : `In ${r.agreed} of the ${r.choices} tricks where the player had a choice, they played the same card as the AI. ${only ? 'This was the only place they played differently.' : `They played differently in ${r.differs.length} tricks; here most clearly.`}`
-  const facts = de
+  const stillToPlay = ([1, 2] as Seat[]).filter((s) => !w.table.some((p) => p.seat === s))
+  const lastWords = last
     ? [
-        `Spiel: ${game}, gereizt bis ${r.bid}. ${sides}`,
-        trumpWords(contract, locale),
-        `${w.trick}. Stich. ${before ? `Vor dem Spieler gespielt: ${before}.` : 'Der Spieler spielt aus.'}`,
-        `Hand des Spielers vor dem Zug: ${w.hand.map((c) => cardWords(c, locale)).join(', ')}.`,
-        `Gespielt: ${cardWords(w.played, locale)}. Die AI hätte gespielt: ${cardWords(w.best, locale)}.`,
-        trick ? `So lief der Stich wirklich: ${trickWords(trick.cards, contract, side, locale)}.` : '',
-        instead,
-        ...ruling,
-        agreed,
-        dealLine(r.mine, 'Ergebnis des Spiels', locale),
+        say(`Der Spieler spielt als Letzter. Mit ${cardWords(w.played, locale)}: ${taken([...w.table, { seat: PLAYER, card: w.played }])}.`, `The player plays last. With ${cardWords(w.played, locale)}: ${taken([...w.table, { seat: PLAYER, card: w.played }])}.`),
+        say(`Mit ${cardWords(w.best, locale)}: ${taken([...w.table, { seat: PLAYER, card: w.best }])}.`, `With ${cardWords(w.best, locale)}: ${taken([...w.table, { seat: PLAYER, card: w.best }])}.`),
+        // Both ways the player's side's: then more points in it are a gain, never the reason against.
+        !isNull && own(takerOf([...w.table, { seat: PLAYER, card: w.played }])) && own(takerOf([...w.table, { seat: PLAYER, card: w.best }]))
+          ? say('Beide Male bekommt die Partei des Spielers den Stich: Jedes Auge darin zählt für sie, mehr Augen sind hier ein Gewinn – der Grund für die Karte der AI liegt woanders.', "Either way the player's side takes the trick: every point in it counts for them, so more points here are a gain — the reason for the AI's card lies elsewhere.")
+          : '',
       ]
-    : [
-        `Game: ${game}, bid to ${r.bid}. ${sides}`,
-        trumpWords(contract, locale),
-        `Trick ${w.trick}. ${before ? `Played before the player: ${before}.` : 'The player leads.'}`,
-        `The player's hand before the move: ${w.hand.map((c) => cardWords(c, locale)).join(', ')}.`,
-        `Played: ${cardWords(w.played, locale)}. The AI would have played: ${cardWords(w.best, locale)}.`,
-        trick ? `How the trick really went: ${trickWords(trick.cards, contract, side, locale)}.` : '',
-        instead,
-        ...ruling,
-        agreed,
-        dealLine(r.mine, 'Result of the game', locale),
-      ]
-  const system = de
-    ? 'Du bist der Skat-Trainer von SkatGo. Antworte auf Deutsch. Erkläre einem Lernenden in zwei bis drei kurzen Sätzen, warum seine Karte schlechter war als die der AI. Stütze dich nur auf die genannten Fakten und nenne keine Karten, Stiche oder Ergebnisse, die dort nicht stehen. Beachte, wer zu wessen Partei gehört: Augen in einem Stich, den die eigene Partei bekommt, sind gut für den Spieler – sage nie, er hätte sie sparen sollen oder verschenkt. Steht in den Fakten, welche Karte nach dem Stich die höchste ihrer Farbe wäre, ist das meist der Grund für die Wahl der AI. Nenne den Unterschied nur dann eine Feinheit, wenn die Fakten sagen, dass es die einzige Abweichung war. Nenne Augenzahlen nur so, wie sie in den Fakten stehen. Wer einen Stich bekommt, steht in den Fakten; wo dort steht, dass es nicht bekannt ist, behaupte es nicht und erwähne es auch nicht, sondern erkläre, was feststeht (etwa wie viele Augen die Karte in den Stich gibt oder ob ein Trumpf verbraucht wird). Duze den Lernenden und nutze die Begriffe einer Skatrunde (Stich, Trumpf, Augen, Alleinspieler, Gegenspieler, schmieren). Kein Markdown, keine Aufzählung, keine Überschrift.'
-    : "You are SkatGo's Skat coach. Answer in English only, whatever language the terms are in. In two or three short sentences, explain to a learner why their card was worse than the AI's. Use only the facts given and name no card, trick or result that is not in them. Mind who is on whose side: points in a trick the player's own side takes are good for the player — never say they should have been saved or were given away. Where the facts say which card would be the highest of its suit after the trick, that is usually the AI's reason. Call the difference a fine point only where the facts say it was the only place the player played differently. Give point counts only as the facts state them. Who takes a trick is in the facts; where they say it is not known, do not claim it and do not mention it — explain what is certain instead (such as how many points the card puts into the trick, or whether a trump is spent). Address the learner as you; keep the German Skat terms Grand, Null, Hand and Ouvert. No Markdown, no lists, no heading."
+    : []
+  const knewThen = [
+    ...history,
+    history.length ? say(`Augen bis dahin: Partei des Spielers ${ownPoints}, Gegenseite ${otherPoints}.`, `Points so far: the player's side ${ownPoints}, the other side ${otherPoints}.`) : '',
+    voids.length ? say(`Bekannt: ${voids.join('; ')}.`, `Known: ${voids.join('; ')}.`) : '',
+    say(
+      `Stich ${w.trick}: ${w.table.length ? `vor dem Spieler gespielt: ${playWords(w.table)}.` : 'Der Spieler spielt aus.'}`,
+      `Trick ${w.trick}: ${w.table.length ? `played before the player: ${playWords(w.table)}.` : 'The player leads.'}`,
+    ),
+    // Who holds the trick so far, and who is still to play after the player.
+    w.table.length
+      ? say(`Den Stich hält bis jetzt ${name(takerOf(w.table))} (${side(takerOf(w.table))}) mit ${cardWords(w.table[trickWinnerIndex(cardsIn(w.table), contract)].card, locale)}.`, `So far the trick is held by ${name(takerOf(w.table))} (${side(takerOf(w.table))}) with ${cardWords(w.table[trickWinnerIndex(cardsIn(w.table), contract)].card, locale)}.`)
+      : '',
+    last
+      ? say('Nach dem Spieler spielt in diesem Stich niemand mehr.', 'No one plays after the player in this trick.')
+      : say(`Nach dem Spieler spielen in diesem Stich noch: ${stillToPlay.map(name).join(' und ')}.`, `Still to play after the player in this trick: ${stillToPlay.map(name).join(' and ')}.`),
+    say(`Hand des Spielers: ${cardsWords(w.hand, locale)}. Erlaubt: ${cardsWords(legal, locale)}.`, `The player's hand: ${cardsWords(w.hand, locale)}. Allowed: ${cardsWords(legal, locale)}.`),
+    say(`Gespielt: ${cardWords(w.played, locale)}. Die AI hätte gespielt: ${cardWords(w.best, locale)}.`, `Played: ${cardWords(w.played, locale)}. The AI would have played: ${cardWords(w.best, locale)}.`),
+    outWords(w.played),
+    outWords(w.best),
+    keptRules
+      ? say(`Mit ${cardWords(w.best, locale)} hätte der Spieler ${cardWords(w.played, locale)} behalten, dann die höchste ${suitName(effectiveSuit(w.played, contract))}-Karte im Spiel.`, `With ${cardWords(w.best, locale)} the player would have kept ${cardWords(w.played, locale)}, then the highest ${suitName(effectiveSuit(w.played, contract))} card in play.`)
+      : '',
+    ...lastWords,
+  ]
+
+  // What only became known afterwards.
+  const trick = r.tricks[w.trick - 1]
+  const only = r.differs.length === 1
+  const after = [
+    trick && !last ? say(`So lief Stich ${w.trick} wirklich: ${playWords(trick.cards)} – ${taken(trick.cards)}.`, `How trick ${w.trick} really went: ${playWords(trick.cards)} — ${taken(trick.cards)}.`) : '',
+    say(
+      `In ${r.agreed} von ${r.choices} Stichen, in denen der Spieler wählen konnte, spielte er dieselbe Karte wie die AI. ${only ? 'Dies war die einzige Stelle, an der er anders spielte.' : `Er spielte in ${r.differs.length} Stichen anders; hier am deutlichsten.`}`,
+      `In ${r.agreed} of the ${r.choices} tricks where the player had a choice, they played the same card as the AI. ${only ? 'This was the only place they played differently.' : `They played differently in ${r.differs.length} tricks; here most clearly.`}`,
+    ),
+    resultWords(r.mine, locale),
+  ]
+
+  const facts = [
+    say('DAS SPIEL', 'THE GAME'),
+    say(`${game}, gereizt bis ${r.bid}. ${sides}`, `${game}, bid to ${r.bid}. ${sides}`),
+    rules,
+    say('WAS DER SPIELER WISSEN KONNTE, ALS ER DIE KARTE WÄHLTE', 'WHAT THE PLAYER COULD KNOW WHEN CHOOSING THE CARD'),
+    ...knewThen,
+    say('ERST DANACH BEKANNT', 'ONLY KNOWN AFTERWARDS'),
+    ...after,
+  ]
+  const system = say(
+    'Du bist der Skat-Trainer von SkatGo. Antworte auf Deutsch, in zwei bis drei kurzen Sätzen, ohne Markdown und ohne Aufzählung. Erkläre aus Sicht des Spielers im Moment seiner Entscheidung – mit dem, was er da wissen konnte –, warum die Karte der AI besser war als seine. Was erst danach bekannt wurde, ist nicht der Grund; nenne es höchstens, um zu sagen, dass es diesmal gut oder schlecht ausging. Prüfe die üblichen Gründe an den Fakten: Ist eine Karte, die die eigene schlägt, noch draußen, kann sie überstochen werden und ihre Augen verlieren; Augen in einen Stich der eigenen Partei zu schmieren ist gut, in einen Stich der Gegenseite schlecht; einen Trumpf oder eine hohe Karte für später behalten; den Partner nicht überstechen; Farben, die ein Spieler nicht mehr hat. Stütze dich nur auf die Fakten und die Skatregeln: nenne keine Karte und keine Kartenverteilung, die nicht aus den Fakten folgt. Nenne den Unterschied nur dann eine Feinheit, wenn die Fakten sagen, dass es die einzige Abweichung war. Duze den Spieler und nutze die Begriffe einer Skatrunde (Stich, Trumpf, Augen, bedienen, stechen, schmieren, Alleinspieler, Gegenspieler).',
+    "You are SkatGo's Skat coach. Answer in English only, whatever language the terms are in, in two or three short sentences, with no Markdown and no lists. Explain from the player's point of view at the moment of the decision — with what they could know then — why the AI's card was better than theirs. What only became known afterwards is not the reason; mention it at most to say it went well or badly this time. Test the usual reasons against the facts: if a card that beats the player's is still out, it can be taken and its points lost; points thrown into a trick of the player's own side are good, into the other side's bad; keeping a trump or a high card for later; not overtaking the partner; suits a player has shown out of. Use only the facts and the rules of Skat: name no card and no distribution of cards that does not follow from the facts. Call the difference a fine point only where the facts say it was the only place the player played differently. Address the player as you; keep the German Skat terms Grand, Null, Hand and Ouvert.",
+  )
   return { system, messages: [{ role: 'user', content: facts.filter(Boolean).join('\n') }] }
+}
+
+/** How the game ended for the player's deal. */
+function resultWords(d: DealSummary, locale: Locale): string {
+  const de = locale === 'de'
+  if (d.declarer === null || !d.declaration) return de ? 'Alle haben gepasst.' : 'Everyone passed.'
+  const x = d.detail
+  const points = x && d.declaration.contract.kind !== 'null' ? ` ${x.declarerPoints}:${x.defenderPoints}` : ''
+  const declarer = seatName(d.declarer, locale)
+  return de
+    ? `Ergebnis: ${declarer} hat das Spiel ${d.won ? 'gewonnen' : 'verloren'}${points}; der Spieler schreibt ${d.scores[PLAYER]}.`
+    : `Result: ${declarer} ${d.won ? 'won' : 'lost'} the game${points}; the player scores ${d.scores[PLAYER]}.`
 }
 
 /** The model's few sentences, or null when it cannot answer now (the card itself is still shown). */
 export async function explainReview(r: DealReview, locale: Locale): Promise<string | null> {
   const prompt = reviewPrompt(r, locale)
   if (!prompt) return null
-  const signal = AbortSignal.timeout(LIMITS.timeoutMs)
-  const stream = await openModelStream(prompt.system, prompt.messages, signal, LIMITS.reviewTokens)
+  const signal = AbortSignal.timeout(LIMITS.reviewTimeoutMs)
+  const stream = await openModelStream(prompt.system, prompt.messages, signal, LIMITS.reviewTokens, 'high')
   if (!stream.ok) return null
   let text = ''
   try {

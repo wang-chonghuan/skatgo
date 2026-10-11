@@ -770,7 +770,8 @@ function ActionsFor({
 function Stack({ seat, game, shown }: { seat: Seat; game: Game; shown?: Card[] }) {
   // `shown`: the cards this seat held when the deal was decided early, laid open in place (SKATGO-65).
   // On the right, an open card is turned the other way and each covers the top of the one under it,
-  // so every card's index is on the part that shows.
+  // so every card's index is on the part that shows. Open cards — those, or an Ouvert declarer's — are
+  // spread wider than a closed hand, so each reads (SKATGO-79, the human: 「ouvert…要像claim时的那种间距」).
   const open = !!shown || (game.declarer === seat && game.declaration?.ouvert && (game.phase === 'play' || game.phase === 'trickEnd'))
   const held = shown ?? game.hands[seat]
   const cards = open && game.declaration ? sortHand(held, game.declaration.contract) : held
@@ -778,7 +779,7 @@ function Stack({ seat, game, shown }: { seat: Seat; game: Game; shown?: Card[] }
   return (
     <div data-testid={`skat-stack-${seat}`} aria-hidden={open ? undefined : 'true'} {...stylex.props(styles.stack, seat === 1 ? styles.stackLeft : styles.stackRight, flip && styles.stackOpenRight)}>
       {(flip ? [...cards].reverse() : cards).map((c, i) => (
-        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot, shown && styles.sideSlotSpread, flip && styles.sideSlotOpenRight, flip && shown && styles.sideSlotSpreadRight)}>
+        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot, open && styles.sideSlotSpread, flip && styles.sideSlotOpenRight, flip && styles.sideSlotSpreadRight)}>
           <span {...stylex.props(styles.sideCard, flip && styles.sideCardOpenRight)}>
             <PlayingCard card={c} faceDown={!open} size="fill" />
           </span>

@@ -32,8 +32,9 @@ export const dailyName = (size: DailySize, nickname: string) => post<{ nickname:
 /** Today's leaderboard, or yesterday's final one. */
 export const dailyBoard = (size: DailySize, day: 'today' | 'yesterday') => post<DailyBoard>('board', { size, day })
 
-/** A finished deal's worst card and why (SKATGO-79); `text` is null when the explanation is not available. */
-export const dailyReview = (size: DailySize, deal: number) =>
-  post<{ review: DealReview; text: string | null; limited?: boolean }>('review', { size, deal, locale: getLocale() })
+/** A finished deal trick by trick and its worst card (SKATGO-79); with `explain`, also why — `text` is null
+ *  when the explanation is not available. Without it the model is not asked. */
+export const dailyReview = (size: DailySize, deal: number, explain = true) =>
+  post<{ review: DealReview; text: string | null; limited?: boolean }>('review', { size, deal, explain, locale: getLocale() })
 
 export const isError = <T extends object>(r: T | DailyError): r is DailyError => 'error' in r

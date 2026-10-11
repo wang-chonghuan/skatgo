@@ -6,7 +6,7 @@ import { dailyReview } from '~/lib/daily-api'
 import { type Card, pointsOf } from '~/lib/skat/cards'
 import type { Game } from '~/lib/skat/game'
 import { cardLabel, contractName } from '~/lib/skat/i18n'
-import { type Auction, type DailyStatus, type DealReview, type DealSummary, PLAYER, dailySize, saldo, totals } from '~/lib/skat/tournament'
+import { type DailyStatus, type DealReview, type DealSummary, PLAYER, dailySize, saldo, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -28,7 +28,7 @@ import { Btn, Panel, Rich } from './ui'
 // lines are told apart at a glance; neither colour judges. A day's row gives both Saldo and opens to its
 // sheet; the rows fold so the table fits a phone without scrolling sideways.
 
-const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
+export const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 
 /** The seats' names in the player's deal, and in the AI's, where the AI sits in the player's seat. */
 const youNames = () => [m.name_you(), m.name_lina(), m.name_max()]
@@ -61,13 +61,12 @@ function playedParts(d: DealSummary, who: string): string[] {
   return parts
 }
 
-/** A deal's auction as one line (SKATGO-57): each seat's highest number, or pass; the declarer bold. */
-function auctionLine(a: Auction, d: DealSummary, names: string[]): string {
-  if (d.declarer === null) return m.daily_all_passed()
-  return a.map((s, seat) => {
-    const said = `${names[seat]} ${s.value > 0 ? s.value : m.daily_pass()}`
-    return seat === d.declarer ? `**${said}**` : said
-  }).join(' · ')
+/** What a deal was, as the line under its row in a score sheet (SKATGO-79): the declarer, the game and
+ *  the bid, won or lost with the card points, and what made it big or lost it — or that all passed. */
+export function gameLine(d: DealSummary, names: string[]): string {
+  if (d.declarer === null || !d.declaration) return m.daily_passed_in_short()
+  const [head, ...rest] = playedParts(d, names[d.declarer])
+  return [`${head} (${d.bid})`, ...rest].join(' · ')
 }
 
 type Scores = readonly [number, number, number]
@@ -85,11 +84,13 @@ function Who({ side }: { side: Side }) {
 /**
  * A score sheet (SKATGO-79): the three seats' Seeger-Fabian scores — of one deal, or a tournament's totals
  * — the player's line over the AI's, with each line's Saldo, the number that says how they did against the
- * table, largest. The AI's line is missing on days dealt before it played them.
+ * table, largest. `lines` puts what the deal was under each row; what Saldo means opens from its heading.
+ * The AI's line is missing on days dealt before it played them.
  */
-export function ScoreSheet({ mine, ai, testId }: { mine: Scores; ai: Scores | null; testId: string }) {
+export function ScoreSheet({ mine, ai, lines, testId }: { mine: Scores; ai: Scores | null; lines?: { you: string; ai: string | null }; testId: string }) {
+  const [why, setWhy] = useState(false)
   const seats = [m.daily_col_seat(), m.name_lina(), m.name_max()]
-  const lines: [Side, Scores][] = ai ? [['you', mine], ['ai', ai]] : [['you', mine]]
+  const rows: [Side, Scores, string | null][] = [['you', mine, lines?.you ?? null], ...(ai ? [['ai', ai, lines?.ai ?? null] as [Side, Scores, string | null]] : [])]
   return (
     <div {...stylex.props(styles.sheet)}>
       <table data-testid={testId} {...stylex.props(styles.scores)}>
@@ -99,22 +100,31 @@ export function ScoreSheet({ mine, ai, testId }: { mine: Scores; ai: Scores | nu
             {seats.map((name, seat) => (
               <th key={name} scope="col" {...stylex.props(typography.small, styles.scoreHead, seat === PLAYER && styles.own)}>{name}</th>
             ))}
-            <th scope="col" {...stylex.props(typography.smallBold, styles.scoreHead, styles.saldo)}>{m.daily_saldo()}</th>
+            <th scope="col" {...stylex.props(styles.scoreHead, styles.saldo)}>
+              <button type="button" aria-expanded={why} data-testid="daily-saldo-why" onClick={() => setWhy((w) => !w)} {...stylex.props(typography.smallBold, styles.saldoWhy)}>
+                {m.daily_saldo()} ?
+              </button>
+            </th>
           </tr>
         </thead>
-        <tbody>
-          {lines.map(([side, scores]) => (
-            <tr key={side} data-row={side} data-scores={scores.join(',')} data-saldo={saldo(scores)}>
+        {rows.map(([side, scores, line]) => (
+          <tbody key={side} data-row={side} data-scores={scores.join(',')} data-saldo={saldo(scores)}>
+            <tr>
               <th scope="row" {...stylex.props(styles.scoreLabel)}><Who side={side} /></th>
               {scores.map((v, seat) => (
                 <td key={seat} data-seat={seat} {...stylex.props(typography.appBtnStrong, styles.scoreCell, seat === PLAYER && styles.own)}>{signed(v)}</td>
               ))}
               <td data-testid="daily-saldo" {...stylex.props(typography.dialogTitle, styles.scoreCell, styles.saldo)}>{signed(saldo(scores))}</td>
             </tr>
-          ))}
-        </tbody>
+            {line ? (
+              <tr>
+                <td colSpan={seats.length + 2} data-testid="daily-game-line" {...stylex.props(typography.micro, styles.gameLine)}><Rich text={line} /></td>
+              </tr>
+            ) : null}
+          </tbody>
+        ))}
       </table>
-      <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_saldo_note()}</p>
+      {why ? <p data-testid="daily-saldo-note" {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_saldo_note()}</p> : null}
     </div>
   )
 }
@@ -162,83 +172,115 @@ export function TrickReplay({ tricks, names, skat, highlight = null, early = nul
   )
 }
 
-/** Where a finished deal's review is asked for: the tournament and the deal, on the day it was played. */
-export type ReviewOf = { size: number; deal: number; day: string }
-
-/** A review as it comes back: the worst card and the replay, and the model's sentences when it had them. */
+/** A review as it comes back: the deal trick by trick and its worst card, and the model's sentences when
+ *  they were asked for and could be had. */
 export type Reviewed = { review: DealReview; text: string | null }
 
-/** Reviews already fetched on this page, so reopening a deal does not ask again. */
-const reviewed = new Map<string, Reviewed>()
+/** Fetches a finished deal's review, with the model's explanation (`explain`) or without it. */
+export type AskReview = (explain: boolean) => Promise<Reviewed | { error: string }>
 
-/** A finished deal of today's tournament, reviewed through /api/daily. */
-export function DealReviewButton({ size, deal, day, replay = false }: ReviewOf & { replay?: boolean }) {
-  return <ReviewButton cacheKey={`${day}|${size}|${deal}`} ask={() => dailyReview(dailySize(size), deal)} replay={replay} />
-}
+/** A deal of one of today's tournaments, reviewed through /api/daily. */
+export const dailyAsk = (size: number, deal: number): AskReview => (explain) => dailyReview(dailySize(size), deal, explain)
+
+/** What this page already fetched, so reopening a deal does not ask again: explained reviews, and the
+ *  deals fetched for their replay alone. */
+const reviewed = new Map<string, Reviewed>()
+const replays = new Map<string, Pick<DealReview, 'tricks' | 'skat' | 'early'>>()
 
 /**
- * The player's worst card in a finished deal, only when asked (SKATGO-79, the human: 「做成一个按钮，不用
- * 每次自动显示」): the trick, the card played and SkatZero's, and the assistant's model's few sentences on
- * why — or the word that every card was SkatZero's own choice. `ask` fetches it: the daily tournament's
- * deal, or a free game's (SKATGO-79: 「自由对局中也要有这个东西」). `replay` shows the deal trick by trick
- * with the worst card's trick marked, where the page has no replay of its own.
+ * A finished deal's analysis, one fold (SKATGO-79, the human: 「游戏详情，你还不如改成复盘」, and the
+ * settlement simplified): the way to the player's worst card on top — only when asked (「做成一个按钮，不用
+ * 每次自动显示」) — then the deal trick by trick, that card's trick marked once it is known, the skat, and
+ * `footer` (free play's sum). `deal` is the deal when the page has it (the settlement); otherwise opening
+ * the fold fetches it, without asking the model.
  */
-export function ReviewButton({ ask: fetchReview, cacheKey, replay = false }: { ask: () => Promise<Reviewed | { error: string }>; cacheKey?: string; replay?: boolean }) {
-  const [got, setGot] = useState(cacheKey ? (reviewed.get(cacheKey) ?? null) : null)
+export function DealAnalysis({ testId = 'daily-replay-fold', ...rest }: AnalysisProps & { testId?: string }) {
+  return (
+    <Fold label={m.daily_replay()} testId={testId}>
+      <AnalysisBody {...rest} />
+    </Fold>
+  )
+}
+
+type AnalysisProps = {
+  deal?: Pick<DealReview, 'tricks' | 'skat' | 'early'>
+  names?: string[]
+  ask: AskReview
+  cacheKey?: string
+  footer?: ReactNode
+}
+
+function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
+  const [got, setGot] = useState<Reviewed | null>(cacheKey ? (reviewed.get(cacheKey) ?? null) : null)
+  const [shown, setShown] = useState(deal ?? (cacheKey ? replays.get(cacheKey) : undefined) ?? got?.review ?? null)
   const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle')
-  async function ask() {
+  const [unavailable, setUnavailable] = useState(false)
+  useEffect(() => {
+    if (shown) return
+    void ask(false).then((r) => {
+      if ('error' in r) return setUnavailable(true)
+      if (cacheKey) replays.set(cacheKey, r.review)
+      setShown(r.review)
+    })
+    // Once, when the fold opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  async function explain() {
     setState('loading')
-    const r = await fetchReview()
+    const r = await ask(true)
     if ('error' in r) return setState('failed')
     if (cacheKey) reviewed.set(cacheKey, r)
     setGot(r)
+    setShown((s) => s ?? r.review)
   }
-  if (got) {
-    const w = got.review.worst
-    return (
-      <div
-        data-testid="daily-review-result"
-        data-trick={w?.trick ?? ''}
-        data-played={w ? `${w.played.suit}${w.played.rank}` : ''}
-        data-best={w ? `${w.best.suit}${w.best.rank}` : ''}
-        {...stylex.props(styles.review)}
-      >
-        <p {...stylex.props(typography.note, styles.reviewLine)}>
-          <Rich text={w ? m.daily_review_card({ trick: w.trick, played: cardLabel(w.played), best: cardLabel(w.best) }) : m.daily_review_clean()} />
-        </p>
-        {w ? (
-          got.text ? (
-            <p data-testid="daily-review-text" {...stylex.props(typography.note, styles.reviewText)}>
-              <span {...stylex.props(typography.smallBold, styles.reviewLabel)}>{m.daily_review_ai()}</span> {got.text}
-            </p>
-          ) : (
-            <p {...stylex.props(typography.note, styles.muted)}>{m.daily_review_no_text()}</p>
-          )
-        ) : null}
-        {/* Where the page has no replay of its own (/daily), the deal comes with the review, the worst
-            card's trick marked. */}
-        {replay ? <TrickReplay tricks={got.review.tricks} names={youNames()} skat={got.review.skat} highlight={w?.trick ?? null} early={got.review.early} /> : null}
-      </div>
-    )
-  }
-  if (state === 'loading') return <p data-testid="daily-review-loading" {...stylex.props(typography.loading, styles.muted)}>{m.daily_review_loading()}</p>
+  const w = got?.review.worst ?? null
   return (
-    <div {...stylex.props(styles.reviewAsk)}>
-      <Btn testId="daily-review" tone="quiet" size="sm" onClick={() => void ask()}>{m.daily_review()}</Btn>
-      {state === 'failed' ? <p role="alert" {...stylex.props(typography.note, styles.muted)}>{m.daily_review_failed()}</p> : null}
+    <div {...stylex.props(styles.analysis)}>
+      {got ? (
+        <div
+          data-testid="daily-review-result"
+          data-trick={w?.trick ?? ''}
+          data-played={w ? `${w.played.suit}${w.played.rank}` : ''}
+          data-best={w ? `${w.best.suit}${w.best.rank}` : ''}
+          {...stylex.props(styles.review)}
+        >
+          <p {...stylex.props(typography.note, styles.reviewLine)}>
+            <Rich text={w ? m.daily_review_card({ trick: w.trick, played: cardLabel(w.played), best: cardLabel(w.best) }) : m.daily_review_clean()} />
+          </p>
+          {w ? (
+            got.text ? (
+              <p data-testid="daily-review-text" {...stylex.props(typography.note, styles.reviewText)}>
+                <span {...stylex.props(typography.smallBold, styles.reviewLabel)}>{m.daily_review_ai()}</span> {got.text}
+              </p>
+            ) : (
+              <p {...stylex.props(typography.note, styles.muted)}>{m.daily_review_no_text()}</p>
+            )
+          ) : null}
+        </div>
+      ) : state === 'loading' ? (
+        <p data-testid="daily-review-loading" {...stylex.props(typography.loading, styles.muted)}>{m.daily_review_loading()}</p>
+      ) : (
+        <div {...stylex.props(styles.reviewAsk)}>
+          <Btn testId="daily-review" tone="quiet" size="sm" onClick={() => void explain()}>{m.daily_review()}</Btn>
+          {state === 'failed' ? <p role="alert" {...stylex.props(typography.note, styles.muted)}>{m.daily_review_failed()}</p> : null}
+        </div>
+      )}
+      {shown ? (
+        <TrickReplay tricks={shown.tricks} names={names ?? youNames()} skat={shown.skat} highlight={w?.trick ?? null} early={shown.early} />
+      ) : (
+        <p {...stylex.props(typography.note, styles.muted)}>{unavailable ? m.daily_review_failed() : m.loading()}</p>
+      )}
+      {footer}
     </div>
   )
 }
 
 /**
- * One deal, the player against the AI (SKATGO-57, a score sheet since SKATGO-79) — what the settlement
- * leads with: the three seats' scores in the player's deal over the AI's and each Saldo; then each side's
- * auction and game, so the player sees at once how they did and why; then, when the deal is a finished
- * one of today's, the way to its worst card. The sides sit side by side on a wide screen, one above the
- * other on a phone; no cards inside the settlement, which is one already.
+ * One deal, the player against the AI (SKATGO-57, a score sheet since SKATGO-79): the three seats' scores
+ * in the player's deal over the AI's, each with its Saldo and, under it, what the deal was. What happened
+ * trick by trick is the analysis beside it (`DealAnalysis`).
  */
-export function DealVsAi({ mine, ai, mineAuction, aiAuction, review }: { mine: DealSummary; ai: DealSummary | null; mineAuction?: Auction; aiAuction?: Auction | null; review?: ReviewOf & { replay?: boolean } }) {
-  const played = mine.declarer !== null
+export function DealVsAi({ mine, ai }: { mine: DealSummary; ai: DealSummary | null }) {
   return (
     <section
       data-testid="daily-deal-vs-ai"
@@ -248,31 +290,8 @@ export function DealVsAi({ mine, ai, mineAuction, aiAuction, review }: { mine: D
       data-saldo-ai={ai ? saldo(ai.scores) : ''}
       {...stylex.props(styles.deal)}
     >
-      <ScoreSheet testId="daily-deal-scores" mine={mine.scores} ai={ai ? ai.scores : null} />
-      <div {...stylex.props(styles.sides)}>
-        <SideStory side="you" d={mine} a={mineAuction} names={youNames()} />
-        {ai ? <SideStory side="ai" d={ai} a={aiAuction ?? undefined} names={aiNames()} /> : null}
-      </div>
-      {review && played ? <DealReviewButton {...review} /> : null}
+      <ScoreSheet testId="daily-deal-scores" mine={mine.scores} ai={ai ? ai.scores : null} lines={{ you: gameLine(mine, youNames()), ai: ai ? gameLine(ai, aiNames()) : null }} />
     </section>
-  )
-}
-
-function SideStory({ side, d, a, names }: { side: Side; d: DealSummary; a?: Auction; names: string[] }) {
-  const lines: [string, string][] = [
-    [m.daily_line_bidding(), a ? auctionLine(a, d, names) : '–'],
-    [m.daily_line_game(), d.declarer === null || !d.declaration ? m.daily_passed_in_short() : playedParts(d, names[d.declarer]).join(' · ')],
-  ]
-  return (
-    <div data-testid="daily-deal-side" data-side={side} {...stylex.props(styles.side)}>
-      <span><Who side={side} /></span>
-      {lines.map(([label, text]) => (
-        <p key={label} {...stylex.props(styles.sideLine)}>
-          <span {...stylex.props(typography.micro, styles.muted)}>{label}</span>
-          <span {...stylex.props(typography.note, styles.sideText)}><Rich text={text} /></span>
-        </p>
-      ))}
-    </div>
   )
 }
 
@@ -303,11 +322,9 @@ export function DayDeals({ of, status }: { of: number; status?: DailyStatus }) {
         <VsAiTable
           deals={status?.deals ?? []}
           benchmarks={status?.benchmarks}
-          auctions={status?.auctions}
-          benchmarkAuctions={status?.benchmarkAuctions}
           of={of}
           current={status?.started ? status.deal : null}
-          review={status ? { size: of, day: status.day } : undefined}
+          analysis={status ? { size: of, day: status.day } : undefined}
           openLatest
         />
       </section>
@@ -315,14 +332,13 @@ export function DayDeals({ of, status }: { of: number; status?: DailyStatus }) {
   )
 }
 
-/** The running comparison: one foldable row per finished deal, the player's Saldo against the AI's
- *  (SKATGO-79), opening to that deal's score sheet; under the rows the score sheet of the whole
- *  tournament so far. `openLatest` opens the newest row — after a deal, and on the day's page while it
- *  runs. `flat` (inside the settlement's fold, SKATGO-57): rows that do not fold again — folds never nest.
+/** The running comparison on /daily: one foldable row per finished deal, the player's Saldo against the
+ *  AI's (SKATGO-79), opening to that deal's score sheet and its analysis; under the rows the score sheet
+ *  of the whole tournament so far. `openLatest` opens the newest row, on the day's page while it runs.
  *  `of` (SKATGO-63): the day's number of deals; those not finished follow as rows of their number and
  *  whether they are `current` or still to play — nothing of their cards, which every player shares.
- *  `review`: the tournament and day whose finished deals may be reviewed. */
-export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, openLatest = false, flat = false, of, current = null, review }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; auctions?: Auction[]; benchmarkAuctions?: (Auction | null)[]; openLatest?: boolean; flat?: boolean; of?: number; current?: number | null; review?: Omit<ReviewOf, 'deal'> }) {
+ *  `analysis`: the tournament and day whose finished deals can be gone through. */
+export function VsAiTable({ deals, benchmarks, openLatest = false, of, current = null, analysis }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; openLatest?: boolean; of?: number; current?: number | null; analysis?: { size: number; day: string } }) {
   const latest = deals.length - 1
   const [open, setOpen] = useState<number[]>(openLatest ? [latest] : [])
   useEffect(() => {
@@ -357,24 +373,23 @@ export function VsAiTable({ deals, benchmarks, auctions, benchmarkAuctions, open
           )
           return (
             <li key={i} data-testid="daily-vs-ai-row" data-you={saldo(d.scores)} data-ai={b ? saldo(b.scores) : ''} {...stylex.props(styles.item)}>
-              {flat ? (
-                <div {...stylex.props(styles.grid, styles.flatRow)}>{cells(null)}</div>
-              ) : (
-                <button
-                  type="button"
-                  aria-expanded={isOpen}
-                  aria-controls={id}
-                  aria-label={m.daily_show_deal({ n: i + 1 })}
-                  data-testid="daily-vs-ai-toggle"
-                  onClick={() => toggle(i)}
-                  {...stylex.props(styles.grid, styles.row)}
-                >
-                  {cells(isOpen ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />)}
-                </button>
-              )}
-              {isOpen && !flat ? (
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                aria-controls={id}
+                aria-label={m.daily_show_deal({ n: i + 1 })}
+                data-testid="daily-vs-ai-toggle"
+                onClick={() => toggle(i)}
+                {...stylex.props(styles.grid, styles.row)}
+              >
+                {cells(isOpen ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />)}
+              </button>
+              {isOpen ? (
                 <div id={id} data-testid="daily-vs-ai-detail" {...stylex.props(styles.detail)}>
-                  <DealVsAi mine={d} ai={b} mineAuction={auctions?.[i]} aiAuction={benchmarkAuctions?.[i] ?? null} review={review ? { ...review, deal: i, replay: true } : undefined} />
+                  <DealVsAi mine={d} ai={b} />
+                  {analysis && d.declarer !== null ? (
+                    <DealAnalysis ask={dailyAsk(analysis.size, i)} cacheKey={`${analysis.day}|${analysis.size}|${i}`} />
+                  ) : null}
                 </div>
               ) : null}
             </li>
@@ -425,6 +440,23 @@ const styles = stylex.create({
   saldo: { paddingInlineStart: space.x8, borderInlineStartWidth: border.hair, borderInlineStartStyle: 'solid', borderInlineStartColor: color.hairline, textAlign: 'end' },
   sheet: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   sheetNote: { margin: 0 },
+  // What the deal was, under its row: quiet, one line, never wider than the sheet.
+  gameLine: { paddingBottom: space.x6, color: color.slate, overflowWrap: 'anywhere' },
+  // The Saldo heading opens what Saldo means.
+  saldoWhy: {
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: color.slate,
+    textDecorationLine: 'underline',
+    textDecorationStyle: 'dotted',
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  analysis: { display: 'flex', flexDirection: 'column', gap: space.x10 },
   replay: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   replayTable: { width: '100%', borderCollapse: 'collapse', color: color.navy },
   replayHead: { paddingBottom: space.x4, textAlign: 'start', color: color.slate },
@@ -442,10 +474,6 @@ const styles = stylex.create({
   reviewText: { margin: 0, color: color.text },
   reviewLabel: { color: color.navy },
   reviewAsk: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: space.x6 },
-  sides: { display: 'flex', flexDirection: { default: 'row', [bp.phone]: 'column' }, gap: { default: space.x24, [bp.phone]: space.x12 } },
-  side: { display: 'flex', flexDirection: 'column', gap: space.x6, flexGrow: 1, flexBasis: 0, minWidth: 0 },
-  sideLine: { display: 'flex', flexDirection: 'column', margin: 0 },
-  sideText: { color: color.text, overflowWrap: 'anywhere' },
   fold: { display: 'flex', flexDirection: 'column', borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   foldButton: {
     display: 'flex',

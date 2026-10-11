@@ -84,15 +84,16 @@ export async function handleDaily(request: Request): Promise<Response> {
   }
 }
 
-/** A finished deal's review (SKATGO-79): the worst card from the service, and a few sentences on it from
- *  the assistant's model in the page's language — counted against the same per-visitor and daily limits
- *  as the assistant. Without the sentences (limited, or the model unavailable) the card is still shown. */
-async function review(call: (path: string, payload: object) => Promise<Response>, body: { locale?: unknown }, player: string): Promise<Response> {
-  const { locale, ...rest } = body
+/** A finished deal's review (SKATGO-79): the deal trick by trick and its worst card from the service,
+ *  and — when `explain` is not false — a few sentences on that card from the assistant's model in the
+ *  page's language, counted against the same per-visitor and daily limits as the assistant. Without the
+ *  sentences (not asked for, limited, or the model unavailable) the card is still shown. */
+async function review(call: (path: string, payload: object) => Promise<Response>, body: { locale?: unknown; explain?: unknown }, player: string): Promise<Response> {
+  const { locale, explain, ...rest } = body
   const upstream = await call('review', { ...rest, player })
   if (!upstream.ok) return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
   const found = (await upstream.json()) as DealReview
-  if (!found.worst) return json(200, { review: found, text: null })
+  if (!found.worst || explain === false) return json(200, { review: found, text: null })
   const limited = admit(player) !== null
   const text = limited ? null : await explainReview(found, isLocale(locale) ? locale : 'de')
   return json(200, { review: found, text, limited })

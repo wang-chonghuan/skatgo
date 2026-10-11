@@ -31,7 +31,7 @@ import {
   runningPoints,
   trickWinner,
 } from '~/lib/skat/game'
-import { type Auction, type DealSummary, seegerFabian } from '~/lib/skat/tournament'
+import { type DealSummary, saldo, seegerFabian, summarize, totals } from '~/lib/skat/tournament'
 import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
@@ -47,7 +47,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { DealVsAi, Fold, type Reviewed, ReviewButton, TrickReplay, VsAiTable } from './daily-comparison'
+import { DealAnalysis, DealVsAi, type Reviewed, dailyAsk, gameLine, signed } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
@@ -112,14 +112,11 @@ export type Tournament = {
   /** The day's finished deals and, for each, the AI's result in the player's seat (SKATGO-42). */
   deals?: DealSummary[]
   benchmarks?: (DealSummary | null)[]
-  /** Each finished deal's auction, the player's and the AI's (SKATGO-57). */
-  auctions?: Auction[]
-  benchmarkAuctions?: (Auction | null)[]
 }
 
-/** What the settlement shows in the tournament (SKATGO-57): this deal against the AI first, the day so far
- *  folded away under it. */
-type DailyAfter = { compare: ReactNode; day: ReactNode }
+/** What the settlement shows in the tournament (SKATGO-57, simplified in SKATGO-79): this deal's score
+ *  sheet against the AI, its analysis folded away, and where the tournament stands, in one line. */
+type DailyAfter = { compare: ReactNode; analysis: ReactNode; day: ReactNode }
 
 /** A game the server owns, as free play and lesson 11 play it (SKATGO-40): the learner's moves go to
  *  `send`, `game` is what came back; hints and the assistant are as at the local table. */
@@ -371,38 +368,31 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   // With the panel pinned open, the learner's move is made in the panel, as Funbridge's bidding box is
   // (SKATGO-34): nothing then lies over the table. Otherwise it is the drawer over the felt.
   const movesInPanel = fullScreen && pinned && panelOpen
-  // In the tournament, after each deal (SKATGO-57): the deal just played against the AI, then the day so
-  // far, folded (SKATGO-42, SKATGO-48). The deal on the table is the one the server just recorded.
+  // In the tournament, after each deal (SKATGO-57, simplified in SKATGO-79): the deal just played against
+  // the AI as a score sheet, its analysis folded, and the tournament so far in one line — the whole day is
+  // /daily's. The deal on the table is the one the server just recorded.
   const finished = tournament?.deals?.[tournament.deal]
+  const aiSoFar = tournament?.deals?.map((_, i) => tournament.benchmarks?.[i] ?? null)
   const dailyAfter: DailyAfter | null = tournament?.deals
     ? {
-        compare: finished ? (
-          <DealVsAi
-            mine={finished}
-            ai={tournament.benchmarks?.[tournament.deal] ?? null}
-            mineAuction={tournament.auctions?.[tournament.deal]}
-            aiAuction={tournament.benchmarkAuctions?.[tournament.deal] ?? null}
-            review={{ size: tournament.of, deal: tournament.deal, day: tournament.day }}
+        compare: finished ? <DealVsAi mine={finished} ai={tournament.benchmarks?.[tournament.deal] ?? null} /> : null,
+        analysis: finished && finished.declarer !== null ? (
+          <DealAnalysis
+            deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null }}
+            names={[nameOf(0), nameOf(1), nameOf(2)]}
+            ask={dailyAsk(tournament.of, tournament.deal)}
+            cacheKey={`${tournament.day}|${tournament.of}|${tournament.deal}`}
           />
         ) : null,
         day: (
-          <Fold label={m.daily_day_fold({ n: tournament.deals.length, of: tournament.of })} testId="daily-day-fold">
-            <VsAiTable flat deals={tournament.deals} benchmarks={tournament.benchmarks} auctions={tournament.auctions} benchmarkAuctions={tournament.benchmarkAuctions} />
-          </Fold>
+          <p data-testid="daily-after" {...stylex.props(typography.note, styles.note)}>
+            {aiSoFar?.every((b) => b)
+              ? m.daily_after({ n: tournament.deals.length, of: tournament.of, you: signed(saldo(totals(tournament.deals))), ai: signed(saldo(totals(aiSoFar as DealSummary[]))) })
+              : m.daily_after_solo({ n: tournament.deals.length, of: tournament.of, you: signed(saldo(totals(tournament.deals))) })}
+          </p>
         ),
       }
     : null
-
-  // In free play, under the settlement (SKATGO-79): the game trick by trick, and its worst card when asked.
-  const freeAfter: ReactNode = server?.review && game.phase === 'done' ? (
-    <>
-      {/* The settlement above already shows the skat. */}
-      <Fold label={m.daily_replay()} testId="free-replay-fold">
-        <TrickReplay tricks={game.tricks} names={[nameOf(0), nameOf(1), nameOf(2)]} early={game.early ?? null} />
-      </Fold>
-      <ReviewButton ask={server.review} />
-    </>
-  ) : null
 
   return (
     <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>
@@ -426,7 +416,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
                 </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeAfter={freeAfter} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} />
                 </div>
               )}
             </div>
@@ -547,7 +537,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeAfter={freeAfter} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -628,7 +618,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeAfter={freeAfter} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} />
             </section>
           ) : null}
 
@@ -689,7 +679,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeAfter={freeAfter} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} />
         </div>
       ) : null}
     </div>
@@ -712,7 +702,7 @@ function ActionsFor({
   last,
   daily,
   roomAfter,
-  freeAfter,
+  freeReview,
 }: {
   game: Game
   picked: Card[]
@@ -734,13 +724,13 @@ function ActionsFor({
   daily?: DailyAfter | null
   /** At a private table: the deal's scores and the running totals, shown once it is over. */
   roomAfter?: ReactNode
-  /** Free play's replay and review under the settlement (SKATGO-79). */
-  freeAfter?: ReactNode
+  /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
+  freeReview?: () => Promise<Reviewed | { error: string }>
 }) {
   return (
     <Actions
       roomAfter={roomAfter}
-      freeAfter={freeAfter}
+      freeReview={freeReview}
       compact={compact}
       game={game}
       picked={picked}
@@ -920,8 +910,8 @@ type ActionsProps = {
   last: boolean
   daily?: DailyAfter | null
   roomAfter?: ReactNode
-  /** Free play's replay and review under the settlement (SKATGO-79). */
-  freeAfter?: ReactNode
+  /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
+  freeReview?: () => Promise<Reviewed | { error: string }>
 }
 
 function Actions(p: ActionsProps) {
@@ -944,7 +934,7 @@ function Actions(p: ActionsProps) {
   }
 
   if (game.phase === 'done' && game.result && game.declarer !== null) {
-    return <Result game={game} onNewGame={p.onNewGame} dealScore={p.dealScore} last={p.last} daily={p.daily} roomAfter={p.roomAfter} freeAfter={p.freeAfter} />
+    return <Result game={game} onNewGame={p.onNewGame} dealScore={p.dealScore} last={p.last} daily={p.daily} roomAfter={p.roomAfter} freeReview={p.freeReview} />
   }
 
   if (who !== ME) {
@@ -1111,7 +1101,7 @@ function DeclarePicker({
   )
 }
 
-function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeAfter }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null; roomAfter?: ReactNode; freeAfter?: ReactNode }) {
+function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null; roomAfter?: ReactNode; freeReview?: () => Promise<Reviewed | { error: string }> }) {
   const nameOf = useNameOf()
   const named = useContext(Names) !== null
   const r = game.result!
@@ -1175,11 +1165,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeAfter 
         <div {...stylex.props(styles.resultBody)}>
           {early}
           {daily.compare}
-          {/* The deal trick by trick (SKATGO-79) — what the worst card's trick is read against — where
-              the free table shows the settlement's lines. */}
-          <Fold label={m.daily_replay()} testId="daily-replay-fold">
-            <TrickReplay tricks={game.tricks} names={[nameOf(0), nameOf(1), nameOf(2)]} skat={game.skat} early={game.early ?? null} />
-          </Fold>
+          {daily.analysis}
           {daily.day}
         </div>
       ) : (
@@ -1187,9 +1173,28 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeAfter 
           <div {...stylex.props(styles.resultBody)}>
             <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
             {early}
-            {settlement}
+            {freeReview ? (
+              // Free play (SKATGO-79, simplified): what the game was and who wrote what; the rest — the
+              // tricks, the worst card, the skat and the sum — in one fold.
+              <>
+                <p data-testid="skat-result-line" {...stylex.props(typography.note, styles.note)}>
+                  <Rich text={gameLine(summarize(game), [nameOf(0), nameOf(1), nameOf(2)])} />
+                </p>
+                <p {...stylex.props(typography.note, styles.note)}>
+                  <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score), nameOf)} />
+                </p>
+                <DealAnalysis
+                  testId="free-replay-fold"
+                  deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null }}
+                  names={[nameOf(0), nameOf(1), nameOf(2)]}
+                  ask={() => freeReview()}
+                  footer={<p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>}
+                />
+              </>
+            ) : (
+              settlement
+            )}
             {roomAfter}
-            {freeAfter}
           </div>
         </Panel>
       )}

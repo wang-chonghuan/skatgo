@@ -169,7 +169,7 @@ function DailyResult({ size, status, board, onNamed }: { size: DailySize; status
     <Panel>
       <section data-testid="daily-result" data-total={status.totals[PLAYER]} {...stylex.props(styles.result)}>
         <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_result_title()}</h2>
-        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} auctions={status.auctions} benchmarkAuctions={status.benchmarkAuctions} review={{ size, day: status.day }} />
+        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} analysis={{ size, day: status.day }} />
         {board ? <Nickname key={board.me?.nickname ?? ''} size={size} board={board} onNamed={onNamed} /> : null}
       </section>
     </Panel>
@@ -267,8 +267,6 @@ export function DailyTable() {
         totals: busy ? before.current : reply.status.totals,
         deals: reply.status.deals,
         benchmarks: reply.status.benchmarks,
-        auctions: reply.status.auctions,
-        benchmarkAuctions: reply.status.benchmarkAuctions,
       }}
     />
   )

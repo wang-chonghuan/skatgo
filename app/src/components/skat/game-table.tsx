@@ -869,14 +869,15 @@ function InfoBoard({ game, scores, points }: { game: Game; scores: [number, numb
       </div>
       <div data-testid="skat-info-points" {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_points()}</span>
-        {/* The declarer's card points in the board's amber, as the player's total is beside them, so which
-            number is whose reads at a glance (SKATGO-79, the human: 「庄家的数字…否则用户分不清」, then
-            「显示橙色的算了，就跟计分牌里du的颜色一样」). */}
+        {/* The player's side's card points in the board's amber, as the player's total is beside them —
+            the declarer's when they declare, the defenders' when they defend — so which number is theirs
+            reads at a glance (SKATGO-79, the human: 「我是庄家，则庄家的分显示橙色，我是防家，则防家的分显示橙色」). */}
         <span {...stylex.props(typography.infoNumber, styles.boardValue)}>
           {playing ? (
             <>
-              <span data-testid="skat-info-points-declarer" {...stylex.props(styles.boardDeclarer)}>{points.declarer}</span>
-              {` : ${points.defenders}`}
+              <span data-testid="skat-info-points-declarer" {...stylex.props(game.declarer === ME && styles.boardMine)}>{points.declarer}</span>
+              {' : '}
+              <span data-testid="skat-info-points-defenders" {...stylex.props(game.declarer !== ME && styles.boardMine)}>{points.defenders}</span>
             </>
           ) : (
             '—'
@@ -1496,7 +1497,6 @@ const styles = stylex.create({
   boardLabel: { color: color.amber, whiteSpace: 'nowrap' },
   boardValue: { color: color.onColor, whiteSpace: 'nowrap' },
   boardMine: { color: color.amber },
-  boardDeclarer: { color: color.amber },
   boardSub: { color: color.onColorSoft, whiteSpace: 'nowrap', minHeight: space.x12 },
   totals: { display: 'flex', gap: space.x12 },
   total: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x2 },

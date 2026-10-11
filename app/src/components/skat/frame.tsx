@@ -15,7 +15,7 @@ import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev } from '../../theme/elevation.stylex'
-import { border, layer, opacity, space } from '../../theme/scale.stylex'
+import { border, layer, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { FlagDE, FlagUS } from '../../theme/flags'
 import { typography } from '../../theme/type'
@@ -58,12 +58,13 @@ export function useFrame() {
 /** The front page's links, in this order (the human, 2026-10-01): today's deals, guided free play, the
  *  course, the rules. No separate "Play" button beside them. */
 // The header's links, in the human's order (SKATGO-69): the tournament, learning, free play, a private table,
-// then puzzles, which are not there yet: shown greyed, leading nowhere.
-const HEADER_LINKS: { to: '/daily' | '/course' | '/play' | '/with-friends'; label: () => string }[] = [
+// then the tricks (SKATGO-82), which took the place of the greyed-out puzzles.
+const HEADER_LINKS: { to: '/daily' | '/course' | '/play' | '/with-friends' | '/skat-tricks'; label: () => string }[] = [
   { to: '/daily', label: () => m.nav_header_daily() },
   { to: '/course', label: () => m.nav_header_learn() },
   { to: '/play', label: () => m.nav_header_free() },
   { to: '/with-friends', label: () => m.nav_header_friends() },
+  { to: '/skat-tricks', label: () => m.nav_header_tricks() },
 ]
 
 /** The front page's header: the public site's white bar, also over the tournament, the course and the
@@ -81,7 +82,6 @@ export function LandingHeader() {
         {HEADER_LINKS.map((l) => (
           <Link key={l.to} to={l.to} data-nav={l.to} {...stylex.props(typography.landingNav, styles.landingLink)}>{l.label()}</Link>
         ))}
-        <span data-nav="puzzles" {...stylex.props(typography.landingNav, styles.landingLink, styles.soon)}>{m.nav_header_puzzles()}</span>
       </nav>
       <div {...stylex.props(styles.landingEnd)}>
         <LanguageSwitch />
@@ -98,7 +98,6 @@ export function LandingHeader() {
           {HEADER_LINKS.map((l) => (
             <Link key={l.to} to={l.to} onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{l.label()}</Link>
           ))}
-          <span data-nav="puzzles" {...stylex.props(typography.landingNav, styles.menuLink, styles.soon)}>{m.nav_header_puzzles()}</span>
           <div {...stylex.props(styles.menuAccount)}>
             <Account />
           </div>
@@ -469,7 +468,6 @@ const styles = stylex.create({
   landingNav: { display: { default: 'flex', [bp.headerMenu]: 'none' }, alignItems: 'center', gap: space.x32 },
   landingLink: { color: { default: color.slate, ':hover': color.navy }, textDecoration: 'none', ...focus },
   // Not there yet (SKATGO-69): greyed, and nothing answers the pointer.
-  soon: { opacity: opacity.disabled, cursor: 'default', color: color.slate },
   landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x8 } },
   desktopOnly: { display: { default: 'inline-flex', [bp.headerMenu]: 'none' } },
   menuButton: {

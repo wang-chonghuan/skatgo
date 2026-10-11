@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import { Link } from '@tanstack/react-router'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
@@ -254,6 +255,10 @@ function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
             <Rich text={w ? m.daily_review_card({ trick: w.trick, played: cardLabel(w.played), best: cardLabel(w.best) }) : m.daily_review_clean()} />
           </p>
           {w ? <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_review_marks()}</p> : null}
+          {/* Where to read up on it (SKATGO-82): in a new tab, so a table or a game stays where it is. */}
+          <Link to="/skat-tricks" target="_blank" rel="noopener" data-testid="tricks-more-link" {...stylex.props(typography.note, styles.tricksLink)}>
+            {m.tricks_more_link()}
+          </Link>
         </div>
       ) : failed ? (
         <p role="alert" {...stylex.props(typography.note, styles.muted)}>{m.daily_review_failed()}</p>
@@ -438,6 +443,15 @@ const styles = stylex.create({
   whoAi: { backgroundColor: color.info },
   review: { display: 'flex', flexDirection: 'column', gap: space.x6, padding: space.x10, borderRadius: radii.column, backgroundColor: color.page },
   reviewLine: { margin: 0, color: color.navy },
+  tricksLink: {
+    alignSelf: 'flex-start',
+    color: color.info,
+    textDecoration: { default: 'none', ':hover': 'underline' },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
   table: { display: 'flex', flexDirection: 'column', color: color.navy },
   // Deal, you, the AI, the difference: the same columns in the header, every row and the total.
   grid: {

@@ -45,6 +45,14 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/regeln'],
       ],
     },
+    // The Skat-Tricks section (SKATGO-82): the same address in both languages, the search term itself.
+    {
+      pattern: '/skat-tricks',
+      localized: [
+        ['en', '/en/skat-tricks'],
+        ['de', '/de/skat-tricks'],
+      ],
+    },
     // The bidding table (SKATGO-50), a page of the rules.
     {
       pattern: '/rules/bidding-table',

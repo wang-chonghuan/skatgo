@@ -71,7 +71,7 @@ fixed light palette, not a light/dark pair.
 | **Page** | every sub-page's background; the front page's is white | `color.page` (front page `color.surface`) | `color.text`, titles `color.navy`, secondary `color.slate` |
 | **Header** | the public site's white bar over every page but the tables | `color.surface`, `elev.landingHeader` | `color.navy`, links `color.slate` |
 | **Option card** | a white card on the page: a lesson, the course's progress, the tournament's board and results, a panel | `color.surface`, `radii.option`, `elev.option` (the featured one `elev.optionFeatured`) | `color.navy` / `color.slate` |
-| **Colour tile** | a section on the front page: ♣ the course (`tileOrange`), ♠ free play (`tileGreen`) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
+| **Colour tile** | a section on the front page: ♣ the course (`tileOrange`), ♠ free play (`tileGreen`), the tricks (`tileNavy`), a private table (`tileRed`) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
 | **Felt** | where cards lie: the table, a drill's hand | `fill.felt` (`feltInner` → `feltOuter`, with a fine grain) | `color.onColor`; highlights `color.gold` / `color.amber` |
 | **Board and plates** | the table's info board, the seat plates, dark pills | `color.board` with `color.boardLine`; `color.plate` | `color.onColor`, quieter `color.onColorSoft`; the player's own numbers — their score, their side's card points — in `color.amber` (SKATGO-79) |
 | **Footer** | the legal links under every header page (SKATGO-46) | `color.surface` with a `hairline` rule | links in `color.info` |
@@ -85,7 +85,7 @@ fixed light palette, not a light/dark pair.
 | `go` | the one call to action, and the current state; `goLanding` is the public site's own green on its landing buttons |
 | `info` | links in text, the hint button, the focus ring, and the "AI" tag wherever the AI is named — a score sheet, the play record, the leaderboard (SKATGO-79, SKATGO-80, the human: 「AI标志都用app里那个蓝色的Ai标志」) |
 | `stop` | leaving the table |
-| `tileGreen`, `tileOrange` | the front page's section tiles: ♠ free play, ♣ the course |
+| `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the tricks, a private table |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); the play record's trick most worth improving (`badSoft`, SKATGO-79, the human: 「本app常用那种粉红的背景」). `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson, the learner's message in the assistant |
 | `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
@@ -213,8 +213,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **The frame** (`skat-layout.tsx`, `components/skat/frame.tsx`): every page but the tables wears the
   public site's header (SKATGO-43; lessons too since SKATGO-47). The header has:
   - the SkatGo mark (`dims.landingMark`) and name (`landingBrand`);
-  - the four links, in this order (the human, 2026-10-01): the daily tournament, free play, the
-    course, the rules;
+  - the five links, in this order (SKATGO-69, SKATGO-82): the daily tournament, learning (the course),
+    free play, a private table, and the tricks ("Tricks", which took the place of the greyed-out
+    "Aufgaben");
   - on the right, the language menu (a flag button opening a card of flags), the settings gear (the
     choice of deck: the Turnierblatt by default, the Deutsches Blatt, or the Turnierblatt with English
     letters J / Q / K / A — SKATGO-66), and sign-in
@@ -227,11 +228,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
     its one green landing action (play today's deals); a quiet ✓ line of what a first visitor wants to
     know; and the human's illustration (SKATGO-33). Never on felt (Redline 4);
-  - the sections as colour tiles, one suit each: ♣ the course, ♠ free play, each with its card art and
-    a `quiet` button;
+  - the sections as colour tiles, each with its card art and a `quiet` button: the course, free play,
+    the tricks ("Skat-Tricks", `tileNavy`, SKATGO-82; it held the puzzles' "coming soon" before) and a
+    private table (`tileRed`);
   - plain links to the rules and the course, and the questions people ask.
 - **A sub-page** (the course, a lesson, the rules, the bidding table, the score sheet, the short rules,
-  the daily tournament, the legal pages), on the grey page: its title is the column's first element, an
+  the daily tournament, the Skat-Tricks, the legal pages), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
   tournament's page puts a switch of two pills under its lead, "6 Spiele | 12 Spiele" (SKATGO-77,
@@ -239,7 +241,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",
   "Gestern", or the weekday and date — and steps through the last seven days with two round arrow
   buttons at the right, earlier on the left, the one at the end of the range spent (SKATGO-80). A
-  printable has its download beside the title (`TitleWithDownload`). A lesson starts playing at once: under its title only a
+  printable has its download beside the title (`TitleWithDownload`). An article of the Skat-Tricks
+  (`tricks-page.tsx`, SKATGO-82) reads like the rules: its H1 and lead, section headings, each trick a
+  numbered sub-heading over short paragraphs, and three ways into the daily tournament — at the start, in
+  the middle and at the end — each a `tip` panel with its line and the `go` button; one action repeated
+  down a long page, not rival primaries (the human chose green for all three). It ends with its links to
+  read on. The course lists it as an option card under the lessons, the footer links it, and the table's
+  rules panel and the play record link it in a new tab, so a game is never left behind. A lesson starts playing at once: under its title only a
   one-line kicker and the lesson's promise, then the lesson, which keeps its "back / continue" bar
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
   lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,

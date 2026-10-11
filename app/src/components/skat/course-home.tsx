@@ -114,6 +114,11 @@ export function CourseHome() {
             )
           })}
         </ol>
+        {/* Past the lessons, the strategy articles (SKATGO-82). */}
+        <Link to="/skat-tricks" data-testid="skat-tricks-card" {...stylex.props(styles.card)}>
+          <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{m.tricks_title()}</span>
+          <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{m.tricks_course_text()}</span>
+        </Link>
         <PrintLinks />
       </div>
     </div>

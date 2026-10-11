@@ -55,6 +55,14 @@ Null ouvert, Ramsch); the bidding table; and two printables, a score sheet and a
 rules, each also as a PDF (SKATGO-29, SKATGO-50, SKATGO-53). Every number in them is the rules
 engine's.
 
+Skat-Tricks at `/skat-tricks` (SKATGO-82): strategy articles for players past the basics, in plain words —
+the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」. The section's own page is its first article,
+twelve tricks for bidding, playing alone and defending, written for the search "Skat Tricks"; later
+articles get their own addresses under it, each for its own search term, and practice joins them later
+in the same section. Every article leads to the daily tournament, where each trick can be tried and
+compared with the AI. The text is SkatGo's own: no book's passages, examples or order are copied, and
+the articles recommend no books.
+
 **Who it is for**
 
 Learners from 6 to 99 (the human, 2026-09-21: 「年龄改为6-99岁」), who want to be able to sit down at a
@@ -76,7 +84,8 @@ exposure. Neither alone proves that learners can play, and delayed search report
 
 - It speaks German and English only. Public URLs determine page language, and learners can switch it
   themselves. The German homepage is the same for every browser (SKATGO-44).
-- It is the course, free play, the daily tournament and the rules reference — nothing from
+- It is the course, free play, the daily tournament, private tables with friends, the Skat-Tricks and
+  the rules reference — nothing from
   Parrottoon, from which it was split on 2026-09-21: none of Parrottoon's English content, and no link
   back to it.
 

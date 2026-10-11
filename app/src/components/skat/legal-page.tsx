@@ -67,6 +67,7 @@ export function LegalFooter() {
         <Link to="/privacy" {...stylex.props(typography.link, styles.link)}>{m.privacy_title()}</Link>
         <Link to="/terms" {...stylex.props(typography.link, styles.link)}>{m.terms_title()}</Link>
         <Link to="/terms" hash="legal-operator" {...stylex.props(typography.link, styles.link)}>{m.legal_operator()}</Link>
+        <Link to="/skat-tricks" {...stylex.props(typography.link, styles.link)}>{m.tricks_title()}</Link>
       </nav>
     </footer>
   )

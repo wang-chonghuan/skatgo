@@ -69,7 +69,7 @@ export const stage = stylex.defineVars({
    *  three cards, two steps and a card tall (282u, 208u in portrait), sit in the middle of the frame's
    *  height: the top card as far from the frame's top as the bottom card from its bottom (the human),
    *  measured from the frame's middle so its border cannot tip the balance. These are the tops of the
-   *  first card (Max's), the second (the learner's) and the third (Lina's). */
+   *  first card (Noah's), the second (the learner's) and the third (Lina's). */
   trickFirst: { default: `calc(50% - ${u} * 141)`, [bp.portrait]: `calc(50% - ${u} * 104)` },
   trickSecond: { default: `calc(50% - ${u} * 91)`, [bp.portrait]: `calc(50% - ${u} * 67)` },
   trickThird: { default: `calc(50% - ${u} * 41)`, [bp.portrait]: `calc(50% - ${u} * 30)` },

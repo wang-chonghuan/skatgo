@@ -21,7 +21,8 @@ Random exercises, cards and personal progress run in the browser. The German roo
 page, and the old German homepage address redirects permanently to it (SKATGO-44). `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*` and
 `/api/free/*`. They pass the daily tournament's and free play's requests on to `multiplayer`. Free
 play includes lesson 11's game (SKATGO-40). `/api/free/*` is limited per address to 300 new games an
-hour and 200 moves per 10 s, and answers `429 slow_down` beyond that.
+hour and 200 other requests — moves, resumes and reviews — per 10 s, and answers `429 slow_down` beyond
+that.
 
 The independent **`multiplayer`** Colyseus service uses PostgreSQL for durable rooms
 (SKATGO-20, human-approved 2026-09-27). It supports 1-3 humans, fills other seats with AI,
@@ -31,7 +32,9 @@ admission flow for rooms is shipped yet: integration clients require a separate 
 The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily` and free play
 (SKATGO-40) under `/free`. Their one client is the web service, which holds the admission key. Free
 play stores nothing: each game is an encrypted token keyed from the admission key, so changing that
-key ends the games in progress.
+key ends the games in progress. A finished deal's review — the AI's cards in its play record — is
+SkatZero's work on this instance, per request (`/daily/review`, `/free/review`, SKATGO-79); nothing of
+it is stored.
 Only one database-fenced process owns rooms; liveness and gameplay readiness are separate.
 The service is ready only once two things are in place:
 - SkatZero's nine models are loaded, hash-verified and warmed (SKATGO-38);

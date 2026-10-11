@@ -270,4 +270,6 @@ export type DailyBoard = {
   me: { finished: boolean; total: number; saldo: number; nickname: string | null; rank: number | null } | null
   /** The nickname the player last used, to offer again. */
   lastNickname: string | null
+  /** The AI's Saldo over the tournament that day, for everyone (SKATGO-80); null for a day it did not play. */
+  ai: { saldo: number } | null
 }

@@ -72,8 +72,9 @@ export function gameLine(d: DealSummary, names: string[]): string {
 type Scores = readonly [number, number, number]
 type Side = 'you' | 'ai'
 
-/** Whose line it is: the player in navy, the AI in orange (SKATGO-79). */
-function Who({ side }: { side: Side }) {
+/** Whose line it is: the player in navy, the AI in orange (SKATGO-79); also the AI's row on the
+ *  leaderboard (SKATGO-80). */
+export function Who({ side }: { side: Side }) {
   return (
     <span data-who={side} {...stylex.props(typography.badge, styles.whoTag, side === 'you' ? styles.whoYou : styles.whoAi)}>
       {side === 'you' ? m.name_you() : m.daily_ai()}

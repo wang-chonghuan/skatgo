@@ -392,7 +392,10 @@ const BOARD_ROWS = 100
  * the stored deals, so entries finished before it rank the same way); equal Saldo share a rank and the
  * next rank skips (1, 1, 3), the earlier finish listed first. Only nicknames and totals leave here —
  * never a player id. For the asking player: their own standing (a finished player without a nickname
- * sees the rank they would have), and the nickname they last used on an earlier day.
+ * sees the rank they would have), and the nickname they last used on an earlier day. `ai` (SKATGO-80): the
+ * AI's Saldo over the tournament — its play from the player's seat, worked out when the day was dealt, the
+ * same for every player — shown to everyone, its total only (the human: 「都显示，只在leader board上显示
+ * 总成绩即可」); null when a deal of that day has none.
  */
 export async function dailyBoard(store: Store, who: string | null, size: DailySize, which: 'today' | 'yesterday', now = Date.now()) {
   const day = which === 'today' ? dayOf(now) : dayBefore(dayOf(now))
@@ -424,7 +427,10 @@ export async function dailyBoard(store: Store, who: string | null, size: DailySi
       'SELECT nickname FROM daily_entries WHERE player = $1 AND nickname IS NOT NULL ORDER BY day DESC LIMIT 1', [who])
     lastNickname = last.rows[0]?.nickname ?? null
   }
-  return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, lastNickname }
+  const { rows: dealt } = await store.pool.query('SELECT deals FROM daily_deals WHERE day = $1 AND size = $2', [day, size])
+  const played = ((dealt[0]?.deals ?? []) as DealSpec[]).map((spec) => spec.benchmark?.summary)
+  const ai = played.length > 0 && played.every((b) => b) ? { saldo: saldo(totals(played as DealSummary[])) } : null
+  return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, lastNickname, ai }
 }
 
 /**

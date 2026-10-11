@@ -5,13 +5,13 @@ import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'rea
 import { track } from '~/lib/analytics'
 import { type DailyError, dailyAct, dailyBoard, dailyName, dailyState, isError } from '~/lib/daily-api'
 import type { Move } from '~/lib/skat/game'
-import { DAILY_DEALS, type DailyBoard, type DailyReply, type DailySize, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
+import { type BoardRow, DAILY_DEALS, type DailyBoard, type DailyReply, type DailySize, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { DayDeals, VsAiTable } from './daily-comparison'
+import { DayDeals, VsAiTable, Who } from './daily-comparison'
 import { Toggle, sizeSearch } from './daily-page'
 import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, TextField, linkLook } from './ui'
@@ -68,12 +68,27 @@ export function DailyEntry({ size, waiting }: { size: DailySize; waiting?: React
   )
 }
 
-/** A day's leaderboard: nicknames and totals, the player's own row marked; today's or yesterday's. */
+/** A board line: a player's row, or the AI's Saldo (SKATGO-80). */
+type Line = { row: BoardRow } | { ai: number }
+const saldoOf = (l: Line) => ('ai' in l ? l.ai : l.row.saldo)
+
+/** A day's leaderboard: nicknames and Saldo, the player's own row marked; today's or yesterday's. The AI
+ *  stands among the players by its Saldo, after any player with the same, taking no rank (SKATGO-80); when
+ *  it falls below the rows shown it follows them, with the player's own row. With nobody on the board yet
+ *  it stands there alone, under the line that says so. */
 function Leaderboard({ which, board, onShow }: { which: Which; board: DailyBoard | DailyError | null; onShow: (w: Which) => void }) {
-  const rows = board && !isError(board) ? board.rows : []
+  const shown = board && !isError(board) ? board : null
+  const rows = shown?.rows ?? []
+  const ai = shown?.ai?.saldo ?? null
+  const cut = rows.length < (shown?.total ?? 0)
+  const at = ai === null ? -1 : rows.findIndex((r) => r.saldo < ai)
+  const lines: Line[] = rows.map((row) => ({ row }))
+  if (ai !== null && (at >= 0 || !cut)) lines.splice(at >= 0 ? at : lines.length, 0, { ai })
+  const below: Line[] = [...(shown?.own ? [{ row: shown.own }] : []), ...(ai !== null && at < 0 && cut ? [{ ai }] : [])]
+  below.sort((a, b) => saldoOf(b) - saldoOf(a) || ('ai' in a ? 1 : 0) - ('ai' in b ? 1 : 0))
   return (
     <Panel>
-      <section data-testid="daily-board" data-day={board && !isError(board) ? board.day : undefined} {...stylex.props(styles.result)}>
+      <section data-testid="daily-board" data-day={shown?.day} {...stylex.props(styles.result)}>
         <div {...stylex.props(styles.boardHead)}>
           <h2 {...stylex.props(typography.panelLabel, styles.text, styles.what)}>{m.daily_board_title()}</h2>
           {(['today', 'yesterday'] as Which[]).map((w) => (
@@ -84,33 +99,47 @@ function Leaderboard({ which, board, onShow }: { which: Which; board: DailyBoard
         </div>
         {board === null ? null : isError(board) ? (
           <p {...stylex.props(typography.appText, styles.muted)}>{m.daily_unavailable()}</p>
-        ) : rows.length === 0 ? (
-          <p data-testid="daily-board-empty" {...stylex.props(typography.appText, styles.muted)}>
-            {which === 'today' ? m.daily_board_empty_today() : m.daily_board_empty_yesterday()}
-          </p>
         ) : (
-          <ol {...stylex.props(styles.rows)}>
-            {/* What the number is (SKATGO-79): the board ranks by Saldo, not by a player's own total. */}
-            <li aria-hidden="true" {...stylex.props(typography.micro, styles.boardHeadRow, styles.muted)}>
-              <span {...stylex.props(styles.what)} />
-              <span>{m.daily_saldo()}</span>
-            </li>
-            {[...rows, ...(board.own ? [board.own] : [])].map((r, i) => (
-              <li
-                key={i}
-                data-testid="daily-board-row"
-                data-rank={r.rank}
-                data-total={r.total}
-                data-saldo={r.saldo}
-                data-me={r.me ? 'true' : undefined}
-                {...stylex.props(typography.appText, styles.row, styles.boardRow, i === rows.length && styles.gap, r.me && styles.mine)}
-              >
-                <span {...stylex.props(styles.muted, styles.rank)}>{r.rank}</span>
-                <span data-testid="daily-board-name" {...stylex.props(styles.what)}>{r.nickname}</span>
-                <span {...stylex.props(styles.score)}>{signed(r.saldo)}</span>
-              </li>
-            ))}
-          </ol>
+          <>
+            {rows.length === 0 ? (
+              <p data-testid="daily-board-empty" {...stylex.props(typography.appText, styles.muted)}>
+                {which === 'today' ? m.daily_board_empty_today() : m.daily_board_empty_yesterday()}
+              </p>
+            ) : null}
+            {lines.length + below.length > 0 ? (
+              <ol {...stylex.props(styles.rows)}>
+                {/* What the number is (SKATGO-79): the board ranks by Saldo, not by a player's own total. */}
+                <li aria-hidden="true" {...stylex.props(typography.micro, styles.boardHeadRow, styles.muted)}>
+                  <span {...stylex.props(styles.what)} />
+                  <span>{m.daily_saldo()}</span>
+                </li>
+                {[...lines, ...below].map((l, i) => {
+                  const apart = i === lines.length
+                  return 'ai' in l ? (
+                    <li key="ai" data-testid="daily-board-ai" data-saldo={l.ai} {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap)}>
+                      <span {...stylex.props(styles.rank)} />
+                      <span {...stylex.props(styles.what)}><Who side="ai" /></span>
+                      <span {...stylex.props(styles.score)}>{signed(l.ai)}</span>
+                    </li>
+                  ) : (
+                    <li
+                      key={i}
+                      data-testid="daily-board-row"
+                      data-rank={l.row.rank}
+                      data-total={l.row.total}
+                      data-saldo={l.row.saldo}
+                      data-me={l.row.me ? 'true' : undefined}
+                      {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap, l.row.me && styles.mine)}
+                    >
+                      <span {...stylex.props(styles.muted, styles.rank)}>{l.row.rank}</span>
+                      <span data-testid="daily-board-name" {...stylex.props(styles.what)}>{l.row.nickname}</span>
+                      <span {...stylex.props(styles.score)}>{signed(l.row.saldo)}</span>
+                    </li>
+                  )
+                })}
+              </ol>
+            ) : null}
+          </>
         )}
       </section>
     </Panel>

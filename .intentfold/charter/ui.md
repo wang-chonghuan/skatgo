@@ -85,9 +85,9 @@ fixed light palette, not a light/dark pair.
 | `go` | the one call to action, and the current state; `goLanding` is the public site's own green on its landing buttons |
 | `info` | links in text, the hint button, the focus ring, and the "AI" tag after the AI's card in a play record (SKATGO-79) |
 | `stop` | leaving the table |
-| `tileGreen`, `tileOrange` | the front page's section tiles: ♠ free play, ♣ the course; `tileOrange` also tags the AI's line in a score sheet, as `navy` tags the player's (SKATGO-79, the human: 「当前的主题色就是：橙色，红色，海军蓝，绿色」) |
+| `tileGreen`, `tileOrange` | the front page's section tiles: ♠ free play, ♣ the course; `tileOrange` also tags the AI's line in a score sheet, as `navy` tags the player's (SKATGO-79, the human: 「当前的主题色就是：橙色，红色，海军蓝，绿色」), and the AI's row on the leaderboard (SKATGO-80) |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
-| `good` / `goodSoft`, `bad` / `badSoft` | a right / wrong answer: border / fill; and `badSoft` behind the play record's trick most worth improving (SKATGO-79, the human: 「本app常用那种粉红的背景」) — nothing else |
+| `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); the play record's trick most worth improving (`badSoft`, SKATGO-79, the human: 「本app常用那种粉红的背景」). `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson, the learner's message in the assistant |
 | `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
 | `scrim` | the dim behind a dialog |
 

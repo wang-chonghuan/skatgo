@@ -3,12 +3,11 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { dailyReview } from '~/lib/daily-api'
-import { type Card, pointsOf } from '~/lib/skat/cards'
+import { type Card, pointsOf, sameCard } from '~/lib/skat/cards'
 import type { Game } from '~/lib/skat/game'
 import { cardLabel, contractName } from '~/lib/skat/i18n'
-import { type DailyStatus, type DealReview, type DealSummary, PLAYER, dailySize, saldo, totals } from '~/lib/skat/tournament'
+import { type DailyStatus, type DealReview, type DealSummary, type Differ, PLAYER, dailySize, saldo, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
-import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
@@ -133,11 +132,17 @@ export function ScoreSheet({ mine, ai, lines, testId }: { mine: Scores; ai: Scor
 /**
  * A deal replayed trick by trick (SKATGO-79, the human: 「10墩，每墩谁出了什么（有时序）然后谁赢了，一个10行的
  * 表格」): each trick's three cards in the order they were played, each under its player's name, and who
- * took it with how many card points. The player's own cards are bold; `highlight` marks a trick (the
- * worst card's). Tricks a claim or a concession left unplayed are not rows, only a line under them.
+ * took it with how many card points; under each trick, the player's hand as it was before it (「每trick都要
+ * 显示打这个trick前我手里的牌」). The player's own cards are bold. `differs`, once asked for, puts the AI's
+ * card under the player's wherever it would have played another, and marks the trick of the furthest. Tricks
+ * a claim or a concession left unplayed are not rows, only a line under them.
  */
-export function TrickReplay({ tricks, names, skat, hand, highlight = null, early = null }: { tricks: Game['tricks']; names: string[]; skat?: Card[]; hand?: Card[]; highlight?: number | null; early?: Game['early'] | null }) {
+export function TrickReplay({ tricks, names, skat, hand, differs = null, early = null }: { tricks: Game['tricks']; names: string[]; skat?: Card[]; hand?: Card[]; differs?: Differ[] | null; early?: Game['early'] | null }) {
   const played = early ? tricks.slice(0, early.from) : tricks
+  const worst = differs?.[0]?.trick ?? null
+  const ai = new Map((differs ?? []).map((d) => [d.trick, d.best]))
+  // What the player held before a trick: the hand they began with, less the cards of the tricks before.
+  const before = (i: number) => (hand ?? []).filter((c) => !tricks.slice(0, i).some((t) => t.cards.some((p) => p.seat === PLAYER && sameCard(p.card, c))))
   return (
     <div {...stylex.props(styles.replay)}>
       <table data-testid="daily-replay" data-tricks={played.length} {...stylex.props(styles.replayTable)}>
@@ -148,28 +153,41 @@ export function TrickReplay({ tricks, names, skat, hand, highlight = null, early
             <th scope="col" {...stylex.props(typography.micro, styles.replayHead, styles.end)}>{m.daily_replay_winner()}</th>
           </tr>
         </thead>
-        <tbody>
-          {played.map((t, i) => (
-            <tr key={i} data-trick={i + 1} data-winner={t.winner} data-highlight={highlight === i + 1 ? 'true' : undefined} {...stylex.props(styles.replayRow, highlight === i + 1 && styles.replayMarked)}>
-              <td {...stylex.props(typography.small, styles.muted, styles.replayCell)}>{i + 1}</td>
-              {t.cards.map((p, k) => (
-                <td key={k} data-seat={p.seat} {...stylex.props(styles.replayCell)}>
-                  <span {...stylex.props(typography.micro, styles.muted, styles.replayName)}>{names[p.seat]}</span>
-                  <span {...stylex.props(p.seat === PLAYER ? typography.smallBold : typography.small, styles.replayCard)}><Rich text={cardLabel(p.card)} /></span>
-                </td>
-              ))}
-              <td {...stylex.props(typography.small, styles.replayCell, styles.end)}>{m.daily_replay_points({ name: names[t.winner], points: pointsOf(t.cards.map((p) => p.card)) })}</td>
-            </tr>
-          ))}
-        </tbody>
+        {played.map((t, i) => {
+          const n = i + 1
+          const marked = worst === n
+          const best = ai.get(n)
+          const held = before(i)
+          return (
+            <tbody key={i} data-trick={n} data-highlight={marked ? 'true' : undefined} {...stylex.props(styles.replayRow, marked && styles.replayMarked)}>
+              <tr data-winner={t.winner}>
+                <td {...stylex.props(typography.small, styles.muted, styles.replayCell)}>{n}</td>
+                {t.cards.map((p, k) => (
+                  <td key={k} data-seat={p.seat} {...stylex.props(styles.replayCell)}>
+                    <span {...stylex.props(typography.micro, styles.muted, styles.replayName)}>{names[p.seat]}</span>
+                    <span {...stylex.props(p.seat === PLAYER ? typography.smallBold : typography.small, styles.replayCard)}><Rich text={cardLabel(p.card)} /></span>
+                    {p.seat === PLAYER && best ? (
+                      <span data-testid="daily-replay-ai" data-card={`${best.suit}${best.rank}`} {...stylex.props(typography.small, styles.replayAi)}>
+                        <Who side="ai" /> <Rich text={cardLabel(best)} />
+                      </span>
+                    ) : null}
+                  </td>
+                ))}
+                <td {...stylex.props(typography.small, styles.replayCell, styles.end)}>{m.daily_replay_points({ name: names[t.winner], points: pointsOf(t.cards.map((p) => p.card)) })}</td>
+              </tr>
+              {held.length ? (
+                <tr>
+                  <td />
+                  <td colSpan={t.cards.length + 1} data-testid="daily-replay-hand" data-cards={held.length} {...stylex.props(typography.micro, styles.replayHand)}>
+                    <span {...stylex.props(styles.muted)}>{m.daily_replay_hand()}</span> <Rich text={held.map(cardLabel).join(' ')} />
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          )
+        })}
       </table>
       {early ? <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_replay_rest({ n: 10 - early.from })}</p> : null}
-      {/* The player's hand when the play began, under the record (the human: 「下面要显示一个打这幅牌前玩家手里的牌」). */}
-      {hand?.length ? (
-        <p data-testid="daily-replay-hand" {...stylex.props(typography.small, styles.sheetNote)}>
-          <span {...stylex.props(styles.muted)}>{m.daily_replay_hand()}</span> <Rich text={hand.map(cardLabel).join(' ')} />
-        </p>
-      ) : null}
       {skat?.length ? (
         <p {...stylex.props(typography.small, styles.sheetNote)}>
           <span {...stylex.props(styles.muted)}>{m.result_skat()}</span> <Rich text={skat.map(cardLabel).join(' ')} />
@@ -179,27 +197,25 @@ export function TrickReplay({ tricks, names, skat, hand, highlight = null, early
   )
 }
 
-/** A review as it comes back: the deal trick by trick and its worst card, and the model's sentences when
- *  they were asked for and could be had. */
-export type Reviewed = { review: DealReview; text: string | null }
-
-/** Fetches a finished deal's review, with the model's explanation (`explain`) or without it. */
-export type AskReview = (explain: boolean) => Promise<Reviewed | { error: string }>
+/** Fetches a finished deal's review: the deal trick by trick, and where the player's cards were not the AI's. */
+export type AskReview = () => Promise<DealReview | { error: string }>
 
 /** A deal of one of today's tournaments, reviewed through /api/daily. */
-export const dailyAsk = (size: number, deal: number): AskReview => (explain) => dailyReview(dailySize(size), deal, explain)
+export const dailyAsk = (size: number, deal: number): AskReview => () => dailyReview(dailySize(size), deal)
 
-/** What this page already fetched, so reopening a deal does not ask again: explained reviews, and the
- *  deals fetched for their replay alone. */
-const reviewed = new Map<string, Reviewed>()
-const replays = new Map<string, Pick<DealReview, 'tricks' | 'skat' | 'early' | 'hand'>>()
+/** What this page already fetched, so reopening a deal does not ask again — and the deals whose AI cards
+ *  were asked for, which stay shown. */
+const reviews = new Map<string, DealReview>()
+const opened = new Set<string>()
 
 /**
  * A finished deal's play record, open (SKATGO-79, the human: 「本次牌谱要显示出来，不要折叠，用专业名词说
- * 这个牌谱」): the way to the deal's turning point — the player's worst card — on top, only when asked
- * (「做成一个按钮，不用每次自动显示」); then the deal trick by trick, that card's trick marked once it is
- * known, the skat, and `footer` (free play's sum). `deal` is the deal when the page has it (the
- * settlement); otherwise it is fetched, without asking the model.
+ * 这个牌谱」): the way to the AI's cards — where it would have played another than the player, the move most
+ * worth improving first — on top, only when asked (「做成一个按钮，不用每次自动显示」); then the deal trick
+ * by trick with the player's hand before each, the AI's cards in it once asked for, the skat, and `footer`
+ * (free play's sum). Every word of it is SkatZero's choice and the rules engine's record — no model
+ * explains it (the human: 「解读太麻烦了」). `deal` is the deal when the page has it (the settlement);
+ * otherwise it is fetched.
  */
 export function DealAnalysis({ testId = 'daily-play-record', ...rest }: AnalysisProps & { testId?: string }) {
   return (
@@ -219,65 +235,61 @@ type AnalysisProps = {
 }
 
 function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
-  // The explanation is in the page's language: one fetched in another stays with that language.
-  const said = cacheKey ? `${cacheKey}|${getLocale()}` : undefined
-  const [got, setGot] = useState<Reviewed | null>(said ? (reviewed.get(said) ?? null) : null)
-  const [shown, setShown] = useState(deal ?? (cacheKey ? replays.get(cacheKey) : undefined) ?? got?.review ?? null)
+  const [review, setReview] = useState<DealReview | null>(cacheKey ? (reviews.get(cacheKey) ?? null) : null)
+  const [open, setOpen] = useState(cacheKey ? opened.has(cacheKey) : false)
   const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle')
   const [unavailable, setUnavailable] = useState(false)
+  const record = deal ?? review
+  async function fetchReview(): Promise<DealReview | null> {
+    const r = await ask()
+    if ('error' in r) return null
+    if (cacheKey) reviews.set(cacheKey, r)
+    setReview(r)
+    return r
+  }
   useEffect(() => {
-    if (shown) return
-    void ask(false).then((r) => {
-      if ('error' in r) return setUnavailable(true)
-      if (cacheKey) replays.set(cacheKey, r.review)
-      setShown(r.review)
-    })
+    if (record) return
+    void fetchReview().then((r) => setUnavailable(!r))
     // Once, when the record is shown.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  async function explain() {
-    setState('loading')
-    const r = await ask(true)
-    if ('error' in r) return setState('failed')
-    if (said) reviewed.set(said, r)
-    setGot(r)
-    setShown((s) => s ?? r.review)
+  async function reveal() {
+    if (!review) {
+      setState('loading')
+      if (!(await fetchReview())) return setState('failed')
+    }
+    if (cacheKey) opened.add(cacheKey)
+    setOpen(true)
   }
-  const w = got?.review.worst ?? null
+  const differs = open && review ? review.differs : null
+  const w = differs?.[0] ?? null
   return (
     <div {...stylex.props(styles.analysis)}>
-      {got ? (
+      {differs ? (
         <div
           data-testid="daily-review-result"
           data-trick={w?.trick ?? ''}
           data-played={w ? `${w.played.suit}${w.played.rank}` : ''}
           data-best={w ? `${w.best.suit}${w.best.rank}` : ''}
+          data-differs={differs.length}
           {...stylex.props(styles.review)}
         >
           <p {...stylex.props(typography.note, styles.reviewLine)}>
             <Rich text={w ? m.daily_review_card({ trick: w.trick, played: cardLabel(w.played), best: cardLabel(w.best) }) : m.daily_review_clean()} />
           </p>
-          {w ? (
-            got.text ? (
-              <p data-testid="daily-review-text" {...stylex.props(typography.note, styles.reviewText)}>
-                <span {...stylex.props(typography.smallBold, styles.reviewLabel)}>{m.daily_review_ai()}</span> {got.text}
-              </p>
-            ) : (
-              <p {...stylex.props(typography.note, styles.muted)}>{m.daily_review_no_text()}</p>
-            )
-          ) : null}
+          {w ? <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_review_marks()}</p> : null}
         </div>
       ) : state === 'loading' ? (
         <p data-testid="daily-review-loading" {...stylex.props(typography.loading, styles.muted)}>{m.daily_review_loading()}</p>
       ) : (
         <div {...stylex.props(styles.reviewAsk)}>
           {/* The hint's blue, so it is seen beside the green way on (the human: 「用更明显的颜色，我怕人不点」). */}
-          <Btn testId="daily-review" tone="info" size="md" onClick={() => void explain()}>{m.daily_review()}</Btn>
+          <Btn testId="daily-review" tone="info" size="md" onClick={() => void reveal()}>{m.daily_review()}</Btn>
           {state === 'failed' ? <p role="alert" {...stylex.props(typography.note, styles.muted)}>{m.daily_review_failed()}</p> : null}
         </div>
       )}
-      {shown ? (
-        <TrickReplay tricks={shown.tricks} names={names ?? youNames()} skat={shown.skat} hand={shown.hand} highlight={w?.trick ?? null} early={shown.early} />
+      {record ? (
+        <TrickReplay tricks={record.tricks} names={names ?? youNames()} skat={record.skat} hand={record.hand} differs={differs} early={record.early} />
       ) : (
         <p {...stylex.props(typography.note, styles.muted)}>{unavailable ? m.daily_review_failed() : m.loading()}</p>
       )}
@@ -460,19 +472,21 @@ const styles = stylex.create({
   replayTable: { width: '100%', borderCollapse: 'collapse', color: color.navy },
   replayHead: { paddingBottom: space.x4, textAlign: 'start', color: color.slate },
   replayRow: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
-  // The trick of the move most worth improving: the row the explanation talks about, on the app's pink
-  // (the human: 「那一行标红背景，就是本app常用那种粉红的背景」).
+  // The trick of the move most worth improving, on the app's pink (the human: 「那一行标红背景，就是本app常用
+  // 那种粉红的背景」).
   replayMarked: { backgroundColor: color.badSoft },
   replayCell: { paddingBlock: space.x4, paddingInlineEnd: space.x6, verticalAlign: 'top' },
   replayName: { display: 'block' },
   replayCard: { display: 'block', color: color.navy },
+  // The AI's card under the player's, tagged as the score sheet tags its line.
+  replayAi: { display: 'flex', alignItems: 'center', gap: space.x4, marginTop: space.x2, color: color.navy, whiteSpace: 'nowrap' },
+  // The hand before the trick, quiet under its row.
+  replayHand: { paddingBottom: space.x6, color: color.navy, overflowWrap: 'anywhere' },
   whoTag: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.onColor },
   whoYou: { backgroundColor: color.navy },
   whoAi: { backgroundColor: color.tileOrange },
   review: { display: 'flex', flexDirection: 'column', gap: space.x6, padding: space.x10, borderRadius: radii.column, backgroundColor: color.page },
   reviewLine: { margin: 0, color: color.navy },
-  reviewText: { margin: 0, color: color.text },
-  reviewLabel: { color: color.navy },
   reviewAsk: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: space.x6 },
   table: { display: 'flex', flexDirection: 'column', color: color.navy },
   // Deal, you, the AI, the difference: the same columns in the header, every row and the total.

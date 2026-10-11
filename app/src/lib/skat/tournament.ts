@@ -194,13 +194,13 @@ export function saldo(scores: readonly [number, number, number], seat: Seat = PL
   return 3 * scores[seat] - (scores[0] + scores[1] + scores[2])
 }
 
-/** The card a player gave away most in a finished deal (SKATGO-79): at each of their plays SkatZero
- *  values every legal card, and this is the play whose card fell furthest below the best one. `table` is
- *  the trick as it stood; `trick` counts from 1. */
-export type WorstCard = { trick: number; hand: Card[]; table: Played[]; played: Card; best: Card; loss: number }
+/** A card the player played where SkatZero would have played another (SKATGO-79): at each of their plays
+ *  SkatZero values every legal card, and this is one whose card fell below the best one. `trick` counts
+ *  from 1; `loss` is how far below, in SkatZero's own values. */
+export type Differ = { trick: number; played: Card; best: Card; loss: number }
 
 /** What the review of one finished deal works from: the deal as the player played it, the AI's in the
- *  same seat, and the worst card — null when every card was SkatZero's own choice. */
+ *  same seat, and where the player's cards were not the AI's. */
 export type DealReview = {
   deal: number
   bid: number
@@ -208,15 +208,12 @@ export type DealReview = {
   ai: DealSummary | null
   auction: Auction
   aiAuction: Auction | null
-  worst: WorstCard | null
-  /** How the player's cards compare with SkatZero's (SKATGO-79, the human: no threshold — 「通过10墩排序的方式，选出最差的」):
-   *  the plays they had a choice in, those where they played SkatZero's own card, and the tricks of the
-   *  others, the furthest from SkatZero's first. */
-  choices: number
-  agreed: number
-  differs: number[]
+  /** Every play where the player's card was not SkatZero's, the furthest below its best first — the first is
+   *  the move most worth improving (the human: no threshold, 「通过10墩排序的方式，选出最差的」); empty
+   *  when every card was SkatZero's own choice. */
+  differs: Differ[]
   /** The deal trick by trick as it was played — the tricks claimed or given up (`early`) left out — and
-   *  the skat, for the replay the worst card is read against. */
+   *  the skat, for the replay the AI's cards are read against. */
   tricks: Game['tricks']
   skat: Card[]
   early: Game['early'] | null

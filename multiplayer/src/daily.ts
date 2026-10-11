@@ -430,7 +430,7 @@ export async function dailyBoard(store: Store, who: string | null, size: DailySi
 /**
  * The review of one deal the player has finished (SKATGO-79): the deal replayed from their recorded moves,
  * and at each card they played with a choice, every legal card valued by SkatZero as it weighs its own
- * choice; the worst card is the one furthest below the best. Only the player's own hand and the trick as
+ * choice; where theirs was not the best, the furthest below it first. Only the player's own hand and the trick as
  * it stood go into it — nothing they could not see — with the deal's result beside the AI's.
  */
 export async function dailyReview(store: Store, policy: Policy, who: string, size: DailySize, index: number, now = Date.now()): Promise<DealReview> {

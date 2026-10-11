@@ -1,6 +1,5 @@
 import type { Move } from '~/lib/skat/game'
 import type { DealReview, SeatView } from '~/lib/skat/tournament'
-import { getLocale } from '~/paraglide/runtime'
 
 // The browser's side of free play on the server (SKATGO-40): two requests to /api/free
 // (lib/free-handler.ts). The game is the token the server hands back; it lives in the page's memory.
@@ -54,11 +53,11 @@ export function takeCarriedGame(): string | null {
   return token || null
 }
 
-/** A finished game's worst card and replay (SKATGO-79); `text` is null when the explanation is not available. */
-export async function freeReview(token: string): Promise<{ review: DealReview; text: string | null } | FreeError> {
+/** A finished game trick by trick, with SkatZero's card wherever the player's was not (SKATGO-79). */
+export async function freeReview(token: string): Promise<DealReview | FreeError> {
   try {
-    const res = await fetch('/api/free/review', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, locale: getLocale() }) })
-    const data = (await res.json()) as { review: DealReview; text: string | null } | FreeError
+    const res = await fetch('/api/free/review', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token }) })
+    const data = (await res.json()) as DealReview | FreeError
     return res.ok ? data : { error: 'error' in data ? data.error : 'unavailable' }
   } catch {
     return { error: 'unavailable' }

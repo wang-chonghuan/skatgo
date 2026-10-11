@@ -1,6 +1,5 @@
 import type { Move } from '~/lib/skat/game'
 import type { DailyBoard, DailyReply, DailySize, DealReview } from '~/lib/skat/tournament'
-import { getLocale } from '~/paraglide/runtime'
 
 // The browser's side of the daily tournament (SKATGO-35, SKATGO-36): its requests to /api/daily
 // (lib/daily-handler.ts). Who is playing travels in the session or the tournament's own cookie, never
@@ -32,9 +31,7 @@ export const dailyName = (size: DailySize, nickname: string) => post<{ nickname:
 /** Today's leaderboard, or yesterday's final one. */
 export const dailyBoard = (size: DailySize, day: 'today' | 'yesterday') => post<DailyBoard>('board', { size, day })
 
-/** A finished deal trick by trick and its worst card (SKATGO-79); with `explain`, also why — `text` is null
- *  when the explanation is not available. Without it the model is not asked. */
-export const dailyReview = (size: DailySize, deal: number, explain = true) =>
-  post<{ review: DealReview; text: string | null; limited?: boolean }>('review', { size, deal, explain, locale: getLocale() })
+/** A finished deal trick by trick, with SkatZero's card wherever the player's was not (SKATGO-79). */
+export const dailyReview = (size: DailySize, deal: number) => post<DealReview>('review', { size, deal })
 
 export const isError = <T extends object>(r: T | DailyError): r is DailyError => 'error' in r

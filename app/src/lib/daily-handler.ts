@@ -1,13 +1,10 @@
-import { isLocale } from '~/lib/ask/context'
-import { admit } from '~/lib/ask/limits'
-import { explainReview } from '~/lib/daily-review'
 import { signedInUser } from '~/lib/session'
-import type { DealReview } from '~/lib/skat/tournament'
 
 // POST /api/daily/state, /act, /name, /board and /review — the daily tournament's only way in from the
 // browser (SKATGO-35, SKATGO-36: a finished player's nickname, and the leaderboard; SKATGO-79: a finished
-// deal's worst card, which the service finds, explained here by the assistant's model). The tournament itself runs in the multiplayer service, which owns the cards and the
-// scores; this handler only says who is playing and passes the request on with the service's key.
+// deal's replay with SkatZero's card wherever the player's was not). The tournament itself runs in the
+// multiplayer service, which owns the cards and the scores; this handler only says who is playing and
+// passes the request on with the service's key.
 //
 // Who is playing: the signed-in account, or else this device — a random id in an httpOnly cookie,
 // stored at the service only as its hash. The cookie is strictly necessary and nothing else: it is
@@ -70,7 +67,6 @@ export async function handleDaily(request: Request): Promise<Response> {
 
   try {
     if (userId && known && (op === 'state' || op === 'board')) await call('claim', { from: anon, to: `user:${userId}` })
-    if (op === 'review') return await review(call, body as { locale?: unknown }, player!)
     const upstream = await call(op, { ...body, player })
     const headers: Record<string, string> = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
     // A guest without the cookie who only looks is a stranger the service has never seen: "not
@@ -82,19 +78,4 @@ export async function handleDaily(request: Request): Promise<Response> {
   } catch {
     return json(503, { error: 'unavailable' })
   }
-}
-
-/** A finished deal's review (SKATGO-79): the deal trick by trick and its worst card from the service,
- *  and — when `explain` is not false — a few sentences on that card from the assistant's model in the
- *  page's language, counted against the same per-visitor and daily limits as the assistant. Without the
- *  sentences (not asked for, limited, or the model unavailable) the card is still shown. */
-async function review(call: (path: string, payload: object) => Promise<Response>, body: { locale?: unknown; explain?: unknown }, player: string): Promise<Response> {
-  const { locale, explain, ...rest } = body
-  const upstream = await call('review', { ...rest, player })
-  if (!upstream.ok) return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
-  const found = (await upstream.json()) as DealReview
-  if (!found.worst || explain === false) return json(200, { review: found, text: null })
-  const limited = admit(player) !== null
-  const text = limited ? null : await explainReview(found, isLocale(locale) ? locale : 'de')
-  return json(200, { review: found, text, limited })
 }

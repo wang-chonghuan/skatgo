@@ -163,7 +163,8 @@ export function freeRoutes(admissionKey: string, ready: () => boolean, policy: (
     const g = replayLog(d.dealer, deckOf(d.deck), t.log)
     return { token: i.token, steps: [seatView(g)], revision: t.log.length, computer: p.version }
   }))
-  // A finished game's worst card and replay (SKATGO-79), from the game's own token: nothing is stored.
+  // A finished game's replay and where SkatZero would have played another card (SKATGO-79), from the
+  // game's own token: nothing is stored.
   router.post('/review', run(async (body) => {
     const i = tokenInput.parse(body)
     const { p, t } = opened(i.token)

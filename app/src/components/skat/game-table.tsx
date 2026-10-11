@@ -47,7 +47,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { DealAnalysis, DealVsAi, type Reviewed, dailyAsk, gameLine, signed } from './daily-comparison'
+import { type AskReview, DealAnalysis, DealVsAi, dailyAsk, gameLine, signed } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
@@ -123,8 +123,8 @@ type DailyAfter = { compare: ReactNode; analysis: ReactNode; day: ReactNode }
 export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'> & {
   /** The server could not be reached or refused: said plainly, with a way on (SKATGO-40 Q6). */
   problem?: { text: string; retry?: () => void; fresh: () => void } | null
-  /** Free play's review of the finished game (SKATGO-79): its worst card and replay. */
-  review?: () => Promise<Reviewed | { error: string }>
+  /** Free play's review of the finished game (SKATGO-79): its replay, and where the AI would have played another card. */
+  review?: AskReview
 }
 
 /** A private table (SKATGO-61): the room's deal turned so the viewer is seat 0, the people's
@@ -725,7 +725,7 @@ function ActionsFor({
   /** At a private table: the deal's scores and the running totals, shown once it is over. */
   roomAfter?: ReactNode
   /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
-  freeReview?: () => Promise<Reviewed | { error: string }>
+  freeReview?: AskReview
 }) {
   return (
     <Actions
@@ -929,7 +929,7 @@ type ActionsProps = {
   daily?: DailyAfter | null
   roomAfter?: ReactNode
   /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
-  freeReview?: () => Promise<Reviewed | { error: string }>
+  freeReview?: AskReview
 }
 
 function Actions(p: ActionsProps) {
@@ -1119,7 +1119,7 @@ function DeclarePicker({
   )
 }
 
-function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null; roomAfter?: ReactNode; freeReview?: () => Promise<Reviewed | { error: string }> }) {
+function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null; roomAfter?: ReactNode; freeReview?: AskReview }) {
   const nameOf = useNameOf()
   const named = useContext(Names) !== null
   const r = game.result!
@@ -1197,7 +1197,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
         </div>
       ) : freeReview ? (
         // Free play (SKATGO-79): what the game was and who wrote what, the way on, then the play record
-        // with the turning point, the skat and the sum.
+        // with the AI's cards on request, the skat and the sum.
         <>
           <Panel tone={humanWon ? 'good' : 'bad'}>
             <div {...stylex.props(styles.resultBody)}>
@@ -1216,7 +1216,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
             testId="free-play-record"
             deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null, hand: startHand(game) }}
             names={[nameOf(0), nameOf(1), nameOf(2)]}
-            ask={() => freeReview()}
+            ask={freeReview}
             footer={<p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>}
           />
         </>

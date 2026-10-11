@@ -466,8 +466,6 @@
   "daily_unavailable": "Today's tournament can't be reached right now. Try again in a moment.",
   "daily_retry": "Try again",
   "daily_points": "Points",
-  "daily_saldo": "Saldo",
-  "daily_saldo_note": "Saldo = (seat − Lina) + (seat − Noah): how far that seat is ahead of both opponents.",
   "daily_after": "After {n} of {of} deals: points {you} · AI {ai}",
   "daily_after_solo": "After {n} of {of} deals: points {you}",
   "daily_review_card": "Trick {trick}: you played {played} — {best} was better.",

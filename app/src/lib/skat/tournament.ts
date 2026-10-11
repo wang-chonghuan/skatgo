@@ -191,13 +191,6 @@ export function totals(deals: DealSummary[]): [number, number, number] {
   return deals.reduce<[number, number, number]>((t, d) => [t[0] + d.scores[0], t[1] + d.scores[1], t[2] + d.scores[2]], [0, 0, 0])
 }
 
-/** How far a seat is ahead of the other two (SKATGO-79, the human: 「能看出我比对手强多少」): its
- *  score less each other seat's, added — (own − one) + (own − other). 0 when all three are level; the
- *  three seats' Saldo add up to 0. Of one deal's scores, or of a tournament's totals. */
-export function saldo(scores: readonly [number, number, number], seat: Seat = PLAYER): number {
-  return 3 * scores[seat] - (scores[0] + scores[1] + scores[2])
-}
-
 /** A card the player played where SkatZero would have played another (SKATGO-79): at each of their plays
  *  SkatZero values every legal card, and this is one whose card fell below the best one. `trick` counts
  *  from 1; `loss` is how far below, in SkatZero's own values. */
@@ -257,8 +250,8 @@ export type DailyReply = {
   revision: number
 }
 
-/** One row of a day's leaderboard (SKATGO-36): a nickname, its Saldo — what ranks it since SKATGO-79 —
- *  and its own total, never who is behind it. */
+/** One row of a day's leaderboard (SKATGO-36): a nickname and its Seeger-Fabian total, which ranks it
+ *  (SKATGO-81), never who is behind it. */
 export type BoardRow = { rank: number; nickname: string; total: number; me: boolean }
 
 /** A day's leaderboard, and where the asking player stands on it. */

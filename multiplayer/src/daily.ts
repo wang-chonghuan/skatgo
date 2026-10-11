@@ -393,7 +393,7 @@ const BOARD_ROWS = 100
  * A tournament's leaderboard for a day (SKATGO-36, one per size since SKATGO-77; today or one of the six
  * days before, SKATGO-80): the finished entries
  * that have a nickname, by their Seeger-Fabian total, the standard German players know (SKATGO-81, the
- * human: 「按他们习惯的标准来」; SKATGO-79's Saldo stays only in the score sheet); equal totals share a rank
+ * human: 「按他们习惯的标准来」; SKATGO-79's Saldo is gone); equal totals share a rank
  * and the next rank skips (1, 1, 3), the earlier finish listed first. Only nicknames and totals leave here —
  * never a player id. For the asking player: their own standing (a finished player without a nickname
  * sees the rank they would have), and the nickname they last used on an earlier day. `ai` (SKATGO-80): the

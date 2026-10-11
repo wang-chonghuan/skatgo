@@ -466,8 +466,6 @@
   "daily_unavailable": "Das Turnier von heute ist gerade nicht erreichbar. Versuch es gleich noch einmal.",
   "daily_retry": "Nochmal versuchen",
   "daily_points": "Punkte",
-  "daily_saldo": "Saldo",
-  "daily_saldo_note": "Saldo = (Platz − Lina) + (Platz − Noah): wie weit dieser Platz den beiden Gegnern voraus ist.",
   "daily_after": "Nach {n} von {of} Spielen: Punkte {you} · AI {ai}",
   "daily_after_solo": "Nach {n} von {of} Spielen: Punkte {you}",
   "daily_review_card": "{trick}. Stich: Du hast {played} gespielt – besser war {best}.",

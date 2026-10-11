@@ -6,7 +6,7 @@ import { dailyReview } from '~/lib/daily-api'
 import { type Card, pointsOf, sameCard } from '~/lib/skat/cards'
 import type { Game } from '~/lib/skat/game'
 import { cardLabel, contractName } from '~/lib/skat/i18n'
-import { type DailyStatus, type DealReview, type DealSummary, type Differ, PLAYER, dailySize, saldo, totals } from '~/lib/skat/tournament'
+import { type DailyStatus, type DealReview, type DealSummary, type Differ, PLAYER, dailySize, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -22,9 +22,8 @@ import { Panel, Rich } from './ui'
 // was dealt, and shown only once the player has finished that deal.
 //
 // Since SKATGO-79 every comparison is a score sheet: all three seats' Seeger-Fabian scores, the player's
-// deal over the AI's, and each side's Saldo — how far that seat is ahead of the two opponents — beside
-// them for reference. What is compared and ranked is the player's own Seeger-Fabian score, the standard
-// German players know (SKATGO-81, the human: 「按他们习惯的标准来」). The player is navy and the AI the
+// deal over the AI's. What is compared and ranked is the player's own Seeger-Fabian score, the standard
+// German players know (SKATGO-81, the human: 「按他们习惯的标准来」, and of Saldo: 「saldo都移除吧」). The player is navy and the AI the
 // app's blue, its one "AI" tag wherever the AI is named (SKATGO-80, the human: 「AI标志都用app里那个蓝色的
 // Ai标志」), so the two lines are told apart at a glance; neither colour judges. A day's row gives both
 // scores and opens to its sheet; the rows fold so the table fits a phone without scrolling sideways.
@@ -85,50 +84,38 @@ export function Who({ side }: { side: Side }) {
 
 /**
  * A score sheet (SKATGO-79): the three seats' Seeger-Fabian scores — of one deal, or a tournament's totals
- * — the player's line over the AI's, the player's own seat marked, with each line's Saldo last for reference
- * (SKATGO-81: the scores themselves are what is ranked). `lines` puts what the deal was under each row;
- * what Saldo means opens from its heading.
- * The AI's line is missing on days dealt before it played them.
+ * — the player's line over the AI's, the player's own seat marked. `lines` puts what the deal was under
+ * each row. The AI's line is missing on days dealt before it played them.
  */
 export function ScoreSheet({ mine, ai, lines, testId }: { mine: Scores; ai: Scores | null; lines?: { you: string; ai: string | null }; testId: string }) {
-  const [why, setWhy] = useState(false)
   const seats = [m.daily_col_seat(), m.name_lina(), m.name_max()]
   const rows: [Side, Scores, string | null][] = [['you', mine, lines?.you ?? null], ...(ai ? [['ai', ai, lines?.ai ?? null] as [Side, Scores, string | null]] : [])]
   return (
-    <div {...stylex.props(styles.sheet)}>
-      <table data-testid={testId} {...stylex.props(styles.scores)}>
+    <table data-testid={testId} {...stylex.props(styles.scores)}>
         <thead>
           <tr>
             <td />
             {seats.map((name, seat) => (
               <th key={name} scope="col" {...stylex.props(typography.small, styles.scoreHead, seat === PLAYER && styles.own)}>{name}</th>
             ))}
-            <th scope="col" {...stylex.props(styles.scoreHead, styles.saldo)}>
-              <button type="button" aria-expanded={why} data-testid="daily-saldo-why" onClick={() => setWhy((w) => !w)} {...stylex.props(typography.smallBold, styles.saldoWhy)}>
-                {m.daily_saldo()} ?
-              </button>
-            </th>
           </tr>
         </thead>
         {rows.map(([side, scores, line]) => (
-          <tbody key={side} data-row={side} data-scores={scores.join(',')} data-saldo={saldo(scores)}>
+          <tbody key={side} data-row={side} data-scores={scores.join(',')}>
             <tr>
               <th scope="row" {...stylex.props(styles.scoreLabel)}><Who side={side} /></th>
               {scores.map((v, seat) => (
                 <td key={seat} data-seat={seat} {...stylex.props(typography.appBtnStrong, styles.scoreCell, seat === PLAYER && styles.own)}>{signed(v)}</td>
               ))}
-              <td data-testid="daily-saldo" {...stylex.props(typography.appBtnStrong, styles.scoreCell, styles.saldo)}>{signed(saldo(scores))}</td>
             </tr>
             {line ? (
               <tr>
-                <td colSpan={seats.length + 2} data-testid="daily-game-line" {...stylex.props(typography.micro, styles.gameLine)}><Rich text={line} /></td>
+                <td colSpan={seats.length + 1} data-testid="daily-game-line" {...stylex.props(typography.micro, styles.gameLine)}><Rich text={line} /></td>
               </tr>
             ) : null}
           </tbody>
         ))}
-      </table>
-      {why ? <p data-testid="daily-saldo-note" {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_saldo_note()}</p> : null}
-    </div>
+    </table>
   )
 }
 
@@ -283,7 +270,7 @@ function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
 
 /**
  * One deal, the player against the AI (SKATGO-57, a score sheet since SKATGO-79): the three seats' scores
- * in the player's deal over the AI's, each with its Saldo and, under it, what the deal was. What happened
+ * in the player's deal over the AI's, and under each what the deal was. What happened
  * trick by trick is the analysis beside it (`DealAnalysis`).
  */
 export function DealVsAi({ mine, ai }: { mine: DealSummary; ai: DealSummary | null }) {
@@ -292,8 +279,6 @@ export function DealVsAi({ mine, ai }: { mine: DealSummary; ai: DealSummary | nu
       data-testid="daily-deal-vs-ai"
       data-you={mine.scores[PLAYER]}
       data-ai={ai ? ai.scores[PLAYER] : ''}
-      data-saldo-you={saldo(mine.scores)}
-      data-saldo-ai={ai ? saldo(ai.scores) : ''}
       {...stylex.props(styles.deal)}
     >
       <ScoreSheet testId="daily-deal-scores" mine={mine.scores} ai={ai ? ai.scores : null} lines={{ you: gameLine(mine, youNames()), ai: ai ? gameLine(ai, aiNames()) : null }} />
@@ -421,33 +406,16 @@ const styles = stylex.create({
   day: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   dayTitle: { margin: 0, color: color.navy },
   deal: { display: 'flex', flexDirection: 'column', gap: space.x12, color: color.navy },
-  // All three seats, the player's deal over the AI's, the difference under them.
+  // All three seats, the player's deal over the AI's.
   scores: { width: '100%', borderCollapse: 'collapse', color: color.navy },
   scoreHead: { paddingBottom: space.x4, textAlign: 'center', color: color.slate },
   scoreLabel: { paddingInlineEnd: space.x8, textAlign: 'start', color: color.slate, whiteSpace: 'nowrap' },
   scoreCell: { paddingBlock: space.x4, textAlign: 'center' },
   // The player's seat is the one the comparison is about.
   own: { backgroundColor: color.page },
-  // Saldo, set off from the seats: a reference beside them, no larger than they are (SKATGO-81).
-  saldo: { paddingInlineStart: space.x8, borderInlineStartWidth: border.hair, borderInlineStartStyle: 'solid', borderInlineStartColor: color.hairline, textAlign: 'end' },
-  sheet: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   sheetNote: { margin: 0 },
   // What the deal was, under its row: quiet, one line, never wider than the sheet.
   gameLine: { paddingBottom: space.x6, color: color.slate, overflowWrap: 'anywhere' },
-  // The Saldo heading opens what Saldo means.
-  saldoWhy: {
-    padding: 0,
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    color: color.slate,
-    textDecorationLine: 'underline',
-    textDecorationStyle: 'dotted',
-    cursor: 'pointer',
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.info,
-    outlineOffset: border.focusOffset,
-  },
   analysis: { display: 'flex', flexDirection: 'column', gap: space.x10 },
   record: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x8, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   recordTitle: { margin: 0, color: color.navy },

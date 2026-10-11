@@ -25,12 +25,12 @@ leaderboard per day, which can be looked at for seven days, today's included (SK
 「要保留显示最近7天的」), ranked by that total; every entry stands by its own. The AI stands on it too, for
 everyone, today's board included: its total over the tournament from the player's seat, among the
 players', after any player with the same, taking no rank — its total only, never a deal (SKATGO-80, the
-human: 「都显示，只在leader board上显示总成绩即可」). **Saldo** — (the seat − Lina) + (the seat − Noah), how
-far a seat is ahead of the table (SKATGO-79) — stays in the score sheets as a reference.
+human: 「都显示，只在leader board上显示总成绩即可」). There is no other measure beside it (SKATGO-81, the human:
+「saldo都移除吧」).
 
 After each deal the player sees how the computer, named "AI", played the same deal from their seat
-(SKATGO-42): a score sheet of all three seats' scores, the player's deal over the AI's, each with its
-Saldo for reference and a line saying what the deal was — declarer, game and bid, won or lost with the card points,
+(SKATGO-42): a score sheet of all three seats' scores, the player's deal over the AI's, each with a
+line saying what the deal was — declarer, game and bid, won or lost with the card points,
 Schneider, Schwarz or overbid; then the tournament so far in one line; then the deal's play record
 ("Spielverlauf", SKATGO-79). The play record is open, never folded: trick by trick, who played which card
 in order and who took it with how many card points, and under every trick the player's hand before it.

@@ -15,9 +15,11 @@ export const LIMITS = {
   messages: 6,
   /** Tokens the model may spend on one answer. */
   answerTokens: 700,
-  /** Tokens for a deal's review (SKATGO-79): its reasoning counts against the cap, and at 700 a longer
-   *  deal sometimes left no room for the answer. */
-  reviewTokens: 2000,
+  /** Tokens for a deal's review (SKATGO-79): it reasons at high effort, and the reasoning counts against
+   *  the cap — a tight cap leaves no room for the answer. */
+  reviewTokens: 16000,
+  /** How long a deal's review may take: high effort thinks longer than the assistant's medium. */
+  reviewTimeoutMs: 90_000,
   /** How long one call to the model may take. */
   timeoutMs: 30_000,
 } as const

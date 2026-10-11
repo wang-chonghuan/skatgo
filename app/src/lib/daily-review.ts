@@ -7,8 +7,8 @@ import { m } from '~/paraglide/messages'
 import type { Locale } from '~/paraglide/runtime'
 
 // The words of a deal's review (SKATGO-79): the multiplayer service finds the player's worst card with
-// SkatZero; this asks the assistant's model (`gpt-5.6-luna`, medium — the human's choice) for two or three
-// sentences on why it was worse than SkatZero's card. The model never decides which card was worst, and it
+// SkatZero; this asks the assistant's model, `gpt-5.6-luna` at high effort (the human: 「还是用high吧」; the
+// assistant itself stays at medium), for two or three sentences on why it was worse than SkatZero's card. The model never decides which card was worst, and it
 // is not left to work the trick out: the rules engine gives it the few facts that decide a card's worth —
 // who holds the trick and who is still to play, the higher cards of the same suit still out, whether the
 // kept card would rule its suit, how the trick went — and no more (the human, after trying the whole game at
@@ -206,8 +206,8 @@ function resultWords(d: DealSummary, locale: Locale): string {
 export async function explainReview(r: DealReview, locale: Locale): Promise<string | null> {
   const prompt = reviewPrompt(r, locale)
   if (!prompt) return null
-  const signal = AbortSignal.timeout(LIMITS.timeoutMs)
-  const stream = await openModelStream(prompt.system, prompt.messages, signal, LIMITS.reviewTokens)
+  const signal = AbortSignal.timeout(LIMITS.reviewTimeoutMs)
+  const stream = await openModelStream(prompt.system, prompt.messages, signal, LIMITS.reviewTokens, 'high')
   if (!stream.ok) return null
   let text = ''
   try {

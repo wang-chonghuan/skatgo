@@ -23,9 +23,9 @@ import { Panel, Rich } from './ui'
 //
 // Since SKATGO-79 every comparison is a score sheet: all three seats' Seeger-Fabian scores, the player's
 // deal over the AI's, and each side's Saldo — how far that seat is ahead of the two opponents — because a
-// seat's own score says nothing about how it did against the table. The player is navy and the AI orange,
-// two of the theme's own colours (the human: 「当前的主题色就是：橙色，红色，海军蓝，绿色」), so the two
-// lines are told apart at a glance; neither colour judges. A day's row gives both Saldo and opens to its
+// seat's own score says nothing about how it did against the table. The player is navy and the AI the
+// app's blue, its one "AI" tag wherever the AI is named (SKATGO-80, the human: 「AI标志都用app里那个蓝色的
+// Ai标志」), so the two lines are told apart at a glance; neither colour judges. A day's row gives both Saldo and opens to its
 // sheet; the rows fold so the table fits a phone without scrolling sideways.
 
 export const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
@@ -72,8 +72,8 @@ export function gameLine(d: DealSummary, names: string[]): string {
 type Scores = readonly [number, number, number]
 type Side = 'you' | 'ai'
 
-/** Whose line it is: the player in navy, the AI in orange (SKATGO-79); also the AI's row on the
- *  leaderboard (SKATGO-80). */
+/** Whose line it is: the player in navy, the AI in the app's blue (SKATGO-79, SKATGO-80) — the one tag
+ *  for the AI in a score sheet, the play record and on the leaderboard. */
 export function Who({ side }: { side: Side }) {
   return (
     <span data-who={side} {...stylex.props(typography.badge, styles.whoTag, side === 'you' ? styles.whoYou : styles.whoAi)}>
@@ -171,7 +171,7 @@ export function TrickReplay({ tricks, names, skat, hand, differs = null, early =
                     {p.seat === PLAYER && best ? (
                       <span data-testid="daily-replay-ai" data-card={`${best.suit}${best.rank}`} {...stylex.props(typography.small, styles.replayAi)}>
                         <Rich text={cardLabel(best)} />
-                        <span {...stylex.props(typography.badge, styles.whoTag, styles.whoHint)}>{m.daily_ai()}</span>
+                        <Who side="ai" />
                       </span>
                     ) : null}
                   </td>
@@ -465,9 +465,7 @@ const styles = stylex.create({
   replayHand: { paddingBottom: space.x6, color: color.navy, overflowWrap: 'anywhere' },
   whoTag: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.onColor },
   whoYou: { backgroundColor: color.navy },
-  whoAi: { backgroundColor: color.tileOrange },
-  // The AI's card in the play record: the hint's blue (the human: 「橙色的AI标记，换成蓝色的」).
-  whoHint: { backgroundColor: color.info },
+  whoAi: { backgroundColor: color.info },
   review: { display: 'flex', flexDirection: 'column', gap: space.x6, padding: space.x10, borderRadius: radii.column, backgroundColor: color.page },
   reviewLine: { margin: 0, color: color.navy },
   table: { display: 'flex', flexDirection: 'column', color: color.navy },

@@ -19,18 +19,18 @@ player (SKATGO-62), shown first, and separately the same 12 deals for every play
 against two computer players, Lina and Noah, and scored by Seeger-Fabian; one entry per player per
 tournament per day; scores are the server's, from the cards actually played. A player who sees too many
 deals ahead does not start, so the short one leads (the human, 2026-10-10: 「用户看到太多，就不想打了」).
-A seat's own score says nothing about how it did against the table, so results are read by **Saldo**:
-(the seat − Lina) + (the seat − Noah), per deal and per tournament (SKATGO-79, the human: 「我的分数减去
-我的两个对手的分数」). Each tournament has a leaderboard per day, which can be looked at for seven days, today's included
-(SKATGO-80, the human: 「要保留显示最近7天的」), ranked by the tournament's Saldo; every entry,
-those from before SKATGO-79 included, stands by its own Saldo. The AI stands on it too, for everyone,
-today's board included: its Saldo over the tournament among the players', after any player with the
-same, taking no rank — its total only, never a deal (SKATGO-80, the human: 「都显示，只在leader board上
-显示总成绩即可」).
+Results are ranked and compared by the player's own Seeger-Fabian total, the standard German players
+know from their clubs and tournaments (SKATGO-81, the human: 「按他们习惯的标准来」). Each tournament has a
+leaderboard per day, which can be looked at for seven days, today's included (SKATGO-80, the human:
+「要保留显示最近7天的」), ranked by that total; every entry stands by its own. The AI stands on it too, for
+everyone, today's board included: its total over the tournament from the player's seat, among the
+players', after any player with the same, taking no rank — its total only, never a deal (SKATGO-80, the
+human: 「都显示，只在leader board上显示总成绩即可」). There is no other measure beside it (SKATGO-81, the human:
+「saldo都移除吧」).
 
 After each deal the player sees how the computer, named "AI", played the same deal from their seat
-(SKATGO-42): a score sheet of all three seats' scores, the player's deal over the AI's, each with its
-Saldo and a line saying what the deal was — declarer, game and bid, won or lost with the card points,
+(SKATGO-42): a score sheet of all three seats' scores, the player's deal over the AI's, each with a
+line saying what the deal was — declarer, game and bid, won or lost with the card points,
 Schneider, Schwarz or overbid; then the tournament so far in one line; then the deal's play record
 ("Spielverlauf", SKATGO-79). The play record is open, never folded: trick by trick, who played which card
 in order and who took it with how many card points, and under every trick the player's hand before it.
@@ -39,7 +39,7 @@ player's; the trick where the player's card fell furthest below SkatZero's choic
 up in one line on top — ranked, with no threshold (the human: 「通过10墩排序的方式，选出最差的」). It is the
 engine's record and SkatZero's choices only: no language model explains it (the human, 2026-10-11:
 「解读太麻烦了」). A deal all players passed has no play record. The tournament's page keeps a row per
-finished deal with the player's and the AI's Saldo, opening to that deal's score sheet and play
+finished deal with the player's and the AI's score, opening to that deal's score sheet and play
 record, and under the rows the score sheet of the whole tournament so far; the newest row opens after
 each deal and on the tournament's page mid-day (SKATGO-48). The page lists all of the chosen
 tournament's deals from the start (SKATGO-63): the finished ones in that comparison, the rest by number

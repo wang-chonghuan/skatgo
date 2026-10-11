@@ -17,7 +17,8 @@ export const SUMMARY_EN: RulesSummary = [
       {
         kind: 'list',
         items: [
-          'The four **Buben** (B, the Jacks of an international deck) are always the highest trumps: ♣B, ♠B, ♥B, ♦B. In a suit game the trump suit follows with A, 10, K, D, 9, 8, 7 – eleven trumps. In Grand only the Buben are trumps.',
+          '**B = J** (Bube = Jack) and **D = Q** (Dame = Queen); K and A are the same as in an international deck.',
+          'The four **Buben** are always the highest trumps: ♣B, ♠B, ♥B, ♦B. In a suit game the trump suit follows with A, 10, K, D, 9, 8, 7 – eleven trumps. In Grand only the Buben are trumps.',
           'Side suits run A, 10, K, D, 9, 8, 7. Null has no trumps, and every suit runs A, K, D, B, 10, 9, 8, 7.',
           'You must **follow** the suit led; trumps count as one suit, so a Bube follows trumps. If you cannot follow, you may trump or throw off. The highest trump wins the trick, otherwise the highest card of the suit led.',
         ],

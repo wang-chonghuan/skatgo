@@ -17,7 +17,19 @@ export const RULES_EN: RulesText = {
       blocks: [
         {
           kind: 'p',
-          text: 'Skat is played with **32 cards**: the four suits clubs ♣, spades ♠, hearts ♥ and diamonds ♦, each with Ace, 10, King, Dame, Bube, 9, 8 and 7. The **Bube (B)** is the Jack (J) of an international deck and the **Dame (D)** the Queen (Q); Skat tables call them Bube and Dame, as the tournament deck prints them. That is an ordinary French-suited deck without the 2s to 6s. Some regions use a German-suited deck (acorns, leaves, hearts and bells, with Ober and Unter for Dame and Bube); the rules are the same.',
+          text: 'Skat is played with **32 cards**: the four suits clubs ♣, spades ♠, hearts ♥ and diamonds ♦, each with Ace, 10, King, Dame, Bube, 9, 8 and 7.',
+        },
+        {
+          kind: 'p',
+          text: 'Skat tables, and the tournament deck used here, write two court cards with German letters. If you know the international (poker) deck, read them like this:',
+        },
+        {
+          kind: 'list',
+          items: [
+            '**B = J**: the **Bube** is the Jack. ♣B is the jack of clubs.',
+            '**D = Q**: the **Dame** is the Queen. ♠D is the queen of spades.',
+            '**K** (King) and **A** (Ace) are the same in both decks.',
+          ],
         },
         {
           kind: 'p',
@@ -89,7 +101,7 @@ export const RULES_EN: RulesText = {
       blocks: [
         {
           kind: 'p',
-          text: '**Suit games.** One suit is trumps. The four Buben are always the four highest trumps, in the order **♣B, ♠B, ♥B, ♦B**, followed by the Ace, 10, King, Dame, 9, 8 and 7 of the trump suit: **eleven trumps**. The other three suits keep seven cards each, ranked A, 10, K, D, 9, 8, 7.',
+          text: '**Suit games.** One suit is trumps. The four Buben are always the four highest trumps, in the order **♣B, ♠B, ♥B, ♦B** (the four Jacks), followed by the Ace, 10, King, Dame, 9, 8 and 7 of the trump suit: **eleven trumps**. The other three suits keep seven cards each, ranked A, 10, K, D, 9, 8, 7.',
         },
         {
           kind: 'p',

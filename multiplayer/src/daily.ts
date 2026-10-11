@@ -2,19 +2,19 @@ import { createHash, randomInt } from 'node:crypto'
 import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
-import { type Card, sameCard, shuffle } from '../../app/src/lib/skat/cards'
+import { type Card, shuffle } from '../../app/src/lib/skat/cards'
 import { chooseDeclaration, declarationAdvice } from '../../app/src/lib/skat/ai'
-import { actor, aiBid, collectTrick, deal, next, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
+import { actor, aiBid, deal, next, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import {
   DAILY_DEALS, DAILY_SIZES, DAILY_TIME_ZONE, PLAYER, auctionOf, saldo, seatView, summarize, totals, type DailySize, type DailyStatus,
-  type DealReview, type DealSummary, type WorstCard,
+  type DealReview, type DealSummary,
   type SeatView,
 } from '../../app/src/lib/skat/tournament'
 import { cleanNickname } from '../../app/src/lib/skat/nickname'
 import { actionSchema, applySeatMove, computerMove, Rejected, secretEquals, secureDeck } from './model'
 import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
 import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzero/bidding'
-import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, raw, replayLog, skatzeroTurn } from './computers'
+import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, playsOf, raw, replayLog, reviewOf, skatzeroTurn, worstCard } from './computers'
 import type { Store } from './store'
 
 // The daily tournament (SKATGO-35). Every day has one tournament per size — 6 deals and 12 (SKATGO-77) —
@@ -444,48 +444,26 @@ export async function dailyReview(store: Store, policy: Policy, who: string, siz
   const spec = (dealt[0].deals as DealSpec[])[index]
   const actions = e.actions[index] ?? []
   // Every card the player played, with the deal as it stood just before.
-  const plays: { g: Game; card: Card }[] = []
-  let g: Game
+  let plays: { g: Game; card: Card }[]
+  let end: Game
   if (dealt[0].computer === HEURISTIC) {
-    g = untilPlayer(deal(spec.dealer, spec.deck))
+    plays = []
+    end = untilPlayer(deal(spec.dealer, spec.deck))
     for (const move of actions as Move[]) {
-      if (move.type === 'play') plays.push({ g, card: move.card })
-      g = untilPlayer(applySeatMove(g, PLAYER, move))
+      if (move.type === 'play') plays.push({ g: end, card: move.card })
+      end = untilPlayer(applySeatMove(end, PLAYER, move))
     }
   } else {
-    g = deal(spec.dealer, spec.deck)
-    for (const { seat, move } of actions as Logged[]) {
-      if (g.phase === 'trickEnd') g = collectTrick(g)
-      if (seat === PLAYER && move.type === 'play') plays.push({ g, card: move.card })
-      g = applySeatMove(g, seat, move)
-    }
-  }
-  let worst: WorstCard | null = null
-  for (const { g: before, card } of plays) {
-    const ranked = await policy.ranked(viewOf(before, PLAYER))
-    if (ranked.length < 2) continue
-    const best = ranked.reduce((a, b) => (b.value > a.value ? b : a))
-    const played = ranked.find((r) => sameCard(r.card, card))
-    if (!played) continue
-    const loss = best.value - played.value
-    if (loss > 0 && (!worst || loss > worst.loss)) {
-      worst = { trick: before.tricks.length + 1, hand: before.hands[PLAYER], table: before.trick, played: card, best: best.card, loss }
-    }
+    plays = playsOf(spec.dealer, spec.deck, actions as Logged[])
+    end = replayLog(spec.dealer, spec.deck, actions as Logged[])
   }
   const b = spec.benchmark
-  const end = g.phase === 'trickEnd' ? collectTrick(g) : g
-  return {
+  return reviewOf(end, await worstCard(policy, plays), {
     deal: index,
-    bid: g.bid,
     mine: e.deals[index],
     ai: b?.summary ?? null,
-    auction: auctionOf(g),
     aiAuction: b ? auctionOf(replayLog(spec.dealer, spec.deck, b.log)) : null,
-    worst,
-    tricks: end.early ? end.tricks.slice(0, end.early.from) : end.tricks,
-    skat: end.skat,
-    early: end.early ?? null,
-  }
+  })
 }
 
 /** The routes, behind the admission key. */

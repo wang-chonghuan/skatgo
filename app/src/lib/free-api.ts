@@ -1,5 +1,6 @@
 import type { Move } from '~/lib/skat/game'
-import type { SeatView } from '~/lib/skat/tournament'
+import type { DealReview, SeatView } from '~/lib/skat/tournament'
+import { getLocale } from '~/paraglide/runtime'
 
 // The browser's side of free play on the server (SKATGO-40): two requests to /api/free
 // (lib/free-handler.ts). The game is the token the server hands back; it lives in the page's memory.
@@ -22,5 +23,16 @@ export const freeNew = () => post('new', {})
 
 /** One move in the game the token holds, quoting how many moves came before it. */
 export const freeAct = (token: string, revision: number, action: Move) => post('act', { token, revision, action })
+
+/** A finished game's worst card and replay (SKATGO-79); `text` is null when the explanation is not available. */
+export async function freeReview(token: string): Promise<{ review: DealReview; text: string | null } | FreeError> {
+  try {
+    const res = await fetch('/api/free/review', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, locale: getLocale() }) })
+    const data = (await res.json()) as { review: DealReview; text: string | null } | FreeError
+    return res.ok ? data : { error: 'error' in data ? data.error : 'unavailable' }
+  } catch {
+    return { error: 'unavailable' }
+  }
+}
 
 export const isFreeError = (r: FreeReply | FreeError): r is FreeError => 'error' in r

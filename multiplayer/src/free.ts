@@ -5,7 +5,7 @@ import express from 'express'
 import { z } from 'zod'
 import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, seatView } from '../../app/src/lib/skat/tournament'
-import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, replayLog } from './computers'
+import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, playsOf, replayLog, reviewOf, worstCard } from './computers'
 import { actionSchema, applySeatMove, Rejected, secretEquals } from './model'
 import { BIDS, type HandMode } from './skatzero/bidding'
 import type { Policy } from './skatzero/policy'
@@ -148,6 +148,20 @@ export function freeRoutes(admissionKey: string, ready: () => boolean, policy: (
     return reply(p, t.id, t.t, t.log, g, [g])
   }))
 
+  // A finished game's worst card and replay (SKATGO-79), from the game's own token: nothing is stored.
+  const reviewInput = z.object({ token: z.string().max(20_000) }).strict()
+  router.post('/review', run(async (body) => {
+    const i = reviewInput.parse(body)
+    const p = pool()!
+    const t = open(key, i.token)
+    if (t.v !== 1 || t.pool !== p.version || !(t.id >= 0 && t.id < p.deals.length)) throw new Rejected('game_expired')
+    if (Date.now() - t.t > TOKEN_MS) throw new Rejected('game_expired')
+    const d = p.deals[t.id]
+    const deck = deckOf(d.deck)
+    const end = replayLog(d.dealer, deck, t.log)
+    if (end.phase !== 'done') throw new Rejected('not_finished')
+    return reviewOf(end, await worstCard(policy()!, playsOf(d.dealer, deck, t.log)))
+  }))
   router.use((_err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     res.status(400).json({ error: 'invalid_request' })
   })

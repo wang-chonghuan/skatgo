@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { type GameMode, track } from '~/lib/analytics'
-import { type FreeError, freeAct, freeNew, isFreeError } from '~/lib/free-api'
+import { type FreeError, freeAct, freeNew, freeReview, isFreeError } from '~/lib/free-api'
 import type { Move } from '~/lib/skat/game'
 import { type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -116,6 +116,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         collect: () => setRelease(true),
         next: () => void start(),
         problem: failure ? { text: failure.text, retry: failure.retry, fresh: () => void start() } : null,
+        // Free play's finished game, reviewed on request from its own token (SKATGO-79); not lesson 11.
+        review: mode === 'free' && token ? () => freeReview(token) : undefined,
       }}
     />
   )

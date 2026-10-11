@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
-import { dailyReview, isError } from '~/lib/daily-api'
+import { dailyReview } from '~/lib/daily-api'
 import { type Card, pointsOf } from '~/lib/skat/cards'
 import type { Game } from '~/lib/skat/game'
 import { cardLabel, contractName } from '~/lib/skat/i18n'
@@ -165,23 +165,32 @@ export function TrickReplay({ tricks, names, skat, highlight = null, early = nul
 /** Where a finished deal's review is asked for: the tournament and the deal, on the day it was played. */
 export type ReviewOf = { size: number; deal: number; day: string }
 
+/** A review as it comes back: the worst card and the replay, and the model's sentences when it had them. */
+export type Reviewed = { review: DealReview; text: string | null }
+
 /** Reviews already fetched on this page, so reopening a deal does not ask again. */
-const reviewed = new Map<string, { review: DealReview; text: string | null }>()
+const reviewed = new Map<string, Reviewed>()
+
+/** A finished deal of today's tournament, reviewed through /api/daily. */
+export function DealReviewButton({ size, deal, day, replay = false }: ReviewOf & { replay?: boolean }) {
+  return <ReviewButton cacheKey={`${day}|${size}|${deal}`} ask={() => dailyReview(dailySize(size), deal)} replay={replay} />
+}
 
 /**
  * The player's worst card in a finished deal, only when asked (SKATGO-79, the human: 「做成一个按钮，不用
  * 每次自动显示」): the trick, the card played and SkatZero's, and the assistant's model's few sentences on
- * why — or the word that every card was SkatZero's own choice.
+ * why — or the word that every card was SkatZero's own choice. `ask` fetches it: the daily tournament's
+ * deal, or a free game's (SKATGO-79: 「自由对局中也要有这个东西」). `replay` shows the deal trick by trick
+ * with the worst card's trick marked, where the page has no replay of its own.
  */
-export function DealReviewButton({ size, deal, day, replay = false }: ReviewOf & { replay?: boolean }) {
-  const key = `${day}|${size}|${deal}`
-  const [got, setGot] = useState(reviewed.get(key) ?? null)
+export function ReviewButton({ ask: fetchReview, cacheKey, replay = false }: { ask: () => Promise<Reviewed | { error: string }>; cacheKey?: string; replay?: boolean }) {
+  const [got, setGot] = useState(cacheKey ? (reviewed.get(cacheKey) ?? null) : null)
   const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle')
   async function ask() {
     setState('loading')
-    const r = await dailyReview(dailySize(size), deal)
-    if (isError(r)) return setState('failed')
-    reviewed.set(key, r)
+    const r = await fetchReview()
+    if ('error' in r) return setState('failed')
+    if (cacheKey) reviewed.set(cacheKey, r)
     setGot(r)
   }
   if (got) {

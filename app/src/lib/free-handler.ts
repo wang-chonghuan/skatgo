@@ -1,4 +1,10 @@
-// POST /api/free/new and /api/free/act — free play and lesson 11 on the server (SKATGO-40). The game
+import { isLocale } from '~/lib/ask/context'
+import { admit } from '~/lib/ask/limits'
+import { explainReview } from '~/lib/daily-review'
+import type { DealReview } from '~/lib/skat/tournament'
+
+// POST /api/free/new, /act and /review — free play and lesson 11 on the server (SKATGO-40; /review: a
+// finished game's worst card and replay, explained by the assistant's model, SKATGO-79). The game
 // runs in the multiplayer service; this handler only passes requests on with the service's key and
 // keeps the door from being run through: per address, at most FREE_LIMITS new games an hour and
 // moves per ten seconds (a classroom or a family often shares one address, so the limits are wide).
@@ -39,6 +45,7 @@ function clientIp(request: Request): string {
 }
 
 export async function handleFree(request: Request): Promise<Response> {
+  if (new URL(request.url).pathname === '/api/free/review') return review(request)
   if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const op = new URL(request.url).pathname.slice('/api/free/'.length)
   if (op !== 'new' && op !== 'act') return json(404, { error: 'not found' })
@@ -60,6 +67,40 @@ export async function handleFree(request: Request): Promise<Response> {
       signal: AbortSignal.timeout(10_000),
     })
     return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
+  } catch {
+    return json(503, { error: 'unavailable' })
+  }
+}
+
+/** A finished game's review (SKATGO-79): its worst card and replay from the service — which replays the
+ *  game's token, so nothing is stored — and a few sentences from the assistant's model, counted against
+ *  the assistant's limits for this address. Without them the card is still shown. */
+async function review(request: Request): Promise<Response> {
+  if (request.method !== 'POST') return json(405, { error: 'POST only' })
+  const base = process.env.MULTIPLAYER_URL
+  const key = process.env.MULTIPLAYER_ADMISSION_KEY
+  if (!base || !key) return json(503, { error: 'unavailable' })
+  const address = clientIp(request)
+  if (!admitFree('act', address)) return json(429, { error: 'slow_down' })
+  let body: { token?: unknown; locale?: unknown }
+  try {
+    body = (await request.json()) as typeof body
+  } catch {
+    return json(400, { error: 'invalid_request' })
+  }
+  try {
+    const upstream = await fetch(new URL('/free/review', base), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-admission-key': key },
+      body: JSON.stringify({ token: body.token }),
+      signal: AbortSignal.timeout(10_000),
+    })
+    if (!upstream.ok) return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
+    const found = (await upstream.json()) as DealReview
+    if (!found.worst) return json(200, { review: found, text: null })
+    const limited = admit(`ip:${address}`) !== null
+    const text = limited ? null : await explainReview(found, isLocale(body.locale) ? body.locale : 'de')
+    return json(200, { review: found, text, limited })
   } catch {
     return json(503, { error: 'unavailable' })
   }

@@ -9,7 +9,8 @@ import type { Locale } from '~/paraglide/runtime'
 // The words of a deal's review (SKATGO-79): the multiplayer service finds the player's worst card with
 // SkatZero; this asks the assistant's model (`gpt-5.6-luna`, medium — the human's choice) for two or three
 // sentences on why it was worse than SkatZero's card. The model is given only the facts the service
-// found, in the page's language, and explains them; it never decides which card was worst.
+// found, in the page's language, and explains them; it never decides which card was worst. To the player
+// SkatZero is "the AI" — its name is never shown, nor given to the model (the human, SKATGO-79).
 
 /** A card in words: "Pik-Zehn", "Ten of Spades". */
 function cardWords(c: Card, locale: Locale): string {
@@ -92,7 +93,7 @@ export function reviewPrompt(r: DealReview, locale: Locale): { system: string; m
         trumpWords(contract, locale),
         `${w.trick}. Stich. ${before ? `Vor dem Spieler gespielt: ${before}.` : 'Der Spieler spielt aus.'}`,
         `Hand des Spielers vor dem Zug: ${w.hand.map((c) => cardWords(c, locale)).join(', ')}.`,
-        `Gespielt: ${cardWords(w.played, locale)}. SkatZero hätte gespielt: ${cardWords(w.best, locale)}.`,
+        `Gespielt: ${cardWords(w.played, locale)}. Die AI hätte gespielt: ${cardWords(w.best, locale)}.`,
         trick ? `So lief der Stich wirklich: ${trickWords(trick.cards, contract, side, locale)}.` : '',
         instead,
         dealLine(r.mine, 'Ergebnis des Spiels', locale),
@@ -102,14 +103,14 @@ export function reviewPrompt(r: DealReview, locale: Locale): { system: string; m
         trumpWords(contract, locale),
         `Trick ${w.trick}. ${before ? `Played before the player: ${before}.` : 'The player leads.'}`,
         `The player's hand before the move: ${w.hand.map((c) => cardWords(c, locale)).join(', ')}.`,
-        `Played: ${cardWords(w.played, locale)}. SkatZero would have played: ${cardWords(w.best, locale)}.`,
+        `Played: ${cardWords(w.played, locale)}. The AI would have played: ${cardWords(w.best, locale)}.`,
         trick ? `How the trick really went: ${trickWords(trick.cards, contract, side, locale)}.` : '',
         instead,
         dealLine(r.mine, 'Result of the game', locale),
       ]
   const system = de
-    ? 'Du bist der Skat-Trainer von SkatGo. Erkläre einem Lernenden in zwei bis drei kurzen Sätzen, warum seine Karte schlechter war als die von SkatZero. Stütze dich nur auf die genannten Fakten und nenne keine Karten, Stiche oder Ergebnisse, die dort nicht stehen. Beachte, wer zu wessen Partei gehört: Augen, die der Partner bekommt, gehören auch dem Spieler. Wer einen Stich bekommt, steht in den Fakten; wo dort steht, dass es nicht bekannt ist, behaupte es nicht und erwähne es auch nicht, sondern erkläre, was feststeht (etwa wie viele Augen die Karte in den Stich gibt oder ob ein Trumpf verbraucht wird). Duze den Lernenden und nutze die Begriffe einer Skatrunde (Stich, Trumpf, Augen, Alleinspieler, Gegenspieler, schmieren). Kein Markdown, keine Aufzählung, keine Überschrift.'
-    : "You are SkatGo's Skat coach. In two or three short sentences, explain to a learner why their card was worse than SkatZero's. Use only the facts given and name no card, trick or result that is not in them. Mind who is on whose side: points the partner takes belong to the player too. Who takes a trick is in the facts; where they say it is not known, do not claim it and do not mention it — explain what is certain instead (such as how many points the card puts into the trick, or whether a trump is spent). Address the learner as you; keep the German Skat terms Grand, Null, Hand and Ouvert. No Markdown, no lists, no heading."
+    ? 'Du bist der Skat-Trainer von SkatGo. Antworte auf Deutsch. Erkläre einem Lernenden in zwei bis drei kurzen Sätzen, warum seine Karte schlechter war als die der AI. Stütze dich nur auf die genannten Fakten und nenne keine Karten, Stiche oder Ergebnisse, die dort nicht stehen. Beachte, wer zu wessen Partei gehört: Augen, die der Partner bekommt, gehören auch dem Spieler. Wer einen Stich bekommt, steht in den Fakten; wo dort steht, dass es nicht bekannt ist, behaupte es nicht und erwähne es auch nicht, sondern erkläre, was feststeht (etwa wie viele Augen die Karte in den Stich gibt oder ob ein Trumpf verbraucht wird). Duze den Lernenden und nutze die Begriffe einer Skatrunde (Stich, Trumpf, Augen, Alleinspieler, Gegenspieler, schmieren). Kein Markdown, keine Aufzählung, keine Überschrift.'
+    : "You are SkatGo's Skat coach. Answer in English only, whatever language the terms are in. In two or three short sentences, explain to a learner why their card was worse than the AI's. Use only the facts given and name no card, trick or result that is not in them. Mind who is on whose side: points the partner takes belong to the player too. Who takes a trick is in the facts; where they say it is not known, do not claim it and do not mention it — explain what is certain instead (such as how many points the card puts into the trick, or whether a trump is spent). Address the learner as you; keep the German Skat terms Grand, Null, Hand and Ouvert. No Markdown, no lists, no heading."
   return { system, messages: [{ role: 'user', content: facts.filter(Boolean).join('\n') }] }
 }
 

@@ -1170,52 +1170,64 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
       </div>
     </>
   )
+  const next = (
+    <Row>
+      <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={onNewGame}>
+        {roomAfter ? m.daily_next_deal() : dealScore === null ? m.result_new_game() : last ? m.daily_see_result() : m.daily_next_deal()}
+      </Btn>
+    </Row>
+  )
   return (
     <Dialog>
     <div ref={panel} data-testid="skat-result" data-human-won={String(humanWon)} {...stylex.props(styles.declare)}>
       {daily ? (
-        // The dialog is the card: nothing inside it is boxed again (SKATGO-57).
+        // The dialog is the card: nothing inside it is boxed again (SKATGO-57). The way on comes right
+        // after the result, before the play record (SKATGO-79, the human: 「new game按钮应该放到靠上面点的位置」).
         <div {...stylex.props(styles.resultBody)}>
           {early}
           {daily.compare}
-          {daily.analysis}
           {daily.day}
+          {next}
+          {daily.analysis}
         </div>
+      ) : freeReview ? (
+        // Free play (SKATGO-79): what the game was and who wrote what, the way on, then the play record
+        // with the turning point, the skat and the sum.
+        <>
+          <Panel tone={humanWon ? 'good' : 'bad'}>
+            <div {...stylex.props(styles.resultBody)}>
+              <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
+              {early}
+              <p data-testid="skat-result-line" {...stylex.props(typography.note, styles.note)}>
+                <Rich text={gameLine(summarize(game), [nameOf(0), nameOf(1), nameOf(2)])} />
+              </p>
+              <p {...stylex.props(typography.note, styles.note)}>
+                <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score), nameOf)} />
+              </p>
+            </div>
+          </Panel>
+          {next}
+          <DealAnalysis
+            testId="free-play-record"
+            deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null }}
+            names={[nameOf(0), nameOf(1), nameOf(2)]}
+            ask={() => freeReview()}
+            footer={<p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>}
+          />
+        </>
       ) : (
-        <Panel tone={humanWon ? 'good' : 'bad'}>
-          <div {...stylex.props(styles.resultBody)}>
-            <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
-            {early}
-            {freeReview ? (
-              // Free play (SKATGO-79, simplified): what the game was and who wrote what; the rest — the
-              // tricks, the worst card, the skat and the sum — in one fold.
-              <>
-                <p data-testid="skat-result-line" {...stylex.props(typography.note, styles.note)}>
-                  <Rich text={gameLine(summarize(game), [nameOf(0), nameOf(1), nameOf(2)])} />
-                </p>
-                <p {...stylex.props(typography.note, styles.note)}>
-                  <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score), nameOf)} />
-                </p>
-                <DealAnalysis
-                  testId="free-replay-fold"
-                  deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null }}
-                  names={[nameOf(0), nameOf(1), nameOf(2)]}
-                  ask={() => freeReview()}
-                  footer={<p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>}
-                />
-              </>
-            ) : (
-              settlement
-            )}
-            {roomAfter}
-          </div>
-        </Panel>
+        <>
+          <Panel tone={humanWon ? 'good' : 'bad'}>
+            <div {...stylex.props(styles.resultBody)}>
+              <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
+              {early}
+              {settlement}
+              {roomAfter}
+            </div>
+          </Panel>
+          {next}
+        </>
       )}
-      <Row>
-        <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={onNewGame}>
-          {roomAfter ? m.daily_next_deal() : dealScore === null ? m.result_new_game() : last ? m.daily_see_result() : m.daily_next_deal()}
-        </Btn>
-      </Row>
     </div>
     </Dialog>
   )

@@ -8,6 +8,7 @@ import type { Game } from '~/lib/skat/game'
 import { cardLabel, contractName } from '~/lib/skat/i18n'
 import { type DailyStatus, type DealReview, type DealSummary, PLAYER, dailySize, saldo, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
+import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
@@ -188,17 +189,18 @@ const reviewed = new Map<string, Reviewed>()
 const replays = new Map<string, Pick<DealReview, 'tricks' | 'skat' | 'early'>>()
 
 /**
- * A finished deal's analysis, one fold (SKATGO-79, the human: 「游戏详情，你还不如改成复盘」, and the
- * settlement simplified): the way to the player's worst card on top — only when asked (「做成一个按钮，不用
- * 每次自动显示」) — then the deal trick by trick, that card's trick marked once it is known, the skat, and
- * `footer` (free play's sum). `deal` is the deal when the page has it (the settlement); otherwise opening
- * the fold fetches it, without asking the model.
+ * A finished deal's play record, open (SKATGO-79, the human: 「本次牌谱要显示出来，不要折叠，用专业名词说
+ * 这个牌谱」): the way to the deal's turning point — the player's worst card — on top, only when asked
+ * (「做成一个按钮，不用每次自动显示」); then the deal trick by trick, that card's trick marked once it is
+ * known, the skat, and `footer` (free play's sum). `deal` is the deal when the page has it (the
+ * settlement); otherwise it is fetched, without asking the model.
  */
-export function DealAnalysis({ testId = 'daily-replay-fold', ...rest }: AnalysisProps & { testId?: string }) {
+export function DealAnalysis({ testId = 'daily-play-record', ...rest }: AnalysisProps & { testId?: string }) {
   return (
-    <Fold label={m.daily_replay()} testId={testId}>
+    <section data-testid={testId} {...stylex.props(styles.record)}>
+      <h3 {...stylex.props(typography.panelLabel, styles.recordTitle)}>{m.daily_replay()}</h3>
       <AnalysisBody {...rest} />
-    </Fold>
+    </section>
   )
 }
 
@@ -211,7 +213,9 @@ type AnalysisProps = {
 }
 
 function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
-  const [got, setGot] = useState<Reviewed | null>(cacheKey ? (reviewed.get(cacheKey) ?? null) : null)
+  // The explanation is in the page's language: one fetched in another stays with that language.
+  const said = cacheKey ? `${cacheKey}|${getLocale()}` : undefined
+  const [got, setGot] = useState<Reviewed | null>(said ? (reviewed.get(said) ?? null) : null)
   const [shown, setShown] = useState(deal ?? (cacheKey ? replays.get(cacheKey) : undefined) ?? got?.review ?? null)
   const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle')
   const [unavailable, setUnavailable] = useState(false)
@@ -222,14 +226,14 @@ function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
       if (cacheKey) replays.set(cacheKey, r.review)
       setShown(r.review)
     })
-    // Once, when the fold opens.
+    // Once, when the record is shown.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   async function explain() {
     setState('loading')
     const r = await ask(true)
     if ('error' in r) return setState('failed')
-    if (cacheKey) reviewed.set(cacheKey, r)
+    if (said) reviewed.set(said, r)
     setGot(r)
     setShown((s) => s ?? r.review)
   }
@@ -292,20 +296,6 @@ export function DealVsAi({ mine, ai }: { mine: DealSummary; ai: DealSummary | nu
     >
       <ScoreSheet testId="daily-deal-scores" mine={mine.scores} ai={ai ? ai.scores : null} lines={{ you: gameLine(mine, youNames()), ai: ai ? gameLine(ai, aiNames()) : null }} />
     </section>
-  )
-}
-
-/** A part of the settlement that opens on a tap (SKATGO-57): the deal's details, the day so far. */
-export function Fold({ label, testId, children }: { label: string; testId: string; children: ReactNode }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div data-testid={testId} data-open={open} {...stylex.props(styles.fold)}>
-      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} {...stylex.props(typography.smallBold, styles.foldButton)}>
-        <span>{label}</span>
-        {open ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />}
-      </button>
-      {open ? <div {...stylex.props(styles.foldBody)}>{children}</div> : null}
-    </div>
   )
 }
 
@@ -457,6 +447,8 @@ const styles = stylex.create({
     outlineOffset: border.focusOffset,
   },
   analysis: { display: 'flex', flexDirection: 'column', gap: space.x10 },
+  record: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x8, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  recordTitle: { margin: 0, color: color.navy },
   replay: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   replayTable: { width: '100%', borderCollapse: 'collapse', color: color.navy },
   replayHead: { paddingBottom: space.x4, textAlign: 'start', color: color.slate },
@@ -474,24 +466,6 @@ const styles = stylex.create({
   reviewText: { margin: 0, color: color.text },
   reviewLabel: { color: color.navy },
   reviewAsk: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: space.x6 },
-  fold: { display: 'flex', flexDirection: 'column', borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
-  foldButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingBlock: space.x8,
-    paddingInline: 0,
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    color: color.slate,
-    cursor: 'pointer',
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.info,
-    outlineOffset: border.focusOffset,
-  },
-  foldBody: { display: 'flex', flexDirection: 'column', gap: space.x6, paddingBottom: space.x8 },
   table: { display: 'flex', flexDirection: 'column', color: color.navy },
   // Deal, you, the AI, the difference: the same columns in the header, every row and the total.
   grid: {

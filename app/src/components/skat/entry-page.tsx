@@ -69,13 +69,10 @@ export function EntryPage() {
             <Link to="/course" data-testid="entry-course" {...linkLook('quiet', 'md', 'landing')}>
               {finished === 0 ? m.entry_new_cta() : m.course_continue({ n: next })}
             </Link>
-            {finished > 0 ? (
-              <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span>
-            ) : (
-              // For whoever has not started (SKATGO-89): the twelve rules, a button as plain to see as the
-              // course's (the human: 「学习卡上那个5分钟，看起来不够明显」).
-              <Link to="/course/quick-start" data-testid="entry-quick" {...linkLook('quiet', 'md', 'landing')}>{m.quick_entry_link()}</Link>
-            )}
+            {/* The twelve rules (SKATGO-89), a button as plain to see as the course's (the human: 「学习卡上那个5分钟，
+                看起来不够明显」), always — whether or not a lesson was taken (SKATGO-92, the human: 「必须还放在学习卡上」). */}
+            <Link to="/course/quick-start" data-testid="entry-quick" {...linkLook('quiet', 'md', 'landing')}>{m.quick_entry_link()}</Link>
+            {finished > 0 ? <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span> : null}
           </Face>
         </section>
         <section data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, tileTones.play)}>

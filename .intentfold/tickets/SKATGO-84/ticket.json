@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-84",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-merge",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-84",
+  "branch": "SKATGO-84-ops-redlines",
+  "base": "e15e61bc6b2cec6b0ca25d282c77ec945e2f39a4",
+  "ports": {
+    "web": 55084,
+    "multiplayer": 56084,
+    "database": 57084
+  }
+}

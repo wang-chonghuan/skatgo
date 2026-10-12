@@ -251,8 +251,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   numbered, each a line of text, the ones that name points or an order with that row of cards under them
   (`CardRowView`, the points as captions), then a `tip` panel with the `go` button to free play, and links
   to the course and the rules. Its ways in: an option card under the course's lead, ahead of the progress
-  card; on the front page a second `quiet` button, "5-Minuten-Crashkurs" — a crash course, never read as a quick game or a summary (the human: 「其实就是5分钟速成的意思」) — beside the course tile's own, for
-  whoever has not started a lesson (the human: 「看起来不够明显」); and a link under the rules' lead. Not in the header. An article of the Skat-Tricks
+  card; on the front page a second `quiet` button, "5-Minuten-Crashkurs" — a crash course, never read as a quick game or a summary (the human: 「其实就是5分钟速成的意思」) — beside the course tile's own, always, whether or not a lesson was taken (the human: 「看起来不够明显」; SKATGO-92: 「必须还放在学习卡上」); and a link under the rules' lead. Not in the header. An article of the Skat-Tricks
   (`tricks-page.tsx`, SKATGO-82) reads like the rules: its H1 and lead, section headings, each trick a
   numbered sub-heading over short paragraphs, and three ways into the daily tournament — at the start, in
   the middle and at the end — each a `tip` panel with its line and the `go` button; one action repeated

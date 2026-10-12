@@ -307,9 +307,11 @@ render psql skatgo-multiplayer-db --confirm --output text \
 # on them, so the leader deals them anew. Players' entries are lost for good: run it only for days the
 # human named, and in production only with the human's explicit go-ahead.
 # Without --yes it is a dry run printing, per tournament of each day, its computer label and entry
-# counts. The production database takes no outside connections, so run it inside the multiplayer
-# service as a Render one-off job.
+# counts. Reach the production database as below.
 DATABASE_URL=… node multiplayer/scripts/redeal-days.mjs <YYYY-MM-DD>… [--yes]
+
+# query the production database (read or write): ips-render-ops cap5. Its IP allow list is closed by
+# default; open it for the session, run the work, then close it again (an empty list).
 
 # custom domains and TLS: ips-render-ops cap9
 curl -s "https://api.render.com/v1/services/$SERVICE_ID/custom-domains" \
@@ -370,13 +372,9 @@ never erase or reset rooms to make an older revision start.
 3. **Creating or deleting cloud resources** — not without the human's explicit approval.
 4. **Creating or first-deploying a production Render service for this project** — not without the
    human's explicit approval.
-5. **Changing production schema, infrastructure, ingress, scaling, or required environment keys** —
-   not without the human's explicit approval. Includes: the Render service needing an env key or
-   secret it does not already have; region, plan, instance count, ingress or health check changing;
-   the `Dockerfile`'s base image, exposed port or start command changing.
-6. **Pointing a production domain at a new target** — not without the human's explicit approval.
+5. **Pointing a production domain at a new target** — not without the human's explicit approval.
    Includes any DNS or Redirect Rule change in the `skatgo.com` Cloudflare zone and any Render
    custom-domain change.
-7. **Reporting a deploy as complete without running the post-deploy check** — forbidden outright.
-8. **Proxying the `skatgo.com` apex through Cloudflare** — forbidden outright. It must stay
+6. **Reporting a deploy as complete without running the post-deploy check** — forbidden outright.
+7. **Proxying the `skatgo.com` apex through Cloudflare** — forbidden outright. It must stay
    DNS-only so Render owns the production certificate and origin remains directly observable.

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-94",
+  "mode": "autonomous",
+  "stage": "closed",
+  "finish": "auto-merge",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-94",
+  "branch": "SKATGO-94-charter-icons",
+  "base": "b24d10513c7ceadda13d7133ce01d5ada79056c2",
+  "ports": {}
+}

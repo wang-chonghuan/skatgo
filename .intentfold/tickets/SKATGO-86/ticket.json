@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-86",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-86",
+  "branch": "SKATGO-86-free-ai-result",
+  "base": "d44c38164ed74ae5c8ae8d8eb27da4210b1a9f31",
+  "ports": { "web": 55086, "multiplayer": 56086, "database": 57086 }
+}

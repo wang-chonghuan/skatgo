@@ -475,6 +475,8 @@
   "daily_review_clean": "Jede deiner Karten war auch die Wahl der AI.",
   "daily_review_marks": "Wo die AI eine andere Karte gespielt hätte, steht sie im Spielverlauf unter deiner.",
   "daily_review_failed": "Die Auswertung klappt gerade nicht. Versuch es gleich noch einmal.",
+  "free_ai_loading": "Die AI spielt dieses Spiel gerade von deinem Platz aus …",
+  "free_ai_failed": "Das Spiel der AI ließ sich gerade nicht berechnen.",
   "free_new_game": "Neues Spiel",
   "free_unreachable": "Der Server ist nicht erreichbar. Prüf deine Verbindung und versuch es noch einmal.",
   "friends_meta_title": "Skat mit Freunden online spielen – privater Tisch",

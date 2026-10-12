@@ -10,5 +10,10 @@
   - 桌面上「Spiel 1 von 6」和三个名字都在 58.4px，手机上都在 129.4px；改动前线上是 60.4 对 58.4，名字的位置没变。
   - 脚本只跟叫，赢下叫牌后打 Hand，定约弹窗里已没有那句。
 
+## 追加：「Ändern」改绿
+- `daily-table.tsx`：每日赛结果处名字旁的「Ändern」从 `quiet` 改为 `go`（绿色）。
+- 验证：`tmp/finish.mts` 用脚本合法着法让新设备打完今天的 6 副赛，`tmp/nick.mjs` 在桌面和手机上量到按钮背景 rgb(0, 163, 54)，2 项全过；typecheck、build、设计令牌检查通过。
+- 待人决定：charter ui.md 第 245 行写的是 `quiet` "Ändern"。
+
 ## 服务
 web http://127.0.0.1:55097、multiplayer 56097、数据库 57097 在跑。

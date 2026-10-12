@@ -185,7 +185,8 @@ function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }
     return (
       <div data-testid="daily-nickname-set" data-name={me.nickname} {...stylex.props(styles.nickRow)}>
         <p {...stylex.props(typography.appText, styles.text, styles.what)}>{m.daily_nick_on({ name: me.nickname })}</p>
-        <Btn testId="daily-nickname-change" tone="quiet" size="sm" onClick={() => setEditing(true)}>{m.daily_nick_change()}</Btn>
+        {/* Green, or it is not seen (SKATGO-97, the human: 「改名字change的按钮改为绿色，否则太不明显」). */}
+        <Btn testId="daily-nickname-change" tone="go" size="sm" onClick={() => setEditing(true)}>{m.daily_nick_change()}</Btn>
       </div>
     )
   }

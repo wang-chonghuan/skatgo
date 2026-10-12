@@ -1,4 +1,4 @@
-import type { Move } from '~/lib/skat/game'
+import type { Move, Seat } from '~/lib/skat/game'
 import type { DealReview, SeatView } from '~/lib/skat/tournament'
 
 // The browser's side of free play on the server (SKATGO-40): two requests to /api/free
@@ -17,8 +17,9 @@ async function post(op: 'new' | 'act' | 'resume', body: object): Promise<FreeRep
   }
 }
 
-/** A new game: a deal from the server's pool, played up to the learner's first move. */
-export const freeNew = () => post('new', {})
+/** A new game: a deal from the server's pool, played up to the learner's first move — dealt by `dealer`
+ *  when named, the next deal of free play's round (SKATGO-88). */
+export const freeNew = (dealer?: Seat) => post('new', dealer === undefined ? {} : { dealer })
 
 /** One move in the game the token holds, quoting how many moves came before it. */
 export const freeAct = (token: string, revision: number, action: Move) => post('act', { token, revision, action })
@@ -30,27 +31,31 @@ export const freeResume = (token: string) => post('resume', { token })
  * A free game carried across a change of language (SKATGO-79, the human: 「打牌过程中切换语言，咋导致牌都
  * 重新发了？」). Changing the language loads the page anew, and the game lives only in the page, so the
  * table's token goes along in the new address's fragment — which no server sees and nothing stores — and
- * the table there takes it up and clears it. A reload still starts a new game (SKATGO-40).
+ * the table there takes it up and clears it. The round it is part of goes along too (SKATGO-88). A reload
+ * still starts a new game, and a new round (SKATGO-40).
  */
 const CARRY = '#game='
-let onTable: string | null = null
+const ROUND = '&round='
+let onTable: { token: string; round: string | null } | null = null
 
-/** The free table says which game it holds (null when it holds none). */
-export const holdGame = (token: string | null) => {
-  onTable = token
+/** The free table says which game it holds (null when it holds none), and its round, as a string. */
+export const holdGame = (token: string | null, round: string | null = null) => {
+  onTable = token ? { token, round } : null
 }
 
 /** Before the language changes: the game on the table into the address, for the new page to take. */
 export function carryGame() {
-  if (onTable) history.replaceState(history.state, '', `${location.pathname}${location.search}${CARRY}${onTable}`)
+  if (!onTable) return
+  const round = onTable.round === null ? '' : `${ROUND}${encodeURIComponent(onTable.round)}`
+  history.replaceState(history.state, '', `${location.pathname}${location.search}${CARRY}${onTable.token}${round}`)
 }
 
-/** On the new page: the game carried here, if any, taken out of the address. */
-export function takeCarriedGame(): string | null {
+/** On the new page: the game carried here, if any, and its round, taken out of the address. */
+export function takeCarriedGame(): { token: string; round: string | null } | null {
   if (!location.hash.startsWith(CARRY)) return null
-  const token = location.hash.slice(CARRY.length)
+  const [token, round] = location.hash.slice(CARRY.length).split(ROUND)
   history.replaceState(history.state, '', `${location.pathname}${location.search}`)
-  return token || null
+  return token ? { token, round: round ? decodeURIComponent(round) : null } : null
 }
 
 /** A finished game trick by trick, with SkatZero's card wherever the player's was not (SKATGO-79). */

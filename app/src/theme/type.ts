@@ -49,11 +49,13 @@ export const typography = stylex.create({
   // the reference did not show is derived from the same ratio.
 
   // The public site
-  /** The front page's H1 and its lead (SKATGO-29): Funbridge's hero sizes, measured on funbridge.com —
-   *  headline 72/36 black, subheading 28/24 bold, both at 1.2.
+  /** The front page's H1 and its lead (SKATGO-29): the headline is Funbridge's hero size, measured on
+   *  funbridge.com — 72/36 black at 1.2. The lead was its subheading, 28/24 bold, until it crowded the
+   *  headline and the button; now it is one short line at body weight, 20/17 (SKATGO-91, the human:
+   *  「字太多，字号太大」).
    *  Both restate the family: the Astryx theme sets its own on every h1 and p, which the page does not load. */
   landingHero: { fontFamily: family.body, fontSize: { default: fontSize.fHero, [bp.phone]: fontSize.fHeroPhone }, fontWeight: weight.black, lineHeight: leading.tight },
-  landingHeroLead: { fontFamily: family.body, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.bold, lineHeight: leading.tight },
+  landingHeroLead: { fontFamily: family.body, fontSize: { default: fontSize.f20, [bp.phone]: fontSize.f17 }, fontWeight: weight.text, lineHeight: leading.ui },
   /** The site's name beside the mark in the front page header (SKATGO-31): the hero headline's face and weight. */
   landingBrand: { fontFamily: family.body, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.black, lineHeight: leading.tight },
   landingHeading: { fontSize: { default: fontSize.f36, [bp.phone]: fontSize.f24 }, fontWeight: weight.extrabold, lineHeight: leading.tight },

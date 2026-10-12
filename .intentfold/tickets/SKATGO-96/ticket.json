@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-96",
+  "mode": "autonomous",
+  "stage": "closed",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-96",
+  "branch": "SKATGO-96-free-resume",
+  "base": "3a92cf85b638592a6e56f12bb308f72f87d51140",
+  "ports": {
+    "web": 55096,
+    "multiplayer": 56096,
+    "database": 57096
+  }
+}

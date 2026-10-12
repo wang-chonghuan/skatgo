@@ -138,6 +138,8 @@ export const dims = stylex.defineVars({
 
   // The assistant (SKATGO-9/11), unchanged geometry.
   launcher: '44px',
+  /** The table's menu under its way-out button (SKATGO-96). */
+  tableMenu: '240px',
   launcherLift: '48px',
   /** On a phone the launcher sits higher, above a lesson's sticky bar. */
   launcherLiftPhone: '80px',

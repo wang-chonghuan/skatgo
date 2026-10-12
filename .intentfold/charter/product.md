@@ -62,7 +62,9 @@ Seeger-Fabian — the player's deal over the AI's, the same deal played by the c
 seat (SKATGO-86: 「打完了能显示AI打这幅牌叫的啥，打几分」) — then the way to the next deal and the same
 play record; after the sixth, the round in one row per deal and its score sheet, as at the end of a
 tournament, and a new round. Lesson 11's game is one game with the same result. Changing the language
-mid-round keeps the game and the round (SKATGO-79, SKATGO-88); a reload starts a new round.
+mid-round keeps the game and the round (SKATGO-79, SKATGO-88), and so does a reload or coming back within a
+day (SKATGO-96: 「刷新一下页面，当deal丢了，连game也丢了」). The player may give up a round for a new one,
+never one deal alone, so a round's total stays honest; the tournament cannot be given up.
 
 A rules reference: the whole rules at `/rules`, with anchors for what people look up by name (Grand,
 Null ouvert, Ramsch); the bidding table; and two printables, a score sheet and a short version of the

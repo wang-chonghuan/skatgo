@@ -32,7 +32,7 @@ export const freeResume = (token: string) => post('resume', { token })
  * 重新发了？」). Changing the language loads the page anew, and the game lives only in the page, so the
  * table's token goes along in the new address's fragment — which no server sees and nothing stores — and
  * the table there takes it up and clears it. The round it is part of goes along too (SKATGO-88). A reload
- * still starts a new game, and a new round (SKATGO-40).
+ * takes the game up from this browser's storage instead (SKATGO-96, below).
  */
 const CARRY = '#game='
 const ROUND = '&round='
@@ -56,6 +56,34 @@ export function takeCarriedGame(): { token: string; round: string | null } | nul
   const [token, round] = location.hash.slice(CARRY.length).split(ROUND)
   history.replaceState(history.state, '', `${location.pathname}${location.search}`)
   return token ? { token, round: round ? decodeURIComponent(round) : null } : null
+}
+
+/*
+ * The game on the table kept in this browser (SKATGO-96, the human: 「刷新一下页面，当deal丢了，连game也丢了」): its
+ * token and the round's finished deals, the same as a change of language carries. A reload or a later visit
+ * takes it up; the server still keeps nothing, and a token over a day old starts a new round. Storage that
+ * cannot be read or written is no storage: the table then starts anew, as it did before.
+ */
+const KEPT = 'skatgo.free.v1'
+
+/** Keep the game on the table, with its round as a string; null forgets it. */
+export function keepGame(token: string | null, round: string | null = null) {
+  try {
+    if (token) localStorage.setItem(KEPT, JSON.stringify({ token, round }))
+    else localStorage.removeItem(KEPT)
+  } catch {
+    // Not kept: a reload starts anew.
+  }
+}
+
+/** The game kept in this browser, if any. */
+export function keptGame(): { token: string; round: string | null } | null {
+  try {
+    const kept = JSON.parse(localStorage.getItem(KEPT) ?? 'null') as { token?: unknown; round?: unknown } | null
+    return kept && typeof kept.token === 'string' && kept.token ? { token: kept.token, round: typeof kept.round === 'string' ? kept.round : null } : null
+  } catch {
+    return null
+  }
 }
 
 /** A finished game trick by trick, with SkatZero's card wherever the player's was not (SKATGO-79). */

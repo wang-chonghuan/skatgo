@@ -295,6 +295,9 @@
   "nav_menu": "Menü",
   "nav_home_link": "Startseite",
 
+  "table_menu": "Menü",
+  "table_continue": "Weiterspielen",
+  "table_menu_back": "Nein, weiterspielen",
   "table_leave": "Tisch verlassen",
   "table_history": "Reizen",
   "table_game_tab": "Spiel",
@@ -483,6 +486,8 @@
   "free_round_result": "Zur Auswertung",
   "free_round_title": "Deine Runde",
   "free_round_new": "Neue Runde",
+  "free_round_abandon": "Diese Runde abbrechen? Du beginnst wieder mit Spiel 1.",
+  "free_round_abandon_yes": "Ja, neue Runde",
   "free_new_game": "Neues Spiel",
   "free_unreachable": "Der Server ist nicht erreichbar. Prüf deine Verbindung und versuch es noch einmal.",
   "friends_meta_title": "Skat mit Freunden online spielen – privater Tisch",

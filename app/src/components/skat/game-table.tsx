@@ -35,7 +35,7 @@ import { type DealSummary, seegerFabian, summarize, totals } from '~/lib/skat/to
 import { BID_LADDER, type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
-import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -128,6 +128,8 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   problem?: { text: string; retry?: () => void; fresh: () => void } | null
   /** Free play's review of the finished game (SKATGO-79): its replay, and where the AI would have played another card. */
   review?: AskReview
+  /** Free play: give up the round for a new one (SKATGO-96). */
+  newRound?: () => void
 }
 
 /** A private table (SKATGO-61): the room's deal turned so the viewer is seat 0, the people's
@@ -584,6 +586,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             glow={hint?.card ? [hint.card] : hint?.cards ?? []}
           />
         </div>
+
+        {/* The way out, on the felt where it is always seen (SKATGO-96): last, so it stays over a dialog. */}
+        {fullScreen ? <TableMenu leave={tournament ? '/daily' : room ? '/with-friends' : '/'} newRound={server?.newRound} /> : null}
       </div>
 
       <aside
@@ -666,16 +671,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
               <>
                 <Pill tone="quiet">{m.table_points({ declarer: points.declarer, defenders: points.defenders })}</Pill>
               </>
-            ) : null}
-          </div>
-
-          <div {...stylex.props(styles.panelFoot)}>
-            {fullScreen && tournament ? (
-              <Link to="/daily" data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
-            ) : fullScreen && room ? (
-              <Link to="/with-friends" data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
-            ) : fullScreen ? (
-              <Link to="/" data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
             ) : null}
           </div>
         </div>
@@ -1334,6 +1329,64 @@ function Message({ tone, testId, onClose, children }: { tone: 'tip' | 'bad'; tes
   )
 }
 
+/**
+ * The table's way out (SKATGO-96, the human: 「退出按钮……放到打牌界面上？」): a round button in the felt's top right
+ * corner, across from the assistant's at the top left, on every full-screen table. It opens a small menu — keep
+ * playing, give up free play's round for a new one (asked once more first), or leave the table. Leaving loses
+ * nothing: free play's game waits in this browser, the tournament's on the server, a private table's in its room.
+ */
+function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends'; newRound?: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [asking, setAsking] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+  const close = () => {
+    setOpen(false)
+    setAsking(false)
+  }
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close()
+    const onDown = (e: PointerEvent) => !box.current?.contains(e.target as Node) && close()
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('pointerdown', onDown)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.removeEventListener('pointerdown', onDown)
+    }
+  }, [open])
+  return (
+    <div ref={box} data-testid="skat-menu" {...stylex.props(styles.menuCorner)}>
+      <button
+        type="button"
+        aria-label={m.table_menu()}
+        aria-expanded={open}
+        data-testid="skat-menu-button"
+        onClick={() => (open ? close() : setOpen(true))}
+        {...stylex.props(styles.menuButton)}
+      >
+        <LogOut aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
+      </button>
+      {open ? (
+        <div data-testid="skat-menu-list" {...stylex.props(styles.menuList)}>
+          {asking ? (
+            <>
+              <p {...stylex.props(typography.appText, styles.menuAsk)}>{m.free_round_abandon()}</p>
+              <Btn testId="skat-menu-new-yes" tone="stop" shape="block" onClick={() => { close(); newRound?.() }}>{m.free_round_abandon_yes()}</Btn>
+              <Btn testId="skat-menu-new-no" tone="quiet" shape="block" onClick={close}>{m.table_menu_back()}</Btn>
+            </>
+          ) : (
+            <>
+              <Btn testId="skat-menu-continue" tone="go" shape="block" onClick={close}>{m.table_continue()}</Btn>
+              {newRound ? <Btn testId="skat-menu-new" tone="quiet" shape="block" onClick={() => setAsking(true)}>{m.free_round_new()}</Btn> : null}
+              <Link to={leave} data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
+            </>
+          )}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 const Say = ({ children }: { children: ReactNode }) => <p {...stylex.props(typography.appText, styles.say)}>{children}</p>
 
 /** A dialog over the table: white, on the scrim, one full-width green action inside. */
@@ -1352,6 +1405,48 @@ const tintOf = (c: Contract): Tint => (c.kind === 'suit' ? c.trump : c.kind)
 
 
 const styles = stylex.create({
+  // The way out (SKATGO-96): mirrors the assistant's launcher at the felt's top left (ask.tsx).
+  menuCorner: {
+    position: 'absolute',
+    top: { default: space.x16, [bp.phone]: space.x8 },
+    right: { default: space.x16, [bp.phone]: space.x8 },
+    zIndex: layer.window,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: space.x8,
+  },
+  menuButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: dims.launcher,
+    height: dims.launcher,
+    padding: 0,
+    borderWidth: 0,
+    borderRadius: radii.round,
+    backgroundColor: color.surface,
+    color: color.navy,
+    cursor: 'pointer',
+    boxShadow: elev.panel,
+    transform: { default: move.rest, ':active': move.press },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  menuList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x10,
+    width: dims.tableMenu,
+    padding: space.x16,
+    boxSizing: 'border-box',
+    borderRadius: radii.dialog,
+    backgroundColor: color.surface,
+    boxShadow: elev.panel,
+  },
+  menuAsk: { margin: 0, color: color.navy },
   // Clipped, not hidden (SKATGO-32): a hidden overflow can still be scrolled by focus or scrollIntoView,
   // which slid the whole felt sideways; a clipped one cannot scroll at all.
   table: { position: 'relative', display: 'grid', backgroundColor: color.page, overflow: 'clip' },
@@ -1752,7 +1847,6 @@ const styles = stylex.create({
   chipPass: { backgroundColor: color.go, color: color.onColor },
   chipBid: { backgroundColor: color.tintHearts, color: color.plate },
   strip: { display: 'flex', flexWrap: 'wrap', gap: space.x6, justifyContent: 'center' },
-  panelFoot: { display: 'flex', flexDirection: 'column', gap: space.x12, marginTop: 'auto' },
 
   // A row of moves is centred under what is asked, in the drawer and in a dialog alike.
   row: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.x10 },

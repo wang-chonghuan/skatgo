@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { type GameMode, track } from '~/lib/analytics'
-import { type FreeError, freeAct, freeNew, freeResume, freeReview, holdGame, isFreeError, takeCarriedGame } from '~/lib/free-api'
+import { type FreeError, freeAct, freeNew, freeResume, freeReview, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
 import { type Move, type Seat, next as nextSeat } from '~/lib/skat/game'
 import { type DealReview, type DealSummary, type SeatView, gameFromView, summarize, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -17,8 +17,9 @@ import { Btn, Panel, linkLook } from './ui'
 import { TableLoading } from './table-loading'
 
 // Free play and lesson 11 on the server (SKATGO-40): a game drawn from the server's pool, played
-// against SkatZero's computers. The page holds the game's token in memory only — no cookie, no
-// storage — so a reload starts a new game, as before. The server answers each move with every state
+// against SkatZero's computers. The server keeps nothing per game: the page holds the game's token, and free
+// play keeps it in this browser with its round, so a reload goes on with the same deal (SKATGO-96); lesson 11
+// keeps nothing. The server answers each move with every state
 // the table passed through, and the table shows them one by one on its own beats. Hints and the
 // assistant work as at the local table: they read only what this seat may see. A game's start and
 // finish are its only events (SKATGO-74): never a bid or a card.
@@ -89,8 +90,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     take(r.steps, r)
   }
 
-  /** A game carried here across a change of language (SKATGO-79): taken up where it was, or, when its
-   *  token is no longer good, a new one. */
+  /** A game carried here across a change of language (SKATGO-79) or kept in this browser (SKATGO-96): taken
+   *  up where it was, or, when its token is no longer good, a new one in a new round. */
   async function resume(carried: { token: string; round: string | null }) {
     setSending(true)
     const r = await freeResume(carried.token)
@@ -105,13 +106,15 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     }
     take(r.steps, r)
   }
-  // Free play's game goes along when the language changes, with its round (SKATGO-88); lesson 11 starts
-  // its game again with its step.
+  // Free play's game goes along when the language changes, with its round (SKATGO-88), and stays in this
+  // browser for a reload (SKATGO-96) until the round is over; lesson 11 starts its game again with its step.
   useEffect(() => {
     if (mode !== 'free') return
     holdGame(token, JSON.stringify(round))
+    if (summary) keepGame(null)
+    else if (token) keepGame(token, JSON.stringify(round))
     return () => holdGame(null)
-  }, [mode, token, round])
+  }, [mode, token, round, summary])
 
   /** After a deal of free play's round: it goes into the round, with the AI's deal from the same seat
    *  when its review has it; then the next deal, dealt by the next seat, or after the sixth the round's
@@ -132,7 +135,7 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
   useEffect(() => {
     if (started.current) return
     started.current = true
-    const carried = mode === 'free' ? takeCarriedGame() : null
+    const carried = mode === 'free' ? takeCarriedGame() ?? keptGame() : null
     void (carried ? resume(carried) : start())
     // Once, when the table opens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -200,6 +203,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         // player's seat (SKATGO-86) — free play and lesson 11 alike, the same table.
         review: token ? () => ask(token) : undefined,
         round: mode === 'free' ? { deal: round.deals.length, of: ROUND_DEALS, total: totals(round.deals)[0] } : undefined,
+        // Free play's round can be given up for a new one (SKATGO-96); the table asks first.
+        newRound: mode === 'free' ? newRound : undefined,
       }}
     />
   )

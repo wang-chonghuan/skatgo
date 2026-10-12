@@ -10,3 +10,9 @@
 
 ## AC3 「Ändern」是绿色
 - 打完今天 6 副赛的设备（`tmp/finish.mts`，脚本合法着法），`/de/taeglich` 上名字旁的「Ändern」背景是绿色按钮的颜色 rgb(0, 163, 54)，桌面和手机。
+
+## AC4 名字一行在排行榜第一行
+- 打完今天 6 副赛的设备打开 `/de/taeglich`：「Auf der Rangliste als … · Ändern」是排行榜面板的第一行，结果面板里不再有它。
+
+## AC5 首页按钮是标准绿色
+- 首页「Heute spielen」和每日赛页「Heute spielen」的背景都是 rgb(0, 163, 54)。

@@ -15,5 +15,11 @@
 - 验证：`tmp/finish.mts` 用脚本合法着法让新设备打完今天的 6 副赛，`tmp/nick.mjs` 在桌面和手机上量到按钮背景 rgb(0, 163, 54)，2 项全过；typecheck、build、设计令牌检查通过。
 - 待人决定：charter ui.md 第 245 行写的是 `quiet` "Ändern"。
 
+## 追加 2
+- 名字那一行（`Nickname`）移到排行榜面板第一行（`daily-table.tsx` `Leaderboard` 的 `name`），结果面板只留成绩。
+- `ui.tsx` `landingTones.go` 不再换成公开站点的绿色：首页和每日赛页的「Heute spielen」都是标准绿色 #00A336（形状和字体不变）。
+- 验证：build、单元测试、设计令牌、client bundle 通过；`tmp/more.mjs` 4 项、`tmp/nick.mjs` 2 项全过，桌面和手机都测了。
+- 待人决定：charter ui.md 第 85 行（`goLanding` 是公开站点按钮的绿色）、第 244–245 行（名字一行在结果里、`quiet` "Ändern"）已和代码不符；`color.goLanding`、`elev.btnGoLanding` 已无人使用。
+
 ## 服务
 web http://127.0.0.1:55097、multiplayer 56097、数据库 57097 在跑。

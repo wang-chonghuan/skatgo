@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-93",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-93",
+  "branch": "SKATGO-93-entry-cleanup",
+  "base": "e2aee16efd8a8487b08514c26a71731516c9bad0",
+  "ports": { "web": 55093, "multiplayer": 56093, "database": 57093 }
+}

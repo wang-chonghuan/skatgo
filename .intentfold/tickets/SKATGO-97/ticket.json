@@ -1,10 +1,14 @@
 {
   "ticket": "SKATGO-97",
   "mode": "autonomous",
-  "stage": "handed-off",
+  "stage": "closed",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-97",
   "branch": "SKATGO-97-board-align",
   "base": "c0164cdf5d51e6c7b5060eb2e7bac067906b283b",
-  "ports": { "web": 55097, "multiplayer": 56097, "database": 57097 }
+  "ports": {
+    "web": 55097,
+    "multiplayer": 56097,
+    "database": 57097
+  }
 }

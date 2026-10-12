@@ -50,7 +50,11 @@ export async function handleFree(request: Request): Promise<Response> {
   if (!admitFree(op === 'new' ? 'new' : 'act', clientIp(request))) return json(429, { error: 'slow_down' })
   let body: unknown
   try {
-    body = op === 'new' ? {} : await request.json()
+    // A new game may name its dealer, free play's round going round (SKATGO-88); nothing else is passed on.
+    if (op === 'new') {
+      const asked = await request.json().catch(() => ({})) as { dealer?: unknown }
+      body = asked && [0, 1, 2].includes(asked.dealer as number) ? { dealer: asked.dealer } : {}
+    } else body = await request.json()
   } catch {
     return json(400, { error: 'invalid_request' })
   }

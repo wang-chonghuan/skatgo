@@ -81,6 +81,14 @@ export function open(key: Buffer, token: string): Token {
 
 export const deckOf = (s: string) => s.split(' ').map(card)
 
+/** A deal of the pool at random — dealt by `dealer` when one is named: a private table's next deal
+ *  (SKATGO-61), free play's next deal of a round (SKATGO-88). */
+export function poolDealIndex(p: Pool, dealer?: Seat): number {
+  if (dealer === undefined) return randomInt(p.deals.length)
+  const ids = p.deals.flatMap((d, i) => (d.dealer === dealer ? [i] : []))
+  return ids[randomInt(ids.length)]
+}
+
 /** The computers' moves until it is the player's turn: SkatZero's prepared plans for the auction and the
  *  skat, its cards from the models. */
 function turn(policy: Policy, plans: Record<'1' | '2', SeatPlan>) {
@@ -123,9 +131,12 @@ export function freeRoutes(admissionKey: string, ready: () => boolean, policy: (
     }
   }
 
-  router.post('/new', run(async () => {
+  // A new game; free play's round names the dealer of its next deal, so the deal goes round (SKATGO-88).
+  const newInput = z.object({ dealer: z.union([z.literal(0), z.literal(1), z.literal(2)]).optional() }).strict()
+  router.post('/new', run(async (body) => {
+    const i = newInput.parse(body ?? {})
     const p = pool()!
-    const id = randomInt(p.deals.length)
+    const id = poolDealIndex(p, i.dealer)
     const d = p.deals[id]
     const g = deal(d.dealer, deckOf(d.deck))
     return reply(p, id, Date.now(), [], g, [g])

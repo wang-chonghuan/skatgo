@@ -1,16 +1,19 @@
 import * as stylex from '@stylexjs/stylex'
+import { Link } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { type GameMode, track } from '~/lib/analytics'
 import { type FreeError, freeAct, freeNew, freeResume, freeReview, holdGame, isFreeError, takeCarriedGame } from '~/lib/free-api'
-import type { Move } from '~/lib/skat/game'
-import { type SeatView, gameFromView } from '~/lib/skat/tournament'
+import { type Move, type Seat, next as nextSeat } from '~/lib/skat/game'
+import { type DealReview, type DealSummary, type SeatView, gameFromView, summarize, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { color } from '../../theme/color.stylex'
 import { space } from '../../theme/scale.stylex'
+import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { VsAiTable } from './daily-comparison'
 import { BOT_DELAY, GameTable } from './game-table'
-import { Btn, Panel } from './ui'
+import { Btn, Panel, linkLook } from './ui'
 
 // Free play and lesson 11 on the server (SKATGO-40): a game drawn from the server's pool, played
 // against SkatZero's computers. The page holds the game's token in memory only — no cookie, no
@@ -26,6 +29,13 @@ const problemText = (e: FreeError) =>
 
 type Settled = { humanWon: boolean; humanScore: number }
 
+/** Free play's round (SKATGO-88): six deals, the deal going round as at a real table, so the player sits
+ *  in each position twice; its finished deals, the player's and the AI's from the same seat. Lesson 11 is
+ *  one game, not a round. */
+const ROUND_DEALS = 6
+type Round = { deals: DealSummary[]; ais: (DealSummary | null)[] }
+const NO_ROUND: Round = { deals: [], ais: [] }
+
 export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: GameMode; fullScreen?: boolean; onSettled?: (info: Settled) => void }) {
   const [token, setToken] = useState<string | null>(null)
   const [revision, setRevision] = useState(0)
@@ -37,6 +47,15 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
   const [sending, setSending] = useState(false)
   const [failure, setFailure] = useState<Failure | null>(null)
   const started = useRef(false)
+  const [round, setRound] = useState<Round>(NO_ROUND)
+  const [summary, setSummary] = useState(false)
+  /** Each finished game's review, asked once (SKATGO-86): the result and the round both read it. */
+  const reviews = useRef(new Map<string, Promise<DealReview | FreeError>>())
+  const ask = (t: string) => {
+    let asked = reviews.current.get(t)
+    if (!asked) reviews.current.set(t, (asked = freeReview(t)))
+    return asked
+  }
 
   function take(steps: SeatView[], next: { token: string; revision: number }) {
     setToken(next.token)
@@ -46,9 +65,10 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     setQueue(steps.slice(1))
   }
 
-  async function start() {
+  /** A new game; in a round, dealt by `dealer` (the first deal's dealer is the server's to draw). */
+  async function start(dealer?: Seat) {
     setSending(true)
-    const r = await freeNew()
+    const r = await freeNew(dealer)
     setSending(false)
     if (isFreeError(r)) return setFailure({ text: problemText(r), retry: () => void start() })
     track('game_started', { mode })
@@ -70,19 +90,44 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
 
   /** A game carried here across a change of language (SKATGO-79): taken up where it was, or, when its
    *  token is no longer good, a new one. */
-  async function resume(carried: string) {
+  async function resume(carried: { token: string; round: string | null }) {
     setSending(true)
-    const r = await freeResume(carried)
+    const r = await freeResume(carried.token)
     setSending(false)
     if (isFreeError(r)) return void start()
+    if (carried.round) {
+      try {
+        setRound(JSON.parse(carried.round) as Round)
+      } catch {
+        // A round that does not read is no round: the game goes on as the first deal of a new one.
+      }
+    }
     take(r.steps, r)
   }
-  // Free play's game goes along when the language changes; lesson 11 starts its game again with its step.
+  // Free play's game goes along when the language changes, with its round (SKATGO-88); lesson 11 starts
+  // its game again with its step.
   useEffect(() => {
     if (mode !== 'free') return
-    holdGame(token)
+    holdGame(token, JSON.stringify(round))
     return () => holdGame(null)
-  }, [mode, token])
+  }, [mode, token, round])
+
+  /** After a deal of free play's round: it goes into the round, with the AI's deal from the same seat
+   *  when its review has it; then the next deal, dealt by the next seat, or after the sixth the round's
+   *  result. Lesson 11 just starts its game again. */
+  async function nextDeal(finished: NonNullable<typeof game>) {
+    if (mode !== 'free' || !token) return void start()
+    const r = await ask(token)
+    const played: Round = { deals: [...round.deals, summarize(finished)], ais: [...round.ais, 'error' in r ? null : r.ai] }
+    setRound(played)
+    if (played.deals.length >= ROUND_DEALS) return setSummary(true)
+    void start(nextSeat(finished.dealer))
+  }
+  function newRound() {
+    setRound(NO_ROUND)
+    setSummary(false)
+    void start()
+  }
   useEffect(() => {
     if (started.current) return
     started.current = true
@@ -107,6 +152,23 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
   }, [queue, shown, release])
 
   const game = useMemo(() => (shown ? gameFromView(shown) : null), [shown])
+  if (summary) {
+    return (
+      <div {...stylex.props(styles.summary)}>
+        <Panel>
+          <div data-testid="free-round" {...stylex.props(styles.summaryBody)}>
+            <h2 {...stylex.props(typography.dialogTitle, styles.text)}>{m.free_round_title()}</h2>
+            <VsAiTable deals={round.deals} benchmarks={round.ais} />
+            <div {...stylex.props(styles.row)}>
+              <Btn testId="free-round-new" onClick={newRound}>{m.free_round_new()}</Btn>
+              {/* The table's own way out, as on the felt (free play's leads to the front page). */}
+              <Link to="/" data-testid="skat-leave" {...linkLook('quiet', 'md')}>{m.table_leave()}</Link>
+            </div>
+          </div>
+        </Panel>
+      </div>
+    )
+  }
   if (!game) {
     if (!failure) return null
     return (
@@ -130,11 +192,12 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         busy: sending || queue.length > 0,
         send: (move) => void send(move),
         collect: () => setRelease(true),
-        next: () => void start(),
+        next: () => void nextDeal(game),
         problem: failure ? { text: failure.text, retry: failure.retry, fresh: () => void start() } : null,
         // A finished game, reviewed on request from its own token (SKATGO-79), with the AI's game from the
         // player's seat (SKATGO-86) — free play and lesson 11 alike, the same table.
-        review: token ? () => freeReview(token) : undefined,
+        review: token ? () => ask(token) : undefined,
+        round: mode === 'free' ? { deal: round.deals.length, of: ROUND_DEALS, total: totals(round.deals)[0] } : undefined,
       }}
     />
   )
@@ -143,4 +206,7 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
 const styles = stylex.create({
   text: { margin: 0, color: color.navy },
   row: { display: 'flex', gap: space.x10, paddingTop: space.x10 },
+  // The round's result (SKATGO-88): one reading column in the middle of the screen.
+  summary: { display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: space.x16, minHeight: dims.screenDynamic, boxSizing: 'border-box' },
+  summaryBody: { display: 'flex', flexDirection: 'column', gap: space.x16, width: '100%', maxWidth: dims.readingColumn },
 })

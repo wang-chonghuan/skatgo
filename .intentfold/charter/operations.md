@@ -32,9 +32,9 @@ admission flow for rooms is shipped yet: integration clients require a separate 
 The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily` and free play
 (SKATGO-40) under `/free`. Their one client is the web service, which holds the admission key. Free
 play stores nothing: each game is an encrypted token keyed from the admission key, so changing that
-key ends the games in progress. A finished deal's review — the AI's cards in its play record — is
-SkatZero's work on this instance, per request (`/daily/review`, `/free/review`, SKATGO-79); nothing of
-it is stored.
+key ends the games in progress. A finished deal's review — the AI's cards in its play record, and in free
+play the AI's own game from the player's seat (SKATGO-86) — is SkatZero's work on this instance, per
+request (`/daily/review`, `/free/review`, SKATGO-79); nothing of it is stored.
 Only one database-fenced process owns rooms; liveness and gameplay readiness are separate.
 The service is ready only once two things are in place:
 - SkatZero's nine models are loaded, hash-verified and warmed (SKATGO-38);

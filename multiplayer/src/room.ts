@@ -1,12 +1,11 @@
 import { Room, ServerError, type Client } from '@colyseus/core'
 import { StateView } from '@colyseus/schema'
 import { z } from 'zod'
-import { randomInt } from 'node:crypto'
 import { actor, collectTrick, type Seat } from '../../app/src/lib/skat/game'
 import { cleanNickname } from '../../app/src/lib/skat/nickname'
 import { ticketValid } from '../../app/src/lib/room-ticket'
 import { computerTurn, decided, type Logged } from './computers'
-import { deckOf, plan, type Pool } from './free'
+import { deckOf, plan, poolDealIndex, type Pool } from './free'
 import {
   applyAction, applySeatMove, commandSchema, GRACE_MS, hash, privateView, publicView,
   Rejected, scoreEnded, secretEquals, tokenSchema, TTL_MS, type PoolDeal, type Snapshot,
@@ -34,8 +33,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
   const pick = (dealer: Seat): PoolDeal => {
     const p = pool()
     if (!p) throw new Rejected('not_ready')
-    const ids = p.deals.flatMap((d, i) => (d.dealer === dealer ? [i] : []))
-    const d = p.deals[ids[randomInt(ids.length)]]
+    const d = p.deals[poolDealIndex(p, dealer)]
     return { dealer: d.dealer, deck: deckOf(d.deck), plans: d.computers }
   }
   return class SkatRoom extends Room<{ state: InstanceType<typeof MatchState> }> {

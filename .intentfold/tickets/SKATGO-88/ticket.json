@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-88",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-88",
+  "branch": "SKATGO-88-free-round",
+  "base": "48e0e73936f4c0b3fa2f3fd4887d5b2a99944042",
+  "ports": { "web": 55088, "multiplayer": 56088, "database": 57088 }
+}

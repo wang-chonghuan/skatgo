@@ -271,6 +271,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   its round in the strip as the tournament does, "Spiel n von 6 · gesamt X"; after the sixth deal the
   round's result takes the felt's place: a white panel with its `VsAiTable`, "Neue Runde" (`go`) and
   "Tisch verlassen" (`quiet`) (SKATGO-88).
+- **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
+  felt's top right corner, the size of the assistant's launcher across from it at the top left, on every
+  full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"
+  (`quiet`, which asks once more: "Ja, neue Runde" `stop`, "Nein, weiterspielen" `quiet`), and "Tisch
+  verlassen" (`stop`). The side panel has no way out of its own.
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
   without JavaScript, in the lobby's own tokens and typography — never hidden keyword text or new
   decorative containers.

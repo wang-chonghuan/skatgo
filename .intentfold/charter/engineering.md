@@ -161,8 +161,10 @@ also built from the repository root. Neither project imports the other's runtime
   - The server keeps nothing per game. The game is an AES-256-GCM token (key derived by HKDF from
     the admission key, label `skatgo-free/1`, 24 h lifetime) holding the deal's index, the pool
     version, the start time and every move, the computers' included.
-  - Replay runs the engine only; a computer is asked only for new moves. There is no cookie and no
-    browser storage; a reload starts a new game and a new round.
+  - Replay runs the engine only; a computer is asked only for new moves. There is no cookie. The
+    browser keeps the token and the round's finished deals in `localStorage` (`skatgo.free.v1`,
+    SKATGO-96), so a reload or a later visit takes the game up through `/free/resume`; when the round
+    is over it is forgotten, and a token past its day starts a new round.
   - A round of six deals (SKATGO-88) is the page's: `/free/new` takes the dealer of the round's next
     deal and draws a pool deal with that dealer (`poolDealIndex` in `src/free.ts`, which private tables
     use too); the first deal's dealer is drawn at random.

@@ -295,6 +295,9 @@
   "nav_menu": "Menu",
   "nav_home_link": "Home",
 
+  "table_menu": "Menu",
+  "table_continue": "Keep playing",
+  "table_menu_back": "No, keep playing",
   "table_leave": "Leave the table",
   "table_history": "Bidding",
   "table_game_tab": "Game",
@@ -483,6 +486,8 @@
   "free_round_result": "See the round",
   "free_round_title": "Your round",
   "free_round_new": "New round",
+  "free_round_abandon": "Give up this round? You start again from deal 1.",
+  "free_round_abandon_yes": "Yes, new round",
   "free_new_game": "New game",
   "free_unreachable": "Can't reach the server. Check your connection, then try again.",
   "friends_meta_title": "Play Skat online with friends – private table",

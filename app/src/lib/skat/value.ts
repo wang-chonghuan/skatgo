@@ -117,7 +117,10 @@ export function settle(
     const value = decl.hand
       ? decl.ouvert ? NULL_VALUES.handOuvert : NULL_VALUES.hand
       : decl.ouvert ? NULL_VALUES.ouvert : NULL_VALUES.plain
-    const won = outcome.declarerTricks === 0
+    // A Null's value is fixed, so one below the bid is lost whatever happens (ISkO 3.4.4, SKATGO-98). Such a
+    // Null is refused when announced; this settles any announced before that.
+    const overbid = value < bid
+    const won = !overbid && outcome.declarerTricks === 0
     return {
       won,
       value,
@@ -126,8 +129,8 @@ export function settle(
       parts: [],
       multiplier: 1,
       matadors: { with: true, count: 0 },
-      overbid: false,
-      reason: { kind: won ? 'nullWon' : 'nullLost' },
+      overbid,
+      reason: overbid ? { kind: 'overbid', worth: value, bid } : { kind: won ? 'nullWon' : 'nullLost' },
     }
   }
 
@@ -190,6 +193,31 @@ export function expectedValue(decl: Declaration, declarerCards: Card[]): number 
   if (decl.schwarzAnnounced) mult += 2
   if (decl.ouvert) mult++
   return baseValue(decl.contract) * mult
+}
+
+/**
+ * The most a declaration can be worth if it is won: every level it can still reach — Schneider and Schwarz
+ * played out — on top of what it announces (ISkO 3.4.3, „die höchstmögliche Gewinnstufe“). A Null's value is fixed.
+ */
+export function highestValue(decl: Declaration, declarerCards: Card[]): number {
+  if (decl.contract.kind === 'null') return expectedValue(decl, declarerCards)
+  const notYet = (decl.schneiderAnnounced ? 0 : 1) + (decl.schwarzAnnounced ? 0 : 1)
+  return expectedValue(decl, declarerCards) + baseValue(decl.contract) * notYet
+}
+
+const SUIT_AND_GRAND: Contract[] = [...(['C', 'S', 'H', 'D'] as const).map((trump): Contract => ({ kind: 'suit', trump })), { kind: 'grand' }]
+
+/**
+ * Whether the declarer may announce `decl` at this bid (ISkO 3.4.2–3.4.4, SKATGO-98): only a game that can
+ * reach the bid, and never a Null worth less. When no suit game or Grand can reach it any more — a top
+ * Jack found in the skat — any of them may be announced, and it is lost as overbid (3.4.3, 5.4.1).
+ * `declarerCards` are the cards the declarer can count matadors over: in a Hand game the ten alone.
+ */
+export function mayDeclare(decl: Declaration, bid: number, declarerCards: Card[]): boolean {
+  if (decl.contract.kind === 'null') return expectedValue(decl, declarerCards) >= bid
+  if (highestValue(decl, declarerCards) >= bid) return true
+  const all = (contract: Contract): Declaration => ({ contract, hand: decl.hand, schneiderAnnounced: decl.hand, schwarzAnnounced: decl.hand, ouvert: decl.hand })
+  return SUIT_AND_GRAND.every((c) => highestValue(all(c), declarerCards) < bid)
 }
 
 export const trickPoints = pointsOf

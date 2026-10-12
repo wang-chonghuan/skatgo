@@ -11,7 +11,7 @@ import {
   type SeatView,
 } from '../../app/src/lib/skat/tournament'
 import { cleanNickname, pickName } from '../../app/src/lib/skat/nickname'
-import { actionSchema, applySeatMove, computerMove, Rejected, secretEquals, secureDeck } from './model'
+import { actionSchema, applySeatMove, computerMove, refuseUnlawful, Rejected, secretEquals, secureDeck } from './model'
 import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
 import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzero/bidding'
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, judgePlays, playsOf, raw, replayLog, reviewOf, skatzeroTurn } from './computers'
@@ -331,7 +331,9 @@ export async function dailyAct(store: Store, policy: Policy, input: z.infer<type
     const steps: Game[] = []
     let current: Game | null
     if (computer === HEURISTIC) {
-      const g = applySeatMove(replay(specs[input.deal], moves as Move[]), PLAYER, move)
+      const at = replay(specs[input.deal], moves as Move[])
+      refuseUnlawful(at, move)
+      const g = applySeatMove(at, PLAYER, move)
       steps.push(g)
       untilPlayer(g, steps)
       moves.push(move)
@@ -340,6 +342,7 @@ export async function dailyAct(store: Store, policy: Policy, input: z.infer<type
       const log = moves as Logged[]
       let g = replayLog(specs[input.deal].dealer, specs[input.deal].deck, log)
       if (actor(g) !== PLAYER) throw new Rejected('not_your_turn')
+      refuseUnlawful(g, move)
       g = applySeatMove(g, PLAYER, move)
       log.push({ seat: PLAYER, move })
       steps.push(g)

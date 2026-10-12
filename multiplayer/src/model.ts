@@ -2,7 +2,7 @@ import { createHash, randomInt, timingSafeEqual } from 'node:crypto'
 import { z } from 'zod'
 import { fullDeck, type Card } from '../../app/src/lib/skat/cards'
 import {
-  actor, adviceFor, aiBid, aiDeclare, applyMove, bidAction, collectTrick, deal, declare, next,
+  actor, adviceFor, aiBid, aiDeclare, applyMove, bidAction, collectTrick, deal, declare, mayAnnounce, next,
   playCard, type Game, type Move, type Seat,
 } from '../../app/src/lib/skat/game'
 import { declarationAdvice } from '../../app/src/lib/skat/ai'
@@ -116,6 +116,7 @@ export function applyAction(s: Snapshot, seat: Seat, action: Command['action'], 
     return
   }
   if (!s.game) throw new Rejected('not_your_turn')
+  refuseUnlawful(s.game, action)
   s.game = applySeatMove(s.game, seat, action)
   scoreEnded(s)
 }
@@ -130,6 +131,11 @@ export function scoreEnded(s: Snapshot) {
   const add = seegerFabian(s.game)
   s.scores = s.scores.map((n, i) => n + add[i]) as Snapshot['scores']
   s.scored = s.deals
+}
+/** A person's new move: a declaration the rules do not allow is refused (ISkO 3.4.2–3.4.4, SKATGO-98). Only
+ *  new moves are checked; a game recorded before replays as it was played. */
+export function refuseUnlawful(g: Game, move: Move | Command['action']) {
+  if (move.type === 'declare' && !mayAnnounce(g, move.declaration)) throw new Rejected('illegal_action')
 }
 /** A seat's move through the engine, refused unless it is that seat's turn and the move is legal. The
  *  defenders may give up a Null at any empty trick, whoever's lead it is (SKATGO-59). */

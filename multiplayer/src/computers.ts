@@ -1,5 +1,5 @@
 import { type Card, type Contract, sameCard, sortHand } from '../../app/src/lib/skat/cards'
-import { claimLine, collectTrick, concedable, deal, pickUpSkat, roleOf, actor, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
+import { claimLine, collectTrick, concedable, deal, discard, mayAnnounce, pickUpSkat, playHand, roleOf, actor, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { type Declaration, nextBid } from '../../app/src/lib/skat/value'
 import { declarationAdvice } from '../../app/src/lib/skat/ai'
 import { type DealReview, PLAYER, auctionOf, summarize, type Differ } from '../../app/src/lib/skat/tournament'
@@ -102,6 +102,15 @@ export function declaration(mode: PickupMode | HandMode): Declaration {
   return { contract, hand, schneiderAnnounced: false, schwarzAnnounced: false, ouvert: base === 'NO' }
 }
 
+/** SkatZero's game, or — when the rules do not let it be announced at this bid (ISkO 3.4.2–3.4.4, SKATGO-98) —
+ *  the best game they do, ranked as the course ranks it. `at` is the declarer's table at the announcement. */
+function lawful(at: Game, d: Declaration): Declaration {
+  if (mayAnnounce(at, d)) return d
+  const seat = at.declarer!
+  const known = at.pickedUp ? [...at.hands[seat], ...at.skat] : at.hands[seat]
+  return declarationAdvice(at.hands[seat], known, at.bid, !at.pickedUp, (x) => mayAnnounce(at, x)).declaration
+}
+
 /** What a computer seat decided about the auction when its deal was prepared (SKATGO-39). */
 export type SeatPlan = {
   /** SkatZero's highest bid; 17 or 0 is a pass everywhere (SKATGO-39 Q2). */
@@ -123,28 +132,30 @@ export async function skatzeroTurn(g: Game, seat: Seat, plan: SeatPlan, policy: 
   }
   if (g.phase === 'skat' && !g.pickedUp) {
     const choice = plan.skatOrHand(g.bid)
-    if (!choice.pickup) return [{ seat, move: { type: 'hand' } }, { seat, move: { type: 'declare', declaration: declaration(choice.mode) } }]
+    if (!choice.pickup) return [{ seat, move: { type: 'hand' } }, { seat, move: { type: 'declare', declaration: lawful(playHand(g), declaration(choice.mode)) } }]
     const picked = pickUpSkat(g)
     const position = POSITION[roleOf(seat, g.dealer)]
     const d = await decide(declareAfterPickup(policy, picked.hands[seat].map(raw), position, g.bid))
-    return [{ seat, move: { type: 'pickup' } }, { seat, move: { type: 'discard', cards: d.discard.map(card) } }, { seat, move: { type: 'declare', declaration: declaration(d.mode) } }]
+    const put = d.discard.map(card)
+    return [{ seat, move: { type: 'pickup' } }, { seat, move: { type: 'discard', cards: put } }, { seat, move: { type: 'declare', declaration: lawful(discard(picked, put), declaration(d.mode)) } }]
   }
   // A computer standing in at a private table (SKATGO-61) may find the person's skat step half done.
   const position = POSITION[roleOf(seat, g.dealer)]
   if (g.phase === 'skat') {
     const d = await decide(declareAfterPickup(policy, g.hands[seat].map(raw), position, g.bid))
-    return [{ seat, move: { type: 'discard', cards: d.discard.map(card) } }, { seat, move: { type: 'declare', declaration: declaration(d.mode) } }]
+    const put = d.discard.map(card)
+    return [{ seat, move: { type: 'discard', cards: put } }, { seat, move: { type: 'declare', declaration: lawful(discard(g, put), declaration(d.mode)) } }]
   }
   if (g.phase === 'declare' && g.pickedUp) {
     const d = await decide(declareAfterPickup(policy, [...g.hands[seat], ...g.skat].map(raw), position, g.bid))
-    return [{ seat, move: { type: 'declare', declaration: declaration(d.mode) } }]
+    return [{ seat, move: { type: 'declare', declaration: lawful(g, declaration(d.mode)) } }]
   }
   if (g.phase === 'declare') {
     // The person chose Hand: the plan's Hand game, or — when the plan would have picked up — the game
     // the course's advice names for these ten cards.
     const choice = plan.skatOrHand(g.bid)
     const d = choice.pickup ? declarationAdvice(g.hands[seat], g.hands[seat], g.bid, true).declaration : declaration(choice.mode)
-    return [{ seat, move: { type: 'declare', declaration: d } }]
+    return [{ seat, move: { type: 'declare', declaration: lawful(g, d) } }]
   }
   throw new ComputerFailed('computer_unexpected_phase')
 }

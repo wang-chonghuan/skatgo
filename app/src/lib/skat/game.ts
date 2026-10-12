@@ -17,7 +17,7 @@ import {
 } from './cards'
 import { type Advice, advise, chooseDeclaration, maxBid } from './ai'
 import { minus, nullBeaten, restLine } from './rest'
-import { BID_LADDER, type Declaration, type Settlement, nextBid, settle } from './value'
+import { BID_LADDER, type Declaration, type Settlement, mayDeclare, nextBid, settle } from './value'
 
 export type Seat = 0 | 1 | 2
 export const next = (s: Seat): Seat => ((s + 1) % 3) as Seat
@@ -209,6 +209,15 @@ export function normalise(d: Declaration, pickedUp: boolean): Declaration {
   if (pickedUp) return { ...d, hand: false, schneiderAnnounced: false, schwarzAnnounced: false, ouvert: false }
   const schwarz = d.schwarzAnnounced || d.ouvert
   return { ...d, hand: true, schwarzAnnounced: schwarz, schneiderAnnounced: d.schneiderAnnounced || schwarz }
+}
+
+/** Whether the declarer may announce `d` now (ISkO 3.4.2–3.4.4, SKATGO-98), by the cards they can count: the
+ *  ten and the two put away, or in a Hand game the ten alone. The engine itself takes any announcement, so a
+ *  game recorded before still replays; a person's new one is checked with this (multiplayer `model.ts`). */
+export function mayAnnounce(g: Game, d: Declaration): boolean {
+  if (g.declarer === null) return false
+  const known = g.pickedUp ? [...g.hands[g.declarer], ...g.skat] : g.hands[g.declarer]
+  return mayDeclare(normalise(d, g.pickedUp), g.bid, known)
 }
 
 export function declare(g: Game, d: Declaration): Game {

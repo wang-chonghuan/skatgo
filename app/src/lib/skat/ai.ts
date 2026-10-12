@@ -148,28 +148,39 @@ export type DeclarationAdvice = {
  * they rank it. `known` is what the declarer can count matadors over — the ten plus the two put away,
  * or, in a Hand game, the ten alone (the skat is unseen). Like the computers, it announces nothing.
  */
-export function declarationAdvice(ten: Card[], known: Card[], bid: number, hand: boolean): DeclarationAdvice {
+export function declarationAdvice(ten: Card[], known: Card[], bid: number, hand: boolean, allowed?: (d: Declaration) => boolean): DeclarationAdvice {
+  // `allowed` keeps to the games the rules let the declarer announce (SKATGO-98): the learner's hint and a
+  // computer standing in. Without it the ranking is as it always was, so heuristic days replay unchanged.
+  if (allowed) {
+    const kept = declarationAdviceAmong(ten, known, bid, hand, allowed)
+    if (kept) return kept
+  }
+  return declarationAdviceAmong(ten, known, bid, hand)!
+}
+
+function declarationAdviceAmong(ten: Card[], known: Card[], bid: number, hand: boolean, allowed?: (d: Declaration) => boolean): DeclarationAdvice | null {
   // The computers choose discard and contract together. When the learner kept exactly the ten they
   // would keep (e.g. by following the discard hint), the advice is their contract — so the discard
   // hint and this one never contradict each other. Otherwise the contracts are ranked, their way, on
   // the ten the learner actually kept.
   const theirs = hand ? null : chooseDeclaration(known, bid)
-  const keptTheirs = theirs && ten.length === known.length - 2 && theirs.discard.every((d) => !ten.some((c) => sameCard(c, d)))
+  const keptTheirs = theirs && ten.length === known.length - 2 && theirs.discard.every((d) => !ten.some((c) => sameCard(c, d))) && (!allowed || allowed(theirs.declaration))
   let best: { plan: Plan; value: number; rank: number } | null = null
   for (const contract of ALL_CONTRACTS) {
     if (keptTheirs && JSON.stringify(contract) !== JSON.stringify(theirs.declaration.contract)) continue
     const plan = planFor(ten, contract)
-    if (!plan) continue
+    if (!plan || (allowed && !allowed({ ...plan.declaration, hand }))) continue
     const value = expectedValue({ ...plan.declaration, hand }, known)
     const rank = rankOf(plan, value, bid)
     if (!best || rank > best.rank) best = { plan, value, rank }
   }
-  const { contract } = best!.plan.declaration
+  if (!best) return null
+  const { contract } = best.plan.declaration
   return {
-    declaration: { ...best!.plan.declaration, hand },
-    value: best!.value,
-    covers: best!.value >= bid,
-    strong: best!.plan.score >= 1,
+    declaration: { ...best.plan.declaration, hand },
+    value: best.value,
+    covers: best.value >= bid,
+    strong: best.plan.score >= 1,
     trumps: contract.kind === 'null' ? 0 : ten.filter((c) => isTrump(c, contract)).length,
     aces: ten.filter((c) => c.rank === 'A' && !isTrump(c, contract)).length,
     jacks: ten.filter((c) => c.rank === 'J').length,

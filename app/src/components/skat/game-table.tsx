@@ -26,13 +26,14 @@ import {
   legalFor,
   next,
   playCard,
+  mayAnnounce,
   normalise,
   roleOf,
   runningPoints,
   trickWinner,
 } from '~/lib/skat/game'
 import { type DealSummary, seegerFabian, summarize, totals } from '~/lib/skat/tournament'
-import { BID_LADDER, type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
+import { BID_LADDER, type Declaration, baseValue, expectedValue, highestValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
 import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
@@ -1062,6 +1063,20 @@ function DeclarePicker({
     normalise({ contract, hand: isHand, schneiderAnnounced: false, schwarzAnnounced: false, ouvert: false, ...extra }, game.pickedUp)
   const value = draft ? expectedValue(draft, known) : null
   const same = (a: Contract, b: Contract) => JSON.stringify(a) === JSON.stringify(b)
+  // Only a game that can reach the bid may be announced (ISkO 3.4.2–3.4.4, SKATGO-98, the human: 「明明已经灰了……
+  // 但是还能选择」). A tile is open when its game can, at the most it may be announced at; the button when the
+  // game as chosen can.
+  const open = (c: Contract) => mayAnnounce(game, make(c, { ouvert: isHand || c.kind === 'null' }))
+  const lawful = draft !== null && mayAnnounce(game, draft)
+  const note = (d: Declaration, v: number) => {
+    const name = `${contractName(d.contract)}${d.hand ? ' Hand' : ''}`
+    if (v >= game.bid) return m.declare_covers({ contract: name, value: v, bid: game.bid })
+    if (!lawful) return m.declare_short_of({ contract: name, bid: game.bid })
+    if (highestValue(d, known) < game.bid) return m.declare_forced({ bid: game.bid })
+    return !d.schneiderAnnounced && v + baseValue(d.contract) >= game.bid
+      ? m.declare_needs_schneider({ contract: name, value: v, bid: game.bid })
+      : m.declare_needs_schwarz({ contract: name, value: v, bid: game.bid })
+  }
 
   return (
     <div {...stylex.props(styles.declare)}>
@@ -1069,18 +1084,21 @@ function DeclarePicker({
         {CONTRACTS.map((c) => {
           const v = expectedValue(make(c), known)
           const chosen = draft !== null && same(draft.contract, c)
+          const allowed = open(c)
           return (
             <button
               key={JSON.stringify(c)}
               type="button"
               data-testid={`skat-contract-${c.kind === 'suit' ? c.trump : c.kind}`}
               data-covers={String(v >= game.bid)}
+              data-allowed={String(allowed)}
+              disabled={!allowed}
               aria-pressed={chosen}
               onClick={() => setDraft(make(c))}
-              {...stylex.props(typography.contractTile, styles.contractBtn, contractTint[tintOf(c)], chosen && styles.contractChosen, v < game.bid && styles.contractShort)}
+              {...stylex.props(typography.contractTile, styles.contractBtn, contractTint[tintOf(c)], chosen && styles.contractChosen, !allowed && styles.contractShort)}
             >
               <span><Rich text={contractName(c)} /></span>
-              <span {...stylex.props(typography.micro, styles.contractValue)}>{m.declare_worth({ value: v })}{v < game.bid ? m.declare_short() : ''}</span>
+              <span {...stylex.props(typography.micro, styles.contractValue)}>{m.declare_worth({ value: v })}{allowed ? '' : m.declare_short()}</span>
             </button>
           )
         })}
@@ -1105,15 +1123,13 @@ function DeclarePicker({
       {draft && value !== null ? (
         <Panel tone={value >= game.bid ? 'good' : 'bad'}>
           <p {...stylex.props(typography.note, styles.note)}>
-            {value >= game.bid
-              ? m.declare_covers({ contract: `${contractName(draft.contract)}${draft.hand ? ' Hand' : ''}`, value, bid: game.bid })
-              : m.declare_overbid({ contract: contractName(draft.contract), value, bid: game.bid })}
-            {isHand && draft.contract.kind !== 'null' ? m.declare_hand_note() : ''}
+            {note(draft, value)}
+            {isHand && draft.contract.kind !== 'null' && lawful ? m.declare_hand_note() : ''}
           </p>
         </Panel>
       ) : null}
       <Row>
-        <Btn testId="skat-declare" shape="block" size="lg" grow disabled={!draft} onClick={() => draft && onDeclare(draft)}>{m.declare_go()}</Btn>
+        <Btn testId="skat-declare" shape="block" size="lg" grow disabled={!lawful} onClick={() => draft && lawful && onDeclare(draft)}>{m.declare_go()}</Btn>
         {onHint ? <Btn testId="skat-declare-hint" tone="info" shape="block" size="lg" onClick={onHint}>{m.declare_hint_button()}</Btn> : null}
       </Row>
     </div>

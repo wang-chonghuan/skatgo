@@ -278,6 +278,29 @@ function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
  * in the player's deal over the AI's, and under each what the deal was. What happened
  * trick by trick is the analysis beside it (`DealAnalysis`).
  */
+/**
+ * A finished free game against the AI (SKATGO-86): the same score sheet as a daily deal's, the player's
+ * deal at once and the AI's from the player's seat once the review that works it out arrives. `ask` is the
+ * game's review, asked once; the play record shares it.
+ */
+export function FreeVsAi({ mine, ask }: { mine: DealSummary; ask: AskReview }) {
+  const [ai, setAi] = useState<DealSummary | null>(null)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    void ask().then((r) => ('error' in r || !r.ai ? setFailed(true) : setAi(r.ai)))
+    // Once, when the result is shown.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return (
+    <div data-testid="free-vs-ai" data-state={ai ? 'ready' : failed ? 'failed' : 'loading'} {...stylex.props(styles.analysis)}>
+      <DealVsAi mine={mine} ai={ai} />
+      {ai ? null : (
+        <p role={failed ? 'alert' : undefined} {...stylex.props(typography.note, styles.muted)}>{failed ? m.free_ai_failed() : m.free_ai_loading()}</p>
+      )}
+    </div>
+  )
+}
+
 export function DealVsAi({ mine, ai }: { mine: DealSummary; ai: DealSummary | null }) {
   return (
     <section

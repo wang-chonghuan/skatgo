@@ -475,6 +475,8 @@
   "daily_review_clean": "Every card you played was the AI’s choice too.",
   "daily_review_marks": "Where the AI would have played another card, the play record shows it under yours.",
   "daily_review_failed": "The review isn’t working right now. Try again in a moment.",
+  "free_ai_loading": "The AI is playing this deal from your seat …",
+  "free_ai_failed": "The AI's game could not be worked out just now.",
   "free_new_game": "New game",
   "free_unreachable": "Can't reach the server. Check your connection, then try again.",
   "friends_meta_title": "Play Skat online with friends – private table",

@@ -132,8 +132,9 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         collect: () => setRelease(true),
         next: () => void start(),
         problem: failure ? { text: failure.text, retry: failure.retry, fresh: () => void start() } : null,
-        // Free play's finished game, reviewed on request from its own token (SKATGO-79); not lesson 11.
-        review: mode === 'free' && token ? () => freeReview(token) : undefined,
+        // A finished game, reviewed on request from its own token (SKATGO-79), with the AI's game from the
+        // player's seat (SKATGO-86) — free play and lesson 11 alike, the same table.
+        review: token ? () => freeReview(token) : undefined,
       }}
     />
   )

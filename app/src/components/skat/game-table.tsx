@@ -47,7 +47,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { type AskReview, DealAnalysis, DealVsAi, dailyAsk, gameLine, signed } from './daily-comparison'
+import { type AskReview, DealAnalysis, DealVsAi, FreeVsAi, dailyAsk, signed } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
@@ -942,6 +942,7 @@ function Actions(p: ActionsProps) {
       <Dialog>
         <Say>{p.dealScore === null ? m.table_passed_in() : m.daily_passed_in()}</Say>
         {p.daily?.compare}
+        {p.freeReview ? <FreeVsAi mine={summarize(game)} ask={p.freeReview} /> : null}
         {p.daily?.day}
         {p.roomAfter}
         <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={p.onNewGame}>
@@ -1127,6 +1128,9 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
   const d = game.declaration!
   const humanWon = declarer === ME ? r.won : !r.won
   const isNull = d.contract.kind === 'null'
+  // A free game's review, asked once (SKATGO-86): the score sheet against the AI and the play record share it.
+  const [reviewed] = useState(() => freeReview?.())
+  const askReviewed: AskReview | undefined = reviewed ? () => reviewed : undefined
   // On a phone the settlement opens below the fold; bring it into view, or the game just seems to stop.
   const panel = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -1195,28 +1199,24 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
           {next}
           {daily.analysis}
         </div>
-      ) : freeReview ? (
-        // Free play (SKATGO-79): what the game was and who wrote what, the way on, then the play record
-        // with the AI's cards, the skat and the sum.
+      ) : askReviewed ? (
+        // Free play and lesson 11 (SKATGO-79, SKATGO-86): won or lost, the score sheet — the player's deal
+        // over the AI's from the same seat, in Seeger-Fabian — the way on, then the play record with the
+        // AI's cards, the skat and the sum.
         <>
           <Panel tone={humanWon ? 'good' : 'bad'}>
             <div {...stylex.props(styles.resultBody)}>
               <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
               {early}
-              <p data-testid="skat-result-line" {...stylex.props(typography.note, styles.note)}>
-                <Rich text={gameLine(summarize(game), [nameOf(0), nameOf(1), nameOf(2)])} />
-              </p>
-              <p {...stylex.props(typography.note, styles.note)}>
-                <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score), nameOf)} />
-              </p>
             </div>
           </Panel>
+          <FreeVsAi mine={summarize(game)} ask={askReviewed} />
           {next}
           <DealAnalysis
             testId="free-play-record"
             deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null, hand: startHand(game) }}
             names={[nameOf(0), nameOf(1), nameOf(2)]}
-            ask={freeReview}
+            ask={askReviewed}
             footer={<p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>}
           />
         </>

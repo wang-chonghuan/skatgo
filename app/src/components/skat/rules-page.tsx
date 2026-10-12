@@ -36,6 +36,8 @@ export function RulesPage() {
             <Rich text={text} />
           </p>
         ))}
+        {/* For a beginner who only wants to start (SKATGO-89): the twelve rules on one page. */}
+        <Link to="/course/quick-start" data-testid="rules-quick" {...stylex.props(typography.appLink, styles.lessonLink)}>{m.quick_rules_link()}</Link>
         <Ways />
         <PrintLinks />
 

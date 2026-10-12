@@ -7,6 +7,7 @@ import { PrintLinks } from './print-links'
 import { track } from '~/lib/analytics'
 import { lessons } from '~/lib/skat/lessons/content'
 import { GUIDES } from '~/lib/skat/lessons/guide'
+import { QUICK_START } from '~/lib/skat/quickstart'
 import { type LessonRecord, type Tally, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
@@ -57,6 +58,13 @@ export function CourseHome() {
             <Pill tone="quiet">{m.home_pill_saved()}</Pill>
           </div>
         </section>
+
+        {/* Skat in 5 Minuten (SKATGO-89): the twelve rules on one page, for whoever wants to play first and
+            learn on the way — a card like the lessons', so the progress card keeps the one green button. */}
+        <Link to="/course/quick-start" data-testid="skat-quick-card" {...stylex.props(styles.card)}>
+          <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{QUICK_START[getLocale()].h1}</span>
+          <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{m.quick_course_text()}</span>
+        </Link>
 
         {/* The featured card: where the learner is and the one way on — the lesson to take next, or, once
             the course is done, the table (SKATGO-8, SKATGO-29). */}

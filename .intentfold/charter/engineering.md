@@ -82,11 +82,12 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/ask/` | the assistant's server side: the page context it is given, the limits, the model call, and the `/api/ask` handler (with an optional session lookup for rate-limit identity) |
 | `app/src/start.ts` | Clerk's request middleware, which hands each page its session state |
 | `app/src/skat-layout.tsx` | the frame around every page: the front page's header over every page but the tables (lessons included since SKATGO-47; the rail, tab bar and coloured band are gone), or the full-screen table; the legal footer and the floating assistant. The header's pieces — links, language menu, card-colour settings, sign-in — are `components/skat/frame.tsx` |
-| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/$slug` (a lesson), `/rules`, `/rules/bidding-table` (SKATGO-50), `/rules/score-sheet` and `/rules/printable` (the printables, SKATGO-53), `/daily` and `/daily/play` (`?deals=12` for the 12-deal tournament, SKATGO-77), `/play`, `/with-friends` and `/table/$id` (private tables, SKATGO-61), `/skat-tricks` (SKATGO-82), `/privacy`, `/terms`; each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
+| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/quick-start` ("Skat in 5 Minuten", SKATGO-89; its Paraglide pattern stands ahead of the lessons' so its address is never read as a slug), `/course/$slug` (a lesson), `/rules`, `/rules/bidding-table` (SKATGO-50), `/rules/score-sheet` and `/rules/printable` (the printables, SKATGO-53), `/daily` and `/daily/play` (`?deals=12` for the 12-deal tournament, SKATGO-77), `/play`, `/with-friends` and `/table/$id` (private tables, SKATGO-61), `/skat-tricks` (SKATGO-82), `/privacy`, `/terms`; each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`) is cut from it by `.intentfold/tickets/SKATGO-23/icons.mjs` — regenerate them, never edit them |
 | `app/brand/cards/`, `app/public/cards/` | the playing cards' pictures (SKATGO-66): the court figures of both decks, the German Daus and suit symbols, and the back, generated with Azure OpenAI `gpt-image-2` by `generate.sh` from `prompts/`, each call in `calls.txt` and each master's request beside it (`masters/*.png.json`); the masters are lossless WebP, pixel for pixel the model's PNGs, which stay out of git; `PROVENANCE.md` says how and that no commercial deck was copied. The served WebP files are cut from the masters by `app/scripts/make-card-images.mjs` — regenerate them, never edit them. |
 | `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: the day's tournaments by size (`DAILY_SIZES`, SKATGO-77), what seat 0 may see of a deal (`seatView`, also free play's), that view as a table, Seeger-Fabian, and a finished deal's review (`DealReview`, SKATGO-79) |
+| `app/src/lib/skat/quickstart.ts`, `app/src/components/skat/quick-start-page.tsx` | Skat in 5 Minuten (SKATGO-89): the twelve rules per language as data, and the page, whose cards — points and orders — are drawn from `cards.ts` |
 | `app/src/lib/skat/tricks/`, `app/src/components/skat/tricks-page.tsx` | the Skat-Tricks (SKATGO-82): the articles' text per language as data (`content.{de,en}.ts`; numbers a reader could check come from `value.ts` and `cards.ts`), held to the ticket by `tricks.test.ts`, and the page that renders them on the server; a later article is more content and its own address under `/skat-tricks` |
 | `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36) |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
@@ -267,6 +268,10 @@ the committed fixture (`test/fixtures/skatzero-parity.json`, produced by that dr
 - `app/public/og/*.png` — the link-preview pictures, one per page and language, drawn from each page's
   h1: `node .intentfold/tickets/SKATGO-50/og.mjs <running origin> <page path>…` (Playwright from app's
   devDependencies). Redraw a page's picture when its h1 changes.
+- `app/public/quick-start-table-{de,en}.webp` — the table on "Skat in 5 Minuten" (SKATGO-89), caught in a
+  real free game by `node .intentfold/tickets/SKATGO-89/table-shot.mjs <running origin>` (web and
+  multiplayer running, Playwright from app's devDependencies, `cwebp`). Redraw it when the table's look
+  changes.
 - `app/public/downloads/*.pdf` — the printables (SKATGO-53), printed from their pages. Rerun after the
   printables' text, the rules engine's numbers or the print styles change, and commit the PDFs:
 

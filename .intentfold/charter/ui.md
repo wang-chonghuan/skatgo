@@ -232,8 +232,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     the tricks ("Skat-Tricks", `tileNavy`, SKATGO-82; it held the puzzles' "coming soon" before) and a
     private table (`tileRed`);
   - plain links to the rules and the course, and the questions people ask.
-- **A sub-page** (the course, a lesson, the rules, the bidding table, the score sheet, the short rules,
-  the daily tournament, the Skat-Tricks, the legal pages), on the grey page: its title is the column's first element, an
+- **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
+  the short rules, the daily tournament, the Skat-Tricks, the legal pages), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
   tournament's page puts a switch of two pills under its lead, "6 Spiele | 12 Spiele" (SKATGO-77,
@@ -241,7 +241,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",
   "Gestern", or the weekday and date — and steps through the last seven days with two round arrow
   buttons at the right, earlier on the left, the one at the end of the range spent (SKATGO-80). A
-  printable has its download beside the title (`TitleWithDownload`). An article of the Skat-Tricks
+  printable has its download beside the title (`TitleWithDownload`). Skat in 5 Minuten
+  (`quick-start-page.tsx`, SKATGO-89) is one reading column: its H1 and one-line lead, a small picture of
+  the table in a real game in the page's language — no wider than the front page's picture (`dims.heroArt`),
+  with a caption naming what is where (the human: 「不要占空间太大，主要是让读者产生直觉」) — the twelve rules
+  numbered, each a line of text, the ones that name points or an order with that row of cards under them
+  (`CardRowView`, the points as captions), then a `tip` panel with the `go` button to free play, and links
+  to the course and the rules. Its ways in: an option card under the course's lead, ahead of the progress
+  card; on the front page a second `quiet` button, "5-Minuten-Crashkurs" — a crash course, never read as a quick game or a summary (the human: 「其实就是5分钟速成的意思」) — beside the course tile's own, for
+  whoever has not started a lesson (the human: 「看起来不够明显」); and a link under the rules' lead. Not in the header. An article of the Skat-Tricks
   (`tricks-page.tsx`, SKATGO-82) reads like the rules: its H1 and lead, section headings, each trick a
   numbered sub-heading over short paragraphs, and three ways into the daily tournament — at the start, in
   the middle and at the end — each a `tip` panel with its line and the `go` button; one action repeated

@@ -541,5 +541,8 @@
   "daily_nick_refused": "Please choose another nickname.",
   "daily_would_be": "Your points: {total}. That would be #{rank} today.",
   "entry_art_alt": "Three friends playing Skat around a table shaped like a club",
-  "message_close": "Close"
+  "message_close": "Close",
+  "quick_course_text": "The 12 rules you need to start playing – then straight to the table.",
+  "quick_entry_link": "5-minute crash course",
+  "quick_rules_link": "New to Skat? The 5-minute crash course"
 }

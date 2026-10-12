@@ -423,7 +423,7 @@
   "nav_rules": "Rules",
 
   "entry_point_free": "Free",
-  "entry_point_no_signup": "No sign-up",
+  "entry_point_no_signup": "No account needed",
   "entry_point_ai": "AI analysis",
   "nav_daily": "Daily",
   "nav_header_daily": "Daily Tournament",
@@ -542,6 +542,6 @@
   "entry_art_alt": "Three friends playing Skat around a table shaped like a club",
   "message_close": "Close",
   "quick_course_text": "The 12 rules you need to start playing – then straight to the table.",
-  "quick_entry_link": "5-minute crash course",
-  "quick_rules_link": "New to Skat? The 5-minute crash course"
+  "quick_entry_link": "Crash course in 5 minutes",
+  "quick_rules_link": "New to Skat? The crash course in 5 minutes"
 }

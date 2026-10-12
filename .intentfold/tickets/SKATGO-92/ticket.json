@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-92",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-92",
+  "branch": "SKATGO-92-crashkurs-always",
+  "base": "d86dcb9bb5c03f6e0ea686e94f818ed97917b6c6",
+  "ports": { "web": 55092, "multiplayer": 56092, "database": 57092 }
+}

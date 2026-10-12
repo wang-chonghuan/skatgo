@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-91",
+  "mode": "autonomous",
+  "stage": "closed",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-91",
+  "branch": "SKATGO-91-hero-lead",
+  "base": "d86dcb9bb5c03f6e0ea686e94f818ed97917b6c6",
+  "ports": {
+    "web": 55091,
+    "multiplayer": 56091,
+    "database": 57091
+  }
+}

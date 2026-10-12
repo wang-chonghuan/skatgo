@@ -72,7 +72,7 @@ export function EntryPage() {
             {/* The twelve rules (SKATGO-89), a button as plain to see as the course's (the human: 「学习卡上那个5分钟，
                 看起来不够明显」), always — whether or not a lesson was taken (SKATGO-92, the human: 「必须还放在学习卡上」). */}
             <Link to="/course/quick-start" data-testid="entry-quick" {...linkLook('quiet', 'md', 'landing')}>{m.quick_entry_link()}</Link>
-            {finished > 0 ? <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span> : null}
+            {/* No count of lessons done under the buttons: the course page shows it (SKATGO-93, the human: 「这个小字也给我删了」). */}
           </Face>
         </section>
         <section data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, tileTones.play)}>
@@ -252,7 +252,6 @@ const styles = stylex.create({
   tileTitle: { margin: 0, color: color.onColor },
   tileText: { margin: 0, color: color.onColor },
   foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, marginTop: 'auto', paddingTop: space.x8 },
-  aside: { color: color.onColor },
   readingLink: { color: color.info, textDecoration: 'underline' },
 
   faq: { display: 'flex', flexDirection: 'column', gap: space.x24 },

@@ -94,10 +94,11 @@ export function ScoreSheet({ mine, ai, lines, testId }: { mine: Scores; ai: Scor
   return (
     <table data-testid={testId} {...stylex.props(styles.scores)}>
         <thead>
+          {/* The own seat's shading starts under its name, which stays readable (SKATGO-93, the human: 「your seat 这个字不要被灰色阴影遮住」). */}
           <tr>
             <td />
             {seats.map((name, seat) => (
-              <th key={name} scope="col" {...stylex.props(typography.small, styles.scoreHead, seat === PLAYER && styles.own)}>{name}</th>
+              <th key={name} scope="col" {...stylex.props(typography.small, styles.scoreHead)}>{name}</th>
             ))}
           </tr>
         </thead>

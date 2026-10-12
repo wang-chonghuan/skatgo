@@ -24,6 +24,16 @@ export const timing = stylex.defineVars({
   /** Every transition under `bp.reducedMotion` (SKATGO-29). */
   instant: '0s',
   easeOut: 'ease-out',
+  /** One turn of the logo while a table loads (SKATGO-93), at an even pace. */
+  spin: '2.4s',
+  steady: 'linear',
+})
+
+/** One whole turn, start to end: the logo while a table loads (SKATGO-93, the human: 「最好让它会旋转，因为本来就是个
+ *  三叉的形状」). The keyframes are where it turns; StyleX keeps them with the styles that use them. */
+export const turn = stylex.defineConsts({
+  start: 'rotate(0deg)',
+  end: 'rotate(360deg)',
 })
 
 /** A compositing hint for things that move over the felt (SKATGO-41): each gets its own layer, so the

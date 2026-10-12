@@ -306,7 +306,7 @@
   "info_bid": "Reizwert",
   "info_declarer": "Alleinspieler",
   "info_points": "Augen",
-  "info_tricks": "Stich {n} von 10",
+  "info_deal": "Spiel {n} von {of}",
   "info_totals": "Gesamt",
   "info_label": "Spielinformation",
 
@@ -315,6 +315,7 @@
   "home_meta_description": "Skat online spielen: kostenlos gegen die KI, im täglichen Turnier mit {short} oder {long} gleichen Spielen oder Skat lernen im interaktiven Kurs. Ohne Download.",
   "not_found_title": "Seite nicht gefunden",
   "not_found_text": "Diese Seite gibt es nicht. Auf der Startseite findest du das Turnier, den Skatkurs und die Regeln.",
+  "table_loading": "Der Tisch wird vorbereitet …",
   "game_javascript": "Für die Karten am Tisch brauchst du JavaScript. Die Regeln und den Kurs kannst du hier auch ohne JavaScript lesen.",
   "game_learning_title": "Skat lernen und Regeln nachschlagen",
   "game_learning_text": "Neu beim Skat? Im kostenlosen Kurs lernst du Schritt für Schritt die Karten, die Trumpfreihenfolge, das Reizen und die Abrechnung. Du übst mit Karten und spielst zum Schluss eine vollständige Partie. In den Skatregeln findest du die Spielarten, das Bedienen, den Spielwert und Beispiele zum Nachlesen.",
@@ -424,7 +425,7 @@
 
   "entry_point_free": "Kostenlos",
   "entry_point_no_signup": "Ohne Anmeldung",
-  "entry_point_ai": "KI-Analyse",
+  "entry_point_ai": "Analyse mit KI",
   "nav_daily": "Täglich",
   "nav_header_daily": "Tagesturnier",
   "nav_header_free": "Freies Spiel",
@@ -542,6 +543,6 @@
   "entry_art_alt": "Drei Freunde spielen Skat an einem Tisch in Kreuzform",
   "message_close": "Schließen",
   "quick_course_text": "Die 12 Regeln, die du zum Losspielen brauchst – danach geht’s direkt an den Tisch.",
-  "quick_entry_link": "5-Minuten-Crashkurs",
-  "quick_rules_link": "Neu beim Skat? Der 5-Minuten-Crashkurs"
+  "quick_entry_link": "Crashkurs in 5 Minuten",
+  "quick_rules_link": "Neu beim Skat? Der Crashkurs in 5 Minuten"
 }

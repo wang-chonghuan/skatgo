@@ -45,10 +45,15 @@ each deal and on the tournament's page mid-day (SKATGO-48). The page lists all o
 tournament's deals from the start (SKATGO-63): the finished ones in that comparison, the rest by number
 as in progress or not yet played, never with their cards.
 
-Free play at `/play`: one game at a time against the same two computer players, unranked, free and
-without an account (SKATGO-40, SKATGO-50). A finished game shows its result, the way to the next game,
-and the same play record. Changing the language mid-game keeps the game (SKATGO-79); a reload starts
-a new one.
+Free play at `/play`: a round of six deals against the same two computer players, the deal going round
+as at a real table, so the player sits in each position twice (SKATGO-88: 「自由对局也要换发牌人……默认6
+deals」); unranked, free and without an account (SKATGO-40, SKATGO-50). The table shows which deal of
+six it is and the player's Seeger-Fabian total so far. A finished deal shows a score sheet in
+Seeger-Fabian — the player's deal over the AI's, the same deal played by the computer from the player's
+seat (SKATGO-86: 「打完了能显示AI打这幅牌叫的啥，打几分」) — then the way to the next deal and the same
+play record; after the sixth, the round in one row per deal and its score sheet, as at the end of a
+tournament, and a new round. Lesson 11's game is one game with the same result. Changing the language
+mid-round keeps the game and the round (SKATGO-79, SKATGO-88); a reload starts a new round.
 
 A rules reference: the whole rules at `/rules`, with anchors for what people look up by name (Grand,
 Null ouvert, Ramsch); the bidding table; and two printables, a score sheet and a short version of the

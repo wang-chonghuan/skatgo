@@ -57,7 +57,9 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   heuristics. Since SKATGO-79 SkatZero also reviews a finished deal for its play record: at each of the
   player's plays it values every legal card as it weighs its own choice (`Policy.ranked`), and
   `judgePlays` in `src/computers.ts` keeps the plays whose card fell below its best, furthest first
-  (`DealReview.differs`). `/daily/review` and `/free/review` work it out on request and store nothing.
+  (`DealReview.differs`). `/daily/review` and `/free/review` work it out on request and store nothing;
+  `/free/review` also has SkatZero play the deal in all three seats from the pool's plans and returns
+  that game as the AI's (`DealReview.ai`, SKATGO-86), for free play and lesson 11 alike.
   No language model judges or explains play.
 - Course libraries: `motion` (animation), `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
   assistant's chat window).
@@ -91,7 +93,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/components/skat/rules-page.tsx`, `bidding-table-page.tsx`, `app/src/lib/skat/rules/` | the rules reference and its text, with anchored sub-headings for topics looked up by name (`#grand`, `#null-ouvert`, `#ramsch`), the bidding table (SKATGO-50), and the printable short version (`rules-summary-page.tsx`, text in `rules/summary.{de,en}.ts`, SKATGO-53). Every number on these pages — card points, base and Null values, the bid ladder, the multiplier limits — is rendered from `value.ts` and `cards.ts` |
 | `app/src/components/skat/score-sheet-page.tsx`, `print-links.tsx`, `app/src/lib/printables.ts`, `app/public/downloads/` | the printables (SKATGO-53): the score sheet (its Seeger-Fabian bonuses are `SEEGER_FABIAN` in `tournament.ts`); the download button and the links to the printables; which PDF belongs to which page; the committed PDFs, made by `app/scripts/make-printables.mjs` (Tools). Each PDF is served with a canonical Link header naming its page, set in `app/vite.config.ts` from `lib/printables.ts` and `lib/origin.ts` |
 | `app/src/components/skat/daily-page.tsx`, `daily-table.tsx`, `daily-comparison.tsx` | `/daily` with its switch between the two tournaments (SKATGO-77); each tournament's button, result, board and table; `/daily/play` is its full-screen page. `daily-comparison.tsx` holds `ScoreSheet`, `VsAiTable` (one collapsible row per finished deal with the player's and the computer's score, opening to the deal's score sheet and play record, and the tournament's score sheet — SKATGO-42, SKATGO-48, SKATGO-79, SKATGO-81) and the play record (`DealAnalysis`, `TrickReplay`), which free play's result uses too |
-| `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy (`new`, `act`, `resume`, `review`) and its per-address limits, the browser's calls and the game carried across a change of language (SKATGO-79), and the table free play and lesson 11 use (`GameTable` with a `server` source, hints and assistant kept) |
+| `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy (`new`, `act`, `resume`, `review`) and its per-address limits, the browser's calls and the game carried across a change of language (SKATGO-79), and the table free play and lesson 11 use (`GameTable` with a `server` source, hints and assistant kept); free play's round of six deals — its progress, its finished deals with the AI's, the next deal's dealer asked of `/free/new`, and its result (SKATGO-88) |
 | `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament; `src/free.ts` free play; `src/computers.ts` the SkatZero computer turns both share; `scripts/make-free-pool.ts` the one-off generator of free play's pool |
 
 **Key decisions**
@@ -145,8 +147,8 @@ also built from the repository root. Neither project imports the other's runtime
   human ruled out compatibility code, and production's earlier days were deleted and re-dealt.
 - **A free-play game is a deal from a committed pool, and its state travels with the page**
   (SKATGO-40).
-  - The pool holds 1,000 deals (seed `skatgo-free-pool/1`). For both computers it stores the
-    highest bid and the pick-up/Hand choice at every SkatZero bid value.
+  - The pool holds 1,000 deals (seed `skatgo-free-pool/1`). For every seat (since SKATGO-61) it stores
+    the highest bid and the pick-up/Hand choice at every SkatZero bid value.
   - It is generated once by `scripts/make-free-pool.ts` and committed with its size, SHA-256 and
     count in the manifest. Readiness waits for it; an altered pool stops the service at start.
     Running the generator with a larger count extends the pool; earlier deals stay identical.
@@ -154,10 +156,13 @@ also built from the repository root. Neither project imports the other's runtime
     the admission key, label `skatgo-free/1`, 24 h lifetime) holding the deal's index, the pool
     version, the start time and every move, the computers' included.
   - Replay runs the engine only; a computer is asked only for new moves. There is no cookie and no
-    browser storage; a reload starts a new game.
+    browser storage; a reload starts a new game and a new round.
+  - A round of six deals (SKATGO-88) is the page's: `/free/new` takes the dealer of the round's next
+    deal and draws a pool deal with that dealer (`poolDealIndex` in `src/free.ts`, which private tables
+    use too); the first deal's dealer is drawn at random.
   - A change of language reloads the page, so the token goes with it in the URL fragment
-    (`#game=…`, never sent to a server), leaves the address at once, and `/free/resume` takes the game
-    up from it (SKATGO-79).
+    (`#game=…`, with the round's finished deals as `&round=…` since SKATGO-88; never sent to a server),
+    leaves the address at once, and `/free/resume` takes the game up from it (SKATGO-79).
   - The pool is in the public repository, so its decks are readable. This is accepted because free
     play is unranked.
 - **Split from Parrottoon on 2026-09-21**, as byte copies of its course code, theme and styles. The

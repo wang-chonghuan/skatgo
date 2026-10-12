@@ -1065,7 +1065,6 @@ function DeclarePicker({
 
   return (
     <div {...stylex.props(styles.declare)}>
-      <Say><Rich text={m.declare_prompt({ bid: game.bid })} /></Say>
       <div {...stylex.props(styles.contractGrid, compact && styles.contractGridCompact)}>
         {CONTRACTS.map((c) => {
           const v = expectedValue(make(c), known)
@@ -1639,7 +1638,9 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: space.x4,
+    // 4 under the label, 2 under the value: the line under a value sits level with the names under the totals,
+    // which are 2 under their numbers (SKATGO-97, the human: 「deal 6 of 6和……lina, you, noah不在一条水平线上」).
+    gap: space.x2,
     minWidth: 0,
     paddingBlock: { default: space.x10, [bp.phone]: space.x8 },
     paddingInline: { default: space.x16, [bp.phone]: space.x8 },
@@ -1657,7 +1658,7 @@ const styles = stylex.create({
     borderTopColor: color.boardLine,
     textAlign: 'center',
   },
-  boardLabel: { color: color.amber, whiteSpace: 'nowrap' },
+  boardLabel: { color: color.amber, whiteSpace: 'nowrap', marginBottom: space.x2 },
   boardValue: { color: color.onColor, whiteSpace: 'nowrap' },
   boardMine: { color: color.amber },
   boardSub: { color: color.onColorSoft, whiteSpace: 'nowrap', minHeight: space.x12 },

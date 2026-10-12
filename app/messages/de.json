@@ -216,7 +216,6 @@
   "bid_hint_pass": "Dieses Blatt ist nicht stark genug. Sag „Passe“ und spiel entspannt als Gegenspieler mit.",
   "skat_hint": "Drück **{cards}** und spiel dann **{contract}**.",
   "list_and": " und ",
-  "declare_prompt": "Sag dein Spiel an. Du hast bis **{bid}** gereizt, also muss das Spiel mindestens {bid} wert sein.",
   "declare_worth": "Wert {value}",
   "declare_short": " · zu wenig",
   "declare_null_ouvert": "Ouvert (offen gespielt)",

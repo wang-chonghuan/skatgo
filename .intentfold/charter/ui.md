@@ -82,7 +82,7 @@ fixed light palette, not a light/dark pair.
 |---|---|
 | `page`, `surface`, `hairline` | the page, white surfaces, rules and borders |
 | `text`, `navy`, `slate`, `slateDeep`, `onColor` | body text, titles and links, secondary text, a darker slate (the slate button), text on colour or felt |
-| `go` | the one call to action, and the current state; `goLanding` is the public site's own green on its landing buttons |
+| `go` | the one call to action, and the current state — the public site's landing buttons too (SKATGO-97, the human: 「改成我们按钮的标准绿色」); `goLanding` and `elev.btnGoLanding`, its former own green, are no longer used |
 | `info` | links in text, the hint button, the focus ring, and the "AI" tag wherever the AI is named — a score sheet, the play record, the leaderboard (SKATGO-79, SKATGO-80, the human: 「AI标志都用app里那个蓝色的Ai标志」) |
 | `stop` | leaving the table |
 | `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the tricks, a private table |
@@ -240,9 +240,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `Toggle` in `daily-page.tsx`), 6 chosen first; under it everything is the chosen tournament's: its one
   `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",
   "Gestern", or the weekday and date — and steps through the last seven days with two round arrow
-  buttons at the right, earlier on the left, the one at the end of the range spent (SKATGO-80). Under a
-  finished tournament's result the player's name stands in one line, "Auf der Rangliste als …", with a
-  `quiet` "Ändern" that opens the name in place — a text field and its save button, and a refusal in `bad`
+  buttons at the right, earlier on the left, the one at the end of the range spent (SKATGO-80). Once the
+  tournament is finished, the board's first line is the player's name, "Auf der Rangliste als …", with a
+  `go` "Ändern" (SKATGO-97, the human: 「放到排行榜第一行」「改为绿色，否则太不明显」) that opens the name in place — a text field and its save button, and a refusal in `bad`
   when the name may not be used or another player holds it (SKATGO-90); there is no form to join the board.
   A printable has its download beside the title (`TitleWithDownload`). Skat in 5 Minuten
   (`quick-start-page.tsx`, SKATGO-89) is one reading column: its H1 and one-line lead, a small picture of

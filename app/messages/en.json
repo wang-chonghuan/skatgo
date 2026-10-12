@@ -216,7 +216,6 @@
   "bid_hint_pass": "This hand isn't strong enough. Pass and enjoy being a defender.",
   "skat_hint": "Put away **{cards}**, then play **{contract}**.",
   "list_and": " and ",
-  "declare_prompt": "Announce your game. You bid **{bid}**, so the game must be worth at least {bid}.",
   "declare_worth": "worth {value}",
   "declare_short": " · too low",
   "declare_null_ouvert": "Ouvert (hand face up)",

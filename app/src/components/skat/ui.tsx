@@ -254,8 +254,10 @@ const tones = stylex.create({
 })
 
 // The public site's green is its own (reference.md: rgb(0,168,120)).
+// The public site's green buttons are the app's own green (SKATGO-97, the human: 「首页play today's tournament按钮改成
+// 我们按钮的标准绿色」): its landing shape and type only.
 const landingTones = stylex.create({
-  go: { backgroundColor: color.goLanding, boxShadow: elev.btnGoLanding },
+  go: {},
   quiet: {},
   info: {},
   stop: {},

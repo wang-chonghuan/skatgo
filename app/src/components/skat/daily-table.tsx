@@ -52,7 +52,7 @@ export function DailyEntry({ size, waiting }: { size: DailySize; waiting?: React
   return (
     <div {...stylex.props(styles.stack)}>
       {status.finished ? (
-        <DailyResult size={size} status={status} board={today} onNamed={() => loadBoard(0)} />
+        <DailyResult size={size} status={status} />
       ) : (
         <div {...stylex.props(styles.stack)}>
           {/* The way in first, its own width so it reads as a button (SKATGO-63). */}
@@ -66,7 +66,12 @@ export function DailyEntry({ size, waiting }: { size: DailySize; waiting?: React
           <DayDeals of={status.of} status={status} />
         </div>
       )}
-      <Leaderboard back={back} board={boards[back] ?? null} onShow={show} />
+      <Leaderboard
+        back={back}
+        board={boards[back] ?? null}
+        onShow={show}
+        name={status.finished && today ? <Nickname key={today.me?.nickname ?? ''} board={today} onNamed={() => loadBoard(0)} /> : null}
+      />
     </div>
   )
 }
@@ -89,7 +94,7 @@ function dayName(back: number, day: string | undefined): string {
  *  7天的」). The AI stands among the players by its total, after any player with the same, taking no rank
  *  (SKATGO-80); when it falls below the rows shown it follows them, with the player's own row. With nobody
  *  on the board yet it stands there alone, under the line that says so. */
-function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard | DailyError | null; onShow: (back: number) => void }) {
+function Leaderboard({ back, board, onShow, name }: { back: number; board: DailyBoard | DailyError | null; onShow: (back: number) => void; name?: ReactNode }) {
   const shown = board && !isError(board) ? board : null
   const rows = shown?.rows ?? []
   const ai = shown?.ai?.total ?? null
@@ -102,6 +107,9 @@ function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard 
   return (
     <Panel>
       <section data-testid="daily-board" data-day={shown?.day} {...stylex.props(styles.result)}>
+        {/* The player's name and the way to change it, the board's first line (SKATGO-97, the human: 「名字和改名字的那一行，
+            放到排行榜第一行」). */}
+        {name}
         <div {...stylex.props(styles.boardHead)}>
           <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_board_title()}</h2>
           <span data-testid="daily-board-day" data-back={back} {...stylex.props(typography.toggle, styles.text, styles.what)}>{dayName(back, shown?.day)}</span>
@@ -185,7 +193,8 @@ function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }
     return (
       <div data-testid="daily-nickname-set" data-name={me.nickname} {...stylex.props(styles.nickRow)}>
         <p {...stylex.props(typography.appText, styles.text, styles.what)}>{m.daily_nick_on({ name: me.nickname })}</p>
-        <Btn testId="daily-nickname-change" tone="quiet" size="sm" onClick={() => setEditing(true)}>{m.daily_nick_change()}</Btn>
+        {/* Green, or it is not seen (SKATGO-97, the human: 「改名字change的按钮改为绿色，否则太不明显」). */}
+        <Btn testId="daily-nickname-change" tone="go" size="sm" onClick={() => setEditing(true)}>{m.daily_nick_change()}</Btn>
       </div>
     )
   }
@@ -205,14 +214,13 @@ function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }
   )
 }
 
-/** The tournament's deals and the total, as the server recorded them, and the nickname for the board. */
-function DailyResult({ size, status, board, onNamed }: { size: DailySize; status: DailyStatus; board: DailyBoard | null; onNamed: () => void }) {
+/** The tournament's deals and the total, as the server recorded them. */
+function DailyResult({ size, status }: { size: DailySize; status: DailyStatus }) {
   return (
     <Panel>
       <section data-testid="daily-result" data-total={status.totals[PLAYER]} {...stylex.props(styles.result)}>
         <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_result_title()}</h2>
         <VsAiTable deals={status.deals} benchmarks={status.benchmarks} analysis={{ size, day: status.day }} />
-        {board ? <Nickname key={board.me?.nickname ?? ''} board={board} onNamed={onNamed} /> : null}
       </section>
     </Panel>
   )

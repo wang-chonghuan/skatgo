@@ -1,7 +1,10 @@
 // SKATGO-93: a centred logo (the human: 「你刚调整过的这个图标，非常对称，能否给我做成一套新的logo，因为老的不够对称……
 // 还要保持以前的高清」). The old icons centre the master's drawn box (SKATGO-30/70), but the box's middle is not
-// the middle of the mark: the diamond above, the spade and heart below. Here the centre is that of the circle
-// through the three outer suits' centres, and every icon is cut about it.
+// the middle of the mark: the diamond reaches further above than the spade and heart below. The mark's centre is
+// that of the circle through the three outer suits' centres.
+//   - The turning logo (logo-mark.png) turns about that centre exactly, so it sits there.
+//   - The still icons sit halfway between the box's middle and the mark's centre — centred to the eye — so the mark
+//     can fill 80% of the icon, as app icons do (the human: 「80吧，同意」); strictly centred it could not pass 75%.
 //   1. app/brand/skatgo-logo-centred.png: the master (1408×1408) moved so that centre is the picture's — same
 //      pixels, same size, nothing scaled.
 //   2. app/public/logo-v2/: every icon the site uses, by the same names, sizes and paddings as before, plus
@@ -43,6 +46,7 @@ const centred = await page.evaluate(async ([src, toB64]) => {
 console.log('mark centre in the master', centred.centre.map((v) => v.toFixed(1)), 'moved by', centred.shift)
 writeFileSync(new URL('brand/skatgo-logo-centred.png', APP), Buffer.from(centred.b64, 'base64'))
 const src = 'data:image/png;base64,' + centred.b64
+const CENTRE = 704 // the mark's centre, now the master's (1408 / 2)
 
 // The drawn area's reach from the centre: the icon is scaled so the farthest drawn pixel fits, in x and in y.
 const reach = await page.evaluate(async (src) => {
@@ -57,18 +61,33 @@ const reach = await page.evaluate(async (src) => {
   return r
 }, src)
 console.log('reach from the centre', reach)
+const box = await page.evaluate(async (src) => {
+  const img = new Image(); img.src = src; await img.decode()
+  const W = img.width, H = img.height, c = new OffscreenCanvas(W, H); const x = c.getContext('2d'); x.drawImage(img, 0, 0)
+  const d = x.getImageData(0, 0, W, H).data
+  let x0 = W, y0 = H, x1 = 0, y1 = 0
+  for (let y = 0; y < H; y++) for (let i = 0; i < W; i++) {
+    const p = (y * W + i) * 4
+    if (d[p] < 235 || d[p + 1] < 235 || d[p + 2] < 235) { x0 = Math.min(x0, i); y0 = Math.min(y0, y); x1 = Math.max(x1, i); y1 = Math.max(y1, y) }
+  }
+  return { x0, y0, x1, y1 }
+}, src)
+// Centred to the eye: halfway between the drawn box's middle and the mark's centre.
+const eye = [((box.x0 + box.x1) / 2 + CENTRE) / 2, ((box.y0 + box.y1) / 2 + CENTRE) / 2]
+console.log('drawn box', box, 'centred to the eye at', eye)
 
-/** A square PNG of `side`: white ground (or clear), the mark's centre in the middle, its reach `pad` (fraction
- *  of the side) from the edge, corners rounded by `round` (fraction of the side; 0 = square). */
-const render = (side, pad, round, clear = false) => page.evaluate(async ([src, reach, side, pad, round, clear, toB64]) => {
+/** A square PNG of `side`: white ground (or clear), corners rounded by `round` (fraction of the side; 0 = square).
+ *  `fill` > 0: centred to the eye, the drawn box `fill` of the side across. `fill` < 0: the mark's centre exactly in
+ *  the middle, its farthest pixel -`fill` of the half side from it. */
+const render = (side, fill, round, clear = false) => page.evaluate(async ([src, reach, box, eye, side, fill, round, clear, toB64]) => {
   const enc = eval(toB64)
   const img = new Image(); img.src = src; await img.decode()
   const c = new OffscreenCanvas(side, side); const x = c.getContext('2d')
   x.imageSmoothingQuality = 'high'
   if (round > 0) { x.beginPath(); x.roundRect(0, 0, side, side, side * round); x.clip() }
   if (!clear) { x.fillStyle = '#ffffff'; x.fillRect(0, 0, side, side) }
-  const k = (side * (1 - 2 * pad)) / (2 * reach)
-  x.drawImage(img, side / 2 - (img.width / 2) * k, side / 2 - (img.height / 2) * k, img.width * k, img.height * k)
+  const [k, cx, cy] = fill > 0 ? [(side * fill) / Math.max(box.x1 - box.x0 + 1, box.y1 - box.y0 + 1), eye[0], eye[1]] : [(-fill * side) / 2 / reach, img.width / 2, img.height / 2]
+  x.drawImage(img, side / 2 - cx * k, side / 2 - cy * k, img.width * k, img.height * k)
   const px = x.getImageData(0, 0, side, side); const d = px.data
   for (let i = 0; i < d.length; i += 4) {
     if (clear) { // white to clear, soft edges keeping their colour
@@ -80,12 +99,12 @@ const render = (side, pad, round, clear = false) => page.evaluate(async ([src, r
   }
   x.putImageData(px, 0, 0)
   return enc(c)
-}, [src, reach, side, pad, round, clear, toB64]).then((s) => Buffer.from(s, 'base64'))
+}, [src, reach, box, eye, side, fill, round, clear, toB64]).then((s) => Buffer.from(s, 'base64'))
 
 const ROUND = 0.22
 const OUT = new URL('public/logo-v2/', APP)
 const out = (name, buf) => { writeFileSync(new URL(name, OUT), buf); console.log(`public/logo-v2/${name}  ${buf.length} bytes`) }
-const ico = await Promise.all([16, 32, 48].map((s) => render(s, 0.04, ROUND)))
+const ico = await Promise.all([16, 32, 48].map((s) => render(s, 0.86, ROUND)))
 out('favicon-32.png', ico[1])
 const header = Buffer.alloc(6 + 16 * ico.length); header.writeUInt16LE(0, 0); header.writeUInt16LE(1, 2); header.writeUInt16LE(ico.length, 4)
 let offset = header.length
@@ -96,12 +115,14 @@ ico.forEach((p, i) => {
   offset += p.length
 })
 out('favicon.ico', Buffer.concat([header, ...ico]))
-out('apple-touch-icon.png', await render(180, 0.12, 0))
-out('icon-192.png', await render(192, 0.1, ROUND))
-out('icon-512.png', await render(512, 0.1, ROUND))
-out('icon-maskable-512.png', await render(512, 0.21, 0))
-out('logo-96.png', await render(96, 0.06, 0))
-out('logo-mark.png', await render(192, 0.1, 0, true))
+out('apple-touch-icon.png', await render(180, 0.8, 0))
+out('icon-192.png', await render(192, 0.8, ROUND))
+out('icon-512.png', await render(512, 0.8, ROUND))
+// Maskable: the whole mark inside the safe circle (80% of the side across).
+out('icon-maskable-512.png', await render(512, 0.58, 0))
+out('logo-96.png', await render(96, 0.86, 0))
+// The turning logo: its centre exactly in the middle, so it turns about the picture's own centre.
+out('logo-mark.png', await render(192, -0.96, 0, true))
 
 // A sheet for the human: each icon, old above new, at its own size, on grey with a crosshair through the middle.
 const names = ['icon-512.png', 'icon-maskable-512.png', 'icon-192.png', 'apple-touch-icon.png', 'logo-96.png', 'favicon-32.png']

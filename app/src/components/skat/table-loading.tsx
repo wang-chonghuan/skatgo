@@ -11,8 +11,9 @@ import { dims } from '../../theme/shape.stylex'
 /**
  * What a table shows while it loads (SKATGO-93): the felt, and on it the SkatGo logo turning in a white disc that fades into the felt at its rim —
  * three suits around the club, so it reads as turning (the human: 「不要显示那个几个人打牌的插画，应该显示我logo的动画」,
- * then 「还是要圆形白色」). The logo itself is on a clear ground (logo-mark.png, made from icon-512.png by
- * `.intentfold/tickets/SKATGO-93/tmp/make-mark.mjs`): the icon's own white square stuck out of the disc as it turned.
+ * then 「还是要圆形白色」). The logo is on a clear ground, or the icon's white square would stick out of the disc as
+ * it turns, and the centre of its three outer suits is the picture's own, so it turns about its middle (the human:
+ * 「旋转的中心不对」): logo-mark.png, cut by `.intentfold/tickets/SKATGO-93/icons.mjs`.
  * The turn is CSS, so it runs before the page's script; with reduced motion the logo stands still.
  */
 export function TableLoading({ children }: { children?: ReactNode }) {
@@ -51,8 +52,6 @@ const styles = stylex.create({
   mark: {
     width: dims.tableLoaderMark,
     height: dims.tableLoaderMark,
-    translate: turn.lift,
-    transformOrigin: turn.origin,
     animationName: { default: spin, [bp.reducedMotion]: 'none' },
     animationDuration: timing.spin,
     animationTimingFunction: timing.steady,

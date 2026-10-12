@@ -34,12 +34,6 @@ export const timing = stylex.defineVars({
 export const turn = stylex.defineConsts({
   start: 'rotate(0deg)',
   end: 'rotate(360deg)',
-  /** The logo turns about the centre of its three outer suits, not of its picture: measured in
-   *  icon-192.png (logo-mark.png has the same framing), the circle through the suits' centres has its centre at 49.6% across and 57.7% down
-   *  (the human: 「旋转的中心不对」). */
-  origin: '49.6% 57.7%',
-  /** …and is lifted by the difference, so that centre sits in the middle of its disc. */
-  lift: '0.4% -7.7%',
 })
 
 /** A compositing hint for things that move over the felt (SKATGO-41): each gets its own layer, so the

@@ -6,3 +6,9 @@
 2. **文案？** 用工单里的建议：
    - 德文 „Spiel gegen die KI, mit Freunden oder im Turnier – mit KI-Coach.“
    - 英文 "Play the AI, your friends or the community – with an AI coach."
+
+## 返工（人，2026-10-12）：「这样又觉得太短太淡了，而且要强调每副牌都可以与AI比较，谁打得更好。再想想文案，以及我讨厌连字符」
+- 文案改成两句，第二句讲每副牌都和 AI 比、谁打得更好；去掉破折号和 „KI-Coach“ 的连字符：
+  - 德文 „Spiel gegen die KI, mit Freunden oder im Turnier. Nach jedem Spiel vergleichst du dich mit der KI: Wer hat besser gespielt?“
+  - 英文 "Play the AI, your friends or the tournament. After every deal, compare yourself with the AI: who played it better?"
+- 不那么淡：`landingHeroLead` 改为 22/18px、`weight.ui`（600），仍比原来 28/24px、700 小。

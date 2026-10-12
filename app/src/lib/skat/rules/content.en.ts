@@ -89,7 +89,7 @@ export const RULES_EN: RulesText = {
         },
         {
           kind: 'p',
-          text: 'At a real table a bidder may skip numbers; in SkatGo each bid is the next number on the ladder.',
+          text: 'A bidder may skip numbers, as at a real table: instead of 18, 20, 22 you can say 30 straight away. In SkatGo that is "Higher …".',
         },
       ],
       lesson: '7',

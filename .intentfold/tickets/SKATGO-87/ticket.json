@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-87",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-87",
+  "branch": "SKATGO-87-jump-bid",
+  "base": "65a2433807481086cd5b5bfff81b5f60993dda3e",
+  "ports": { "web": 55087, "multiplayer": 56087, "database": 57087 }
+}

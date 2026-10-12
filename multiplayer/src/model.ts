@@ -29,7 +29,8 @@ const declaration = z.object({
 }).strict()
 export const actionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('start') }).strict(),
-  z.object({ type: z.literal('bid'), value: z.enum(['bid', 'hold', 'pass']) }).strict(),
+  // `to`: the number a speaker jumps to (SKATGO-87); the engine decides whether it may be named now.
+  z.object({ type: z.literal('bid'), value: z.enum(['bid', 'hold', 'pass']), to: z.number().int().optional() }).strict(),
   z.object({ type: z.literal('pickup') }).strict(),
   z.object({ type: z.literal('hand') }).strict(),
   z.object({ type: z.literal('discard'), cards: z.array(card).length(2) }).strict(),

@@ -25,8 +25,8 @@ export const dailyState = (size: DailySize, open: boolean) => post<DailyReply>('
 /** One move in the current deal, quoting the day, the deal and how many moves came before it. */
 export const dailyAct = (size: DailySize, at: { day: string; deal: number; revision: number }, action: Move) => post<DailyReply>('act', { size, ...at, action })
 
-/** Put today's finished entry on the board under `nickname`, or change it. */
-export const dailyName = (size: DailySize, nickname: string) => post<{ nickname: string }>('name', { size, nickname })
+/** Change the player's name: from now on, and on today's finished entries (SKATGO-90). */
+export const dailyName = (nickname: string) => post<{ nickname: string }>('name', { nickname })
 
 /** A day's leaderboard, `back` days before today (0: today's; up to `BOARD_DAYS` − 1, SKATGO-80). */
 export const dailyBoard = (size: DailySize, back: number) => post<DailyBoard>('board', { size, day: back })

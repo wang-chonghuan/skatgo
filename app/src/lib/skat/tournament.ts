@@ -263,10 +263,9 @@ export type DailyBoard = {
   own: BoardRow | null
   /** Entries on the board in all, beyond the rows shown. */
   total: number
-  /** The asking player's entry that day: a finished player without a nickname gets the rank they would have. */
+  /** The asking player's entry that day, and the name it stands on the board under (SKATGO-90: given when
+   *  it finished). */
   me: { finished: boolean; total: number; nickname: string | null; rank: number | null } | null
-  /** The nickname the player last used, to offer again. */
-  lastNickname: string | null
   /** The AI's Seeger-Fabian total over the tournament that day, from the player's seat, for everyone
    *  (SKATGO-80, SKATGO-81); null for a day it did not play. */
   ai: { total: number } | null

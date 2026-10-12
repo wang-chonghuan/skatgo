@@ -46,3 +46,58 @@ export function cleanNickname(raw: string): string | null {
   if (words.some((w) => BLOCKED.has(w))) return null
   return name
 }
+
+/**
+ * The names a player gets on the leaderboard without choosing one (SKATGO-90): two German words, an
+ * adjective and a noun, as mobile games give them — friendly, from animals and nature, nothing of cards
+ * (the human: not a bot's name), every word picked so no pairing can offend. The adjective takes the
+ * noun's gender: Flinker Fuchs, Flinke Eule, Flinkes Reh. The human agreed this list on 2026-10-12.
+ */
+const ADJECTIVES = [
+  'Flink', 'Mutig', 'Klug', 'Schlau', 'Still', 'Leis', 'Munter', 'Heiter', 'Fröhlich', 'Froh', 'Kühn', 'Wach',
+  'Emsig', 'Eifrig', 'Flott', 'Sanft', 'Gelassen', 'Geschickt', 'Glücklich', 'Tapfer', 'Frei', 'Treu',
+  'Stolz', 'Zäh', 'Rasch', 'Edl', 'Hell', 'Bunt', 'Blau', 'Grün', 'Golden', 'Silbern', 'Nordisch', 'Sonnig',
+  'Wendig',
+]
+/** Each noun with the ending its gender gives the adjective before it (-er, -e, -es). */
+const NOUNS: [string, 'er' | 'e' | 'es'][] = [
+  ...['Fuchs', 'Adler', 'Falke', 'Luchs', 'Biber', 'Otter', 'Dachs', 'Hase', 'Igel', 'Kranich', 'Specht', 'Bär',
+    'Wolf', 'Uhu', 'Rabe', 'Delfin', 'Pinguin', 'Panda', 'Tiger', 'Hirsch', 'Elch', 'Kolibri', 'Komet', 'Sturm',
+    'Mond', 'Stern', 'Gipfel'].map((n) => [n, 'er'] as [string, 'er']),
+  ...['Eule', 'Lerche', 'Möwe', 'Meise', 'Amsel', 'Schwalbe', 'Libelle', 'Robbe', 'Katze', 'Biene', 'Hummel',
+    'Gazelle', 'Welle', 'Wolke', 'Eiche', 'Birke', 'Tanne'].map((n) => [n, 'e'] as [string, 'e']),
+  ...['Reh', 'Pony', 'Zebra', 'Lama', 'Polarlicht', 'Gewitter'].map((n) => [n, 'es'] as [string, 'es']),
+]
+
+/** Every name from the list that is a good nickname — a few pairs are longer than NICKNAME_MAX and left out. */
+export const RANDOM_NAMES: readonly string[] = ADJECTIVES.flatMap((a) => NOUNS.map(([n, ending]) => `${a}${ending} ${n}`)).filter(
+  (name) => cleanNickname(name) === name,
+)
+
+/** FNV-1a: a player's identifier as a number, the same on every platform. */
+function hash(s: string): number {
+  let h = 0x811c9dc5
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193) >>> 0
+  return h
+}
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+
+/**
+ * The name a player gets (SKATGO-90): the first of the list, in an order fixed by `seed` (the player's
+ * identifier), that `taken` does not refuse — every name without a number comes before any with one, so
+ * a number appears only once all of them are in use.
+ */
+export function pickName(seed: string, taken: (name: string) => boolean): string {
+  const h = hash(seed)
+  const size = RANDOM_NAMES.length
+  let step = 7919 % size
+  while (gcd(step, size) !== 1) step++
+  for (let k = 0; k < size; k++) {
+    const name = RANDOM_NAMES[(h + k * step) % size]
+    if (!taken(name)) return name
+  }
+  for (let k = 0; ; k++) {
+    const name = `${RANDOM_NAMES[(h + k) % size]} ${10 + ((h + k) % 90)}`
+    if (cleanNickname(name) === name && !taken(name)) return name
+  }
+}

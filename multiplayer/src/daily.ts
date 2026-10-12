@@ -10,7 +10,7 @@ import {
   type DealReview, type DealSummary,
   type SeatView,
 } from '../../app/src/lib/skat/tournament'
-import { cleanNickname } from '../../app/src/lib/skat/nickname'
+import { cleanNickname, pickName } from '../../app/src/lib/skat/nickname'
 import { actionSchema, applySeatMove, computerMove, Rejected, secretEquals, secureDeck } from './model'
 import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
 import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzero/bidding'
@@ -132,6 +132,7 @@ const actInput = z.object({
   revision: z.number().int().nonnegative(),
   action: actionSchema,
 }).strict()
+// A name is the player's, not a tournament's (SKATGO-90): the size a page still sends is accepted and not used.
 const nameInput = z.object({ player, size, nickname: z.string().max(200) }).strict()
 // The board's day: how many days back, today 0 (SKATGO-80); `today` and `yesterday` are how pages before it ask.
 const boardInput = z.object({
@@ -309,6 +310,7 @@ export async function dailyState(store: Store, policy: Policy, who: string, size
     const before = JSON.stringify(e)
     const g = computer === HEURISTIC ? settleEnded(specs, e, now) : await settleRecorded(specs, e, now, policy, computer)
     if (JSON.stringify(e) !== before) await save(c, day, size, who, e)
+    if (e.finished_at) await nameFinished(c, day, size, who, now)
     return { status: status(day, size, e, specs, computer), view: g ? seatView(g) : null, revision: g ? e.actions[e.deals.length].length : 0 }
   })
 }
@@ -345,6 +347,7 @@ export async function dailyAct(store: Store, policy: Policy, input: z.infer<type
       current = await settleRecorded(specs, e, now, policy, computer)
     }
     await save(c, day, input.size, input.player, e)
+    if (e.finished_at) await nameFinished(c, day, input.size, input.player, now)
     return {
       status: status(day, input.size, e, specs, computer),
       steps: steps.map(seatView) as SeatView[],
@@ -355,13 +358,15 @@ export async function dailyAct(store: Store, policy: Policy, input: z.infer<type
 
 /** A player who signs in takes today's anonymous entries from this device into the account, each
  *  tournament's unless the account already has one in it today. Past days never move (SKATGO-35, grill
- *  Q7; SKATGO-77). */
+ *  Q7; SKATGO-77). An account without a name of its own takes the device's (SKATGO-90). */
 export async function dailyClaim(store: Store, from: string, to: string, now = Date.now()) {
   const day = dayOf(now)
   return store.transaction(async c => {
     const r = await c.query(
       `UPDATE daily_entries e SET player = $3 WHERE e.day = $1 AND e.player = $2
          AND NOT EXISTS (SELECT 1 FROM daily_entries x WHERE x.day = $1 AND x.size = e.size AND x.player = $3)`, [day, from, to])
+    await c.query(
+      'UPDATE daily_players SET player = $2 WHERE player = $1 AND NOT EXISTS (SELECT 1 FROM daily_players WHERE player = $2)', [from, to])
     return { claimed: (r.rowCount ?? 0) > 0 }
   })
 }
@@ -372,16 +377,64 @@ export function dayBefore(day: string): string {
   return new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0, 10)
 }
 
-/** A finished player puts today's entry in a tournament on its board under a nickname, or changes it,
- *  until midnight (SKATGO-36). A refused name is refused without saying why. */
-export async function dailyName(store: Store, who: string, size: DailySize, raw: string, now = Date.now()) {
+/** One at a time gives names out or changes them, so no two players come to hold the same (SKATGO-90). */
+const NAME_LOCK = 7392030
+
+/**
+ * A player's current name (SKATGO-90): the one they set or were given, or — the first time they need one —
+ * a name of two words given now: the first in the player's own order that nobody holds and no board shows,
+ * a number only once every name without one is taken.
+ */
+async function nameOf(c: pg.PoolClient, who: string, now: number): Promise<string> {
+  const held = async () => (await c.query('SELECT nickname FROM daily_players WHERE player = $1', [who])).rows[0]?.nickname as string | undefined
+  const known = await held()
+  if (known) return known
+  await c.query('SELECT pg_advisory_xact_lock($1)', [NAME_LOCK])
+  const meanwhile = await held()
+  if (meanwhile) return meanwhile
+  const { rows } = await c.query(
+    'SELECT lower(nickname) AS n FROM daily_players UNION SELECT lower(nickname) FROM daily_entries WHERE nickname IS NOT NULL')
+  const taken = new Set(rows.map((r) => r.n as string))
+  const name = pickName(who, (n) => taken.has(n.toLowerCase()))
+  await c.query('INSERT INTO daily_players (player, nickname, created_at) VALUES ($1, $2, $3)', [who, name, now])
+  return name
+}
+
+/** A finished entry goes on its board under the player's current name (SKATGO-90: no name to fill in). A
+ *  name an entry already has is never changed — the human's red line: 「禁止改变任何已经有的用户的名字」. */
+async function nameFinished(c: pg.PoolClient, day: string, size: DailySize, who: string, now: number) {
+  await c.query(
+    'UPDATE daily_entries SET nickname = $4 WHERE day = $1 AND size = $2 AND player = $3 AND finished_at IS NOT NULL AND nickname IS NULL',
+    [day, size, who, await nameOf(c, who, now)])
+}
+
+/** Entries finished before SKATGO-90 without a name go on their boards too (grill Q3): each under its
+ *  player's current name, given now when they have none. Runs in the leader at start; names already there
+ *  stay as they are. */
+export async function nameUnnamed(store: Store, now = Date.now()) {
+  const { rows } = await store.pool.query(
+    'SELECT day, size, player FROM daily_entries WHERE finished_at IS NOT NULL AND nickname IS NULL ORDER BY day, finished_at')
+  for (const r of rows) await store.transaction((c) => nameFinished(c, r.day, r.size, r.player, now))
+  if (rows.length) console.log(JSON.stringify({ event: 'daily_named', entries: rows.length }))
+}
+
+/** A player changes their name (SKATGO-90): from now on, and on today's finished entries — never an
+ *  earlier day's (the red line). A refused name is refused without saying why; a name another player
+ *  holds is taken, whatever its case. */
+export async function dailyName(store: Store, who: string, raw: string, now = Date.now()) {
   const nickname = cleanNickname(raw)
   if (!nickname) throw new Rejected('nickname_refused')
   const day = dayOf(now)
   return store.transaction(async c => {
-    const r = await c.query(
-      'UPDATE daily_entries SET nickname = $4 WHERE day = $1 AND size = $2 AND player = $3 AND finished_at IS NOT NULL', [day, size, who, nickname])
-    if (r.rowCount !== 1) throw new Rejected('not_finished')
+    const { rows: done } = await c.query('SELECT 1 FROM daily_entries WHERE player = $1 AND finished_at IS NOT NULL LIMIT 1', [who])
+    if (!done[0]) throw new Rejected('not_finished')
+    await c.query('SELECT pg_advisory_xact_lock($1)', [NAME_LOCK])
+    const { rows: clash } = await c.query('SELECT 1 FROM daily_players WHERE lower(nickname) = lower($1) AND player <> $2', [nickname, who])
+    if (clash[0]) throw new Rejected('nickname_taken')
+    await c.query(
+      'INSERT INTO daily_players (player, nickname, created_at) VALUES ($1, $2, $3) ON CONFLICT (player) DO UPDATE SET nickname = EXCLUDED.nickname',
+      [who, nickname, now])
+    await c.query('UPDATE daily_entries SET nickname = $3 WHERE day = $1 AND player = $2 AND finished_at IS NOT NULL', [day, who, nickname])
     return { nickname }
   })
 }
@@ -391,12 +444,11 @@ const BOARD_ROWS = 100
 
 /**
  * A tournament's leaderboard for a day (SKATGO-36, one per size since SKATGO-77; today or one of the six
- * days before, SKATGO-80): the finished entries
- * that have a nickname, by their Seeger-Fabian total, the standard German players know (SKATGO-81, the
+ * days before, SKATGO-80): the finished entries — each on it under its name, given when it finished
+ * (SKATGO-90) — by their Seeger-Fabian total, the standard German players know (SKATGO-81, the
  * human: 「按他们习惯的标准来」; SKATGO-79's Saldo is gone); equal totals share a rank
  * and the next rank skips (1, 1, 3), the earlier finish listed first. Only nicknames and totals leave here —
- * never a player id. For the asking player: their own standing (a finished player without a nickname
- * sees the rank they would have), and the nickname they last used on an earlier day. `ai` (SKATGO-80): the
+ * never a player id. For the asking player: their own standing and name. `ai` (SKATGO-80): the
  * AI's total over the tournament — its play from the player's seat, worked out when the day was dealt, the
  * same for every player — shown to everyone, its total only (the human: 「都显示，只在leader board上显示
  * 总成绩即可」); null when a deal of that day has none.
@@ -417,7 +469,6 @@ export async function dailyBoard(store: Store, who: string | null, size: DailySi
   const mine = ranked.findIndex(r => r.me)
   const own = mine >= BOARD_ROWS ? ranked[mine] : null
   let me = null
-  let lastNickname: string | null = null
   if (who) {
     const own = await store.pool.query(
       'SELECT nickname, total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, size, who])
@@ -426,14 +477,11 @@ export async function dailyBoard(store: Store, who: string | null, size: DailySi
       const rank = 1 + ranked.filter(r => r.total > e.total).length
       me = { finished: !!e.finished_at, total: e.total as number, nickname: e.nickname as string | null, rank: e.finished_at ? rank : null }
     }
-    const last = await store.pool.query(
-      'SELECT nickname FROM daily_entries WHERE player = $1 AND nickname IS NOT NULL ORDER BY day DESC LIMIT 1', [who])
-    lastNickname = last.rows[0]?.nickname ?? null
   }
   const { rows: dealt } = await store.pool.query('SELECT deals FROM daily_deals WHERE day = $1 AND size = $2', [day, size])
   const played = ((dealt[0]?.deals ?? []) as DealSpec[]).map((spec) => spec.benchmark?.summary)
   const ai = played.length > 0 && played.every((b) => b) ? { total: totals(played as DealSummary[])[PLAYER] } : null
-  return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, lastNickname, ai }
+  return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, ai }
 }
 
 /**
@@ -510,7 +558,7 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
   router.post('/act', run(async body => dailyAct(store, policy()!, actInput.parse(body))))
   router.post('/name', run(async body => {
     const i = nameInput.parse(body)
-    return dailyName(store, i.player, i.size, i.nickname)
+    return dailyName(store, i.player, i.nickname)
   }))
   router.post('/board', run(async body => {
     const i = boardInput.parse(body)

@@ -21,5 +21,11 @@
 - 牌桌信息板「Augen」下改为第几副（`info_deal` „Spiel n von x“ / "Deal n of x"）：自由对局 x/6，第 11 课 1/1，比赛 x/6 或 x/12；好友房间留空。侧栏的「Stich n von 10」标签删除，`info_tricks` 消息删除。
 - 检查：typecheck、build、单元测试、client bundle、设计令牌、git grep 全过；浏览器 `tmp/table.mjs` 16 项全过（自由对局桌面和手机、第 11 课、6 副赛桌面、12 副赛手机）。
 
+## 返工 3：加载界面
+- 新组件 `table-loading.tsx`：毛毡上，白色渐变圆里转动的 logo（`logo-mark.png`，透明底，`tmp/make-mark.mjs` 由 icon-512.png 生成）。转动中心是三个花色的中心，不是图片中心；减少动画时不转；纯 CSS，脚本没跑也会转。
+- 用在：自由对局、每日赛、好友牌桌的加载占位（原来是插画或空毛毡）；自由对局（全屏）和每日赛牌还在路上时。插画只留在首页。
+- 新增令牌：`timing.spin`、`timing.steady`、`turn`（effects）、`fill.loaderGlow`（elevation）、`dims.tableLoader`、`dims.tableLoaderMark`（shape）。新消息 `table_loading`（屏幕阅读器读的「Der Tisch wird vorbereitet …」）。
+- 检查：typecheck、build、单元测试 118/118、client bundle、设计令牌、SEO；浏览器 `tmp/loading.mjs` 9 项全过（含转动中心实测：偏差 0.3px 以内）。
+
 ## 服务
 web http://127.0.0.1:55093、multiplayer 56093、本地数据库 57093 在跑。

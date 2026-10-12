@@ -14,6 +14,7 @@ import { typography } from '../../theme/type'
 import { VsAiTable } from './daily-comparison'
 import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, linkLook } from './ui'
+import { TableLoading } from './table-loading'
 
 // Free play and lesson 11 on the server (SKATGO-40): a game drawn from the server's pool, played
 // against SkatZero's computers. The page holds the game's token in memory only — no cookie, no
@@ -170,7 +171,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     )
   }
   if (!game) {
-    if (!failure) return null
+    // Until the deal comes, a full-screen table shows the turning logo (SKATGO-93); a lesson's shows nothing.
+    if (!failure) return fullScreen ? <TableLoading /> : null
     return (
       <Panel tone="bad">
         <p data-testid="server-problem" role="alert" {...stylex.props(typography.appText, styles.text)}>{failure.text}</p>

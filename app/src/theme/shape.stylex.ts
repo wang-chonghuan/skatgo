@@ -42,6 +42,9 @@ export const dims = stylex.defineVars({
   landingHeaderPhone: '64px',
   landingColumn: '1140px',
   heroArt: '480px',
+  /** The white disc on the felt while a table loads, and the logo turning in it (SKATGO-93). */
+  tableLoader: '144px',
+  tableLoaderMark: '96px',
 
   // The front page's tiles and hero picture
   tileArtRight: '-18px',

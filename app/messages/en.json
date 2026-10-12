@@ -315,6 +315,7 @@
   "home_meta_description": "Play Skat online free against the AI, enter the daily tournament with {short} or {long} identical deals, or learn in the interactive course. No download.",
   "not_found_title": "Page not found",
   "not_found_text": "This page does not exist. The homepage has the tournament, Skat course and rules.",
+  "table_loading": "Setting up the table …",
   "game_javascript": "The card table needs JavaScript. You can still read the rules and course introductions without it.",
   "game_learning_title": "Learn Skat and look up the rules",
   "game_learning_text": "New to Skat? The free course takes you through the cards, trump order, bidding and scoring, step by step. Practise with cards and finish with a complete game. The Skat rules cover contracts, following suit, game values and examples you can return to while learning.",

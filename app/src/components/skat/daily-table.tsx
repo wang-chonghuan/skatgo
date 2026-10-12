@@ -18,6 +18,7 @@ import { DayDeals, VsAiTable, Who } from './daily-comparison'
 import { sizeSearch } from './daily-page'
 import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, TextField, linkLook } from './ui'
+import { TableLoading } from './table-loading'
 
 // The daily tournament in the browser (SKATGO-35, SKATGO-36): the button on /daily that starts or
 // continues the day, the day's result once all its deals are played with the name it stands on the
@@ -291,7 +292,8 @@ export function DailyTable() {
       </Panel>
     )
   }
-  if (!reply || !game) return null
+  // Until the day's deal comes, the turning logo (SKATGO-93).
+  if (!reply || !game) return <TableLoading />
   const busy = sending || queue.length > 0
   return (
     <GameTable

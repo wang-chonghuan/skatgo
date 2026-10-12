@@ -6,7 +6,6 @@ import { DAILY_DEALS, DAILY_LENGTHS, DAILY_SIZES, type DailySize } from '~/lib/d
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { fill } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
@@ -14,6 +13,7 @@ import { ClientPart, DailyEntry, DailyTable } from './client-part'
 import { DayDeals } from './daily-comparison'
 import { GameReading } from './game-reading'
 import { linkLook } from './ui'
+import { TableLoading } from './table-loading'
 
 /** The search that names one of the day's tournaments; the six-deal one is the page without any. */
 export const sizeSearch = (size: DailySize) => (size === DAILY_DEALS ? {} : { deals: size })
@@ -70,13 +70,13 @@ export function DailyPage() {
 /**
  * The tournament's table (SKATGO-35): the day's current deal, the whole screen, as free play's table is.
  * Its title is a heading for screen readers only. The table renders in the browser; until it arrives,
- * bare felt holds its place.
+ * the logo turns on the felt (SKATGO-93).
  */
 export function DailyPlay() {
   return (
     <div {...stylex.props(styles.play)}>
       <h1 {...stylex.props(styles.hidden)}>{m.daily_play_title()}</h1>
-      <ClientPart fallback={<div aria-hidden="true" {...stylex.props(styles.feltHold)} />}>
+      <ClientPart fallback={<TableLoading />}>
         <DailyTable />
       </ClientPart>
     </div>
@@ -86,7 +86,6 @@ export function DailyPlay() {
 const styles = stylex.create({
   root: { display: 'flex', flexDirection: 'column' },
   play: { display: 'flex', flexDirection: 'column', flexGrow: 1 },
-  feltHold: { minHeight: dims.screenDynamic, backgroundImage: fill.felt },
   hidden: {
     position: 'absolute',
     width: dims.visuallyHidden,

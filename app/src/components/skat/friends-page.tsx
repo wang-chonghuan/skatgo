@@ -4,12 +4,12 @@ import { Link } from '@tanstack/react-router'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { fill } from '../../theme/elevation.stylex'
 import { space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ClientPart, OpenTable, PrivateTable } from './client-part'
 import { readingLink } from './game-reading'
+import { TableLoading } from './table-loading'
 
 /**
  * Skat with friends (SKATGO-61): the public page a search for "Skat mit Freunden online spielen" lands
@@ -46,13 +46,13 @@ export function FriendsPage() {
 
 /**
  * A private table's own page (SKATGO-61): personal, never indexed. Its title is a heading for screen
- * readers only; the lobby or the table renders in the browser, bare felt holding its place until then.
+ * readers only; the lobby or the table renders in the browser, the logo turning on the felt until then (SKATGO-93).
  */
 export function TablePage() {
   return (
     <div {...stylex.props(styles.play)}>
       <h1 {...stylex.props(styles.hidden)}>{m.table_title()}</h1>
-      <ClientPart fallback={<div aria-hidden="true" {...stylex.props(styles.feltHold)} />}>
+      <ClientPart fallback={<TableLoading />}>
         <PrivateTable />
       </ClientPart>
     </div>
@@ -78,7 +78,6 @@ const styles = stylex.create({
   links: { display: 'flex', flexWrap: 'wrap', gap: space.x16 },
   steps: { display: 'flex', flexDirection: 'column', gap: space.x8, margin: 0, paddingInlineStart: space.x24 },
   play: { display: 'flex', flexDirection: 'column', flexGrow: 1 },
-  feltHold: { minHeight: dims.screenDynamic, backgroundImage: fill.felt },
   hidden: {
     position: 'absolute',
     width: dims.visuallyHidden,

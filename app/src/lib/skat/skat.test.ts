@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { chooseDeclaration, declarationAdvice, skatAdvice } from './ai'
 import { type Contract, cards, fullDeck, legalPlays, pointsOf, sameCard, shuffle, trickWinnerIndex, trumpSequence } from './cards'
-import { actor, adviceFor, aiBid, aiDeclare, bidAction, collectTrick, deal, playCard } from './game'
+import { actor, adviceFor, aiBid, aiDeclare, applyMove, bidAction, collectTrick, deal, playCard } from './game'
 import { BID_LADDER, type Declaration, matadors, settle } from './value'
 
 // Expected values here come from the International Skat Order, not from running the code.
@@ -127,6 +127,34 @@ describe('the bidding ladder', () => {
   })
   it('tops out at Grand ouvert with four: 264', () => {
     expect(BID_LADDER[BID_LADDER.length - 1]).toBe(264)
+  })
+})
+
+describe('jump bids (SKATGO-87)', () => {
+  // Dealer 2: forehand is seat 0, so middlehand (1) names numbers to forehand (0) first.
+  const start = () => deal(2, fullDeck())
+  it('the speaker may name any higher number on the ladder; the listener answers that number', () => {
+    const g = applyMove(start(), { type: 'bid', value: 'bid', to: 33 })
+    expect(g.bidding.value).toBe(33)
+    expect(g.bidding.awaiting).toBe('listener')
+    expect(g.bidding.log.at(-1)).toEqual({ seat: 1, say: 'bid', value: 33 })
+    const held = applyMove(g, { type: 'bid', value: 'hold' })
+    expect(held.bidding.log.at(-1)).toEqual({ seat: 0, say: 'hold', value: 33 })
+    // The next number after a jump is the ladder's next above it.
+    expect(applyMove(held, { type: 'bid', value: 'bid' }).bidding.value).toBe(35)
+  })
+  it('a "bid" without a number is the next one, as every recorded move means', () => {
+    expect(applyMove(start(), { type: 'bid', value: 'bid' }).bidding.value).toBe(18)
+  })
+  it('refuses a number off the ladder, not above the one on the table, or from anyone but the speaker', () => {
+    const g = start()
+    expect(applyMove(g, { type: 'bid', value: 'bid', to: 19 })).toBe(g)
+    const at30 = applyMove(g, { type: 'bid', value: 'bid', to: 30 })
+    const back = applyMove(at30, { type: 'bid', value: 'hold' })
+    expect(applyMove(back, { type: 'bid', value: 'bid', to: 30 })).toBe(back)
+    expect(applyMove(back, { type: 'bid', value: 'bid', to: 27 })).toBe(back)
+    expect(applyMove(at30, { type: 'bid', value: 'hold', to: 33 })).toBe(at30)
+    expect(applyMove(g, { type: 'bid', value: 'pass', to: 33 })).toBe(g)
   })
 })
 

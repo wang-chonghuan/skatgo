@@ -32,7 +32,7 @@ import {
   trickWinner,
 } from '~/lib/skat/game'
 import { type DealSummary, seegerFabian, summarize, totals } from '~/lib/skat/tournament'
-import { type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
+import { BID_LADDER, type Declaration, expectedValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
 import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, Settings, Spade, X } from 'lucide-react'
@@ -740,7 +740,7 @@ function ActionsFor({
       dealScore={dealScore}
       last={last}
       daily={daily}
-      onBid={(a) => dispatch({ type: 'bid', value: a })}
+      onBid={(a, to) => dispatch(to === undefined ? { type: 'bid', value: a } : { type: 'bid', value: a, to })}
       onPickUp={() => dispatch({ type: 'pickup' })}
       onHand={() => dispatch({ type: 'hand' })}
       onDiscard={() => {
@@ -911,7 +911,8 @@ type ActionsProps = {
   picked: Card[]
   draft: Declaration | null
   setDraft: (d: Declaration | null) => void
-  onBid: (a: 'bid' | 'hold' | 'pass') => void
+  /** `to`: the number a jump bid names (SKATGO-87). */
+  onBid: (a: 'bid' | 'hold' | 'pass', to?: number) => void
   onPickUp: () => void
   onHand: () => void
   onDiscard: () => void
@@ -981,17 +982,7 @@ function Actions(p: ActionsProps) {
         </Row>
       )
     }
-    if (b.awaiting === 'speaker') {
-      const value = nextBid(b.value)
-      return (
-        <Row>
-          <Say>{m.bid_your_turn({ name: nameOf(b.listener) })}</Say>
-          <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_button({ value: value ?? '' })}</Btn>
-          <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-          {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
-        </Row>
-      )
-    }
+    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} />
     return (
       <Row>
         <Say>{m.bid_asked({ name: nameOf(b.speaker), value: b.value })}</Say>
@@ -1265,6 +1256,48 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
     <button type="button" aria-pressed={on} onClick={onClick} {...stylex.props(typography.toggle, styles.toggle, on && styles.toggleOn)}>
       {on ? '☑' : '☐'} {children}
     </button>
+  )
+}
+
+/**
+ * The speaker's turn in the auction: the next number, or — opened with "Höher …" — any higher number on
+ * the ladder, a jump bid as at a real table (SKATGO-87). The numbers lie in one row that scrolls sideways,
+ * so the hand stays in sight on a phone; a number is picked first and named with the main button, so a
+ * slip of the finger names nothing.
+ */
+function SpeakerBid({ value, listener, hints, onBid, onBidHint }: { value: number; listener: string; hints: boolean; onBid: ActionsProps['onBid']; onBidHint: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [picked, setPicked] = useState<number | null>(null)
+  const next = nextBid(value)
+  const higher = next === null ? [] : BID_LADDER.filter((v) => v > next)
+  const named = picked ?? next
+  return (
+    <Row>
+      <Say>{m.bid_your_turn({ name: listener })}</Say>
+      <Btn testId="skat-bid" shape="block" size="lg" onClick={() => (picked === null ? onBid('bid') : onBid('bid', picked))}>{m.bid_button({ value: named ?? '' })}</Btn>
+      <Btn testId="skat-pass" shape="block" size="lg" onClick={() => onBid('pass')}>{m.bid_pass()}</Btn>
+      {higher.length > 0 ? (
+        <Btn testId="skat-higher" tone="quiet" shape="block" size="lg" onClick={() => { setOpen((o) => !o); setPicked(null) }}>{m.bid_higher()}</Btn>
+      ) : null}
+      {open ? (
+        <div role="group" aria-label={m.bid_higher_values()} data-testid="skat-jump" {...stylex.props(styles.jumpRow)}>
+          {higher.map((v) => (
+            <button
+              key={v}
+              type="button"
+              data-testid="skat-jump-value"
+              data-value={v}
+              aria-pressed={picked === v}
+              onClick={() => setPicked((p) => (p === v ? null : v))}
+              {...stylex.props(typography.toggle, styles.toggle, styles.jumpValue, picked === v && styles.toggleOn)}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {hints ? <Btn tone="info" shape="block" size="lg" onClick={onBidHint}>{m.bid_hint_button()}</Btn> : null}
+    </Row>
   )
 }
 
@@ -1745,6 +1778,17 @@ const styles = stylex.create({
     cursor: 'pointer',
   },
   toggleOn: { backgroundColor: color.goodSoft, borderColor: color.go },
+  // The higher numbers of a jump bid (SKATGO-87): one row across the panel that scrolls sideways.
+  jumpRow: {
+    display: 'flex',
+    flexWrap: 'nowrap',
+    flexBasis: '100%',
+    gap: space.x8,
+    overflowX: 'auto',
+    overscrollBehaviorX: 'contain',
+    paddingBlock: space.x4,
+  },
+  jumpValue: { flexShrink: 0 },
   resultBody: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   resultTitle: { margin: 0, color: color.navy },
   resultSkat: { display: 'flex', alignItems: 'center', gap: space.x6 },

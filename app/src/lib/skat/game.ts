@@ -17,7 +17,7 @@ import {
 } from './cards'
 import { type Advice, advise, chooseDeclaration, maxBid } from './ai'
 import { minus, nullBeaten, restLine } from './rest'
-import { type Declaration, type Settlement, nextBid, settle } from './value'
+import { BID_LADDER, type Declaration, type Settlement, nextBid, settle } from './value'
 
 export type Seat = 0 | 1 | 2
 export const next = (s: Seat): Seat => ((s + 1) % 3) as Seat
@@ -33,7 +33,8 @@ export type Bidding = {
   listener: Seat
   /** Highest number said so far; 0 before anyone has spoken. */
   value: number
-  /** Who must act: the speaker names the next number, or the listener answers the one on the table. */
+  /** Who must act: the speaker names a number — the next one, or any higher on the ladder (SKATGO-87) —
+   *  or the listener answers the one on the table. */
   awaiting: 'speaker' | 'listener' | 'forehandAlone'
   stage: 1 | 2
   log: BidEvent[]
@@ -128,7 +129,14 @@ function wonAuction(g: Game, winner: Seat): Game {
 
 export type BidAction = 'bid' | 'hold' | 'pass'
 
-export function bidAction(g: Game, action: BidAction): Game {
+/** A number the speaker may name now: one of the ladder's above the number on the table — a jump bid,
+ *  as at a real table (SKATGO-87). */
+export const canJumpTo = (g: Game, to: number) =>
+  g.phase === 'bidding' && g.bidding.awaiting === 'speaker' && BID_LADDER.includes(to) && to > g.bidding.value
+
+/** The auction after `action`. The speaker's "bid" names the next number on the ladder, or `to` when
+ *  given — a jump; an illegal `to` leaves the game as it was. */
+export function bidAction(g: Game, action: BidAction, to?: number): Game {
   const b = g.bidding
   if (g.phase !== 'bidding') return g
 
@@ -145,7 +153,8 @@ export function bidAction(g: Game, action: BidAction): Game {
       const log = [...b.log, { seat: b.speaker, say: 'pass' as const, value: 0 }]
       return wonAuction({ ...g, bidding: { ...b, log } }, b.listener)
     }
-    const value = nextBid(b.value)
+    if (to !== undefined && !canJumpTo(g, to)) return g
+    const value = to ?? nextBid(b.value)
     if (value === null) return g
     return { ...g, bidding: { ...b, value, awaiting: 'listener', log: [...b.log, { seat: b.speaker, say: 'bid', value }] } }
   }
@@ -267,7 +276,9 @@ function finish(g: Game): Game {
 /** One move by the seat whose turn it is, as a table sends it — locally, or over the wire to a server
  *  that owns the game (multiplayer rooms, the daily tournament). */
 export type Move =
-  | { type: 'bid'; value: BidAction }
+  /** `to`: the number a speaker names when jumping (SKATGO-87); without it, "bid" is the next number, as
+   *  every move recorded before it means. */
+  | { type: 'bid'; value: BidAction; to?: number }
   | { type: 'pickup' }
   | { type: 'hand' }
   | { type: 'discard'; cards: Card[] }
@@ -284,8 +295,11 @@ export function applyMove(g: Game, move: Move): Game {
   switch (move.type) {
     case 'bid': {
       if (g.phase !== 'bidding') return g
+      const speaking = g.bidding.awaiting === 'speaker'
       const valid = move.value === 'pass' || (g.bidding.awaiting === 'listener' ? move.value === 'hold' : move.value === 'bid')
-      return valid ? bidAction(g, move.value) : g
+      // Only the speaker names a number, so only the speaker's "bid" may carry one.
+      if (move.to !== undefined && !(speaking && move.value === 'bid')) return g
+      return valid ? bidAction(g, move.value, move.to) : g
     }
     case 'pickup':
       return g.pickedUp ? g : pickUpSkat(g)

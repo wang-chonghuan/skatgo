@@ -77,7 +77,7 @@ export const RULES_DE: RulesText = {
         },
         {
           kind: 'p',
-          text: 'Am echten Tisch darf man beim Reizen Werte überspringen; bei SkatGo ist jedes Gebot der nächste Reizwert.',
+          text: 'Wer reizt, darf Werte überspringen – wie am echten Tisch: Statt 18, 20, 22 kann man gleich 30 sagen. Bei SkatGo geht das mit „Höher …“.',
         },
       ],
       lesson: '7',

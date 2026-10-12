@@ -27,5 +27,12 @@
 - 新增令牌：`timing.spin`、`timing.steady`、`turn`（effects）、`fill.loaderGlow`（elevation）、`dims.tableLoader`、`dims.tableLoaderMark`（shape）。新消息 `table_loading`（屏幕阅读器读的「Der Tisch wird vorbereitet …」）。
 - 检查：typecheck、build、单元测试 118/118、client bundle、设计令牌、SEO；浏览器 `tmp/loading.mjs` 9 项全过（含转动中心实测：偏差 0.3px 以内）。
 
+## 返工 4：新 logo
+- 母图 `app/brand/skatgo-logo.png` 换成居中版：原图整体上移 62 像素，让三个花色的中心落在图片正中；1408×1408，像素未缩放。
+- 全部图标由新脚本 `.intentfold/tickets/SKATGO-93/icons.mjs` 生成（取代 SKATGO-23 的 icons.mjs，后者按外框居中，重跑会回到旧样子）：静态图标视觉居中，图案 80%（`icon-192/512`、`apple-touch-icon`）、86%（`logo-96`、favicon）、58%（`icon-maskable-512`）；加载动画用的 `logo-mark.png` 严格居中，所以加载动画不再需要转动中心的补偿（`turn.origin`、`turn.lift` 已删）。
+- 链接预览图 42 张由 SKATGO-50 的 og.mjs 重画；`play-*.png` 由自由对局页画（好友页共用这张，见 SKATGO-70）；`home-*.png` 最后由首页画。lesson-3-en 的标题跟着页面现在的 H1 变了。
+- 检查：完整机械检查全过（118 个单元测试、SEO 46 页、SEO 测试 25/25）；站点提供的图标与生成结果逐字节一致；加载动画 9 项重测全过。
+- charter 待人决定：engineering.md 第 92 行写着图标由 `.intentfold/tickets/SKATGO-23/icons.mjs` 生成，现在应是本单的 `icons.mjs`。
+
 ## 服务
 web http://127.0.0.1:55093、multiplayer 56093、本地数据库 57093 在跑。

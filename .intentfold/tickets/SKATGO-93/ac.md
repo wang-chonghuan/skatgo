@@ -38,3 +38,9 @@
 ## AC9 绕正确的中心转
 - 把 logo 停在 0°、120°、240° 截图：方块的三个位置所在圆的圆心（转动中心）离白圆中心不超过 1.5px；三个花色中心所在圆的圆心也在白圆中心。
 - 白圆边缘渐变到毛毡，没有硬边；转动时 logo 的白底不会伸出圆外（logo 用透明底）。
+
+## 返工 4：新 logo
+## AC10 图标换成居中的新版
+- 站点提供的 `favicon.ico`、`favicon-32.png`、`apple-touch-icon.png`、`icon-192/512.png`、`icon-maskable-512.png`、`logo-96.png`、`logo-mark.png` 与 `icons.mjs` 从母图生成的完全一致（逐字节）；`/logo-v2/` 不存在。
+- 图案占画布：安装图标和 iPhone 80%，页头和标签 86–88%，maskable 58%，maskable 的图案离中心不超过 34.5%（安全圆 40%）。
+- 链接预览图：41 张只在左上角 50px 的 logo 处不同；lesson-3-en 另因页面标题已改而换了标题文字。

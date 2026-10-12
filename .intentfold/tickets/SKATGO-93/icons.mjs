@@ -5,10 +5,11 @@
 //   - The turning logo (logo-mark.png) turns about that centre exactly, so it sits there.
 //   - The still icons sit halfway between the box's middle and the mark's centre — centred to the eye — so the mark
 //     can fill 80% of the icon, as app icons do (the human: 「80吧，同意」); strictly centred it could not pass 75%.
-//   1. app/brand/skatgo-logo-centred.png: the master (1408×1408) moved so that centre is the picture's — same
-//      pixels, same size, nothing scaled.
-//   2. app/public/logo-v2/: every icon the site uses, by the same names, sizes and paddings as before, plus
-//      logo-mark.png (clear ground, for the turning logo) and sheet.png (old beside new), for the human to look at.
+//   1. app/brand/skatgo-logo.png, the master (1408×1408), moved so that centre is the picture's — same pixels,
+//      same size, nothing scaled. Once centred it stays as it is, so a rerun cuts the same icons.
+//   2. app/public/: every icon the site uses, by the same names and sizes as before, and logo-mark.png (clear
+//      ground, for the turning logo); a sheet of the old icons beside the new ones in this ticket's tmp/.
+// Replaces SKATGO-23's icons.mjs, which centres the drawn box. Rerun after the master changes:
 //   node .intentfold/tickets/SKATGO-93/icons.mjs
 import { readFileSync, writeFileSync } from 'node:fs'
 import { chromium } from '../../../app/node_modules/playwright/index.mjs'
@@ -44,7 +45,7 @@ const centred = await page.evaluate(async ([src, toB64]) => {
   return { centre: [ux, uy], shift: [dx, dy], suits: s, b64: await enc(o) }
 }, [master, toB64])
 console.log('mark centre in the master', centred.centre.map((v) => v.toFixed(1)), 'moved by', centred.shift)
-writeFileSync(new URL('brand/skatgo-logo-centred.png', APP), Buffer.from(centred.b64, 'base64'))
+if (centred.shift.some((v) => v !== 0)) writeFileSync(new URL('brand/skatgo-logo.png', APP), Buffer.from(centred.b64, 'base64'))
 const src = 'data:image/png;base64,' + centred.b64
 const CENTRE = 704 // the mark's centre, now the master's (1408 / 2)
 
@@ -102,8 +103,9 @@ const render = (side, fill, round, clear = false) => page.evaluate(async ([src, 
 }, [src, reach, box, eye, side, fill, round, clear, toB64]).then((s) => Buffer.from(s, 'base64'))
 
 const ROUND = 0.22
-const OUT = new URL('public/logo-v2/', APP)
-const out = (name, buf) => { writeFileSync(new URL(name, OUT), buf); console.log(`public/logo-v2/${name}  ${buf.length} bytes`) }
+const OUT = new URL('public/', APP)
+const OLD = new Map(['icon-512.png', 'icon-maskable-512.png', 'icon-192.png', 'apple-touch-icon.png', 'logo-96.png', 'favicon-32.png'].map((n) => [n, png(new URL(n, OUT))]))
+const out = (name, buf) => { writeFileSync(new URL(name, OUT), buf); console.log(`public/${name}  ${buf.length} bytes`) }
 const ico = await Promise.all([16, 32, 48].map((s) => render(s, 0.86, ROUND)))
 out('favicon-32.png', ico[1])
 const header = Buffer.alloc(6 + 16 * ico.length); header.writeUInt16LE(0, 0); header.writeUInt16LE(1, 2); header.writeUInt16LE(ico.length, 4)
@@ -126,7 +128,7 @@ out('logo-mark.png', await render(192, -0.96, 0, true))
 
 // A sheet for the human: each icon, old above new, at its own size, on grey with a crosshair through the middle.
 const names = ['icon-512.png', 'icon-maskable-512.png', 'icon-192.png', 'apple-touch-icon.png', 'logo-96.png', 'favicon-32.png']
-const files = names.map((n) => [png(new URL(`public/${n}`, APP)), png(new URL(n, OUT))])
+const files = names.map((n) => [OLD.get(n), png(new URL(n, OUT))])
 const sheet = await page.evaluate(async ([files, toB64]) => {
   const enc = eval(toB64)
   const load = async (s) => { const i = new Image(); i.src = s; await i.decode(); return i }
@@ -146,5 +148,5 @@ const sheet = await page.evaluate(async ([files, toB64]) => {
   }
   return enc(c)
 }, [files, toB64])
-out('sheet.png', Buffer.from(sheet, 'base64'))
+writeFileSync(new URL('tmp/sheet.png', import.meta.url), Buffer.from(sheet, 'base64'))
 await b.close()

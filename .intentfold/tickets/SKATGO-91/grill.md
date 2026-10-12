@@ -12,3 +12,4 @@
   - 德文 „Spiel gegen die KI, mit Freunden oder im Turnier. Nach jedem Spiel vergleichst du dich mit der KI: Wer hat besser gespielt?“
   - 英文 "Play the AI, your friends or the tournament. After every deal, compare yourself with the AI: who played it better?"
 - 不那么淡：`landingHeroLead` 改为 22/18px、`weight.ui`（600），仍比原来 28/24px、700 小。
+- 人：「可以，但是我觉得字重不够，有点淡」→ 字重回到加粗 700，字号仍是 22/18px。

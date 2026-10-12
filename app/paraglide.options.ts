@@ -31,6 +31,15 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/kurs'],
       ],
     },
+    // Skat in 5 Minuten (SKATGO-89): a page of its own under the course, ahead of the lessons' pattern so
+    // its address is never read as a lesson's slug.
+    {
+      pattern: '/course/quick-start',
+      localized: [
+        ['en', '/en/course/skat-in-5-minutes'],
+        ['de', '/de/kurs/skat-in-5-minuten'],
+      ],
+    },
     {
       pattern: '/course/:slug',
       localized: [

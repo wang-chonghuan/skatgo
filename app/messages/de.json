@@ -541,5 +541,8 @@
   "daily_nick_refused": "Bitte wähle einen anderen Spitznamen.",
   "daily_would_be": "Deine Punkte: {total}. Das wäre heute Platz {rank}.",
   "entry_art_alt": "Drei Freunde spielen Skat an einem Tisch in Kreuzform",
-  "message_close": "Schließen"
+  "message_close": "Schließen",
+  "quick_course_text": "Die 12 Regeln, die du zum Losspielen brauchst – danach geht’s direkt an den Tisch.",
+  "quick_entry_link": "Oder in 5 Minuten: die 12 Regeln",
+  "quick_rules_link": "Neu beim Skat? Die 12 Regeln in 5 Minuten"
 }

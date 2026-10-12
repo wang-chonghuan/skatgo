@@ -12,7 +12,10 @@ An interactive Skat course at skatgo.com, in German and English. Eleven lessons 
 deck" to a full game: each lesson teaches with cards the learner can touch, then checks with
 exercises that are judged on the spot and explain every wrong answer. Overall progress is visible from
 the course map, and the last lesson is a whole game against two computer players. The aim, in the
-human's words: 「只要进度走完，就能短时间把skat学会，学到可以和已经会的人打牌的水平」.
+human's words: 「只要进度走完，就能短时间把skat学会，学到可以和已经会的人打牌的水平」. For whoever
+wants to play first, "Skat in 5 Minuten" under the course (SKATGO-89) is the twelve rules the human told
+his son, after which he could play on SkatGo (「他听完就会在skatgo上打牌了」) — kept as the human said
+them, translated and nothing added — then the way to the table.
 
 A daily Skat tournament at `/daily`, in two lengths (SKATGO-77): every day the same 6 deals for every
 player (SKATGO-62), shown first, and separately the same 12 deals for every player; each deal played

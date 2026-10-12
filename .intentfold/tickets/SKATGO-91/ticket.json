@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-91",
   "mode": "autonomous",
-  "stage": "handed-off",
+  "stage": "closed",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-91",
   "branch": "SKATGO-91-hero-lead",

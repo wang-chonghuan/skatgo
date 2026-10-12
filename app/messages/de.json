@@ -306,7 +306,7 @@
   "info_bid": "Reizwert",
   "info_declarer": "Alleinspieler",
   "info_points": "Augen",
-  "info_tricks": "Stich {n} von 10",
+  "info_deal": "Spiel {n} von {of}",
   "info_totals": "Gesamt",
   "info_label": "Spielinformation",
 

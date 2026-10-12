@@ -14,3 +14,16 @@
 ## AC4 速成课的名字没有连字符
 - 首页课程卡的按钮：德文 „Crashkurs in 5 Minuten“，英文 "Crash course in 5 minutes"。
 - 规则页 `/de/regeln`、`/en/rules` 的链接是 „Neu beim Skat? Der Crashkurs in 5 Minuten“ / "New to Skat? The crash course in 5 minutes"，页面上不再出现旧写法。
+
+## 返工 2（人：结果页顶部没有 padding、Your seat 被灰色遮住、牌桌显示第几副而不是第几墩）
+构建产物 web 55093、multiplayer 56093、本地数据库 57093。自由对局和第 11 课的牌由 `tmp/stage.mts` 用合法着法走到最后一张，浏览器里只出最后一张（`tmp/table.mjs`）。
+
+## AC5 牌桌显示第几副
+- 牌桌信息板「Augen」下面：自由对局 „Spiel 1 von 6“，第 11 课 „Spiel 1 von 1“，6 副赛 „Spiel 1 von 6“，12 副赛 „Spiel 1 von 12“。
+- 页面上任何地方都不再出现 „Stich n von 10“。
+
+## AC6 结果框从顶部打开
+- 打完后结果框的 scrollTop 是 0，第一张卡（输赢）离框顶不少于框的内边距（24px），桌面和手机都是。
+
+## AC7 「Dein Platz」不被灰色遮住
+- 计分表表头「Dein Platz」没有底色；它下面的分数格仍是灰色底。

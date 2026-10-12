@@ -165,6 +165,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   const [dealer, setDealer] = useState<Seat>(2)
   const [localGame, setGame] = useState<Game>(() => deal(2))
   const remote = tournament ?? server ?? room
+  // Which deal of how many (SKATGO-93): the tournament's, free play's round of six, and lesson 11's single
+  // deal. A private table counts no deals.
+  const dealOf = tournament ? { n: tournament.deal + 1, of: tournament.of } : server?.round ? { n: server.round.deal + 1, of: server.round.of } : server ? { n: 1, of: 1 } : null
   // The learner's own card goes on the table the moment it is tapped (SKATGO-73); the server's answer,
   // with the computers' replies, replaces it when it comes. Until then the table shows `pending`.
   const [pending, setPending] = useState<{ from: Game; game: Game } | null>(null)
@@ -408,7 +411,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             learner asked for, or why a card was refused, each until it is closed. The stage keeps this
             band clear (SKATGO-34): nothing on the table reaches into it. */}
         <div data-testid="skat-top" {...stylex.props(styles.top, (hint !== null || refusal !== null) && styles.topTip)}>
-          <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} />
+          <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} deal={dealOf} />
           {!acting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
               {game.phase === 'trickEnd' && winner !== null ? (
@@ -661,7 +664,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             {game.declarer !== null ? <Pill tone="quiet">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
             {game.phase === 'play' || game.phase === 'trickEnd' ? (
               <>
-                <Pill tone="quiet">{m.info_tricks({ n: Math.min(10, game.tricks.length + 1) })}</Pill>
                 <Pill tone="quiet">{m.table_points({ declarer: points.declarer, defenders: points.defenders })}</Pill>
               </>
             ) : null}
@@ -860,8 +862,9 @@ function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: bo
 }
 
 /** The info board across the top of the felt: what is being played, by whom, how the hand stands, and
- *  the running totals — each a small label over its value, divided by fine rules. */
-function InfoBoard({ game, scores, points }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number } }) {
+ *  the running totals — each a small label over its value, divided by fine rules. Under the points, which
+ *  deal of how many this is, not which trick (SKATGO-93, the human: 「当前是第几墩，没必要，应该改为显示，当前是第几个deal」). */
+function InfoBoard({ game, scores, points, deal }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number }; deal: { n: number; of: number } | null }) {
   const nameOf = useNameOf()
   const contract = game.declaration?.contract ?? null
   const playing = game.phase === 'play' || game.phase === 'trickEnd'
@@ -898,7 +901,7 @@ function InfoBoard({ game, scores, points }: { game: Game; scores: [number, numb
             '—'
           )}
         </span>
-        <span {...stylex.props(typography.infoSub, styles.boardSub)}>{playing ? m.info_tricks({ n: Math.min(10, game.tricks.length + 1) }) : ''}</span>
+        <span data-testid="skat-info-deal" {...stylex.props(typography.infoSub, styles.boardSub)}>{deal ? m.info_deal(deal) : ''}</span>
       </div>
       <div data-testid="skat-info-totals" {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_totals()}</span>
@@ -1135,9 +1138,12 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
   const [reviewed] = useState(() => freeReview?.())
   const askReviewed: AskReview | undefined = reviewed ? () => reviewed : undefined
   // On a phone the settlement opens below the fold; bring it into view, or the game just seems to stop.
+  // The dialog is what scrolls into view, not the result inside it: the result is taller than the dialog,
+  // so scrolling it in also scrolled the dialog's own content past its top padding (SKATGO-93, the human:
+  // 「顶部竟然没有padding，像是被滚动过了一点一样」).
   const panel = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    panel.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    panel.current?.closest('[role="dialog"]')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [])
   const formula = isNull
     ? m.result_null_formula({ contract: `Null${d.hand ? ' Hand' : ''}${d.ouvert ? ' Ouvert' : ''}`, value: r.value })

@@ -15,5 +15,11 @@
 - 重跑 typecheck、build 和浏览器检查（加了 AC4），26 项全过。
 - 没动：英文 SEO 标题和描述里的 "no sign-up"、页面网址 `skat-in-5-minuten`；charter ui.md 第 254 行还写着旧按钮名 „5-Minuten-Crashkurs“（charter 归人管，没改）。
 
+## 返工 2
+- 结果框打开时不再往下滚：滚进视野的是框本身（`game-table.tsx` `Result`），框内从顶部开始，内边距完整。
+- 计分表「Your seat / Dein Platz」表头去掉灰底，分数格保留（`daily-comparison.tsx`）。
+- 牌桌信息板「Augen」下改为第几副（`info_deal` „Spiel n von x“ / "Deal n of x"）：自由对局 x/6，第 11 课 1/1，比赛 x/6 或 x/12；好友房间留空。侧栏的「Stich n von 10」标签删除，`info_tricks` 消息删除。
+- 检查：typecheck、build、单元测试、client bundle、设计令牌、git grep 全过；浏览器 `tmp/table.mjs` 16 项全过（自由对局桌面和手机、第 11 课、6 副赛桌面、12 副赛手机）。
+
 ## 服务
-web http://127.0.0.1:55093 在跑。
+web http://127.0.0.1:55093、multiplayer 56093、本地数据库 57093 在跑。

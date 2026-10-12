@@ -306,7 +306,7 @@
   "info_bid": "Current bid",
   "info_declarer": "Declarer",
   "info_points": "Card points",
-  "info_tricks": "Trick {n} of 10",
+  "info_deal": "Deal {n} of {of}",
   "info_totals": "Totals",
   "info_label": "Game information",
 

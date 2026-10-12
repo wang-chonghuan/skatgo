@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-86",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-86",
   "branch": "SKATGO-86-free-ai-result",

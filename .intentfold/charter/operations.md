@@ -297,11 +297,13 @@ render services --output json --confirm
 render logs --resources "$SERVICE_ID" --limit 100 --output text --confirm
 render deploys list "$SERVICE_ID" --output json --confirm
 
-# clear a nickname from a day's leaderboards (SKATGO-36): the entry and its score stay; it leaves the
-# board until the player names it again. Day is the Berlin date; equal nicknames that day all clear, in
-# both tournaments — add `AND size = 6` or `AND size = 12` for one (SKATGO-77).
+# take an unsuitable name off the boards (SKATGO-36, SKATGO-90) — only when the human names it, since a
+# name already on a board is otherwise never changed (the human's red line). The entries and their scores
+# stay; the player's current name goes too, so when the multiplayer service next starts the entries, and
+# the player, are given a new random name. Every day and both tournaments; add `AND day = '<YYYY-MM-DD>'`
+# to the first statement for one day.
 render psql skatgo-multiplayer-db --confirm --output text \
-  --command "UPDATE daily_entries SET nickname = NULL WHERE day = '<YYYY-MM-DD>' AND nickname = '<nickname>'"
+  --command "UPDATE daily_entries SET nickname = NULL WHERE nickname = '<nickname>'; DELETE FROM daily_players WHERE nickname = '<nickname>'"
 
 # re-deal named days (SKATGO-42): deletes those days' deals, both tournaments', and every entry played
 # on them, so the leader deals them anew. Players' entries are lost for good: run it only for days the

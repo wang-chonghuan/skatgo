@@ -2,7 +2,7 @@ import { createServer } from 'node:http'
 import express from 'express'
 import { Server, matchMaker } from '@colyseus/core'
 import { WebSocketTransport } from '@colyseus/ws-transport'
-import { dailyRoutes, prepareDays } from './daily'
+import { dailyRoutes, nameUnnamed, prepareDays } from './daily'
 import { freeRoutes, loadPool } from './free'
 import { loadPolicy, type Policy } from './skatzero/policy'
 import { makeRoom, RESTORE } from './room'
@@ -74,6 +74,8 @@ async function elect() {
       // The leader deals today and tomorrow ahead, with the computers' bidding (SKATGO-39); readiness
       // does not wait for it.
       void prepareDays(store, policy!)
+      // Entries finished before SKATGO-90 without a name go on their boards under one.
+      void nameUnnamed(store).catch(() => console.error('daily_naming_failed'))
       setInterval(() => { if (ready && !stopping) void prepareDays(store, policy!) }, 60 * 60 * 1000).unref()
       console.log(JSON.stringify({ event: 'ready', version, port }))
       return

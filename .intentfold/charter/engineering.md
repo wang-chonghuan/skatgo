@@ -36,8 +36,13 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   socket. A day has two tournaments, 6 and 12 deals (SKATGO-77, `DAILY_SIZES` in
   `lib/skat/tournament.ts`). Its PostgreSQL holds each tournament's deals (`daily_deals`) and each
   player's entry (`daily_entries`: the human's moves per deal, per-deal summaries, the total, and the
-  nickname a finished player put on the leaderboard — SKATGO-36), both keyed by the day and the
-  tournament's `size`; rows from before SKATGO-77 are the 6-deal tournament. Every route names the size
+  name it stands on the leaderboard under — SKATGO-36, written when it finishes since SKATGO-90 and never
+  changed after that day), both keyed by the day and the
+  tournament's `size`; rows from before SKATGO-77 are the 6-deal tournament. A player's current name
+  (`daily_players`, SKATGO-90) is what a newly finished entry is written with: the last name the player
+  set before, or one given at the first finish under an advisory lock, so no two players are given the
+  same; a sign-in carries a device's name to an account without one. The leader names entries finished
+  before without a name when it starts. Changing the name rewrites only today's finished entries. Every route names the size
   (none means 6). Each tournament's leaderboard is computed from those rows on request, ranked by the
   entry's Seeger-Fabian total (`daily_entries.total`, SKATGO-81), ties to the earlier finish, with the
   AI's total from the player's seat beside it, from the deals' stored `benchmark` (SKATGO-80). The web
@@ -89,7 +94,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/skat/tournament.ts` | the tournament's rules on the engine: the day's tournaments by size (`DAILY_SIZES`, SKATGO-77), what seat 0 may see of a deal (`seatView`, also free play's), that view as a table, Seeger-Fabian, and a finished deal's review (`DealReview`, SKATGO-79) |
 | `app/src/lib/skat/quickstart.ts`, `app/src/components/skat/quick-start-page.tsx` | Skat in 5 Minuten (SKATGO-89): the twelve rules per language as data, and the page, whose cards — points and orders — are drawn from `cards.ts` |
 | `app/src/lib/skat/tricks/`, `app/src/components/skat/tricks-page.tsx` | the Skat-Tricks (SKATGO-82): the articles' text per language as data (`content.{de,en}.ts`; numbers a reader could check come from `value.ts` and `cards.ts`), held to the ticket by `tricks.test.ts`, and the page that renders them on the server; a later article is more content and its own address under `/skat-tricks` |
-| `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36) |
+| `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36), and the names a player is given (SKATGO-90): the agreed word list and `pickName`, which takes the first free name in an order fixed by the player's id, a number only once every name without one is taken |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
 | `app/src/components/skat/rules-page.tsx`, `bidding-table-page.tsx`, `app/src/lib/skat/rules/` | the rules reference and its text, with anchored sub-headings for topics looked up by name (`#grand`, `#null-ouvert`, `#ramsch`), the bidding table (SKATGO-50), and the printable short version (`rules-summary-page.tsx`, text in `rules/summary.{de,en}.ts`, SKATGO-53). Every number on these pages — card points, base and Null values, the bid ladder, the multiplier limits — is rendered from `value.ts` and `cards.ts` |
 | `app/src/components/skat/score-sheet-page.tsx`, `print-links.tsx`, `app/src/lib/printables.ts`, `app/public/downloads/` | the printables (SKATGO-53): the score sheet (its Seeger-Fabian bonuses are `SEEGER_FABIAN` in `tournament.ts`); the download button and the links to the printables; which PDF belongs to which page; the committed PDFs, made by `app/scripts/make-printables.mjs` (Tools). Each PDF is served with a canonical Link header naming its page, set in `app/vite.config.ts` from `lib/printables.ts` and `lib/origin.ts` |

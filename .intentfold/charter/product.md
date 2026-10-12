@@ -25,7 +25,13 @@ deals ahead does not start, so the short one leads (the human, 2026-10-10: 「�
 Results are ranked and compared by the player's own Seeger-Fabian total, the standard German players
 know from their clubs and tournaments (SKATGO-81, the human: 「按他们习惯的标准来」). Each tournament has a
 leaderboard per day, which can be looked at for seven days, today's included (SKATGO-80, the human:
-「要保留显示最近7天的」), ranked by that total; every entry stands by its own. The AI stands on it too, for
+「要保留显示最近7天的」), ranked by that total; every entry stands by its own. A finished entry stands on
+its board at once, with nothing to fill in (SKATGO-90, the human: 「让用户填名字，太麻烦了」), under the player's
+name: the one they set before, or a name of two friendly German words given at random — never the
+email address, never words of cards, a number only when every name without one is taken; the same
+device, or the same account, keeps its name. A player may change it, for today's entries and from now
+on, to a name no other player holds. A name already on a board is never changed (the human's red line:
+「禁止改变任何已经有的用户的名字……这是绝对红线」). The AI stands on it too, for
 everyone, today's board included: its total over the tournament from the player's seat, among the
 players', after any player with the same, taking no rank — its total only, never a deal (SKATGO-80, the
 human: 「都显示，只在leader board上显示总成绩即可」). There is no other measure beside it (SKATGO-81, the human:

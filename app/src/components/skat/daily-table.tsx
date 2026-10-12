@@ -20,8 +20,8 @@ import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, TextField, linkLook } from './ui'
 
 // The daily tournament in the browser (SKATGO-35, SKATGO-36): the button on /daily that starts or
-// continues the day, the day's result once all its deals are played with the nickname that puts it on
-// the leaderboard, the leaderboard itself, and the table for a deal the server owns. Each is about one of
+// continues the day, the day's result once all its deals are played with the name it stands on the
+// leaderboard under (given, and changeable — SKATGO-90), the leaderboard itself, and the table for a deal the server owns. Each is about one of
 // the day's tournaments, named by its number of deals (SKATGO-77). The
 // server answers each move with every state the table passed through — the learner's move, then each
 // computer move and trick — and the table shows them one by one on its own beats, as if the computers
@@ -160,28 +160,29 @@ function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard 
   )
 }
 
-/** The nickname that puts a finished day on the board: offered, shown, or changed until midnight. */
-function Nickname({ size, board, onNamed }: { size: DailySize; board: DailyBoard; onNamed: () => void }) {
+/** The player's name on the board (SKATGO-90): given when the tournament finished — nothing to fill in —
+ *  shown, and changed in place. A change holds from now on and for today's entries, never an earlier day's. */
+function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }) {
   const me = board.me
   const [editing, setEditing] = useState(false)
-  const [value, setValue] = useState(me?.nickname ?? board.lastNickname ?? '')
-  const [refused, setRefused] = useState(false)
+  const [value, setValue] = useState(me?.nickname ?? '')
+  const [problem, setProblem] = useState<'refused' | 'taken' | null>(null)
   const [saving, setSaving] = useState(false)
   const id = useId()
-  if (!me?.finished) return null
+  if (!me?.finished || !me.nickname) return null
   async function save() {
     setSaving(true)
-    const r = await dailyName(size, value)
+    const r = await dailyName(value)
     setSaving(false)
-    if (isError(r)) return setRefused(true)
+    if (isError(r)) return setProblem(r.error === 'nickname_taken' ? 'taken' : 'refused')
     track('daily_nickname_set')
-    setRefused(false)
+    setProblem(null)
     setEditing(false)
     onNamed()
   }
-  if (me.nickname && !editing) {
+  if (!editing) {
     return (
-      <div data-testid="daily-nickname-set" {...stylex.props(styles.nickRow)}>
+      <div data-testid="daily-nickname-set" data-name={me.nickname} {...stylex.props(styles.nickRow)}>
         <p {...stylex.props(typography.appText, styles.text, styles.what)}>{m.daily_nick_on({ name: me.nickname })}</p>
         <Btn testId="daily-nickname-change" tone="quiet" size="sm" onClick={() => setEditing(true)}>{m.daily_nick_change()}</Btn>
       </div>
@@ -189,19 +190,16 @@ function Nickname({ size, board, onNamed }: { size: DailySize; board: DailyBoard
   }
   return (
     <div {...stylex.props(styles.nickForm)}>
-      {me.nickname ? null : (
-        <p data-testid="daily-would-be" data-rank={me.rank ?? undefined} {...stylex.props(typography.appText, styles.text)}>
-          {m.daily_would_be({ total: signed(me.total), rank: me.rank ?? 1 })}
-        </p>
-      )}
       <label htmlFor={id} {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_nick_label()}</label>
       <div {...stylex.props(styles.nickRow)}>
-        <TextField id={id} testId="daily-nickname" autoComplete="nickname" value={value} invalid={refused} onChange={setValue} onEnter={() => { if (!saving) void save() }} />
-        <Btn testId="daily-nickname-save" disabled={saving || value.trim() === ''} onClick={() => void save()}>
-          {me.nickname ? m.daily_nick_save() : m.daily_nick_join()}
-        </Btn>
+        <TextField id={id} testId="daily-nickname" autoComplete="nickname" value={value} invalid={problem !== null} onChange={setValue} onEnter={() => { if (!saving) void save() }} />
+        <Btn testId="daily-nickname-save" disabled={saving || value.trim() === ''} onClick={() => void save()}>{m.daily_nick_save()}</Btn>
       </div>
-      {refused ? <p data-testid="daily-nickname-refused" role="alert" {...stylex.props(typography.appText, styles.refused)}>{m.daily_nick_refused()}</p> : null}
+      {problem ? (
+        <p data-testid="daily-nickname-refused" data-problem={problem} role="alert" {...stylex.props(typography.appText, styles.refused)}>
+          {problem === 'taken' ? m.daily_nick_taken() : m.daily_nick_refused()}
+        </p>
+      ) : null}
     </div>
   )
 }
@@ -213,7 +211,7 @@ function DailyResult({ size, status, board, onNamed }: { size: DailySize; status
       <section data-testid="daily-result" data-total={status.totals[PLAYER]} {...stylex.props(styles.result)}>
         <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_result_title()}</h2>
         <VsAiTable deals={status.deals} benchmarks={status.benchmarks} analysis={{ size, day: status.day }} />
-        {board ? <Nickname key={board.me?.nickname ?? ''} size={size} board={board} onNamed={onNamed} /> : null}
+        {board ? <Nickname key={board.me?.nickname ?? ''} board={board} onNamed={onNamed} /> : null}
       </section>
     </Panel>
   )

@@ -60,6 +60,16 @@ export class Store {
             ALTER TABLE daily_entries ADD FOREIGN KEY (day, size) REFERENCES daily_deals (day, size);
           END IF;
         END $$;
+        -- A player's current name (SKATGO-90): the one each newly finished entry goes on its board under.
+        -- The names already on entries are never changed (the human's red line); a player who set names
+        -- before keeps the last one as their current name.
+        CREATE TABLE IF NOT EXISTS daily_players (
+          player text PRIMARY KEY, nickname text NOT NULL, created_at bigint NOT NULL
+        );
+        INSERT INTO daily_players (player, nickname, created_at)
+          SELECT DISTINCT ON (player) player, nickname, created_at FROM daily_entries WHERE nickname IS NOT NULL
+           ORDER BY player, day DESC, finished_at DESC NULLS LAST
+          ON CONFLICT DO NOTHING;
       `)
       await c.query('COMMIT')
     } catch (e) {

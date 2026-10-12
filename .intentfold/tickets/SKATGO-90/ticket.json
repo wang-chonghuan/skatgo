@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-90",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-90",
+  "branch": "SKATGO-90-auto-names",
+  "base": "26da9492c2788fd3088465bda9c59ca2efa963cb",
+  "ports": { "web": 55090, "multiplayer": 56090, "database": 57090 }
+}

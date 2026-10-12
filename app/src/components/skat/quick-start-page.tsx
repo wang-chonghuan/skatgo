@@ -7,8 +7,9 @@ import { QUICK_START, type QuickCards } from '~/lib/skat/quickstart'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
+import { elev } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
-import { dims } from '../../theme/shape.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { CardRowView } from './card-row'
 import { Panel, Rich, linkLook } from './ui'
@@ -39,8 +40,8 @@ function rowOf(cards: QuickCards): CardRow {
 
 /**
  * Skat in 5 Minuten (SKATGO-89): the twelve rules a beginner needs to sit down at SkatGo's table, one
- * page under the course — the human's own twelve, numbered, the points and orders shown with the
- * engine's cards — then the way to the table, and the course and the rules for more. Rendered on the
+ * page under the course — a small picture of the table in a real game first, then the human's own
+ * twelve, numbered, the points and orders shown with the engine's cards — then the way to the table, and the course and the rules for more. Rendered on the
  * server, like the rules, so it reads without JavaScript.
  */
 export function QuickStartPage() {
@@ -50,6 +51,11 @@ export function QuickStartPage() {
       <article {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{page.h1}</h1>
         <p {...stylex.props(typography.landingBody, styles.lead)}>{page.lead}</p>
+        {/* What the rules are about, at a glance: no wider than the front page's picture. */}
+        <figure data-testid="quick-picture" {...stylex.props(styles.figure)}>
+          <img src={page.picture.src} alt={page.picture.caption} decoding="async" {...stylex.props(styles.picture)} />
+          <figcaption {...stylex.props(typography.meta, styles.caption)}>{page.picture.caption}</figcaption>
+        </figure>
         <ol {...stylex.props(styles.rules)}>
           {page.rules.map((rule, i) => (
             <li key={i} data-testid="quick-rule" data-rule={i + 1} {...stylex.props(styles.rule)}>
@@ -100,6 +106,9 @@ const styles = stylex.create({
   },
   title: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.navy },
+  figure: { display: 'flex', flexDirection: 'column', gap: space.x6, width: '100%', maxWidth: dims.heroArt, margin: 0 },
+  picture: { display: 'block', width: '100%', height: 'auto', borderRadius: radii.option, boxShadow: elev.option },
+  caption: { color: color.slate },
   rules: { display: 'flex', flexDirection: 'column', gap: space.x12, margin: 0, padding: 0, listStyleType: 'none' },
   // Each rule on its own line, its number ahead of it, the cards under its text.
   rule: {

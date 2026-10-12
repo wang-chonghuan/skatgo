@@ -242,7 +242,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   "Gestern", or the weekday and date — and steps through the last seven days with two round arrow
   buttons at the right, earlier on the left, the one at the end of the range spent (SKATGO-80). A
   printable has its download beside the title (`TitleWithDownload`). Skat in 5 Minuten
-  (`quick-start-page.tsx`, SKATGO-89) is one reading column: its H1 and one-line lead, the twelve rules
+  (`quick-start-page.tsx`, SKATGO-89) is one reading column: its H1 and one-line lead, a small picture of
+  the table in a real game in the page's language — no wider than the front page's picture (`dims.heroArt`),
+  with a caption naming what is where (the human: 「不要占空间太大，主要是让读者产生直觉」) — the twelve rules
   numbered, each a line of text, the ones that name points or an order with that row of cards under them
   (`CardRowView`, the points as captions), then a `tip` panel with the `go` button to free play, and links
   to the course and the rules. Its ways in: an option card under the course's lead, ahead of the progress

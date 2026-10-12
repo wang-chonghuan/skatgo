@@ -268,6 +268,10 @@ the committed fixture (`test/fixtures/skatzero-parity.json`, produced by that dr
 - `app/public/og/*.png` — the link-preview pictures, one per page and language, drawn from each page's
   h1: `node .intentfold/tickets/SKATGO-50/og.mjs <running origin> <page path>…` (Playwright from app's
   devDependencies). Redraw a page's picture when its h1 changes.
+- `app/public/quick-start-table-{de,en}.webp` — the table on "Skat in 5 Minuten" (SKATGO-89), caught in a
+  real free game by `node .intentfold/tickets/SKATGO-89/table-shot.mjs <running origin>` (web and
+  multiplayer running, Playwright from app's devDependencies, `cwebp`). Redraw it when the table's look
+  changes.
 - `app/public/downloads/*.pdf` — the printables (SKATGO-53), printed from their pages. Rerun after the
   printables' text, the rules engine's numbers or the print styles change, and commit the PDFs:
 

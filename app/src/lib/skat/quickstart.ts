@@ -4,7 +4,9 @@ import type { Locale } from '~/paraglide/runtime'
 // SkatGo — the human: 「这个十二条我教我儿子，口述的，他听完就会在skatgo上打牌了」, and 「我认为你不需要修改
 // 它」. So each rule is the human's own, translated and nothing more: no rule added, none left out, none
 // explained further. Where a rule names points or an order, the page shows the cards beside it, drawn
-// from the rules engine (`cards`), never typed here.
+// from the rules engine (`cards`), never typed here. Under the lead, a small picture of SkatGo's table in a
+// real game, so the reader can see what the rules are about (the human: 「附带一个游戏页面的截图，不要占空间
+// 太大，主要是让读者产生直觉」); made by `.intentfold/tickets/SKATGO-89/table-shot.mjs`.
 
 /** The cards a rule is shown with: the card points, a suit's order, the Jacks' order, the Null order. */
 export type QuickCards = 'points' | 'suitOrder' | 'jacks' | 'nullOrder'
@@ -14,6 +16,8 @@ export type QuickStart = {
   metaDescription: string
   h1: string
   lead: string
+  /** The table in a real game, in the page's language: its file under app/public, and what it shows. */
+  picture: { src: string; caption: string }
   rules: { text: string; cards?: QuickCards }[]
   play: { text: string; button: string }
   further: { course: string; rules: string }
@@ -25,6 +29,10 @@ const DE: QuickStart = {
     'Skat schnell lernen: zwölf kurze Regeln – Karten, Stiche, Trumpf, Reizen und Null. Danach kannst du sofort online gegen zwei Computer spielen, kostenlos und ohne Anmeldung.',
   h1: 'Skat in 5 Minuten',
   lead: 'Zwölf Regeln, dann kannst du loslegen.',
+  picture: {
+    src: '/quick-start-table-de.webp',
+    caption: 'So sieht der Tisch bei SkatGo aus: unten deine Karten, in der Mitte der Stich, links und rechts Lina und Noah.',
+  },
   rules: [
     { text: 'Es gibt **32 Karten** und **3 Spieler**: ein Kartenspiel ohne die 2, 3, 4, 5 und 6.' },
     { text: 'Jeder bekommt **10 Karten**, die übrigen **2** liegen verdeckt auf dem Tisch – das ist der **Skat**.' },
@@ -49,6 +57,10 @@ const EN: QuickStart = {
     'Learn Skat fast: twelve short rules – cards, tricks, trumps, bidding and Null. Then play online against two computer players straight away, free and without signing up.',
   h1: 'Skat in 5 minutes',
   lead: 'Twelve rules, then you can start playing.',
+  picture: {
+    src: '/quick-start-table-en.webp',
+    caption: "SkatGo's table: your cards at the bottom, the trick in the middle, Lina and Noah left and right.",
+  },
   rules: [
     { text: 'There are **32 cards** and **3 players**: a pack of cards without the 2, 3, 4, 5 and 6.' },
     { text: 'Everyone gets **10 cards**; the other **2** lie face down on the table – that is the **Skat**.' },

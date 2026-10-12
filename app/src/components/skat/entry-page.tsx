@@ -72,8 +72,9 @@ export function EntryPage() {
             {finished > 0 ? (
               <span {...stylex.props(typography.tileSub, styles.aside)}>{m.home_done({ finished, total: course.length })}</span>
             ) : (
-              // For whoever has not started (SKATGO-89): the twelve rules first, the course after.
-              <Link to="/course/quick-start" data-testid="entry-quick" {...stylex.props(typography.tileSub, styles.quick)}>{m.quick_entry_link()}</Link>
+              // For whoever has not started (SKATGO-89): the twelve rules, a button as plain to see as the
+              // course's (the human: 「学习卡上那个5分钟，看起来不够明显」).
+              <Link to="/course/quick-start" data-testid="entry-quick" {...linkLook('quiet', 'md', 'landing')}>{m.quick_entry_link()}</Link>
             )}
           </Face>
         </section>
@@ -255,14 +256,6 @@ const styles = stylex.create({
   tileText: { margin: 0, color: color.onColor },
   foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, marginTop: 'auto', paddingTop: space.x8 },
   aside: { color: color.onColor },
-  quick: {
-    color: color.onColor,
-    textDecoration: 'underline',
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.onColor,
-    outlineOffset: border.focusOffset,
-  },
   readingLink: { color: color.info, textDecoration: 'underline' },
 
   faq: { display: 'flex', flexDirection: 'column', gap: space.x24 },

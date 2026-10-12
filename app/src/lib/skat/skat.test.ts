@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { chooseDeclaration, declarationAdvice, skatAdvice } from './ai'
 import { type Contract, cards, fullDeck, legalPlays, pointsOf, sameCard, shuffle, trickWinnerIndex, trumpSequence } from './cards'
 import { actor, adviceFor, aiBid, aiDeclare, applyMove, bidAction, collectTrick, deal, playCard } from './game'
-import { BID_LADDER, type Declaration, matadors, settle } from './value'
+import { BID_LADDER, type Declaration, highestValue, matadors, mayDeclare, settle } from './value'
 
 // Expected values here come from the International Skat Order, not from running the code.
 
@@ -118,6 +118,36 @@ describe('settlement', () => {
     expect(settle(decl(nullGame, { ouvert: true }), 18, [], none).value).toBe(46)
     expect(settle(decl(nullGame, { hand: true, ouvert: true }), 18, [], none).value).toBe(59)
     expect(settle(decl(nullGame), 18, [], { ...none, declarerTricks: 1 })).toMatchObject({ won: false, score: -46 })
+  })
+  it('a Null worth less than the bid is lost, though the declarer took no trick (ISkO 3.4.4, SKATGO-98)', () => {
+    const none = { declarerPoints: 0, defenderPoints: 120, declarerTricks: 0, defenderTricks: 10 }
+    expect(settle(decl(nullGame), 24, [], none)).toMatchObject({ won: false, overbid: true, value: 23, score: -46 })
+  })
+})
+
+describe('what may be announced (ISkO 3.4.2–3.4.4, SKATGO-98)', () => {
+  const with2 = cards('C:J | S:J | H:A')
+  const with1 = cards('C:J')
+  it('a game reaching the bid only with Schneider may be announced', () => {
+    expect(highestValue(decl(hearts), with2)).toBe(50)
+    expect(mayDeclare(decl(hearts), 33, with2)).toBe(true)
+  })
+  it('a game that cannot reach the bid may not, while another can', () => {
+    expect(mayDeclare(decl(hearts), 72, with1)).toBe(false)
+    expect(mayDeclare(decl(grand), 72, with1)).toBe(true)
+  })
+  it('a Null worth less than the bid may not; Null ouvert, worth 46, may', () => {
+    expect(mayDeclare(decl(nullGame), 24, [])).toBe(false)
+    expect(mayDeclare(decl(nullGame, { ouvert: true }), 24, [])).toBe(true)
+  })
+  it('when no suit game or Grand can reach the bid any more, any of them may be announced, but no Null', () => {
+    expect(mayDeclare(decl(hearts), 120, with1)).toBe(true)
+    expect(mayDeclare(decl(grand), 120, with1)).toBe(true)
+    expect(mayDeclare(decl(nullGame), 120, with1)).toBe(false)
+  })
+  it('in a Hand game the announcements count towards what it can reach', () => {
+    expect(mayDeclare(decl(grand, { hand: true }), 144, with1)).toBe(false)
+    expect(mayDeclare(decl(grand, { hand: true, schneiderAnnounced: true, schwarzAnnounced: true, ouvert: true }), 144, with1)).toBe(true)
   })
 })
 

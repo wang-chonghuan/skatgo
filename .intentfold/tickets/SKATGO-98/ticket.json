@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-98",
+  "mode": "autonomous",
+  "stage": "closed",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-98",
+  "branch": "SKATGO-98-declare-legal",
+  "base": "bb4b6e5b1f28f7e332718de7dc48212484a0b76d",
+  "ports": { "web": 55098, "multiplayer": 56098, "database": 57098 }
+}

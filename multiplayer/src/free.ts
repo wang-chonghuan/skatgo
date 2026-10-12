@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
-import { actionSchema, applySeatMove, Rejected, secretEquals } from './model'
+import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals } from './model'
 import { BIDS, type HandMode } from './skatzero/bidding'
 import type { Policy } from './skatzero/policy'
 
@@ -159,6 +159,7 @@ export function freeRoutes(admissionKey: string, ready: () => boolean, policy: (
     const d = p.deals[t.id]
     let g = replayLog(d.dealer, deckOf(d.deck), t.log)
     if (actor(g) !== PLAYER) throw new Rejected('not_your_turn')
+    refuseUnlawful(g, i.action as Move)
     g = applySeatMove(g, PLAYER, i.action as Move)
     t.log.push({ seat: PLAYER, move: i.action as Move })
     return reply(p, t.id, t.t, t.log, g, [g])

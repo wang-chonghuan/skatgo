@@ -5,7 +5,7 @@
 
 import { bidAdvice, chooseDeclaration, declarationAdvice, skatAdvice } from './ai'
 import type { Card } from './cards'
-import { type Game, type Seat, adviceFor } from './game'
+import { type Game, type Seat, adviceFor, mayAnnounce } from './game'
 import { adviceReason, cardLabel, contractName } from './i18n'
 import { m } from '~/paraglide/messages'
 
@@ -37,7 +37,7 @@ export function declareHint(game: Game): Hint {
   // the ten alone — the skat is unseen.
   const isHand = !game.pickedUp
   const ten = game.hands[ME]
-  const a = declarationAdvice(ten, isHand ? ten : [...ten, ...game.skat], game.bid, isHand)
+  const a = declarationAdvice(ten, isHand ? ten : [...ten, ...game.skat], game.bid, isHand, (d) => mayAnnounce(game, d))
   const contract = `${contractName(a.declaration.contract)}${isHand ? ' Hand' : ''}`
   const why =
     a.declaration.contract.kind === 'suit'

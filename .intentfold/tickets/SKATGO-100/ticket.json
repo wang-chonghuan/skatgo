@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-100",
+  "mode": "autonomous",
+  "stage": "closed",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-100",
+  "branch": "SKATGO-100-polish",
+  "base": "5753813f476ce6057783c61ba2f427359b5a5ac1",
+  "ports": { "web": 55100, "multiplayer": 56100, "database": 57100 }
+}

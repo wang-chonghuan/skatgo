@@ -197,7 +197,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `PrintLinks` | `print-links.tsx` | the "Zum Ausdrucken" links to the score sheet and the short rules, on the rules page, the bidding table and the course; left off paper |
 | `ScoreSheet` | `daily-comparison.tsx` | a score sheet (SKATGO-79): the three seats' Seeger-Fabian scores of one deal or of a tournament, the player's line, tagged "Du" in `navy`, over the AI's, tagged "AI" in `info`; no other number beside them (SKATGO-81); under a deal's line, what that deal was. The AI's line is left out for days dealt before it played them. Free play and lesson 11 show it after every game, the AI's line once the review has worked it out, with a note while it does or when it cannot (SKATGO-86) |
 | `VsAiTable` | `daily-comparison.tsx` | the daily tournament's comparison with the computer (SKATGO-48, SKATGO-79): one row per finished deal — the deal's number, the player's and the AI's Seeger-Fabian score each with its role under the heading "Punkte", signed, never `good` / `bad` (SKATGO-81) — that opens to the deal's `ScoreSheet` and play record; under the rows, the tournament's `ScoreSheet`. Rows collapse instead of scrolling sideways; the newest opens after a deal and on `/daily` mid-day. On `/daily` while the day runs (`DayDeals`, "Die Spiele von heute", also rendered on the server; SKATGO-63) every deal of the chosen tournament has a row: the ones not finished follow by number, "läuft" for the one being played and "offen" for the rest, with nothing of their cards; the total appears once a deal is finished. Free play's round result, "Deine Runde", is the same table over its six deals (SKATGO-88) |
-| `DealAnalysis` / `TrickReplay` | `daily-comparison.tsx` | a finished deal's play record, "Spielverlauf" (SKATGO-79), after a daily deal, on a `/daily` row and after a free game; open, never folded, with no button. On top, in one line, the player's card that fell furthest below the AI's choice and the AI's card. Then a row per trick: its three cards in the order played, each under its player's name, the player's own bold, and who took the trick with its card points; under each row, the player's hand before that trick. Wherever the AI would have played another card, that card stands under the player's, in the same column, with an `info` "AI" tag after it; the furthest trick's rows are `badSoft`. Under the tricks, a line for those left unplayed when the deal was decided early, and the skat |
+| `DealAnalysis` / `TrickReplay` | `daily-comparison.tsx` | a finished deal's play record, "Spielverlauf" (SKATGO-79), after a daily deal, on a `/daily` row and after a free game; open, never folded, with no button. On top, in one line, the player's card that fell furthest below the AI's choice and the AI's card. Then a row per trick: its three cards in the order played, each under its player's name, the player's own bold, and who took the trick with its card points; under a row the player taps, and only that one, the player's hand before that trick, folded again by a tap anywhere else, with no icon (SKATGO-100). Wherever the AI would have played another card, that card stands under the player's, in the same column, with an `info` "AI" tag after it; the furthest trick's rows are `badSoft`. Under the tricks, a line for those left unplayed when the deal was decided early, and the skat |
 | `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards and the skat are as big as the hand's; the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68). An open hand at the side — an Ouvert declarer's, or the cards laid open when a deal is decided early — is spread at `stage.stackStepOpen`, wider than a closed one, so every card reads (SKATGO-79) |
 
 Recurring patterns — reuse them rather than inventing a neighbour:
@@ -267,7 +267,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   standard web-app table. Free play's search entry is the front page.
 - **At the table**, the speaker in the auction may jump (SKATGO-87): "Höher …" (`quiet`) opens, under it,
   one row of every higher number on the ladder in pills (`toggle`), scrolling sideways so the hand stays
-  in sight on a phone; a number is picked first and named with the main button. Free play's table shows
+  in sight on a phone; a number is picked first and named with the main button. While a move of the
+  player's is on its way to the server, the table shows no move buttons, so none hangs there dead
+  (SKATGO-100). Free play's table shows
   its round in the strip as the tournament does, "Spiel n von 6 · gesamt X"; after the sixth deal the
   round's result takes the felt's place: a white panel with its `VsAiTable`, "Neue Runde" (`go`) and
   "Tisch verlassen" (`quiet`) (SKATGO-88).
@@ -275,7 +277,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   felt's top right corner, the size of the assistant's launcher across from it at the top left, on every
   full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"
   (`quiet`, which asks once more: "Ja, neue Runde" `stop`, "Nein, weiterspielen" `quiet`), and "Tisch
-  verlassen" (`stop`). The side panel has no way out of its own.
+  verlassen" (`stop`). The side panel has no way out of its own. The button stays over the table's dialogs,
+  which start below it, and keeps to the felt beside a pinned panel; an open drawer covers it (SKATGO-100).
+- **The info board** (SKATGO-100): a cell's content never runs past its padding. Hand and Ouvert stand on
+  the small line under the contract; a long name wraps, a small line ends in an ellipsis; the three running
+  totals share the cell in equal columns, smaller on a phone (`infoTotal`) and smaller again once one has four
+  digits (`infoTotalLong`).
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
   without JavaScript, in the lobby's own tokens and typography — never hidden keyword text or new
   decorative containers.

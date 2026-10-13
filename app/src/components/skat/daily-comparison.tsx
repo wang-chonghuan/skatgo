@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { dailyReview } from '~/lib/daily-api'
 import { type Card, pointsOf, sameCard } from '~/lib/skat/cards'
@@ -136,9 +136,21 @@ export function TrickReplay({ tricks, names, skat, hand, differs = null, early =
   const ai = new Map((differs ?? []).map((d) => [d.trick, d.best]))
   // What the player held before a trick: the hand they began with, less the cards of the tricks before.
   const before = (i: number) => (hand ?? []).filter((c) => !tricks.slice(0, i).some((t) => t.cards.some((p) => p.seat === PLAYER && sameCard(p.card, c))))
+  // That hand is shown for one trick at a time, the one tapped; a tap anywhere else folds it away (SKATGO-100, the
+  // human: 「只有用户点击那一行时，才显示出来，而且点击别处就折叠回去，只能显示一个」). No icon says so.
+  const [shown, setShown] = useState<number | null>(null)
+  const rows = useRef<HTMLTableElement>(null)
+  useEffect(() => {
+    if (shown === null) return
+    const away = (e: PointerEvent) => {
+      if (!(e.target as Element).closest?.('[data-trick]') || !rows.current?.contains(e.target as Node)) setShown(null)
+    }
+    document.addEventListener('pointerdown', away)
+    return () => document.removeEventListener('pointerdown', away)
+  }, [shown])
   return (
     <div {...stylex.props(styles.replay)}>
-      <table data-testid="daily-replay" data-tricks={played.length} {...stylex.props(styles.replayTable)}>
+      <table ref={rows} data-testid="daily-replay" data-tricks={played.length} {...stylex.props(styles.replayTable)}>
         <thead>
           <tr>
             <th scope="col" {...stylex.props(typography.micro, styles.replayHead)}>{m.daily_replay_trick()}</th>
@@ -152,7 +164,14 @@ export function TrickReplay({ tricks, names, skat, hand, differs = null, early =
           const best = ai.get(n)
           const held = before(i)
           return (
-            <tbody key={i} data-trick={n} data-highlight={marked ? 'true' : undefined} {...stylex.props(styles.replayRow, marked && styles.replayMarked)}>
+            <tbody
+              key={i}
+              data-trick={n}
+              data-highlight={marked ? 'true' : undefined}
+              aria-expanded={held.length ? shown === n : undefined}
+              onClick={held.length ? () => setShown((s) => (s === n ? null : n)) : undefined}
+              {...stylex.props(styles.replayRow, marked && styles.replayMarked, held.length > 0 && styles.replayTap)}
+            >
               <tr data-winner={t.winner}>
                 <td {...stylex.props(typography.small, styles.muted, styles.replayCell)}>{n}</td>
                 {t.cards.map((p, k) => (
@@ -169,7 +188,7 @@ export function TrickReplay({ tricks, names, skat, hand, differs = null, early =
                 ))}
                 <td {...stylex.props(typography.small, styles.replayCell, styles.end)}>{m.daily_replay_points({ name: names[t.winner], points: pointsOf(t.cards.map((p) => p.card)) })}</td>
               </tr>
-              {held.length ? (
+              {held.length && shown === n ? (
                 <tr>
                   <td />
                   <td colSpan={t.cards.length + 1} data-testid="daily-replay-hand" data-cards={held.length} {...stylex.props(typography.micro, styles.replayHand)}>
@@ -455,6 +474,7 @@ const styles = stylex.create({
   // The trick of the move most worth improving, on the app's pink (the human: 「那一行标红背景，就是本app常用
   // 那种粉红的背景」).
   replayMarked: { backgroundColor: color.badSoft },
+  replayTap: { cursor: 'pointer' },
   replayCell: { paddingBlock: space.x4, paddingInlineEnd: space.x6, verticalAlign: 'top' },
   replayName: { display: 'block' },
   replayCard: { display: 'block', color: color.navy },

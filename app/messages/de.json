@@ -286,7 +286,7 @@
   "auth_sign_in": "Anmelden",
 
   "entry_title": "Skat online kostenlos",
-  "entry_lead": "Spiel gegen die KI, mit Freunden oder im Turnier. Nach jedem Spiel vergleichst du dich mit der KI: Wer hat besser gespielt?",
+  "entry_lead": "Spiel gegen die KI, mit Freunden oder im Turnier. Nach jedem Spiel siehst du, wie die KI deine Karten gespielt hätte.",
   "entry_cta": "Heute spielen",
   "ask_page_entry": "Start",
 
@@ -430,7 +430,7 @@
 
   "entry_point_free": "Kostenlos",
   "entry_point_no_signup": "Ohne Anmeldung",
-  "entry_point_ai": "Analyse mit KI",
+  "entry_point_ai": "KI-Analyse",
   "nav_daily": "Täglich",
   "nav_header_daily": "Tagesturnier",
   "nav_header_free": "Freies Spiel",
@@ -550,6 +550,6 @@
   "entry_art_alt": "Drei Freunde spielen Skat an einem Tisch in Kreuzform",
   "message_close": "Schließen",
   "quick_course_text": "Die 12 Regeln, die du zum Losspielen brauchst – danach geht’s direkt an den Tisch.",
-  "quick_entry_link": "Crashkurs in 5 Minuten",
-  "quick_rules_link": "Neu beim Skat? Der Crashkurs in 5 Minuten"
+  "quick_entry_link": "5-Minuten-Crashkurs",
+  "quick_rules_link": "Neu beim Skat? Der 5-Minuten-Crashkurs"
 }

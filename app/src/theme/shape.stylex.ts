@@ -87,6 +87,8 @@ export const dims = stylex.defineVars({
   boardWidthPhone: 'calc(100% - 120px)',
   /** Two rows of two at any width (SKATGO-29). */
   boardColumns: 'repeat(2, minmax(0, 1fr))',
+  /** The info board's three running totals, side by side (SKATGO-100). */
+  boardTotals: 'repeat(3, minmax(0, 1fr))',
   /** In landscape the board is one row of four (SKATGO-34), so the band at the top stays low. */
   boardColumnsWide: 'repeat(4, minmax(0, auto))',
   boardWidthWide: 'min(640px, calc(100% - 144px))',
@@ -138,6 +140,12 @@ export const dims = stylex.defineVars({
 
   // The assistant (SKATGO-9/11), unchanged geometry.
   launcher: '44px',
+  /** Room above a dialog on the table for the way-out button over it (SKATGO-100): its top offset, its size and a
+   *  gap. */
+  scrimTop: '68px',
+  scrimTopPhone: '60px',
+  /** The felt's cell in the table's grid: the way-out button keeps to it beside a pinned panel (SKATGO-100). */
+  feltCell: '1 / 1 / 2 / 2',
   /** The table's menu under its way-out button (SKATGO-96). */
   tableMenu: '240px',
   launcherLift: '48px',

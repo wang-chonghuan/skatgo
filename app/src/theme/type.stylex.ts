@@ -43,6 +43,11 @@ export const fontSize = stylex.defineVars({
    *  66px (36px on a phone), following the screen's width so it never breaks. The human, 2026-10-09. */
   fHero: 'min(66px, 5.2vw)',
   fHeroPhone: 'min(36px, 8.6vw)',
+  /** The table's three running totals on a phone (SKATGO-100): they share one cell of the info board, so they
+   *  shrink with the screen rather than run past it. */
+  fBoardTotal: 'min(24px, 5.2vw)',
+  /** …and when one of them has four digits. */
+  fBoardTotalLong: 'min(18px, 4.2vw)',
 })
 
 /** Only the weights the page loads (routes/__root.tsx): 400 to 900. */

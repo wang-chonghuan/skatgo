@@ -42,7 +42,8 @@ After each deal the player sees how the computer, named "AI", played the same de
 line saying what the deal was — declarer, game and bid, won or lost with the card points,
 Schneider, Schwarz or overbid; then the tournament so far in one line; then the deal's play record
 ("Spielverlauf", SKATGO-79). The play record is open, never folded: trick by trick, who played which card
-in order and who took it with how many card points, and under every trick the player's hand before it.
+in order and who took it with how many card points, and, for the trick the player taps, their hand before it
+(SKATGO-100).
 Wherever SkatZero would have played another card in the player's seat, that card stands under the
 player's; the trick where the player's card fell furthest below SkatZero's choice is marked and summed
 up in one line on top — ranked, with no threshold (the human: 「通过10墩排序的方式，选出最差的」). It is the

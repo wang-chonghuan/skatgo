@@ -372,7 +372,11 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   // The side panel shows the game, or the rules with a way back (SKATGO-75).
   const [panelView, setPanelView] = useState<'game' | 'rules'>('game')
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
-  const acting = inFrameActions && myTurn
+  // While a move of the learner's is on its way to the server, the table still shows the state it was made in:
+  // its buttons stay away until the answer comes, or they would hang there dead and vanish under the learner's
+  // finger — the jump bid's "Höher …" most of all (SKATGO-100, the human: 「跳叫按钮，有时候不能显示，有时候会显示」).
+  const waiting = inFrameActions && myTurn && remoteBusy
+  const acting = inFrameActions && myTurn && !waiting
   const dialog = game.phase === 'passedIn' || (game.phase === 'done' && !revealing)
   // With the panel pinned open, the learner's move is made in the panel, as Funbridge's bidding box is
   // (SKATGO-34): nothing then lies over the table. Otherwise it is the drawer over the felt.
@@ -415,7 +419,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             band clear (SKATGO-34): nothing on the table reaches into it. */}
         <div data-testid="skat-top" {...stylex.props(styles.top, (hint !== null || refusal !== null) && styles.topTip)}>
           <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} deal={dealOf} />
-          {!acting && !dialog ? (
+          {!acting && !waiting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
               {game.phase === 'trickEnd' && winner !== null ? (
                 <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
@@ -587,9 +591,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
             glow={hint?.card ? [hint.card] : hint?.cards ?? []}
           />
         </div>
-
-        {/* The way out, on the felt where it is always seen (SKATGO-96): last, so it stays over a dialog. */}
-        {fullScreen ? <TableMenu leave={tournament ? '/daily' : room ? '/with-friends' : '/'} newRound={server?.newRound} /> : null}
       </div>
 
       <aside
@@ -687,6 +688,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
           <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} />
         </div>
       ) : null}
+
+      {/* The way out (SKATGO-96), in the felt's top right corner and over the dialogs on the table, so it can
+          always be pressed (SKATGO-100); an open drawer covers the felt, and it with it. */}
+      {fullScreen && (pinned || !panelOpen) ? <TableMenu leave={tournament ? '/daily' : room ? '/with-friends' : '/'} newRound={server?.newRound} /> : null}
     </div>
   )
 }
@@ -864,17 +869,19 @@ function InfoBoard({ game, scores, points, deal }: { game: Game; scores: [number
   const nameOf = useNameOf()
   const contract = game.declaration?.contract ?? null
   const playing = game.phase === 'play' || game.phase === 'trickEnd'
-  const extras = `${game.declaration?.hand ? ' · Hand' : ''}${game.declaration?.ouvert ? ' · Ouvert' : ''}`
+  // Hand and Ouvert on the small line under the contract, so the large one never outgrows its cell (SKATGO-100,
+  // the human: 「花色hand的时候……左右padding为0了」).
+  const extras = [game.declaration?.hand ? 'Hand' : '', game.declaration?.ouvert ? 'Ouvert' : ''].filter(Boolean).join(' · ')
   return (
     <section data-testid="skat-info" aria-label={m.info_label()} {...stylex.props(styles.board)}>
       <div data-testid="skat-info-contract" {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{contract ? m.info_contract() : m.info_bid()}</span>
         {contract ? (
-          <span {...stylex.props(typography.infoValue, styles.boardValue)}><Rich text={contractName(contract)} />{extras}</span>
+          <span {...stylex.props(typography.infoValue, styles.boardValue)}><Rich text={contractName(contract)} /></span>
         ) : (
-          <span {...stylex.props(typography.infoNumber, styles.boardValue)}>{game.bidding.value > 0 ? game.bidding.value : '—'}</span>
+          <span {...stylex.props(typography.infoNumber, styles.boardNumber)}>{game.bidding.value > 0 ? game.bidding.value : '—'}</span>
         )}
-        <span {...stylex.props(typography.infoSub, styles.boardSub)}>{!contract && game.declarer === null ? m.table_bidding() : ''}</span>
+        <span {...stylex.props(typography.infoSub, styles.boardSub)}>{contract ? extras : game.declarer === null ? m.table_bidding() : ''}</span>
       </div>
       <div {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_declarer()}</span>
@@ -886,7 +893,7 @@ function InfoBoard({ game, scores, points, deal }: { game: Game; scores: [number
         {/* The player's side's card points in the board's amber, as the player's total is beside them —
             the declarer's when they declare, the defenders' when they defend — so which number is theirs
             reads at a glance (SKATGO-79, the human: 「我是庄家，则庄家的分显示橙色，我是防家，则防家的分显示橙色」). */}
-        <span {...stylex.props(typography.infoNumber, styles.boardValue)}>
+        <span {...stylex.props(typography.infoNumber, styles.boardNumber)}>
           {playing ? (
             <>
               <span data-testid="skat-info-points-declarer" {...stylex.props(game.declarer === ME && styles.boardMine)}>{points.declarer}</span>
@@ -904,7 +911,7 @@ function InfoBoard({ game, scores, points, deal }: { game: Game; scores: [number
         <div {...stylex.props(styles.totals)}>
           {([1, ME, 2] as Seat[]).map((seat) => (
             <span key={seat} {...stylex.props(styles.total)}>
-              <span {...stylex.props(typography.infoNumber, styles.boardValue, seat === ME && styles.boardMine)}>{scores[seat]}</span>
+              <span {...stylex.props(scores.some((s) => Math.abs(s) >= 1000) ? typography.infoTotalLong : typography.infoTotal, styles.boardNumber, seat === ME && styles.boardMine)}>{scores[seat]}</span>
               <span {...stylex.props(typography.infoSub, styles.boardSub)}>{nameOf(seat)}</span>
             </span>
           ))}
@@ -1420,12 +1427,14 @@ const tintOf = (c: Contract): Tint => (c.kind === 'suit' ? c.trump : c.kind)
 
 
 const styles = stylex.create({
-  // The way out (SKATGO-96): mirrors the assistant's launcher at the felt's top left (ask.tsx).
+  // The way out (SKATGO-96): mirrors the assistant's launcher at the felt's top left (ask.tsx). Placed in the
+  // felt's grid area of the table, so it keeps to the felt beside a pinned panel, and over the table's dialogs.
   menuCorner: {
     position: 'absolute',
+    gridArea: dims.feltCell,
     top: { default: space.x16, [bp.phone]: space.x8 },
     right: { default: space.x16, [bp.phone]: space.x8 },
-    zIndex: layer.window,
+    zIndex: layer.tip,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-end',
@@ -1659,7 +1668,7 @@ const styles = stylex.create({
     gap: space.x2,
     minWidth: 0,
     paddingBlock: { default: space.x10, [bp.phone]: space.x8 },
-    paddingInline: { default: space.x16, [bp.phone]: space.x8 },
+    paddingInline: { default: space.x16, [bp.phone]: space.x6 },
     // One row of four in landscape: a rule between the cells. Two rows of two in portrait: a rule
     // between the columns and one between the rows.
     borderLeftWidth: {
@@ -1674,12 +1683,16 @@ const styles = stylex.create({
     borderTopColor: color.boardLine,
     textAlign: 'center',
   },
-  boardLabel: { color: color.amber, whiteSpace: 'nowrap', marginBottom: space.x2 },
-  boardValue: { color: color.onColor, whiteSpace: 'nowrap' },
+  boardLabel: { color: color.amber, whiteSpace: 'nowrap', marginBottom: space.x2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' },
+  // What does not fit its cell wraps (a long name) or ends in an ellipsis (a small line), never past the cell's
+  // padding (SKATGO-100).
+  boardValue: { color: color.onColor, maxWidth: '100%', overflowWrap: 'anywhere', textWrap: 'balance' },
+  boardNumber: { color: color.onColor, whiteSpace: 'nowrap' },
   boardMine: { color: color.amber },
-  boardSub: { color: color.onColorSoft, whiteSpace: 'nowrap', minHeight: space.x12 },
-  totals: { display: 'flex', gap: space.x12 },
-  total: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x2 },
+  boardSub: { color: color.onColorSoft, whiteSpace: 'nowrap', minHeight: space.x12, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' },
+  // Three equal columns: a long name ends in an ellipsis instead of pushing the totals past the cell.
+  totals: { display: 'grid', gridTemplateColumns: dims.boardTotals, columnGap: { default: space.x12, [bp.phone]: space.x6 }, width: '100%' },
+  total: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x2, minWidth: 0 },
 
   // The skat and its label, in the frame's middle.
   skatPile: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6, width: '100%' },
@@ -1931,6 +1944,8 @@ const styles = stylex.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.x16,
+    // The way-out button stays over the dialogs (SKATGO-100); the dialog starts below it.
+    paddingTop: { default: dims.scrimTop, [bp.phone]: dims.scrimTopPhone },
     backgroundColor: color.scrim,
   },
   dialog: {

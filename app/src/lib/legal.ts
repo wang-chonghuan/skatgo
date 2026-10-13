@@ -66,7 +66,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Games and public results',
           paragraphs: [
             'The daily tournament stores a player identifier, moves, results, scores and timestamps on the server. When you finish a tournament, your entry appears with its score and rank on the public leaderboard under a name of two words assigned at random, which you can change. Do not choose a name that reveals information you do not want to publish.',
-            'Signing in can attach today\'s guest entries on this device to your account, one per tournament. Daily records do not automatically disappear at midnight. Free play state is instead held in an encrypted game token that is valid for one day. This browser keeps it, with the round\'s finished deals, so that a reload continues the game; the server stores nothing per game.',
+            'Signing in can attach today\'s guest entries on this device to your account, one per tournament. Daily records do not automatically disappear at midnight. Free-play state is instead held in an encrypted game token that is valid for one day. This browser keeps it, with the round\'s finished deals, so that a reload continues the game; the server stores nothing per game.',
           ],
         },
         {
@@ -180,7 +180,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Spiele und öffentliche Ergebnisse',
           paragraphs: [
             'Das Tagesturnier speichert Spielerkennung, Spielzüge, Ergebnisse, Punkte und Zeitangaben auf dem Server. Wenn du ein Turnier beendest, erscheint dein Eintrag mit Punktzahl und Rang in der öffentlichen Bestenliste – unter einem zufällig vergebenen Namen aus zwei Wörtern, den du ändern kannst. Wähle keinen Namen, der unerwünschte persönliche Informationen offenlegt.',
-            'Bei der Anmeldung können die heutigen Gasteinträge dieses Geräts deinem Konto zugeordnet werden, einer pro Turnier. Turnierdaten werden nicht automatisch um Mitternacht gelöscht. Beim freien Spiel liegt der Spielstand dagegen in einem verschlüsselten Spieltoken, das einen Tag gültig ist. Dieser Browser speichert es mit den fertigen Spielen der Runde, damit Neuladen das Spiel fortsetzt; der Server speichert pro Spiel nichts.',
+            'Bei der Anmeldung können die heutigen Gasteinträge dieses Geräts deinem Konto zugeordnet werden, einer pro Turnier. Turnierdaten werden nicht automatisch um Mitternacht gelöscht. Beim freien Spiel liegt der Spielstand dagegen in einem verschlüsselten Spiel-Token, das einen Tag gültig ist. Dieser Browser speichert es mit den fertigen Spielen der Runde, damit Neuladen das Spiel fortsetzt; der Server speichert pro Spiel nichts.',
           ],
         },
         {

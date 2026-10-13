@@ -88,8 +88,12 @@ export const typography = stylex.create({
   bidChip: { fontFamily: family.numeral, fontSize: fontSize.f20, fontWeight: weight.regular, lineHeight: leading.glyph },
   contractTile: { fontFamily: 'inherit', fontSize: fontSize.f18, fontWeight: weight.bold, lineHeight: leading.tight },
   // The table's info board: a small caps label over a large value, and a quieter second line.
-  infoLabel: { fontSize: fontSize.f12, fontWeight: weight.bold, lineHeight: leading.tight, textTransform: 'uppercase', letterSpacing: '0.06em' },
+  infoLabel: { fontSize: fontSize.f12, fontWeight: weight.bold, lineHeight: leading.tight, textTransform: 'uppercase', letterSpacing: { default: '0.06em', [bp.phone]: '0.02em' } },
   infoValue: { fontSize: { default: fontSize.f22, [bp.phone]: fontSize.f18 }, fontWeight: weight.bold, lineHeight: leading.tight },
   infoNumber: { fontFamily: family.numeral, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.regular, lineHeight: leading.glyph },
+  /** The three running totals in one cell of the info board (SKATGO-100): smaller with the phone's width. */
+  infoTotal: { fontFamily: family.numeral, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.fBoardTotal }, fontWeight: weight.regular, lineHeight: leading.glyph },
+  /** …when one of them has four digits, all three smaller, so they still fit. */
+  infoTotalLong: { fontFamily: family.numeral, fontSize: { default: fontSize.f22, [bp.phone]: fontSize.fBoardTotalLong }, fontWeight: weight.regular, lineHeight: leading.glyph },
   infoSub: { fontSize: fontSize.f13, fontWeight: weight.ui, lineHeight: leading.tight },
 })

@@ -77,7 +77,10 @@ export function LandingHeader() {
       <Link to="/" {...stylex.props(typography.landingHeading, styles.landingBrand)}>
         <img src="/logo-96.png" alt="" {...stylex.props(styles.landingMark)} />
         {/* The site's address beside the mark (SKATGO-69). */}
-        <span {...stylex.props(typography.landingBrand)}>{m.site_name()}{m.site_domain()}</span>
+        <span {...stylex.props(typography.landingBrand)}>
+          {m.site_name()}
+          <span {...stylex.props(styles.landingDomain)}>{m.site_domain()}</span>
+        </span>
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
         {HEADER_LINKS.map((l) => (
@@ -473,8 +476,8 @@ const styles = stylex.create({
   // The header's mark (SKATGO-31).
   landingMark: {
     display: 'block',
-    width: { default: dims.landingMark, [bp.phone]: { default: dims.landingMarkPhone, [bp.narrowPhone]: dims.landingMarkNarrow } },
-    height: { default: dims.landingMark, [bp.phone]: { default: dims.landingMarkPhone, [bp.narrowPhone]: dims.landingMarkNarrow } },
+    width: { default: dims.landingMark, [bp.phone]: dims.landingMarkPhone },
+    height: { default: dims.landingMark, [bp.phone]: dims.landingMarkPhone },
     borderRadius: radii.card,
     flexShrink: 0,
   },
@@ -494,7 +497,9 @@ const styles = stylex.create({
     backgroundColor: color.surface,
     boxShadow: elev.landingHeader,
   },
-  landingBrand: { display: 'flex', alignItems: 'center', gap: { default: space.x10, [bp.narrowPhone]: space.x6 }, color: color.navy, textDecoration: 'none', ...focus },
+  landingBrand: { display: 'flex', alignItems: 'center', gap: space.x10, color: color.navy, textDecoration: 'none', ...focus },
+  // The narrowest phones drop ".com" rather than shrink the name (SKATGO-104).
+  landingDomain: { display: { default: 'inline', [bp.narrowPhone]: 'none' } },
   landingNav: { display: { default: 'flex', [bp.headerMenu]: 'none' }, alignItems: 'center', gap: space.x32 },
   landingLink: { color: { default: color.slate, ':hover': color.navy }, textDecoration: 'none', ...focus },
   // Not there yet (SKATGO-69): greyed, and nothing answers the pointer.

@@ -57,7 +57,7 @@ export const typography = stylex.create({
   landingHero: { fontFamily: family.body, fontSize: { default: fontSize.fHero, [bp.phone]: fontSize.fHeroPhone }, fontWeight: weight.black, lineHeight: leading.tight },
   landingHeroLead: { fontFamily: family.body, fontSize: { default: fontSize.f22, [bp.phone]: fontSize.f18 }, fontWeight: weight.bold, lineHeight: leading.ui },
   /** The site's name beside the mark in the front page header (SKATGO-31): the hero headline's face and weight. */
-  landingBrand: { fontFamily: family.body, fontSize: { default: fontSize.f28, [bp.phone]: { default: fontSize.f24, [bp.narrowPhone]: fontSize.f20 } }, fontWeight: weight.black, lineHeight: leading.tight },
+  landingBrand: { fontFamily: family.body, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.black, lineHeight: leading.tight },
   landingHeading: { fontSize: { default: fontSize.f36, [bp.phone]: fontSize.f24 }, fontWeight: weight.extrabold, lineHeight: leading.tight },
   landingBody: { fontSize: { default: fontSize.f20, [bp.phone]: fontSize.f16 }, fontWeight: weight.text, lineHeight: leading.ui },
   landingNav: { fontSize: fontSize.f16, fontWeight: weight.ui, lineHeight: leading.ui },

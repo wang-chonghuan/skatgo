@@ -37,6 +37,11 @@ export const dims = stylex.defineVars({
   /** The front page header's mark (SKATGO-31): the new icon's square carries white margin, so it is shown larger. */
   landingMark: '56px',
   landingMarkPhone: '44px',
+  /** A language flag (SKATGO-104): 3:2, a little smaller on a phone so both fit beside "SkatGo.com". */
+  flagWidth: '30px',
+  flagHeight: '20px',
+  flagWidthPhone: '28px',
+  flagHeightPhone: '19px',
 
   // The public site
   /** The front page header (SKATGO-31: 80px, lower than the reference's 100 so the hero starts higher). */

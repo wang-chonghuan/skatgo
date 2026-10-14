@@ -346,7 +346,9 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
                   }}
                   {...stylex.props(typography.appBtnStrong, styles.deck, on && styles.deckOn)}
                 >
-                  <Flag />
+                  <span {...stylex.props(styles.flag)}>
+                    <Flag />
+                  </span>
                   <span {...stylex.props(styles.deckName)}>{NAME[l]}</span>
                   <span aria-hidden="true" {...stylex.props(styles.check, !on && styles.checkOff)}>
                     <Check size={icon.inline} strokeWidth={icon.outline} />
@@ -503,7 +505,7 @@ const styles = stylex.create({
   landingNav: { display: { default: 'flex', [bp.headerMenu]: 'none' }, alignItems: 'center', gap: space.x32 },
   landingLink: { color: { default: color.slate, ':hover': color.navy }, textDecoration: 'none', ...focus },
   // Not there yet (SKATGO-69): greyed, and nothing answers the pointer.
-  landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x4 } },
+  landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x2 } },
   desktopOnly: { display: { default: 'inline-flex', [bp.headerMenu]: 'none' } },
   menuButton: {
     display: { default: 'none', [bp.headerMenu]: 'inline-flex' },
@@ -536,7 +538,7 @@ const styles = stylex.create({
   menuAccount: { paddingTop: space.x8 },
 
   // The language switch (SKATGO-104): two bare flags, each in a button as tall as the header's controls.
-  flags: { display: 'flex', alignItems: 'center', gap: space.x8, flexShrink: 0 },
+  flags: { display: 'flex', alignItems: 'center', gap: { default: space.x8, [bp.phone]: space.x6 }, flexShrink: 0 },
   flagButton: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -552,7 +554,13 @@ const styles = stylex.create({
     outlineColor: color.info,
   },
   flagButtonOff: { opacity: { default: opacity.flagOff, ':hover': opacity.flagHover, ':focus-visible': opacity.flagHover } },
-  flag: { display: 'flex', borderRadius: radii.flag, overflow: 'hidden' },
+  flag: {
+    display: 'flex',
+    width: { default: dims.flagWidth, [bp.phone]: dims.flagWidthPhone },
+    height: { default: dims.flagHeight, [bp.phone]: dims.flagHeightPhone },
+    borderRadius: radii.flag,
+    overflow: 'hidden',
+  },
   flagOn: {
     outlineStyle: 'solid',
     outlineWidth: border.tile,

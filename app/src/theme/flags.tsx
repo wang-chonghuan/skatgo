@@ -1,12 +1,12 @@
 import { useId } from 'react'
 
 // The two languages' flags for the header's language switch (SKATGO-29, SKATGO-104), drawn here
-// because a flag is nothing but fixed colours. Both render in the same small box, centred and cropped
-// into it. English is the United States and the United Kingdom halved on the diagonal (the human,
-// SKATGO-104: 「美国英国各一半的国旗」).
+// because a flag is nothing but fixed colours. Both fill the box their caller sizes (`dims.flag*`),
+// centred and cropped into it. English is the United States and the United Kingdom halved on the
+// diagonal (the human, SKATGO-104: 「美国英国各一半的国旗」).
 
-const W = 24
-const H = 16
+const W = '100%'
+const H = '100%'
 
 /** English: the United States top left, the United Kingdom bottom right, a thin white line between. */
 export function FlagEN() {

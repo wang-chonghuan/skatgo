@@ -1,0 +1,25 @@
+{
+  "schema": "n-azure/image-generation@1",
+  "created_at": "2026-10-14T22:39:07.510857+00:00",
+  "endpoint": "https://finleyswedencentralinstance.openai.azure.com",
+  "api_version": "preview",
+  "model": "gpt-image-2",
+  "mode": "generation",
+  "auth_method": "api-key",
+  "prompt": "An original illustration of a court figure for a traditional European playing card, drawn fresh in the spirit of 19th-century card patterns.\n\nDrawing: clean flat colour areas with bold, even, dark outlines of one consistent weight. No gradients, shading, texture, paper grain or engraving hatching. Simple, clear shapes and a calm, frontal, symmetrical pose, so the figure stays readable when the whole card is only 60 pixels wide.\n\nColour: a balanced palette of royal blue, forest green, golden yellow, deep red, black, white and a warm skin tone. No single colour dominates the costume; the colours are distributed evenly across the figure.\n\nBackground: fully transparent.\n\nNever include text, letters, numbers, signatures, corner indices, a card border or a frame. This is an original drawing, not a copy or tracing of any existing commercial deck.\n\nFormat: portrait, the back of a playing card, used for every card of both decks. A symmetrical traditional ornament — a bold interlace or strapwork with a central rosette — point-symmetric so it looks the same when the card is turned, covering the whole picture edge to edge, with no plain empty areas anywhere. Medium density: the ornament's elements are large and clearly separated, about six to eight repeats across the card's width, never a fine dense mesh or tiny repeated dots. At the exact centre, a small plain round medallion about one fifth of the card's width, in the ground colour, framed by one thin ring, left empty. Only the two colours named below, flat. No figures, no suit symbols, no text, no logo. Opaque background. This overrides the palette and the transparent background above.\n\nColours: a deep navy blue ground (#022657) with the ornament in white.",
+  "references": [],
+  "request": {
+    "size": "1024x1536",
+    "quality": "high",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "output": {
+    "path": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-102/app/brand/cards/masters/back-navy.png",
+    "width": 1024,
+    "height": 1536,
+    "bytes": 2265532,
+    "sha256": "ae2c0e04f278b3011307c9806a238ddd3e7e74e8d0a90fff37eed6ba44893c83"
+  }
+}

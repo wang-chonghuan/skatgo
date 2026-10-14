@@ -44,3 +44,7 @@
 2026-10-09T16:18:37Z german-sym-D symbol 1024x1024 high refs=1 ok
 2026-10-09T16:20:49Z german-C-O court-top 1536x1024 high refs=2 ok
 2026-10-09T16:22:50Z german-C-U court-top 1536x1024 high refs=2 ok
+2026-10-14T22:39:05Z back-charcoal back2 1024x1536 high refs=0 ok
+2026-10-14T22:39:07Z back-navy back2 1024x1536 high refs=0 ok
+2026-10-14T22:39:08Z back-burgundy back2 1024x1536 high refs=0 ok
+2026-10-14T22:39:10Z back-green back2 1024x1536 high refs=0 ok

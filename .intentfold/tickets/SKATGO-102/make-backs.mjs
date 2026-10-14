@@ -29,8 +29,11 @@ for (const name of BACKS) {
     const mark = new Image(); mark.src = logo; await mark.decode()
     const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d')
     x.imageSmoothingQuality = 'high'
-    // the master is 2:3; the card is 5:7 — its whole width, cut evenly at top and bottom
-    const sh = (img.width * H) / W
+    // the master is 2:3, the card 5:7: half the difference is cut evenly at top and bottom, the other half taken up
+    // by widening the picture a little (about 3.6 %), so the ornament keeps most of its edge (the human: 「上下边缘
+    // 花纹刚好被截掉了一点」) and its circles still look round
+    const cover = (img.width * H) / W
+    const sh = (img.height + cover) / 2
     x.drawImage(img, 0, (img.height - sh) / 2, img.width, sh, 0, 0, W, H)
     const d = x.getImageData(0, 0, W, H).data
     const at = (i, j) => { const o = (j * W + i) * 4; return [d[o], d[o + 1], d[o + 2]] }

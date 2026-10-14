@@ -25,6 +25,8 @@ export const radii = stylex.defineVars({
   cardSm: '6px',
   cardXs: '4px',
   round: '999px',
+  /** A language flag in the header (SKATGO-104). */
+  flag: '3px',
 })
 
 export const dims = stylex.defineVars({
@@ -35,6 +37,11 @@ export const dims = stylex.defineVars({
   /** The front page header's mark (SKATGO-31): the new icon's square carries white margin, so it is shown larger. */
   landingMark: '56px',
   landingMarkPhone: '44px',
+  /** A language flag (SKATGO-104): 3:2, a little smaller on a phone so both fit beside "SkatGo.com". */
+  flagWidth: '30px',
+  flagHeight: '20px',
+  flagWidthPhone: '28px',
+  flagHeightPhone: '19px',
 
   // The public site
   /** The front page header (SKATGO-31: 80px, lower than the reference's 100 so the hero starts higher). */
@@ -167,9 +174,6 @@ export const dims = stylex.defineVars({
   // Generic
   screen: '100vh',
   screenDynamic: '100dvh',
-  /** The language menu's card (SKATGO-29): its narrowest, and where it opens, just under its button. */
-  langMenu: '180px',
-  langMenuTop: 'calc(100% + 6px)',
   /** A visually hidden element (a heading only screen readers and crawlers get): one pixel, clipped away. */
   visuallyHidden: '1px',
   visuallyHiddenClip: 'inset(50%)',

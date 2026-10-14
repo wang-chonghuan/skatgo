@@ -16,9 +16,9 @@ import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev } from '../../theme/elevation.stylex'
-import { border, layer, space } from '../../theme/scale.stylex'
+import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
-import { FlagDE, FlagUS } from '../../theme/flags'
+import { FlagDE, FlagEN } from '../../theme/flags'
 import { typography } from '../../theme/type'
 import { Btn, suitText } from './ui'
 
@@ -77,7 +77,10 @@ export function LandingHeader() {
       <Link to="/" {...stylex.props(typography.landingHeading, styles.landingBrand)}>
         <img src="/logo-96.png" alt="" {...stylex.props(styles.landingMark)} />
         {/* The site's address beside the mark (SKATGO-69). */}
-        <span {...stylex.props(typography.landingBrand)}>{m.site_name()}{m.site_domain()}</span>
+        <span {...stylex.props(typography.landingBrand)}>
+          {m.site_name()}
+          <span {...stylex.props(styles.landingDomain)}>{m.site_domain()}</span>
+        </span>
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
         {HEADER_LINKS.map((l) => (
@@ -130,78 +133,47 @@ export function Account({ shape = 'pill' }: { shape?: 'pill' | 'landing' }) {
 /** How each language names itself, in its own script. */
 const NAME: Record<Locale, string> = { en: 'English', de: 'Deutsch' }
 
-const FLAG: Record<Locale, () => ReactNode> = { en: FlagUS, de: FlagDE }
+const FLAG: Record<Locale, () => ReactNode> = { en: FlagEN, de: FlagDE }
 
 /**
- * The language menu (SKATGO-23), drawn the way Funbridge draws it (SKATGO-29): a small bordered button
- * with the current language's flag, opening a card of flags and names, the current one ticked. Choosing
- * goes through Paraglide's setLocale, which loads the same page in that language and remembers the
- * choice (cookie). Closes on a choice, a click outside or Escape.
+ * The language switch (SKATGO-23, SKATGO-104): both languages' flags side by side, one tap switching.
+ * The language in use is in full colour, ringed in green; the other keeps its colours, faded. No frame
+ * and no padding round the flags (the human: 「我奇怪你为啥一定要有paddding」) — each sits in an invisible
+ * button as tall as the header's other controls, so a thumb still finds it. Choosing goes through Paraglide's setLocale, which loads
+ * the same page in that language and remembers the choice (cookie).
  */
 export function LanguageSwitch() {
   const current = getLocale()
-  const [open, setOpen] = useState(false)
-  const root = useRef<HTMLSpanElement | null>(null)
-  useEffect(() => {
-    if (!open) return
-    const away = (e: PointerEvent) => {
-      if (!root.current?.contains(e.target as Node)) setOpen(false)
-    }
-    const escape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('pointerdown', away)
-    document.addEventListener('keydown', escape)
-    return () => {
-      document.removeEventListener('pointerdown', away)
-      document.removeEventListener('keydown', escape)
-    }
-  }, [open])
-  const Current = FLAG[current]
   return (
-    <span ref={root} {...stylex.props(styles.switch)}>
-      <button
-        type="button"
-        aria-label={m.language_label()}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        data-testid="language-switch"
-        onClick={() => setOpen((o) => !o)}
-        {...stylex.props(styles.langButton)}
-      >
-        <Current />
-      </button>
-      {open ? (
-        <div role="menu" aria-label={m.language_label()} data-testid="language-menu" {...stylex.props(styles.langMenu)}>
-          {locales.map((l) => {
-            const Flag = FLAG[l]
-            const chosen = l === current
-            return (
-              <button
-                key={l}
-                type="button"
-                role="menuitemradio"
-                aria-checked={chosen}
-                lang={LANG_TAG[l]}
-                data-locale={l}
-                onClick={() => {
-                  setOpen(false)
-                  if (!chosen) {
-                    carryGame()
-                    void setLocale(l)
-                  }
-                }}
-                {...stylex.props(typography.appLink, styles.langItem, chosen && styles.langItemChosen)}
-              >
-                <Flag />
-                <span {...stylex.props(styles.langName)}>{NAME[l]}</span>
-                {chosen ? <Check size={icon.inline} strokeWidth={icon.outline} /> : null}
-              </button>
-            )
-          })}
-        </div>
-      ) : null}
-    </span>
+    <div role="radiogroup" aria-label={m.language_label()} data-testid="language-switch" {...stylex.props(styles.flags)}>
+      {locales.map((l) => {
+        const Flag = FLAG[l]
+        const on = l === current
+        return (
+          <button
+            key={l}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            aria-label={NAME[l]}
+            title={NAME[l]}
+            lang={LANG_TAG[l]}
+            data-locale={l}
+            onClick={() => {
+              if (!on) {
+                carryGame()
+                void setLocale(l)
+              }
+            }}
+            {...stylex.props(styles.flagButton, !on && styles.flagButtonOff)}
+          >
+            <span {...stylex.props(styles.flag, on && styles.flagOn)}>
+              <Flag />
+            </span>
+          </button>
+        )
+      })}
+    </div>
   )
 }
 
@@ -374,7 +346,9 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
                   }}
                   {...stylex.props(typography.appBtnStrong, styles.deck, on && styles.deckOn)}
                 >
-                  <Flag />
+                  <span {...stylex.props(styles.flag)}>
+                    <Flag />
+                  </span>
                   <span {...stylex.props(styles.deckName)}>{NAME[l]}</span>
                   <span aria-hidden="true" {...stylex.props(styles.check, !on && styles.checkOff)}>
                     <Check size={icon.inline} strokeWidth={icon.outline} />
@@ -516,8 +490,9 @@ const styles = stylex.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    // A phone's header is tighter, so "SkatGo.com" fits beside the controls (SKATGO-69).
-    gap: { default: space.x16, [bp.phone]: space.x8 },
+    // A phone's header is tighter, so "SkatGo.com" fits beside the controls (SKATGO-69) and both
+    // language flags (SKATGO-104).
+    gap: { default: space.x16, [bp.phone]: space.x6 },
     height: { default: dims.landingHeader, [bp.phone]: dims.landingHeaderPhone },
     paddingInline: { default: space.x20, [bp.phone]: space.x12 },
     boxSizing: 'border-box',
@@ -525,17 +500,20 @@ const styles = stylex.create({
     boxShadow: elev.landingHeader,
   },
   landingBrand: { display: 'flex', alignItems: 'center', gap: space.x10, color: color.navy, textDecoration: 'none', ...focus },
+  // The narrowest phones drop ".com" rather than shrink the name (SKATGO-104).
+  landingDomain: { display: { default: 'inline', [bp.narrowPhone]: 'none' } },
   landingNav: { display: { default: 'flex', [bp.headerMenu]: 'none' }, alignItems: 'center', gap: space.x32 },
   landingLink: { color: { default: color.slate, ':hover': color.navy }, textDecoration: 'none', ...focus },
   // Not there yet (SKATGO-69): greyed, and nothing answers the pointer.
-  landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x8 } },
+  landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x2 } },
   desktopOnly: { display: { default: 'inline-flex', [bp.headerMenu]: 'none' } },
   menuButton: {
     display: { default: 'none', [bp.headerMenu]: 'inline-flex' },
     alignItems: 'center',
     justifyContent: 'center',
-    width: dims.iconButton,
-    height: dims.iconButton,
+    // As small as the gear on a phone, so the flags fit (SKATGO-104).
+    width: { default: dims.iconButton, [bp.phone]: space.x32 },
+    height: { default: dims.iconButton, [bp.phone]: space.x32 },
     padding: 0,
     borderWidth: 0,
     borderRadius: radii.round,
@@ -559,56 +537,35 @@ const styles = stylex.create({
   menuLink: { paddingBlock: space.x8, color: color.navy, textDecoration: 'none', ...focus },
   menuAccount: { paddingTop: space.x8 },
 
-  switch: { position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0 },
-  // The menu's button: a bordered white box with the flag and a small chevron.
-  langButton: {
+  // The language switch (SKATGO-104): two bare flags, each in a button as tall as the header's controls.
+  flags: { display: 'flex', alignItems: 'center', gap: { default: space.x8, [bp.phone]: space.x6 }, flexShrink: 0 },
+  flagButton: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: space.x6,
-    height: { default: dims.control, [bp.phone]: space.x32 },
-    paddingInline: { default: space.x12, [bp.phone]: space.x8 },
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: color.hairline,
-    borderRadius: radii.panel,
-    backgroundColor: color.surface,
-    color: color.navy,
-    cursor: 'pointer',
-    ...focus,
-  },
-  // The open card of languages, under the button's right edge.
-  langMenu: {
-    position: 'absolute',
-    top: dims.langMenuTop,
-    right: 0,
-    zIndex: layer.window,
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: dims.langMenu,
-    padding: space.x6,
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: color.hairline,
-    borderRadius: radii.panel,
-    backgroundColor: color.surface,
-    boxShadow: elev.panel,
-  },
-  langItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: space.x10,
-    width: '100%',
-    paddingBlock: space.x8,
-    paddingInline: space.x10,
+    justifyContent: 'center',
+    height: space.x32,
+    padding: 0,
     borderWidth: 0,
-    borderRadius: radii.column,
-    backgroundColor: { default: 'transparent', ':hover': color.page },
-    color: color.navy,
-    textAlign: 'start',
+    borderRadius: radii.flag,
+    backgroundColor: 'transparent',
     cursor: 'pointer',
-    ...focus,
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focusSm,
+    outlineColor: color.info,
   },
-  langItemChosen: { backgroundColor: color.page },
-  langName: { flexGrow: 1 },
+  flagButtonOff: { opacity: { default: opacity.flagOff, ':hover': opacity.flagHover, ':focus-visible': opacity.flagHover } },
+  flag: {
+    display: 'flex',
+    width: { default: dims.flagWidth, [bp.phone]: dims.flagWidthPhone },
+    height: { default: dims.flagHeight, [bp.phone]: dims.flagHeightPhone },
+    borderRadius: radii.flag,
+    overflow: 'hidden',
+  },
+  flagOn: {
+    outlineStyle: 'solid',
+    outlineWidth: border.tile,
+    outlineColor: color.go,
+    outlineOffset: border.flagOffset,
+  },
 
 })

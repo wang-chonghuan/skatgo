@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-102",
+  "mode": "autonomous",
+  "stage": "closed",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-102",
+  "branch": "SKATGO-102-card-backs",
+  "base": "ae280c267f0bd8f797c420a9ddf078812d44dc5c",
+  "ports": {
+    "web": 55102,
+    "multiplayer": 56102,
+    "database": 57102
+  }
+}

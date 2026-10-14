@@ -4,7 +4,8 @@
 # helper writes <name>.png.json beside the master with the prompt, parameters and the PNG's SHA-256 (no
 # credential).
 #
-#   app/brand/cards/generate.sh <name> <kind: court-top|full|symbol|back> [reference.png ...]
+#   app/brand/cards/generate.sh <name> <kind: court-top|full|symbol|back|back2> [reference.png ...]
+# back2 (SKATGO-102): a back in the original's style, less dense, with an empty medallion for the logo.
 #
 # The helper is n-azure's generate_image.py (direct Azure call; key from the local credential file).
 set -euo pipefail
@@ -13,7 +14,7 @@ helper="${N_AZURE_IMAGE:-$HOME/.claude/skills/n-azure/scripts/generate_image.py}
 name="$1"; kind="$2"; shift 2
 case "$kind" in
   court-top) size=1536x1024; format="$here/prompts/_court-top.txt" ;;
-  full|back) size=1024x1536; format="$here/prompts/_$kind.txt" ;;
+  full|back|back2) size=1024x1536; format="$here/prompts/_$kind.txt" ;;
   symbol) size=1024x1024; format="$here/prompts/_symbol.txt" ;;
   *) echo "unknown kind $kind" >&2; exit 2 ;;
 esac
@@ -22,7 +23,7 @@ prompt="$(mktemp)"
 refs=()
 for r in "$@"; do refs+=(--reference-image "$r"); done
 # A back is a whole opaque face; everything else lies on the card's white.
-background=transparent; [ "$kind" = back ] && background=opaque
+background=transparent; case "$kind" in back|back2) background=opaque ;; esac
 status=ok
 python3 "$helper" --prompt-file "$prompt" --output "$here/masters/$name.png" --size "$size" --quality high \
   --background "$background" --retries 0 --force ${refs[@]+"${refs[@]}"} >/dev/null || status=failed

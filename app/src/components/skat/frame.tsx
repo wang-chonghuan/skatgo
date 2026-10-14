@@ -6,6 +6,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { LANG_TAG } from '~/lib/site'
+import { CARD_BACKS, DEFAULT_BACK, backSrc, isCardBack } from '~/lib/skat/backs'
 import { type Deck, useSettings } from '~/lib/skat/settings'
 import { m } from '~/paraglide/messages'
 import { carryGame } from '~/lib/free-api'
@@ -235,6 +236,8 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const choose = useSettings((s) => s.setDeck)
   const tapToCollect = useSettings((s) => s.tapToCollect)
   const setTapToCollect = useSettings((s) => s.setTapToCollect)
+  const back = useSettings((s) => (isCardBack(s.back) ? s.back : DEFAULT_BACK))
+  const setBack = useSettings((s) => s.setBack)
   const sounds = useSettings((s) => s.sounds)
   const setSounds = useSettings((s) => s.setSounds)
   const current = getLocale()
@@ -289,6 +292,26 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
                 </button>
               )
             })}
+          </div>
+        </section>
+        {/* The card back (SKATGO-102): every one there is, as small cards to tap. */}
+        <section {...stylex.props(styles.section)}>
+          <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_back()}</h3>
+          <div role="radiogroup" aria-label={m.settings_back()} {...stylex.props(styles.backs)}>
+            {CARD_BACKS.map((b) => (
+              <button
+                key={b}
+                type="button"
+                role="radio"
+                aria-checked={b === back}
+                aria-label={b}
+                data-testid={`settings-back-${b}`}
+                onClick={() => setBack(b)}
+                {...stylex.props(styles.backChoice, b === back && styles.backOn)}
+              >
+                <img src={backSrc(b)} alt="" loading="lazy" {...stylex.props(styles.backThumb)} />
+              </button>
+            ))}
           </div>
         </section>
         <section {...stylex.props(styles.section)}>
@@ -375,6 +398,22 @@ const focus = {
 } as const
 
 const styles = stylex.create({
+  // The card backs in the settings (SKATGO-102): small cards in rows, the chosen one ringed in green.
+  backs: { display: 'grid', gridTemplateColumns: dims.backChoices, gap: space.x8 },
+  backChoice: {
+    padding: 0,
+    borderWidth: border.focus,
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    borderRadius: radii.option,
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focusSm,
+    outlineColor: color.info,
+  },
+  backOn: { borderColor: color.go },
+  backThumb: { display: 'block', width: '100%', aspectRatio: dims.cardAspect, borderRadius: radii.card },
   // The deck settings (SKATGO-66): the gear, its dialog and the choice tiles.
   gear: {
     display: 'inline-flex',

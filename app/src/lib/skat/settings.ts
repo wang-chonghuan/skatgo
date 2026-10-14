@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { type CardBack, DEFAULT_BACK, isCardBack } from './backs'
 
 // The learner's display preferences, kept in this browser like the progress, under a key of their own so
 // a change here can never touch the progress. SKATGO-66: the deck the cards are drawn in. The default is
@@ -20,6 +21,9 @@ type SettingsState = {
   /** SKATGO-101: the cards' sounds at the table. On by default (the human: 「默认开」). */
   sounds: boolean
   setSounds: (on: boolean) => void
+  /** SKATGO-102: the cards' back, to choose in the settings (lib/skat/backs.ts). */
+  back: CardBack
+  setBack: (back: CardBack) => void
 }
 
 export const useSettings = create<SettingsState>()(
@@ -31,11 +35,13 @@ export const useSettings = create<SettingsState>()(
       setTapToCollect: (tapToCollect) => set({ tapToCollect }),
       sounds: true,
       setSounds: (sounds) => set({ sounds }),
+      back: DEFAULT_BACK,
+      setBack: (back) => set({ back }),
     }),
     {
       name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds }),
+      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back }),
     },
   ),
 )
@@ -56,4 +62,13 @@ export function useTapToCollect(): boolean {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   return mounted && stored
+}
+
+/** The back to draw: the default on the server and in the first browser render, so the markup hydrates; a stored
+ *  choice applies at once after mount, unless it names a back there no longer is (SKATGO-102). */
+export function useBack(): CardBack {
+  const stored = useSettings((s) => s.back)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  return mounted && isCardBack(stored) ? stored : DEFAULT_BACK
 }

@@ -3,7 +3,8 @@ import * as stylex from '@stylexjs/stylex'
 import { type Card, type Rank, type Suit, cardId } from '~/lib/skat/cards'
 import { spokenCard } from '~/lib/skat/i18n'
 import { m } from '~/paraglide/messages'
-import { type Deck, useDeck } from '~/lib/skat/settings'
+import { backSrc } from '~/lib/skat/backs'
+import { type Deck, useBack, useDeck } from '~/lib/skat/settings'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { move, timing } from '../../theme/effects.stylex'
@@ -175,13 +176,15 @@ type Props = {
 
 export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glow, verdict, legal, data, onClick }: Props) {
   const deckChoice = useDeck()
+  const back = useBack()
   const german = deckChoice === 'german'
   const letters = indexOf(card.rank, deckChoice)
-  // The back is skatgo's own (SKATGO-66): a charcoal and white ornament inside a white frame.
+  // The back is the one chosen in the settings (SKATGO-102), by default the earlier ornament (SKATGO-66), inside a
+  // white frame.
   const body = faceDown ? (
     <span {...stylex.props(styles.back)}>
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" focusable="false" {...stylex.props(styles.face)}>
-        <image href="/cards/back.webp" width={W} height={H} preserveAspectRatio="xMidYMid slice" />
+        <image href={backSrc(back)} width={W} height={H} preserveAspectRatio="xMidYMid slice" />
       </svg>
     </span>
   ) : (

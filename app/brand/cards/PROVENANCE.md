@@ -41,3 +41,7 @@ The figures are drawn fresh in the spirit of the traditional patterns: the Frenc
 - Every prompt asks for an original drawing and forbids copying or tracing any existing deck.
 
 The corner letters are not pictures: they are outlines of Bebas Neue (SIL Open Font License), see `app/scripts/extract-card-glyphs.py`.
+
+## More backs (SKATGO-102)
+
+Four more backs in the earlier back's style, generated 2026-10-14 with the same model and helper: `generate.sh back-<colour> back2`, where `prompts/_back2.txt` asks for the same kind of ornament, less dense (the human: 「不要太细密，否则有密集恐惧症，但是也不要留白」), edge to edge, with a small empty medallion in the middle, and `prompts/back-<colour>.txt` names its two colours: charcoal and white, navy and white, burgundy and white, forest green and gold. The masters are `masters/back-{charcoal,navy,burgundy,green}.webp`, each with its request beside it. `.intentfold/tickets/SKATGO-102/make-backs.mjs` cuts them to the card's 5:7 and puts the SkatGo logo into the medallion in the back's own other colour, small (「不要彩色，要和牌背一致，这样低调不夸张」).

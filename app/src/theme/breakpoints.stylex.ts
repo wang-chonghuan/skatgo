@@ -9,6 +9,9 @@ export const bp = stylex.defineConsts({
   /** Too narrow for the header's five links beside the logo and its controls (SKATGO-69): they fold
    *  into the menu, as on a phone. */
   headerMenu: '@media (max-width: 1099px)',
+  /** Narrower than the common phones (360px and up): the header's name and mark step down so the
+   *  language flags still fit beside them (SKATGO-104). */
+  narrowPhone: '@media (max-width: 359px)',
   /** The contract picker wraps from six columns to three. */
   contracts: '@media (max-width: 600px)',
   /** The course map's hero stacks. */

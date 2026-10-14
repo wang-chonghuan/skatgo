@@ -42,6 +42,8 @@ export const border = stylex.defineVars({
   /** Focus ring on the small controls in a header. */
   focusSm: '2px',
   focusOffset: '2px',
+  /** The gap between the header's chosen flag and its green ring (SKATGO-104). */
+  flagOffset: '1px',
 })
 
 // Corner radii and component dimensions live in shape.stylex.ts (SKATGO-26).
@@ -53,6 +55,10 @@ export const opacity = stylex.defineVars({
   disabled: '0.45',
   /** A disabled round icon button. */
   iconDisabled: '0.4',
+  /** The header's flag of the language not in use (SKATGO-104): its own colours, faded, never grey. */
+  flagOff: '0.4',
+  /** That flag under the pointer or focus. */
+  flagHover: '0.8',
 })
 
 /** Stacking order of what floats over the page. */

@@ -31,7 +31,7 @@ What the product controls is what it hands them — tokens only, in `components/
 and `lib/clerk-appearance.ts` — and the shell around them, which is the kit. Tokens reach them as CSS
 variables, which inherit into deep-chat's shadow root. Clerk's windows stay in English; the human
 chose not to add its translation package. Icons are **lucide-react** outline icons at the sizes in
-`icon` (`constants.ts`): the header's menu, language and settings controls, the table's side panel and
+`icon` (`constants.ts`): the header's menu and settings controls, the table's side panel and
 edge tabs, an exercise's controls, the assistant, the comparison's open/close chevrons, and the
 download button. Suits are the text glyphs ♣ ♠ ♥ ♦, never icons.
 
@@ -53,7 +53,7 @@ breakpoint of its own; `check-design-tokens.mjs` (Tools) fails the build otherwi
 | `type.stylex.ts` | `family`, `fontSize`, `weight`, `leading` | typography primitives — used only by `type.ts` |
 | `type.ts` | `typography` | the typography roles product code picks from |
 | `constants.ts` | `phoneQuery`, `pinnedQuery`, `themeColor`, `icon`, `stepSlide`, `deal`, `cardIndex`, `playIn`, `trick`, `finish`, `shake`, `drawer`, `confettiBurst` | values for code that cannot read a CSS variable: `matchMedia`, the `theme-color` meta, lucide sizes, SVG attributes, `motion` and `canvas-confetti` |
-| `flags.tsx`, `icons.tsx` | `FlagUS`, `FlagDE`; the Astryx icon registry | the language menu's flags; the icons the Astryx theme is built with |
+| `flags.tsx`, `icons.tsx` | `FlagEN` (the United States and the United Kingdom halved on the diagonal, SKATGO-104), `FlagDE`; the Astryx icon registry | the language switch's flags; the icons the Astryx theme is built with |
 | `parrottoonTheme.ts` | the Astryx theme, compiled to `parrottoon.{css,js,d.ts}` | the reset and prose defaults underneath (the name is historical) |
 
 The registry holds the value and a comment saying what it is for; this file holds the rules for
@@ -216,7 +216,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - the five links, in this order (SKATGO-69, SKATGO-82): the daily tournament, learning (the course),
     free play, a private table, and the tricks ("Tricks", which took the place of the greyed-out
     "Aufgaben");
-  - on the right, the language menu (a flag button opening a card of flags), the settings gear (the
+  - on the right, the language switch — both flags side by side, bare, one tap switching; the language in
+    use in full colour ringed in `color.go`, the other in its own colours faded (`opacity.flagOff`, never
+    grey; SKATGO-104) — the settings gear (the
     choice of deck: the Turnierblatt by default, the Deutsches Blatt, or the Turnierblatt with English
     letters J / Q / K / A — SKATGO-66), and sign-in
     or the account.

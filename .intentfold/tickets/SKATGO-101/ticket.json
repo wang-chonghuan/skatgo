@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-101",
+  "mode": "autonomous",
+  "stage": "closed",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-101",
+  "branch": "SKATGO-101-card-sounds",
+  "base": "c642a28cebb8d28ef6e96f14d118e5a6fb7612fa",
+  "ports": {
+    "web": 55101,
+    "multiplayer": 56101,
+    "database": 57101
+  }
+}

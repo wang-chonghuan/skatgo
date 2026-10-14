@@ -34,6 +34,10 @@ export const stepSlide = { offset: 28, duration: 0.2 }
 /** Cards dealt into a fan, one after another. */
 export const deal = { rise: 24, duration: 0.22, stagger: 0.025, staggerCap: 12 }
 
+/** The cards' sounds at the table (SKATGO-101): their loudness (Web Audio gain, 0 to 1) and the shortest
+ *  gap in milliseconds between two of one kind, so a burst of moves does not stack into noise. */
+export const sound = { volume: 0.45, gap: 80 }
+
 /** A card face's corner index — the rank's figures and letters — is a stroked line in the deck's
  *  1000-unit symbol box, drawn 80 wide by the deck. SKATGO-47 draws it bolder (an SVG attribute, so not
  *  a CSS variable). */

@@ -4,7 +4,7 @@ type LegalSection = { id: string; title: string; paragraphs: string[]; contact?:
 type LegalDocument = { intro: string; sections: LegalSection[] }
 type LegalCopy = { privacy: LegalDocument; terms: LegalDocument }
 
-export const LEGAL_UPDATED = '2026-10-12'
+export const LEGAL_UPDATED = '2026-10-14'
 
 export const LEGAL_OPERATOR = {
   name: 'Olena Holub',
@@ -139,6 +139,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           paragraphs: [
             'You may access the course for learning and practice. Copyright and third-party licence rights remain with their owners; these terms do not grant ownership of the site or its content.',
             'SkatGo may update its lessons, games and features. Network failures and maintenance can interrupt play or affect unsaved progress. Continuous availability and preservation of every game are not guaranteed. These terms do not exclude rights or liability that applicable law does not allow to be excluded.',
+            'The card backs to choose from in the settings come from Kenney, BdRGames, Sylly and chaakravue (CC0) and from jeffshee, "Colorful Poker Card Back" (CC BY 3.0, https://opengameart.org/content/colorful-poker-card-back), resized.',
           ],
         },
         {
@@ -253,6 +254,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           paragraphs: [
             'Du darfst den Kurs zum Lernen und Üben nutzen. Urheberrechte und Lizenzrechte Dritter verbleiben bei ihren Inhabern; diese Bedingungen übertragen kein Eigentum an der Website oder ihren Inhalten.',
             'SkatGo kann Lektionen, Spiele und Funktionen aktualisieren. Netzstörungen und Wartung können Spiele unterbrechen oder ungesicherten Fortschritt beeinträchtigen. Dauerhafte Verfügbarkeit und der Erhalt jedes Spiels werden nicht garantiert. Gesetzlich nicht ausschließbare Rechte und Haftung bleiben unberührt.',
+            'Die in den Einstellungen wählbaren Kartenrücken stammen von Kenney, BdRGames, Sylly und chaakravue (CC0) sowie von jeffshee, „Colorful Poker Card Back“ (CC BY 3.0, https://opengameart.org/content/colorful-poker-card-back), in der Größe angepasst.',
           ],
         },
         {

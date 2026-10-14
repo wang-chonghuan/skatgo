@@ -123,6 +123,8 @@ export const dims = stylex.defineVars({
   cardLg: '96px',
   cardLgPhone: '72px',
   cardAspect: '5 / 7',
+  /** The card backs to choose from in the settings (SKATGO-102): as many small cards to a row as fit. */
+  backChoices: 'repeat(auto-fill, minmax(52px, 1fr))',
   slotXs: '38px',
   slotSm: '58px',
   slotMd: '80px',

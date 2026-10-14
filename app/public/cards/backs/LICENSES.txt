@@ -1,0 +1,14 @@
+SkatGo card backs (SKATGO-102): sources and licences. Each file is redrawn at 500x700 by
+.intentfold/tickets/SKATGO-102/make-backs.mjs from the packs below.
+
+k5-logo*, kenney-*  Kenney, "Boardgame Pack" v2 — https://opengameart.org/content/boardgame-pack
+                    CC0 (http://creativecommons.org/publicdomain/zero/1.0/). k5-logo* add the SkatGo logo.
+bdr-*               BdRGames, "Playing cards back vector svg" — https://opengameart.org/content/playing-cards-back-vector-svg
+                    CC0
+sylly-*             Sylly, "Cards set" — https://opengameart.org/content/cards-set
+                    CC0
+itch-*              chaakravue, "CARDBACK BUNDLE (FREE)" — https://chaakravue.itch.io/cardback-bundle
+                    CC0
+jeff-*              jeffshee, "Colorful Poker Card Back" — https://opengameart.org/content/colorful-poker-card-back
+                    CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/) — credit required; given in the terms
+                    of use. Changed: resized to 500x700.

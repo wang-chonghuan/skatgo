@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import type { SoundSet } from './sounds'
 
 // The learner's display preferences, kept in this browser like the progress, under a key of their own so
 // a change here can never touch the progress. SKATGO-66: the deck the cards are drawn in. The default is
@@ -21,9 +20,6 @@ type SettingsState = {
   /** SKATGO-101: the cards' sounds at the table. On by default (the human: 「默认开」). */
   sounds: boolean
   setSounds: (on: boolean) => void
-  /** SKATGO-101, for now: which of the trial sound sets plays (lib/skat/sounds.ts). */
-  soundSet: SoundSet
-  setSoundSet: (set: SoundSet) => void
 }
 
 export const useSettings = create<SettingsState>()(
@@ -35,13 +31,11 @@ export const useSettings = create<SettingsState>()(
       setTapToCollect: (tapToCollect) => set({ tapToCollect }),
       sounds: true,
       setSounds: (sounds) => set({ sounds }),
-      soundSet: 'kenney',
-      setSoundSet: (soundSet) => set({ soundSet }),
     }),
     {
       name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, soundSet: s.soundSet }),
+      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds }),
     },
   ),
 )

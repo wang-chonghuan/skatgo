@@ -1,8 +1,0 @@
-Playing Card Sounds by BMacZero (Brian MacIntosh)
-https://opengameart.org/node/118338
-
-License: Creative Commons Zero (CC0)
-http://creativecommons.org/publicdomain/zero/1.0/
-
-Used for bmac-deal.mp3 (shuffle.wav), bmac-play-1.mp3 (contact1.wav), bmac-play-2.mp3 (contact2.wav)
-and bmac-collect.mp3 (cut.wav), trimmed and levelled to MP3. Credit is optional.

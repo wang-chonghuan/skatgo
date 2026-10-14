@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom'
 
 import { LANG_TAG } from '~/lib/site'
 import { type Deck, useSettings } from '~/lib/skat/settings'
+import { SOUND_SETS, SOUND_SET_NAMES, trySoundSet } from '~/lib/skat/sounds'
 import { m } from '~/paraglide/messages'
 import { carryGame } from '~/lib/free-api'
 import { type Locale, getLocale, locales, setLocale } from '~/paraglide/runtime'
@@ -237,6 +238,8 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const setTapToCollect = useSettings((s) => s.setTapToCollect)
   const sounds = useSettings((s) => s.sounds)
   const setSounds = useSettings((s) => s.setSounds)
+  const soundSet = useSettings((s) => s.soundSet)
+  const setSoundSet = useSettings((s) => s.setSoundSet)
   const current = getLocale()
   const box = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -329,6 +332,33 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             </span>
           </button>
         </section>
+        {/* For now (SKATGO-101): the sound sets to try one by one, each played as it is chosen. Goes once one is kept. */}
+        {sounds ? (
+          <section {...stylex.props(styles.section)}>
+            <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_sound_set()}</h3>
+            <div role="radiogroup" aria-label={m.settings_sound_set()} {...stylex.props(styles.decks)}>
+              {SOUND_SETS.map((set) => (
+                <button
+                  key={set}
+                  type="button"
+                  role="radio"
+                  aria-checked={set === soundSet}
+                  data-testid={`settings-sound-set-${set}`}
+                  onClick={() => {
+                    setSoundSet(set)
+                    void trySoundSet(set)
+                  }}
+                  {...stylex.props(typography.appBtnStrong, styles.deck, set === soundSet && styles.deckOn)}
+                >
+                  <span {...stylex.props(styles.deckName)}>{SOUND_SET_NAMES[set]}</span>
+                  <span aria-hidden="true" {...stylex.props(styles.check, set !== soundSet && styles.checkOff)}>
+                    <Check size={icon.inline} strokeWidth={icon.outline} />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
         <section {...stylex.props(styles.section)}>
           <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.language_label()}</h3>
           <div role="radiogroup" aria-label={m.language_label()} {...stylex.props(styles.decks)}>

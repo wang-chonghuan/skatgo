@@ -19,3 +19,14 @@
 - **开关**：设置里「Töne · Kartengeräusche」/「Sound · Card sounds」，默认开，记在本浏览器（`skatgo.settings.v2`）。已有设置的老用户也是默认开。
 - **浏览器的出声限制**：页面第一次被点之前，浏览器不让网页出声。用户点进牌桌（比如在首页点「Heute spielen」）通常已经算点过，之后在任何地方点一下也会解锁。声音不能出时，牌照常打。
 - **charter**：engineering.md 加一行说明 `app/public/sounds` 的来源、授权和生成脚本，与卡牌图片、图标同样处理。
+
+## 试听（人：「有没有其他音效选择，这个好像太沉重，你可以临时在setting里加上很多音效套装，我一个一个试试？」）
+- 另找到 BMacZero 的 Playing Card Sounds（CC0，https://opengameart.org/node/118338），声音短而脆。
+- 设置里临时加了「Klangset (zum Ausprobieren)」，6 套，点一套就选中并立刻试播一遍（发牌、三张牌、收墩）：
+  1. Kenney Original：原来那套；
+  2. Kenney Leicht：轻放牌声、轻滑，偏小声；
+  3. Kenney Hell：原那套快放 30%，音更高更脆；
+  4. BMacZero：洗牌、接触声、切牌声；
+  5. Mix：BMacZero 的发牌和收墩，Kenney 的轻放牌声；
+  6. Papier：浏览器用噪声合成，不用文件。
+- 人选定后：只留选中的那套，删掉选择器和其他文件，再交付。

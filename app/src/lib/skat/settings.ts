@@ -17,6 +17,9 @@ type SettingsState = {
    *  itself after a short pause. Off by default. */
   tapToCollect: boolean
   setTapToCollect: (on: boolean) => void
+  /** SKATGO-101: the cards' sounds at the table. On by default (the human: 「默认开」). */
+  sounds: boolean
+  setSounds: (on: boolean) => void
 }
 
 export const useSettings = create<SettingsState>()(
@@ -26,11 +29,13 @@ export const useSettings = create<SettingsState>()(
       setDeck: (deck) => set({ deck }),
       tapToCollect: false,
       setTapToCollect: (tapToCollect) => set({ tapToCollect }),
+      sounds: true,
+      setSounds: (sounds) => set({ sounds }),
     }),
     {
       name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect }),
+      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds }),
     },
   ),
 )

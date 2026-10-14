@@ -33,6 +33,8 @@
   "settings_tap_collect": "Stich per Tippen einsammeln",
   "settings_tap_collect_on": "Ein: jeder Stich bleibt liegen, bis du tippst.",
   "settings_tap_collect_off": "Aus: jeder Stich wird nach kurzer Pause eingesammelt.",
+  "settings_sound": "Töne",
+  "settings_sound_cards": "Kartengeräusche",
   "panel_back": "Zurück",
   "settings_close": "Schließen",
   "deck_tournament": "Turnierblatt (französisches Blatt, vier Farben)",

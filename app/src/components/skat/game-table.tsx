@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom'
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
+import { loadSounds, playSound } from '~/lib/skat/sounds'
 import { visibleTable } from '~/lib/skat/table-view'
 import { useTapToCollect } from '~/lib/skat/settings'
 import { cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
@@ -175,6 +176,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   // with the computers' replies, replaces it when it comes. Until then the table shows `pending`.
   const [pending, setPending] = useState<{ from: Game; game: Game } | null>(null)
   const game = remote ? (pending && pending.from === remote.game ? pending.game : remote.game) : localGame
+  useCardSounds(game)
   // A deal decided early (SKATGO-59) first shows everyone's remaining cards, face up, until the learner
   // taps (SKATGO-65): the game they are judged on is `revealed`, then the settlement follows.
   const [revealed, setRevealed] = useState<Game | null>(null)
@@ -1349,6 +1351,30 @@ function Message({ tone, testId, onClose, children }: { tone: 'tip' | 'bad'; tes
       </div>
     </Panel>
   )
+}
+
+/**
+ * The cards' sounds (SKATGO-101): what changed on the table since it was last drawn — a new deal dealt out, a
+ * card more on the table (the learner's own at once, as it is shown at once), a trick gathered in. A game taken
+ * up in the middle makes no sound for what was already played.
+ */
+function useCardSounds(game: Game) {
+  useEffect(() => void loadSounds(), [])
+  const seen = useRef<{ deal: string; cards: number; tricks: number } | null>(null)
+  const fresh = game.phase === 'bidding' && game.bidding.log.length === 0 && game.tricks.length === 0
+  const dealt = `${game.dealer}|${game.hands.map((h) => h.map(cardId).join()).join('|')}|${game.skat.map(cardId).join()}`
+  const cards = game.tricks.length * 3 + game.trick.length
+  useEffect(() => {
+    const before = seen.current
+    if (fresh) {
+      if (before?.deal !== dealt) playSound('deal')
+      seen.current = { deal: dealt, cards, tricks: game.tricks.length }
+      return
+    }
+    if (before && cards > before.cards) playSound('play')
+    if (before && game.tricks.length > before.tricks) playSound('collect')
+    seen.current = { deal: before?.deal ?? '', cards, tricks: game.tricks.length }
+  }, [fresh, dealt, cards, game.tricks.length])
 }
 
 /**

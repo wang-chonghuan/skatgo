@@ -235,6 +235,8 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const choose = useSettings((s) => s.setDeck)
   const tapToCollect = useSettings((s) => s.tapToCollect)
   const setTapToCollect = useSettings((s) => s.setTapToCollect)
+  const sounds = useSettings((s) => s.sounds)
+  const setSounds = useSettings((s) => s.setSounds)
   const current = getLocale()
   const box = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -304,6 +306,25 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
               <span {...stylex.props(typography.small, styles.deckLetters)}>{tapToCollect ? m.settings_tap_collect_on() : m.settings_tap_collect_off()}</span>
             </span>
             <span aria-hidden="true" {...stylex.props(styles.check, !tapToCollect && styles.checkOff)}>
+              <Check size={icon.inline} strokeWidth={icon.outline} />
+            </span>
+          </button>
+        </section>
+        {/* The cards' sounds at the table (SKATGO-101), on by default. */}
+        <section {...stylex.props(styles.section)}>
+          <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_sound()}</h3>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={sounds}
+            data-testid="settings-sounds"
+            onClick={() => setSounds(!sounds)}
+            {...stylex.props(typography.appBtnStrong, styles.deck, sounds && styles.deckOn)}
+          >
+            <span {...stylex.props(styles.deckName)}>
+              <span>{m.settings_sound_cards()}</span>
+            </span>
+            <span aria-hidden="true" {...stylex.props(styles.check, !sounds && styles.checkOff)}>
               <Check size={icon.inline} strokeWidth={icon.outline} />
             </span>
           </button>

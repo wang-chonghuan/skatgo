@@ -76,11 +76,8 @@ export function LandingHeader() {
     <header data-testid="landing-header" {...stylex.props(styles.landingHeader)}>
       <Link to="/" {...stylex.props(typography.landingHeading, styles.landingBrand)}>
         <img src="/logo-96.png" alt="" {...stylex.props(styles.landingMark)} />
-        {/* The site's address beside the mark (SKATGO-69). */}
-        <span {...stylex.props(typography.landingBrand)}>
-          {m.site_name()}
-          <span {...stylex.props(styles.landingDomain)}>{m.site_domain()}</span>
-        </span>
+        {/* The site's name beside the mark, without ".com" (SKATGO-105). */}
+        <span {...stylex.props(typography.landingBrand)}>{m.site_name()}</span>
       </Link>
       <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
         {HEADER_LINKS.map((l) => (
@@ -500,12 +497,11 @@ const styles = stylex.create({
     boxShadow: elev.landingHeader,
   },
   landingBrand: { display: 'flex', alignItems: 'center', gap: space.x10, color: color.navy, textDecoration: 'none', ...focus },
-  // The narrowest phones drop ".com" rather than shrink the name (SKATGO-104).
-  landingDomain: { display: { default: 'inline', [bp.narrowPhone]: 'none' } },
   landingNav: { display: { default: 'flex', [bp.headerMenu]: 'none' }, alignItems: 'center', gap: space.x32 },
   landingLink: { color: { default: color.slate, ':hover': color.navy }, textDecoration: 'none', ...focus },
   // Not there yet (SKATGO-69): greyed, and nothing answers the pointer.
-  landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x2 } },
+  // The flags, the gear and sign-in or the menu, each clear of the next (SKATGO-105).
+  landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x16, [bp.phone]: space.x12, [bp.narrowPhone]: space.x10 } },
   desktopOnly: { display: { default: 'inline-flex', [bp.headerMenu]: 'none' } },
   menuButton: {
     display: { default: 'none', [bp.headerMenu]: 'inline-flex' },

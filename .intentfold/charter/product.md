@@ -77,14 +77,16 @@ basics. The section's own page is its exercises: twelve kinds — bidding, putti
 leading and smearing as a defender, counting, "can I still lose?", open endgames, cracking a Null ouvert,
 how safe a Null is, probabilities, the declarer's first lead — as cards that open to three exercises each,
 36 in all, chosen by hand, not generated. An exercise is answered once: then its page shows whether it was
-right, the right answer, why, and the trick it practises. No sign-in, nothing saved. Every answer is the
+right, the right answer and why. No sign-in, nothing saved. Every answer is the
 rules engine's or an exact solver's, or SkatZero's choice clearly ahead of the next; positions may draw on
 Skat books (the human, SKATGO-103: 「可以参考书上的」). The list of exercises is a search entry in both
 languages, a single exercise is not (the human: 「单页不收录，但是题目页要收录」). The articles are in plain
 words — the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」 — the first, twelve tricks for bidding,
 playing alone and defending, written for the search "Skat Tricks", at `/skat-tricks/12-tricks`, each trick
 linking to the exercises that practise it; later articles get their own addresses under the section, each
-for its own search term. Every article leads to the daily tournament, where each trick can be tried and
+for its own search term. The articles are for search engines (the human, SKATGO-105: 「只用于seo」): the
+site's ways in — the front page's tile, the course, the header — lead to the exercises, and an article is
+reached only by a small link under them. Every article leads to the daily tournament, where each trick can be tried and
 compared with the AI. The articles' text is SkatGo's own: no book's passages, examples or order are copied,
 and the articles recommend no books. After every deal, the play record links to the exercises.
 

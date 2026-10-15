@@ -5,7 +5,6 @@ import { useState } from 'react'
 
 import { cardLabel, contractName, roleName } from '~/lib/skat/i18n'
 import type { CardRow, ChoiceStep, PickStep, PlayStep } from '~/lib/skat/lessons/types'
-import { TRICKS } from '~/lib/skat/tricks'
 import { EXERCISE_TEXT, exerciseById, exercisesOf, nextExercise } from '~/lib/skat/tricks/exercises'
 import type { Exercise, ExerciseText, Option, ShownRow, Situation, Who } from '~/lib/skat/tricks/exercises/types'
 import { m } from '~/paraglide/messages'
@@ -45,7 +44,6 @@ function ExerciseView({ id }: { id: string }) {
   const siblings = exercisesOf(exercise.type)
   const n = siblings.findIndex((e) => e.id === exercise.id) + 1
   const following = nextExercise(exercise.id)
-  const trick = exercise.trick ? TRICKS[locale].blocks.find((b) => b.kind === 'trick' && b.n === exercise.trick) : undefined
   const callbacks = {
     once: true,
     onSolved: () => setResult('right'),
@@ -95,11 +93,6 @@ function ExerciseView({ id }: { id: string }) {
                   <p data-testid="tricks-exercise-explain" {...stylex.props(typography.body, styles.para)}>
                     <Rich text={words.explain} />
                   </p>
-                  {trick && trick.kind === 'trick' ? (
-                    <Link to="/skat-tricks/12-tricks" hash={`trick-${trick.n}`} data-testid="tricks-exercise-trick" {...stylex.props(typography.appLink, styles.link)}>
-                      {m.tricks_ex_trick({ n: trick.n, title: trick.title })}
-                    </Link>
-                  ) : null}
                 </div>
               </div>
             </Panel>

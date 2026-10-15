@@ -72,13 +72,21 @@ Null ouvert, Ramsch); the bidding table; and two printables, a score sheet and a
 rules, each also as a PDF (SKATGO-29, SKATGO-50, SKATGO-53). Every number in them is the rules
 engine's.
 
-Skat-Tricks at `/skat-tricks` (SKATGO-82): strategy articles for players past the basics, in plain words —
-the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」. The section's own page is its first article,
-twelve tricks for bidding, playing alone and defending, written for the search "Skat Tricks"; later
-articles get their own addresses under it, each for its own search term, and practice joins them later
-in the same section. Every article leads to the daily tournament, where each trick can be tried and
-compared with the AI. The text is SkatGo's own: no book's passages, examples or order are copied, and
-the articles recommend no books.
+Skat-Tricks at `/skat-tricks` (SKATGO-82, SKATGO-103): practice and strategy articles for players past the
+basics. The section's own page is its exercises: twelve kinds — bidding, putting away, choosing the game,
+leading and smearing as a defender, counting, "can I still lose?", open endgames, cracking a Null ouvert,
+how safe a Null is, probabilities, the declarer's first lead — as cards that open to three exercises each,
+36 in all, chosen by hand, not generated. An exercise is answered once: then its page shows whether it was
+right, the right answer, why, and the trick it practises. No sign-in, nothing saved. Every answer is the
+rules engine's or an exact solver's, or SkatZero's choice clearly ahead of the next; positions may draw on
+Skat books (the human, SKATGO-103: 「可以参考书上的」). The list of exercises is a search entry in both
+languages, a single exercise is not (the human: 「单页不收录，但是题目页要收录」). The articles are in plain
+words — the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」 — the first, twelve tricks for bidding,
+playing alone and defending, written for the search "Skat Tricks", at `/skat-tricks/12-tricks`, each trick
+linking to the exercises that practise it; later articles get their own addresses under the section, each
+for its own search term. Every article leads to the daily tournament, where each trick can be tried and
+compared with the AI. The articles' text is SkatGo's own: no book's passages, examples or order are copied,
+and the articles recommend no books. After every deal, the play record links to the exercises.
 
 **Who it is for**
 

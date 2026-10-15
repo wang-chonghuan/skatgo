@@ -27,7 +27,12 @@ import { Btn, Panel, Rich, Tip } from './ui'
 // `solvedBefore`: the learner already solved this step and has come back to it (SKATGO-3). It opens in
 // its solved state — the right answer and the explanation showing — so looking again costs nothing
 // and cannot add a mistake. It is read once, as the initial state.
-export type StepCallbacks = { onSolved: () => void; onMistake: () => void; solvedBefore?: boolean }
+//
+// `once`: a Skat-Tricks exercise (SKATGO-103) — the first answer is the answer. A wrong one is judged, the
+// right answer is shown beside it, and the step takes no other; the page around it says what was right
+// and why, so the step shows no feedback panel of its own. A card the rules forbid is still refused with
+// the reason, and is not an answer.
+export type StepCallbacks = { onSolved: () => void; onMistake: () => void; solvedBefore?: boolean; once?: boolean }
 
 export function Teach({ step }: { step: TeachStep }) {
   return (
@@ -70,13 +75,14 @@ function Feedback({ state, good, bad }: { state: 'idle' | 'wrong' | 'right'; goo
   )
 }
 
-export function Choice({ step, onSolved, onMistake, solvedBefore }: { step: ChoiceStep } & StepCallbacks) {
+export function Choice({ step, onSolved, onMistake, solvedBefore, once }: { step: ChoiceStep } & StepCallbacks) {
   const [wrong, setWrong] = useState<number[]>([])
   const [right, setRight] = useState(!!solvedBefore)
   const [nonce, setNonce] = useState(0)
+  const over = right || (!!once && wrong.length > 0)
 
   function choose(i: number) {
-    if (right) return
+    if (over) return
     if (i === step.answer) {
       setRight(true)
       onSolved()
@@ -99,25 +105,26 @@ export function Choice({ step, onSolved, onMistake, solvedBefore }: { step: Choi
               type="button"
               data-testid="skat-option"
               data-correct={String(i === step.answer)}
-              disabled={right || wrong.includes(i)}
+              disabled={over || wrong.includes(i)}
               onClick={() => choose(i)}
-              {...stylex.props(typography.option, styles.option, right && i === step.answer && styles.optionRight, wrong.includes(i) && styles.optionWrong)}
+              {...stylex.props(typography.option, styles.option, over && i === step.answer && styles.optionRight, wrong.includes(i) && styles.optionWrong)}
             >
               <Rich text={o} />
             </button>
           ))}
         </div>
       </Shake>
-      <Feedback state={right ? 'right' : wrong.length ? 'wrong' : 'idle'} good={step.explain} bad={step.hint ?? m.ex_choice_wrong()} />
+      {once ? null : <Feedback state={right ? 'right' : wrong.length ? 'wrong' : 'idle'} good={step.explain} bad={step.hint ?? m.ex_choice_wrong()} />}
     </div>
   )
 }
 
-export function Pick({ step, onSolved, onMistake, solvedBefore }: { step: PickStep } & StepCallbacks) {
+export function Pick({ step, onSolved, onMistake, solvedBefore, once }: { step: PickStep } & StepCallbacks) {
   const [chosen, setChosen] = useState<Card[]>([])
   const [state, setState] = useState<'idle' | 'wrong' | 'right'>(solvedBefore ? 'right' : 'idle')
   const [nonce, setNonce] = useState(0)
   const has = (list: Card[], c: Card) => list.some((d) => sameCard(c, d))
+  const over = state === 'right' || (!!once && state === 'wrong')
 
   function judge(selection: Card[]) {
     if (sameSet(selection, step.correct)) {
@@ -131,7 +138,7 @@ export function Pick({ step, onSolved, onMistake, solvedBefore }: { step: PickSt
   }
 
   function tap(card: Card) {
-    if (state === 'right') return
+    if (over) return
     if (step.single) {
       setChosen([card])
       judge([card])
@@ -152,21 +159,23 @@ export function Pick({ step, onSolved, onMistake, solvedBefore }: { step: PickSt
       {step.context ? <p {...stylex.props(typography.context, styles.context)}><Rich text={step.context} /></p> : null}
       <Shake nonce={nonce}>
         <div {...stylex.props(styles.felt)}>
-          <Fan testId="skat-pick" cards={step.cards} size="lg" onPick={tap} answer={step.correct} selected={state === 'right' ? [] : chosen} verdicts={verdicts} glow={state === 'right' ? step.correct : []} />
+          <Fan testId="skat-pick" cards={step.cards} size="lg" onPick={tap} answer={step.correct} selected={over ? [] : chosen} verdicts={verdicts} glow={over ? step.correct : []} />
         </div>
       </Shake>
       {step.single ? null : (
         <div {...stylex.props(styles.centerRow)}>
-          <Btn testId="skat-check" tone="info" shape="block" disabled={chosen.length === 0 || state === 'right'} onClick={() => judge(chosen)}>
+          <Btn testId="skat-check" tone="info" shape="block" disabled={chosen.length === 0 || over} onClick={() => judge(chosen)}>
             {m.ex_pick_check({ n: chosen.length })}
           </Btn>
         </div>
       )}
-      <Feedback
-        state={state}
-        good={step.explain}
-        bad={step.hint ?? (step.single ? m.ex_pick_wrong_single() : m.ex_pick_wrong_multi())}
-      />
+      {once ? null : (
+        <Feedback
+          state={state}
+          good={step.explain}
+          bad={step.hint ?? (step.single ? m.ex_pick_wrong_single() : m.ex_pick_wrong_multi())}
+        />
+      )}
     </div>
   )
 }
@@ -216,7 +225,7 @@ export function Order({ step, onSolved, onMistake, solvedBefore }: { step: Order
   )
 }
 
-export function Play({ step, onSolved, onMistake, solvedBefore }: { step: PlayStep } & StepCallbacks) {
+export function Play({ step, onSolved, onMistake, solvedBefore, once }: { step: PlayStep } & StepCallbacks) {
   const legal = legalPlays(step.hand, step.trick, step.contract)
   const [played, setPlayed] = useState<Card | null>(solvedBefore ? (step.best ?? legal)[0] : null)
   const [state, setState] = useState<'idle' | 'wrong' | 'right'>(solvedBefore ? 'right' : 'idle')
@@ -224,14 +233,18 @@ export function Play({ step, onSolved, onMistake, solvedBefore }: { step: PlaySt
   const [nonce, setNonce] = useState(0)
   const hand = sortHand(step.hand, step.contract).filter((c) => !played || !sameCard(c, played))
 
+  const over = state === 'right' || (!!once && state === 'wrong' && played !== null)
+
   function tap(card: Card) {
-    if (state === 'right') return
+    if (over) return
     const isLegal = legal.some((c) => sameCard(c, card))
     if (!isLegal) {
       const led = effectiveSuit(step.trick[0], step.contract)
       setWhy(m.ex_play_illegal({ led: ledName(led) }) + (card.rank === 'J' && step.contract.kind !== 'null' ? m.ex_play_illegal_jack() : ''))
     } else if (step.best && !step.best.some((c) => sameCard(c, card))) {
       setWhy(step.whyNot ?? m.ex_play_not_best())
+      // Played once and for all: the card goes to the table, judged, and the right one lights up in the hand.
+      if (once) setPlayed(card)
     } else {
       setPlayed(card)
       setState('right')
@@ -259,17 +272,17 @@ export function Play({ step, onSolved, onMistake, solvedBefore }: { step: PlaySt
             ))}
             {played ? (
               <motion.div initial={{ opacity: 0, y: playIn.rise }} animate={{ opacity: 1, y: 0 }} {...stylex.props(styles.trickCell)}>
-                <PlayingCard card={played} size="md" glow />
+                <PlayingCard card={played} size="md" glow={state === 'right'} verdict={state === 'wrong' ? 'bad' : undefined} />
                 <span {...stylex.props(typography.label, styles.feltLabel)}>{m.name_you()}</span>
               </motion.div>
             ) : null}
           </div>
         </div>
         <Shake nonce={nonce}>
-          <Fan testId="skat-play-hand" cards={hand} size="lg" onPick={tap} legal={state === 'right' ? undefined : legal} answer={step.best ?? legal} />
+          <Fan testId="skat-play-hand" cards={hand} size="lg" onPick={tap} legal={over ? undefined : legal} answer={step.best ?? legal} glow={over && state === 'wrong' ? step.best ?? [] : []} />
         </Shake>
       </div>
-      <Feedback state={state} good={step.explain} bad={why} />
+      {once && over ? null : <Feedback state={state} good={step.explain} bad={why} />}
     </div>
   )
 }

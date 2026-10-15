@@ -1,121 +1,208 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
+import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
-import { TRICKS } from '~/lib/skat/tricks'
-import type { TricksBlock } from '~/lib/skat/tricks/types'
+import { EXERCISE_TEXT, EXERCISE_TYPES, exercisesOf } from '~/lib/skat/tricks/exercises'
+import type { ExerciseType } from '~/lib/skat/tricks/exercises/types'
+import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
+import { icon } from '../../theme/constants'
+import { timing } from '../../theme/effects.stylex'
+import { elev, pose } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
-import { dims } from '../../theme/shape.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { Panel, Rich, linkLook } from './ui'
 
 /**
- * The Skat-Tricks section (SKATGO-82): its first article, twelve tricks in plain words, at the section's
- * own address — for the search "Skat Tricks" — with three ways into the daily tournament and the pages to
- * read on. Later articles get their own addresses and a "Mehr Skat-Tricks" list here when the first of
- * them is written. Rendered on the server, like the rules.
+ * The Skat-Tricks section's page (SKATGO-103, before it the first article of SKATGO-82): the twelve kinds
+ * of exercise as option cards, each opening to its three exercises, and under them the way to the article.
+ * Each card is a native <details>: closed, its exercises are still in the page a search engine reads (the
+ * human: 「题目页要收录……很好的引流材料」). A card named in the address (#druecken, from a trick of the
+ * article) opens by itself. Nothing is remembered: no sign-in, no saved results.
  */
 export function TricksPage() {
-  const locale = getLocale()
-  const article = TRICKS[locale]
+  const text = EXERCISE_TEXT[getLocale()]
+  const [open, setOpen] = useState<ReadonlySet<ExerciseType>>(() => new Set())
+  useEffect(() => {
+    const hash = window.location.hash.slice(1)
+    if ((EXERCISE_TYPES as readonly string[]).includes(hash)) setOpen(new Set([hash as ExerciseType]))
+  }, [])
+  const toggle = (type: ExerciseType, isOpen: boolean) =>
+    setOpen((s) => {
+      if (s.has(type) === isOpen) return s
+      const next = new Set(s)
+      if (isOpen) next.add(type)
+      else next.delete(type)
+      return next
+    })
   return (
     <div data-testid="tricks" {...stylex.props(styles.root)}>
-      <article {...stylex.props(styles.column)}>
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{article.h1}</h1>
-        {article.intro.map((text) => (
-          <p key={text} {...stylex.props(typography.landingBody, styles.lead)}>
-            <Rich text={text} />
-          </p>
-        ))}
-        {article.blocks.map((block, i) => (
-          <TricksBlockView key={i} block={block} />
-        ))}
-        <nav aria-labelledby="tricks-further" {...stylex.props(styles.further)}>
-          <h2 id="tricks-further" {...stylex.props(typography.optionTitle, styles.heading)}>{article.further.title}</h2>
-          <div {...stylex.props(styles.furtherLinks)}>
-            {article.further.links.map((l) => (
-              <Link key={l.to} to={l.to} {...stylex.props(typography.appLink, styles.link)}>{l.label}</Link>
-            ))}
-          </div>
+      <div {...stylex.props(styles.column)}>
+        <header {...stylex.props(styles.intro)}>
+          <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.tricks_hub_h1()}</h1>
+          <p {...stylex.props(typography.landingBody, styles.lead)}>{m.tricks_hub_lead()}</p>
+        </header>
+        <ol {...stylex.props(styles.list)}>
+          {EXERCISE_TYPES.map((type, i) => {
+            const isOpen = open.has(type)
+            const exercises = exercisesOf(type)
+            const Chevron = isOpen ? ChevronUp : ChevronDown
+            return (
+              <li key={type} id={type} {...stylex.props(styles.item)}>
+                <details
+                  open={isOpen}
+                  onToggle={(e) => toggle(type, e.currentTarget.open)}
+                  data-testid="tricks-type"
+                  data-type={type}
+                  {...stylex.props(styles.card, isOpen && styles.cardOpen)}
+                >
+                  <summary data-testid="tricks-type-head" {...stylex.props(styles.summary)}>
+                    <span aria-hidden="true" {...stylex.props(typography.smallBold, styles.number)}>{i + 1}</span>
+                    <span {...stylex.props(styles.heading)}>
+                      <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{text.types[type].title}</span>
+                      <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{text.types[type].blurb}</span>
+                    </span>
+                    <span {...stylex.props(typography.meta, styles.count)}>{m.tricks_hub_count({ n: exercises.length })}</span>
+                    <span {...stylex.props(styles.chevron)}>
+                      <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                    </span>
+                  </summary>
+                  <ol {...stylex.props(styles.tasks)}>
+                    {exercises.map((e, k) => (
+                      <li key={e.id} {...stylex.props(styles.task)}>
+                        <Link to="/skat-tricks/$exercise" params={{ exercise: e.id }} data-testid="tricks-exercise-link" {...stylex.props(styles.taskLink)}>
+                          <span {...stylex.props(styles.taskText)}>
+                            <span {...stylex.props(typography.meta, styles.taskNumber)}>{m.tricks_hub_task({ n: k + 1 })}</span>
+                            <span {...stylex.props(typography.appBtnStrong, styles.taskTitle)}>{text.exercises[e.id].title}</span>
+                          </span>
+                          <ChevronRight aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.taskArrow)} />
+                        </Link>
+                      </li>
+                    ))}
+                  </ol>
+                </details>
+              </li>
+            )
+          })}
+        </ol>
+        {/* The article that was this page before (SKATGO-82), now at its own address, and the rules to look a
+            point up in: small links under the cards. */}
+        <nav {...stylex.props(styles.links)}>
+          <Link to="/skat-tricks/12-tricks" data-testid="tricks-article-link" {...stylex.props(typography.appLink, styles.articleLink)}>
+            {m.tricks_article_link()}
+          </Link>
+          <Link to="/rules" data-testid="tricks-rules-link" {...stylex.props(typography.appLink, styles.articleLink)}>
+            {m.tricks_rules_link()}
+          </Link>
         </nav>
-      </article>
+      </div>
     </div>
   )
 }
 
-function TricksBlockView({ block }: { block: TricksBlock }) {
-  if (block.kind === 'h2') return <h2 {...stylex.props(typography.optionTitle, styles.section)}>{block.title}</h2>
-  if (block.kind === 'cta') {
-    // A way into the daily tournament: the same action wherever it stands, so each carries the go button.
-    return (
-      <Panel tone="tip">
-        <div data-testid="tricks-cta" {...stylex.props(styles.cta)}>
-          <p {...stylex.props(typography.appText, styles.text)}>
-            <Rich text={block.text} />
-          </p>
-          <div {...stylex.props(styles.action)}>
-            <Link to="/daily" data-testid="tricks-cta-button" {...linkLook('go', 'md')}>{block.button}</Link>
-          </div>
-        </div>
-      </Panel>
-    )
-  }
-  return (
-    <section data-testid="tricks-trick" data-trick={block.n} {...stylex.props(styles.trick)}>
-      <h3 {...stylex.props(typography.appBtnStrong, styles.heading)}>{`${block.n}. ${block.title}`}</h3>
-      {block.paragraphs.map((text) => (
-        <p key={text} {...stylex.props(typography.appText, styles.text)}>
-          <Rich text={text} />
-        </p>
-      ))}
-      {block.link ? (
-        <Link to={block.link.to} {...stylex.props(typography.appLink, styles.link, styles.trickLink)}>{block.link.label}</Link>
-      ) : null}
-    </section>
-  )
-}
+const focus = {
+  outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+  outlineWidth: border.focus,
+  outlineColor: color.info,
+  outlineOffset: border.focusOffset,
+} as const
 
+// The course's page column and option cards (course-home.tsx), one card to a row.
 const styles = stylex.create({
   root: { display: 'flex', flexDirection: 'column' },
   column: {
     display: 'flex',
     flexDirection: 'column',
-    gap: space.x16,
+    gap: space.x24,
     width: '100%',
     maxWidth: dims.readingColumn,
     marginInline: 'auto',
     boxSizing: 'border-box',
-    paddingBlock: { default: space.x32, [bp.phone]: space.x16 },
+    paddingTop: { default: space.x48, [bp.phone]: space.x24 },
+    paddingBottom: space.x72,
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
+  intro: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   title: { margin: 0, color: color.navy },
-  lead: { margin: 0, color: color.navy },
-  section: { margin: 0, paddingTop: space.x16, color: color.navy },
-  heading: { margin: 0, color: color.navy },
-  trick: { display: 'flex', flexDirection: 'column', gap: space.x8 },
-  text: { margin: 0, color: color.text },
-  cta: { display: 'flex', flexDirection: 'column', gap: space.x12 },
-  // A row of its own, so the button keeps its width instead of stretching across the panel.
-  action: { display: 'flex' },
-  further: {
+  lead: { margin: 0, color: color.slate },
+  list: { listStyleType: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: space.x12 },
+  item: { margin: 0 },
+  card: {
+    borderRadius: radii.option,
+    borderWidth: border.tile,
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    backgroundColor: color.surface,
+    boxShadow: elev.option,
+    overflow: 'hidden',
+  },
+  cardOpen: { borderColor: color.go },
+  summary: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: space.x8,
-    paddingTop: space.x16,
+    alignItems: 'center',
+    gap: space.x16,
+    padding: { default: space.x20, [bp.phone]: space.x16 },
+    cursor: 'pointer',
+    listStyleType: 'none',
+    color: color.navy,
+    '::-webkit-details-marker': { display: 'none' },
+    transform: { default: pose.rest, ':hover': pose.lift },
+    transitionProperty: 'transform',
+    transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
+    ...focus,
+  },
+  number: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    width: dims.control,
+    height: dims.control,
+    borderRadius: radii.round,
+    backgroundColor: color.page,
+    color: color.navy,
+  },
+  heading: { display: 'flex', flexDirection: 'column', gap: space.x4, flexGrow: 1, minWidth: 0 },
+  optionTitle: { margin: 0, color: color.navy },
+  optionDesc: { margin: 0, color: color.slate },
+  count: { flexShrink: 0, color: color.slate, whiteSpace: 'nowrap', display: { default: 'block', [bp.phone]: 'none' } },
+  chevron: { display: 'flex', flexShrink: 0, color: color.slate },
+  tasks: {
+    listStyleType: 'none',
+    margin: 0,
+    padding: 0,
     borderTopWidth: border.hair,
     borderTopStyle: 'solid',
     borderTopColor: color.hairline,
   },
-  furtherLinks: { display: 'flex', flexWrap: 'wrap', gap: space.x16 },
-  link: {
+  task: {
+    margin: 0,
+    borderBottomWidth: { default: border.hair, ':last-child': 0 },
+    borderBottomStyle: 'solid',
+    borderBottomColor: color.hairline,
+  },
+  taskLink: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: space.x12,
+    paddingBlock: space.x16,
+    paddingInline: { default: space.x20, [bp.phone]: space.x16 },
+    color: color.navy,
+    textDecoration: 'none',
+    backgroundColor: { default: color.surface, ':hover': color.page },
+    ...focus,
+  },
+  taskText: { display: 'flex', flexDirection: 'column', gap: space.x2, flexGrow: 1, minWidth: 0 },
+  taskNumber: { color: color.slate },
+  taskTitle: { color: color.navy },
+  taskArrow: { flexShrink: 0, color: color.go },
+  links: { display: 'flex', flexWrap: 'wrap', gap: space.x16 },
+  articleLink: {
     color: color.info,
     textDecoration: { default: 'none', ':hover': 'underline' },
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.info,
-    outlineOffset: border.focusOffset,
+    ...focus,
   },
-  trickLink: { alignSelf: 'flex-start' },
 })

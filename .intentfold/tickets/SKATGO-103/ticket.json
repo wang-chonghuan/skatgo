@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-103",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-103",
+  "branch": "SKATGO-103-tricks-exercises",
+  "base": "ae280c2",
+  "ports": { "web": 55103, "multiplayer": 56103, "database": 57103 }
+}

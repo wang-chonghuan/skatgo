@@ -82,11 +82,11 @@ export function EntryPage() {
             </Link>
           </Face>
         </section>
-        {/* The tricks (SKATGO-82): the tile that held the puzzles' place, renamed for what the section is now —
-            articles first, practice later — and leading to it. */}
+        {/* The tricks (SKATGO-82): the tile that held the puzzles' place. Its words are the first article's, so
+            it leads there, to its own address since SKATGO-103. */}
         <section data-testid="entry-card" data-section="tricks" {...stylex.props(styles.tile, tileTones.practice)}>
           <Face art={PRACTICE_ART} title={m.entry_practice_title()} text={m.entry_practice_text()}>
-            <Link to="/skat-tricks" data-testid="entry-tricks" {...linkLook('quiet', 'md', 'landing')}>
+            <Link to="/skat-tricks/12-tricks" data-testid="entry-tricks" {...linkLook('quiet', 'md', 'landing')}>
               {m.entry_practice_cta()}
             </Link>
           </Face>

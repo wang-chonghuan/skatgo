@@ -1,38 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { ClientPage } from '~/components/skat/client-page'
-import { breadcrumbs, ogImageUrl, pageHead, samePath } from '~/lib/head'
-import { TRICKS } from '~/lib/skat/tricks'
-import { SITE_URL, localizedUrl } from '~/lib/site'
+import { breadcrumbs, pageHead, samePath } from '~/lib/head'
 import { m } from '~/paraglide/messages'
-import { getLocale } from '~/paraglide/runtime'
 
-// The Skat-Tricks section (SKATGO-82): its first article is the section's own page.
+// The Skat-Tricks section (SKATGO-82): since SKATGO-103 its page is the exercises, by kind; the first
+// article has its own address under it.
 export const Route = createFileRoute('/skat-tricks')({
-  head: () => {
-    const locale = getLocale()
-    const article = TRICKS[locale]
-    const publisher = { '@type': 'Organization', name: m.site_name(), url: SITE_URL }
-    return pageHead({
-      title: article.metaTitle,
-      description: article.metaDescription,
+  head: () =>
+    pageHead({
+      title: m.tricks_hub_meta_title(),
+      description: m.tricks_hub_meta_description(),
       paths: samePath('/skat-tricks'),
-      image: 'tricks',
-      jsonLd: [
-        {
-          '@type': 'Article',
-          headline: article.h1,
-          description: article.metaDescription,
-          url: localizedUrl('/skat-tricks', locale),
-          inLanguage: locale,
-          image: ogImageUrl('tricks', locale),
-          datePublished: '2026-10-12',
-          author: publisher,
-          publisher,
-        },
-        breadcrumbs([[m.tricks_title(), '/skat-tricks']]),
-      ],
-    })
-  },
+      image: 'tricks-exercises',
+      jsonLd: [breadcrumbs([[m.tricks_title(), '/skat-tricks']])],
+    }),
   component: () => <ClientPage page="tricks" />,
 })

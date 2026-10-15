@@ -24,6 +24,8 @@ import { Route as DailyPlayRouteImport } from './routes/daily_.play'
 import { Route as RulesBiddingTableRouteImport } from './routes/rules_.bidding-table'
 import { Route as RulesPrintableRouteImport } from './routes/rules_.printable'
 import { Route as RulesScoreSheetRouteImport } from './routes/rules_.score-sheet'
+import { Route as SkatTricksExerciseRouteImport } from './routes/skat-tricks_.$exercise'
+import { Route as SkatTricks12TricksRouteImport } from './routes/skat-tricks_.12-tricks'
 import { Route as TableIdRouteImport } from './routes/table.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -101,6 +103,16 @@ const RulesScoreSheetRoute = RulesScoreSheetRouteImport.update({
   path: '/rules/score-sheet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SkatTricksExerciseRoute = SkatTricksExerciseRouteImport.update({
+  id: '/skat-tricks_/$exercise',
+  path: '/skat-tricks/$exercise',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkatTricks12TricksRoute = SkatTricks12TricksRouteImport.update({
+  id: '/skat-tricks_/12-tricks',
+  path: '/skat-tricks/12-tricks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TableIdRoute = TableIdRouteImport.update({
   id: '/table/$id',
   path: '/table/$id',
@@ -122,6 +134,8 @@ export interface FileRoutesByFullPath {
   '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/rules/printable': typeof RulesPrintableRoute
   '/rules/score-sheet': typeof RulesScoreSheetRoute
+  '/skat-tricks/$exercise': typeof SkatTricksExerciseRoute
+  '/skat-tricks/12-tricks': typeof SkatTricks12TricksRoute
   '/table/$id': typeof TableIdRoute
   '/course/': typeof CourseIndexRoute
 }
@@ -140,6 +154,8 @@ export interface FileRoutesByTo {
   '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/rules/printable': typeof RulesPrintableRoute
   '/rules/score-sheet': typeof RulesScoreSheetRoute
+  '/skat-tricks/$exercise': typeof SkatTricksExerciseRoute
+  '/skat-tricks/12-tricks': typeof SkatTricks12TricksRoute
   '/table/$id': typeof TableIdRoute
   '/course': typeof CourseIndexRoute
 }
@@ -159,6 +175,8 @@ export interface FileRoutesById {
   '/rules_/bidding-table': typeof RulesBiddingTableRoute
   '/rules_/printable': typeof RulesPrintableRoute
   '/rules_/score-sheet': typeof RulesScoreSheetRoute
+  '/skat-tricks_/$exercise': typeof SkatTricksExerciseRoute
+  '/skat-tricks_/12-tricks': typeof SkatTricks12TricksRoute
   '/table/$id': typeof TableIdRoute
   '/course/': typeof CourseIndexRoute
 }
@@ -179,6 +197,8 @@ export interface FileRouteTypes {
     | '/rules/bidding-table'
     | '/rules/printable'
     | '/rules/score-sheet'
+    | '/skat-tricks/$exercise'
+    | '/skat-tricks/12-tricks'
     | '/table/$id'
     | '/course/'
   fileRoutesByTo: FileRoutesByTo
@@ -197,6 +217,8 @@ export interface FileRouteTypes {
     | '/rules/bidding-table'
     | '/rules/printable'
     | '/rules/score-sheet'
+    | '/skat-tricks/$exercise'
+    | '/skat-tricks/12-tricks'
     | '/table/$id'
     | '/course'
   id:
@@ -215,6 +237,8 @@ export interface FileRouteTypes {
     | '/rules_/bidding-table'
     | '/rules_/printable'
     | '/rules_/score-sheet'
+    | '/skat-tricks_/$exercise'
+    | '/skat-tricks_/12-tricks'
     | '/table/$id'
     | '/course/'
   fileRoutesById: FileRoutesById
@@ -234,6 +258,8 @@ export interface RootRouteChildren {
   RulesBiddingTableRoute: typeof RulesBiddingTableRoute
   RulesPrintableRoute: typeof RulesPrintableRoute
   RulesScoreSheetRoute: typeof RulesScoreSheetRoute
+  SkatTricksExerciseRoute: typeof SkatTricksExerciseRoute
+  SkatTricks12TricksRoute: typeof SkatTricks12TricksRoute
   TableIdRoute: typeof TableIdRoute
   CourseIndexRoute: typeof CourseIndexRoute
 }
@@ -345,6 +371,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RulesScoreSheetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/skat-tricks_/$exercise': {
+      id: '/skat-tricks_/$exercise'
+      path: '/skat-tricks/$exercise'
+      fullPath: '/skat-tricks/$exercise'
+      preLoaderRoute: typeof SkatTricksExerciseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skat-tricks_/12-tricks': {
+      id: '/skat-tricks_/12-tricks'
+      path: '/skat-tricks/12-tricks'
+      fullPath: '/skat-tricks/12-tricks'
+      preLoaderRoute: typeof SkatTricks12TricksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/table/$id': {
       id: '/table/$id'
       path: '/table/$id'
@@ -370,6 +410,8 @@ const rootRouteChildren: RootRouteChildren = {
   RulesBiddingTableRoute: RulesBiddingTableRoute,
   RulesPrintableRoute: RulesPrintableRoute,
   RulesScoreSheetRoute: RulesScoreSheetRoute,
+  SkatTricksExerciseRoute: SkatTricksExerciseRoute,
+  SkatTricks12TricksRoute: SkatTricks12TricksRoute,
   TableIdRoute: TableIdRoute,
   CourseIndexRoute: CourseIndexRoute,
 }

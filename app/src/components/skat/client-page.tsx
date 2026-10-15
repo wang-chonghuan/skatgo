@@ -9,6 +9,8 @@ import { RulesPage } from './rules-page'
 import { RulesSummaryPage } from './rules-summary-page'
 import { QuickStartPage } from './quick-start-page'
 import { TricksPage } from './tricks-page'
+import { TricksArticlePage } from './tricks-article-page'
+import { TricksExercisePage } from './tricks-exercise-page'
 import { ScoreSheetPage } from './score-sheet-page'
 import { NotFoundPage } from './not-found'
 import { PrivacyPage, TermsPage } from './legal-page'
@@ -18,7 +20,7 @@ import { PrivacyPage, TermsPage } from './legal-page'
 // Every page is rendered on the server (SKATGO-1, SKATGO-23, SKATGO-29), so search engines read each
 // language's titles, text and links. What only the browser can render — a lesson's player and the
 // free-play table — each page loads lazily through ./client-part.tsx; progress is applied after mount.
-const PAGES = { entry: EntryPage, daily: DailyPage, dailyPlay: DailyPlay, course: CourseHome, lesson: LessonPage, rules: RulesPage, biddingTable: BiddingTablePage, scoreSheet: ScoreSheetPage, rulesSummary: RulesSummaryPage, tricks: TricksPage, quickStart: QuickStartPage, play: FreePlay, friends: FriendsPage, table: TablePage, notFound: NotFoundPage, privacy: PrivacyPage, terms: TermsPage }
+const PAGES = { entry: EntryPage, daily: DailyPage, dailyPlay: DailyPlay, course: CourseHome, lesson: LessonPage, rules: RulesPage, biddingTable: BiddingTablePage, scoreSheet: ScoreSheetPage, rulesSummary: RulesSummaryPage, tricks: TricksPage, tricksArticle: TricksArticlePage, tricksExercise: TricksExercisePage, quickStart: QuickStartPage, play: FreePlay, friends: FriendsPage, table: TablePage, notFound: NotFoundPage, privacy: PrivacyPage, terms: TermsPage }
 
 export function ClientPage({ page }: { page: keyof typeof PAGES }) {
   const Page = PAGES[page]

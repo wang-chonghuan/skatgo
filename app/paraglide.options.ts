@@ -62,6 +62,22 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/skat-tricks'],
       ],
     },
+    // Its first article (SKATGO-82) and each exercise (SKATGO-103), under it; the article's address ahead of
+    // the exercises' pattern, so it is never read as an exercise.
+    {
+      pattern: '/skat-tricks/12-tricks',
+      localized: [
+        ['en', '/en/skat-tricks/12-tricks'],
+        ['de', '/de/skat-tricks/12-tricks'],
+      ],
+    },
+    {
+      pattern: '/skat-tricks/:exercise',
+      localized: [
+        ['en', '/en/skat-tricks/:exercise'],
+        ['de', '/de/skat-tricks/:exercise'],
+      ],
+    },
     // The bidding table (SKATGO-50), a page of the rules.
     {
       pattern: '/rules/bidding-table',

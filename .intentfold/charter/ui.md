@@ -231,11 +231,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     its one green landing action (play today's deals); a quiet ✓ line of what a first visitor wants to
     know; and the human's illustration (SKATGO-33). Never on felt (Redline 4);
   - the sections as colour tiles, each with its card art and a `quiet` button: the course, free play,
-    the tricks ("Skat-Tricks", `tileNavy`, SKATGO-82; it held the puzzles' "coming soon" before) and a
-    private table (`tileRed`);
+    the tricks ("Skat-Tricks", `tileNavy`, SKATGO-82; it held the puzzles' "coming soon" before; its words and
+    link are the first article's) and a private table (`tileRed`);
   - plain links to the rules and the course, and the questions people ask.
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
-  the short rules, the daily tournament, the Skat-Tricks, the legal pages), on the grey page: its title is the column's first element, an
+  the short rules, the daily tournament, the Skat-Tricks and their article and exercises, the legal pages), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
   tournament's page puts a switch of two pills under its lead, "6 Spiele | 12 Spiele" (SKATGO-77,
@@ -253,13 +253,24 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   numbered, each a line of text, the ones that name points or an order with that row of cards under them
   (`CardRowView`, the points as captions), then a `tip` panel with the `go` button to free play, and links
   to the course and the rules. Its ways in: an option card under the course's lead, ahead of the progress
-  card; on the front page a second `quiet` button, "5-Minuten-Crashkurs" — a crash course, never read as a quick game or a summary (the human: 「其实就是5分钟速成的意思」) — beside the course tile's own, always, whether or not a lesson was taken (the human: 「看起来不够明显」; SKATGO-92: 「必须还放在学习卡上」); and a link under the rules' lead. Not in the header. An article of the Skat-Tricks
-  (`tricks-page.tsx`, SKATGO-82) reads like the rules: its H1 and lead, section headings, each trick a
+  card; on the front page a second `quiet` button, "5-Minuten-Crashkurs" — a crash course, never read as a quick game or a summary (the human: 「其实就是5分钟速成的意思」) — beside the course tile's own, always, whether or not a lesson was taken (the human: 「看起来不够明显」; SKATGO-92: 「必须还放在学习卡上」); and a link under the rules' lead. Not in the header. The Skat-Tricks' page (`tricks-page.tsx`,
+  SKATGO-103) is its H1 and lead, then the twelve kinds of exercise as option cards in one column — a number
+  disc, title and one line, the count, and a chevron — each a native `<details>` that opens in place to its
+  three exercises as rows (number, title, a `go` arrow), the open card ringed `go`; under the cards, a small
+  `info` link to the article. An exercise's page (`tricks-exercise-page.tsx`) has the way back ("Alle
+  Aufgaben", `quiet`, with a chevron) and the kind and number in a `Pill`, the title as H1, then one white
+  card: what the learner knows in a `panelLabel` line, the cards on show as `CardRowView` rows, and the
+  question in the course's widget (`Choice`, `Pick`, `Play`) answered once — the right answer then lit, a
+  wrong one marked `bad`. Under the card, the verdict in a `good` or `bad` `Panel` with its icon, the right
+  answer, the reason and the trick it practises; then "Nächste Aufgabe" (`go`) and "Noch mal" (`quiet`). An
+  article of the Skat-Tricks (`tricks-article-page.tsx`, SKATGO-82) reads like the rules: its H1 and lead, section headings, each trick a
   numbered sub-heading over short paragraphs, and three ways into the daily tournament — at the start, in
   the middle and at the end — each a `tip` panel with its line and the `go` button; one action repeated
-  down a long page, not rival primaries (the human chose green for all three). It ends with its links to
-  read on. The course lists it as an option card under the lessons, the footer links it, and the table's
-  rules panel and the play record link it in a new tab, so a game is never left behind. A lesson starts playing at once: under its title only a
+  down a long page, not rival primaries (the human chose green for all three). Each trick that has
+  exercises links to them. It ends with its links to read on. The course lists it as an option card under
+  the lessons. The header and the footer link the Skat-Tricks' page, and the table's rules panel and the
+  play record ("Interaktive Übungen – spiel besser Skat") link it in a new tab, so a game is never left
+  behind. A lesson starts playing at once: under its title only a
   one-line kicker and the lesson's promise, then the lesson, which keeps its "back / continue" bar
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
   lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,

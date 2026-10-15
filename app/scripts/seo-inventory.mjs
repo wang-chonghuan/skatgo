@@ -92,18 +92,22 @@ async function sourceData() {
     },
   })
   try {
-    const [{ GUIDES, lessonPath }, { PRIVATE_PAGES }, { paraglideOptions }] = await Promise.all([
+    const [{ GUIDES, lessonPath }, { PRIVATE_PAGES }, { paraglideOptions }, { EXERCISES }] = await Promise.all([
       import('../src/lib/skat/lessons/guide.ts'),
       import('../src/lib/indexability.ts'),
       import('../paraglide.options.ts'),
+      import('../src/lib/skat/tricks/exercises/positions.ts'),
     ])
-    return { guides: GUIDES, lessonPath, privatePaths: [...PRIVATE_PAGES], patterns: paraglideOptions.urlPatterns }
+    // A private route whose addresses come from the source (a Skat-Tricks exercise, SKATGO-103) is checked at
+    // a real one: an unknown exercise is a missing page.
+    const samples = { '/skat-tricks/$exercise': `/skat-tricks/${EXERCISES[0].id}` }
+    return { guides: GUIDES, lessonPath, privatePaths: [...PRIVATE_PAGES], patterns: paraglideOptions.urlPatterns, samples }
   } finally {
     hooks.deregister()
   }
 }
 
-export function deriveInventory({ routes, pages, guides, courseIds, lessonPath, privatePaths, patterns, locales, tags, site }) {
+export function deriveInventory({ routes, pages, guides, courseIds, lessonPath, privatePaths, patterns, locales, tags, site, samples = {} }) {
   assert.ok(locales.length > 0, 'Derived no configured locales')
   assert.ok(locales.includes('de') && locales.includes('en'), 'German and English must remain independent')
   const staticRoutes = routes.filter((path) => !path.includes('$'))
@@ -151,7 +155,7 @@ export function deriveInventory({ routes, pages, guides, courseIds, lessonPath, 
   assert.equal(new Set(entries.map((entry) => entry.loc)).size, entries.length, 'Independent page/language URLs must not collapse')
   return {
     site, locales, tags, entries,
-    privateEntries: privatePaths.map((path) => same(path.replace(/\$[A-Za-z0-9_]+/g, 'sample'))).flatMap(entriesFor),
+    privateEntries: privatePaths.map((path) => same(samples[path] ?? path.replace(/\$[A-Za-z0-9_]+/g, 'sample'))).flatMap(entriesFor),
     lessonEntries: lessons.flatMap(entriesFor),
   }
 }

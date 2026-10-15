@@ -1,9 +1,11 @@
 import { Outlet } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
+import { useEffect } from 'react'
 
 import { AskLauncher } from '~/components/skat/ask'
 import { LegalFooter } from '~/components/skat/legal-page'
 import { LandingHeader, useFrame, useSection } from '~/components/skat/frame'
+import { primeSounds } from '~/lib/skat/sounds'
 import { bp } from './theme/breakpoints.stylex'
 import { color } from './theme/color.stylex'
 import { dims } from './theme/shape.stylex'
@@ -16,6 +18,8 @@ import { typography } from './theme/type'
 //   play              — the card table fills the screen, with its own side panel and way out.
 // The floating assistant comes after, and decides itself which pages it is on.
 export function SkatLayout() {
+  // The cards' sounds are fetched on any page and woken by the first touch, so the first deal is heard (SKATGO-106).
+  useEffect(primeSounds, [])
   const frame = useFrame()
   const section = useSection()
   if (frame === 'landing') {

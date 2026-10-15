@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-106",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-106",
+  "branch": "SKATGO-106-deal-sound",
+  "base": "75b9980",
+  "ports": { "web": 55106, "multiplayer": 56106, "database": 57106 }
+}

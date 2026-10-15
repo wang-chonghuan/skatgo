@@ -7,7 +7,7 @@ import { createPortal } from 'react-dom'
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
-import { loadSounds, playSound } from '~/lib/skat/sounds'
+import { playSound } from '~/lib/skat/sounds'
 import { visibleTable } from '~/lib/skat/table-view'
 import { useTapToCollect } from '~/lib/skat/settings'
 import { cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
@@ -1359,7 +1359,6 @@ function Message({ tone, testId, onClose, children }: { tone: 'tip' | 'bad'; tes
  * up in the middle makes no sound for what was already played.
  */
 function useCardSounds(game: Game) {
-  useEffect(() => void loadSounds(), [])
   const seen = useRef<{ deal: string; cards: number; tricks: number } | null>(null)
   const fresh = game.phase === 'bidding' && game.bidding.log.length === 0 && game.tricks.length === 0
   const dealt = `${game.dealer}|${game.hands.map((h) => h.map(cardId).join()).join('|')}|${game.skat.map(cardId).join()}`

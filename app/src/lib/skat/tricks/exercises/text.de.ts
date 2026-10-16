@@ -3,6 +3,7 @@
 // Lektionen.
 
 import { P_JACK_IN_SKAT, P_THREE_NIL, P_THREE_ONE, P_TWO_TWO } from './positions'
+import { LADDER_DE } from './ladder-text'
 import type { ExercisesText } from './types'
 
 /** A probability as the text says it, from the counted value. */
@@ -13,6 +14,7 @@ const RISK = ['Sicher – egal, wie die Karten sitzen', 'Riskant – es kommt da
 
 export const EXERCISES_DE: ExercisesText = {
   types: {
+    'sieg-sichern': { title: 'Sieg sichern', blurb: 'Skat-Endspiele wie Schachaufgaben: Eine Karte gewinnt sicher.' },
     reizen: { title: 'Reizen oder passen?', blurb: 'Reizwert ausrechnen und entscheiden, wie weit du gehst.' },
     druecken: { title: 'Drücken', blurb: 'Welche zwei Karten legst du in den Skat?' },
     spielwahl: { title: 'Welches Spiel?', blurb: 'Farbspiel, Grand oder Null – was holt am meisten aus deinen Karten?' },
@@ -27,6 +29,7 @@ export const EXERCISES_DE: ExercisesText = {
     ausspielen: { title: 'Ausspielen als Alleinspieler', blurb: 'Deine erste Karte: Trumpf ziehen oder Asse spielen?' },
   },
   exercises: {
+    ...LADDER_DE,
     'reizen-1': {
       title: 'Wie hoch geht Kreuz mit zwei Buben?',
       prompt: 'Du willst **Kreuz** spielen. Bis wie viel darfst du höchstens reizen, ohne dich zu überreizen?',

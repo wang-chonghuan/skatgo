@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-108",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-108",
+  "branch": "SKATGO-108-endgame-ladder",
+  "base": "982c237",
+  "ports": { "web": 55108, "multiplayer": 56108, "database": 57108 }
+}

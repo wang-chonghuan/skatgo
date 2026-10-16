@@ -2,6 +2,7 @@ import { type Card, type Contract, isTrump, pointsOf, sameCard, trickWinnerIndex
 import { SUIT_BASE, GRAND_BASE, matadors } from '../../value'
 import { cards } from './cards-of'
 import { JUDGED } from './judged'
+import { LADDER } from './ladder'
 import { type Position, nullBreaks, nullSure, openPoints, openValues, splits, sureOf } from './solve'
 import { EXERCISE_TYPES, type Exercise, type Option, type ShownRow, type Who } from './types'
 
@@ -349,5 +350,5 @@ const EXACT: Exercise[] = [
 
 /** All 36, kind by kind in the section's order, each kind's in its own order. */
 export const EXERCISES: Exercise[] = EXERCISE_TYPES.flatMap((type) =>
-  [...EXACT, ...JUDGED].filter((e) => e.type === type).sort((a, b) => a.id.localeCompare(b.id)),
+  [...LADDER, ...EXACT, ...JUDGED].filter((e) => e.type === type).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true })),
 )

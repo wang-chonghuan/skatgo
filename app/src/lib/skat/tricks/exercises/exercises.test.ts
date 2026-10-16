@@ -3,18 +3,23 @@ import { describe, expect, it } from 'vitest'
 import { type Card, cardId, fullDeck, legalPlays, sameCard, trickWinnerIndex } from '../../cards'
 import { locales } from '~/paraglide/runtime'
 import { EXERCISE_TEXT, EXERCISE_TYPES, EXERCISES } from '.'
+import { ENDGAMES_STORED } from './endgames.data'
+import { readEndgame, recordOf, solveEndgame } from './endgame'
 import { MITZAEHLEN, cards } from './positions'
 
-// The Skat-Tricks exercises (SKATGO-103) held to their ticket: twelve kinds, three each, every one in both
-// languages, every card real and every move legal. The exact answers are computed when positions.ts loads —
+// The Skat-Tricks exercises (SKATGO-103) held to their ticket: the "Sieg sichern" ladder of ten (SKATGO-108)
+// first, then twelve kinds of three, every one in both languages, every card real and every move legal. The exact answers are computed when positions.ts loads —
 // a position whose answer is not unique fails there; SkatZero's are checked in multiplayer/.
 
 describe('the Skat-Tricks exercises', () => {
-  it('twelve kinds, three exercises each, in the kinds\' order, each id once', () => {
-    expect(EXERCISES).toHaveLength(36)
-    expect(new Set(EXERCISES.map((e) => e.id)).size).toBe(36)
-    for (const type of EXERCISE_TYPES) expect(EXERCISES.filter((e) => e.type === type).map((e) => e.id)).toEqual([1, 2, 3].map((n) => `${type}-${n}`))
-    expect(EXERCISES.map((e) => e.type)).toEqual(EXERCISE_TYPES.flatMap((t) => [t, t, t]))
+  it('the ladder of ten first, then twelve kinds of three, in the kinds\' order, each id once', () => {
+    const size = (type: string) => (type === 'sieg-sichern' ? 10 : 3)
+    expect(EXERCISE_TYPES[0]).toBe('sieg-sichern')
+    expect(EXERCISE_TYPES).toHaveLength(13)
+    expect(EXERCISES).toHaveLength(46)
+    expect(new Set(EXERCISES.map((e) => e.id)).size).toBe(46)
+    for (const type of EXERCISE_TYPES) expect(EXERCISES.filter((e) => e.type === type).map((e) => e.id)).toEqual(Array.from({ length: size(type) }, (_, i) => `${type}-${i + 1}`))
+    expect(EXERCISES.map((e) => e.type)).toEqual(EXERCISE_TYPES.flatMap((t) => Array(size(t)).fill(t)))
   })
 
   for (const locale of locales) {
@@ -33,7 +38,9 @@ describe('the Skat-Tricks exercises', () => {
 
   it('no card twice in what an exercise shows', () => {
     for (const e of EXERCISES) {
-      const shown: Card[] = e.situation.rows.flatMap((r) => (r.kind === 'trick' ? r.plays.map((p) => p.card) : r.cards))
+      const shown: Card[] = e.situation.rows.flatMap((r) =>
+        r.kind === 'trick' ? r.plays.map((p) => p.card) : r.kind === 'history' ? r.tricks.flatMap((t) => t.cards.map((c) => c.card)) : r.kind === 'voids' ? [] : r.cards,
+      )
       const asked: Card[] = e.ask.kind === 'play' ? [...e.ask.hand, ...e.ask.trick.map((t) => t.card)] : e.ask.kind === 'pick' ? e.ask.cards : []
       const all = [...shown, ...asked]
       for (const c of all) expect(fullDeck().some((d) => sameCard(c, d)), `${e.id} ${cardId(c)}`).toBe(true)
@@ -77,6 +84,44 @@ describe('the Skat-Tricks exercises', () => {
         })
         leader = t[trickWinnerIndex(trick, d.contract)][0]
       }
+    }
+  })
+
+  describe('the "Sieg sichern" ladder (SKATGO-108)', () => {
+    it('rises: three tricks left at level 1, four at level 2, five at level 3', () => {
+      expect(ENDGAMES_STORED.map((s) => [s.hand.length, s.level])).toEqual([
+        [3, 1], [3, 1], [3, 1], [4, 2], [4, 2], [4, 2], [4, 2], [5, 3], [5, 3], [5, 3],
+      ])
+    })
+    for (const s of ENDGAMES_STORED) {
+      it(`${s.id}: a whole deal, played by the rules`, () => {
+        const e = readEndgame(s)
+        const played = e.tricks.flatMap((t) => t.cards)
+        expect(new Set([...e.hand, ...e.skat, ...e.left, ...e.right, ...played.map((p) => p.card)].map(cardId)).size).toBe(32)
+        // Each seat's cards at the start of the play: what it holds now and what it played.
+        const hands: Record<string, Card[]> = {
+          you: [...e.hand, ...played.filter((p) => p.side === 'you').map((p) => p.card)],
+          left: [...e.left, ...played.filter((p) => p.side === 'left').map((p) => p.card)],
+          right: [...e.right, ...played.filter((p) => p.side === 'right').map((p) => p.card)],
+        }
+        for (const h of Object.values(hands)) expect(h).toHaveLength(10)
+        let leader = e.tricks[0].cards[0].side
+        for (const t of e.tricks) {
+          expect(t.cards[0].side).toBe(leader)
+          const trick: Card[] = []
+          for (const p of t.cards) {
+            expect(legalPlays(hands[p.side], trick, e.contract).some((c) => sameCard(c, p.card)), `${s.id} ${p.side} ${cardId(p.card)}`).toBe(true)
+            hands[p.side] = hands[p.side].filter((c) => !sameCard(c, p.card))
+            trick.push(p.card)
+          }
+          expect(t.cards[trickWinnerIndex(trick, e.contract)].side).toBe(t.winner)
+          leader = t.winner
+        }
+        expect(leader).toBe('you')
+      })
+      it(`${s.id}: proven again — one sure card, every other card loses in a possible split, the stored analysis`, () => {
+        expect(readEndgame(s)).toEqual(solveEndgame(recordOf(s)))
+      })
     }
   })
 })

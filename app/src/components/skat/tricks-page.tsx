@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronRight, ChevronUp, CircleCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { EXERCISE_TEXT, EXERCISE_TYPES, exercisesOf } from '~/lib/skat/tricks/exercises'
 import type { ExerciseType } from '~/lib/skat/tricks/exercises/types'
+import { useLadder } from '~/lib/skat/tricks/ladder-progress'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
@@ -15,17 +16,26 @@ import { elev, pose } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { Pill } from './ui'
 
 /**
  * The Skat-Tricks section's page (SKATGO-103, before it the first article of SKATGO-82): the twelve kinds
  * of exercise as option cards, each opening to its three exercises, and under them the way to the article.
  * Each card is a native <details>: closed, its exercises are still in the page a search engine reads (the
  * human: 「题目页要收录……很好的引流材料」). A card named in the address (#druecken, from a trick of the
- * article) opens by itself. Nothing is remembered: no sign-in, no saved results.
+ * article) opens by itself.
+ *
+ * The first card is the "Sieg sichern" ladder (SKATGO-108), featured: ten steps in rising order, each with its
+ * level, the ones answered right checked and the next one marked — remembered in this browser only, applied
+ * after mount. The other kinds remember nothing.
  */
 export function TricksPage() {
   const text = EXERCISE_TEXT[getLocale()]
   const [open, setOpen] = useState<ReadonlySet<ExerciseType>>(() => new Set())
+  const [mounted, setMounted] = useState(false)
+  const stored = useLadder((s) => s.solved)
+  const solved = mounted ? stored : NONE
+  useEffect(() => setMounted(true), [])
   useEffect(() => {
     const hash = window.location.hash.slice(1)
     if ((EXERCISE_TYPES as readonly string[]).includes(hash)) setOpen(new Set([hash as ExerciseType]))
@@ -49,6 +59,8 @@ export function TricksPage() {
           {EXERCISE_TYPES.map((type, i) => {
             const isOpen = open.has(type)
             const exercises = exercisesOf(type)
+            const ladder = type === 'sieg-sichern'
+            const nextUp = ladder ? exercises.find((e) => !solved.includes(e.id))?.id : undefined
             const Chevron = isOpen ? ChevronUp : ChevronDown
             return (
               <li key={type} id={type} {...stylex.props(styles.item)}>
@@ -57,7 +69,7 @@ export function TricksPage() {
                   onToggle={(e) => toggle(type, e.currentTarget.open)}
                   data-testid="tricks-type"
                   data-type={type}
-                  {...stylex.props(styles.card, isOpen && styles.cardOpen)}
+                  {...stylex.props(styles.card, isOpen && styles.cardOpen, ladder && styles.cardFeatured)}
                 >
                   <summary data-testid="tricks-type-head" {...stylex.props(styles.summary)}>
                     <span aria-hidden="true" {...stylex.props(typography.smallBold, styles.number)}>{i + 1}</span>
@@ -65,7 +77,9 @@ export function TricksPage() {
                       <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{text.types[type].title}</span>
                       <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{text.types[type].blurb}</span>
                     </span>
-                    <span {...stylex.props(typography.meta, styles.count)}>{m.tricks_hub_count({ n: exercises.length })}</span>
+                    <span data-testid={ladder ? 'tricks-ladder-progress' : undefined} {...stylex.props(typography.meta, styles.count, ladder && styles.countShown)}>
+                      {ladder ? m.tricks_ladder_progress({ n: exercises.filter((e) => solved.includes(e.id)).length, count: exercises.length }) : m.tricks_hub_count({ n: exercises.length })}
+                    </span>
                     <span {...stylex.props(styles.chevron)}>
                       <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
                     </span>
@@ -75,9 +89,17 @@ export function TricksPage() {
                       <li key={e.id} {...stylex.props(styles.task)}>
                         <Link to="/skat-tricks/$exercise" params={{ exercise: e.id }} data-testid="tricks-exercise-link" {...stylex.props(styles.taskLink)}>
                           <span {...stylex.props(styles.taskText)}>
-                            <span {...stylex.props(typography.meta, styles.taskNumber)}>{m.tricks_hub_task({ n: k + 1 })}</span>
+                            <span {...stylex.props(typography.meta, styles.taskNumber)}>
+                              {e.level ? `${m.tricks_hub_task({ n: k + 1 })} · ${m.tricks_ladder_level({ n: e.level })}` : m.tricks_hub_task({ n: k + 1 })}
+                            </span>
                             <span {...stylex.props(typography.appBtnStrong, styles.taskTitle)}>{text.exercises[e.id].title}</span>
                           </span>
+                          {ladder && solved.includes(e.id) ? (
+                            <span data-testid="tricks-ladder-solved" aria-label={m.tricks_ladder_solved()} {...stylex.props(styles.solved)}>
+                              <CircleCheck aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                            </span>
+                          ) : null}
+                          {e.id === nextUp ? <Pill tone="go">{m.tricks_ladder_next()}</Pill> : null}
                           <ChevronRight aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.taskArrow)} />
                         </Link>
                       </li>
@@ -102,6 +124,8 @@ export function TricksPage() {
     </div>
   )
 }
+
+const NONE: string[] = []
 
 const focus = {
   outlineStyle: { default: 'none', ':focus-visible': 'solid' },
@@ -140,6 +164,8 @@ const styles = stylex.create({
     overflow: 'hidden',
   },
   cardOpen: { borderColor: color.go },
+  // The ladder (SKATGO-108): the featured card's deeper shadow, ringed in the action green.
+  cardFeatured: { borderColor: color.go, boxShadow: elev.optionFeatured },
   summary: {
     display: 'flex',
     alignItems: 'center',
@@ -170,6 +196,9 @@ const styles = stylex.create({
   optionDesc: { margin: 0, color: color.slate },
   count: { flexShrink: 0, color: color.slate, whiteSpace: 'nowrap', display: { default: 'block', [bp.phone]: 'none' } },
   chevron: { display: 'flex', flexShrink: 0, color: color.slate },
+  // The ladder's progress shows on a phone too.
+  countShown: { display: 'block' },
+  solved: { display: 'flex', flexShrink: 0, color: color.good },
   tasks: {
     listStyleType: 'none',
     margin: 0,

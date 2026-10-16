@@ -2,6 +2,7 @@
 // SkatZero; only the words are here. **bold** and suit symbols as in the lessons.
 
 import { P_JACK_IN_SKAT, P_THREE_NIL, P_THREE_ONE, P_TWO_TWO } from './positions'
+import { LADDER_EN } from './ladder-text'
 import type { ExercisesText } from './types'
 
 /** A probability as the text says it, from the counted value. */
@@ -12,6 +13,7 @@ const RISK = ['Safe – however the cards lie', 'Risky – it depends on how the
 
 export const EXERCISES_EN: ExercisesText = {
   types: {
+    'sieg-sichern': { title: 'Lock in the win', blurb: 'Skat endgames like chess puzzles: one card wins for sure.' },
     reizen: { title: 'Bid or pass?', blurb: 'Work out your bid value and decide how far to go.' },
     druecken: { title: 'Putting away', blurb: 'Which two cards go into the skat?' },
     spielwahl: { title: 'Which game?', blurb: 'Suit game, Grand or Null – which gets the most from your cards?' },
@@ -26,6 +28,7 @@ export const EXERCISES_EN: ExercisesText = {
     ausspielen: { title: 'Leading as declarer', blurb: 'Your first card: draw trumps or play your aces?' },
   },
   exercises: {
+    ...LADDER_EN,
     'reizen-1': {
       title: 'How high does Clubs go with two Jacks?',
       prompt: 'You want to play **Clubs**. What is the highest you may bid without overbidding?',

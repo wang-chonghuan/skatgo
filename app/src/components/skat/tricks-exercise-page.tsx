@@ -3,10 +3,14 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronLeft, CircleCheck, CircleX } from 'lucide-react'
 import { useState } from 'react'
 
-import { cardLabel, contractName, roleName } from '~/lib/skat/i18n'
+import type { Card } from '~/lib/skat/cards'
+import type { Game } from '~/lib/skat/game'
+import { cardLabel, contractName, roleName, suitName } from '~/lib/skat/i18n'
 import type { CardRow, ChoiceStep, PickStep, PlayStep } from '~/lib/skat/lessons/types'
 import { EXERCISE_TEXT, exerciseById, exercisesOf, nextExercise } from '~/lib/skat/tricks/exercises'
+import type { Endgame, Side, Trick } from '~/lib/skat/tricks/exercises/endgame'
 import type { Exercise, ExerciseText, Option, ShownRow, Situation, Who } from '~/lib/skat/tricks/exercises/types'
+import { useLadder } from '~/lib/skat/tricks/ladder-progress'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
@@ -17,6 +21,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { CardRowView } from './card-row'
+import { TrickReplay } from './daily-comparison'
 import { Choice, Pick, Play } from './exercises'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 
@@ -37,16 +42,22 @@ function ExerciseView({ id }: { id: string }) {
   // A fresh attempt is a fresh widget.
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState<'right' | 'wrong' | null>(null)
+  const solve = useLadder((s) => s.solve)
   if (!exercise) return null
   const locale = getLocale()
   const text = EXERCISE_TEXT[locale]
   const words = text.exercises[exercise.id]
   const siblings = exercisesOf(exercise.type)
   const n = siblings.findIndex((e) => e.id === exercise.id) + 1
-  const following = nextExercise(exercise.id)
+  // The ladder climbs within itself (SKATGO-108): after its last step, back to the list.
+  const after = nextExercise(exercise.id)
+  const following = exercise.type === 'sieg-sichern' && after?.type !== exercise.type ? undefined : after
   const callbacks = {
     once: true,
-    onSolved: () => setResult('right'),
+    onSolved: () => {
+      setResult('right')
+      if (exercise.type === 'sieg-sichern') solve(exercise.id)
+    },
     onMistake: () => setResult('wrong'),
   }
   const again = () => {
@@ -96,6 +107,7 @@ function ExerciseView({ id }: { id: string }) {
                 </div>
               </div>
             </Panel>
+            {exercise.endgame ? <EndgameAnalysis e={exercise.endgame} /> : null}
             <div {...stylex.props(styles.actions)}>
               {following ? (
                 <Link to="/skat-tricks/$exercise" params={{ exercise: following.id }} data-testid="tricks-exercise-next" {...linkLook('go', 'md')}>
@@ -139,18 +151,76 @@ function SituationView({ situation: s }: { situation: Situation }) {
     s.bid ? m.tricks_sit_bid({ bid: s.bid }) : null,
     s.trickNo ? m.tricks_row_trick({ n: s.trickNo }) : null,
     s.points !== undefined ? m.tricks_sit_points({ n: s.points }) : null,
+    s.need !== undefined ? m.tricks_sit_need({ n: s.need }) : null,
+    s.tricksLeft !== undefined ? m.tricks_sit_left({ n: s.tricksLeft }) : null,
   ].filter(Boolean)
   return (
     <div data-testid="tricks-situation" {...stylex.props(styles.situation)}>
       {facts.length ? <p {...stylex.props(typography.panelLabel, styles.facts)}>{facts.join(' · ')}</p> : null}
       {s.rows.map((row, i) => (
-        <CardRowView key={i} row={cardRow(row)} />
+        <RowView key={i} row={row} />
       ))}
     </div>
   )
 }
 
-function cardRow(row: ShownRow): CardRow {
+const SEAT_OF: Record<Side, 0 | 1 | 2> = { you: 0, left: 1, right: 2 }
+const replayNames = () => [m.tricks_who_you(), m.tricks_who_left(), m.tricks_who_right()]
+/** Tricks in the play record's own shape: the declarer — the learner — in seat 0, left 1, right 2. */
+const asReplay = (tricks: { cards: { who: Who; card: Card }[]; winner: Who }[]): Game['tricks'] =>
+  tricks.map((t) => ({ cards: t.cards.map((c) => ({ seat: SEAT_OF[c.who as Side], card: c.card })), winner: SEAT_OF[t.winner as Side] }))
+
+/** A row the question shows: the play so far as the play record (SKATGO-108), the voids as a line, else cards. */
+function RowView({ row }: { row: ShownRow }) {
+  if (row.kind === 'history') {
+    return (
+      <div data-testid="tricks-history" {...stylex.props(styles.history)}>
+        <p {...stylex.props(typography.meta, styles.facts)}>{m.tricks_row_history()}</p>
+        <TrickReplay tricks={asReplay(row.tricks)} names={replayNames()} />
+      </div>
+    )
+  }
+  if (row.kind === 'voids') {
+    return (
+      <p data-testid="tricks-voids" {...stylex.props(typography.meta, styles.facts)}>
+        {row.voids.map((v) => (v.suit === 'T' ? m.tricks_void_trump({ who: whoName(v.who) }) : m.tricks_void_suit({ who: whoName(v.who), suit: suitName(v.suit) }))).join(' · ')}
+      </p>
+    )
+  }
+  return <CardRowView row={cardRow(row)} />
+}
+
+/**
+ * After a ladder step is answered (SKATGO-108): the opponents' cards turned over, the sure way through this
+ * deal trick by trick, and each other card with a split of the opponents' cards in which it loses.
+ */
+function EndgameAnalysis({ e }: { e: Endgame }) {
+  const list = (cs: Card[]) => cs.map(cardLabel).join(' ')
+  const replay = (ts: Trick[]) => asReplay(ts.map((t) => ({ cards: t.cards.map((c) => ({ who: c.side, card: c.card })), winner: t.winner })))
+  return (
+    <section data-testid="tricks-analysis" {...stylex.props(styles.card)}>
+      <div {...stylex.props(styles.analysisPart)}>
+        <h2 {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_an_hands()}</h2>
+        <CardRowView row={{ label: m.tricks_who_left(), cards: e.left }} />
+        <CardRowView row={{ label: m.tricks_who_right(), cards: e.right }} />
+      </div>
+      <div data-testid="tricks-analysis-line" {...stylex.props(styles.analysisPart)}>
+        <h2 {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_an_line()}</h2>
+        <TrickReplay tricks={replay(e.line)} names={replayNames()} />
+      </div>
+      <div data-testid="tricks-analysis-traps" {...stylex.props(styles.analysisPart)}>
+        <h2 {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_an_traps()}</h2>
+        {e.traps.map((x) => (
+          <p key={cardLabel(x.card)} {...stylex.props(typography.body, styles.para)}>
+            <Rich text={m.tricks_an_trap({ card: `**${cardLabel(x.card)}**`, left: list(x.left), right: list(x.right) })} />
+          </p>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function cardRow(row: Exclude<ShownRow, { kind: 'history' } | { kind: 'voids' }>): CardRow {
   switch (row.kind) {
     case 'skat':
       return { label: m.tricks_row_skat(), cards: row.cards }
@@ -241,6 +311,8 @@ const styles = stylex.create({
     borderBottomColor: color.hairline,
   },
   facts: { margin: 0, color: color.slate },
+  history: { display: 'flex', flexDirection: 'column', gap: space.x8 },
+  analysisPart: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   result: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   verdict: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },
   verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },

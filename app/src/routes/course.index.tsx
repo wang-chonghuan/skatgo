@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ClientPage } from '~/components/skat/client-page'
+import { clientPage } from '~/components/skat/client-page'
 import { breadcrumbs, organization, pageHead, samePath } from '~/lib/head'
 import { localizedUrl } from '~/lib/site'
 import { lessons } from '~/lib/skat/lessons/content'
@@ -32,5 +32,5 @@ export const Route = createFileRoute('/course/')({
       ],
     })
   },
-  component: () => <ClientPage page="course" />,
+  component: clientPage('course'),
 })

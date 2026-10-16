@@ -1,28 +1,40 @@
-import { BiddingTablePage } from './bidding-table-page'
-import { CourseHome } from './course-home'
-import { DailyPage, DailyPlay } from './daily-page'
-import { EntryPage } from './entry-page'
-import { FreePlay } from './free-play'
-import { FriendsPage, TablePage } from './friends-page'
-import { LessonPage } from './lesson-page'
-import { RulesPage } from './rules-page'
-import { RulesSummaryPage } from './rules-summary-page'
-import { QuickStartPage } from './quick-start-page'
-import { TricksPage } from './tricks-page'
-import { TricksArticlePage } from './tricks-article-page'
-import { TricksExercisePage } from './tricks-exercise-page'
-import { ScoreSheetPage } from './score-sheet-page'
+import { lazyRouteComponent } from '@tanstack/react-router'
+
 import { NotFoundPage } from './not-found'
-import { PrivacyPage, TermsPage } from './legal-page'
 
 // How the routes reach the course's pages — the only way they may (engineering.md, redline 4).
 //
 // Every page is rendered on the server (SKATGO-1, SKATGO-23, SKATGO-29), so search engines read each
 // language's titles, text and links. What only the browser can render — a lesson's player and the
 // free-play table — each page loads lazily through ./client-part.tsx; progress is applied after mount.
-const PAGES = { entry: EntryPage, daily: DailyPage, dailyPlay: DailyPlay, course: CourseHome, lesson: LessonPage, rules: RulesPage, biddingTable: BiddingTablePage, scoreSheet: ScoreSheetPage, rulesSummary: RulesSummaryPage, tricks: TricksPage, tricksArticle: TricksArticlePage, tricksExercise: TricksExercisePage, quickStart: QuickStartPage, play: FreePlay, friends: FriendsPage, table: TablePage, notFound: NotFoundPage, privacy: PrivacyPage, terms: TermsPage }
-
-export function ClientPage({ page }: { page: keyof typeof PAGES }) {
-  const Page = PAGES[page]
-  return <Page />
+//
+// Each page is its own chunk (SKATGO-107: the front page used to carry every page's code, a megabyte, and
+// a phone froze for seconds running it). A route's component is the page's lazy component; the router
+// loads it before it renders on the server and before the browser takes the page over, so the server's
+// HTML is never replaced by a gap.
+const PAGES = {
+  entry: lazyRouteComponent(() => import('./entry-page'), 'EntryPage'),
+  daily: lazyRouteComponent(() => import('./daily-page'), 'DailyPage'),
+  dailyPlay: lazyRouteComponent(() => import('./daily-page'), 'DailyPlay'),
+  course: lazyRouteComponent(() => import('./course-home'), 'CourseHome'),
+  lesson: lazyRouteComponent(() => import('./lesson-page'), 'LessonPage'),
+  rules: lazyRouteComponent(() => import('./rules-page'), 'RulesPage'),
+  biddingTable: lazyRouteComponent(() => import('./bidding-table-page'), 'BiddingTablePage'),
+  scoreSheet: lazyRouteComponent(() => import('./score-sheet-page'), 'ScoreSheetPage'),
+  rulesSummary: lazyRouteComponent(() => import('./rules-summary-page'), 'RulesSummaryPage'),
+  tricks: lazyRouteComponent(() => import('./tricks-page'), 'TricksPage'),
+  tricksArticle: lazyRouteComponent(() => import('./tricks-article-page'), 'TricksArticlePage'),
+  tricksExercise: lazyRouteComponent(() => import('./tricks-exercise-page'), 'TricksExercisePage'),
+  quickStart: lazyRouteComponent(() => import('./quick-start-page'), 'QuickStartPage'),
+  play: lazyRouteComponent(() => import('./free-play'), 'FreePlay'),
+  friends: lazyRouteComponent(() => import('./friends-page'), 'FriendsPage'),
+  table: lazyRouteComponent(() => import('./friends-page'), 'TablePage'),
+  privacy: lazyRouteComponent(() => import('./legal-page'), 'PrivacyPage'),
+  terms: lazyRouteComponent(() => import('./legal-page'), 'TermsPage'),
 }
+
+/** The route component of a page. */
+export const clientPage = (page: keyof typeof PAGES) => PAGES[page]
+
+/** The page for an address nothing answers — small, and needed before any route is known. */
+export const ClientNotFound = NotFoundPage

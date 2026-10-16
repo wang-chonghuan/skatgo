@@ -190,6 +190,31 @@ export const P_THREE_NIL = (2 * choose(17, 7)) / choose(20, 10)
 
 // —— The exercises ——————————————————————————————————————————————————————————————————————————————————————
 
+// The solver's answers are worked out the first time an exercise is shown, not when this module loads: every
+// page's code reaches it through the exercise route's title, and solving all of them at once froze every page
+// for seconds on a phone (SKATGO-107). Each is worked out once.
+function once<T>(work: () => T): () => T {
+  let done = false
+  let value: T
+  return () => {
+    if (!done) {
+      value = work()
+      done = true
+    }
+    return value
+  }
+}
+function onceEach<K extends object, T>(work: (key: K) => T): (key: K) => T {
+  const seen = new WeakMap<K, T>()
+  return (key) => {
+    if (!seen.has(key)) seen.set(key, work(key))
+    return seen.get(key) as T
+  }
+}
+const endspielAsk = onceEach((e: Endspiel): Exercise['ask'] => ({ kind: 'play', contract: e.contract, hand: e.you, trick: [], best: [endspiel(e)] }))
+const nullOuvertAsk = onceEach((n: NullOuvert): Exercise['ask'] => ({ kind: 'play', contract: NULL, hand: n.you, trick: [], best: [nullOuvert(n)] }))
+const nullRisikoAsk = onceEach((n: NullRisiko): Exercise['ask'] => ({ kind: 'choice', options: riskText, answer: nullRisiko(n) }))
+
 const deal0 = MITZAEHLEN[0]
 const deal1 = MITZAEHLEN[1]
 const deal2 = MITZAEHLEN[2]
@@ -243,14 +268,23 @@ const EXACT: Exercise[] = [
   },
 
   // 7 Verlierbar?
-  ...VERLIERBAR.map((v, i): Exercise => ({
-    id: `verlierbar-${i + 1}`,
-    type: 'verlierbar',
-    trick: 5,
-    situation: { contract: v.contract, role: 'declarer', position: 'forehand', points: v.have, rows: [{ kind: 'hand', who: 'you', cards: v.you }, { kind: 'outstanding', cards: v.out }] },
-    ask: { kind: 'choice', options: sureText, answer: verlierbar(v) },
-    proof: { by: 'solver', note: verlierbar(v) === 0 ? 'sicher: ein Weg zu 61 gegen jede Verteilung' : 'verlierbar: eine Verteilung, in der auch offen keine 61 gehen' },
-  })),
+  ...VERLIERBAR.map((v, i): Exercise => {
+    const answer = once(() => verlierbar(v))
+    const ask = once((): Exercise['ask'] => ({ kind: 'choice', options: sureText, answer: answer() }))
+    const proof = once((): Exercise['proof'] => ({ by: 'solver', note: answer() === 0 ? 'sicher: ein Weg zu 61 gegen jede Verteilung' : 'verlierbar: eine Verteilung, in der auch offen keine 61 gehen' }))
+    return {
+      id: `verlierbar-${i + 1}`,
+      type: 'verlierbar',
+      trick: 5,
+      situation: { contract: v.contract, role: 'declarer', position: 'forehand', points: v.have, rows: [{ kind: 'hand', who: 'you', cards: v.you }, { kind: 'outstanding', cards: v.out }] },
+      get ask() {
+        return ask()
+      },
+      get proof() {
+        return proof()
+      },
+    }
+  }),
 
   // 8 Endspiel mit offenen Karten
   ...ENDSPIEL.map((e, i): Exercise => ({
@@ -258,7 +292,9 @@ const EXACT: Exercise[] = [
     type: 'endspiel',
     trick: e.trick,
     situation: { contract: e.contract, role: 'declarer', position: 'forehand', points: e.have, rows: [{ kind: 'hand', who: 'left', cards: e.left }, { kind: 'hand', who: 'right', cards: e.right }] },
-    ask: { kind: 'play', contract: e.contract, hand: e.you, trick: [], best: [endspiel(e)] },
+    get ask() {
+      return endspielAsk(e)
+    },
     proof: { by: 'solver', note: 'die einzige Karte, mit der offen 61 gehen' },
   })),
 
@@ -267,7 +303,9 @@ const EXACT: Exercise[] = [
     id: `null-ouvert-${i + 1}`,
     type: 'null-ouvert',
     situation: { contract: NULL, ouvert: true, role: 'defender', position: 'forehand', declarer: 'rearhand', rows: [{ kind: 'hand', who: 'declarer', cards: n.declarer }, { kind: 'hand', who: 'partner', cards: n.partner }] },
-    ask: { kind: 'play', contract: NULL, hand: n.you, trick: [], best: [nullOuvert(n)] },
+    get ask() {
+      return nullOuvertAsk(n)
+    },
     proof: { by: 'solver', note: 'der einzige Anspiel, der den Null offen schlägt' },
   })),
 
@@ -276,7 +314,9 @@ const EXACT: Exercise[] = [
     id: `null-risiko-${i + 1}`,
     type: 'null-risiko',
     situation: { contract: NULL, role: 'declarer', position: 'rearhand', rows: [{ kind: 'hand', who: 'you', cards: n.you }, { kind: 'outstanding', cards: n.out }] },
-    ask: { kind: 'choice', options: riskText, answer: nullRisiko(n) },
+    get ask() {
+      return nullRisikoAsk(n)
+    },
     proof: { by: 'solver', note: 'alle 252 Verteilungen' },
   })),
 

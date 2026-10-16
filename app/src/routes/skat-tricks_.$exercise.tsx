@@ -1,6 +1,6 @@
 import { createFileRoute, notFound, rootRouteId } from '@tanstack/react-router'
 
-import { ClientPage } from '~/components/skat/client-page'
+import { clientPage } from '~/components/skat/client-page'
 import { breadcrumbs, pageHead, samePath } from '~/lib/head'
 import { EXERCISE_TEXT, exerciseById } from '~/lib/skat/tricks/exercises'
 import { m } from '~/paraglide/messages'
@@ -24,5 +24,5 @@ export const Route = createFileRoute('/skat-tricks_/$exercise')({
       jsonLd: [breadcrumbs([[m.tricks_title(), '/skat-tricks'], [words.title, path]])],
     })
   },
-  component: () => <ClientPage page="tricksExercise" />,
+  component: clientPage('tricksExercise'),
 })

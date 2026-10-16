@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ClientPage } from '~/components/skat/client-page'
+import { clientPage } from '~/components/skat/client-page'
 import { breadcrumbs, pageHead, samePath } from '~/lib/head'
 import { m } from '~/paraglide/messages'
 
@@ -13,5 +13,5 @@ export const Route = createFileRoute('/with-friends')({
       image: 'play',
       jsonLd: [breadcrumbs([[m.friends_title(), '/with-friends']])],
     }),
-  component: () => <ClientPage page="friends" />,
+  component: clientPage('friends'),
 })

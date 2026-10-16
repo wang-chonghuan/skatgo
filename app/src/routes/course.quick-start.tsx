@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ClientPage } from '~/components/skat/client-page'
+import { clientPage } from '~/components/skat/client-page'
 import { breadcrumbs, pageHead, samePath } from '~/lib/head'
 import { QUICK_START } from '~/lib/skat/quickstart'
 import { localizedUrl } from '~/lib/site'
@@ -24,5 +24,5 @@ export const Route = createFileRoute('/course/quick-start')({
       ],
     })
   },
-  component: () => <ClientPage page="quickStart" />,
+  component: clientPage('quickStart'),
 })

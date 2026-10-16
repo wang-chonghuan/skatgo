@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ClientPage } from '~/components/skat/client-page'
+import { clientPage } from '~/components/skat/client-page'
 import { pageHead, samePath } from '~/lib/head'
 import { m } from '~/paraglide/messages'
 
@@ -14,5 +14,5 @@ export const Route = createFileRoute('/table/$id')({
       image: 'play',
       jsonLd: [],
     }),
-  component: () => <ClientPage page="table" />,
+  component: clientPage('table'),
 })

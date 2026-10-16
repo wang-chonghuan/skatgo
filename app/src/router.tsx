@@ -1,5 +1,5 @@
 import { createRouter } from '@tanstack/react-router'
-import { ClientPage } from '~/components/skat/client-page'
+import { ClientNotFound } from '~/components/skat/client-page'
 import { deLocalizeUrl, localizeUrl } from './paraglide/runtime'
 import { routeTree } from './routeTree.gen'
 
@@ -13,7 +13,7 @@ export function getRouter() {
       input: ({ url }) => deLocalizeUrl(url),
       output: ({ url }) => localizeUrl(url),
     },
-    defaultNotFoundComponent: () => <ClientPage page="notFound" />,
+    defaultNotFoundComponent: ClientNotFound,
   })
 
   // Route-local scroll containers (the reading pane) are not the window, so the

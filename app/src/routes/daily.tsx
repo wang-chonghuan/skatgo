@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ClientPage } from '~/components/skat/client-page'
+import { clientPage } from '~/components/skat/client-page'
 import { DAILY_DEALS, DAILY_LENGTHS, type DailySize, dailySize } from '~/lib/daily'
 import { breadcrumbs, pageHead, samePath } from '~/lib/head'
 import { m } from '~/paraglide/messages'
@@ -24,5 +24,5 @@ export const Route = createFileRoute('/daily')({
         breadcrumbs([[m.nav_daily(), '/daily']]),
       ],
     }),
-  component: () => <ClientPage page="daily" />,
+  component: clientPage('daily'),
 })

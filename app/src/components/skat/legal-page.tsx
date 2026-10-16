@@ -60,19 +60,6 @@ function LegalPage({ document }: { document: 'privacy' | 'terms' }) {
 export const PrivacyPage = () => <LegalPage document="privacy" />
 export const TermsPage = () => <LegalPage document="terms" />
 
-export function LegalFooter() {
-  return (
-    <footer data-testid="legal-footer" {...stylex.props(styles.footer)}>
-      <nav aria-label={m.legal_links()} {...stylex.props(styles.footerLinks)}>
-        <Link to="/privacy" {...stylex.props(typography.link, styles.link)}>{m.privacy_title()}</Link>
-        <Link to="/terms" {...stylex.props(typography.link, styles.link)}>{m.terms_title()}</Link>
-        <Link to="/terms" hash="legal-operator" {...stylex.props(typography.link, styles.link)}>{m.legal_operator()}</Link>
-        <Link to="/skat-tricks" {...stylex.props(typography.link, styles.link)}>{m.tricks_title()}</Link>
-      </nav>
-    </footer>
-  )
-}
-
 const styles = stylex.create({
   column: {
     display: 'flex',
@@ -103,22 +90,5 @@ const styles = stylex.create({
     outlineWidth: border.focus,
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
-  },
-  footer: {
-    backgroundColor: color.surface,
-    borderTopWidth: border.hair,
-    borderTopStyle: 'solid',
-    borderTopColor: color.hairline,
-  },
-  footerLinks: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: space.x20,
-    width: '100%',
-    maxWidth: dims.landingColumn,
-    marginInline: 'auto',
-    paddingBlock: space.x20,
-    paddingInline: { default: space.x24, [bp.phone]: space.x16 },
-    boxSizing: 'border-box',
   },
 })

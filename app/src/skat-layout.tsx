@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useEffect } from 'react'
 
 import { AskLauncher } from '~/components/skat/ask'
-import { LegalFooter } from '~/components/skat/legal-page'
+import { LegalFooter } from '~/components/skat/legal-footer'
 import { LandingHeader, useFrame, useSection } from '~/components/skat/frame'
 import { primeSounds } from '~/lib/skat/sounds'
 import { bp } from './theme/breakpoints.stylex'

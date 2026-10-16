@@ -1,6 +1,6 @@
 import { createFileRoute, notFound, redirect, rootRouteId } from '@tanstack/react-router'
 
-import { ClientPage } from '~/components/skat/client-page'
+import { clientPage } from '~/components/skat/client-page'
 import { breadcrumbs, pageHead } from '~/lib/head'
 import { GUIDES, lessonBySlug, lessonPath } from '~/lib/skat/lessons/guide'
 import { m } from '~/paraglide/messages'
@@ -30,5 +30,5 @@ export const Route = createFileRoute('/course/$slug')({
       jsonLd: [breadcrumbs([[m.course_title(), '/course'], [guide.h1, paths[locale]]])],
     })
   },
-  component: () => <ClientPage page="lesson" />,
+  component: clientPage('lesson'),
 })

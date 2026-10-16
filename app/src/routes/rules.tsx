@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ClientPage } from '~/components/skat/client-page'
+import { clientPage } from '~/components/skat/client-page'
 import { breadcrumbs, pageHead, samePath } from '~/lib/head'
 import { m } from '~/paraglide/messages'
 import { localizedUrl } from '~/lib/site'
@@ -18,5 +18,5 @@ export const Route = createFileRoute('/rules')({
         breadcrumbs([[m.rules_title(), '/rules']]),
       ],
     }),
-  component: () => <ClientPage page="rules" />,
+  component: clientPage('rules'),
 })

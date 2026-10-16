@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-108",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "auto-deploy",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-108",
   "branch": "SKATGO-108-endgame-ladder",

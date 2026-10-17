@@ -225,9 +225,9 @@ export function Order({ step, onSolved, onMistake, solvedBefore }: { step: Order
   )
 }
 
-/** `table`: what else lies on the felt, above the trick — a ladder step's opponents and the cards still out
- *  (SKATGO-109). */
-export function Play({ step, onSolved, onMistake, solvedBefore, once, table }: { step: PlayStep; table?: ReactNode } & StepCallbacks) {
+/** `table`: what else lies on the felt, above the trick — a ladder step's opponents' cards and what is known
+ *  of them; `handLabel`: a line right over the hand (SKATGO-109). */
+export function Play({ step, onSolved, onMistake, solvedBefore, once, table, handLabel }: { step: PlayStep; table?: ReactNode; handLabel?: string } & StepCallbacks) {
   const legal = legalPlays(step.hand, step.trick, step.contract)
   const [played, setPlayed] = useState<Card | null>(solvedBefore ? (step.best ?? legal)[0] : null)
   const [state, setState] = useState<'idle' | 'wrong' | 'right'>(solvedBefore ? 'right' : 'idle')
@@ -260,13 +260,13 @@ export function Play({ step, onSolved, onMistake, solvedBefore, once, table }: {
 
   return (
     <div {...stylex.props(styles.stack)}>
-      <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
+      {step.prompt ? <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p> : null}
       <div {...stylex.props(styles.felt)}>
         {table}
-        <div {...stylex.props(styles.trickRow)}>
+        {/* With a ladder's table above it, the empty trick is not shown until a card is played (SKATGO-109). */}
+        <div {...stylex.props(styles.trickRow, !!table && !played && styles.trickHidden)}>
           <span {...stylex.props(typography.label, styles.feltLabel)}>{m.ex_on_table({ contract: contractName(step.contract) })}</span>
-          {/* With a ladder's table above it, the empty trick takes no room until a card is played (SKATGO-109). */}
-          <div {...stylex.props(styles.trickCards, !!table && !played && styles.trickCardsEmpty)}>
+          <div {...stylex.props(styles.trickCards)}>
             {step.trick.length === 0 && !played && !table ? <span {...stylex.props(typography.label, styles.feltLabel)}>{m.ex_you_lead()}</span> : null}
             {step.trick.map((c, i) => (
               <div key={cardId(c)} {...stylex.props(styles.trickCell)}>
@@ -282,6 +282,7 @@ export function Play({ step, onSolved, onMistake, solvedBefore, once, table }: {
             ) : null}
           </div>
         </div>
+        {handLabel ? <span {...stylex.props(typography.label, styles.feltLabel, styles.handLabel)}>{handLabel}</span> : null}
         <Shake nonce={nonce}>
           <Fan testId="skat-play-hand" cards={hand} size="lg" onPick={tap} legal={over ? undefined : legal} answer={step.best ?? legal} glow={over && state === 'wrong' ? step.best ?? [] : []} />
         </Shake>
@@ -334,7 +335,8 @@ const styles = stylex.create({
   feltLabel: { color: color.amber },
   trickRow: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x8, paddingTop: space.x4 },
   trickCards: { display: 'flex', gap: space.x12, alignItems: 'flex-start', justifyContent: 'center', minHeight: dims.cardSlotRow },
-  trickCardsEmpty: { minHeight: 0 },
+  trickHidden: { display: 'none' },
+  handLabel: { textAlign: 'center' },
   trickCell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
   centerRow: { display: 'flex', justifyContent: 'center' },
   verdict: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },

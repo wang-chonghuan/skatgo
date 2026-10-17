@@ -594,8 +594,13 @@
   "tricks_ladder_next": "Weiter",
   "tricks_ladder_solved": "Gelöst",
   "tricks_an_line": "So gewinnst du sicher",
-  "tricks_out": "Noch draußen",
-  "tricks_chip_suit": "kein {suit}",
-  "tricks_chip_trump": "kein Trumpf",
-  "tricks_line_you": "Du +{n}"
+  "tricks_line_you": "Du +{n}",
+  "tricks_ladder_out": "Diese {n} Karten haben die Gegner noch. Wer welche hat, weißt du nicht.",
+  "tricks_ladder_known": "Das weißt du aus dem Spiel:",
+  "tricks_ladder_left": "Links",
+  "tricks_ladder_right": "Rechts",
+  "tricks_ladder_lacks": "{who} hat {parts} mehr.",
+  "tricks_ladder_part_trump": "keinen Trumpf",
+  "tricks_ladder_part_suit": "kein {suit}",
+  "tricks_ladder_and": " und "
 }

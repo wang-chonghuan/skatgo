@@ -594,8 +594,13 @@
   "tricks_ladder_next": "Next",
   "tricks_ladder_solved": "Solved",
   "tricks_an_line": "How to win for sure",
-  "tricks_out": "Still out",
-  "tricks_chip_suit": "no {suit}",
-  "tricks_chip_trump": "no trump",
-  "tricks_line_you": "You +{n}"
+  "tricks_line_you": "You +{n}",
+  "tricks_ladder_out": "Your opponents still hold these {n} cards. You don't know who has which.",
+  "tricks_ladder_known": "What you know from the play so far:",
+  "tricks_ladder_left": "Left",
+  "tricks_ladder_right": "Right",
+  "tricks_ladder_lacks": "{who} has {parts} left.",
+  "tricks_ladder_part_trump": "no trumps",
+  "tricks_ladder_part_suit": "no {suit}",
+  "tricks_ladder_and": " and "
 }

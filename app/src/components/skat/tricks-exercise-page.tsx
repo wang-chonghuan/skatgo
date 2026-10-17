@@ -3,8 +3,8 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronLeft, CircleCheck, CircleX } from 'lucide-react'
 import { useState } from 'react'
 
-import { type Card, SUIT_SYMBOL, sortHand } from '~/lib/skat/cards'
-import { cardLabel, contractName, roleName } from '~/lib/skat/i18n'
+import { type Card, sortHand } from '~/lib/skat/cards'
+import { cardLabel, contractName, roleName, suitName } from '~/lib/skat/i18n'
 import type { CardRow, ChoiceStep, PickStep, PlayStep } from '~/lib/skat/lessons/types'
 import { EXERCISE_TEXT, exerciseById, exercisesOf, nextExercise } from '~/lib/skat/tricks/exercises'
 import type { Endgame } from '~/lib/skat/tricks/exercises/endgame'
@@ -75,14 +75,26 @@ function ExerciseView({ id }: { id: string }) {
           </Link>
           <Pill>{m.tricks_ex_kicker({ type: text.types[exercise.type].title, n, count: siblings.length })}</Pill>
         </nav>
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{words.title}</h1>
+        {/* A ladder step says its goal as a sentence, and the rest of what to know under it (SKATGO-109). */}
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{words.goal ?? words.title}</h1>
+        {words.note ? <p data-testid="tricks-ladder-note" {...stylex.props(typography.appText, styles.note)}>{words.note}</p> : null}
 
         <section {...stylex.props(styles.card)}>
           <SituationView situation={exercise.situation} />
           <div key={attempt}>
             {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
             {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
-            {exercise.ask.kind === 'play' ? <Play step={playStep(exercise, words)} table={exercise.endgame ? <LadderTable e={exercise.endgame} /> : undefined} {...callbacks} /> : null}
+            {exercise.ask.kind === 'play' && exercise.endgame ? (
+              <>
+                <Play step={{ ...playStep(exercise, words), prompt: '' }} table={<LadderTable e={exercise.endgame} />} handLabel={m.tricks_row_cards()} {...callbacks} />
+                <div {...stylex.props(styles.ask)}>
+                  <p {...stylex.props(typography.prompt, styles.askLine)}>{words.prompt}</p>
+                  {words.sure ? <p {...stylex.props(typography.appText, styles.note)}>{words.sure}</p> : null}
+                </div>
+              </>
+            ) : exercise.ask.kind === 'play' ? (
+              <Play step={playStep(exercise, words)} {...callbacks} />
+            ) : null}
           </div>
         </section>
 
@@ -169,47 +181,37 @@ function SituationView({ situation: s }: { situation: Situation }) {
 }
 
 /**
- * A ladder step's table (SKATGO-109, the human: 「太复杂了」): everything the step needs at one glance — the two
- * opponents with their cards face down and the voids they showed, and the cards still out, sorted so they do
- * not tell whose they are. Your cards are the hand under it.
+ * A ladder step's table (SKATGO-109, the human: 「从用户角度……能不能马上想到你是要干啥」): in plain sentences,
+ * the cards the opponents still hold — sorted, so they do not tell whose they are — and what the play has
+ * shown about them; your cards are the hand under it.
  */
 function LadderTable({ e }: { e: Endgame }) {
-  const seat = (side: 'left' | 'right', cards: Card[]) => {
-    const voids = e.voids.filter((v) => v.side === side)
-    return (
-      <div data-testid={`tricks-ladder-${side}`} {...stylex.props(styles.seat, side === 'right' && styles.seatRight)}>
-        <span {...stylex.props(typography.label, styles.onFelt)}>{side === 'left' ? m.tricks_who_left() : m.tricks_who_right()}</span>
-        <span {...stylex.props(styles.backs)}>
-          {cards.map((c) => (
-            <PlayingCard key={cardLabel(c)} card={c} size="xs" faceDown />
-          ))}
-        </span>
-        {voids.length ? (
-          <span {...stylex.props(styles.chips, side === 'right' && styles.chipsRight)}>
-            {voids.map((v) => (
-              <Pill key={v.suit} tone="dark">
-                <Rich text={v.suit === 'T' ? m.tricks_chip_trump() : m.tricks_chip_suit({ suit: SUIT_SYMBOL[v.suit] })} />
-              </Pill>
-            ))}
-          </span>
-        ) : null}
-      </div>
-    )
-  }
+  const out = sortHand([...e.left, ...e.right], e.contract)
+  const who = (side: 'left' | 'right') => (side === 'left' ? m.tricks_ladder_left() : m.tricks_ladder_right())
   return (
     <div data-testid="tricks-ladder-table" {...stylex.props(styles.ladderTable)}>
-      <div {...stylex.props(styles.seats)}>
-        {seat('left', e.left)}
-        {seat('right', e.right)}
-      </div>
-      <div {...stylex.props(styles.out)}>
-        <span {...stylex.props(typography.label, styles.onFelt)}>{m.tricks_out()}</span>
-        <span data-testid="tricks-ladder-out" {...stylex.props(styles.outCards)}>
-          {sortHand([...e.left, ...e.right], e.contract).map((c) => (
-            <PlayingCard key={cardLabel(c)} card={c} size="xs" />
-          ))}
-        </span>
-      </div>
+      <p {...stylex.props(typography.bodySmall, styles.onFelt)}>{m.tricks_ladder_out({ n: out.length })}</p>
+      <span data-testid="tricks-ladder-out" {...stylex.props(styles.outCards)}>
+        {out.map((c) => (
+          <PlayingCard key={cardLabel(c)} card={c} size="xs" />
+        ))}
+      </span>
+      {e.voids.length ? (
+        <div data-testid="tricks-ladder-known" {...stylex.props(styles.known)}>
+          <p {...stylex.props(typography.label, styles.onFeltSoft)}>{m.tricks_ladder_known()}</p>
+          <ul {...stylex.props(styles.knownList)}>
+            {(['left', 'right'] as const).map((side) => {
+              // One sentence per opponent: "Left has no trumps and no Diamonds left."
+              const parts = e.voids.filter((v) => v.side === side).map((v) => (v.suit === 'T' ? m.tricks_ladder_part_trump() : m.tricks_ladder_part_suit({ suit: suitName(v.suit) })))
+              return parts.length ? (
+                <li key={side} {...stylex.props(typography.bodySmall, styles.onFelt)}>
+                  {m.tricks_ladder_lacks({ who: who(side), parts: parts.join(m.tricks_ladder_and()) })}
+                </li>
+              ) : null
+            })}
+          </ul>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -226,18 +228,18 @@ function LadderLine({ e }: { e: Endgame }) {
   let running = 0
   return (
     <div data-testid="tricks-ladder-line" {...stylex.props(styles.lineFelt)}>
-      <span {...stylex.props(typography.label, styles.onFelt)}>{m.tricks_an_line()}</span>
+      <span {...stylex.props(typography.label, styles.onFeltSoft)}>{m.tricks_an_line()}</span>
       {shown.map((t, i) => {
         if (t.winner === 'you') running += t.points
         const done = t.winner === 'you' && running >= e.need
         return (
           <div key={i} {...stylex.props(styles.lineRow)}>
-            <span {...stylex.props(typography.label, styles.onFelt)}>{i + 1}.</span>
+            <span {...stylex.props(typography.label, styles.onFeltSoft)}>{i + 1}.</span>
             {t.cards.map((c) => (
               <PlayingCard key={cardLabel(c.card)} card={c.card} size="xs" glow={c.side === 'you'} />
             ))}
             <span {...stylex.props(typography.smallBold, styles.onFelt, styles.lineEnd)}>
-              {t.winner === 'you' ? `${m.tricks_line_you({ n: t.points })}${done ? ' ✓' : ''}` : t.winner === 'left' ? m.tricks_who_left() : m.tricks_who_right()}
+              {t.winner === 'you' ? `${m.tricks_line_you({ n: t.points })}${done ? ' ✓' : ''}` : t.winner === 'left' ? m.tricks_ladder_left() : m.tricks_ladder_right()}
             </span>
           </div>
         )
@@ -339,16 +341,23 @@ const styles = stylex.create({
   facts: { margin: 0, color: color.slate },
   trap: { margin: 0, color: color.bad },
   // A ladder step's table and line (SKATGO-109), on the drill's felt.
-  ladderTable: { display: 'flex', flexDirection: 'column', gap: space.x12 },
-  seats: { display: 'flex', justifyContent: 'space-between', gap: space.x12 },
-  seat: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: space.x4 },
-  seatRight: { alignItems: 'flex-end' },
-  backs: { display: 'flex', gap: space.x2 },
-  chips: { display: 'flex', flexWrap: 'wrap', gap: space.x4 },
-  chipsRight: { justifyContent: 'flex-end' },
-  out: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
+  ladderTable: { display: 'flex', flexDirection: 'column', gap: space.x8 },
   outCards: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: space.x4 },
-  onFelt: { color: color.amber },
+  known: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x4,
+    paddingTop: space.x8,
+    borderTopWidth: border.hair,
+    borderTopStyle: 'solid',
+    borderTopColor: color.boardLine,
+  },
+  knownList: { margin: 0, paddingLeft: space.x20, listStyleType: 'disc', display: 'flex', flexDirection: 'column', gap: space.x2 },
+  onFelt: { margin: 0, color: color.onColor },
+  onFeltSoft: { margin: 0, color: color.amber },
+  note: { margin: 0, color: color.slate },
+  ask: { display: 'flex', flexDirection: 'column', gap: space.x4, paddingTop: space.x12 },
+  askLine: { margin: 0, color: color.navy },
   lineFelt: {
     display: 'flex',
     flexDirection: 'column',

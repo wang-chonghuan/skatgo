@@ -2,7 +2,7 @@ import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
 import { LADDER_FREE } from '../../app/src/lib/skat/tricks/exercises/ladder'
-import { ENDGAMES_STORED } from '../../app/src/lib/skat/tricks/exercises/endgames.data'
+import { OPEN_STORED } from '../../app/src/lib/skat/tricks/exercises/open-endgames.data'
 import { Rejected, secretEquals } from './model'
 import type { Store } from './store'
 
@@ -12,7 +12,8 @@ import type { Store } from './store'
 // only a signed-in account (`user:<Clerk id>`): from the third step on the ladder needs one, and the first
 // steps a guest answered stay in that browser until it signs in, when they are merged in here.
 
-const STEPS = ENDGAMES_STORED.map((s) => s.id)
+// Since SKATGO-110 the steps are the open-card endgames', the only exercises the site shows.
+const STEPS = OPEN_STORED.map((s) => s.id)
 const FREE = new Set(STEPS.slice(0, LADDER_FREE))
 /** Enough for any honest count; a number on a row, not a score. */
 const MAX_MISSES = 999

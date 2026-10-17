@@ -143,6 +143,11 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
   standings: ReactNode
 }
 
+/** An open-card endgame of the Skat-Tricks (SKATGO-110): a deal stopped a few tricks before its end, every hand
+ *  open as at an Ouvert, the learner's cards judged and the others' answers played by the exercise. No hints, no
+ *  assistant and no settlement: the exercise's page says how it went. */
+export type ExerciseTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'>
+
 type Props = {
   /** Called once per game, when it is settled. */
   onSettled?: (info: { humanWon: boolean; humanScore: number }) => void
@@ -154,6 +159,8 @@ type Props = {
   server?: ServerGame
   /** Play at a private table (SKATGO-61). */
   room?: RoomTable
+  /** Play out an open-card endgame (SKATGO-110). */
+  exercise?: ExerciseTable
 }
 
 export function GameTable(props: Props) {
@@ -164,11 +171,11 @@ export function GameTable(props: Props) {
   )
 }
 
-function Table({ onSettled, fullScreen = false, tournament, server, room }: Props) {
+function Table({ onSettled, fullScreen = false, tournament, server, room, exercise }: Props) {
   const nameOf = useNameOf()
   const [dealer, setDealer] = useState<Seat>(2)
   const [localGame, setGame] = useState<Game>(() => deal(2))
-  const remote = tournament ?? server ?? room
+  const remote = tournament ?? server ?? room ?? exercise
   // Which deal of how many (SKATGO-93): the tournament's, free play's round of six, and lesson 11's single
   // deal. A private table counts no deals.
   const dealOf = tournament ? { n: tournament.deal + 1, of: tournament.of } : server?.round ? { n: server.round.deal + 1, of: server.round.of } : server ? { n: 1, of: 1 } : null
@@ -185,7 +192,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   // A card tapped while a finished trick waits: the trick goes, and the card follows at once if the
   // learner is on lead (SKATGO-73).
   const [intent, setIntent] = useState<Card | null>(null)
-  const hints = !tournament && !room
+  const hints = !tournament && !room && !exercise
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   const [picked, setPicked] = useState<Card[]>([])
   // The trick's cards that have landed (SKATGO-41). A card flies in on a layer of its own under a
@@ -238,7 +245,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   }, [game, who, remote])
 
   useEffect(() => {
-    if (game.phase !== 'done' || !game.result || game.declarer === null || settledFor.current === game || revealing) return
+    if (exercise || game.phase !== 'done' || !game.result || game.declarer === null || settledFor.current === game || revealing) return
     settledFor.current = game
     const { result, declarer } = game
     setScores((s) => {
@@ -251,7 +258,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
     if (humanWon) {
       void confetti(confettiBurst.game)
     }
-  }, [game, onSettled, revealing])
+  }, [game, onSettled, revealing, exercise])
 
   // A hint or a refusal lies over everything at the table, and a tap anywhere puts it away (SKATGO-75).
   // The listener is added after the tap that opened it, so that tap does not close it again.
@@ -279,8 +286,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   // hint the tournament does not give.
   const publish = useTableSnapshot((s) => s.publish)
   useEffect(() => {
-    publish(tournament || room ? null : visibleTable(game, scores))
-  }, [game, scores, publish, tournament, room])
+    publish(tournament || room || exercise ? null : visibleTable(game, scores))
+  }, [game, scores, publish, tournament, room, exercise])
   useEffect(() => () => publish(null), [publish])
 
   /** The learner's move: to the server for a server game, through the engine here otherwise. */
@@ -379,7 +386,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
   // finger — the jump bid's "Höher …" most of all (SKATGO-100, the human: 「跳叫按钮，有时候不能显示，有时候会显示」).
   const waiting = inFrameActions && myTurn && remoteBusy
   const acting = inFrameActions && myTurn && !waiting
-  const dialog = game.phase === 'passedIn' || (game.phase === 'done' && !revealing)
+  const dialog = !exercise && (game.phase === 'passedIn' || (game.phase === 'done' && !revealing))
   // With the panel pinned open, the learner's move is made in the panel, as Funbridge's bidding box is
   // (SKATGO-34): nothing then lies over the table. Otherwise it is the drawer over the felt.
   const movesInPanel = fullScreen && pinned && panelOpen
@@ -465,7 +472,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room }: Prop
         {/* Both opponents' hands: the same cards as the learner's, turned sideways and stacked down the
             left and right edges, running off the felt so only part of each shows (SKATGO-26). */}
         {([1, 2] as Seat[]).map((seat) => (
-          <Stack key={seat} seat={seat} game={game} shown={rest?.[seat]} />
+          // An exercise shows every hand, as the table shows an Ouvert declarer's (SKATGO-110).
+          <Stack key={seat} seat={seat} game={game} shown={exercise ? game.hands[seat] : rest?.[seat]} />
         ))}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>

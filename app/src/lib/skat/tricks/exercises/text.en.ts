@@ -3,6 +3,7 @@
 
 import { P_JACK_IN_SKAT, P_THREE_NIL, P_THREE_ONE, P_TWO_TWO } from './positions'
 import { LADDER_EN } from './ladder-text'
+import { OPEN_EN } from './open-text'
 import type { ExercisesText } from './types'
 
 /** A probability as the text says it, from the counted value. */
@@ -13,6 +14,7 @@ const RISK = ['Safe – however the cards lie', 'Risky – it depends on how the
 
 export const EXERCISES_EN: ExercisesText = {
   types: {
+    'offenes-endspiel': { title: 'Endgames with open cards', blurb: 'Every card is open, as in an Ouvert: play the end card by card – against the best defence.' },
     'sieg-sichern': { title: 'Lock in the win', blurb: 'Skat endgames like chess puzzles: one card wins for sure.' },
     reizen: { title: 'Bid or pass?', blurb: 'Work out your bid value and decide how far to go.' },
     druecken: { title: 'Putting away', blurb: 'Which two cards go into the skat?' },
@@ -28,6 +30,7 @@ export const EXERCISES_EN: ExercisesText = {
     ausspielen: { title: 'Leading as declarer', blurb: 'Your first card: draw trumps or play your aces?' },
   },
   exercises: {
+    ...OPEN_EN,
     ...LADDER_EN,
     'reizen-1': {
       title: 'How high does Clubs go with two Jacks?',

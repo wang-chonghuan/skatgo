@@ -605,5 +605,6 @@
   "tricks_ladder_contract_value": "{contract} · du bist Alleinspieler",
   "tricks_ladder_goal": "Ziel",
   "tricks_ladder_goal_value": "noch {need} Augen in {n} Stichen",
-  "tricks_ladder_kicker": "Aufgabe {n} von {count}"
+  "tricks_ladder_kicker": "Aufgabe {n} von {count}",
+  "tricks_ladder_heading": "Spiel diese Partie weiter"
 }

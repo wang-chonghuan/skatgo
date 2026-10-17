@@ -104,21 +104,16 @@ function words(lang: 'de' | 'en', e: Endgame): ExerciseText {
   const n = e.hand.length
   const w = (lang === 'de' ? DE : EN)[e.id]
   if (!w) throw new Error(`${e.id}: no tip written`)
-  const grand = e.contract.kind === 'grand'
   return lang === 'de'
     ? {
         title: `${g}: noch ${n} Stiche, ${e.need} Augen fehlen`,
-        goal: `Du spielst ${g} und brauchst noch ${e.need} Augen zum Sieg.`,
         prompt: 'Welche Karte spielst du aus?',
-        sure: `Nur eine bringt dir die ${e.need} Augen sicher.`,
         explain: w.tip,
         trap: w.trap,
       }
     : {
         title: `${g}: ${n} tricks to go, ${e.need} card points short`,
-        goal: `You play ${grand ? 'a Grand' : g} and need ${e.need} more card points to win.`,
         prompt: 'Which card do you lead?',
-        sure: `Only one gets you the ${e.need} points for sure.`,
         explain: w.tip,
         trap: w.trap,
       }

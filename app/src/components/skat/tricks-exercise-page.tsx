@@ -76,8 +76,9 @@ function ExerciseView({ id }: { id: string }) {
           {/* A ladder step's kicker is short, so it shares the back button's line on a phone (SKATGO-109). */}
           <Pill>{exercise.endgame ? m.tricks_ladder_kicker({ n, count: siblings.length }) : m.tricks_ex_kicker({ type: text.types[exercise.type].title, n, count: siblings.length })}</Pill>
         </nav>
-        {/* A ladder step says its goal as a sentence, and the rest of what to know under it (SKATGO-109). */}
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{words.goal ?? words.title}</h1>
+        {/* Every ladder step has the same heading; the step itself is on the felt (SKATGO-109, the human:
+            「标题就要continue this deal之类的，统一」). */}
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{exercise.endgame ? m.tricks_ladder_heading() : words.title}</h1>
 
         <section {...stylex.props(styles.card)}>
           <SituationView situation={exercise.situation} />
@@ -85,13 +86,7 @@ function ExerciseView({ id }: { id: string }) {
             {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
             {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
             {exercise.ask.kind === 'play' && exercise.endgame ? (
-              <>
-                <Play step={{ ...playStep(exercise, words), prompt: '' }} table={<LadderTable e={exercise.endgame} />} handLabel={m.tricks_row_cards()} {...callbacks} />
-                <div {...stylex.props(styles.ask)}>
-                  <p {...stylex.props(typography.prompt, styles.askLine)}>{words.prompt}</p>
-                  {words.sure ? <p {...stylex.props(typography.appText, styles.note)}>{words.sure}</p> : null}
-                </div>
-              </>
+              <Play step={{ ...playStep(exercise, words), prompt: '' }} table={<LadderTable e={exercise.endgame} />} handLabel={m.tricks_row_cards()} {...callbacks} />
             ) : exercise.ask.kind === 'play' ? (
               <Play step={playStep(exercise, words)} {...callbacks} />
             ) : null}
@@ -365,9 +360,6 @@ const styles = stylex.create({
   center: { textAlign: 'center' },
   onFelt: { margin: 0, color: color.onColor },
   onFeltSoft: { margin: 0, color: color.amber },
-  note: { margin: 0, color: color.slate },
-  ask: { display: 'flex', flexDirection: 'column', gap: space.x4, paddingTop: space.x12 },
-  askLine: { margin: 0, color: color.navy },
   lineFelt: {
     display: 'flex',
     flexDirection: 'column',

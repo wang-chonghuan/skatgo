@@ -30,7 +30,7 @@ const mergeInput = z.object({
 }).strict()
 
 async function stepsOf(c: pg.PoolClient | pg.Pool, who: string): Promise<Record<string, StepRecord>> {
-  const { rows } = await c.query('SELECT step, solved_at, misses FROM ladder_steps WHERE player = $1', [who])
+  const { rows } = await c.query('SELECT step, solved_at, misses FROM ladder_answers WHERE player = $1', [who])
   return Object.fromEntries(rows.map((r) => [r.step, { solved: r.solved_at !== null, misses: r.misses }]))
 }
 
@@ -38,9 +38,9 @@ async function stepsOf(c: pg.PoolClient | pg.Pool, who: string): Promise<Record<
 export async function ladderAnswer(store: Store, who: string, id: string, right: boolean, now = Date.now()) {
   return store.transaction(async (c) => {
     await c.query(
-      `INSERT INTO ladder_steps (player, step, solved_at, misses, updated_at) VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (player, step) DO UPDATE SET solved_at = COALESCE(ladder_steps.solved_at, EXCLUDED.solved_at),
-         misses = LEAST(ladder_steps.misses + EXCLUDED.misses, ${MAX_MISSES}), updated_at = EXCLUDED.updated_at`,
+      `INSERT INTO ladder_answers (player, step, solved_at, misses, updated_at) VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (player, step) DO UPDATE SET solved_at = COALESCE(ladder_answers.solved_at, EXCLUDED.solved_at),
+         misses = LEAST(ladder_answers.misses + EXCLUDED.misses, ${MAX_MISSES}), updated_at = EXCLUDED.updated_at`,
       [who, id, right ? now : null, right ? 0 : 1, now],
     )
     return stepsOf(c, who)
@@ -53,9 +53,9 @@ export async function ladderMerge(store: Store, who: string, steps: Record<strin
   return store.transaction(async (c) => {
     for (const [id, r] of Object.entries(steps)) {
       await c.query(
-        `INSERT INTO ladder_steps (player, step, solved_at, misses, updated_at) VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT (player, step) DO UPDATE SET solved_at = COALESCE(ladder_steps.solved_at, EXCLUDED.solved_at),
-           misses = GREATEST(ladder_steps.misses, EXCLUDED.misses), updated_at = EXCLUDED.updated_at`,
+        `INSERT INTO ladder_answers (player, step, solved_at, misses, updated_at) VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (player, step) DO UPDATE SET solved_at = COALESCE(ladder_answers.solved_at, EXCLUDED.solved_at),
+           misses = GREATEST(ladder_answers.misses, EXCLUDED.misses), updated_at = EXCLUDED.updated_at`,
         [who, id, r.solved ? now : null, r.misses, now],
       )
     }

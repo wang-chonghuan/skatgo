@@ -2,8 +2,8 @@ import { readEndgame } from './endgame'
 import { ENDGAMES_STORED } from './endgames.data'
 import type { Exercise } from './types'
 
-// The "Sieg sichern" ladder (SKATGO-108, simplified in SKATGO-109): 29 closed-card endgames from SkatZero's
-// games, two or three tricks left, proven by endgame.ts (the tests prove them again from the stored file;
+// The "Sieg sichern" ladder (SKATGO-108, simplified in SKATGO-109): 30 closed-card endgames from SkatZero's
+// games, four tricks left as the one standard (SKATGO-110), proven by endgame.ts (the tests prove them again from the stored file;
 // nothing is worked out in the browser). The exercise is one table: the game and the points still needed in
 // its title, the opponents with their cards face down and the voids they showed, the cards still out, and
 // your cards — no play record, no counting.

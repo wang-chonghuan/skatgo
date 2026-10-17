@@ -15,239 +15,247 @@ type Written = { tip: string; trap: string }
 
 const DE: Record<string, Written> = {
   'sieg-sichern-1': {
-    tip: 'Buben sind keine mehr draußen, also sticht niemand. Dein **♥A** ist die höchste Herzkarte und gewinnt sicher – 11 Augen, mehr als die 4, die dir fehlen.',
-    trap: '♥D zuerst: ♥10 und ♥K sind höher, und dein Ass kann am Ende leer ausgehen.',
+    tip: 'Buben sind keine draußen, und dein **♣A** ist die höchste Kreuzkarte: Es gewinnt sicher – 11 Augen, mehr als die 3, die dir fehlen.',
+    trap: '♣D zuerst: ♣10 und ♣K sind höher.',
   },
   'sieg-sichern-2': {
-    tip: 'Karo hat keiner mehr, und Buben sind keine draußen: Deine **♦9** gewinnt sicher. Beide Gegner müssen eine Karte abwerfen – und draußen sind nur Karten mit Augen, mindestens 4 + 4 = 8.',
-    trap: '♥10 zuerst: Das ♥A schlägt sie.',
+    tip: 'Draußen ist nur noch ein Trumpf, der ♦B – dein ♣B ist höher. Spiel den **♣B**: Wer den ♦B hat, muss ihn zugeben. Danach sticht keiner mehr, und Herz hat keiner: Auch deine ♥7 gewinnt.',
+    trap: '♥7 zuerst: Herz hat keiner, also sticht der ♦B sie.',
   },
   'sieg-sichern-3': {
-    tip: 'Buben sind keine draußen, und dein **♣A** ist die höchste Kreuzkarte: 11 Augen – genau die 11, die dir fehlen.',
-    trap: '♣9 zuerst: Der ♣K ist höher.',
-  },
-  'sieg-sichern-4': {
-    tip: 'Trumpf ist keiner mehr draußen, und dein **♣A** ist die höchste Kreuzkarte: Es gewinnt sicher – 11 Augen, mehr als die 6, die dir fehlen.',
-    trap: '♣D zuerst: Die ♣10 ist höher.',
-  },
-  'sieg-sichern-5': {
-    tip: 'Buben sind keine draußen, und von Herz ist nur noch die ♥8 übrig: Deine **♥10** ist höher und gewinnt sicher – 10 Augen, mehr als die 4, die dir fehlen.',
-    trap: '♥7 zuerst: Die ♥8 ist höher.',
-  },
-  'sieg-sichern-6': {
-    tip: 'Kreuz hat keiner mehr, und Buben sind keine draußen: Dein **♣K** gewinnt sicher – 4 Augen, mehr als die 2, die dir fehlen.',
-    trap: '♥D zuerst: Die ♥10 ist höher.',
-  },
-  'sieg-sichern-7': {
-    tip: 'Buben sind keine draußen: Dein **♦A** gewinnt sicher. Und nur eine Karte draußen ist ohne Augen, die ♦7 – der Stich bringt also mindestens 11 + 4 = 15 Augen, mehr als die 13, die dir fehlen.',
-    trap: '♦9 zuerst: ♦10 und ♦K sind höher.',
-  },
-  'sieg-sichern-8': {
-    tip: 'Trumpf ist keiner mehr draußen, und von Pik nur noch die ♠10 – wer sie hat, muss sie zugeben. Dein **♠A** fängt sie: 11 + 10 = 21 Augen, mehr als die 13, die dir fehlen.',
-    trap: '♠7 zuerst: Die ♠10 nimmt sie, und du machst keinen Stich mehr.',
-  },
-  'sieg-sichern-9': {
-    tip: 'Trumpf ist keiner mehr draußen, und von Herz nur noch die ♥10 – wer sie hat, muss sie zugeben. Dein **♥A** fängt sie: 11 + 10 = 21 Augen, mehr als die 19, die dir fehlen.',
-    trap: '♥8 zuerst: Die ♥10 nimmt sie, und du machst keinen Stich mehr.',
-  },
-  'sieg-sichern-10': {
-    tip: 'Links hat kein Kreuz mehr, also sitzt die ♣10 rechts – als einzige Kreuzkarte muss sie fallen. Buben sind keine draußen: Dein **♣A** holt mindestens 11 + 10 = 21 Augen, mehr als die 14, die dir fehlen.',
-    trap: '♦7 zuerst: Der ♦K sitzt links und nimmt sie – danach machst du keinen Stich mehr.',
-  },
-  'sieg-sichern-11': {
-    tip: 'Karo hat keiner mehr, und Trumpf ist keiner draußen: Deine **♦10** gewinnt sicher. Beide müssen abwerfen, und jede Karte draußen hat mindestens 4 Augen: 10 + 4 + 4 = 18, mehr als die 12, die dir fehlen.',
-    trap: '♠9 zuerst: Links hat ♠10 und ♠K, und du machst keinen Stich mehr.',
-  },
-  'sieg-sichern-12': {
-    tip: 'Links hat keinen Trumpf mehr, also sitzt das ♥A rechts. Spiel den **♣K**: Entweder bringt er seine 4 Augen, oder Rechts sticht ihn mit dem ♥A – dann ist deine ♥D der höchste Trumpf und holt den letzten Stich.',
-    trap: '♥D zuerst: Das ♥A sticht sie, und dein ♣K kann danach leer ausgehen.',
-  },
-  'sieg-sichern-13': {
-    tip: 'Herz hat keiner mehr, und draußen ist nur ein Trumpf, der ♠B – höher als dein ♦K. Spiel den **♥K**: Entweder gewinnt er, oder der ♠B sticht ihn – dann ist dein ♦K der höchste Trumpf und holt den letzten Stich.',
-    trap: '♦K zuerst: Der ♠B nimmt ihn, und dein ♥K kann danach leer ausgehen.',
-  },
-  'sieg-sichern-14': {
-    tip: 'Draußen ist nur noch ein Trumpf, der ♥B – dein ♣B ist höher. Spiel den **♣B** zuerst: Wer den ♥B hat, muss ihn zugeben. Danach sticht keiner mehr, und deine ♦D holt den Rest – alle 17 Augen.',
-    trap: '♦D zuerst: Karo hat keiner, also sticht der ♥B.',
-  },
-  'sieg-sichern-15': {
-    tip: 'Buben sind keine draußen, und dein **♠A** ist die höchste Pikkarte: Es gewinnt sicher – 11 Augen, mehr als die 5, die dir fehlen.',
-    trap: '♠D zuerst: Der ♠K ist höher.',
-  },
-  'sieg-sichern-16': {
-    tip: 'Buben sind keine draußen, und dein **♥A** ist die höchste Herzkarte: Es gewinnt sicher – 11 Augen, mehr als die 10, die dir fehlen.',
-    trap: '♥D zuerst: ♥10 und ♥K sind höher.',
-  },
-  'sieg-sichern-17': {
-    tip: 'Buben sind keine draußen, und dein **♠A** ist die höchste Pikkarte: Es gewinnt sicher – 11 Augen, mehr als die 10, die dir fehlen.',
-    trap: '♠9 zuerst: Der ♠K ist höher.',
-  },
-  'sieg-sichern-18': {
-    tip: 'Trumpf ist keiner mehr draußen, und dein **♥A** ist die höchste Herzkarte: Es gewinnt sicher – 11 Augen, mehr als die 3, die dir fehlen.',
-    trap: '♥9 zuerst: ♥10 und ♥K sind höher.',
-  },
-  'sieg-sichern-19': {
-    tip: 'Kein einziger Trumpf ist mehr draußen – kein Bube, kein Pik. Dein **♣A** ist die höchste Kreuzkarte und gewinnt sicher: 11 Augen, mehr als die 6, die dir fehlen.',
+    tip: 'Buben sind keine draußen, und dein **♣A** ist die höchste Kreuzkarte: Es gewinnt sicher – 11 Augen, mehr als die 8, die dir fehlen.',
     trap: '♣K zuerst: Die ♣10 ist höher.',
   },
+  'sieg-sichern-4': {
+    tip: 'Draußen ist nur noch ein Trumpf, die ♥10, und dein **♥A** ist höher. Spiel es zuerst: Links muss die ♥10 zugeben – danach hat keiner mehr Trumpf, und alle Stiche gehören dir.',
+    trap: '♥K zuerst: Die ♥10 nimmt ihn.',
+  },
+  'sieg-sichern-5': {
+    tip: 'Du brauchst alle vier Stiche. Draußen ist nur ein Trumpf, der ♠B – dein ♣B ist höher. Spiel den **♣B**: Wer den ♠B hat, muss ihn zugeben. Danach hat keiner mehr Trumpf, und deine drei Herz gewinnen.',
+    trap: '♥A zuerst: Der ♠B ist höher und nimmt es.',
+  },
+  'sieg-sichern-6': {
+    tip: 'Draußen ist nur noch ein Trumpf, die ♣7. Spiel das **♣A**: Wer die ♣7 hat, muss sie zugeben. Danach sticht keiner mehr dein ♦A – zusammen mindestens 22 Augen, mehr als die 19, die dir fehlen.',
+    trap: '♦A zuerst: Wer kein Karo hat, sticht es mit der ♣7.',
+  },
+  'sieg-sichern-7': {
+    tip: 'Draußen ist nur noch ein Trumpf, die ♥D, rechts – deine **♥10** ist höher. Spiel sie zuerst: Rechts muss die Dame zugeben, mindestens 13 Augen. Danach sticht keiner mehr dein ♣A: noch mal mindestens 11.',
+    trap: '♣A zuerst: Wer kein Kreuz hat, sticht es mit der ♥D.',
+  },
+  'sieg-sichern-8': {
+    tip: 'Draußen ist nur noch ein Trumpf, das ♣A – dein ♦B ist höher, denn jeder Bube schlägt das Ass. Spiel den **♦B**: Wer das ♣A hat, muss es zugeben. Danach sind ♣9 und ♣7 die einzigen Trümpfe, beide deine, und Herz hat keiner: Alle Stiche gehören dir.',
+    trap: '♥K zuerst: Wer kein Herz hat, sticht ihn mit dem ♣A.',
+  },
+  'sieg-sichern-9': {
+    tip: 'Draußen ist nur noch ein Trumpf, der ♦B, rechts – dein ♥B ist höher. Spiel den **♥B**: Rechts muss den ♦B zugeben. Danach sticht keiner mehr, und ♦10 und ♣A sind die höchsten Karten ihrer Farbe: 4 + 10 + 11 = 25 Augen, genau die 25, die dir fehlen.',
+    trap: '♦10 zuerst: Hat Rechts kein Karo mehr, sticht der ♦B sie.',
+  },
+  'sieg-sichern-10': {
+    tip: 'Draußen ist nur noch ein Trumpf, der ♦B – dein ♣B ist höher. Spiel den **♣B**: Wer den ♦B hat, muss ihn zugeben. Danach sticht keiner mehr, und ♠A, ♠10 und ♦D sind die höchsten Karten ihrer Farbe: Alle Stiche gehören dir.',
+    trap: '♠10 zuerst: Wer kein Pik hat, sticht sie mit dem ♦B.',
+  },
+  'sieg-sichern-11': {
+    tip: 'Draußen ist nur ein Trumpf, der ♥B, rechts – aber Rechts hat auch die ♣8, die letzte Kreuzkarte. Spiel die **♣10**: Rechts muss Kreuz bedienen und darf nicht stechen. Das sind 10 Augen, mehr als die 6, die dir fehlen.',
+    trap: '♠A zuerst: Hat Rechts kein Pik mehr, sticht der ♥B das Ass.',
+  },
+  'sieg-sichern-12': {
+    tip: 'Draußen ist nur ein Trumpf, der ♣B – höher als dein ♥K. Spiel das **♠A**: Entweder gewinnt es – 11 Augen, mehr als die 7, die dir fehlen –, oder der ♣B sticht es. Dann ist dein ♥K der höchste Trumpf.',
+    trap: '♥K zuerst: Der ♣B nimmt ihn, und du machst keinen Stich mehr.',
+  },
+  'sieg-sichern-13': {
+    tip: 'Draußen ist nur ein Trumpf, der ♣B, links – höher als dein ♦B. Spiel das **♥A**: Entweder gewinnt es – 11 Augen, mehr als die 4, die dir fehlen –, oder Links sticht es mit dem ♣B. Dann ist dein ♦B der höchste Trumpf.',
+    trap: '♦B zuerst: Der ♣B nimmt ihn, und du machst keinen Stich mehr.',
+  },
+  'sieg-sichern-14': {
+    tip: 'Draußen ist nur ein Trumpf, der ♣B – höher als deine ♦D. Spiel das **♥A**: Entweder gewinnt es – 11 Augen, mehr als die 7, die dir fehlen –, oder der ♣B sticht es. Dann ist deine ♦D der höchste Trumpf.',
+    trap: '♦D zuerst: Der ♣B nimmt sie, und du machst keinen Stich mehr.',
+  },
+  'sieg-sichern-15': {
+    tip: 'Draußen ist nur ein Trumpf, der ♦B, links – höher als deine ♣7. Spiel das **♥A**: Entweder gewinnt es – 11 Augen, mehr als die 10, die dir fehlen –, oder Links sticht es mit dem ♦B. Dann ist deine ♣7 der höchste Trumpf.',
+    trap: '♣7 zuerst: Der ♦B nimmt sie, und du machst keinen Stich mehr.',
+  },
+  'sieg-sichern-16': {
+    tip: 'Draußen ist nur ein Trumpf, die ♠10, rechts – höher als deine ♠7. Spiel das **♥A**: Entweder gewinnt es – 11 Augen, mehr als die 3, die dir fehlen –, oder Rechts sticht es mit der ♠10. Dann ist deine ♠7 der höchste Trumpf.',
+    trap: '♠7 zuerst: Die ♠10 nimmt sie, und du machst keinen Stich mehr.',
+  },
+  'sieg-sichern-17': {
+    tip: 'Draußen ist nur ein Trumpf, der ♠B, links – höher als deine ♣D. Spiel das **♠A**: Entweder gewinnt es – 11 Augen, mehr als die 10, die dir fehlen –, oder Links sticht es mit dem ♠B. Dann ist deine ♣D der höchste Trumpf.',
+    trap: '♣D zuerst: Der ♠B nimmt sie, und du machst keinen Stich mehr.',
+  },
+  'sieg-sichern-18': {
+    tip: 'Draußen ist nur ein Trumpf, der ♥B – höher als dein ♦B. Spiel das **♦A**: Entweder gewinnt es – 11 Augen, mehr als die 9, die dir fehlen –, oder der ♥B sticht es. Dann ist dein ♦B der höchste Trumpf.',
+    trap: '♦B zuerst: Der ♥B nimmt ihn, und du machst keinen Stich mehr.',
+  },
+  'sieg-sichern-19': {
+    tip: 'Draußen ist nur ein Trumpf, der ♠B, links – höher als dein ♥B. Spiel das **♠A**: Entweder gewinnt es, oder Links sticht es mit dem ♠B – dann ist dein ♥B der höchste Trumpf. So oder so kommen die 15 Augen, die dir fehlen.',
+    trap: '♥B zuerst: Der ♠B nimmt ihn, und du machst keinen Stich mehr.',
+  },
   'sieg-sichern-20': {
-    tip: 'Buben sind keine draußen, und von Karo nur noch die ♦D: Deine **♦10** ist höher und gewinnt sicher – 10 Augen, mehr als die 7, die dir fehlen.',
-    trap: '♦8 zuerst: Die ♦D ist höher.',
+    tip: 'Draußen ist nur ein Trumpf, der ♠B, links – höher als dein ♥B. Spiel das **♣A**: Entweder gewinnt es, oder Links sticht es mit dem ♠B – dann ist dein ♥B der höchste Trumpf. So oder so kommen die 12 Augen, die dir fehlen.',
+    trap: '♥B zuerst: Der ♠B nimmt ihn, und du machst keinen Stich mehr.',
   },
   'sieg-sichern-21': {
-    tip: 'Kreuz hat keiner mehr, und Buben sind keine draußen: Deine **♣10** gewinnt sicher – 10 Augen, mehr als die 3, die dir fehlen.',
-    trap: '♥7 zuerst: ♥A, ♥K und ♥D sind höher.',
+    tip: 'Draußen ist nur ein Trumpf, der ♦B, links – höher als dein ♥K. Spiel die **♠10**, die höchste Pikkarte: Entweder gewinnt sie, oder Links sticht sie mit dem ♦B – dann ist dein ♥K der höchste Trumpf. So oder so kommen die 17 Augen, die dir fehlen.',
+    trap: '♥K zuerst: Der ♦B nimmt ihn, und du machst keinen Stich mehr.',
   },
   'sieg-sichern-22': {
-    tip: 'Herz hat keiner mehr, und Buben sind keine draußen: Deine **♥10** gewinnt sicher – 10 Augen, und dir fehlt nur noch eins.',
-    trap: '♠K zuerst: Das ♠A nimmt ihn, und du machst keinen Stich mehr.',
+    tip: 'Pik hat keiner mehr, und draußen ist nur ein Trumpf, der ♠B, rechts – höher als dein ♦B. Spiel die **♠7**: Entweder gewinnt sie, oder Rechts sticht sie mit dem ♠B – dann ist dein ♦B der höchste Trumpf. So oder so kommen die 7 Augen, die dir fehlen.',
+    trap: '♦B zuerst: Der ♠B nimmt ihn, und du machst keinen Stich mehr.',
   },
   'sieg-sichern-23': {
-    tip: 'Buben sind keine draußen, und von Kreuz ist nur noch der ♣K übrig. Deine **♣10** ist höher und gewinnt sicher – 10 Augen, mehr als die 8, die dir fehlen.',
-    trap: '♣8 zuerst: Der ♣K schlägt sie.',
+    tip: 'Draußen ist nur ein Trumpf, der ♠B, links – höher als dein ♥B. Spiel die **♦10**, die höchste Karokarte: Entweder gewinnt sie, oder Links sticht sie mit dem ♠B – dann ist dein ♥B der höchste Trumpf. So oder so kommen die 30 Augen, die dir fehlen.',
+    trap: '♥B zuerst: Der ♠B nimmt ihn, und du machst keinen Stich mehr.',
   },
   'sieg-sichern-24': {
-    tip: 'Draußen ist nur noch ein Trumpf, die ♦D – deine **♦10** ist höher. Spiel sie zuerst: Die Dame muss fallen, das sind 13 Augen. Danach sticht keiner mehr, und ♣10 und ♦8 holen den Rest.',
-    trap: '♣10 zuerst: Wer kein Kreuz hat, sticht mit der ♦D.',
+    tip: 'Karo hat keiner mehr, und draußen ist nur ein Trumpf, der ♦B, rechts. Spiel die **♦D**: Entweder gewinnt sie, oder Rechts sticht sie mit dem ♦B – dann hat keiner mehr Trumpf, und deine Asse kann niemand stechen. So oder so kommen die 13 Augen, die dir fehlen.',
+    trap: '♣K zuerst: Die ♣10 ist höher.',
   },
   'sieg-sichern-25': {
-    tip: 'Draußen ist nur ein Trumpf, der ♣B – höher als deine beiden. Spiel die **♠8**: Wer den ♣B hat, muss ihn zugeben. Danach ist deine ♠10 der höchste Trumpf und bringt dir mindestens ihre 10 Augen.',
-    trap: '♠10 zuerst: Der ♣B nimmt sie – und mit ihr deine 10 Augen.',
+    tip: 'Draußen ist nur ein Trumpf, der ♥B – höher als deine beiden. Spiel die **♥8**: Wer den ♥B hat, muss ihn zugeben. Danach ist deine ♥10 der höchste Trumpf und bringt dir mindestens ihre 10 Augen.',
+    trap: '♥10 zuerst: Der ♥B nimmt sie – und mit ihr deine 10 Augen.',
   },
   'sieg-sichern-26': {
-    tip: 'Links hat weder Trumpf noch Herz: ♦B und ♥9 sitzen also rechts. Spiel die **♥10** – Rechts muss die ♥9 zugeben und kann nicht stechen. Das sind 10 Augen; die restlichen 4 bekommst du danach sicher.',
-    trap: '♠K zuerst: Der ♦B rechts ist höher.',
+    tip: 'Draußen ist nur ein Trumpf, der ♦B, rechts – höher als deine beiden. Spiel die **♣7**: Rechts muss den ♦B zugeben. Danach ist deine ♣10 der höchste Trumpf, und die 12 Augen, die dir fehlen, kommen sicher.',
+    trap: '♣10 zuerst: Der ♦B nimmt sie – und mit ihr deine 10 Augen.',
   },
   'sieg-sichern-27': {
-    tip: 'Draußen ist noch ein Trumpf, der ♠B – höher als dein ♦B. Spiel die **♣10**: Entweder gewinnt sie (10 Augen), oder ein Gegner sticht sie mit dem ♠B – dann ist dein ♦B der höchste Trumpf und holt die fehlenden Augen.',
-    trap: '♦B zuerst: Der ♠B nimmt ihn.',
+    tip: 'Draußen ist nur ein Trumpf, das ♣A, rechts – höher als deine beiden. Spiel die **♣9**: Rechts muss das Ass zugeben. Danach ist deine ♣D der höchste Trumpf, und die 15 Augen, die dir fehlen, kommen sicher.',
+    trap: '♣D zuerst: Das ♣A nimmt sie – 3 Augen mehr für die Gegner, und am Ende fehlt dir ein Auge.',
   },
   'sieg-sichern-28': {
-    tip: 'Rechts hat keinen Trumpf mehr: ♣B und ♣D sitzen beide links. Spiel den **♣K** – so muss Links einen der beiden hergeben, solange du ♣A und ♣9 noch hast.',
-    trap: '♣A zuerst: Links legt nur die Dame darunter und behält den Buben für deinen König.',
+    tip: 'Draußen ist nur ein Trumpf, der ♣B – höher als deine beiden. Spiel den **♥B**: Wer den ♣B hat, muss ihn zugeben. Danach ist deine ♦10 der höchste Trumpf, und die 25 Augen, die dir fehlen, kommen sicher.',
+    trap: '♦10 zuerst: Der ♣B nimmt sie – und mit ihr deine 10 Augen.',
   },
   'sieg-sichern-29': {
-    tip: 'Rechts hat keinen Trumpf, also sitzt der ♣B links – höher als dein ♠B. Kreuzkarten hat aber jeder noch genau eine: ♣10 und ♣D. Spiel das **♣A**: Beide müssen bedienen – 11 + 10 + 3 = 24 Augen.',
-    trap: '♠B zuerst: Der ♣B links ist höher.',
+    tip: 'Draußen ist nur ein Trumpf, der ♠B – höher als deine beiden. Spiel die **♥8**: Wer den ♠B hat, muss ihn zugeben. Danach ist dein ♥A der höchste Trumpf, und die 25 Augen, die dir fehlen, kommen sicher.',
+    trap: '♥A zuerst: Der ♠B nimmt es – und mit ihm deine 11 Augen.',
+  },
+  'sieg-sichern-30': {
+    tip: 'Das ♣A ist noch draußen, Buben keine. Spiel den **♣K**: Nimmt ihn das Ass, verlierst du nur 4 Augen, und deine ♣10 ist danach die höchste Kreuzkarte.',
+    trap: '♣10 zuerst: Das ♣A nimmt sie – 10 Augen statt 4, und am Ende fehlt dir ein Auge.',
   },
 }
 
 const EN: Record<string, Written> = {
   'sieg-sichern-1': {
-    tip: 'No Jacks are out, so nobody can trump. Your **♥A** is the highest Heart and wins for sure – 11 card points, more than the 4 you need.',
-    trap: '♥Q first: ♥10 and ♥K are higher, and your ace may come away empty at the end.',
+    tip: 'No Jacks are out, and your **♣A** is the highest Club: it wins for sure – 11 card points, more than the 3 you need.',
+    trap: '♣Q first: ♣10 and ♣K are higher.',
   },
   'sieg-sichern-2': {
-    tip: 'Nobody has a Diamond left and no Jacks are out: your **♦9** wins for sure. Both opponents must throw a card – and every card still out is worth points, at least 4 + 4 = 8.',
-    trap: '♥10 first: the ♥A beats it.',
+    tip: 'Only one trump is out, the ♦J – your ♣J is higher. Lead the **♣J**: whoever has the ♦J must play it. After that nobody can trump, and nobody has a Heart: your ♥7 wins too.',
+    trap: '♥7 first: nobody has a Heart, so the ♦J trumps it.',
   },
   'sieg-sichern-3': {
-    tip: 'No Jacks are out, and your **♣A** is the highest Club: 11 card points – exactly the 11 you need.',
-    trap: '♣9 first: the ♣K is higher.',
-  },
-  'sieg-sichern-4': {
-    tip: 'No trumps are out, and your **♣A** is the highest Club: it wins for sure – 11 card points, more than the 6 you need.',
-    trap: '♣Q first: the ♣10 is higher.',
-  },
-  'sieg-sichern-5': {
-    tip: 'No Jacks are out, and of the Hearts only the ♥8 is left: your **♥10** is higher and wins for sure – 10 card points, more than the 4 you need.',
-    trap: '♥7 first: the ♥8 is higher.',
-  },
-  'sieg-sichern-6': {
-    tip: 'Nobody has a Club left and no Jacks are out: your **♣K** wins for sure – 4 card points, more than the 2 you need.',
-    trap: '♥Q first: the ♥10 is higher.',
-  },
-  'sieg-sichern-7': {
-    tip: 'No Jacks are out: your **♦A** wins for sure. And only one card out is worth nothing, the ♦7 – so the trick brings at least 11 + 4 = 15 card points, more than the 13 you need.',
-    trap: '♦9 first: ♦10 and ♦K are higher.',
-  },
-  'sieg-sichern-8': {
-    tip: 'No trumps are out, and of the Spades only the ♠10 – whoever has it must play it. Your **♠A** catches it: 11 + 10 = 21 card points, more than the 13 you need.',
-    trap: '♠7 first: the ♠10 takes it, and you win no trick after that.',
-  },
-  'sieg-sichern-9': {
-    tip: 'No trumps are out, and of the Hearts only the ♥10 – whoever has it must play it. Your **♥A** catches it: 11 + 10 = 21 card points, more than the 19 you need.',
-    trap: '♥8 first: the ♥10 takes it, and you win no trick after that.',
-  },
-  'sieg-sichern-10': {
-    tip: 'Left has no Clubs, so the ♣10 is on the right – the only Club out, so it must fall. No Jacks are out: your **♣A** brings at least 11 + 10 = 21 card points, more than the 14 you need.',
-    trap: '♦7 first: the ♦K is on the left and takes it – and you win no trick after that.',
-  },
-  'sieg-sichern-11': {
-    tip: 'Nobody has a Diamond left and no trumps are out: your **♦10** wins for sure. Both must throw a card, and every card out is worth at least 4: 10 + 4 + 4 = 18, more than the 12 you need.',
-    trap: '♠9 first: Left has ♠10 and ♠K, and you win no trick after that.',
-  },
-  'sieg-sichern-12': {
-    tip: 'Left has no trump, so the ♥A is on the right. Lead the **♣K**: either it brings its 4 card points, or Right trumps it with the ♥A – then your ♥Q is the highest trump and takes the last trick.',
-    trap: '♥Q first: the ♥A takes it, and your ♣K may win nothing afterwards.',
-  },
-  'sieg-sichern-13': {
-    tip: 'Nobody has a Heart, and only one trump is out, the ♠J – higher than your ♦K. Lead the **♥K**: either it wins, or the ♠J trumps it – then your ♦K is the highest trump and takes the last trick.',
-    trap: '♦K first: the ♠J takes it, and your ♥K may win nothing afterwards.',
-  },
-  'sieg-sichern-14': {
-    tip: 'Only one trump is out, the ♥J – your ♣J is higher. Lead the **♣J** first: whoever has the ♥J must play it. After that nobody can trump, and your ♦Q brings the rest – all 17 card points.',
-    trap: '♦Q first: nobody has a Diamond, so the ♥J trumps it.',
-  },
-  'sieg-sichern-15': {
-    tip: 'No Jacks are out, and your **♠A** is the highest Spade: it wins for sure – 11 card points, more than the 5 you need.',
-    trap: '♠Q first: the ♠K is higher.',
-  },
-  'sieg-sichern-16': {
-    tip: 'No Jacks are out, and your **♥A** is the highest Heart: it wins for sure – 11 card points, more than the 10 you need.',
-    trap: '♥Q first: ♥10 and ♥K are higher.',
-  },
-  'sieg-sichern-17': {
-    tip: 'No Jacks are out, and your **♠A** is the highest Spade: it wins for sure – 11 card points, more than the 10 you need.',
-    trap: '♠9 first: the ♠K is higher.',
-  },
-  'sieg-sichern-18': {
-    tip: 'No trumps are out, and your **♥A** is the highest Heart: it wins for sure – 11 card points, more than the 3 you need.',
-    trap: '♥9 first: ♥10 and ♥K are higher.',
-  },
-  'sieg-sichern-19': {
-    tip: 'Not a single trump is out – no Jack, no Spade. Your **♣A** is the highest Club and wins for sure: 11 card points, more than the 6 you need.',
+    tip: 'No Jacks are out, and your **♣A** is the highest Club: it wins for sure – 11 card points, more than the 8 you need.',
     trap: '♣K first: the ♣10 is higher.',
   },
+  'sieg-sichern-4': {
+    tip: 'Only one trump is out, the ♥10, and your **♥A** is higher. Lead it first: Left must play the ♥10 – after that nobody has a trump, and every trick is yours.',
+    trap: '♥K first: the ♥10 takes it.',
+  },
+  'sieg-sichern-5': {
+    tip: 'You need all four tricks. Only one trump is out, the ♠J – your ♣J is higher. Lead the **♣J**: whoever has the ♠J must play it. After that nobody has a trump, and your three Hearts win.',
+    trap: '♥A first: the ♠J is higher and takes it.',
+  },
+  'sieg-sichern-6': {
+    tip: 'Only one trump is out, the ♣7. Lead the **♣A**: whoever has the ♣7 must play it. After that nobody can trump your ♦A – at least 22 card points together, more than the 19 you need.',
+    trap: '♦A first: whoever has no Diamond trumps it with the ♣7.',
+  },
+  'sieg-sichern-7': {
+    tip: 'Only one trump is out, the ♥Q on the right – your **♥10** is higher. Lead it first: Right must play the Queen, at least 13 card points. After that nobody can trump your ♣A: at least 11 more.',
+    trap: '♣A first: whoever has no Club trumps it with the ♥Q.',
+  },
+  'sieg-sichern-8': {
+    tip: 'Only one trump is out, the ♣A – your ♦J is higher, as every Jack beats the Ace. Lead the **♦J**: whoever has the ♣A must play it. Then ♣9 and ♣7 are the only trumps, both yours, and nobody has a Heart: every trick is yours.',
+    trap: '♥K first: whoever has no Heart trumps it with the ♣A.',
+  },
+  'sieg-sichern-9': {
+    tip: 'Only one trump is out, the ♦J on the right – your ♥J is higher. Lead the **♥J**: Right must play the ♦J. After that nobody can trump, and ♦10 and ♣A are the highest of their suits: 4 + 10 + 11 = 25 card points, exactly the 25 you need.',
+    trap: '♦10 first: if Right has no Diamond left, the ♦J trumps it.',
+  },
+  'sieg-sichern-10': {
+    tip: 'Only one trump is out, the ♦J – your ♣J is higher. Lead the **♣J**: whoever has the ♦J must play it. After that nobody can trump, and ♠A, ♠10 and ♦Q are the highest of their suits: every trick is yours.',
+    trap: '♠10 first: whoever has no Spade trumps it with the ♦J.',
+  },
+  'sieg-sichern-11': {
+    tip: 'Only one trump is out, the ♥J on the right – but Right also has the ♣8, the last Club. Lead the **♣10**: Right must follow suit and cannot trump. That is 10 card points, more than the 6 you need.',
+    trap: '♠A first: if Right has no Spade left, the ♥J trumps the Ace.',
+  },
+  'sieg-sichern-12': {
+    tip: 'Only one trump is out, the ♣J – higher than your ♥K. Lead the **♠A**: either it wins – 11 card points, more than the 7 you need – or the ♣J trumps it. Then your ♥K is the highest trump.',
+    trap: '♥K first: the ♣J takes it, and you win no trick after that.',
+  },
+  'sieg-sichern-13': {
+    tip: 'Only one trump is out, the ♣J on the left – higher than your ♦J. Lead the **♥A**: either it wins – 11 card points, more than the 4 you need – or Left trumps it with the ♣J. Then your ♦J is the highest trump.',
+    trap: '♦J first: the ♣J takes it, and you win no trick after that.',
+  },
+  'sieg-sichern-14': {
+    tip: 'Only one trump is out, the ♣J – higher than your ♦Q. Lead the **♥A**: either it wins – 11 card points, more than the 7 you need – or the ♣J trumps it. Then your ♦Q is the highest trump.',
+    trap: '♦Q first: the ♣J takes it, and you win no trick after that.',
+  },
+  'sieg-sichern-15': {
+    tip: 'Only one trump is out, the ♦J on the left – higher than your ♣7. Lead the **♥A**: either it wins – 11 card points, more than the 10 you need – or Left trumps it with the ♦J. Then your ♣7 is the highest trump.',
+    trap: '♣7 first: the ♦J takes it, and you win no trick after that.',
+  },
+  'sieg-sichern-16': {
+    tip: 'Only one trump is out, the ♠10 on the right – higher than your ♠7. Lead the **♥A**: either it wins – 11 card points, more than the 3 you need – or Right trumps it with the ♠10. Then your ♠7 is the highest trump.',
+    trap: '♠7 first: the ♠10 takes it, and you win no trick after that.',
+  },
+  'sieg-sichern-17': {
+    tip: 'Only one trump is out, the ♠J on the left – higher than your ♣Q. Lead the **♠A**: either it wins – 11 card points, more than the 10 you need – or Left trumps it with the ♠J. Then your ♣Q is the highest trump.',
+    trap: '♣Q first: the ♠J takes it, and you win no trick after that.',
+  },
+  'sieg-sichern-18': {
+    tip: 'Only one trump is out, the ♥J – higher than your ♦J. Lead the **♦A**: either it wins – 11 card points, more than the 9 you need – or the ♥J trumps it. Then your ♦J is the highest trump.',
+    trap: '♦J first: the ♥J takes it, and you win no trick after that.',
+  },
+  'sieg-sichern-19': {
+    tip: 'Only one trump is out, the ♠J on the left – higher than your ♥J. Lead the **♠A**: either it wins, or Left trumps it with the ♠J – then your ♥J is the highest trump. Either way, the 15 card points you need will come.',
+    trap: '♥J first: the ♠J takes it, and you win no trick after that.',
+  },
   'sieg-sichern-20': {
-    tip: 'No Jacks are out, and of the Diamonds only the ♦Q: your **♦10** is higher and wins for sure – 10 card points, more than the 7 you need.',
-    trap: '♦8 first: the ♦Q is higher.',
+    tip: 'Only one trump is out, the ♠J on the left – higher than your ♥J. Lead the **♣A**: either it wins, or Left trumps it with the ♠J – then your ♥J is the highest trump. Either way, the 12 card points you need will come.',
+    trap: '♥J first: the ♠J takes it, and you win no trick after that.',
   },
   'sieg-sichern-21': {
-    tip: 'Nobody has a Club left and no Jacks are out: your **♣10** wins for sure – 10 card points, more than the 3 you need.',
-    trap: '♥7 first: ♥A, ♥K and ♥Q are higher.',
+    tip: 'Only one trump is out, the ♦J on the left – higher than your ♥K. Lead the **♠10**, the highest Spade: either it wins, or Left trumps it with the ♦J – then your ♥K is the highest trump. Either way, the 17 card points you need will come.',
+    trap: '♥K first: the ♦J takes it, and you win no trick after that.',
   },
   'sieg-sichern-22': {
-    tip: 'Nobody has a Heart left and no Jacks are out: your **♥10** wins for sure – 10 card points, and you need just one.',
-    trap: '♠K first: the ♠A takes it, and you win no trick after that.',
+    tip: 'Nobody has a Spade left, and only one trump is out, the ♠J on the right – higher than your ♦J. Lead the **♠7**: either it wins, or Right trumps it with the ♠J – then your ♦J is the highest trump. Either way, the 7 card points you need will come.',
+    trap: '♦J first: the ♠J takes it, and you win no trick after that.',
   },
   'sieg-sichern-23': {
-    tip: 'No Jacks are out, and of the Clubs only the ♣K is left. Your **♣10** is higher and wins for sure – 10 card points, more than the 8 you need.',
-    trap: '♣8 first: the ♣K beats it.',
+    tip: 'Only one trump is out, the ♠J on the left – higher than your ♥J. Lead the **♦10**, the highest Diamond: either it wins, or Left trumps it with the ♠J – then your ♥J is the highest trump. Either way, the 30 card points you need will come.',
+    trap: '♥J first: the ♠J takes it, and you win no trick after that.',
   },
   'sieg-sichern-24': {
-    tip: 'Only one trump is out, the ♦Q – your **♦10** is higher. Lead it first: the Queen must fall, 13 card points. After that nobody can trump, and ♣10 and ♦8 bring the rest.',
-    trap: '♣10 first: whoever has no Club trumps it with the ♦Q.',
+    tip: 'Nobody has a Diamond left, and only one trump is out, the ♦J on the right. Lead the **♦Q**: either it wins, or Right trumps it with the ♦J – then nobody has a trump, and nobody can trump your Aces. Either way, the 13 card points you need will come.',
+    trap: '♣K first: the ♣10 is higher.',
   },
   'sieg-sichern-25': {
-    tip: 'Only one trump is out, the ♣J – higher than both of yours. Lead the **♠8**: whoever has the ♣J must play it. Then your ♠10 is the highest trump and brings you at least its 10 card points.',
-    trap: '♠10 first: the ♣J takes it – and your 10 card points with it.',
+    tip: 'Only one trump is out, the ♥J – higher than both of yours. Lead the **♥8**: whoever has the ♥J must play it. Then your ♥10 is the highest trump and brings you at least its 10 card points.',
+    trap: '♥10 first: the ♥J takes it – and your 10 card points with it.',
   },
   'sieg-sichern-26': {
-    tip: 'Left has neither trump nor Hearts, so ♦J and ♥9 are on the right. Lead the **♥10** – Right must play the ♥9 and cannot trump. That is 10 card points; the other 4 follow for sure.',
-    trap: '♠K first: the ♦J on the right is higher.',
+    tip: 'Only one trump is out, the ♦J on the right – higher than both of yours. Lead the **♣7**: Right must play the ♦J. Then your ♣10 is the highest trump, and the 12 card points you need will come for sure.',
+    trap: '♣10 first: the ♦J takes it – and your 10 card points with it.',
   },
   'sieg-sichern-27': {
-    tip: 'One trump is still out, the ♠J – higher than your ♦J. Lead the **♣10**: either it wins (10 card points), or an opponent trumps it with the ♠J – then your ♦J is the highest trump and brings the points you need.',
-    trap: '♦J first: the ♠J takes it.',
+    tip: 'Only one trump is out, the ♣A on the right – higher than both of yours. Lead the **♣9**: Right must play the Ace. Then your ♣Q is the highest trump, and the 15 card points you need will come for sure.',
+    trap: '♣Q first: the ♣A takes it – 3 more card points for them, and in the end you are one short.',
   },
   'sieg-sichern-28': {
-    tip: 'Right has no trump left: ♣J and ♣Q are both on the left. Lead the **♣K** – Left must give up one of them while you still hold ♣A and ♣9.',
-    trap: '♣A first: Left plays only the Queen under it and keeps the Jack for your King.',
+    tip: 'Only one trump is out, the ♣J – higher than both of yours. Lead the **♥J**: whoever has the ♣J must play it. Then your ♦10 is the highest trump, and the 25 card points you need will come for sure.',
+    trap: '♦10 first: the ♣J takes it – and your 10 card points with it.',
   },
   'sieg-sichern-29': {
-    tip: 'Right has no trump, so the ♣J is on the left – higher than your ♠J. But each opponent has exactly one Club left: ♣10 and ♣Q. Lead the **♣A**: both must follow – 11 + 10 + 3 = 24 card points.',
-    trap: '♠J first: the ♣J on the left is higher.',
+    tip: 'Only one trump is out, the ♠J – higher than both of yours. Lead the **♥8**: whoever has the ♠J must play it. Then your ♥A is the highest trump, and the 25 card points you need will come for sure.',
+    trap: '♥A first: the ♠J takes it – and your 11 card points with it.',
+  },
+  'sieg-sichern-30': {
+    tip: 'The ♣A is still out, and no Jacks are. Lead the **♣K**: if the Ace takes it, you lose only 4 card points, and your ♣10 is then the highest Club.',
+    trap: '♣10 first: the ♣A takes it – 10 card points instead of 4, and in the end you are one short.',
   },
 }
 

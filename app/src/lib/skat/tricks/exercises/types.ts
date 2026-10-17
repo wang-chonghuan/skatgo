@@ -8,7 +8,7 @@ import type { Endgame } from './endgame'
 // answer to beating the second choice by a margin.
 
 export const EXERCISE_TYPES = [
-  // The ladder (SKATGO-108) comes first: Skat's mate-in-N, closed cards, 29 steps (SKATGO-109).
+  // The ladder (SKATGO-108) comes first: Skat's mate-in-N, closed cards, 30 steps of four tricks (SKATGO-110).
   'sieg-sichern',
   'reizen',
   'druecken',

@@ -7,17 +7,17 @@ import { ENDGAMES_STORED } from './endgames.data'
 import { readEndgame, recordOf, solveEndgame } from './endgame'
 import { MITZAEHLEN, cards } from './positions'
 
-// The Skat-Tricks exercises (SKATGO-103) held to their ticket: the "Sieg sichern" ladder of 29 (SKATGO-108,
+// The Skat-Tricks exercises (SKATGO-103) held to their ticket: the "Sieg sichern" ladder of 30 (SKATGO-108,
 // SKATGO-109) first, then twelve kinds of three, every one in both languages, every card real and every move legal. The exact answers are computed when positions.ts loads —
 // a position whose answer is not unique fails there; SkatZero's are checked in multiplayer/.
 
 describe('the Skat-Tricks exercises', () => {
-  it('the ladder of 29 first, then twelve kinds of three, in the kinds\' order, each id once', () => {
-    const size = (type: string) => (type === 'sieg-sichern' ? 29 : 3)
+  it('the ladder of 30 first, then twelve kinds of three, in the kinds\' order, each id once', () => {
+    const size = (type: string) => (type === 'sieg-sichern' ? 30 : 3)
     expect(EXERCISE_TYPES[0]).toBe('sieg-sichern')
     expect(EXERCISE_TYPES).toHaveLength(13)
-    expect(EXERCISES).toHaveLength(65)
-    expect(new Set(EXERCISES.map((e) => e.id)).size).toBe(65)
+    expect(EXERCISES).toHaveLength(66)
+    expect(new Set(EXERCISES.map((e) => e.id)).size).toBe(66)
     for (const type of EXERCISE_TYPES) expect(EXERCISES.filter((e) => e.type === type).map((e) => e.id)).toEqual(Array.from({ length: size(type) }, (_, i) => `${type}-${i + 1}`))
     expect(EXERCISES.map((e) => e.type)).toEqual(EXERCISE_TYPES.flatMap((t) => Array(size(t)).fill(t)))
   })
@@ -86,11 +86,8 @@ describe('the Skat-Tricks exercises', () => {
   })
 
   describe('the "Sieg sichern" ladder (SKATGO-108)', () => {
-    it('29 steps of one kind: two tricks left, then three (SKATGO-109)', () => {
-      const left = ENDGAMES_STORED.map((s) => s.hand.length)
-      expect(left).toHaveLength(29)
-      expect(left).toEqual([...left].sort())
-      expect(new Set(left)).toEqual(new Set([2, 3]))
+    it('30 steps of one standard: four tricks left (SKATGO-110)', () => {
+      expect(ENDGAMES_STORED.map((s) => s.hand.length)).toEqual(Array(30).fill(4))
     })
     it('every step has its tip and its trap in both languages', () => {
       for (const locale of locales) for (const s of ENDGAMES_STORED) expect(EXERCISE_TEXT[locale].exercises[s.id].trap, `${locale} ${s.id}`).toBeTruthy()
@@ -146,6 +143,10 @@ describe('the Skat-Tricks exercises', () => {
           leader = t.winner
         }
         expect(leader).toBe('you')
+      })
+      it(`${s.id}: the sure way shown after the answer brings the points still needed`, () => {
+        const e = readEndgame(s)
+        expect(e.line.filter((t) => t.winner === 'you').reduce((n, t) => n + t.points, 0)).toBeGreaterThanOrEqual(e.need)
       })
       it(`${s.id}: proven again — one sure card, every other card loses in a possible split, the stored analysis`, () => {
         expect(readEndgame(s)).toEqual(solveEndgame(recordOf(s)))

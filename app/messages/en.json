@@ -602,5 +602,8 @@
   "tricks_ladder_part_suit": "no {suit}",
   "tricks_ladder_contract": "Contract",
   "tricks_ladder_nothing": "nothing known",
-  "tricks_ladder_contract_value": "{contract} · you are the declarer"
+  "tricks_ladder_contract_value": "{contract} · you are the declarer",
+  "tricks_ladder_goal": "Goal",
+  "tricks_ladder_goal_value": "{need} more card points in {n} tricks",
+  "tricks_ladder_kicker": "Puzzle {n} of {count}"
 }

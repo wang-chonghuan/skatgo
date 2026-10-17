@@ -73,7 +73,8 @@ function ExerciseView({ id }: { id: string }) {
               {m.tricks_ex_back()}
             </span>
           </Link>
-          <Pill>{m.tricks_ex_kicker({ type: text.types[exercise.type].title, n, count: siblings.length })}</Pill>
+          {/* A ladder step's kicker is short, so it shares the back button's line on a phone (SKATGO-109). */}
+          <Pill>{exercise.endgame ? m.tricks_ladder_kicker({ n, count: siblings.length }) : m.tricks_ex_kicker({ type: text.types[exercise.type].title, n, count: siblings.length })}</Pill>
         </nav>
         {/* A ladder step says its goal as a sentence, and the rest of what to know under it (SKATGO-109). */}
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{words.goal ?? words.title}</h1>
@@ -194,6 +195,8 @@ function LadderTable({ e }: { e: Endgame }) {
   const rows: [string, string, string][] = [
     // Who you are, said with the game (the human asked: 「我都是庄家吗」).
     ['contract', m.tricks_ladder_contract(), m.tricks_ladder_contract_value({ contract: contractName(e.contract) })],
+    // The goal on the felt too (the human: 「目标也写在绿色上面，目标分数，要打几张」).
+    ['goal', m.tricks_ladder_goal(), m.tricks_ladder_goal_value({ need: e.need, n: e.hand.length })],
     ['left', m.tricks_ladder_left(), known('left')],
     ['right', m.tricks_ladder_right(), known('right')],
   ]

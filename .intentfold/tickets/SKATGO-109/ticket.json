@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-109",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-109",
+  "branch": "SKATGO-109-ladder-simple",
+  "base": "2762ed2",
+  "ports": { "web": 55109, "multiplayer": 56109, "database": 57109 }
+}

@@ -2,8 +2,9 @@ import { type Card, type Contract, cardId, effectiveSuit, legalPlays, pointsOf, 
 import { cards } from './cards-of'
 import { type Position, type Seat, openPoints, splits, sureOf } from './solve'
 
-// "Sieg sichern" (SKATGO-108): Skat's mate-in-N. The declarer leads with a few cards left and sees what a
-// player at the table sees — its own cards, the skat it put away, every card played. Exactly one card makes
+// "Sieg sichern" (SKATGO-108, two or three tricks left since SKATGO-109): Skat's mate-in-one or -two. The
+// declarer leads and knows what a player at the table knows — its own cards, the skat it put away, every card
+// played; the exercise shows the learner only what follows from it: the cards still out and the voids. Exactly one card makes
 // 61 sure however the defenders' cards lie, among the splits the play has left possible (a defender who did
 // not follow a suit has none of it). Every other card loses in at least one of those splits, even played
 // with every card open. Positions come from SkatZero's games against itself (multiplayer/scripts/
@@ -22,7 +23,6 @@ export type EndgameRecord = {
   game: Game
   /** The declarer's seat at the table. */
   position: 'forehand' | 'middlehand' | 'rearhand'
-  level: 1 | 2 | 3
   skat: string[]
   hand: string[]
   tricks: { cards: [Side, string][]; winner: Side }[]
@@ -37,7 +37,6 @@ export type Endgame = {
   id: string
   contract: Contract
   position: EndgameRecord['position']
-  level: EndgameRecord['level']
   skat: Card[]
   hand: Card[]
   tricks: Trick[]
@@ -116,7 +115,7 @@ export function solveEndgame(r: EndgameRecord): Endgame {
   const legal = legalPlays(b.hand, [], b.contract)
   const sure = legal.filter((c) => sureLead(worlds, c, b.contract, b.need))
   if (sure.length !== 1) throw new Error(`${r.id}: ${sure.length} sure cards`)
-  if (legal.length < 3) throw new Error(`${r.id}: too few choices`)
+  if (legal.length < 2) throw new Error(`${r.id}: no choice`)
   const answer = sure[0]
   const traps = legal
     .filter((c) => !sameCard(c, answer))
@@ -129,7 +128,7 @@ export function solveEndgame(r: EndgameRecord): Endgame {
     left: [...b.left, ...b.right].filter((c) => worlds.every((w) => w.hands[1].some((d) => sameCard(c, d)))),
     right: [...b.left, ...b.right].filter((c) => worlds.every((w) => w.hands[2].some((d) => sameCard(c, d)))),
   }
-  return { id: r.id, contract: b.contract, position: r.position, level: r.level, skat: b.skat, hand: b.hand, tricks: b.tricks, left: b.left, right: b.right, have: b.have, need: b.need, voids: b.voids, placed, answer, line: lineOf(worlds, b.hand, b.left, b.right, b.contract, b.need), traps }
+  return { id: r.id, contract: b.contract, position: r.position, skat: b.skat, hand: b.hand, tricks: b.tricks, left: b.left, right: b.right, have: b.have, need: b.need, voids: b.voids, placed, answer, line: lineOf(worlds, b.hand, b.left, b.right, b.contract, b.need), traps }
 }
 
 /**
@@ -200,7 +199,6 @@ export function readEndgame(s: StoredEndgame): Endgame {
     id: s.id,
     contract: contractOf(s.game),
     position: s.position,
-    level: s.level,
     skat: ids(s.skat),
     hand: ids(s.hand),
     tricks: s.tricks.map((t) => trickIn({ cards: t.cards, winner: t.winner, points: pointsOf(t.cards.map(([, c]) => cards(c)[0])) })),
@@ -217,4 +215,4 @@ export function readEndgame(s: StoredEndgame): Endgame {
 }
 
 /** The record part of a stored endgame. */
-export const recordOf = (s: StoredEndgame): EndgameRecord => ({ id: s.id, game: s.game, position: s.position, level: s.level, skat: s.skat, hand: s.hand, tricks: s.tricks, left: s.left, right: s.right })
+export const recordOf = (s: StoredEndgame): EndgameRecord => ({ id: s.id, game: s.game, position: s.position, skat: s.skat, hand: s.hand, tricks: s.tricks, left: s.left, right: s.right })

@@ -7,7 +7,4496 @@ export const ENDGAMES_STORED: StoredEndgame[] = [
   "id": "sieg-sichern-1",
   "game": "G",
   "position": "forehand",
-  "level": 1,
+  "skat": [
+   "C7",
+   "C10"
+  ],
+  "hand": [
+   "HA",
+   "HQ"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "DA"
+     ],
+     [
+      "left",
+      "D8"
+     ],
+     [
+      "right",
+      "D7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S8"
+     ],
+     [
+      "left",
+      "SK"
+     ],
+     [
+      "right",
+      "S10"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SQ"
+     ],
+     [
+      "you",
+      "S7"
+     ],
+     [
+      "left",
+      "SA"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "C9"
+     ],
+     [
+      "right",
+      "CK"
+     ],
+     [
+      "you",
+      "H7"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "CA"
+     ],
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "S9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "H8"
+     ],
+     [
+      "right",
+      "D9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "CQ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "DJ"
+     ],
+     [
+      "left",
+      "D10"
+     ],
+     [
+      "right",
+      "C8"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "HK",
+   "H9"
+  ],
+  "right": [
+   "DQ",
+   "H10"
+  ],
+  "have": 57,
+  "need": 4,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "C",
+    "trick": 5
+   },
+   {
+    "side": "left",
+    "suit": "T",
+    "trick": 6
+   },
+   {
+    "side": "right",
+    "suit": "T",
+    "trick": 6
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "HA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "H9"
+     ],
+     [
+      "right",
+      "H10"
+     ]
+    ],
+    "winner": "you",
+    "points": 21
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HQ"
+     ],
+     [
+      "left",
+      "HK"
+     ],
+     [
+      "right",
+      "DQ"
+     ]
+    ],
+    "winner": "left",
+    "points": 10
+   }
+  ],
+  "traps": [
+   {
+    "card": "HQ",
+    "left": [
+     "HK",
+     "H9"
+    ],
+    "right": [
+     "DQ",
+     "H10"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-2",
+  "game": "G",
+  "position": "middlehand",
+  "skat": [
+   "CQ",
+   "SQ"
+  ],
+  "hand": [
+   "D9",
+   "H10"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "right",
+      "CA"
+     ],
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "C8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "D8"
+     ],
+     [
+      "right",
+      "DJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "DA"
+     ],
+     [
+      "left",
+      "H8"
+     ],
+     [
+      "right",
+      "SJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "C10"
+     ],
+     [
+      "you",
+      "D7"
+     ],
+     [
+      "left",
+      "CK"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "S9"
+     ],
+     [
+      "you",
+      "SA"
+     ],
+     [
+      "left",
+      "S7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D10"
+     ],
+     [
+      "left",
+      "C9"
+     ],
+     [
+      "right",
+      "H9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "DQ"
+     ],
+     [
+      "left",
+      "H7"
+     ],
+     [
+      "right",
+      "HQ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "DK"
+     ],
+     [
+      "left",
+      "C7"
+     ],
+     [
+      "right",
+      "S8"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "HA",
+   "S10"
+  ],
+  "right": [
+   "SK",
+   "HK"
+  ],
+  "have": 54,
+  "need": 7,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "T",
+    "trick": 2
+   },
+   {
+    "side": "left",
+    "suit": "D",
+    "trick": 3
+   },
+   {
+    "side": "right",
+    "suit": "D",
+    "trick": 3
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "D9",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "D9"
+     ],
+     [
+      "left",
+      "S10"
+     ],
+     [
+      "right",
+      "SK"
+     ]
+    ],
+    "winner": "you",
+    "points": 14
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H10"
+     ],
+     [
+      "left",
+      "HA"
+     ],
+     [
+      "right",
+      "HK"
+     ]
+    ],
+    "winner": "left",
+    "points": 25
+   }
+  ],
+  "traps": [
+   {
+    "card": "H10",
+    "left": [
+     "HA",
+     "S10"
+    ],
+    "right": [
+     "SK",
+     "HK"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-3",
+  "game": "G",
+  "position": "middlehand",
+  "skat": [
+   "HK",
+   "SK"
+  ],
+  "hand": [
+   "CA",
+   "C9"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "right",
+      "S8"
+     ],
+     [
+      "you",
+      "HQ"
+     ],
+     [
+      "left",
+      "SA"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "S9"
+     ],
+     [
+      "right",
+      "SQ"
+     ],
+     [
+      "you",
+      "D8"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "S10"
+     ],
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "H8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "HJ"
+     ],
+     [
+      "right",
+      "D7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D9"
+     ],
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "HA"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "H10"
+     ],
+     [
+      "right",
+      "H7"
+     ],
+     [
+      "you",
+      "D10"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "DA"
+     ],
+     [
+      "right",
+      "H9"
+     ],
+     [
+      "you",
+      "DJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C10"
+     ],
+     [
+      "left",
+      "CQ"
+     ],
+     [
+      "right",
+      "C8"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "CK",
+   "DQ"
+  ],
+  "right": [
+   "C7",
+   "S7"
+  ],
+  "have": 50,
+  "need": 11,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "S",
+    "trick": 3
+   },
+   {
+    "side": "right",
+    "suit": "T",
+    "trick": 4
+   },
+   {
+    "side": "right",
+    "suit": "D",
+    "trick": 5
+   }
+  ],
+  "placed": {
+   "left": [
+    "DQ"
+   ],
+   "right": [
+    "S7"
+   ]
+  },
+  "answer": "CA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "CK"
+     ],
+     [
+      "right",
+      "C7"
+     ]
+    ],
+    "winner": "you",
+    "points": 15
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C9"
+     ],
+     [
+      "left",
+      "DQ"
+     ],
+     [
+      "right",
+      "S7"
+     ]
+    ],
+    "winner": "you",
+    "points": 3
+   }
+  ],
+  "traps": [
+   {
+    "card": "C9",
+    "left": [
+     "CK",
+     "DQ"
+    ],
+    "right": [
+     "C7",
+     "S7"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-4",
+  "game": "D",
+  "position": "forehand",
+  "skat": [
+   "H10",
+   "HQ"
+  ],
+  "hand": [
+   "CQ",
+   "CA"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "DJ"
+     ],
+     [
+      "left",
+      "SJ"
+     ],
+     [
+      "right",
+      "DA"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "HA"
+     ],
+     [
+      "right",
+      "H7"
+     ],
+     [
+      "you",
+      "HK"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "SQ"
+     ],
+     [
+      "right",
+      "SA"
+     ],
+     [
+      "you",
+      "D8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "DQ"
+     ],
+     [
+      "right",
+      "CJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "H9"
+     ],
+     [
+      "you",
+      "DK"
+     ],
+     [
+      "left",
+      "S7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D10"
+     ],
+     [
+      "left",
+      "D9"
+     ],
+     [
+      "right",
+      "S9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C8"
+     ],
+     [
+      "left",
+      "C7"
+     ],
+     [
+      "right",
+      "CK"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "S10"
+     ],
+     [
+      "you",
+      "D7"
+     ],
+     [
+      "left",
+      "SK"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "S8",
+   "C10"
+  ],
+  "right": [
+   "C9",
+   "H8"
+  ],
+  "have": 55,
+  "need": 6,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "H",
+    "trick": 5
+   },
+   {
+    "side": "right",
+    "suit": "T",
+    "trick": 6
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": [
+    "H8"
+   ]
+  },
+  "answer": "CA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "C10"
+     ],
+     [
+      "right",
+      "C9"
+     ]
+    ],
+    "winner": "you",
+    "points": 21
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CQ"
+     ],
+     [
+      "left",
+      "S8"
+     ],
+     [
+      "right",
+      "H8"
+     ]
+    ],
+    "winner": "you",
+    "points": 3
+   }
+  ],
+  "traps": [
+   {
+    "card": "CQ",
+    "left": [
+     "S8",
+     "C10"
+    ],
+    "right": [
+     "C9",
+     "H8"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-5",
+  "game": "G",
+  "position": "forehand",
+  "skat": [
+   "DQ",
+   "S10"
+  ],
+  "hand": [
+   "H10",
+   "H7"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "SJ"
+     ],
+     [
+      "right",
+      "DJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "DA"
+     ],
+     [
+      "left",
+      "D7"
+     ],
+     [
+      "right",
+      "D8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S8"
+     ],
+     [
+      "left",
+      "SQ"
+     ],
+     [
+      "right",
+      "SK"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "CA"
+     ],
+     [
+      "you",
+      "C7"
+     ],
+     [
+      "left",
+      "D10"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "C10"
+     ],
+     [
+      "you",
+      "C9"
+     ],
+     [
+      "left",
+      "S7"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "CK"
+     ],
+     [
+      "you",
+      "C8"
+     ],
+     [
+      "left",
+      "HK"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SA"
+     ],
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "S9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "HQ"
+     ],
+     [
+      "right",
+      "H9"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "DK",
+   "H8"
+  ],
+  "right": [
+   "CQ",
+   "D9"
+  ],
+  "have": 57,
+  "need": 4,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "C",
+    "trick": 4
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": [
+    "CQ"
+   ]
+  },
+  "answer": "H10",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "H10"
+     ],
+     [
+      "left",
+      "H8"
+     ],
+     [
+      "right",
+      "CQ"
+     ]
+    ],
+    "winner": "you",
+    "points": 13
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H7"
+     ],
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "D9"
+     ]
+    ],
+    "winner": "you",
+    "points": 4
+   }
+  ],
+  "traps": [
+   {
+    "card": "H7",
+    "left": [
+     "DK",
+     "H8"
+    ],
+    "right": [
+     "CQ",
+     "D9"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-6",
+  "game": "G",
+  "position": "rearhand",
+  "skat": [
+   "S10",
+   "HK"
+  ],
+  "hand": [
+   "HQ",
+   "CK"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "left",
+      "D7"
+     ],
+     [
+      "right",
+      "D9"
+     ],
+     [
+      "you",
+      "DA"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "SK"
+     ],
+     [
+      "right",
+      "CJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SA"
+     ],
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "S9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "C7"
+     ],
+     [
+      "right",
+      "C8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C10"
+     ],
+     [
+      "left",
+      "CQ"
+     ],
+     [
+      "right",
+      "DJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "S7"
+     ],
+     [
+      "you",
+      "H9"
+     ],
+     [
+      "left",
+      "C9"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "H7"
+     ],
+     [
+      "you",
+      "H8"
+     ],
+     [
+      "left",
+      "HA"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "D8"
+     ],
+     [
+      "right",
+      "S8"
+     ],
+     [
+      "you",
+      "D10"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "DQ",
+   "DK"
+  ],
+  "right": [
+   "H10",
+   "SQ"
+  ],
+  "have": 59,
+  "need": 2,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "T",
+    "trick": 2
+   },
+   {
+    "side": "right",
+    "suit": "C",
+    "trick": 5
+   },
+   {
+    "side": "left",
+    "suit": "S",
+    "trick": 6
+   },
+   {
+    "side": "right",
+    "suit": "D",
+    "trick": 8
+   }
+  ],
+  "placed": {
+   "left": [
+    "DQ",
+    "DK"
+   ],
+   "right": [
+    "H10",
+    "SQ"
+   ]
+  },
+  "answer": "CK",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "CK"
+     ],
+     [
+      "left",
+      "DQ"
+     ],
+     [
+      "right",
+      "SQ"
+     ]
+    ],
+    "winner": "you",
+    "points": 10
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HQ"
+     ],
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "H10"
+     ]
+    ],
+    "winner": "right",
+    "points": 17
+   }
+  ],
+  "traps": [
+   {
+    "card": "HQ",
+    "left": [
+     "DQ",
+     "DK"
+    ],
+    "right": [
+     "H10",
+     "SQ"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-7",
+  "game": "G",
+  "position": "rearhand",
+  "skat": [
+   "S10",
+   "DQ"
+  ],
+  "hand": [
+   "DA",
+   "D9"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "left",
+      "HJ"
+     ],
+     [
+      "right",
+      "CJ"
+     ],
+     [
+      "you",
+      "SJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "S7"
+     ],
+     [
+      "you",
+      "SK"
+     ],
+     [
+      "left",
+      "SA"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "S9"
+     ],
+     [
+      "right",
+      "C8"
+     ],
+     [
+      "you",
+      "SQ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C10"
+     ],
+     [
+      "left",
+      "C7"
+     ],
+     [
+      "right",
+      "CK"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "CQ"
+     ],
+     [
+      "right",
+      "DJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "H7"
+     ],
+     [
+      "you",
+      "HK"
+     ],
+     [
+      "left",
+      "HQ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "H8"
+     ],
+     [
+      "right",
+      "H9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C9"
+     ],
+     [
+      "left",
+      "S8"
+     ],
+     [
+      "right",
+      "D8"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "D7",
+   "D10"
+  ],
+  "right": [
+   "DK",
+   "H10"
+  ],
+  "have": 48,
+  "need": 13,
+  "voids": [
+   {
+    "side": "right",
+    "suit": "S",
+    "trick": 3
+   },
+   {
+    "side": "right",
+    "suit": "C",
+    "trick": 5
+   },
+   {
+    "side": "left",
+    "suit": "C",
+    "trick": 8
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "DA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "DA"
+     ],
+     [
+      "left",
+      "D7"
+     ],
+     [
+      "right",
+      "DK"
+     ]
+    ],
+    "winner": "you",
+    "points": 15
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D9"
+     ],
+     [
+      "left",
+      "D10"
+     ],
+     [
+      "right",
+      "H10"
+     ]
+    ],
+    "winner": "left",
+    "points": 20
+   }
+  ],
+  "traps": [
+   {
+    "card": "D9",
+    "left": [
+     "D7",
+     "D10"
+    ],
+    "right": [
+     "DK",
+     "H10"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-8",
+  "game": "H",
+  "position": "forehand",
+  "skat": [
+   "C10",
+   "D10"
+  ],
+  "hand": [
+   "SA",
+   "S7"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "H8"
+     ],
+     [
+      "right",
+      "H9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "HQ"
+     ],
+     [
+      "right",
+      "DJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "C8"
+     ],
+     [
+      "right",
+      "H10"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H7"
+     ],
+     [
+      "left",
+      "SK"
+     ],
+     [
+      "right",
+      "HA"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "CQ"
+     ],
+     [
+      "you",
+      "CK"
+     ],
+     [
+      "left",
+      "CA"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "DA"
+     ],
+     [
+      "right",
+      "D7"
+     ],
+     [
+      "you",
+      "D9"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "SQ"
+     ],
+     [
+      "right",
+      "S8"
+     ],
+     [
+      "you",
+      "S9"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "DQ"
+     ],
+     [
+      "right",
+      "D8"
+     ],
+     [
+      "you",
+      "HK"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "C9",
+   "DK"
+  ],
+  "right": [
+   "S10",
+   "C7"
+  ],
+  "have": 48,
+  "need": 13,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "T",
+    "trick": 3
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "SA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "SA"
+     ],
+     [
+      "left",
+      "C9"
+     ],
+     [
+      "right",
+      "S10"
+     ]
+    ],
+    "winner": "you",
+    "points": 21
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S7"
+     ],
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "C7"
+     ]
+    ],
+    "winner": "you",
+    "points": 4
+   }
+  ],
+  "traps": [
+   {
+    "card": "S7",
+    "left": [
+     "C9",
+     "DK"
+    ],
+    "right": [
+     "S10",
+     "C7"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-9",
+  "game": "D",
+  "position": "middlehand",
+  "skat": [
+   "C7",
+   "SK"
+  ],
+  "hand": [
+   "HA",
+   "H8"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "right",
+      "CK"
+     ],
+     [
+      "you",
+      "C9"
+     ],
+     [
+      "left",
+      "C10"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "HQ"
+     ],
+     [
+      "right",
+      "H9"
+     ],
+     [
+      "you",
+      "H7"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "C8"
+     ],
+     [
+      "right",
+      "D10"
+     ],
+     [
+      "you",
+      "CJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "D8"
+     ],
+     [
+      "right",
+      "HJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D7"
+     ],
+     [
+      "left",
+      "DA"
+     ],
+     [
+      "right",
+      "SA"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "CA"
+     ],
+     [
+      "right",
+      "HK"
+     ],
+     [
+      "you",
+      "DQ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D9"
+     ],
+     [
+      "left",
+      "DJ"
+     ],
+     [
+      "right",
+      "S10"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "S7"
+     ],
+     [
+      "right",
+      "S9"
+     ],
+     [
+      "you",
+      "DK"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "S8",
+   "CQ"
+  ],
+  "right": [
+   "H10",
+   "SQ"
+  ],
+  "have": 42,
+  "need": 19,
+  "voids": [
+   {
+    "side": "right",
+    "suit": "C",
+    "trick": 3
+   },
+   {
+    "side": "right",
+    "suit": "T",
+    "trick": 5
+   }
+  ],
+  "placed": {
+   "left": [
+    "CQ"
+   ],
+   "right": []
+  },
+  "answer": "HA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "S8"
+     ],
+     [
+      "right",
+      "H10"
+     ]
+    ],
+    "winner": "you",
+    "points": 21
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H8"
+     ],
+     [
+      "left",
+      "CQ"
+     ],
+     [
+      "right",
+      "SQ"
+     ]
+    ],
+    "winner": "you",
+    "points": 6
+   }
+  ],
+  "traps": [
+   {
+    "card": "H8",
+    "left": [
+     "S8",
+     "CQ"
+    ],
+    "right": [
+     "H10",
+     "SQ"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-10",
+  "game": "G",
+  "position": "forehand",
+  "skat": [
+   "HQ",
+   "SK"
+  ],
+  "hand": [
+   "CA",
+   "D7"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "DJ"
+     ],
+     [
+      "left",
+      "HJ"
+     ],
+     [
+      "right",
+      "CJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SA"
+     ],
+     [
+      "you",
+      "S7"
+     ],
+     [
+      "left",
+      "S9"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "S10"
+     ],
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "C9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D9"
+     ],
+     [
+      "left",
+      "DQ"
+     ],
+     [
+      "right",
+      "DA"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SQ"
+     ],
+     [
+      "you",
+      "C8"
+     ],
+     [
+      "left",
+      "C7"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "CQ"
+     ],
+     [
+      "you",
+      "CK"
+     ],
+     [
+      "left",
+      "H8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "H9"
+     ],
+     [
+      "right",
+      "H7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D10"
+     ],
+     [
+      "left",
+      "D8"
+     ],
+     [
+      "right",
+      "S8"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "HK",
+   "DK"
+  ],
+  "right": [
+   "H10",
+   "C10"
+  ],
+  "have": 47,
+  "need": 14,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "S",
+    "trick": 3
+   },
+   {
+    "side": "left",
+    "suit": "C",
+    "trick": 6
+   },
+   {
+    "side": "right",
+    "suit": "D",
+    "trick": 8
+   }
+  ],
+  "placed": {
+   "left": [
+    "DK"
+   ],
+   "right": [
+    "C10"
+   ]
+  },
+  "answer": "CA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "HK"
+     ],
+     [
+      "right",
+      "C10"
+     ]
+    ],
+    "winner": "you",
+    "points": 25
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D7"
+     ],
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "H10"
+     ]
+    ],
+    "winner": "left",
+    "points": 14
+   }
+  ],
+  "traps": [
+   {
+    "card": "D7",
+    "left": [
+     "HK",
+     "DK"
+    ],
+    "right": [
+     "H10",
+     "C10"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-11",
+  "game": "H",
+  "position": "forehand",
+  "skat": [
+   "CQ",
+   "S8"
+  ],
+  "hand": [
+   "S9",
+   "D10"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "SJ"
+     ],
+     [
+      "right",
+      "H7"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "SQ"
+     ],
+     [
+      "right",
+      "D8"
+     ],
+     [
+      "you",
+      "SA"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HK"
+     ],
+     [
+      "left",
+      "H9"
+     ],
+     [
+      "right",
+      "DJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "DQ"
+     ],
+     [
+      "you",
+      "DA"
+     ],
+     [
+      "left",
+      "D9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H10"
+     ],
+     [
+      "left",
+      "C10"
+     ],
+     [
+      "right",
+      "CJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "C9"
+     ],
+     [
+      "you",
+      "H8"
+     ],
+     [
+      "left",
+      "C8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "D7"
+     ],
+     [
+      "right",
+      "HQ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "DK"
+     ],
+     [
+      "left",
+      "S7"
+     ],
+     [
+      "right",
+      "C7"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "SK",
+   "S10"
+  ],
+  "right": [
+   "CA",
+   "CK"
+  ],
+  "have": 49,
+  "need": 12,
+  "voids": [
+   {
+    "side": "right",
+    "suit": "S",
+    "trick": 2
+   },
+   {
+    "side": "left",
+    "suit": "T",
+    "trick": 5
+   },
+   {
+    "side": "left",
+    "suit": "D",
+    "trick": 8
+   },
+   {
+    "side": "right",
+    "suit": "D",
+    "trick": 8
+   }
+  ],
+  "placed": {
+   "left": [
+    "SK",
+    "S10"
+   ],
+   "right": [
+    "CA",
+    "CK"
+   ]
+  },
+  "answer": "D10",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "D10"
+     ],
+     [
+      "left",
+      "SK"
+     ],
+     [
+      "right",
+      "CA"
+     ]
+    ],
+    "winner": "you",
+    "points": 25
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S9"
+     ],
+     [
+      "left",
+      "S10"
+     ],
+     [
+      "right",
+      "CK"
+     ]
+    ],
+    "winner": "left",
+    "points": 14
+   }
+  ],
+  "traps": [
+   {
+    "card": "S9",
+    "left": [
+     "SK",
+     "S10"
+    ],
+    "right": [
+     "CA",
+     "CK"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-12",
+  "game": "H",
+  "position": "forehand",
+  "skat": [
+   "S7",
+   "S9"
+  ],
+  "hand": [
+   "HQ",
+   "CK"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "H7"
+     ],
+     [
+      "right",
+      "DJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "H9"
+     ],
+     [
+      "right",
+      "CJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "D7"
+     ],
+     [
+      "you",
+      "DA"
+     ],
+     [
+      "left",
+      "D8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H8"
+     ],
+     [
+      "left",
+      "SA"
+     ],
+     [
+      "right",
+      "HK"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "CQ"
+     ],
+     [
+      "you",
+      "C7"
+     ],
+     [
+      "left",
+      "C10"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "SQ"
+     ],
+     [
+      "right",
+      "SK"
+     ],
+     [
+      "you",
+      "H10"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "C8"
+     ],
+     [
+      "right",
+      "C9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D10"
+     ],
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "D9"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "S10",
+   "S8"
+  ],
+  "right": [
+   "DQ",
+   "HA"
+  ],
+  "have": 57,
+  "need": 4,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "T",
+    "trick": 4
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": [
+    "HA"
+   ]
+  },
+  "answer": "CK",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "CK"
+     ],
+     [
+      "left",
+      "S10"
+     ],
+     [
+      "right",
+      "DQ"
+     ]
+    ],
+    "winner": "you",
+    "points": 17
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HQ"
+     ],
+     [
+      "left",
+      "S8"
+     ],
+     [
+      "right",
+      "HA"
+     ]
+    ],
+    "winner": "right",
+    "points": 14
+   }
+  ],
+  "traps": [
+   {
+    "card": "HQ",
+    "left": [
+     "S10",
+     "S8"
+    ],
+    "right": [
+     "DQ",
+     "HA"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-13",
+  "game": "D",
+  "position": "rearhand",
+  "skat": [
+   "C8",
+   "C9"
+  ],
+  "hand": [
+   "DK",
+   "HK"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "left",
+      "S7"
+     ],
+     [
+      "right",
+      "SK"
+     ],
+     [
+      "you",
+      "SA"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "H7"
+     ],
+     [
+      "right",
+      "H9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H10"
+     ],
+     [
+      "left",
+      "HQ"
+     ],
+     [
+      "right",
+      "H8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S10"
+     ],
+     [
+      "left",
+      "SQ"
+     ],
+     [
+      "right",
+      "DA"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "CQ"
+     ],
+     [
+      "you",
+      "D10"
+     ],
+     [
+      "left",
+      "C7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S8"
+     ],
+     [
+      "left",
+      "S9"
+     ],
+     [
+      "right",
+      "D8"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "DJ"
+     ],
+     [
+      "you",
+      "D7"
+     ],
+     [
+      "left",
+      "DQ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "HJ"
+     ],
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "D9"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "SJ",
+   "CA"
+  ],
+  "right": [
+   "C10",
+   "CK"
+  ],
+  "have": 56,
+  "need": 5,
+  "voids": [
+   {
+    "side": "right",
+    "suit": "S",
+    "trick": 4
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "HK",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "HK"
+     ],
+     [
+      "left",
+      "SJ"
+     ],
+     [
+      "right",
+      "C10"
+     ]
+    ],
+    "winner": "left",
+    "points": 16
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "CA"
+     ],
+     [
+      "right",
+      "CK"
+     ],
+     [
+      "you",
+      "DK"
+     ]
+    ],
+    "winner": "you",
+    "points": 19
+   }
+  ],
+  "traps": [
+   {
+    "card": "DK",
+    "left": [
+     "SJ",
+     "CA"
+    ],
+    "right": [
+     "C10",
+     "CK"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-14",
+  "game": "S",
+  "position": "rearhand",
+  "skat": [
+   "CK",
+   "C8"
+  ],
+  "hand": [
+   "CJ",
+   "DQ"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "left",
+      "HK"
+     ],
+     [
+      "right",
+      "H7"
+     ],
+     [
+      "you",
+      "HA"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S9"
+     ],
+     [
+      "left",
+      "SK"
+     ],
+     [
+      "right",
+      "DJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "D7"
+     ],
+     [
+      "you",
+      "D9"
+     ],
+     [
+      "left",
+      "CQ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S8"
+     ],
+     [
+      "left",
+      "SQ"
+     ],
+     [
+      "right",
+      "SA"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "D10"
+     ],
+     [
+      "you",
+      "DA"
+     ],
+     [
+      "left",
+      "SJ"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "CA"
+     ],
+     [
+      "right",
+      "C9"
+     ],
+     [
+      "you",
+      "S10"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D8"
+     ],
+     [
+      "left",
+      "C10"
+     ],
+     [
+      "right",
+      "DK"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "C7"
+     ],
+     [
+      "you",
+      "S7"
+     ],
+     [
+      "left",
+      "HQ"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "H8",
+   "H10"
+  ],
+  "right": [
+   "HJ",
+   "H9"
+  ],
+  "have": 46,
+  "need": 15,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "D",
+    "trick": 3
+   },
+   {
+    "side": "left",
+    "suit": "C",
+    "trick": 8
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "CJ",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "H8"
+     ],
+     [
+      "right",
+      "HJ"
+     ]
+    ],
+    "winner": "you",
+    "points": 4
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "DQ"
+     ],
+     [
+      "left",
+      "H10"
+     ],
+     [
+      "right",
+      "H9"
+     ]
+    ],
+    "winner": "you",
+    "points": 13
+   }
+  ],
+  "traps": [
+   {
+    "card": "DQ",
+    "left": [
+     "H8",
+     "H10"
+    ],
+    "right": [
+     "HJ",
+     "H9"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-15",
+  "game": "G",
+  "position": "middlehand",
+  "skat": [
+   "H10",
+   "DK"
+  ],
+  "hand": [
+   "S8",
+   "SQ",
+   "SA"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "right",
+      "D9"
+     ],
+     [
+      "you",
+      "C9"
+     ],
+     [
+      "left",
+      "DA"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "D7"
+     ],
+     [
+      "right",
+      "DQ"
+     ],
+     [
+      "you",
+      "H8"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "D10"
+     ],
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "D8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "SJ"
+     ],
+     [
+      "right",
+      "DJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S10"
+     ],
+     [
+      "left",
+      "S9"
+     ],
+     [
+      "right",
+      "S7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HQ"
+     ],
+     [
+      "left",
+      "H7"
+     ],
+     [
+      "right",
+      "HK"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "CQ"
+     ],
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "C8"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "C10",
+   "HA",
+   "H9"
+  ],
+  "right": [
+   "C7",
+   "SK",
+   "CK"
+  ],
+  "have": 56,
+  "need": 5,
+  "voids": [],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "SA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "SA"
+     ],
+     [
+      "left",
+      "C10"
+     ],
+     [
+      "right",
+      "SK"
+     ]
+    ],
+    "winner": "you",
+    "points": 25
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S8"
+     ],
+     [
+      "left",
+      "HA"
+     ],
+     [
+      "right",
+      "CK"
+     ]
+    ],
+    "winner": "you",
+    "points": 15
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SQ"
+     ],
+     [
+      "left",
+      "H9"
+     ],
+     [
+      "right",
+      "C7"
+     ]
+    ],
+    "winner": "you",
+    "points": 3
+   }
+  ],
+  "traps": [
+   {
+    "card": "S8",
+    "left": [
+     "C10",
+     "HA",
+     "H9"
+    ],
+    "right": [
+     "C7",
+     "SK",
+     "CK"
+    ]
+   },
+   {
+    "card": "SQ",
+    "left": [
+     "C10",
+     "HA",
+     "H9"
+    ],
+    "right": [
+     "C7",
+     "SK",
+     "CK"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-16",
+  "game": "G",
+  "position": "forehand",
+  "skat": [
+   "DQ",
+   "S9"
+  ],
+  "hand": [
+   "HA",
+   "HQ",
+   "H9"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "HJ"
+     ],
+     [
+      "right",
+      "C9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C7"
+     ],
+     [
+      "left",
+      "C10"
+     ],
+     [
+      "right",
+      "CQ"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "SJ"
+     ],
+     [
+      "right",
+      "H7"
+     ],
+     [
+      "you",
+      "DJ"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "S8"
+     ],
+     [
+      "right",
+      "SK"
+     ],
+     [
+      "you",
+      "SA"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "DA"
+     ],
+     [
+      "left",
+      "D7"
+     ],
+     [
+      "right",
+      "D8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CK"
+     ],
+     [
+      "left",
+      "C8"
+     ],
+     [
+      "right",
+      "H8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "S7"
+     ],
+     [
+      "right",
+      "SQ"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "H10",
+   "HK",
+   "D10"
+  ],
+  "right": [
+   "S10",
+   "D9",
+   "DK"
+  ],
+  "have": 51,
+  "need": 10,
+  "voids": [
+   {
+    "side": "right",
+    "suit": "T",
+    "trick": 1
+   },
+   {
+    "side": "right",
+    "suit": "C",
+    "trick": 6
+   },
+   {
+    "side": "left",
+    "suit": "C",
+    "trick": 7
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "HA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "HK"
+     ],
+     [
+      "right",
+      "S10"
+     ]
+    ],
+    "winner": "you",
+    "points": 25
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HQ"
+     ],
+     [
+      "left",
+      "H10"
+     ],
+     [
+      "right",
+      "D9"
+     ]
+    ],
+    "winner": "left",
+    "points": 13
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "D10"
+     ],
+     [
+      "right",
+      "DK"
+     ],
+     [
+      "you",
+      "H9"
+     ]
+    ],
+    "winner": "left",
+    "points": 14
+   }
+  ],
+  "traps": [
+   {
+    "card": "HQ",
+    "left": [
+     "H10",
+     "HK",
+     "D9"
+    ],
+    "right": [
+     "D10",
+     "S10",
+     "DK"
+    ]
+   },
+   {
+    "card": "H9",
+    "left": [
+     "H10",
+     "HK",
+     "D9"
+    ],
+    "right": [
+     "D10",
+     "S10",
+     "DK"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-17",
+  "game": "G",
+  "position": "forehand",
+  "skat": [
+   "C8",
+   "C9"
+  ],
+  "hand": [
+   "H7",
+   "S9",
+   "SA"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "DJ"
+     ],
+     [
+      "right",
+      "D9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H8"
+     ],
+     [
+      "left",
+      "H10"
+     ],
+     [
+      "right",
+      "HQ"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "D7"
+     ],
+     [
+      "you",
+      "DA"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "D8"
+     ],
+     [
+      "right",
+      "H9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S7"
+     ],
+     [
+      "left",
+      "SQ"
+     ],
+     [
+      "right",
+      "S10"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "CA"
+     ],
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "C7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "CQ"
+     ],
+     [
+      "right",
+      "DQ"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "SK",
+   "C10",
+   "S8"
+  ],
+  "right": [
+   "D10",
+   "CK",
+   "HK"
+  ],
+  "have": 51,
+  "need": 10,
+  "voids": [
+   {
+    "side": "right",
+    "suit": "T",
+    "trick": 1
+   },
+   {
+    "side": "left",
+    "suit": "H",
+    "trick": 4
+   },
+   {
+    "side": "left",
+    "suit": "T",
+    "trick": 7
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": [
+    "HK"
+   ]
+  },
+  "answer": "SA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "SA"
+     ],
+     [
+      "left",
+      "S8"
+     ],
+     [
+      "right",
+      "D10"
+     ]
+    ],
+    "winner": "you",
+    "points": 21
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H7"
+     ],
+     [
+      "left",
+      "SK"
+     ],
+     [
+      "right",
+      "HK"
+     ]
+    ],
+    "winner": "right",
+    "points": 8
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "CK"
+     ],
+     [
+      "you",
+      "S9"
+     ],
+     [
+      "left",
+      "C10"
+     ]
+    ],
+    "winner": "left",
+    "points": 14
+   }
+  ],
+  "traps": [
+   {
+    "card": "H7",
+    "left": [
+     "SK",
+     "C10",
+     "S8"
+    ],
+    "right": [
+     "D10",
+     "CK",
+     "HK"
+    ]
+   },
+   {
+    "card": "S9",
+    "left": [
+     "SK",
+     "C10",
+     "D10"
+    ],
+    "right": [
+     "S8",
+     "CK",
+     "HK"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-18",
+  "game": "C",
+  "position": "middlehand",
+  "skat": [
+   "HQ",
+   "D9"
+  ],
+  "hand": [
+   "HA",
+   "H9",
+   "H8"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "right",
+      "S8"
+     ],
+     [
+      "you",
+      "C10"
+     ],
+     [
+      "left",
+      "S9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C7"
+     ],
+     [
+      "left",
+      "CK"
+     ],
+     [
+      "right",
+      "HJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SQ"
+     ],
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "S7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C9"
+     ],
+     [
+      "left",
+      "CJ"
+     ],
+     [
+      "right",
+      "SJ"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "D8"
+     ],
+     [
+      "you",
+      "DA"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C8"
+     ],
+     [
+      "left",
+      "S10"
+     ],
+     [
+      "right",
+      "DJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "D10"
+     ],
+     [
+      "you",
+      "CQ"
+     ],
+     [
+      "left",
+      "DQ"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "SA",
+   "D7",
+   "HK"
+  ],
+  "right": [
+   "H10",
+   "H7",
+   "SK"
+  ],
+  "have": 58,
+  "need": 3,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "T",
+    "trick": 6
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "HA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "HK"
+     ],
+     [
+      "right",
+      "H7"
+     ]
+    ],
+    "winner": "you",
+    "points": 15
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H9"
+     ],
+     [
+      "left",
+      "SA"
+     ],
+     [
+      "right",
+      "H10"
+     ]
+    ],
+    "winner": "right",
+    "points": 21
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SK"
+     ],
+     [
+      "you",
+      "H8"
+     ],
+     [
+      "left",
+      "D7"
+     ]
+    ],
+    "winner": "right",
+    "points": 4
+   }
+  ],
+  "traps": [
+   {
+    "card": "H9",
+    "left": [
+     "SA",
+     "D7",
+     "HK"
+    ],
+    "right": [
+     "H10",
+     "H7",
+     "SK"
+    ]
+   },
+   {
+    "card": "H8",
+    "left": [
+     "SA",
+     "D7",
+     "HK"
+    ],
+    "right": [
+     "H10",
+     "H7",
+     "SK"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-19",
+  "game": "S",
+  "position": "forehand",
+  "skat": [
+   "HK",
+   "H8"
+  ],
+  "hand": [
+   "C7",
+   "CK",
+   "CA"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "SK"
+     ],
+     [
+      "right",
+      "CJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "DQ"
+     ],
+     [
+      "you",
+      "DA"
+     ],
+     [
+      "left",
+      "D8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "DJ"
+     ],
+     [
+      "left",
+      "HJ"
+     ],
+     [
+      "right",
+      "S8"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "D7"
+     ],
+     [
+      "right",
+      "DK"
+     ],
+     [
+      "you",
+      "D10"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SQ"
+     ],
+     [
+      "left",
+      "C8"
+     ],
+     [
+      "right",
+      "S9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S7"
+     ],
+     [
+      "left",
+      "CQ"
+     ],
+     [
+      "right",
+      "SA"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "H10"
+     ],
+     [
+      "you",
+      "S10"
+     ],
+     [
+      "left",
+      "H7"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "D9",
+   "HA",
+   "H9"
+  ],
+  "right": [
+   "C9",
+   "HQ",
+   "C10"
+  ],
+  "have": 55,
+  "need": 6,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "T",
+    "trick": 5
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "CA",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "D9"
+     ],
+     [
+      "right",
+      "C9"
+     ]
+    ],
+    "winner": "you",
+    "points": 11
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C7"
+     ],
+     [
+      "left",
+      "HA"
+     ],
+     [
+      "right",
+      "C10"
+     ]
+    ],
+    "winner": "right",
+    "points": 21
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "HQ"
+     ],
+     [
+      "you",
+      "CK"
+     ],
+     [
+      "left",
+      "H9"
+     ]
+    ],
+    "winner": "right",
+    "points": 7
+   }
+  ],
+  "traps": [
+   {
+    "card": "C7",
+    "left": [
+     "D9",
+     "HA",
+     "H9"
+    ],
+    "right": [
+     "C9",
+     "HQ",
+     "C10"
+    ]
+   },
+   {
+    "card": "CK",
+    "left": [
+     "D9",
+     "HA",
+     "H9"
+    ],
+    "right": [
+     "C9",
+     "HQ",
+     "C10"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-20",
+  "game": "G",
+  "position": "forehand",
   "skat": [
    "HQ",
    "CQ"
@@ -256,10 +4745,1246 @@ export const ENDGAMES_STORED: StoredEndgame[] = [
   ]
  },
  {
-  "id": "sieg-sichern-2",
+  "id": "sieg-sichern-21",
+  "game": "G",
+  "position": "rearhand",
+  "skat": [
+   "DQ",
+   "H9"
+  ],
+  "hand": [
+   "H7",
+   "C10",
+   "H8"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "left",
+      "DA"
+     ],
+     [
+      "right",
+      "D8"
+     ],
+     [
+      "you",
+      "SJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "D7"
+     ],
+     [
+      "right",
+      "HJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CQ"
+     ],
+     [
+      "left",
+      "C7"
+     ],
+     [
+      "right",
+      "S9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CK"
+     ],
+     [
+      "left",
+      "C9"
+     ],
+     [
+      "right",
+      "S7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C8"
+     ],
+     [
+      "left",
+      "CA"
+     ],
+     [
+      "right",
+      "H10"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "D10"
+     ],
+     [
+      "right",
+      "DK"
+     ],
+     [
+      "you",
+      "DJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SA"
+     ],
+     [
+      "left",
+      "S8"
+     ],
+     [
+      "right",
+      "SK"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "D9",
+   "S10",
+   "HK"
+  ],
+  "right": [
+   "HQ",
+   "SQ",
+   "HA"
+  ],
+  "have": 58,
+  "need": 3,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "T",
+    "trick": 2
+   },
+   {
+    "side": "right",
+    "suit": "C",
+    "trick": 3
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "C10",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "C10"
+     ],
+     [
+      "left",
+      "D9"
+     ],
+     [
+      "right",
+      "HQ"
+     ]
+    ],
+    "winner": "you",
+    "points": 13
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H7"
+     ],
+     [
+      "left",
+      "HK"
+     ],
+     [
+      "right",
+      "HA"
+     ]
+    ],
+    "winner": "right",
+    "points": 15
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SQ"
+     ],
+     [
+      "you",
+      "H8"
+     ],
+     [
+      "left",
+      "S10"
+     ]
+    ],
+    "winner": "left",
+    "points": 13
+   }
+  ],
+  "traps": [
+   {
+    "card": "H7",
+    "left": [
+     "D9",
+     "S10",
+     "HK"
+    ],
+    "right": [
+     "HQ",
+     "SQ",
+     "HA"
+    ]
+   },
+   {
+    "card": "H8",
+    "left": [
+     "D9",
+     "S10",
+     "HK"
+    ],
+    "right": [
+     "HQ",
+     "SQ",
+     "HA"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-22",
+  "game": "G",
+  "position": "forehand",
+  "skat": [
+   "C8",
+   "D10"
+  ],
+  "hand": [
+   "SQ",
+   "SK",
+   "H10"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "DJ"
+     ],
+     [
+      "right",
+      "HJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "HK"
+     ],
+     [
+      "right",
+      "H8"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "CQ"
+     ],
+     [
+      "right",
+      "C9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HQ"
+     ],
+     [
+      "left",
+      "D8"
+     ],
+     [
+      "right",
+      "H9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S9"
+     ],
+     [
+      "left",
+      "S10"
+     ],
+     [
+      "right",
+      "S7"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "C7"
+     ],
+     [
+      "right",
+      "CK"
+     ],
+     [
+      "you",
+      "H7"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "C10"
+     ],
+     [
+      "you",
+      "CJ"
+     ],
+     [
+      "left",
+      "D9"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "SA",
+   "S8",
+   "DK"
+  ],
+  "right": [
+   "D7",
+   "DQ",
+   "DA"
+  ],
+  "have": 60,
+  "need": 1,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "H",
+    "trick": 4
+   },
+   {
+    "side": "left",
+    "suit": "C",
+    "trick": 7
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "H10",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "H10"
+     ],
+     [
+      "left",
+      "S8"
+     ],
+     [
+      "right",
+      "D7"
+     ]
+    ],
+    "winner": "you",
+    "points": 10
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SQ"
+     ],
+     [
+      "left",
+      "SA"
+     ],
+     [
+      "right",
+      "DQ"
+     ]
+    ],
+    "winner": "left",
+    "points": 17
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "DA"
+     ],
+     [
+      "you",
+      "SK"
+     ]
+    ],
+    "winner": "right",
+    "points": 19
+   }
+  ],
+  "traps": [
+   {
+    "card": "SQ",
+    "left": [
+     "SA",
+     "S8",
+     "DK"
+    ],
+    "right": [
+     "D7",
+     "DQ",
+     "DA"
+    ]
+   },
+   {
+    "card": "SK",
+    "left": [
+     "SA",
+     "S8",
+     "DK"
+    ],
+    "right": [
+     "D7",
+     "DQ",
+     "DA"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-23",
+  "game": "G",
+  "position": "middlehand",
+  "skat": [
+   "D7",
+   "DQ"
+  ],
+  "hand": [
+   "C8",
+   "C10",
+   "S8"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "right",
+      "C9"
+     ],
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "C7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "CJ"
+     ],
+     [
+      "right",
+      "D10"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "DJ"
+     ],
+     [
+      "right",
+      "H9"
+     ],
+     [
+      "you",
+      "HJ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H8"
+     ],
+     [
+      "left",
+      "H7"
+     ],
+     [
+      "right",
+      "H10"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SQ"
+     ],
+     [
+      "you",
+      "SA"
+     ],
+     [
+      "left",
+      "S9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "D9"
+     ],
+     [
+      "right",
+      "HQ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "HK"
+     ],
+     [
+      "left",
+      "CQ"
+     ],
+     [
+      "right",
+      "S7"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "CK",
+   "S10",
+   "DA"
+  ],
+  "right": [
+   "DK",
+   "D8",
+   "SK"
+  ],
+  "have": 53,
+  "need": 8,
+  "voids": [
+   {
+    "side": "right",
+    "suit": "T",
+    "trick": 2
+   },
+   {
+    "side": "left",
+    "suit": "H",
+    "trick": 6
+   },
+   {
+    "side": "right",
+    "suit": "H",
+    "trick": 7
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "C10",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "C10"
+     ],
+     [
+      "left",
+      "CK"
+     ],
+     [
+      "right",
+      "DK"
+     ]
+    ],
+    "winner": "you",
+    "points": 18
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C8"
+     ],
+     [
+      "left",
+      "S10"
+     ],
+     [
+      "right",
+      "D8"
+     ]
+    ],
+    "winner": "you",
+    "points": 10
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S8"
+     ],
+     [
+      "left",
+      "DA"
+     ],
+     [
+      "right",
+      "SK"
+     ]
+    ],
+    "winner": "right",
+    "points": 15
+   }
+  ],
+  "traps": [
+   {
+    "card": "C8",
+    "left": [
+     "CK",
+     "S10",
+     "DA"
+    ],
+    "right": [
+     "DK",
+     "D8",
+     "SK"
+    ]
+   },
+   {
+    "card": "S8",
+    "left": [
+     "CK",
+     "S10",
+     "DK"
+    ],
+    "right": [
+     "DA",
+     "D8",
+     "SK"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-24",
+  "game": "D",
+  "position": "forehand",
+  "skat": [
+   "HQ",
+   "H9"
+  ],
+  "hand": [
+   "D8",
+   "C10",
+   "D10"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "you",
+      "DJ"
+     ],
+     [
+      "left",
+      "DK"
+     ],
+     [
+      "right",
+      "D7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SJ"
+     ],
+     [
+      "left",
+      "CJ"
+     ],
+     [
+      "right",
+      "DA"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "CK"
+     ],
+     [
+      "right",
+      "CA"
+     ],
+     [
+      "you",
+      "C9"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SA"
+     ],
+     [
+      "you",
+      "S7"
+     ],
+     [
+      "left",
+      "S10"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "HA"
+     ],
+     [
+      "you",
+      "D9"
+     ],
+     [
+      "left",
+      "HK"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S9"
+     ],
+     [
+      "left",
+      "S8"
+     ],
+     [
+      "right",
+      "SK"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "SQ"
+     ],
+     [
+      "you",
+      "HJ"
+     ],
+     [
+      "left",
+      "H10"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "C8",
+   "CQ",
+   "DQ"
+  ],
+  "right": [
+   "H8",
+   "C7",
+   "H7"
+  ],
+  "have": 39,
+  "need": 22,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "S",
+    "trick": 7
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "D10",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "D10"
+     ],
+     [
+      "left",
+      "DQ"
+     ],
+     [
+      "right",
+      "H8"
+     ]
+    ],
+    "winner": "you",
+    "points": 13
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "D8"
+     ],
+     [
+      "left",
+      "C8"
+     ],
+     [
+      "right",
+      "C7"
+     ]
+    ],
+    "winner": "you",
+    "points": 0
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C10"
+     ],
+     [
+      "left",
+      "CQ"
+     ],
+     [
+      "right",
+      "H7"
+     ]
+    ],
+    "winner": "you",
+    "points": 13
+   }
+  ],
+  "traps": [
+   {
+    "card": "D8",
+    "left": [
+     "C8",
+     "CQ",
+     "H8"
+    ],
+    "right": [
+     "DQ",
+     "C7",
+     "H7"
+    ]
+   },
+   {
+    "card": "C10",
+    "left": [
+     "C8",
+     "CQ",
+     "C7"
+    ],
+    "right": [
+     "DQ",
+     "H8",
+     "H7"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-25",
+  "game": "S",
+  "position": "middlehand",
+  "skat": [
+   "C9",
+   "CQ"
+  ],
+  "hand": [
+   "S10",
+   "S8",
+   "H8"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "right",
+      "H7"
+     ],
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "HK"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "DJ"
+     ],
+     [
+      "left",
+      "HJ"
+     ],
+     [
+      "right",
+      "S7"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "D7"
+     ],
+     [
+      "right",
+      "DK"
+     ],
+     [
+      "you",
+      "D10"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SK"
+     ],
+     [
+      "left",
+      "SQ"
+     ],
+     [
+      "right",
+      "SJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "HQ"
+     ],
+     [
+      "you",
+      "H10"
+     ],
+     [
+      "left",
+      "S9"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "DA"
+     ],
+     [
+      "right",
+      "DQ"
+     ],
+     [
+      "you",
+      "D8"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "CK"
+     ],
+     [
+      "right",
+      "C10"
+     ],
+     [
+      "you",
+      "SA"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "C8",
+   "CA",
+   "D9"
+  ],
+  "right": [
+   "CJ",
+   "H9",
+   "C7"
+  ],
+  "have": 57,
+  "need": 4,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "H",
+    "trick": 5
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": [
+    "H9"
+   ]
+  },
+  "answer": "S8",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "S8"
+     ],
+     [
+      "left",
+      "C8"
+     ],
+     [
+      "right",
+      "CJ"
+     ]
+    ],
+    "winner": "right",
+    "points": 2
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "H9"
+     ],
+     [
+      "you",
+      "H8"
+     ],
+     [
+      "left",
+      "CA"
+     ]
+    ],
+    "winner": "right",
+    "points": 11
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "C7"
+     ],
+     [
+      "you",
+      "S10"
+     ],
+     [
+      "left",
+      "D9"
+     ]
+    ],
+    "winner": "you",
+    "points": 10
+   }
+  ],
+  "traps": [
+   {
+    "card": "S10",
+    "left": [
+     "C8",
+     "CA",
+     "D9"
+    ],
+    "right": [
+     "CJ",
+     "H9",
+     "C7"
+    ]
+   },
+   {
+    "card": "H8",
+    "left": [
+     "C8",
+     "CA",
+     "CJ"
+    ],
+    "right": [
+     "D9",
+     "H9",
+     "C7"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-26",
   "game": "S",
   "position": "forehand",
-  "level": 1,
   "skat": [
    "D10",
    "DQ"
@@ -508,10 +6233,252 @@ export const ENDGAMES_STORED: StoredEndgame[] = [
   ]
  },
  {
-  "id": "sieg-sichern-3",
+  "id": "sieg-sichern-27",
+  "game": "H",
+  "position": "middlehand",
+  "skat": [
+   "D10",
+   "SQ"
+  ],
+  "hand": [
+   "C10",
+   "DJ",
+   "C8"
+  ],
+  "tricks": [
+   {
+    "cards": [
+     [
+      "right",
+      "DA"
+     ],
+     [
+      "you",
+      "D8"
+     ],
+     [
+      "left",
+      "DQ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "DK"
+     ],
+     [
+      "you",
+      "H10"
+     ],
+     [
+      "left",
+      "D7"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H8"
+     ],
+     [
+      "left",
+      "H9"
+     ],
+     [
+      "right",
+      "HQ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "D9"
+     ],
+     [
+      "you",
+      "HK"
+     ],
+     [
+      "left",
+      "C9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "H7"
+     ],
+     [
+      "left",
+      "HJ"
+     ],
+     [
+      "right",
+      "CJ"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "S7"
+     ],
+     [
+      "you",
+      "HA"
+     ],
+     [
+      "left",
+      "S9"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "CA"
+     ],
+     [
+      "left",
+      "CQ"
+     ],
+     [
+      "right",
+      "C7"
+     ]
+    ],
+    "winner": "you"
+   }
+  ],
+  "left": [
+   "SA",
+   "SK",
+   "SJ"
+  ],
+  "right": [
+   "S8",
+   "S10",
+   "CK"
+  ],
+  "have": 56,
+  "need": 5,
+  "voids": [
+   {
+    "side": "left",
+    "suit": "D",
+    "trick": 4
+   }
+  ],
+  "placed": {
+   "left": [],
+   "right": []
+  },
+  "answer": "C10",
+  "line": [
+   {
+    "cards": [
+     [
+      "you",
+      "C10"
+     ],
+     [
+      "left",
+      "SJ"
+     ],
+     [
+      "right",
+      "CK"
+     ]
+    ],
+    "winner": "left",
+    "points": 16
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "SA"
+     ],
+     [
+      "right",
+      "S8"
+     ],
+     [
+      "you",
+      "DJ"
+     ]
+    ],
+    "winner": "you",
+    "points": 13
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "C8"
+     ],
+     [
+      "left",
+      "SK"
+     ],
+     [
+      "right",
+      "S10"
+     ]
+    ],
+    "winner": "you",
+    "points": 14
+   }
+  ],
+  "traps": [
+   {
+    "card": "DJ",
+    "left": [
+     "SA",
+     "SK",
+     "SJ"
+    ],
+    "right": [
+     "S8",
+     "S10",
+     "CK"
+    ]
+   },
+   {
+    "card": "C8",
+    "left": [
+     "SA",
+     "SK",
+     "S8"
+    ],
+    "right": [
+     "SJ",
+     "S10",
+     "CK"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "sieg-sichern-28",
   "game": "C",
   "position": "rearhand",
-  "level": 1,
   "skat": [
    "S10",
    "HQ"
@@ -762,68 +6729,117 @@ export const ENDGAMES_STORED: StoredEndgame[] = [
   ]
  },
  {
-  "id": "sieg-sichern-4",
-  "game": "G",
-  "position": "forehand",
-  "level": 2,
+  "id": "sieg-sichern-29",
+  "game": "S",
+  "position": "middlehand",
   "skat": [
-   "D10",
-   "SQ"
+   "D8",
+   "D7"
   ],
   "hand": [
-   "S8",
-   "CA",
-   "CQ",
-   "HJ"
+   "HQ",
+   "SJ",
+   "CA"
   ],
   "tricks": [
    {
     "cards": [
      [
+      "right",
+      "DA"
+     ],
+     [
       "you",
-      "CJ"
+      "SA"
      ],
      [
       "left",
+      "DQ"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "SQ"
+     ],
+     [
+      "left",
+      "S8"
+     ],
+     [
+      "right",
+      "SK"
+     ]
+    ],
+    "winner": "right"
+   },
+   {
+    "cards": [
+     [
+      "right",
+      "DK"
+     ],
+     [
+      "you",
+      "S10"
+     ],
+     [
+      "left",
+      "HJ"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "C7"
+     ],
+     [
+      "right",
+      "C8"
+     ],
+     [
+      "you",
+      "CK"
+     ]
+    ],
+    "winner": "you"
+   },
+   {
+    "cards": [
+     [
+      "you",
+      "S9"
+     ],
+     [
+      "left",
+      "DJ"
+     ],
+     [
+      "right",
+      "H10"
+     ]
+    ],
+    "winner": "left"
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "H8"
+     ],
+     [
+      "right",
       "H7"
      ],
      [
-      "right",
-      "DJ"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
       "you",
       "HA"
-     ],
-     [
-      "left",
-      "D8"
-     ],
-     [
-      "right",
-      "HQ"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "H10"
-     ],
-     [
-      "left",
-      "D9"
-     ],
-     [
-      "right",
-      "D7"
      ]
     ],
     "winner": "you"
@@ -836,7 +6852,7 @@ export const ENDGAMES_STORED: StoredEndgame[] = [
      ],
      [
       "left",
-      "CK"
+      "H9"
      ],
      [
       "right",
@@ -844,77 +6860,45 @@ export const ENDGAMES_STORED: StoredEndgame[] = [
      ]
     ],
     "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "H8"
-     ],
-     [
-      "left",
-      "S9"
-     ],
-     [
-      "right",
-      "C7"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "H9"
-     ],
-     [
-      "left",
-      "DQ"
-     ],
-     [
-      "right",
-      "S7"
-     ]
-    ],
-    "winner": "you"
    }
   ],
   "left": [
-   "S10",
-   "SA",
-   "DK",
-   "DA"
+   "C10",
+   "S7",
+   "CJ"
   ],
   "right": [
-   "C10",
-   "SK",
-   "SJ",
-   "C8"
+   "D10",
+   "D9",
+   "CQ"
   ],
-  "have": 52,
-  "need": 9,
+  "have": 44,
+  "need": 17,
   "voids": [
    {
     "side": "left",
-    "suit": "T",
-    "trick": 1
+    "suit": "D",
+    "trick": 3
    },
    {
-    "side": "left",
-    "suit": "H",
-    "trick": 2
+    "side": "right",
+    "suit": "T",
+    "trick": 5
    },
    {
     "side": "right",
     "suit": "H",
-    "trick": 3
+    "trick": 7
    }
   ],
   "placed": {
-   "left": [],
+   "left": [
+    "S7",
+    "CJ"
+   ],
    "right": [
-    "SJ"
+    "D10",
+    "D9"
    ]
   },
   "answer": "CA",
@@ -927,1806 +6911,78 @@ export const ENDGAMES_STORED: StoredEndgame[] = [
      ],
      [
       "left",
-      "S10"
-     ],
-     [
-      "right",
       "C10"
-     ]
-    ],
-    "winner": "you",
-    "points": 31
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "S8"
-     ],
-     [
-      "left",
-      "SA"
-     ],
-     [
-      "right",
-      "SK"
-     ]
-    ],
-    "winner": "left",
-    "points": 15
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "DK"
-     ],
-     [
-      "right",
-      "C8"
-     ],
-     [
-      "you",
-      "CQ"
-     ]
-    ],
-    "winner": "left",
-    "points": 7
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "DA"
-     ],
-     [
-      "right",
-      "SJ"
-     ],
-     [
-      "you",
-      "HJ"
-     ]
-    ],
-    "winner": "right",
-    "points": 15
-   }
-  ],
-  "traps": [
-   {
-    "card": "S8",
-    "left": [
-     "S10",
-     "DK",
-     "C10",
-     "C8"
-    ],
-    "right": [
-     "SA",
-     "DA",
-     "SK",
-     "SJ"
-    ]
-   },
-   {
-    "card": "CQ",
-    "left": [
-     "S10",
-     "SA",
-     "DK",
-     "DA"
-    ],
-    "right": [
-     "C10",
-     "SK",
-     "SJ",
-     "C8"
-    ]
-   },
-   {
-    "card": "HJ",
-    "left": [
-     "S10",
-     "SA",
-     "DK",
-     "DA"
-    ],
-    "right": [
-     "C10",
-     "SK",
-     "SJ",
-     "C8"
-    ]
-   }
-  ]
- },
- {
-  "id": "sieg-sichern-5",
-  "game": "D",
-  "position": "middlehand",
-  "level": 2,
-  "skat": [
-   "CQ",
-   "S8"
-  ],
-  "hand": [
-   "D8",
-   "H7",
-   "DJ",
-   "H10"
-  ],
-  "tricks": [
-   {
-    "cards": [
-     [
-      "right",
-      "CA"
-     ],
-     [
-      "you",
-      "D9"
-     ],
-     [
-      "left",
-      "C9"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "CJ"
-     ],
-     [
-      "left",
-      "D10"
-     ],
-     [
-      "right",
-      "D7"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "SJ"
-     ],
-     [
-      "left",
-      "DA"
-     ],
-     [
-      "right",
-      "DQ"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "H8"
-     ],
-     [
-      "left",
-      "H9"
-     ],
-     [
-      "right",
-      "HQ"
-     ]
-    ],
-    "winner": "right"
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "SK"
-     ],
-     [
-      "you",
-      "S7"
-     ],
-     [
-      "left",
-      "SA"
-     ]
-    ],
-    "winner": "left"
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "S10"
-     ],
-     [
-      "right",
-      "S9"
-     ],
-     [
-      "you",
-      "DK"
-     ]
-    ],
-    "winner": "you"
-   }
-  ],
-  "left": [
-   "HJ",
-   "C8",
-   "HK",
-   "SQ"
-  ],
-  "right": [
-   "C7",
-   "CK",
-   "HA",
-   "C10"
-  ],
-  "have": 56,
-  "need": 5,
-  "voids": [],
-  "placed": {
-   "left": [],
-   "right": []
-  },
-  "answer": "D8",
-  "line": [
-   {
-    "cards": [
-     [
-      "you",
-      "D8"
-     ],
-     [
-      "left",
-      "HJ"
-     ],
-     [
-      "right",
-      "C10"
-     ]
-    ],
-    "winner": "left",
-    "points": 12
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "C8"
-     ],
-     [
-      "right",
-      "CK"
-     ],
-     [
-      "you",
-      "H7"
-     ]
-    ],
-    "winner": "right",
-    "points": 4
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "HA"
-     ],
-     [
-      "you",
-      "H10"
-     ],
-     [
-      "left",
-      "HK"
-     ]
-    ],
-    "winner": "right",
-    "points": 25
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "C7"
-     ],
-     [
-      "you",
-      "DJ"
-     ],
-     [
-      "left",
-      "SQ"
-     ]
-    ],
-    "winner": "you",
-    "points": 5
-   }
-  ],
-  "traps": [
-   {
-    "card": "H7",
-    "left": [
-     "HJ",
-     "C8",
-     "HK",
-     "HA"
-    ],
-    "right": [
-     "SQ",
-     "C7",
-     "CK",
-     "C10"
-    ]
-   },
-   {
-    "card": "DJ",
-    "left": [
-     "HJ",
-     "C8",
-     "HK",
-     "SQ"
-    ],
-    "right": [
-     "C7",
-     "CK",
-     "HA",
-     "C10"
-    ]
-   },
-   {
-    "card": "H10",
-    "left": [
-     "HJ",
-     "C8",
-     "HK",
-     "HA"
-    ],
-    "right": [
-     "SQ",
-     "C7",
-     "CK",
-     "C10"
-    ]
-   }
-  ]
- },
- {
-  "id": "sieg-sichern-6",
-  "game": "S",
-  "position": "forehand",
-  "level": 2,
-  "skat": [
-   "C9",
-   "C8"
-  ],
-  "hand": [
-   "D10",
-   "SQ",
-   "S7",
-   "SK"
-  ],
-  "tricks": [
-   {
-    "cards": [
-     [
-      "you",
-      "SJ"
-     ],
-     [
-      "left",
-      "CJ"
-     ],
-     [
-      "right",
-      "S10"
-     ]
-    ],
-    "winner": "left"
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "C10"
-     ],
-     [
-      "right",
-      "CK"
-     ],
-     [
-      "you",
-      "SA"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "S8"
-     ],
-     [
-      "left",
-      "S9"
-     ],
-     [
-      "right",
-      "HJ"
-     ]
-    ],
-    "winner": "right"
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "HQ"
-     ],
-     [
-      "you",
-      "HA"
-     ],
-     [
-      "left",
-      "H7"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "D9"
-     ],
-     [
-      "left",
-      "D8"
-     ],
-     [
-      "right",
-      "DK"
-     ]
-    ],
-    "winner": "right"
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "H8"
-     ],
-     [
-      "you",
-      "H10"
-     ],
-     [
-      "left",
-      "HK"
-     ]
-    ],
-    "winner": "you"
-   }
-  ],
-  "left": [
-   "CA",
-   "C7",
-   "D7",
-   "DJ"
-  ],
-  "right": [
-   "DQ",
-   "H9",
-   "CQ",
-   "DA"
-  ],
-  "have": 53,
-  "need": 8,
-  "voids": [],
-  "placed": {
-   "left": [],
-   "right": []
-  },
-  "answer": "S7",
-  "line": [
-   {
-    "cards": [
-     [
-      "you",
-      "S7"
-     ],
-     [
-      "left",
-      "DJ"
-     ],
-     [
-      "right",
-      "DQ"
-     ]
-    ],
-    "winner": "left",
-    "points": 5
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "CA"
      ],
      [
       "right",
       "CQ"
-     ],
-     [
-      "you",
-      "D10"
      ]
     ],
-    "winner": "left",
+    "winner": "you",
     "points": 24
    },
    {
     "cards": [
      [
-      "left",
-      "C7"
-     ],
-     [
-      "right",
-      "H9"
-     ],
-     [
       "you",
-      "SQ"
-     ]
-    ],
-    "winner": "you",
-    "points": 3
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "SK"
-     ],
-     [
-      "left",
-      "D7"
-     ],
-     [
-      "right",
-      "DA"
-     ]
-    ],
-    "winner": "you",
-    "points": 15
-   }
-  ],
-  "traps": [
-   {
-    "card": "D10",
-    "left": [
-     "CA",
-     "C7",
-     "DJ",
-     "H9"
-    ],
-    "right": [
-     "D7",
-     "DQ",
-     "CQ",
-     "DA"
-    ]
-   },
-   {
-    "card": "SQ",
-    "left": [
-     "CA",
-     "C7",
-     "D7",
-     "DQ"
-    ],
-    "right": [
-     "DJ",
-     "H9",
-     "CQ",
-     "DA"
-    ]
-   },
-   {
-    "card": "SK",
-    "left": [
-     "CA",
-     "C7",
-     "D7",
-     "DQ"
-    ],
-    "right": [
-     "DJ",
-     "H9",
-     "CQ",
-     "DA"
-    ]
-   }
-  ]
- },
- {
-  "id": "sieg-sichern-7",
-  "game": "G",
-  "position": "middlehand",
-  "level": 2,
-  "skat": [
-   "HK",
-   "H10"
-  ],
-  "hand": [
-   "HJ",
-   "SQ",
-   "S10",
-   "D10"
-  ],
-  "tricks": [
-   {
-    "cards": [
-     [
-      "right",
-      "H8"
-     ],
-     [
-      "you",
-      "C8"
-     ],
-     [
-      "left",
-      "HA"
-     ]
-    ],
-    "winner": "left"
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "H9"
-     ],
-     [
-      "right",
       "HQ"
      ],
      [
-      "you",
+      "left",
+      "S7"
+     ],
+     [
+      "right",
+      "D10"
+     ]
+    ],
+    "winner": "left",
+    "points": 13
+   },
+   {
+    "cards": [
+     [
+      "left",
+      "CJ"
+     ],
+     [
+      "right",
       "D9"
-     ]
-    ],
-    "winner": "right"
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "H7"
      ],
      [
       "you",
-      "S8"
-     ],
-     [
-      "left",
-      "CK"
-     ]
-    ],
-    "winner": "right"
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "CQ"
-     ],
-     [
-      "you",
-      "CA"
-     ],
-     [
-      "left",
-      "C9"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "CJ"
-     ],
-     [
-      "left",
-      "C7"
-     ],
-     [
-      "right",
-      "DJ"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "SA"
-     ],
-     [
-      "left",
-      "SK"
-     ],
-     [
-      "right",
-      "S9"
-     ]
-    ],
-    "winner": "you"
-   }
-  ],
-  "left": [
-   "DK",
-   "D7",
-   "S7",
-   "D8"
-  ],
-  "right": [
-   "DA",
-   "DQ",
-   "SJ",
-   "C10"
-  ],
-  "have": 47,
-  "need": 14,
-  "voids": [
-   {
-    "side": "left",
-    "suit": "H",
-    "trick": 3
-   },
-   {
-    "side": "left",
-    "suit": "T",
-    "trick": 5
-   }
-  ],
-  "placed": {
-   "left": [],
-   "right": [
-    "SJ"
-   ]
-  },
-  "answer": "S10",
-  "line": [
-   {
-    "cards": [
-     [
-      "you",
-      "S10"
-     ],
-     [
-      "left",
-      "S7"
-     ],
-     [
-      "right",
-      "C10"
-     ]
-    ],
-    "winner": "you",
-    "points": 20
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "HJ"
-     ],
-     [
-      "left",
-      "DK"
-     ],
-     [
-      "right",
       "SJ"
      ]
     ],
-    "winner": "right",
-    "points": 8
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "DA"
-     ],
-     [
-      "you",
-      "D10"
-     ],
-     [
-      "left",
-      "D7"
-     ]
-    ],
-    "winner": "right",
-    "points": 21
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "DQ"
-     ],
-     [
-      "you",
-      "SQ"
-     ],
-     [
-      "left",
-      "D8"
-     ]
-    ],
-    "winner": "right",
-    "points": 6
-   }
-  ],
-  "traps": [
-   {
-    "card": "HJ",
-    "left": [
-     "DK",
-     "D7",
-     "S7",
-     "D8"
-    ],
-    "right": [
-     "DA",
-     "DQ",
-     "SJ",
-     "C10"
-    ]
-   },
-   {
-    "card": "SQ",
-    "left": [
-     "DK",
-     "D7",
-     "S7",
-     "C10"
-    ],
-    "right": [
-     "D8",
-     "DA",
-     "DQ",
-     "SJ"
-    ]
-   },
-   {
-    "card": "D10",
-    "left": [
-     "DK",
-     "D7",
-     "S7",
-     "D8"
-    ],
-    "right": [
-     "DA",
-     "DQ",
-     "SJ",
-     "C10"
-    ]
-   }
-  ]
- },
- {
-  "id": "sieg-sichern-8",
-  "game": "S",
-  "position": "rearhand",
-  "level": 3,
-  "skat": [
-   "HQ",
-   "H10"
-  ],
-  "hand": [
-   "CJ",
-   "CQ",
-   "C7",
-   "C10",
-   "SQ"
-  ],
-  "tricks": [
-   {
-    "cards": [
-     [
-      "left",
-      "DK"
-     ],
-     [
-      "right",
-      "DA"
-     ],
-     [
-      "you",
-      "DQ"
-     ]
-    ],
-    "winner": "right"
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "CK"
-     ],
-     [
-      "you",
-      "CA"
-     ],
-     [
-      "left",
-      "C9"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "S9"
-     ],
-     [
-      "left",
-      "HJ"
-     ],
-     [
-      "right",
-      "SA"
-     ]
-    ],
-    "winner": "left"
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "D10"
-     ],
-     [
-      "right",
-      "D8"
-     ],
-     [
-      "you",
-      "SK"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "SJ"
-     ],
-     [
-      "left",
-      "DJ"
-     ],
-     [
-      "right",
-      "S8"
-     ]
-    ],
-    "winner": "you"
-   }
-  ],
-  "left": [
-   "H9",
-   "HK",
-   "C8",
-   "S7",
-   "D9"
-  ],
-  "right": [
-   "D7",
-   "H7",
-   "HA",
-   "S10",
-   "H8"
-  ],
-  "have": 46,
-  "need": 15,
-  "voids": [],
-  "placed": {
-   "left": [],
-   "right": []
-  },
-  "answer": "C10",
-  "line": [
-   {
-    "cards": [
-     [
-      "you",
-      "C10"
-     ],
-     [
-      "left",
-      "C8"
-     ],
-     [
-      "right",
-      "HA"
-     ]
-    ],
-    "winner": "you",
-    "points": 21
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "CJ"
-     ],
-     [
-      "left",
-      "S7"
-     ],
-     [
-      "right",
-      "S10"
-     ]
-    ],
-    "winner": "you",
-    "points": 12
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "CQ"
-     ],
-     [
-      "left",
-      "H9"
-     ],
-     [
-      "right",
-      "D7"
-     ]
-    ],
-    "winner": "you",
-    "points": 3
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "C7"
-     ],
-     [
-      "left",
-      "HK"
-     ],
-     [
-      "right",
-      "H7"
-     ]
-    ],
-    "winner": "you",
+    "winner": "left",
     "points": 4
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "SQ"
-     ],
-     [
-      "left",
-      "D9"
-     ],
-     [
-      "right",
-      "H8"
-     ]
-    ],
-    "winner": "you",
-    "points": 3
    }
   ],
   "traps": [
    {
-    "card": "CJ",
+    "card": "HQ",
     "left": [
-     "H9",
-     "HK",
-     "C8",
+     "C10",
+     "S7",
+     "CJ"
+    ],
+    "right": [
+     "D10",
      "D9",
-     "HA"
-    ],
-    "right": [
-     "S7",
-     "D7",
-     "H7",
-     "S10",
-     "H8"
+     "CQ"
     ]
    },
    {
-    "card": "CQ",
+    "card": "SJ",
     "left": [
-     "H9",
-     "HK",
-     "C8",
      "S7",
-     "S10"
+     "CJ",
+     "CQ"
     ],
     "right": [
-     "D9",
-     "D7",
-     "H7",
-     "HA",
-     "H8"
-    ]
-   },
-   {
-    "card": "C7",
-    "left": [
-     "H9",
-     "HK",
-     "S7",
-     "D7",
-     "S10"
-    ],
-    "right": [
-     "C8",
-     "D9",
-     "H7",
-     "HA",
-     "H8"
-    ]
-   },
-   {
-    "card": "SQ",
-    "left": [
-     "H9",
-     "HK",
-     "C8",
-     "D9",
-     "D7"
-    ],
-    "right": [
-     "S7",
-     "H7",
-     "HA",
-     "S10",
-     "H8"
-    ]
-   }
-  ]
- },
- {
-  "id": "sieg-sichern-9",
-  "game": "G",
-  "position": "rearhand",
-  "level": 3,
-  "skat": [
-   "S10",
-   "H10"
-  ],
-  "hand": [
-   "C10",
-   "DK",
-   "SQ",
-   "CK",
-   "S8"
-  ],
-  "tricks": [
-   {
-    "cards": [
-     [
-      "left",
-      "HQ"
-     ],
-     [
-      "right",
-      "H8"
-     ],
-     [
-      "you",
-      "C9"
-     ]
-    ],
-    "winner": "left"
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "HK"
-     ],
-     [
-      "right",
-      "SK"
-     ],
-     [
-      "you",
-      "DJ"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "CJ"
-     ],
-     [
-      "left",
-      "C7"
-     ],
-     [
-      "right",
-      "HJ"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "D10"
-     ],
-     [
-      "left",
-      "D9"
-     ],
-     [
-      "right",
-      "D8"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "DA"
-     ],
-     [
-      "left",
-      "CQ"
-     ],
-     [
-      "right",
-      "D7"
-     ]
-    ],
-    "winner": "you"
-   }
-  ],
-  "left": [
-   "S9",
-   "SA",
-   "H7",
-   "HA",
-   "H9"
-  ],
-  "right": [
-   "CA",
-   "S7",
-   "SJ",
-   "DQ",
-   "C8"
-  ],
-  "have": 58,
-  "need": 3,
-  "voids": [
-   {
-    "side": "right",
-    "suit": "H",
-    "trick": 2
-   },
-   {
-    "side": "left",
-    "suit": "T",
-    "trick": 3
-   },
-   {
-    "side": "left",
-    "suit": "D",
-    "trick": 5
-   }
-  ],
-  "placed": {
-   "left": [
-    "H7",
-    "HA",
-    "H9"
-   ],
-   "right": [
-    "SJ",
-    "DQ"
-   ]
-  },
-  "answer": "DK",
-  "line": [
-   {
-    "cards": [
-     [
-      "you",
-      "DK"
-     ],
-     [
-      "left",
-      "S9"
-     ],
-     [
-      "right",
-      "DQ"
-     ]
-    ],
-    "winner": "you",
-    "points": 7
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "C10"
-     ],
-     [
-      "left",
-      "H7"
-     ],
-     [
-      "right",
-      "CA"
-     ]
-    ],
-    "winner": "right",
-    "points": 21
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "S7"
-     ],
-     [
-      "you",
-      "SQ"
-     ],
-     [
-      "left",
-      "SA"
-     ]
-    ],
-    "winner": "left",
-    "points": 14
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "HA"
-     ],
-     [
-      "right",
-      "C8"
-     ],
-     [
-      "you",
-      "CK"
-     ]
-    ],
-    "winner": "left",
-    "points": 15
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "H9"
-     ],
-     [
-      "right",
-      "SJ"
-     ],
-     [
-      "you",
-      "S8"
-     ]
-    ],
-    "winner": "right",
-    "points": 2
-   }
-  ],
-  "traps": [
-   {
-    "card": "C10",
-    "left": [
-     "S9",
-     "SA",
-     "H7",
-     "HA",
-     "H9"
-    ],
-    "right": [
-     "CA",
-     "S7",
-     "SJ",
-     "DQ",
-     "C8"
-    ]
-   },
-   {
-    "card": "SQ",
-    "left": [
-     "S9",
-     "SA",
-     "H7",
-     "HA",
-     "H9"
-    ],
-    "right": [
-     "CA",
-     "S7",
-     "SJ",
-     "DQ",
-     "C8"
-    ]
-   },
-   {
-    "card": "CK",
-    "left": [
-     "S9",
-     "SA",
-     "H7",
-     "HA",
-     "H9"
-    ],
-    "right": [
-     "CA",
-     "S7",
-     "SJ",
-     "DQ",
-     "C8"
-    ]
-   },
-   {
-    "card": "S8",
-    "left": [
-     "S9",
-     "SA",
-     "H7",
-     "HA",
-     "H9"
-    ],
-    "right": [
-     "CA",
-     "S7",
-     "SJ",
-     "DQ",
-     "C8"
-    ]
-   }
-  ]
- },
- {
-  "id": "sieg-sichern-10",
-  "game": "S",
-  "position": "rearhand",
-  "level": 3,
-  "skat": [
-   "D10",
-   "C10"
-  ],
-  "hand": [
-   "SK",
-   "H9",
-   "H8",
-   "SA",
-   "HK"
-  ],
-  "tricks": [
-   {
-    "cards": [
-     [
-      "left",
-      "DK"
-     ],
-     [
-      "right",
-      "DA"
-     ],
-     [
-      "you",
-      "S10"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "DJ"
-     ],
-     [
-      "left",
-      "SQ"
-     ],
-     [
-      "right",
-      "CJ"
-     ]
-    ],
-    "winner": "right"
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "CQ"
-     ],
-     [
-      "you",
-      "S8"
-     ],
-     [
-      "left",
-      "C7"
-     ]
-    ],
-    "winner": "you"
-   },
-   {
-    "cards": [
-     [
-      "you",
-      "S7"
-     ],
-     [
-      "left",
-      "S9"
-     ],
-     [
-      "right",
-      "CA"
-     ]
-    ],
-    "winner": "left"
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "CK"
-     ],
-     [
-      "right",
-      "C9"
-     ],
-     [
-      "you",
-      "HJ"
-     ]
-    ],
-    "winner": "you"
-   }
-  ],
-  "left": [
-   "H7",
-   "HQ",
-   "C8",
-   "SJ",
-   "DQ"
-  ],
-  "right": [
-   "D9",
-   "H10",
-   "D8",
-   "HA",
-   "D7"
-  ],
-  "have": 54,
-  "need": 7,
-  "voids": [
-   {
-    "side": "right",
-    "suit": "T",
-    "trick": 4
-   }
-  ],
-  "placed": {
-   "left": [
-    "SJ"
-   ],
-   "right": []
-  },
-  "answer": "SK",
-  "line": [
-   {
-    "cards": [
-     [
-      "you",
-      "SK"
-     ],
-     [
-      "left",
-      "SJ"
-     ],
-     [
-      "right",
-      "D9"
-     ]
-    ],
-    "winner": "left",
-    "points": 6
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "H7"
-     ],
-     [
-      "right",
-      "H10"
-     ],
-     [
-      "you",
-      "H9"
-     ]
-    ],
-    "winner": "right",
-    "points": 10
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "D8"
-     ],
-     [
-      "you",
-      "H8"
-     ],
-     [
-      "left",
-      "DQ"
-     ]
-    ],
-    "winner": "left",
-    "points": 3
-   },
-   {
-    "cards": [
-     [
-      "left",
-      "HQ"
-     ],
-     [
-      "right",
-      "HA"
-     ],
-     [
-      "you",
-      "HK"
-     ]
-    ],
-    "winner": "right",
-    "points": 18
-   },
-   {
-    "cards": [
-     [
-      "right",
-      "D7"
-     ],
-     [
-      "you",
-      "SA"
-     ],
-     [
-      "left",
-      "C8"
-     ]
-    ],
-    "winner": "you",
-    "points": 11
-   }
-  ],
-  "traps": [
-   {
-    "card": "H9",
-    "left": [
-     "H7",
-     "C8",
-     "SJ",
-     "DQ",
+     "C10",
+     "D10",
      "D9"
-    ],
-    "right": [
-     "HQ",
-     "H10",
-     "D8",
-     "HA",
-     "D7"
-    ]
-   },
-   {
-    "card": "H8",
-    "left": [
-     "H7",
-     "C8",
-     "SJ",
-     "DQ",
-     "D9"
-    ],
-    "right": [
-     "HQ",
-     "H10",
-     "D8",
-     "HA",
-     "D7"
-    ]
-   },
-   {
-    "card": "SA",
-    "left": [
-     "H7",
-     "HQ",
-     "C8",
-     "SJ",
-     "D9"
-    ],
-    "right": [
-     "DQ",
-     "H10",
-     "D8",
-     "HA",
-     "D7"
-    ]
-   },
-   {
-    "card": "HK",
-    "left": [
-     "H7",
-     "C8",
-     "SJ",
-     "DQ",
-     "D9"
-    ],
-    "right": [
-     "HQ",
-     "H10",
-     "D8",
-     "HA",
-     "D7"
     ]
    }
   ]

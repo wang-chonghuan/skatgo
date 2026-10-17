@@ -1,14 +1,15 @@
+import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link, useParams } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChevronLeft, CircleCheck, CircleX } from 'lucide-react'
+import { ChevronLeft, CircleCheck, CircleX, Lock } from 'lucide-react'
 import { useState } from 'react'
 
-import type { Card } from '~/lib/skat/cards'
-import type { Game } from '~/lib/skat/game'
+import { type Card, sortHand } from '~/lib/skat/cards'
 import { cardLabel, contractName, roleName, suitName } from '~/lib/skat/i18n'
 import type { CardRow, ChoiceStep, PickStep, PlayStep } from '~/lib/skat/lessons/types'
 import { EXERCISE_TEXT, exerciseById, exercisesOf, nextExercise } from '~/lib/skat/tricks/exercises'
-import type { Endgame, Side, Trick } from '~/lib/skat/tricks/exercises/endgame'
+import type { Endgame } from '~/lib/skat/tricks/exercises/endgame'
+import { LADDER_FREE } from '~/lib/skat/tricks/exercises/ladder'
 import type { Exercise, ExerciseText, Option, ShownRow, Situation, Who } from '~/lib/skat/tricks/exercises/types'
 import { useLadder } from '~/lib/skat/tricks/ladder-progress'
 import { m } from '~/paraglide/messages'
@@ -16,12 +17,12 @@ import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
-import { elev } from '../../theme/elevation.stylex'
+import { elev, fill } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { CardRowView } from './card-row'
-import { TrickReplay } from './daily-comparison'
+import { CardRowView, Fan } from './card-row'
+import { PlayingCard } from './playing-card'
 import { Choice, Pick, Play } from './exercises'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 
@@ -29,7 +30,9 @@ import { Btn, Panel, Pill, Rich, linkLook } from './ui'
  * One Skat-Tricks exercise (SKATGO-103): the way back to all of them, the kind and number, the title; then on
  * a white card what the learner knows of the game, the cards on show and the question, in the course's own
  * widgets. The first answer counts: then the verdict, the right answer, why it is right and the trick it
- * practises, and the way on. Nothing is saved, and the page is not a search entry (lib/indexability.ts).
+ * practises, and the way on. The page is not a search entry (lib/indexability.ts). Only the ladder's answers are
+ * recorded (SKATGO-109, ladder-progress.ts), and from its third step on it needs an account: a guest sees why
+ * and the way to sign in in the step's place.
  */
 export function TricksExercisePage() {
   const { exercise: id } = useParams({ from: '/skat-tricks_/$exercise' })
@@ -42,13 +45,16 @@ function ExerciseView({ id }: { id: string }) {
   // A fresh attempt is a fresh widget.
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState<'right' | 'wrong' | null>(null)
-  const solve = useLadder((s) => s.solve)
+  const ladder = useLadder()
   if (!exercise) return null
   const locale = getLocale()
   const text = EXERCISE_TEXT[locale]
   const words = text.exercises[exercise.id]
   const siblings = exercisesOf(exercise.type)
   const n = siblings.findIndex((e) => e.id === exercise.id) + 1
+  const record = exercise.type === 'sieg-sichern'
+  // The human: 「前2题不登录可以做，第三题必须登录才可以做」.
+  const locked = record && n > LADDER_FREE
   // The ladder climbs within itself (SKATGO-108): after its last step, back to the list.
   const after = nextExercise(exercise.id)
   const following = exercise.type === 'sieg-sichern' && after?.type !== exercise.type ? undefined : after
@@ -56,9 +62,12 @@ function ExerciseView({ id }: { id: string }) {
     once: true,
     onSolved: () => {
       setResult('right')
-      if (exercise.type === 'sieg-sichern') solve(exercise.id)
+      if (record) ladder.answer(exercise.id, true)
     },
-    onMistake: () => setResult('wrong'),
+    onMistake: () => {
+      setResult('wrong')
+      if (record) ladder.answer(exercise.id, false)
+    },
   }
   const again = () => {
     setResult(null)
@@ -74,18 +83,33 @@ function ExerciseView({ id }: { id: string }) {
               {m.tricks_ex_back()}
             </span>
           </Link>
-          <Pill>{m.tricks_ex_kicker({ type: text.types[exercise.type].title, n, count: siblings.length })}</Pill>
+          {/* A ladder step's kicker is short, so it shares the back button's line on a phone (SKATGO-109). */}
+          <Pill>{exercise.endgame ? m.tricks_ladder_kicker({ n, count: siblings.length }) : m.tricks_ex_kicker({ type: text.types[exercise.type].title, n, count: siblings.length })}</Pill>
         </nav>
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{words.title}</h1>
+        {/* Every ladder step has the same heading; the step itself is on the felt (SKATGO-109, the human:
+            「标题就要continue this deal之类的，统一」). */}
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{exercise.endgame ? m.tricks_ladder_heading() : words.title}</h1>
 
-        <section {...stylex.props(styles.card)}>
-          <SituationView situation={exercise.situation} />
-          <div key={attempt}>
-            {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
-            {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
-            {exercise.ask.kind === 'play' ? <Play step={playStep(exercise, words)} {...callbacks} /> : null}
-          </div>
-        </section>
+        {locked && ladder.account === undefined ? (
+          <section {...stylex.props(styles.card)}>
+            <p data-testid="tricks-ladder-waiting" {...stylex.props(typography.loading, styles.para)}>{m.loading()}</p>
+          </section>
+        ) : locked && ladder.account === null ? (
+          <LadderGate />
+        ) : (
+          <section {...stylex.props(styles.card)}>
+            <SituationView situation={exercise.situation} />
+            <div key={attempt}>
+              {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
+              {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
+              {exercise.ask.kind === 'play' && exercise.endgame ? (
+                <Play step={{ ...playStep(exercise, words), prompt: '' }} table={<LadderTable e={exercise.endgame} />} handLabel={m.tricks_row_cards()} {...callbacks} />
+              ) : exercise.ask.kind === 'play' ? (
+                <Play step={playStep(exercise, words)} {...callbacks} />
+              ) : null}
+            </div>
+          </section>
+        )}
 
         {result ? (
           <div data-testid="tricks-exercise-result" data-result={result} {...stylex.props(styles.result)}>
@@ -104,10 +128,15 @@ function ExerciseView({ id }: { id: string }) {
                   <p data-testid="tricks-exercise-explain" {...stylex.props(typography.body, styles.para)}>
                     <Rich text={words.explain} />
                   </p>
+                  {words.trap ? (
+                    <p data-testid="tricks-exercise-trap" {...stylex.props(typography.body, styles.trap)}>
+                      <Rich text={words.trap} />
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </Panel>
-            {exercise.endgame ? <EndgameAnalysis e={exercise.endgame} /> : null}
+            {exercise.endgame ? <LadderLine e={exercise.endgame} /> : null}
             <div {...stylex.props(styles.actions)}>
               {following ? (
                 <Link to="/skat-tricks/$exercise" params={{ exercise: following.id }} data-testid="tricks-exercise-next" {...linkLook('go', 'md')}>
@@ -126,6 +155,31 @@ function ExerciseView({ id }: { id: string }) {
         ) : null}
       </div>
     </div>
+  )
+}
+
+/** A ladder step a guest may not answer (SKATGO-109): in its place, why — and the way in, Clerk's window over
+ *  the page; once signed in, the step is there. */
+function LadderGate() {
+  return (
+    <section data-testid="tricks-ladder-gate" {...stylex.props(styles.card)}>
+      <div {...stylex.props(styles.verdict)}>
+        <span aria-hidden="true" {...stylex.props(styles.verdictIcon, styles.gateIcon)}>
+          <Lock size={icon.inline} strokeWidth={icon.outline} />
+        </span>
+        <div {...stylex.props(styles.verdictText)}>
+          <p {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_ladder_gate_title()}</p>
+          <p {...stylex.props(typography.body, styles.para)}>{m.tricks_ladder_gate_text({ n: LADDER_FREE })}</p>
+        </div>
+      </div>
+      <div {...stylex.props(styles.actions)}>
+        <SignInButton mode="modal">
+          <Btn testId="tricks-ladder-sign-in" tone="go">
+            {m.tricks_ladder_gate_button()}
+          </Btn>
+        </SignInButton>
+      </div>
+    </section>
   )
 }
 
@@ -151,76 +205,96 @@ function SituationView({ situation: s }: { situation: Situation }) {
     s.bid ? m.tricks_sit_bid({ bid: s.bid }) : null,
     s.trickNo ? m.tricks_row_trick({ n: s.trickNo }) : null,
     s.points !== undefined ? m.tricks_sit_points({ n: s.points }) : null,
-    s.need !== undefined ? m.tricks_sit_need({ n: s.need }) : null,
-    s.tricksLeft !== undefined ? m.tricks_sit_left({ n: s.tricksLeft }) : null,
   ].filter(Boolean)
+  // A ladder step says it all in its title and on its table (SKATGO-109).
+  if (!facts.length && !s.rows.length) return null
   return (
     <div data-testid="tricks-situation" {...stylex.props(styles.situation)}>
       {facts.length ? <p {...stylex.props(typography.panelLabel, styles.facts)}>{facts.join(' · ')}</p> : null}
       {s.rows.map((row, i) => (
-        <RowView key={i} row={row} />
+        <CardRowView key={i} row={cardRow(row)} />
       ))}
     </div>
   )
 }
 
-const SEAT_OF: Record<Side, 0 | 1 | 2> = { you: 0, left: 1, right: 2 }
-const replayNames = () => [m.tricks_who_you(), m.tricks_who_left(), m.tricks_who_right()]
-/** Tricks in the play record's own shape: the declarer — the learner — in seat 0, left 1, right 2. */
-const asReplay = (tricks: { cards: { who: Who; card: Card }[]; winner: Who }[]): Game['tricks'] =>
-  tricks.map((t) => ({ cards: t.cards.map((c) => ({ seat: SEAT_OF[c.who as Side], card: c.card })), winner: SEAT_OF[t.winner as Side] }))
-
-/** A row the question shows: the play so far as the play record (SKATGO-108), the voids as a line, else cards. */
-function RowView({ row }: { row: ShownRow }) {
-  if (row.kind === 'history') {
-    return (
-      <div data-testid="tricks-history" {...stylex.props(styles.history)}>
-        <p {...stylex.props(typography.meta, styles.facts)}>{m.tricks_row_history()}</p>
-        <TrickReplay tricks={asReplay(row.tricks)} names={replayNames()} />
-      </div>
-    )
-  }
-  if (row.kind === 'voids') {
-    return (
-      <p data-testid="tricks-voids" {...stylex.props(typography.meta, styles.facts)}>
-        {row.voids.map((v) => (v.suit === 'T' ? m.tricks_void_trump({ who: whoName(v.who) }) : m.tricks_void_suit({ who: whoName(v.who), suit: suitName(v.suit) }))).join(' · ')}
-      </p>
-    )
-  }
-  return <CardRowView row={cardRow(row)} />
-}
-
 /**
- * After a ladder step is answered (SKATGO-108): the opponents' cards turned over, the sure way through this
- * deal trick by trick, and each other card with a split of the opponents' cards in which it loses.
+ * A ladder step's table (SKATGO-109, the human: 「从用户角度……能不能马上想到你是要干啥」): in plain sentences,
+ * the cards the opponents still hold — sorted, so they do not tell whose they are — and what the play has
+ * shown about them; your cards are the hand under it.
  */
-function EndgameAnalysis({ e }: { e: Endgame }) {
-  const list = (cs: Card[]) => cs.map(cardLabel).join(' ')
-  const replay = (ts: Trick[]) => asReplay(ts.map((t) => ({ cards: t.cards.map((c) => ({ who: c.side, card: c.card })), winner: t.winner })))
+function LadderTable({ e }: { e: Endgame }) {
+  const out = sortHand([...e.left, ...e.right], e.contract)
+  // Each opponent's known gaps, the same three rows on every step (the human: 「要标准显示：合约是啥，左边的特点，右边的特点」).
+  const known = (side: 'left' | 'right') => {
+    const parts = e.voids.filter((v) => v.side === side).map((v) => (v.suit === 'T' ? m.tricks_ladder_part_trump() : m.tricks_ladder_part_suit({ suit: suitName(v.suit) })))
+    return parts.length ? parts.join(', ') : m.tricks_ladder_nothing()
+  }
+  const rows: [string, string, string][] = [
+    // Who you are, said with the game (the human asked: 「我都是庄家吗」).
+    ['contract', m.tricks_ladder_contract(), m.tricks_ladder_contract_value({ contract: contractName(e.contract) })],
+    // The goal on the felt too (the human: 「目标也写在绿色上面，目标分数，要打几张」).
+    ['goal', m.tricks_ladder_goal(), m.tricks_ladder_goal_value({ need: e.need, n: e.hand.length })],
+    ['left', m.tricks_ladder_left(), known('left')],
+    ['right', m.tricks_ladder_right(), known('right')],
+  ]
   return (
-    <section data-testid="tricks-analysis" {...stylex.props(styles.card)}>
-      <div {...stylex.props(styles.analysisPart)}>
-        <h2 {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_an_hands()}</h2>
-        <CardRowView row={{ label: m.tricks_who_left(), cards: e.left }} />
-        <CardRowView row={{ label: m.tricks_who_right(), cards: e.right }} />
+    <div data-testid="tricks-ladder-table" {...stylex.props(styles.ladderTable)}>
+      {/* A table, so the three values line up whatever the labels' widths. */}
+      <table data-testid="tricks-ladder-facts" {...stylex.props(styles.factsTable)}>
+        <tbody>
+          {rows.map(([key, label, value]) => (
+            <tr key={key} data-fact={key}>
+              <th scope="row" {...stylex.props(typography.label, styles.onFeltSoft, styles.factLabel)}>{label}</th>
+              <td {...stylex.props(typography.bodySmall, styles.onFelt, styles.factValue)}>
+                <Rich text={value} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div {...stylex.props(styles.outBlock)}>
+        <p {...stylex.props(typography.label, styles.onFeltSoft, styles.center)}>{m.tricks_ladder_out({ n: out.length })}</p>
+        {/* As big as your own cards (the human: 「剩的牌大一点，最好和手牌一样大」), held like a hand. */}
+        <Fan testId="tricks-ladder-out" cards={out} size="lg" row />
       </div>
-      <div data-testid="tricks-analysis-line" {...stylex.props(styles.analysisPart)}>
-        <h2 {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_an_line()}</h2>
-        <TrickReplay tricks={replay(e.line)} names={replayNames()} />
-      </div>
-      <div data-testid="tricks-analysis-traps" {...stylex.props(styles.analysisPart)}>
-        <h2 {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_an_traps()}</h2>
-        {e.traps.map((x) => (
-          <p key={cardLabel(x.card)} {...stylex.props(typography.body, styles.para)}>
-            <Rich text={m.tricks_an_trap({ card: `**${cardLabel(x.card)}**`, left: list(x.left), right: list(x.right) })} />
-          </p>
-        ))}
-      </div>
-    </section>
+    </div>
   )
 }
 
-function cardRow(row: Exclude<ShownRow, { kind: 'history' } | { kind: 'voids' }>): CardRow {
+/** After a ladder step (SKATGO-109): the sure way, trick by trick on the felt, until the points are in. */
+function LadderLine({ e }: { e: Endgame }) {
+  let total = 0
+  const shown: Endgame['line'] = []
+  for (const t of e.line) {
+    if (total >= e.need) break
+    shown.push(t)
+    if (t.winner === 'you') total += t.points
+  }
+  let running = 0
+  return (
+    <div data-testid="tricks-ladder-line" {...stylex.props(styles.lineFelt)}>
+      <span {...stylex.props(typography.label, styles.onFeltSoft)}>{m.tricks_an_line()}</span>
+      {shown.map((t, i) => {
+        if (t.winner === 'you') running += t.points
+        const done = t.winner === 'you' && running >= e.need
+        return (
+          <div key={i} {...stylex.props(styles.lineRow)}>
+            <span {...stylex.props(typography.label, styles.onFeltSoft)}>{i + 1}.</span>
+            {t.cards.map((c) => (
+              <PlayingCard key={cardLabel(c.card)} card={c.card} size="xs" glow={c.side === 'you'} />
+            ))}
+            <span {...stylex.props(typography.smallBold, styles.onFelt, styles.lineEnd)}>
+              {t.winner === 'you' ? `${m.tricks_line_you({ n: t.points })}${done ? ' ✓' : ''}` : t.winner === 'left' ? m.tricks_ladder_left() : m.tricks_ladder_right()}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function cardRow(row: ShownRow): CardRow {
   switch (row.kind) {
     case 'skat':
       return { label: m.tricks_row_skat(), cards: row.cards }
@@ -311,13 +385,43 @@ const styles = stylex.create({
     borderBottomColor: color.hairline,
   },
   facts: { margin: 0, color: color.slate },
-  history: { display: 'flex', flexDirection: 'column', gap: space.x8 },
-  analysisPart: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  trap: { margin: 0, color: color.bad },
+  // A ladder step's table and line (SKATGO-109), on the drill's felt.
+  ladderTable: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  factsTable: { borderCollapse: 'collapse' },
+  factLabel: { textAlign: 'left', verticalAlign: 'baseline', paddingBlock: space.x2, paddingRight: space.x16, whiteSpace: 'nowrap' },
+  factValue: { verticalAlign: 'baseline', paddingBlock: space.x2 },
+  outBlock: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x6,
+    paddingTop: space.x12,
+    borderTopWidth: border.hair,
+    borderTopStyle: 'solid',
+    borderTopColor: color.boardLine,
+  },
+  center: { textAlign: 'center' },
+  onFelt: { margin: 0, color: color.onColor },
+  onFeltSoft: { margin: 0, color: color.amber },
+  lineFelt: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x8,
+    padding: { default: space.x16, [bp.phone]: space.x12 },
+    borderRadius: radii.panel,
+    borderWidth: dims.frameBorderPlay,
+    borderStyle: 'solid',
+    borderColor: color.gold,
+    backgroundImage: fill.felt,
+  },
+  lineRow: { display: 'flex', alignItems: 'center', gap: space.x6 },
+  lineEnd: { marginLeft: 'auto' },
   result: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   verdict: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },
   verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },
   good: { color: color.good },
   bad: { color: color.bad },
+  gateIcon: { color: color.slate },
   verdictText: { display: 'flex', flexDirection: 'column', gap: space.x8, minWidth: 0 },
   verdictTitle: { margin: 0, color: color.navy },
   para: { margin: 0, color: color.text },

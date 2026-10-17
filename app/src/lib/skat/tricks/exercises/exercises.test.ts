@@ -7,17 +7,17 @@ import { ENDGAMES_STORED } from './endgames.data'
 import { readEndgame, recordOf, solveEndgame } from './endgame'
 import { MITZAEHLEN, cards } from './positions'
 
-// The Skat-Tricks exercises (SKATGO-103) held to their ticket: the "Sieg sichern" ladder of ten (SKATGO-108)
-// first, then twelve kinds of three, every one in both languages, every card real and every move legal. The exact answers are computed when positions.ts loads —
+// The Skat-Tricks exercises (SKATGO-103) held to their ticket: the "Sieg sichern" ladder of 29 (SKATGO-108,
+// SKATGO-109) first, then twelve kinds of three, every one in both languages, every card real and every move legal. The exact answers are computed when positions.ts loads —
 // a position whose answer is not unique fails there; SkatZero's are checked in multiplayer/.
 
 describe('the Skat-Tricks exercises', () => {
-  it('the ladder of ten first, then twelve kinds of three, in the kinds\' order, each id once', () => {
-    const size = (type: string) => (type === 'sieg-sichern' ? 10 : 3)
+  it('the ladder of 29 first, then twelve kinds of three, in the kinds\' order, each id once', () => {
+    const size = (type: string) => (type === 'sieg-sichern' ? 29 : 3)
     expect(EXERCISE_TYPES[0]).toBe('sieg-sichern')
     expect(EXERCISE_TYPES).toHaveLength(13)
-    expect(EXERCISES).toHaveLength(46)
-    expect(new Set(EXERCISES.map((e) => e.id)).size).toBe(46)
+    expect(EXERCISES).toHaveLength(65)
+    expect(new Set(EXERCISES.map((e) => e.id)).size).toBe(65)
     for (const type of EXERCISE_TYPES) expect(EXERCISES.filter((e) => e.type === type).map((e) => e.id)).toEqual(Array.from({ length: size(type) }, (_, i) => `${type}-${i + 1}`))
     expect(EXERCISES.map((e) => e.type)).toEqual(EXERCISE_TYPES.flatMap((t) => Array(size(t)).fill(t)))
   })
@@ -38,9 +38,7 @@ describe('the Skat-Tricks exercises', () => {
 
   it('no card twice in what an exercise shows', () => {
     for (const e of EXERCISES) {
-      const shown: Card[] = e.situation.rows.flatMap((r) =>
-        r.kind === 'trick' ? r.plays.map((p) => p.card) : r.kind === 'history' ? r.tricks.flatMap((t) => t.cards.map((c) => c.card)) : r.kind === 'voids' ? [] : r.cards,
-      )
+      const shown: Card[] = e.situation.rows.flatMap((r) => (r.kind === 'trick' ? r.plays.map((p) => p.card) : r.cards))
       const asked: Card[] = e.ask.kind === 'play' ? [...e.ask.hand, ...e.ask.trick.map((t) => t.card)] : e.ask.kind === 'pick' ? e.ask.cards : []
       const all = [...shown, ...asked]
       for (const c of all) expect(fullDeck().some((d) => sameCard(c, d)), `${e.id} ${cardId(c)}`).toBe(true)
@@ -88,11 +86,41 @@ describe('the Skat-Tricks exercises', () => {
   })
 
   describe('the "Sieg sichern" ladder (SKATGO-108)', () => {
-    it('rises: three tricks left at level 1, four at level 2, five at level 3', () => {
-      expect(ENDGAMES_STORED.map((s) => [s.hand.length, s.level])).toEqual([
-        [3, 1], [3, 1], [3, 1], [4, 2], [4, 2], [4, 2], [4, 2], [5, 3], [5, 3], [5, 3],
-      ])
+    it('29 steps of one kind: two tricks left, then three (SKATGO-109)', () => {
+      const left = ENDGAMES_STORED.map((s) => s.hand.length)
+      expect(left).toHaveLength(29)
+      expect(left).toEqual([...left].sort())
+      expect(new Set(left)).toEqual(new Set([2, 3]))
     })
+    it('every step has its tip and its trap in both languages', () => {
+      for (const locale of locales) for (const s of ENDGAMES_STORED) expect(EXERCISE_TEXT[locale].exercises[s.id].trap, `${locale} ${s.id}`).toBeTruthy()
+    })
+    // The tips and traps are written by hand (SKATGO-109): every card they name is still in play, in the letters
+    // of the text's language; the tip names the answer in bold, and the trap starts with a card that loses.
+    const RANKS: Record<string, Record<string, Card['rank']>> = {
+      de: { '7': '7', '8': '8', '9': '9', '10': '10', B: 'J', D: 'Q', K: 'K', A: 'A' },
+      en: { '7': '7', '8': '8', '9': '9', '10': '10', J: 'J', Q: 'Q', K: 'K', A: 'A' },
+    }
+    const SUITS: Record<string, Card['suit']> = { '♣': 'C', '♠': 'S', '♥': 'H', '♦': 'D' }
+    for (const locale of locales) {
+      it(`${locale}: the cards each tip and trap name`, () => {
+        const named = (text: string) =>
+          [...text.matchAll(/([♣♠♥♦])(10|[0-9]|[A-Z])/g)].map(([whole, suit, rank]) => {
+            expect(RANKS[locale][rank], `${whole} is not a ${locale} card`).toBeTruthy()
+            return { suit: SUITS[suit], rank: RANKS[locale][rank] } as Card
+          })
+        const label = (c: Card) => `${Object.keys(SUITS).find((g) => SUITS[g] === c.suit)}${Object.keys(RANKS[locale]).find((r) => RANKS[locale][r] === c.rank)}`
+        for (const s of ENDGAMES_STORED) {
+          const e = readEndgame(s)
+          const w = EXERCISE_TEXT[locale].exercises[s.id]
+          const live = [...e.hand, ...e.left, ...e.right]
+          for (const c of [...named(w.explain), ...named(w.trap ?? '')]) expect(live.some((d) => sameCard(c, d)), `${s.id}: ${cardId(c)} is not in play`).toBe(true)
+          expect(w.explain, s.id).toContain(`**${label(e.answer)}**`)
+          const first = named(w.trap ?? '')[0]
+          expect(first && e.traps.some((t) => sameCard(t.card, first)), `${s.id}: the trap starts with a card that loses`).toBe(true)
+        }
+      })
+    }
     for (const s of ENDGAMES_STORED) {
       it(`${s.id}: a whole deal, played by the rules`, () => {
         const e = readEndgame(s)

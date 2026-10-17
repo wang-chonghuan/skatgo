@@ -1,9 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChevronDown, ChevronRight, ChevronUp, CircleCheck } from 'lucide-react'
+import { ChevronDown, ChevronRight, ChevronUp, CircleCheck, CircleX, Lock } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { EXERCISE_TEXT, EXERCISE_TYPES, exercisesOf } from '~/lib/skat/tricks/exercises'
+import { LADDER_FREE } from '~/lib/skat/tricks/exercises/ladder'
 import type { ExerciseType } from '~/lib/skat/tricks/exercises/types'
 import { useLadder } from '~/lib/skat/tricks/ladder-progress'
 import { m } from '~/paraglide/messages'
@@ -25,17 +26,16 @@ import { Pill } from './ui'
  * human: 「题目页要收录……很好的引流材料」). A card named in the address (#druecken, from a trick of the
  * article) opens by itself.
  *
- * The first card is the "Sieg sichern" ladder (SKATGO-108), featured: ten steps in rising order, each with its
- * level, the ones answered right checked and the next one marked — remembered in this browser only, applied
- * after mount. The other kinds remember nothing.
+ * The first card is the "Sieg sichern" ladder (SKATGO-108, SKATGO-109), featured: 29 steps in rising order,
+ * the ones answered right checked, the ones answered wrong and not yet right crossed, each step's wrong answers
+ * counted under its number, and the next one marked; for a guest, the steps that need an account carry a lock.
+ * The record is the account's, or for a guest this browser's (ladder-progress.ts), applied after mount. The
+ * other kinds remember nothing.
  */
 export function TricksPage() {
   const text = EXERCISE_TEXT[getLocale()]
   const [open, setOpen] = useState<ReadonlySet<ExerciseType>>(() => new Set())
-  const [mounted, setMounted] = useState(false)
-  const stored = useLadder((s) => s.solved)
-  const solved = mounted ? stored : NONE
-  useEffect(() => setMounted(true), [])
+  const { steps, account } = useLadder()
   useEffect(() => {
     const hash = window.location.hash.slice(1)
     if ((EXERCISE_TYPES as readonly string[]).includes(hash)) setOpen(new Set([hash as ExerciseType]))
@@ -60,7 +60,7 @@ export function TricksPage() {
             const isOpen = open.has(type)
             const exercises = exercisesOf(type)
             const ladder = type === 'sieg-sichern'
-            const nextUp = ladder ? exercises.find((e) => !solved.includes(e.id))?.id : undefined
+            const nextUp = ladder ? exercises.find((e) => !steps[e.id]?.solved)?.id : undefined
             const Chevron = isOpen ? ChevronUp : ChevronDown
             return (
               <li key={type} id={type} {...stylex.props(styles.item)}>
@@ -78,32 +78,53 @@ export function TricksPage() {
                       <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{text.types[type].blurb}</span>
                     </span>
                     <span data-testid={ladder ? 'tricks-ladder-progress' : undefined} {...stylex.props(typography.meta, styles.count, ladder && styles.countShown)}>
-                      {ladder ? m.tricks_ladder_progress({ n: exercises.filter((e) => solved.includes(e.id)).length, count: exercises.length }) : m.tricks_hub_count({ n: exercises.length })}
+                      {ladder ? m.tricks_ladder_progress({ n: exercises.filter((e) => steps[e.id]?.solved).length, count: exercises.length }) : m.tricks_hub_count({ n: exercises.length })}
                     </span>
                     <span {...stylex.props(styles.chevron)}>
                       <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
                     </span>
                   </summary>
                   <ol {...stylex.props(styles.tasks)}>
-                    {exercises.map((e, k) => (
-                      <li key={e.id} {...stylex.props(styles.task)}>
-                        <Link to="/skat-tricks/$exercise" params={{ exercise: e.id }} data-testid="tricks-exercise-link" {...stylex.props(styles.taskLink)}>
-                          <span {...stylex.props(styles.taskText)}>
-                            <span {...stylex.props(typography.meta, styles.taskNumber)}>
-                              {e.level ? `${m.tricks_hub_task({ n: k + 1 })} · ${m.tricks_ladder_level({ n: e.level })}` : m.tricks_hub_task({ n: k + 1 })}
+                    {exercises.map((e, k) => {
+                      const record = ladder ? steps[e.id] : undefined
+                      const misses = record?.misses ?? 0
+                      const mark = record?.solved ? 'solved' : misses ? 'missed' : ladder && account === null && k >= LADDER_FREE ? 'locked' : undefined
+                      return (
+                        <li key={e.id} {...stylex.props(styles.task)}>
+                          <Link
+                            to="/skat-tricks/$exercise"
+                            params={{ exercise: e.id }}
+                            data-testid="tricks-exercise-link"
+                            data-mark={mark}
+                            data-misses={ladder ? misses : undefined}
+                            {...stylex.props(styles.taskLink)}
+                          >
+                            <span {...stylex.props(styles.taskText)}>
+                              <span {...stylex.props(typography.meta, styles.taskNumber)}>
+                                {/* The wrong answers stay counted, also once the step is solved (the human: 「要记下来哪题错了」). */}
+                                {misses ? `${m.tricks_hub_task({ n: k + 1 })} · ${m.tricks_ladder_misses({ n: misses })}` : m.tricks_hub_task({ n: k + 1 })}
+                              </span>
+                              <span {...stylex.props(typography.appBtnStrong, styles.taskTitle)}>{text.exercises[e.id].title}</span>
                             </span>
-                            <span {...stylex.props(typography.appBtnStrong, styles.taskTitle)}>{text.exercises[e.id].title}</span>
-                          </span>
-                          {ladder && solved.includes(e.id) ? (
-                            <span data-testid="tricks-ladder-solved" aria-label={m.tricks_ladder_solved()} {...stylex.props(styles.solved)}>
-                              <CircleCheck aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
-                            </span>
-                          ) : null}
-                          {e.id === nextUp ? <Pill tone="go">{m.tricks_ladder_next()}</Pill> : null}
-                          <ChevronRight aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.taskArrow)} />
-                        </Link>
-                      </li>
-                    ))}
+                            {mark === 'solved' ? (
+                              <span data-testid="tricks-ladder-solved" aria-label={m.tricks_ladder_solved()} {...stylex.props(styles.mark, styles.solved)}>
+                                <CircleCheck aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                              </span>
+                            ) : mark === 'missed' ? (
+                              <span data-testid="tricks-ladder-missed" aria-label={m.tricks_ladder_missed()} {...stylex.props(styles.mark, styles.missed)}>
+                                <CircleX aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                              </span>
+                            ) : mark === 'locked' ? (
+                              <span data-testid="tricks-ladder-locked" aria-label={m.tricks_ladder_locked()} {...stylex.props(styles.mark, styles.locked)}>
+                                <Lock aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                              </span>
+                            ) : null}
+                            {e.id === nextUp ? <Pill tone="go">{m.tricks_ladder_next()}</Pill> : null}
+                            <ChevronRight aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.taskArrow)} />
+                          </Link>
+                        </li>
+                      )
+                    })}
                   </ol>
                 </details>
               </li>
@@ -124,8 +145,6 @@ export function TricksPage() {
     </div>
   )
 }
-
-const NONE: string[] = []
 
 const focus = {
   outlineStyle: { default: 'none', ':focus-visible': 'solid' },
@@ -198,7 +217,10 @@ const styles = stylex.create({
   chevron: { display: 'flex', flexShrink: 0, color: color.slate },
   // The ladder's progress shows on a phone too.
   countShown: { display: 'block' },
-  solved: { display: 'flex', flexShrink: 0, color: color.good },
+  mark: { display: 'flex', flexShrink: 0 },
+  solved: { color: color.good },
+  missed: { color: color.bad },
+  locked: { color: color.slate },
   tasks: {
     listStyleType: 'none',
     margin: 0,

@@ -192,7 +192,8 @@ function LadderTable({ e }: { e: Endgame }) {
     return parts.length ? parts.join(', ') : m.tricks_ladder_nothing()
   }
   const rows: [string, string, string][] = [
-    ['contract', m.tricks_ladder_contract(), contractName(e.contract)],
+    // Who you are, said with the game (the human asked: 「我都是庄家吗」).
+    ['contract', m.tricks_ladder_contract(), m.tricks_ladder_contract_value({ contract: contractName(e.contract) })],
     ['left', m.tricks_ladder_left(), known('left')],
     ['right', m.tricks_ladder_right(), known('right')],
   ]

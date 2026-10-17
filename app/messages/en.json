@@ -601,5 +601,6 @@
   "tricks_ladder_part_trump": "no trumps",
   "tricks_ladder_part_suit": "no {suit}",
   "tricks_ladder_contract": "Contract",
-  "tricks_ladder_nothing": "nothing known"
+  "tricks_ladder_nothing": "nothing known",
+  "tricks_ladder_contract_value": "{contract} · you are the declarer"
 }

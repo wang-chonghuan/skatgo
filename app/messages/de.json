@@ -601,5 +601,6 @@
   "tricks_ladder_part_trump": "keinen Trumpf",
   "tricks_ladder_part_suit": "kein {suit}",
   "tricks_ladder_contract": "Spiel",
-  "tricks_ladder_nothing": "nichts bekannt"
+  "tricks_ladder_nothing": "nichts bekannt",
+  "tricks_ladder_contract_value": "{contract} · du bist Alleinspieler"
 }

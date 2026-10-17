@@ -2,7 +2,7 @@
   "ticket": "SKATGO-109",
   "mode": "autonomous",
   "stage": "handed-off",
-  "finish": "review",
+  "finish": "auto-deploy",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-109",
   "branch": "SKATGO-109-ladder-simple",
   "base": "2762ed2",

@@ -71,8 +71,10 @@ export class Store {
            ORDER BY player, day DESC, finished_at DESC NULLS LAST
           ON CONFLICT DO NOTHING;
         -- The "Sieg sichern" ladder's record per account (SKATGO-109): solved once answered right, and every
-        -- wrong answer counted.
-        CREATE TABLE IF NOT EXISTS ladder_steps (
+        -- wrong answer counted. SKATGO-110 put new puzzles under the same step numbers, so the first table's
+        -- records went with the old puzzles (the human: 「原有答题记录可以删除」).
+        DROP TABLE IF EXISTS ladder_steps;
+        CREATE TABLE IF NOT EXISTS ladder_answers (
           player text NOT NULL, step text NOT NULL, solved_at bigint, misses integer NOT NULL DEFAULT 0,
           updated_at bigint NOT NULL, PRIMARY KEY (player, step)
         );

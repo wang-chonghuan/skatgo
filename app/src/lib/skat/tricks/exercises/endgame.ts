@@ -2,7 +2,7 @@ import { type Card, type Contract, cardId, effectiveSuit, legalPlays, pointsOf, 
 import { cards } from './cards-of'
 import { type Position, type Seat, openPoints, splits, sureOf } from './solve'
 
-// "Sieg sichern" (SKATGO-108, two or three tricks left since SKATGO-109): Skat's mate-in-one or -two. The
+// "Sieg sichern" (SKATGO-108; four tricks left since SKATGO-110): Skat's mate-in-two. The
 // declarer leads and knows what a player at the table knows — its own cards, the skat it put away, every card
 // played; the exercise shows the learner only what follows from it: the cards still out and the voids. Exactly one card makes
 // 61 sure however the defenders' cards lie, among the splits the play has left possible (a defender who did
@@ -142,10 +142,17 @@ function lineOf(start: Position[], hand: Card[], left: Card[], right: Card[], co
   let still = need
   const out: Trick[] = []
   while (real.hands.some((h) => h.length)) {
+    // Who took each trick is seen at the table: a split in which someone else would have is no longer possible.
+    worlds = worlds.filter((w) => w.turn === real.turn && w.trick.length === real.trick.length)
     let card: Card
     if (real.turn === 0) {
       const legal = legalPlays(real.hands[0], real.trick.map((t) => t.card), contract)
-      card = legal.find((c) => sureOf(worlds.map((w) => play(w, c, contract).next), contract, 0, still)) ?? legal[0]
+      // A card that completes the trick brings that trick's points now, the same in every split.
+      const taken = (c: Card) => {
+        const t = play(real, c, contract).trick
+        return t && t.winner === 'you' ? t.points : 0
+      }
+      card = legal.find((c) => sureOf(worlds.map((w) => play(w, c, contract).next), contract, 0, still - taken(c))) ?? legal[0]
     } else {
       const legal = legalPlays(real.hands[real.turn], real.trick.map((t) => t.card), contract)
       card = legal.reduce((best, c) => (openPoints(play(real, c, contract).next, contract, 0) < openPoints(play(real, best, contract).next, contract, 0) ? c : best))

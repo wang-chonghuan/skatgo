@@ -33,8 +33,9 @@ const useGuest = create<Guest>()(
       answer: (id, right) => set((s) => ({ steps: { ...s.steps, [id]: mark(s.steps[id], right) } })),
       forget: () => set({ steps: {} }),
     }),
-    // v1 (SKATGO-108) held the solved steps of the ladder's first ten, which SKATGO-109 replaced.
-    { name: 'skatgo.ladder.v2', storage: createJSONStorage(() => localStorage), partialize: (s) => ({ steps: s.steps }) },
+    // v1 (SKATGO-108) held the solved steps of the ladder's first ten; v2 (SKATGO-109) the steps of two and three
+    // tricks, which SKATGO-110 replaced with four-trick ones at the same numbers — their records are let go.
+    { name: 'skatgo.ladder.v3', storage: createJSONStorage(() => localStorage), partialize: (s) => ({ steps: s.steps }) },
   ),
 )
 

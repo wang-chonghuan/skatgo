@@ -26,7 +26,7 @@ import { Pill } from './ui'
  * human: 「题目页要收录……很好的引流材料」). A card named in the address (#druecken, from a trick of the
  * article) opens by itself.
  *
- * The first card is the "Sieg sichern" ladder (SKATGO-108, SKATGO-109), featured: 29 steps in rising order,
+ * The first card is the "Sieg sichern" ladder (SKATGO-108, SKATGO-109), featured: 30 steps in rising order,
  * the ones answered right checked, the ones answered wrong and not yet right crossed, each step's wrong answers
  * counted under its number, and the next one marked; for a guest, the steps that need an account carry a lock.
  * The record is the account's, or for a guest this browser's (ladder-progress.ts), applied after mount. The

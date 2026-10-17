@@ -49,8 +49,8 @@ export function EntryPage() {
                 {m.entry_cta()}
               </Link>
               {/* The ladder beside it (SKATGO-109, the human: 「这个练习的按钮放到每日tournament的按钮旁边」), white, so the
-                  tournament stays the one green action; it opens the ladder's card on the exercises' page. */}
-              <Link to="/skat-tricks" hash="sieg-sichern" data-testid="entry-ladder" onClick={() => heroClick('ladder')} {...linkLook('quiet', 'lg', 'landing')}>
+                  tournament stays the one green action; it opens the exercises' page, since SKATGO-110 the open-card endgames. */}
+              <Link to="/skat-tricks" hash="offenes-endspiel" data-testid="entry-ladder" onClick={() => heroClick('ladder')} {...linkLook('quiet', 'lg', 'landing')}>
                 {m.entry_ladder_cta()}
               </Link>
             </div>

@@ -1,5 +1,6 @@
 import type { Card, Contract } from '../../cards'
 import type { Endgame } from './endgame'
+import type { OpenEndgame } from './open'
 
 // The Skat-Tricks exercises (SKATGO-103): twelve kinds of question, three of each, chosen by hand. A
 // position is language-free (positions.ts); its words are per language (text.{de,en}.ts). Every answer is
@@ -8,6 +9,8 @@ import type { Endgame } from './endgame'
 // answer to beating the second choice by a margin.
 
 export const EXERCISE_TYPES = [
+  // The open-card endgames (SKATGO-110): since then the only kind shown (index.ts `SHOWN_TYPES`).
+  'offenes-endspiel',
   // The ladder (SKATGO-108) comes first: Skat's mate-in-N, closed cards, 30 steps of four tricks (SKATGO-110).
   'sieg-sichern',
   'reizen',
@@ -105,6 +108,8 @@ export type Exercise = {
   proof: Proof
   /** A ladder step's proven facts (SKATGO-108): the table it is set on and the line shown after the answer. */
   endgame?: Endgame
+  /** An open-card endgame's table and worked-out play (SKATGO-110). */
+  open?: OpenEndgame
 }
 
 /** One exercise's words in one language. */

@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { type Card, cardId, fullDeck, legalPlays, sameCard, trickWinnerIndex } from '../../cards'
+import { type Card, cardId, fullDeck, legalPlays, pointsOf as cardPoints, sameCard, trickWinnerIndex } from '../../cards'
 import { locales } from '~/paraglide/runtime'
-import { EXERCISE_TEXT, EXERCISE_TYPES, EXERCISES } from '.'
+import { EXERCISE_TEXT, EXERCISE_TYPES, EXERCISES, SHOWN_TYPES, exerciseById } from '.'
 import { ENDGAMES_STORED } from './endgames.data'
 import { readEndgame, recordOf, solveEndgame } from './endgame'
+import { type OpenNode, readOpen, recordOfOpen, solveOpen } from './open'
+import { OPEN_STORED } from './open-endgames.data'
+import { collectTrick, playCard, type Game } from '../../game'
 import { MITZAEHLEN, cards } from './positions'
 
 // The Skat-Tricks exercises (SKATGO-103) held to their ticket: the "Sieg sichern" ladder of 30 (SKATGO-108,
@@ -12,12 +15,12 @@ import { MITZAEHLEN, cards } from './positions'
 // a position whose answer is not unique fails there; SkatZero's are checked in multiplayer/.
 
 describe('the Skat-Tricks exercises', () => {
-  it('the ladder of 30 first, then twelve kinds of three, in the kinds\' order, each id once', () => {
-    const size = (type: string) => (type === 'sieg-sichern' ? 30 : 3)
-    expect(EXERCISE_TYPES[0]).toBe('sieg-sichern')
-    expect(EXERCISE_TYPES).toHaveLength(13)
-    expect(EXERCISES).toHaveLength(66)
-    expect(new Set(EXERCISES.map((e) => e.id)).size).toBe(66)
+  it('the open-card endgames first (SKATGO-110), then the ladder of 30, then twelve kinds of three, in the kinds\' order, each id once', () => {
+    const size = (type: string) => (type === 'offenes-endspiel' ? 20 : type === 'sieg-sichern' ? 30 : 3)
+    expect(EXERCISE_TYPES[0]).toBe('offenes-endspiel')
+    expect(EXERCISE_TYPES).toHaveLength(14)
+    expect(EXERCISES).toHaveLength(86)
+    expect(new Set(EXERCISES.map((e) => e.id)).size).toBe(86)
     for (const type of EXERCISE_TYPES) expect(EXERCISES.filter((e) => e.type === type).map((e) => e.id)).toEqual(Array.from({ length: size(type) }, (_, i) => `${type}-${i + 1}`))
     expect(EXERCISES.map((e) => e.type)).toEqual(EXERCISE_TYPES.flatMap((t) => Array(size(t)).fill(t)))
   })
@@ -150,6 +153,51 @@ describe('the Skat-Tricks exercises', () => {
       })
       it(`${s.id}: proven again — one sure card, every other card loses in a possible split, the stored analysis`, () => {
         expect(readEndgame(s)).toEqual(solveEndgame(recordOf(s)))
+      })
+    }
+  })
+
+  describe('the open-card endgames (SKATGO-110)', () => {
+    it('are the only exercises shown; the others are hidden, not deleted', () => {
+      expect(SHOWN_TYPES).toEqual(['offenes-endspiel'])
+      expect(exerciseById('offenes-endspiel-1')).toBeTruthy()
+      for (const e of EXERCISES.filter((x) => x.type !== 'offenes-endspiel')) expect(exerciseById(e.id), e.id).toBeUndefined()
+    })
+    it('twenty, three to five tricks to go, declarer and defender both', () => {
+      const all = OPEN_STORED.map(readOpen)
+      expect(all).toHaveLength(20)
+      for (const e of all) expect([3, 4, 5]).toContain(e.game.hands[0].length)
+      expect(new Set(all.map((e) => e.role))).toEqual(new Set(['declarer', 'defender']))
+    })
+    for (const s of OPEN_STORED) {
+      it(`${s.id}: proven again — one card wins at the start, the stored play as worked out`, () => {
+        expect(readOpen(s)).toEqual(solveOpen(recordOfOpen(s)))
+        expect(readOpen(s).play.win).toHaveLength(1)
+      })
+      it(`${s.id}: every way through the play is legal and ends won`, () => {
+        const e = readOpen(s)
+        const won = (g: Game) => {
+          const declarer = g.declarer!
+          const have = cardPoints(g.skat) + g.tricks.filter((t) => t.winner === declarer).reduce((n, t) => n + cardPoints(t.cards.map((p) => p.card)), 0)
+          const left = cardPoints([...g.hands.flat(), ...g.trick.map((p) => p.card)])
+          return e.role === 'declarer' ? have >= 61 : have + left < 61
+        }
+        const apply = (g: Game, card: Card) => {
+          const at = g.phase === 'trickEnd' ? collectTrick(g) : g
+          const next = playCard(at, card)
+          expect(next, `${s.id}: ${cardId(card)}`).not.toBe(at)
+          return next.phase === 'trickEnd' ? collectTrick(next) : next
+        }
+        const walk = (g: Game, n: OpenNode) => {
+          expect(n.win.length, s.id).toBeGreaterThan(0)
+          for (const a of n.after) {
+            let at = apply(g, a.card)
+            for (const p of a.plays) at = apply(at, p.card)
+            if (a.next) walk(at, a.next)
+            else expect(won(at), `${s.id}: decided for the learner after ${cardId(a.card)}`).toBe(true)
+          }
+        }
+        walk(e.game, e.play)
       })
     }
   })

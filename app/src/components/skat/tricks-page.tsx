@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronDown, ChevronRight, ChevronUp, CircleCheck, CircleX, Lock } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { EXERCISE_TEXT, EXERCISE_TYPES, exercisesOf } from '~/lib/skat/tricks/exercises'
+import { EXERCISE_TEXT, SHOWN_TYPES, exercisesOf } from '~/lib/skat/tricks/exercises'
 import { LADDER_FREE } from '~/lib/skat/tricks/exercises/ladder'
 import type { ExerciseType } from '~/lib/skat/tricks/exercises/types'
 import { useLadder } from '~/lib/skat/tricks/ladder-progress'
@@ -26,19 +26,20 @@ import { Pill } from './ui'
  * human: 「题目页要收录……很好的引流材料」). A card named in the address (#druecken, from a trick of the
  * article) opens by itself.
  *
- * The first card is the "Sieg sichern" ladder (SKATGO-108, SKATGO-109), featured: 30 steps in rising order,
- * the ones answered right checked, the ones answered wrong and not yet right crossed, each step's wrong answers
- * counted under its number, and the next one marked; for a guest, the steps that need an account carry a lock.
- * The record is the account's, or for a guest this browser's (ladder-progress.ts), applied after mount. The
- * other kinds remember nothing.
+ * Since SKATGO-110 only the open-card endgames are shown (`SHOWN_TYPES`; the other kinds are hidden, not deleted),
+ * as one featured card open from the start: twenty steps in rising order, the ones answered right checked, the ones
+ * answered wrong and not yet right crossed, each step's wrong answers counted under its number, and the next one
+ * marked; for a guest, the steps that need an account carry a lock (SKATGO-109). The record is the account's, or for
+ * a guest this browser's (ladder-progress.ts), applied after mount.
  */
 export function TricksPage() {
   const text = EXERCISE_TEXT[getLocale()]
-  const [open, setOpen] = useState<ReadonlySet<ExerciseType>>(() => new Set())
+  // With one kind shown (SKATGO-110), its card is open from the start.
+  const [open, setOpen] = useState<ReadonlySet<ExerciseType>>(() => new Set(SHOWN_TYPES.length === 1 ? SHOWN_TYPES : []))
   const { steps, account } = useLadder()
   useEffect(() => {
     const hash = window.location.hash.slice(1)
-    if ((EXERCISE_TYPES as readonly string[]).includes(hash)) setOpen(new Set([hash as ExerciseType]))
+    if ((SHOWN_TYPES as readonly string[]).includes(hash)) setOpen(new Set([hash as ExerciseType]))
   }, [])
   const toggle = (type: ExerciseType, isOpen: boolean) =>
     setOpen((s) => {
@@ -56,10 +57,11 @@ export function TricksPage() {
           <p {...stylex.props(typography.landingBody, styles.lead)}>{m.tricks_hub_lead()}</p>
         </header>
         <ol {...stylex.props(styles.list)}>
-          {EXERCISE_TYPES.map((type, i) => {
+          {SHOWN_TYPES.map((type, i) => {
             const isOpen = open.has(type)
             const exercises = exercisesOf(type)
-            const ladder = type === 'sieg-sichern'
+            // The kind with a record and the account from the third on (SKATGO-109; the open-card endgames since SKATGO-110).
+            const ladder = type === 'offenes-endspiel'
             const nextUp = ladder ? exercises.find((e) => !steps[e.id]?.solved)?.id : undefined
             const Chevron = isOpen ? ChevronUp : ChevronDown
             return (

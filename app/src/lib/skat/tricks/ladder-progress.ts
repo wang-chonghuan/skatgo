@@ -3,7 +3,8 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import { useAccount } from '~/lib/use-account'
-import { LADDER, LADDER_FREE } from './exercises/ladder'
+import { LADDER_FREE } from './exercises/ladder'
+import { OPEN_EXERCISES } from './exercises/open-list'
 
 // The "Sieg sichern" ladder's record (SKATGO-108; SKATGO-109, the human: 「错的刷新页面后可以重做，但是要记下来哪题
 // 错了」): for each step, whether it was answered right and how many times wrong. Anyone may answer the first
@@ -16,7 +17,8 @@ import { LADDER, LADDER_FREE } from './exercises/ladder'
 export type StepRecord = { solved: boolean; misses: number }
 export type LadderRecord = Record<string, StepRecord>
 
-const FREE = LADDER.slice(0, LADDER_FREE).map((e) => e.id)
+// The record follows the exercises the site shows: since SKATGO-110 the open-card endgames.
+const FREE = OPEN_EXERCISES.slice(0, LADDER_FREE).map((e) => e.id)
 const NONE: LadderRecord = {}
 
 const mark = (r: StepRecord | undefined, right: boolean): StepRecord => ({

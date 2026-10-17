@@ -48,6 +48,11 @@ export function EntryPage() {
               <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
                 {m.entry_cta()}
               </Link>
+              {/* The ladder beside it (SKATGO-109, the human: 「这个练习的按钮放到每日tournament的按钮旁边」), white, so the
+                  tournament stays the one green action; it opens the ladder's card on the exercises' page. */}
+              <Link to="/skat-tricks" hash="sieg-sichern" data-testid="entry-ladder" onClick={() => heroClick('ladder')} {...linkLook('quiet', 'lg', 'landing')}>
+                {m.entry_ladder_cta()}
+              </Link>
             </div>
             {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). */}
             <ul data-testid="entry-points" {...stylex.props(styles.points)}>
@@ -120,8 +125,8 @@ export function EntryPage() {
   )
 }
 
-/** The hero's one button (SKATGO-29; renamed by SKATGO-74's tracking plan). */
-const heroClick = (button: 'primary') => track('home_cta_clicked', { button })
+/** The hero's buttons (SKATGO-29; renamed by SKATGO-74's tracking plan; the ladder's since SKATGO-109). */
+const heroClick = (button: 'primary' | 'ladder') => track('home_cta_clicked', { button })
 
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })

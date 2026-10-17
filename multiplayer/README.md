@@ -168,6 +168,17 @@ reference used in SKATGO-22/38/39), refresh `test/fixtures/skatzero-parity.json`
 `test/fixtures/skatzero-bidding.json`, update the manifest, and give the day's computer a new
 name — never edit a recorded day.
 
+## The ladder's record (SKATGO-109)
+
+`POST /ladder/state`, `/ladder/answer` and `/ladder/merge`, behind the admission key like `/daily`, keep the
+"Sieg sichern" ladder's record per account in `ladder_steps`: for each step a player has answered, when it was
+first answered right (`solved_at`) and how many answers were wrong (`misses`). The web's `/api/tricks/ladder/*`
+(`app/src/lib/tricks-handler.ts`) is their one client and names only signed-in players (`user:<Clerk id>`).
+`answer` takes `{ player, step, right }`; `merge` takes what a guest answered in the browser — the free steps
+only (`LADDER_FREE` in `app/src/lib/skat/tricks/exercises/ladder.ts`) — as `{ player, steps: { <step>: { solved,
+misses } } }` and keeps the larger count, so the same record sent twice changes nothing. Each answers
+`{ steps }`, the account's whole record.
+
 ## Deployment
 
 API-managed, not Blueprint-managed. `render.json` records the approved resource

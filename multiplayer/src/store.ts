@@ -70,6 +70,12 @@ export class Store {
           SELECT DISTINCT ON (player) player, nickname, created_at FROM daily_entries WHERE nickname IS NOT NULL
            ORDER BY player, day DESC, finished_at DESC NULLS LAST
           ON CONFLICT DO NOTHING;
+        -- The "Sieg sichern" ladder's record per account (SKATGO-109): solved once answered right, and every
+        -- wrong answer counted.
+        CREATE TABLE IF NOT EXISTS ladder_steps (
+          player text NOT NULL, step text NOT NULL, solved_at bigint, misses integer NOT NULL DEFAULT 0,
+          updated_at bigint NOT NULL, PRIMARY KEY (player, step)
+        );
       `)
       await c.query('COMMIT')
     } catch (e) {

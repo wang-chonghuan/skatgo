@@ -2,8 +2,8 @@
 // SkatZero's games against itself — free play's committed pool, every seat played by SkatZero — where the
 // declarer leads with two or three cards left, has picked up the skat, still needs points, and exactly one
 // card makes 61 sure however the defenders' cards lie (app/src/lib/skat/tricks/exercises/endgame.ts proves
-// it). The ten were chosen by hand from all that qualify (PICKS: game in the pool and cards left), so each
-// can carry a written tip; `--all <file>` writes every one that qualifies for choosing.
+// it). The 29 (SKATGO-109) were chosen by hand from all that qualify (PICKS: game in the pool and cards left), so
+// each can carry a written tip; `--all <file>` writes every one that qualifies for choosing.
 //
 //   node --import tsx scripts/make-endgames.ts [--all <file>]
 //
@@ -74,8 +74,11 @@ for (let k = 0; k < Math.min(count, pool.deals.length); k++) {
 }
 await policy.release()
 
-// The ten, in the order the ladder climbs: three with two cards left, then seven with three; deal:cards.
-const PICKS: string[] = ['7:2', '550:2', '119:2', '106:3', '611:3', '703:3', '63:3', '222:3', '85:3', '168:3']
+// The 29, in the order the ladder climbs: fourteen with two cards left, then fifteen with three; deal:cards.
+const PICKS: string[] = [
+  '7:2', '550:2', '241:2', '617:2', '559:2', '323:2', '390:2', '60:2', '492:2', '140:2', '593:2', '119:2', '971:2', '705:2',
+  '152:3', '641:3', '751:3', '702:3', '106:3', '25:3', '442:3', '987:3', '611:3', '703:3', '174:3', '63:3', '222:3', '85:3', '168:3',
+]
 if (all) writeFileSync(all, found.map((c) => JSON.stringify({ key: `${c.deal}:${c.n}`, trap: c.trap, ...c.stored })).join('\n') + '\n')
 const chosen: StoredEndgame[] = PICKS.map((key, i) => {
   const pick = found.find((c) => `${c.deal}:${c.n}` === key)

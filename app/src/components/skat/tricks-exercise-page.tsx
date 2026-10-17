@@ -1,6 +1,7 @@
+import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link, useParams } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChevronLeft, CircleCheck, CircleX } from 'lucide-react'
+import { ChevronLeft, CircleCheck, CircleX, Lock } from 'lucide-react'
 import { useState } from 'react'
 
 import { type Card, sortHand } from '~/lib/skat/cards'
@@ -8,6 +9,7 @@ import { cardLabel, contractName, roleName, suitName } from '~/lib/skat/i18n'
 import type { CardRow, ChoiceStep, PickStep, PlayStep } from '~/lib/skat/lessons/types'
 import { EXERCISE_TEXT, exerciseById, exercisesOf, nextExercise } from '~/lib/skat/tricks/exercises'
 import type { Endgame } from '~/lib/skat/tricks/exercises/endgame'
+import { LADDER_FREE } from '~/lib/skat/tricks/exercises/ladder'
 import type { Exercise, ExerciseText, Option, ShownRow, Situation, Who } from '~/lib/skat/tricks/exercises/types'
 import { useLadder } from '~/lib/skat/tricks/ladder-progress'
 import { m } from '~/paraglide/messages'
@@ -28,7 +30,9 @@ import { Btn, Panel, Pill, Rich, linkLook } from './ui'
  * One Skat-Tricks exercise (SKATGO-103): the way back to all of them, the kind and number, the title; then on
  * a white card what the learner knows of the game, the cards on show and the question, in the course's own
  * widgets. The first answer counts: then the verdict, the right answer, why it is right and the trick it
- * practises, and the way on. Nothing is saved, and the page is not a search entry (lib/indexability.ts).
+ * practises, and the way on. The page is not a search entry (lib/indexability.ts). Only the ladder's answers are
+ * recorded (SKATGO-109, ladder-progress.ts), and from its third step on it needs an account: a guest sees why
+ * and the way to sign in in the step's place.
  */
 export function TricksExercisePage() {
   const { exercise: id } = useParams({ from: '/skat-tricks_/$exercise' })
@@ -41,13 +45,16 @@ function ExerciseView({ id }: { id: string }) {
   // A fresh attempt is a fresh widget.
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState<'right' | 'wrong' | null>(null)
-  const solve = useLadder((s) => s.solve)
+  const ladder = useLadder()
   if (!exercise) return null
   const locale = getLocale()
   const text = EXERCISE_TEXT[locale]
   const words = text.exercises[exercise.id]
   const siblings = exercisesOf(exercise.type)
   const n = siblings.findIndex((e) => e.id === exercise.id) + 1
+  const record = exercise.type === 'sieg-sichern'
+  // The human: 「前2题不登录可以做，第三题必须登录才可以做」.
+  const locked = record && n > LADDER_FREE
   // The ladder climbs within itself (SKATGO-108): after its last step, back to the list.
   const after = nextExercise(exercise.id)
   const following = exercise.type === 'sieg-sichern' && after?.type !== exercise.type ? undefined : after
@@ -55,9 +62,12 @@ function ExerciseView({ id }: { id: string }) {
     once: true,
     onSolved: () => {
       setResult('right')
-      if (exercise.type === 'sieg-sichern') solve(exercise.id)
+      if (record) ladder.answer(exercise.id, true)
     },
-    onMistake: () => setResult('wrong'),
+    onMistake: () => {
+      setResult('wrong')
+      if (record) ladder.answer(exercise.id, false)
+    },
   }
   const again = () => {
     setResult(null)
@@ -80,18 +90,26 @@ function ExerciseView({ id }: { id: string }) {
             「标题就要continue this deal之类的，统一」). */}
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{exercise.endgame ? m.tricks_ladder_heading() : words.title}</h1>
 
-        <section {...stylex.props(styles.card)}>
-          <SituationView situation={exercise.situation} />
-          <div key={attempt}>
-            {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
-            {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
-            {exercise.ask.kind === 'play' && exercise.endgame ? (
-              <Play step={{ ...playStep(exercise, words), prompt: '' }} table={<LadderTable e={exercise.endgame} />} handLabel={m.tricks_row_cards()} {...callbacks} />
-            ) : exercise.ask.kind === 'play' ? (
-              <Play step={playStep(exercise, words)} {...callbacks} />
-            ) : null}
-          </div>
-        </section>
+        {locked && ladder.account === undefined ? (
+          <section {...stylex.props(styles.card)}>
+            <p data-testid="tricks-ladder-waiting" {...stylex.props(typography.loading, styles.para)}>{m.loading()}</p>
+          </section>
+        ) : locked && ladder.account === null ? (
+          <LadderGate />
+        ) : (
+          <section {...stylex.props(styles.card)}>
+            <SituationView situation={exercise.situation} />
+            <div key={attempt}>
+              {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
+              {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
+              {exercise.ask.kind === 'play' && exercise.endgame ? (
+                <Play step={{ ...playStep(exercise, words), prompt: '' }} table={<LadderTable e={exercise.endgame} />} handLabel={m.tricks_row_cards()} {...callbacks} />
+              ) : exercise.ask.kind === 'play' ? (
+                <Play step={playStep(exercise, words)} {...callbacks} />
+              ) : null}
+            </div>
+          </section>
+        )}
 
         {result ? (
           <div data-testid="tricks-exercise-result" data-result={result} {...stylex.props(styles.result)}>
@@ -137,6 +155,31 @@ function ExerciseView({ id }: { id: string }) {
         ) : null}
       </div>
     </div>
+  )
+}
+
+/** A ladder step a guest may not answer (SKATGO-109): in its place, why — and the way in, Clerk's window over
+ *  the page; once signed in, the step is there. */
+function LadderGate() {
+  return (
+    <section data-testid="tricks-ladder-gate" {...stylex.props(styles.card)}>
+      <div {...stylex.props(styles.verdict)}>
+        <span aria-hidden="true" {...stylex.props(styles.verdictIcon, styles.gateIcon)}>
+          <Lock size={icon.inline} strokeWidth={icon.outline} />
+        </span>
+        <div {...stylex.props(styles.verdictText)}>
+          <p {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_ladder_gate_title()}</p>
+          <p {...stylex.props(typography.body, styles.para)}>{m.tricks_ladder_gate_text({ n: LADDER_FREE })}</p>
+        </div>
+      </div>
+      <div {...stylex.props(styles.actions)}>
+        <SignInButton mode="modal">
+          <Btn testId="tricks-ladder-sign-in" tone="go">
+            {m.tricks_ladder_gate_button()}
+          </Btn>
+        </SignInButton>
+      </div>
+    </section>
   )
 }
 
@@ -378,6 +421,7 @@ const styles = stylex.create({
   verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },
   good: { color: color.good },
   bad: { color: color.bad },
+  gateIcon: { color: color.slate },
   verdictText: { display: 'flex', flexDirection: 'column', gap: space.x8, minWidth: 0 },
   verdictTitle: { margin: 0, color: color.navy },
   para: { margin: 0, color: color.text },

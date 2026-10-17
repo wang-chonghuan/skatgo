@@ -1,4 +1,3 @@
-import { useAuth } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { useRouterState } from '@tanstack/react-router'
 import { Check, Copy, MessageCircle, Plus, X } from 'lucide-react'
@@ -7,6 +6,7 @@ import { type ComponentType, Suspense, lazy, useCallback, useEffect, useMemo, us
 import { GUEST, type ChatMessage, clearConversation, loadConversation, saveConversation } from '~/lib/ask/conversation'
 import { lessonById } from '~/lib/skat/lessons/content'
 import { lessonBySlug } from '~/lib/skat/lessons/guide'
+import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { icon, phoneQuery } from '../../theme/constants'
@@ -85,15 +85,8 @@ function forgetConversation(): void {
  * gates nothing (SKATGO-13), so its failure must not keep the chat closed either.
  */
 function useOwner(): string | null {
-  const { isLoaded, userId } = useAuth()
-  const [gaveUp, setGaveUp] = useState(false)
-  useEffect(() => {
-    if (isLoaded) return
-    const timer = setTimeout(() => setGaveUp(true), 4_000)
-    return () => clearTimeout(timer)
-  }, [isLoaded])
-  if (isLoaded) return userId ?? GUEST
-  return gaveUp ? GUEST : null
+  const account = useAccount()
+  return account === undefined ? null : (account ?? GUEST)
 }
 
 // --- Phone behaviour ------------------------------------------------------------------------------

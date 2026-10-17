@@ -2,13 +2,17 @@ import { readEndgame } from './endgame'
 import { ENDGAMES_STORED } from './endgames.data'
 import type { Exercise } from './types'
 
-// The "Sieg sichern" ladder (SKATGO-108, simplified in SKATGO-109): ten closed-card endgames from SkatZero's
+// The "Sieg sichern" ladder (SKATGO-108, simplified in SKATGO-109): 29 closed-card endgames from SkatZero's
 // games, two or three tricks left, proven by endgame.ts (the tests prove them again from the stored file;
 // nothing is worked out in the browser). The exercise is one table: the game and the points still needed in
 // its title, the opponents with their cards face down and the voids they showed, the cards still out, and
 // your cards — no play record, no counting.
 
 export const ENDGAMES = ENDGAMES_STORED.map(readEndgame)
+
+/** How many of the first steps anyone may answer; from the next one on, only an account (SKATGO-109, the human:
+ *  「前2题不登录可以做，第三题必须登录才可以做」). */
+export const LADDER_FREE = 2
 
 export const LADDER: Exercise[] = ENDGAMES.map((e) => ({
   id: e.id,

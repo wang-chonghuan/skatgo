@@ -40,8 +40,8 @@ export function isPublishedSite(hostname: string): boolean {
  * what differs between occasions goes in the properties, not the name.
  */
 export type ProductEvents = {
-  /** The front page's main button was pressed. */
-  home_cta_clicked: { button: 'primary' }
+  /** A button of the front page's hero was pressed: the tournament's, or the ladder's beside it (SKATGO-109). */
+  home_cta_clicked: { button: 'primary' | 'ladder' }
   /** A lesson was opened, by its number. */
   lesson_started: { lesson: number }
   /** A lesson's last step was done. */

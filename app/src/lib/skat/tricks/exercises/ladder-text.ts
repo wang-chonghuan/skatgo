@@ -109,7 +109,6 @@ function words(lang: 'de' | 'en', e: Endgame): ExerciseText {
     ? {
         title: `${g}: noch ${n} Stiche, ${e.need} Augen fehlen`,
         goal: `Du spielst ${g} und brauchst noch ${e.need} Augen zum Sieg.`,
-        note: `Noch ${n} Stiche. Du spielst aus. ${grand ? 'Trumpf sind nur die Buben.' : `Trumpf ist ${g}.`}`,
         prompt: 'Welche Karte spielst du aus?',
         sure: `Nur eine bringt dir die ${e.need} Augen sicher.`,
         explain: w.tip,
@@ -118,7 +117,6 @@ function words(lang: 'de' | 'en', e: Endgame): ExerciseText {
     : {
         title: `${g}: ${n} tricks to go, ${e.need} card points short`,
         goal: `You play ${grand ? 'a Grand' : g} and need ${e.need} more card points to win.`,
-        note: `${n} tricks left. You lead. ${grand ? 'Only the Jacks are trumps.' : `${g} are trumps.`}`,
         prompt: 'Which card do you lead?',
         sure: `Only one gets you the ${e.need} points for sure.`,
         explain: w.tip,

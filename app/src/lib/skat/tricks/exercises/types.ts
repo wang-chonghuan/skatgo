@@ -118,10 +118,8 @@ export type ExerciseText = {
   explain: string
   /** A ladder step's most tempting wrong card and why it fails (SKATGO-109). */
   trap?: string
-  /** A ladder step's goal in one sentence, the line under it, and what "for sure" means (SKATGO-109: the page
-   *  says everything in plain sentences). */
+  /** A ladder step's goal in one sentence and what "for sure" means (SKATGO-109: the page says it plainly). */
   goal?: string
-  note?: string
   sure?: string
 }
 

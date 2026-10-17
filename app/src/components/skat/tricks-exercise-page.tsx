@@ -19,7 +19,7 @@ import { elev, fill } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { CardRowView } from './card-row'
+import { CardRowView, Fan } from './card-row'
 import { PlayingCard } from './playing-card'
 import { Choice, Pick, Play } from './exercises'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
@@ -77,7 +77,6 @@ function ExerciseView({ id }: { id: string }) {
         </nav>
         {/* A ladder step says its goal as a sentence, and the rest of what to know under it (SKATGO-109). */}
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{words.goal ?? words.title}</h1>
-        {words.note ? <p data-testid="tricks-ladder-note" {...stylex.props(typography.appText, styles.note)}>{words.note}</p> : null}
 
         <section {...stylex.props(styles.card)}>
           <SituationView situation={exercise.situation} />
@@ -187,31 +186,36 @@ function SituationView({ situation: s }: { situation: Situation }) {
  */
 function LadderTable({ e }: { e: Endgame }) {
   const out = sortHand([...e.left, ...e.right], e.contract)
-  const who = (side: 'left' | 'right') => (side === 'left' ? m.tricks_ladder_left() : m.tricks_ladder_right())
+  // Each opponent's known gaps, the same three rows on every step (the human: 「要标准显示：合约是啥，左边的特点，右边的特点」).
+  const known = (side: 'left' | 'right') => {
+    const parts = e.voids.filter((v) => v.side === side).map((v) => (v.suit === 'T' ? m.tricks_ladder_part_trump() : m.tricks_ladder_part_suit({ suit: suitName(v.suit) })))
+    return parts.length ? parts.join(', ') : m.tricks_ladder_nothing()
+  }
+  const rows: [string, string, string][] = [
+    ['contract', m.tricks_ladder_contract(), contractName(e.contract)],
+    ['left', m.tricks_ladder_left(), known('left')],
+    ['right', m.tricks_ladder_right(), known('right')],
+  ]
   return (
     <div data-testid="tricks-ladder-table" {...stylex.props(styles.ladderTable)}>
-      <p {...stylex.props(typography.bodySmall, styles.onFelt)}>{m.tricks_ladder_out({ n: out.length })}</p>
-      <span data-testid="tricks-ladder-out" {...stylex.props(styles.outCards)}>
-        {out.map((c) => (
-          <PlayingCard key={cardLabel(c)} card={c} size="xs" />
-        ))}
-      </span>
-      {e.voids.length ? (
-        <div data-testid="tricks-ladder-known" {...stylex.props(styles.known)}>
-          <p {...stylex.props(typography.label, styles.onFeltSoft)}>{m.tricks_ladder_known()}</p>
-          <ul {...stylex.props(styles.knownList)}>
-            {(['left', 'right'] as const).map((side) => {
-              // One sentence per opponent: "Left has no trumps and no Diamonds left."
-              const parts = e.voids.filter((v) => v.side === side).map((v) => (v.suit === 'T' ? m.tricks_ladder_part_trump() : m.tricks_ladder_part_suit({ suit: suitName(v.suit) })))
-              return parts.length ? (
-                <li key={side} {...stylex.props(typography.bodySmall, styles.onFelt)}>
-                  {m.tricks_ladder_lacks({ who: who(side), parts: parts.join(m.tricks_ladder_and()) })}
-                </li>
-              ) : null
-            })}
-          </ul>
-        </div>
-      ) : null}
+      {/* A table, so the three values line up whatever the labels' widths. */}
+      <table data-testid="tricks-ladder-facts" {...stylex.props(styles.factsTable)}>
+        <tbody>
+          {rows.map(([key, label, value]) => (
+            <tr key={key} data-fact={key}>
+              <th scope="row" {...stylex.props(typography.label, styles.onFeltSoft, styles.factLabel)}>{label}</th>
+              <td {...stylex.props(typography.bodySmall, styles.onFelt, styles.factValue)}>
+                <Rich text={value} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div {...stylex.props(styles.outBlock)}>
+        <p {...stylex.props(typography.label, styles.onFeltSoft, styles.center)}>{m.tricks_ladder_out({ n: out.length })}</p>
+        {/* As big as your own cards (the human: 「剩的牌大一点，最好和手牌一样大」), held like a hand. */}
+        <Fan testId="tricks-ladder-out" cards={out} size="lg" row />
+      </div>
     </div>
   )
 }
@@ -341,18 +345,20 @@ const styles = stylex.create({
   facts: { margin: 0, color: color.slate },
   trap: { margin: 0, color: color.bad },
   // A ladder step's table and line (SKATGO-109), on the drill's felt.
-  ladderTable: { display: 'flex', flexDirection: 'column', gap: space.x8 },
-  outCards: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: space.x4 },
-  known: {
+  ladderTable: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  factsTable: { borderCollapse: 'collapse' },
+  factLabel: { textAlign: 'left', verticalAlign: 'baseline', paddingBlock: space.x2, paddingRight: space.x16, whiteSpace: 'nowrap' },
+  factValue: { verticalAlign: 'baseline', paddingBlock: space.x2 },
+  outBlock: {
     display: 'flex',
     flexDirection: 'column',
-    gap: space.x4,
-    paddingTop: space.x8,
+    gap: space.x6,
+    paddingTop: space.x12,
     borderTopWidth: border.hair,
     borderTopStyle: 'solid',
     borderTopColor: color.boardLine,
   },
-  knownList: { margin: 0, paddingLeft: space.x20, listStyleType: 'disc', display: 'flex', flexDirection: 'column', gap: space.x2 },
+  center: { textAlign: 'center' },
   onFelt: { margin: 0, color: color.onColor },
   onFeltSoft: { margin: 0, color: color.amber },
   note: { margin: 0, color: color.slate },

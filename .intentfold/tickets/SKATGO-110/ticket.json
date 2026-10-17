@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-110",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "auto-deploy",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-110",
   "branch": "SKATGO-110-ladder-four",

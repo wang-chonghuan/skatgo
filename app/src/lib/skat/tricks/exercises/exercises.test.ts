@@ -38,9 +38,7 @@ describe('the Skat-Tricks exercises', () => {
 
   it('no card twice in what an exercise shows', () => {
     for (const e of EXERCISES) {
-      const shown: Card[] = e.situation.rows.flatMap((r) =>
-        r.kind === 'trick' ? r.plays.map((p) => p.card) : r.kind === 'history' ? r.tricks.flatMap((t) => t.cards.map((c) => c.card)) : r.kind === 'voids' ? [] : r.cards,
-      )
+      const shown: Card[] = e.situation.rows.flatMap((r) => (r.kind === 'trick' ? r.plays.map((p) => p.card) : r.cards))
       const asked: Card[] = e.ask.kind === 'play' ? [...e.ask.hand, ...e.ask.trick.map((t) => t.card)] : e.ask.kind === 'pick' ? e.ask.cards : []
       const all = [...shown, ...asked]
       for (const c of all) expect(fullDeck().some((d) => sameCard(c, d)), `${e.id} ${cardId(c)}`).toBe(true)
@@ -88,10 +86,11 @@ describe('the Skat-Tricks exercises', () => {
   })
 
   describe('the "Sieg sichern" ladder (SKATGO-108)', () => {
-    it('rises: three tricks left at level 1, four at level 2, five at level 3', () => {
-      expect(ENDGAMES_STORED.map((s) => [s.hand.length, s.level])).toEqual([
-        [3, 1], [3, 1], [3, 1], [4, 2], [4, 2], [4, 2], [4, 2], [5, 3], [5, 3], [5, 3],
-      ])
+    it('ten steps of one kind: two tricks left for the first three, three for the rest (SKATGO-109)', () => {
+      expect(ENDGAMES_STORED.map((s) => s.hand.length)).toEqual([2, 2, 2, 3, 3, 3, 3, 3, 3, 3])
+    })
+    it('every step has its tip and its trap in both languages', () => {
+      for (const locale of locales) for (const s of ENDGAMES_STORED) expect(EXERCISE_TEXT[locale].exercises[s.id].trap, `${locale} ${s.id}`).toBeTruthy()
     })
     for (const s of ENDGAMES_STORED) {
       it(`${s.id}: a whole deal, played by the rules`, () => {

@@ -590,17 +590,12 @@
   "tricks_who_right": "Gegner rechts",
   "tricks_game_null_ouvert": "Null ouvert",
   "tricks_rules_link": "Die Skat-Regeln",
-  "tricks_sit_need": "es fehlen {n} Augen",
-  "tricks_sit_left": "noch {n} Stiche",
-  "tricks_row_history": "Bisher gespielt",
-  "tricks_void_suit": "{who}: kein {suit}",
-  "tricks_void_trump": "{who}: kein Trumpf",
   "tricks_ladder_progress": "{n} von {count} gelöst",
-  "tricks_ladder_level": "Stufe {n}",
   "tricks_ladder_next": "Weiter",
   "tricks_ladder_solved": "Gelöst",
-  "tricks_an_hands": "Die Karten der Gegner",
   "tricks_an_line": "So gewinnst du sicher",
-  "tricks_an_traps": "Die Fallen",
-  "tricks_an_trap": "{card} verliert, wenn der linke Gegner {left} hat und der rechte {right}."
+  "tricks_out": "Noch draußen",
+  "tricks_chip_suit": "kein {suit}",
+  "tricks_chip_trump": "kein Trumpf",
+  "tricks_line_you": "Du +{n}"
 }

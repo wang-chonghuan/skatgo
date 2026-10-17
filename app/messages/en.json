@@ -590,17 +590,12 @@
   "tricks_who_right": "Right opponent",
   "tricks_game_null_ouvert": "Null ouvert",
   "tricks_rules_link": "The Skat rules",
-  "tricks_sit_need": "{n} card points short",
-  "tricks_sit_left": "{n} tricks to go",
-  "tricks_row_history": "Played so far",
-  "tricks_void_suit": "{who}: no {suit}",
-  "tricks_void_trump": "{who}: no trump",
   "tricks_ladder_progress": "{n} of {count} solved",
-  "tricks_ladder_level": "Level {n}",
   "tricks_ladder_next": "Next",
   "tricks_ladder_solved": "Solved",
-  "tricks_an_hands": "The opponents' cards",
   "tricks_an_line": "How to win for sure",
-  "tricks_an_traps": "The traps",
-  "tricks_an_trap": "{card} loses if the left opponent holds {left} and the right one {right}."
+  "tricks_out": "Still out",
+  "tricks_chip_suit": "no {suit}",
+  "tricks_chip_trump": "no trump",
+  "tricks_line_you": "You +{n}"
 }

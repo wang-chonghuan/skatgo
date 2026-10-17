@@ -3,12 +3,11 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronLeft, CircleCheck, CircleX } from 'lucide-react'
 import { useState } from 'react'
 
-import type { Card } from '~/lib/skat/cards'
-import type { Game } from '~/lib/skat/game'
-import { cardLabel, contractName, roleName, suitName } from '~/lib/skat/i18n'
+import { type Card, SUIT_SYMBOL, sortHand } from '~/lib/skat/cards'
+import { cardLabel, contractName, roleName } from '~/lib/skat/i18n'
 import type { CardRow, ChoiceStep, PickStep, PlayStep } from '~/lib/skat/lessons/types'
 import { EXERCISE_TEXT, exerciseById, exercisesOf, nextExercise } from '~/lib/skat/tricks/exercises'
-import type { Endgame, Side, Trick } from '~/lib/skat/tricks/exercises/endgame'
+import type { Endgame } from '~/lib/skat/tricks/exercises/endgame'
 import type { Exercise, ExerciseText, Option, ShownRow, Situation, Who } from '~/lib/skat/tricks/exercises/types'
 import { useLadder } from '~/lib/skat/tricks/ladder-progress'
 import { m } from '~/paraglide/messages'
@@ -16,12 +15,12 @@ import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
-import { elev } from '../../theme/elevation.stylex'
+import { elev, fill } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { CardRowView } from './card-row'
-import { TrickReplay } from './daily-comparison'
+import { PlayingCard } from './playing-card'
 import { Choice, Pick, Play } from './exercises'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 
@@ -83,7 +82,7 @@ function ExerciseView({ id }: { id: string }) {
           <div key={attempt}>
             {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
             {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
-            {exercise.ask.kind === 'play' ? <Play step={playStep(exercise, words)} {...callbacks} /> : null}
+            {exercise.ask.kind === 'play' ? <Play step={playStep(exercise, words)} table={exercise.endgame ? <LadderTable e={exercise.endgame} /> : undefined} {...callbacks} /> : null}
           </div>
         </section>
 
@@ -104,10 +103,15 @@ function ExerciseView({ id }: { id: string }) {
                   <p data-testid="tricks-exercise-explain" {...stylex.props(typography.body, styles.para)}>
                     <Rich text={words.explain} />
                   </p>
+                  {words.trap ? (
+                    <p data-testid="tricks-exercise-trap" {...stylex.props(typography.body, styles.trap)}>
+                      <Rich text={words.trap} />
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </Panel>
-            {exercise.endgame ? <EndgameAnalysis e={exercise.endgame} /> : null}
+            {exercise.endgame ? <LadderLine e={exercise.endgame} /> : null}
             <div {...stylex.props(styles.actions)}>
               {following ? (
                 <Link to="/skat-tricks/$exercise" params={{ exercise: following.id }} data-testid="tricks-exercise-next" {...linkLook('go', 'md')}>
@@ -151,76 +155,98 @@ function SituationView({ situation: s }: { situation: Situation }) {
     s.bid ? m.tricks_sit_bid({ bid: s.bid }) : null,
     s.trickNo ? m.tricks_row_trick({ n: s.trickNo }) : null,
     s.points !== undefined ? m.tricks_sit_points({ n: s.points }) : null,
-    s.need !== undefined ? m.tricks_sit_need({ n: s.need }) : null,
-    s.tricksLeft !== undefined ? m.tricks_sit_left({ n: s.tricksLeft }) : null,
   ].filter(Boolean)
+  // A ladder step says it all in its title and on its table (SKATGO-109).
+  if (!facts.length && !s.rows.length) return null
   return (
     <div data-testid="tricks-situation" {...stylex.props(styles.situation)}>
       {facts.length ? <p {...stylex.props(typography.panelLabel, styles.facts)}>{facts.join(' · ')}</p> : null}
       {s.rows.map((row, i) => (
-        <RowView key={i} row={row} />
+        <CardRowView key={i} row={cardRow(row)} />
       ))}
     </div>
   )
 }
 
-const SEAT_OF: Record<Side, 0 | 1 | 2> = { you: 0, left: 1, right: 2 }
-const replayNames = () => [m.tricks_who_you(), m.tricks_who_left(), m.tricks_who_right()]
-/** Tricks in the play record's own shape: the declarer — the learner — in seat 0, left 1, right 2. */
-const asReplay = (tricks: { cards: { who: Who; card: Card }[]; winner: Who }[]): Game['tricks'] =>
-  tricks.map((t) => ({ cards: t.cards.map((c) => ({ seat: SEAT_OF[c.who as Side], card: c.card })), winner: SEAT_OF[t.winner as Side] }))
-
-/** A row the question shows: the play so far as the play record (SKATGO-108), the voids as a line, else cards. */
-function RowView({ row }: { row: ShownRow }) {
-  if (row.kind === 'history') {
-    return (
-      <div data-testid="tricks-history" {...stylex.props(styles.history)}>
-        <p {...stylex.props(typography.meta, styles.facts)}>{m.tricks_row_history()}</p>
-        <TrickReplay tricks={asReplay(row.tricks)} names={replayNames()} />
-      </div>
-    )
-  }
-  if (row.kind === 'voids') {
-    return (
-      <p data-testid="tricks-voids" {...stylex.props(typography.meta, styles.facts)}>
-        {row.voids.map((v) => (v.suit === 'T' ? m.tricks_void_trump({ who: whoName(v.who) }) : m.tricks_void_suit({ who: whoName(v.who), suit: suitName(v.suit) }))).join(' · ')}
-      </p>
-    )
-  }
-  return <CardRowView row={cardRow(row)} />
-}
-
 /**
- * After a ladder step is answered (SKATGO-108): the opponents' cards turned over, the sure way through this
- * deal trick by trick, and each other card with a split of the opponents' cards in which it loses.
+ * A ladder step's table (SKATGO-109, the human: 「太复杂了」): everything the step needs at one glance — the two
+ * opponents with their cards face down and the voids they showed, and the cards still out, sorted so they do
+ * not tell whose they are. Your cards are the hand under it.
  */
-function EndgameAnalysis({ e }: { e: Endgame }) {
-  const list = (cs: Card[]) => cs.map(cardLabel).join(' ')
-  const replay = (ts: Trick[]) => asReplay(ts.map((t) => ({ cards: t.cards.map((c) => ({ who: c.side, card: c.card })), winner: t.winner })))
+function LadderTable({ e }: { e: Endgame }) {
+  const seat = (side: 'left' | 'right', cards: Card[]) => {
+    const voids = e.voids.filter((v) => v.side === side)
+    return (
+      <div data-testid={`tricks-ladder-${side}`} {...stylex.props(styles.seat, side === 'right' && styles.seatRight)}>
+        <span {...stylex.props(typography.label, styles.onFelt)}>{side === 'left' ? m.tricks_who_left() : m.tricks_who_right()}</span>
+        <span {...stylex.props(styles.backs)}>
+          {cards.map((c) => (
+            <PlayingCard key={cardLabel(c)} card={c} size="xs" faceDown />
+          ))}
+        </span>
+        {voids.length ? (
+          <span {...stylex.props(styles.chips, side === 'right' && styles.chipsRight)}>
+            {voids.map((v) => (
+              <Pill key={v.suit} tone="dark">
+                <Rich text={v.suit === 'T' ? m.tricks_chip_trump() : m.tricks_chip_suit({ suit: SUIT_SYMBOL[v.suit] })} />
+              </Pill>
+            ))}
+          </span>
+        ) : null}
+      </div>
+    )
+  }
   return (
-    <section data-testid="tricks-analysis" {...stylex.props(styles.card)}>
-      <div {...stylex.props(styles.analysisPart)}>
-        <h2 {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_an_hands()}</h2>
-        <CardRowView row={{ label: m.tricks_who_left(), cards: e.left }} />
-        <CardRowView row={{ label: m.tricks_who_right(), cards: e.right }} />
+    <div data-testid="tricks-ladder-table" {...stylex.props(styles.ladderTable)}>
+      <div {...stylex.props(styles.seats)}>
+        {seat('left', e.left)}
+        {seat('right', e.right)}
       </div>
-      <div data-testid="tricks-analysis-line" {...stylex.props(styles.analysisPart)}>
-        <h2 {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_an_line()}</h2>
-        <TrickReplay tricks={replay(e.line)} names={replayNames()} />
+      <div {...stylex.props(styles.out)}>
+        <span {...stylex.props(typography.label, styles.onFelt)}>{m.tricks_out()}</span>
+        <span data-testid="tricks-ladder-out" {...stylex.props(styles.outCards)}>
+          {sortHand([...e.left, ...e.right], e.contract).map((c) => (
+            <PlayingCard key={cardLabel(c)} card={c} size="xs" />
+          ))}
+        </span>
       </div>
-      <div data-testid="tricks-analysis-traps" {...stylex.props(styles.analysisPart)}>
-        <h2 {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_an_traps()}</h2>
-        {e.traps.map((x) => (
-          <p key={cardLabel(x.card)} {...stylex.props(typography.body, styles.para)}>
-            <Rich text={m.tricks_an_trap({ card: `**${cardLabel(x.card)}**`, left: list(x.left), right: list(x.right) })} />
-          </p>
-        ))}
-      </div>
-    </section>
+    </div>
   )
 }
 
-function cardRow(row: Exclude<ShownRow, { kind: 'history' } | { kind: 'voids' }>): CardRow {
+/** After a ladder step (SKATGO-109): the sure way, trick by trick on the felt, until the points are in. */
+function LadderLine({ e }: { e: Endgame }) {
+  let total = 0
+  const shown: Endgame['line'] = []
+  for (const t of e.line) {
+    if (total >= e.need) break
+    shown.push(t)
+    if (t.winner === 'you') total += t.points
+  }
+  let running = 0
+  return (
+    <div data-testid="tricks-ladder-line" {...stylex.props(styles.lineFelt)}>
+      <span {...stylex.props(typography.label, styles.onFelt)}>{m.tricks_an_line()}</span>
+      {shown.map((t, i) => {
+        if (t.winner === 'you') running += t.points
+        const done = t.winner === 'you' && running >= e.need
+        return (
+          <div key={i} {...stylex.props(styles.lineRow)}>
+            <span {...stylex.props(typography.label, styles.onFelt)}>{i + 1}.</span>
+            {t.cards.map((c) => (
+              <PlayingCard key={cardLabel(c.card)} card={c.card} size="xs" glow={c.side === 'you'} />
+            ))}
+            <span {...stylex.props(typography.smallBold, styles.onFelt, styles.lineEnd)}>
+              {t.winner === 'you' ? `${m.tricks_line_you({ n: t.points })}${done ? ' ✓' : ''}` : t.winner === 'left' ? m.tricks_who_left() : m.tricks_who_right()}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function cardRow(row: ShownRow): CardRow {
   switch (row.kind) {
     case 'skat':
       return { label: m.tricks_row_skat(), cards: row.cards }
@@ -311,8 +337,31 @@ const styles = stylex.create({
     borderBottomColor: color.hairline,
   },
   facts: { margin: 0, color: color.slate },
-  history: { display: 'flex', flexDirection: 'column', gap: space.x8 },
-  analysisPart: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  trap: { margin: 0, color: color.bad },
+  // A ladder step's table and line (SKATGO-109), on the drill's felt.
+  ladderTable: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  seats: { display: 'flex', justifyContent: 'space-between', gap: space.x12 },
+  seat: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: space.x4 },
+  seatRight: { alignItems: 'flex-end' },
+  backs: { display: 'flex', gap: space.x2 },
+  chips: { display: 'flex', flexWrap: 'wrap', gap: space.x4 },
+  chipsRight: { justifyContent: 'flex-end' },
+  out: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
+  outCards: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: space.x4 },
+  onFelt: { color: color.amber },
+  lineFelt: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x8,
+    padding: { default: space.x16, [bp.phone]: space.x12 },
+    borderRadius: radii.panel,
+    borderWidth: dims.frameBorderPlay,
+    borderStyle: 'solid',
+    borderColor: color.gold,
+    backgroundImage: fill.felt,
+  },
+  lineRow: { display: 'flex', alignItems: 'center', gap: space.x6 },
+  lineEnd: { marginLeft: 'auto' },
   result: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   verdict: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },
   verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },

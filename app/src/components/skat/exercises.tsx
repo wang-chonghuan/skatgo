@@ -225,7 +225,9 @@ export function Order({ step, onSolved, onMistake, solvedBefore }: { step: Order
   )
 }
 
-export function Play({ step, onSolved, onMistake, solvedBefore, once }: { step: PlayStep } & StepCallbacks) {
+/** `table`: what else lies on the felt, above the trick — a ladder step's opponents and the cards still out
+ *  (SKATGO-109). */
+export function Play({ step, onSolved, onMistake, solvedBefore, once, table }: { step: PlayStep; table?: ReactNode } & StepCallbacks) {
   const legal = legalPlays(step.hand, step.trick, step.contract)
   const [played, setPlayed] = useState<Card | null>(solvedBefore ? (step.best ?? legal)[0] : null)
   const [state, setState] = useState<'idle' | 'wrong' | 'right'>(solvedBefore ? 'right' : 'idle')
@@ -260,10 +262,12 @@ export function Play({ step, onSolved, onMistake, solvedBefore, once }: { step: 
     <div {...stylex.props(styles.stack)}>
       <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
       <div {...stylex.props(styles.felt)}>
+        {table}
         <div {...stylex.props(styles.trickRow)}>
           <span {...stylex.props(typography.label, styles.feltLabel)}>{m.ex_on_table({ contract: contractName(step.contract) })}</span>
-          <div {...stylex.props(styles.trickCards)}>
-            {step.trick.length === 0 && !played ? <span {...stylex.props(typography.label, styles.feltLabel)}>{m.ex_you_lead()}</span> : null}
+          {/* With a ladder's table above it, the empty trick takes no room until a card is played (SKATGO-109). */}
+          <div {...stylex.props(styles.trickCards, !!table && !played && styles.trickCardsEmpty)}>
+            {step.trick.length === 0 && !played && !table ? <span {...stylex.props(typography.label, styles.feltLabel)}>{m.ex_you_lead()}</span> : null}
             {step.trick.map((c, i) => (
               <div key={cardId(c)} {...stylex.props(styles.trickCell)}>
                 <PlayingCard card={c} size="md" />
@@ -330,6 +334,7 @@ const styles = stylex.create({
   feltLabel: { color: color.amber },
   trickRow: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x8, paddingTop: space.x4 },
   trickCards: { display: 'flex', gap: space.x12, alignItems: 'flex-start', justifyContent: 'center', minHeight: dims.cardSlotRow },
+  trickCardsEmpty: { minHeight: 0 },
   trickCell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
   centerRow: { display: 'flex', justifyContent: 'center' },
   verdict: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },

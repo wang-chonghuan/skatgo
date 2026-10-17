@@ -25,8 +25,8 @@ import { Pill } from './ui'
  * human: 「题目页要收录……很好的引流材料」). A card named in the address (#druecken, from a trick of the
  * article) opens by itself.
  *
- * The first card is the "Sieg sichern" ladder (SKATGO-108), featured: ten steps in rising order, each with its
- * level, the ones answered right checked and the next one marked — remembered in this browser only, applied
+ * The first card is the "Sieg sichern" ladder (SKATGO-108, SKATGO-109), featured: ten steps in rising order,
+ * the ones answered right checked and the next one marked — remembered in this browser only, applied
  * after mount. The other kinds remember nothing.
  */
 export function TricksPage() {
@@ -90,7 +90,7 @@ export function TricksPage() {
                         <Link to="/skat-tricks/$exercise" params={{ exercise: e.id }} data-testid="tricks-exercise-link" {...stylex.props(styles.taskLink)}>
                           <span {...stylex.props(styles.taskText)}>
                             <span {...stylex.props(typography.meta, styles.taskNumber)}>
-                              {e.level ? `${m.tricks_hub_task({ n: k + 1 })} · ${m.tricks_ladder_level({ n: e.level })}` : m.tricks_hub_task({ n: k + 1 })}
+                              {m.tricks_hub_task({ n: k + 1 })}
                             </span>
                             <span {...stylex.props(typography.appBtnStrong, styles.taskTitle)}>{text.exercises[e.id].title}</span>
                           </span>

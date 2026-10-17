@@ -1,4 +1,4 @@
-import type { Card, Contract, Suit } from '../../cards'
+import type { Card, Contract } from '../../cards'
 import type { Endgame } from './endgame'
 
 // The Skat-Tricks exercises (SKATGO-103): twelve kinds of question, three of each, chosen by hand. A
@@ -36,10 +36,7 @@ export type ShownRow =
   | { kind: 'hand'; who: Who; cards: Card[] }
   | { kind: 'outstanding'; cards: Card[] }
   | { kind: 'hand12'; cards: Card[] }
-  /** The play so far, trick by trick (SKATGO-108). */
-  | { kind: 'history'; tricks: { cards: { who: Who; card: Card }[]; winner: Who }[] }
-  /** Suits ('T' for trumps) a defender showed it has none of. */
-  | { kind: 'voids'; voids: { who: Who; suit: Suit | 'T' }[] }
+
 
 /** What the learner is told of the game before the question, all of it language-free. */
 export type Situation = {
@@ -49,9 +46,6 @@ export type Situation = {
   ouvert?: boolean
   /** The trick being played, counted from 1, when the game is under way. */
   trickNo?: number
-  /** Card points still needed, and tricks still to play (SKATGO-108). */
-  need?: number
-  tricksLeft?: number
   /** The learner's part in it, and seat. */
   role: 'bidder' | 'declarer' | 'defender'
   position?: Position3
@@ -109,10 +103,7 @@ export type Exercise = {
   situation: Situation
   ask: Ask
   proof: Proof
-  /** A ladder step's level of help (SKATGO-108): 1 the outstanding cards listed, 2 count them yourself, 3 the
-   *  points too. */
-  level?: 1 | 2 | 3
-  /** A ladder step's proven facts: what the analysis shows after the answer. */
+  /** A ladder step's proven facts (SKATGO-108): the table it is set on and the line shown after the answer. */
   endgame?: Endgame
 }
 
@@ -125,6 +116,8 @@ export type ExerciseText = {
   options?: string[]
   /** Why the answer is right — shown once the question is answered. */
   explain: string
+  /** A ladder step's most tempting wrong card and why it fails (SKATGO-109). */
+  trap?: string
 }
 
 /** A kind of question's words: its name and one line of what it trains. */

@@ -612,7 +612,7 @@
   "tricks_ladder_missed": "Answered wrong",
   "tricks_ladder_locked": "Account needed",
   "tricks_ladder_gate_title": "Keep going with a free account",
-  "tricks_ladder_gate_text": "You can solve the first {n} puzzles without an account. From here on, sign in – then we keep track of which ones you solved and which ones you got wrong.",
+  "tricks_ladder_gate_text": "You can solve the first {n} puzzles without an account. From here on, sign in for free to play all the puzzles – and pick up where you left off on any device.",
   "tricks_ladder_gate_button": "Sign in for free",
   "tricks_open_later": "Everything was right up to here. At this point only {answer} wins. The declarer’s card points at the end, card by card: {values}.",
   "tricks_open_title_declarer": "{game} · you declare",

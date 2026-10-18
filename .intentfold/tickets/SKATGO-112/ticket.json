@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-112",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-112",
+  "branch": "SKATGO-112-gate-copy",
+  "base": "9c7cc5b00a3f8c9c7c1ab41d114072352225f0b2",
+  "ports": { "web": 55112, "multiplayer": 56112, "database": 57112 }
+}

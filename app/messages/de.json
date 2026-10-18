@@ -612,7 +612,7 @@
   "tricks_ladder_missed": "Falsch beantwortet",
   "tricks_ladder_locked": "Nur mit Konto",
   "tricks_ladder_gate_title": "Weiter mit einem kostenlosen Konto",
-  "tricks_ladder_gate_text": "Die ersten {n} Aufgaben kannst du ohne Konto lösen. Ab hier meldest du dich an – dann merken wir uns, welche du gelöst hast und welche du falsch hattest.",
+  "tricks_ladder_gate_text": "Die ersten {n} Aufgaben kannst du ohne Konto lösen. Ab hier meldest du dich kostenlos an – dann kannst du alle Aufgaben spielen und auf jedem Gerät da weitermachen, wo du aufgehört hast.",
   "tricks_ladder_gate_button": "Kostenlos anmelden",
   "tricks_open_later": "Bis hierher war alles richtig. An dieser Stelle gewinnt nur {answer}. So viele Augen hat der Alleinspieler am Ende, je nach Karte: {values}.",
   "tricks_open_title_declarer": "{game} · du bist Alleinspieler",

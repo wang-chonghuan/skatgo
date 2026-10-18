@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-117",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-117",
   "branch": "SKATGO-117-private-table-login",

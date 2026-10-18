@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-55",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-55",
+  "branch": "SKATGO-55-gsc-openseo",
+  "base": "4a46070469cb7672f68fb7174e0dbb0c7abf42fb",
+  "ports": { "web": 55055, "multiplayer": 56055, "database": 57055 }
+}

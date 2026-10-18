@@ -713,6 +713,15 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
       {/* The way out (SKATGO-96), in the felt's top right corner and over the dialogs on the table, so it can
           always be pressed (SKATGO-100); an open drawer covers the felt, and it with it. */}
+      {/* An exercise has no side panel, so its settings wait in the felt's top left corner, across from the way out
+          (SKATGO-111, the human: 「设置按钮要放一个地方」). */}
+      {fullScreen && exercise ? (
+        <div {...stylex.props(styles.settingsCorner)}>
+          <button type="button" aria-label={m.settings_open()} title={m.settings_open()} data-testid="settings-open-table" onClick={() => setSettingsOpen(true)} {...stylex.props(styles.menuButton)}>
+            <Settings aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
+          </button>
+        </div>
+      ) : null}
       {fullScreen && (exercise || pinned || !panelOpen) ? <TableMenu leave={exercise ? '/skat-tricks' : tournament ? '/daily' : room ? '/with-friends' : '/'} newRound={server?.newRound} /> : null}
     </div>
   )
@@ -1485,6 +1494,14 @@ const styles = stylex.create({
     flexDirection: 'column',
     alignItems: 'flex-end',
     gap: space.x8,
+  },
+  // An exercise's settings (SKATGO-111): the way out's mirror, in the felt's top left corner.
+  settingsCorner: {
+    position: 'absolute',
+    gridArea: dims.feltCell,
+    top: { default: space.x16, [bp.phone]: space.x8 },
+    left: { default: space.x16, [bp.phone]: space.x8 },
+    zIndex: layer.tip,
   },
   menuButton: {
     display: 'flex',

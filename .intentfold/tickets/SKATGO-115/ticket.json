@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-115",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "auto-deploy",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-115",
   "branch": "SKATGO-115-defender-goal",

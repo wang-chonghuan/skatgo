@@ -110,7 +110,9 @@ exposure. Neither alone proves that learners can play, and delayed search report
 **What this product is not**
 
 - It speaks German and English only. Public URLs determine page language, and learners can switch it
-  themselves. The German homepage is the same for every browser (SKATGO-44).
+  themselves. The homepage `skatgo.com/` follows the visitor's language: a German browser, or a request
+  that names no language, gets the German homepage; any other language goes to `/en`; a language the
+  visitor picked in the header wins (SKATGO-113).
 - It is the course, free play, the daily tournament, private tables with friends, the Skat-Tricks and
   the rules reference — nothing from
   Parrottoon, from which it was split on 2026-09-21: none of Parrottoon's English content, and no link

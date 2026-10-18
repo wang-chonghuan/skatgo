@@ -71,7 +71,9 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
   const log = (...args) => { if (!quiet) console.log(...args) }
   try {
     signal?.throwIfAborted()
-    const context = await browser.newContext({ javaScriptEnabled: false })
+    // German, like the request a crawler sends with no language: the German root then renders instead of sending an
+    // English-speaking browser on to /en (SKATGO-113), which is checked on its own below.
+    const context = await browser.newContext({ javaScriptEnabled: false, locale: 'de-DE' })
     context.setDefaultTimeout(15_000)
     context.setDefaultNavigationTimeout(20_000)
     const page = await context.newPage()
@@ -238,10 +240,26 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
         assertIndexable(observed.robots, `${entry.loc}: ${agent}`)
       }
     }
-    for (const acceptLanguage of ['', 'de-DE,de;q=0.9', 'en-US,en;q=0.9', 'fr-FR']) {
-      const response = await request.get(new URL('/', target).href, { maxRedirects: 0, headers: { 'Accept-Language': acceptLanguage, Cookie: 'PARAGLIDE_LOCALE=en' } })
-      assert.equal(response.status(), 200, 'Stable root')
-      assert.match(await response.text(), /<html lang="de"/, 'Stable German root')
+    // The homepage by language (SKATGO-113): no language or German renders the German root; any other language goes
+    // on to /en with its query; a language saved in the header wins over the browser's.
+    for (const [acceptLanguage, cookie, to] of [
+      ['', '', 'de'],
+      ['de-DE,de;q=0.9', '', 'de'],
+      ['en-US,en;q=0.9', '', 'en'],
+      ['fr-FR', '', 'en'],
+      ['en-US,en;q=0.9', 'PARAGLIDE_LOCALE=de', 'de'],
+      ['de-DE,de;q=0.9', 'PARAGLIDE_LOCALE=en', 'en'],
+    ]) {
+      const label = `Root for ${acceptLanguage || 'no language'}${cookie ? ` with ${cookie}` : ''}`
+      const response = await request.get(new URL('/?source=seo', target).href, { maxRedirects: 0, headers: { 'Accept-Language': acceptLanguage, ...(cookie ? { Cookie: cookie } : {}) } })
+      assert.match(response.headers().vary ?? '', /Accept-Language/i, `${label}: varies by language`)
+      if (to === 'de') {
+        assert.equal(response.status(), 200, label)
+        assert.match(await response.text(), /<html lang="de"/, `${label}: German root`)
+      } else {
+        assert.equal(response.status(), 307, label)
+        assert.equal(new URL(response.headers().location, target).href, new URL('/en?source=seo', target).href, `${label}: Preserve query`)
+      }
     }
     for (const path of ['/de', '/de/']) {
       const response = await request.get(new URL(`${path}?source=seo`, target).href, { maxRedirects: 0 })

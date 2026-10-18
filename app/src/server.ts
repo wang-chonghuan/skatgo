@@ -5,7 +5,7 @@ import { handleDaily } from './lib/daily-handler'
 import { handleFree } from './lib/free-handler'
 import { handleRoom } from './lib/room-handler'
 import { handleTricks } from './lib/tricks-handler'
-import { chooseLocale } from './lib/locale'
+import { chooseLocale, rootLocale } from './lib/locale'
 import { movedTo } from './lib/moved'
 import { buildSitemap } from './lib/sitemap'
 import { paraglideMiddleware } from './paraglide/server.js'
@@ -26,7 +26,11 @@ defineCustomServerStrategy('custom-skatgo', {
 //
 // Answered here, before the middleware and without the page router (SKATGO-29):
 //   moved pages   301 to where they live now (lib/moved.ts);
-//   sitemap.xml   built from the page list (lib/sitemap.ts).
+//   sitemap.xml   built from the page list (lib/sitemap.ts);
+//   /             a visitor whose language is not German goes to /en, the query kept (SKATGO-113,
+//                 lib/locale.ts rootLocale) — here and not in the middleware, which redirects only a
+//                 browser's document request and would otherwise serve English at the German address.
+//                 Both answers vary with the language and the saved choice.
 //
 // The assistant's endpoint (SKATGO-9) is answered here, before the middleware and outside the page
 // router: it is a server route, not a page — no language prefix, no redirect, and nothing that reads
@@ -46,6 +50,19 @@ export default {
     // Keep the public scheme when TLS terminates at the reverse proxy.
     if (moved) return Promise.resolve(new Response(null, { status: 301, headers: { location: moved } }))
     if (url.pathname === '/sitemap.xml') return Promise.resolve(new Response(buildSitemap(), { headers: { 'content-type': 'application/xml; charset=utf-8' } }))
+    if (url.pathname === '/') {
+      const vary = { vary: 'Accept-Language, Cookie' }
+      if (rootLocale({ cookie: req.headers.get('cookie'), acceptLanguage: req.headers.get('accept-language') }) !== 'de')
+        return Promise.resolve(new Response(null, { status: 307, headers: { location: `/en${url.search}`, ...vary } }))
+      return paraglideMiddleware(req, () => handler.fetch(req)).then((res) => withHeaders(res, vary))
+    }
     return paraglideMiddleware(req, () => handler.fetch(req))
   },
+}
+
+/** The response with these headers added; a fresh one when its own headers are immutable. */
+function withHeaders(res: Response, headers: Record<string, string>): Response {
+  const out = new Response(res.body, res)
+  for (const [k, v] of Object.entries(headers)) out.headers.set(k, v)
+  return out
 }

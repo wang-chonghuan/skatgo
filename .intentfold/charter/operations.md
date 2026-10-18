@@ -17,8 +17,10 @@ merge. Acceptance verification also uses this file, so stale commands block deli
 The **`web`** service is the TanStack Start server in `app/`, which renders the page
 shell and public reading content for its localized pages, and serves the built assets and the
 printables' PDFs under `/downloads/`, each with a canonical Link header naming its page (SKATGO-53).
-Random exercises, cards and personal progress run in the browser. The German root is a stable 200
-page, and the old German homepage address redirects permanently to it (SKATGO-44). `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*` and
+Random exercises, cards and personal progress run in the browser. The German root is a 200 page for
+a German browser or a request that names no language, and a 307 to `/en` (query kept) for any other
+language or a saved English choice (SKATGO-113); the old German homepage address redirects permanently
+to it (SKATGO-44). `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*` and
 `/api/free/*`. They pass the daily tournament's and free play's requests on to `multiplayer`. Free
 play includes lesson 11's game (SKATGO-40). `/api/free/*` is limited per address to 300 new games an
 hour and 200 other requests — moves, resumes and reviews — per 10 s, and answers `429 slow_down` beyond

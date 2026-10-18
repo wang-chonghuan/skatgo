@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-112",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-112",
   "branch": "SKATGO-112-gate-copy",

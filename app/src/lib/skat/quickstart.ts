@@ -52,10 +52,11 @@ const DE: QuickStart = {
 }
 
 const EN: QuickStart = {
-  metaTitle: 'Skat in 5 minutes: the 12 rules to start playing',
+  // Aimed at the search "how to play skat" (SKATGO-114).
+  metaTitle: 'How to Play Skat: the 12 Rules in 5 Minutes',
   metaDescription:
     'Learn Skat fast: twelve short rules – cards, tricks, trumps, bidding and Null. Then play online against two computer players straight away, free and without signing up.',
-  h1: 'Skat in 5 minutes',
+  h1: 'How to play Skat in 5 minutes',
   lead: 'Twelve rules, then you can start playing.',
   picture: {
     src: '/quick-start-table-en.webp',

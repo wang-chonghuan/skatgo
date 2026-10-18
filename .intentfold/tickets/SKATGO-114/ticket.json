@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-114",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-114",
+  "branch": "SKATGO-114-english-beachhead",
+  "base": "f506e00171d1398f7c66441238204a877b57da1a",
+  "ports": { "web": 55114, "multiplayer": 56114, "database": 57114 }
+}

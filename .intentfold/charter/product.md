@@ -95,9 +95,12 @@ and the articles recommend no books. After every deal, the play record links to 
 Learners from 6 to 99 (the human, 2026-09-21: 「年龄改为6-99岁」), who want to be able to sit down at a
 table with people who already play.
 
-Germany is the primary market. German search entry pages and vocabulary take priority; English
-remains an independent secondary language (human, 2026-10-04, SKATGO-44: 「主要用户应该是德国的，
-英文用户占比百分之一应该」). That percentage is a positioning expectation, not measured traffic.
+English-speaking Skat players come first: people who already play Skat but have nobody to play
+with — the ISPA circle in North America, the UK, German families abroad (human, 2026-10-18,
+SKATGO-114: 「去服务那些有需求却一直没被满足的人」). Next come English speakers who want to learn Skat;
+Germany remains the large long-term market. The first market counts as proven when, of the people who
+come from the English Skat community, 30% come back to play on 3 different days within two weeks; if
+that does not happen, this positioning is to be reconsidered.
 
 **What good looks like**
 

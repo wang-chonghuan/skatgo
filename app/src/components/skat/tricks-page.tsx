@@ -27,9 +27,9 @@ import { Pill, linkLook } from './ui'
  * article) opens by itself.
  *
  * Since SKATGO-110 only the open-card endgames are shown (`SHOWN_TYPES`; the other kinds are hidden, not deleted),
- * as one featured card open from the start: twenty steps in rising order, the ones answered right checked, the ones
- * answered wrong and not yet right crossed, each step's wrong answers counted under its number, and the next one
- * marked; for a guest, the steps that need an account carry a lock (SKATGO-109). The record is the account's, or for
+ * and since SKATGO-111 as levels (`Levels`): twenty tiles in rising order, the ones answered right checked, the ones
+ * answered wrong and not yet right crossed with their wrong answers counted in the corner, and the next one marked;
+ * for a guest, the steps that need an account carry a lock (SKATGO-109). The record is the account's, or for
  * a guest this browser's (ladder-progress.ts), applied after mount.
  */
 export function TricksPage() {

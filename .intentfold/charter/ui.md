@@ -198,7 +198,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `ScoreSheet` | `daily-comparison.tsx` | a score sheet (SKATGO-79): the three seats' Seeger-Fabian scores of one deal or of a tournament, the player's line, tagged "Du" in `navy`, over the AI's, tagged "AI" in `info`; no other number beside them (SKATGO-81); under a deal's line, what that deal was. The AI's line is left out for days dealt before it played them. Free play and lesson 11 show it after every game, the AI's line once the review has worked it out, with a note while it does or when it cannot (SKATGO-86) |
 | `VsAiTable` | `daily-comparison.tsx` | the daily tournament's comparison with the computer (SKATGO-48, SKATGO-79): one row per finished deal — the deal's number, the player's and the AI's Seeger-Fabian score each with its role under the heading "Punkte", signed, never `good` / `bad` (SKATGO-81) — that opens to the deal's `ScoreSheet` and play record; under the rows, the tournament's `ScoreSheet`. Rows collapse instead of scrolling sideways; the newest opens after a deal and on `/daily` mid-day. On `/daily` while the day runs (`DayDeals`, "Die Spiele von heute", also rendered on the server; SKATGO-63) every deal of the chosen tournament has a row: the ones not finished follow by number, "läuft" for the one being played and "offen" for the rest, with nothing of their cards; the total appears once a deal is finished. Free play's round result, "Deine Runde", is the same table over its six deals (SKATGO-88) |
 | `DealAnalysis` / `TrickReplay` | `daily-comparison.tsx` | a finished deal's play record, "Spielverlauf" (SKATGO-79), after a daily deal, on a `/daily` row and after a free game; open, never folded, with no button. On top, in one line, the player's card that fell furthest below the AI's choice and the AI's card. Then a row per trick: its three cards in the order played, each under its player's name, the player's own bold, and who took the trick with its card points; under a row the player taps, and only that one, the player's hand before that trick, folded again by a tap anywhere else, with no icon (SKATGO-100). Wherever the AI would have played another card, that card stands under the player's, in the same column, with an `info` "AI" tag after it; the furthest trick's rows are `badSoft`. Under the tricks, a line for those left unplayed when the deal was decided early, and the skat |
-| `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards and the skat are as big as the hand's; the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68). An open hand at the side — an Ouvert declarer's, or the cards laid open when a deal is decided early — is spread at `stage.stackStepOpen`, wider than a closed one, so every card reads (SKATGO-79) |
+| `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards and the skat are as big as the hand's; the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68). An open hand at the side — an Ouvert declarer's, or the cards laid open when a deal is decided early — is spread at `stage.stackStepOpen`, wider than a closed one, so every card reads (SKATGO-79). As an exercise's table (`exercise`, SKATGO-110/111) every hand is open, the side hands at the learner's card size, and the exercise supplies the board at the top and the dialog at the end; there is no side panel, hint tab, assistant or settlement |
 
 Recurring patterns — reuse them rather than inventing a neighbour:
 
@@ -210,7 +210,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 
 **Frames and pages**
 
-- **The frame** (`skat-layout.tsx`, `components/skat/frame.tsx`): every page but the tables wears the
+- **The frame** (`skat-layout.tsx`, `components/skat/frame.tsx`): every page but the tables — an open-card
+  endgame's page among them (SKATGO-111) — wears the
   public site's header (SKATGO-43; lessons too since SKATGO-47). The header has:
   - the SkatGo mark (`dims.landingMark`) and name (`landingBrand`), "SkatGo" without ".com" (SKATGO-105);
   - the five links, in this order (SKATGO-69, SKATGO-82): the daily tournament, learning (the course),
@@ -228,14 +229,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `aria-current`).
 - **The front page** (`entry-page.tsx`), on white:
   - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
-    its one green landing action (play today's deals); a quiet ✓ line of what a first visitor wants to
+    its one green landing action (play today's deals) and beside it a white `quiet` one, "Skat-Aufgaben
+    lösen" / "Solve Skat puzzles", to the open-card endgames (SKATGO-109); a quiet ✓ line of what a first visitor wants to
     know; and the human's illustration (SKATGO-33). Never on felt (Redline 4);
   - the sections as colour tiles, each with its card art and a `quiet` button: the course, free play,
     the tricks ("Skat-Tricks", `tileNavy`, SKATGO-82; it held the puzzles' "coming soon" before; its words and
     button, "Jetzt üben", lead to the exercises, SKATGO-105) and a private table (`tileRed`);
   - plain links to the rules and the course, and the questions people ask.
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
-  the short rules, the daily tournament, the Skat-Tricks and their article and exercises, the legal pages), on the grey page: its title is the column's first element, an
+  the short rules, the daily tournament, the Skat-Tricks' page and their article, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
   tournament's page puts a switch of two pills under its lead, "6 Spiele | 12 Spiele" (SKATGO-77,
@@ -254,15 +256,21 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`CardRowView`, the points as captions), then a `tip` panel with the `go` button to free play, and links
   to the course and the rules. Its ways in: an option card under the course's lead, ahead of the progress
   card; on the front page a second `quiet` button, "5-Minuten-Crashkurs" — a crash course, never read as a quick game or a summary (the human: 「其实就是5分钟速成的意思」) — beside the course tile's own, always, whether or not a lesson was taken (the human: 「看起来不够明显」; SKATGO-92: 「必须还放在学习卡上」); and a link under the rules' lead. Not in the header. The Skat-Tricks' page (`tricks-page.tsx`,
-  SKATGO-103) is its H1 and lead, then the twelve kinds of exercise as option cards in one column — a number
-  disc, title and one line, the count, and a chevron — each a native `<details>` that opens in place to its
-  three exercises as rows (number, title, a `go` arrow), the open card ringed `go`; under the cards, a small
-  `info` link to the article. An exercise's page (`tricks-exercise-page.tsx`) has the way back ("Alle
-  Aufgaben", `quiet`, with a chevron) and the kind and number in a `Pill`, the title as H1, then one white
-  card: what the learner knows in a `panelLabel` line, the cards on show as `CardRowView` rows, and the
-  question in the course's widget (`Choice`, `Pick`, `Play`) answered once — the right answer then lit, a
-  wrong one marked `bad`. Under the card, the verdict in a `good` or `bad` `Panel` with its icon, the right
-  answer and the reason — no link to the article (SKATGO-105); then "Nächste Aufgabe" (`go`) and "Noch mal" (`quiet`). An
+  SKATGO-103) is its H1 and lead, then the open-card endgames as levels (SKATGO-111): a heading with the count
+  solved, a grid of numbered square tiles — solved `good` with a check, gone wrong `bad` with a cross and the
+  number of wrong answers in its corner, the next one ringed `go`, and for a guest a lock from the third — and
+  under it one `go` button to the next ("Aufgabe n spielen"); under that, small `info` links to the article
+  and the rules. (The twelve kinds of SKATGO-103 as option cards are hidden, SKATGO-110.) An open-card
+  endgame's page (`tricks-exercise-page.tsx`, `open-endgame.tsx`) is the game's full-screen table (SKATGO-111,
+  the human: 「打牌界面那种效果，各种尺寸屏幕都刚好全屏」): no site header, every hand open, the opponents' cards
+  as big as the learner's (`stage.openStack*`); at the top, in the info board's place and make, a board with
+  the puzzle's place ("Aufgabe 1 von 20"), the H1 ("Karo · du bist Alleinspieler") and the learner's side's
+  points against its goal as a `ProgressBar`; the settings in the felt's top left corner and the way out at
+  the top right, both white round buttons; no side panel, hint, assistant or words line. Once the game is
+  decided, a white dialog over the table: "Gelöst!" with the key card, or "Nicht gelöst" with the mistake and
+  the card that would have won; "Nächste Aufgabe" (`go`), "Warum?" (the reason, only when asked) and "Noch
+  mal" (`quiet`). For a guest from the third puzzle the table waits under the sign-in dialog, an invitation
+  with no lock (SKATGO-112). An
   article of the Skat-Tricks (`tricks-article-page.tsx`, SKATGO-82) reads like the rules: its H1 and lead, section headings, each trick a
   numbered sub-heading over short paragraphs, and three ways into the daily tournament — at the start, in
   the middle and at the end — each a `tip` panel with its line and the `go` button; one action repeated
@@ -276,7 +284,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
   lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,
   its section of the rules, and all lessons.
-- **The tables** (`/play`, `/daily/play`, a private table): the felt fills the screen and never scrolls;
+- **The tables** (`/play`, `/daily/play`, a private table, and an open-card endgame's page since SKATGO-111):
+  the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a
   standard web-app table. Free play's search entry is the front page.
 - **At the table**, the speaker in the auction may jump (SKATGO-87): "Höher …" (`quiet`) opens, under it,

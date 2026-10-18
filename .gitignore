@@ -148,3 +148,6 @@ vite.config.ts.timestamp-*
 .intentfold/tmp/
 .intentfold/tickets/*/tmp/
 .playwright-cli/
+
+# macOS folder metadata
+.DS_Store

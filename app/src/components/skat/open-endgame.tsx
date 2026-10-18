@@ -100,22 +100,28 @@ export function OpenTable({ e, title, kicker, hold = false, onSolved, onMistake,
 }
 
 /** The board over the felt, in the info board's place and of its make (SKATGO-111, the human: 「像那种两步杀，消消乐那种」;
- *  「打牌界面那种效果」): the puzzle's place in the list, its heading, and the declarer's card points so far — the skat
- *  and its tricks — against 61, as a bar that grows with every trick it takes. */
+ *  「打牌界面那种效果」): the puzzle's place in the list, its heading, and the learner's side's card points so far against
+ *  what that side needs, as a bar that grows with every trick it takes (SKATGO-115, the human: 「都以玩家应该达到的分值为
+ *  bar」): the declarer's — the skat and its tricks — against 61; the defenders' tricks against 60, which a declarer
+ *  held to 60 leaves them. */
 function Board({ game, role, title, kicker }: { game: Game; role: OpenEndgame['role']; title: string; kicker: string }) {
-  const have = pointsOf(game.skat) + game.tricks.filter((t) => t.winner === game.declarer).reduce((n, t) => n + pointsOf(t.cards.map((p) => p.card)), 0)
+  const declaring = role === 'declarer'
+  const taken = (mine: boolean) => game.tricks.filter((t) => (t.winner === game.declarer) === mine).reduce((n, t) => n + pointsOf(t.cards.map((p) => p.card)), 0)
+  const have = declaring ? pointsOf(game.skat) + taken(true) : taken(false)
+  const goal = declaring ? 61 : 60
+  const goalText = declaring ? m.tricks_open_goal_declarer() : m.tricks_open_goal_side()
   return (
     <section data-testid="open-board" {...stylex.props(styles.board)}>
       <span data-testid="open-kicker" {...stylex.props(typography.infoLabel, styles.kicker)}>{kicker}</span>
       <h1 {...stylex.props(typography.infoValue, styles.title)}>
         <Rich text={title} />
       </h1>
-      <div data-testid="open-goal" data-have={have} {...stylex.props(styles.goal)}>
+      <div data-testid="open-goal" data-have={have} data-goal={goal} {...stylex.props(styles.goal)}>
         <div {...stylex.props(styles.goalRow)}>
-          <span {...stylex.props(typography.infoLabel, styles.onBoard)}>{role === 'declarer' ? m.tricks_open_you({ n: have }) : m.tricks_open_declarer({ n: have })}</span>
-          <span {...stylex.props(typography.infoLabel, styles.goalText)}>{role === 'declarer' ? m.tricks_open_goal_declarer() : m.tricks_open_goal_defender()}</span>
+          <span {...stylex.props(typography.infoLabel, styles.onBoard)}>{declaring ? m.tricks_open_you({ n: have }) : m.tricks_open_side({ n: have })}</span>
+          <span {...stylex.props(typography.infoLabel, styles.goalText)}>{goalText}</span>
         </div>
-        <ProgressBar value={have / 61} label={m.tricks_open_goal_declarer()} />
+        <ProgressBar value={have / goal} label={goalText} />
       </div>
     </section>
   )

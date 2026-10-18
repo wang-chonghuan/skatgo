@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-115",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-115",
+  "branch": "SKATGO-115-defender-goal",
+  "base": "414ee666aef0806e7ddef33274866bdfea498700",
+  "ports": { "web": 55115, "multiplayer": 56115, "database": 57115 }
+}

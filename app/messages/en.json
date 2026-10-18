@@ -618,13 +618,13 @@
   "tricks_open_title_declarer": "{game} · you declare",
   "tricks_open_title_defender": "{game} · you defend",
   "tricks_open_you": "You: {n}",
-  "tricks_open_declarer": "Declarer: {n}",
   "tricks_open_goal_declarer": "Goal 61",
-  "tricks_open_goal_defender": "Goal: below 61",
   "tricks_open_solved": "Solved!",
   "tricks_open_failed": "Not solved",
   "tricks_open_key": "Key card: {card}",
   "tricks_open_why": "Why?",
   "tricks_open_play": "Play puzzle {n}",
-  "tricks_open_mistake": "Your mistake: {card}. The right card was {answer}."
+  "tricks_open_mistake": "Your mistake: {card}. The right card was {answer}.",
+  "tricks_open_side": "Your side: {n}",
+  "tricks_open_goal_side": "Goal 60"
 }

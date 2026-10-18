@@ -1,6 +1,6 @@
 import { type Locale, cookieName, extractLocaleFromUrl, locales } from '~/paraglide/runtime'
 
-// The German root is a stable public page, not a preference redirect (SKATGO-44).
+// The German root renders in German; who lands there is settled before it renders (rootLocale, SKATGO-113).
 // For other URLs, the existing language selection remains (English and German since SKATGO-28; the browser
 // rule is the human's of SKATGO-29: 「浏览器语言是德语，则显示德语，其他语言，则显示英语，识别不出来语言，
 // 则显示德语」):
@@ -16,6 +16,16 @@ export function chooseLocale(input: { url: string; cookie: string | null; accept
   const saved = savedLocale(input.cookie)
   if (saved) return saved
   return browserLocale(input.acceptLanguage) ?? 'de'
+}
+
+/**
+ * The homepage `/` for this visitor (SKATGO-113, the human: 「按照浏览器语言跳转，如果不是德语，就默认显示英语」): their
+ * saved choice, else the browser's first language — German stays, any other goes to `/en` — else, when the request
+ * names no language at all (a search engine's crawler, most link previews), German, so the German homepage stays
+ * the one a crawler finds.
+ */
+export function rootLocale(input: { cookie: string | null; acceptLanguage: string | null }): Locale {
+  return savedLocale(input.cookie) ?? browserLocale(input.acceptLanguage) ?? 'de'
 }
 
 const CHOSEN: readonly string[] = locales

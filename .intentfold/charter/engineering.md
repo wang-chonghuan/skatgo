@@ -115,8 +115,10 @@ also built from the repository root. Neither project imports the other's runtime
   browser-only, behind `client-part.tsx`; progress is applied after mount. A crawler must not need
   hydration to read an indexable page. The SSR bundle import check protects against the historical
   Nitro/rolldown undefined-binding failure (PARROT-42), not a prohibition on static page content.
-- **German-first public addresses** (SKATGO-44): one stable German root, a permanent redirect from
-  the old German homepage, and independent English pages. Paraglide patterns own translated
+- **German-first public addresses** (SKATGO-44): one German root, a permanent redirect from
+  the old German homepage, and independent English pages. The root itself sends a visitor whose saved
+  or browser language is not German to `/en` (`lib/locale.ts` `rootLocale`, answered in `server.ts`
+  before the middleware; SKATGO-113); a request that names no language gets the German root. Paraglide patterns own translated
   addresses; canonical, page-specific hreflang, internal links and sitemap agree with them.
   `lib/indexability.ts` owns exclusion of personal execution pages; those routes declare noindex.
 - **The tournament's cards and scores are the server's** (SKATGO-35). The browser receives only seat
@@ -249,7 +251,7 @@ compares against the current source inventory, so production acceptance requires
 release-identity guard first. Routes, sitemap registry, lesson guides, indexability and language
 patterns derive coverage without a second hand-written page list. The checker verifies visible
 SSR content, reciprocal alternates, self-canonical URLs, Googlebot/Bingbot robots, unique metadata,
-JSON-LD, assets, internal links, stable German root, proxy-safe redirects, noindex personal pages and
+JSON-LD, assets, internal links, the root's language rule (SKATGO-113), proxy-safe redirects, noindex personal pages and
 404s. A file a page links to, such as a printable's PDF, must instead name a sitemap page as its
 canonical in a Link header (SKATGO-53). Empty or incomplete derivation fails. `npm run test:seo`
 exercises actual broken HTTP responses, not only validator objects. See

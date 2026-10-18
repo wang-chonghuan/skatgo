@@ -191,6 +191,7 @@ test('owned preview and same crawler reject actual broken responses', { timeout:
             headers.location = '/'
             return {}
           }, /Preserve query/],
+          ['English root kept', async ({ url, requestHeaders }) => url.pathname === '/' && /^en/.test(requestHeaders['accept-language'] ?? '') && !requestHeaders.cookie ? { status: 200 } : undefined, /Root for en/],
           ['soft 404', async ({ url }) => url.pathname.includes('this-page-does-not-exist') ? { status: 200 } : undefined, /Unknown URL/],
         ]
         try {

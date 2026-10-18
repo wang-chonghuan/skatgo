@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-113",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-113",
+  "branch": "SKATGO-113-home-language",
+  "base": "f506e00171d1398f7c66441238204a877b57da1a",
+  "ports": { "web": 55113, "multiplayer": 56113, "database": 57113 }
+}

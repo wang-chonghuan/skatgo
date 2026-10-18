@@ -1,12 +1,24 @@
 import { describe, expect, it } from 'vitest'
 
-import { chooseLocale } from './locale'
+import { chooseLocale, rootLocale } from './locale'
 
 const at = (path: string, acceptLanguage: string | null, cookie: string | null = null) =>
   chooseLocale({ url: `https://skatgo.com${path}`, cookie, acceptLanguage })
 
 describe('which language a page is served in', () => {
-  it('keeps the German homepage independent of browser and saved preferences', () => {
+  it('sends the homepage visitor by saved choice, then browser language, else German (SKATGO-113)', () => {
+    const root = (acceptLanguage: string | null, cookie: string | null = null) => rootLocale({ cookie, acceptLanguage })
+    expect(root('en-US,en;q=0.9')).toBe('en')
+    expect(root('fr-FR')).toBe('en')
+    expect(root('de-DE,de;q=0.9')).toBe('de')
+    expect(root('de-AT')).toBe('de')
+    for (const none of [null, '', '*', 'de;q=0']) expect(root(none)).toBe('de')
+    expect(root('en-US', 'PARAGLIDE_LOCALE=de')).toBe('de')
+    expect(root('de-DE', 'PARAGLIDE_LOCALE=en')).toBe('en')
+    expect(root('de-DE', 'PARAGLIDE_LOCALE=fr')).toBe('de')
+  })
+
+  it('renders the homepage itself in German; who lands there is rootLocale', () => {
     for (const language of [null, '', '*', 'de-DE', 'en-US,en;q=0.9', 'fr-FR', 'zh-CN,de;q=0.8']) {
       expect(at('/', language)).toBe('de')
       expect(at('/', language, 'PARAGLIDE_LOCALE=en')).toBe('de')

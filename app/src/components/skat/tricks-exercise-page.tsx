@@ -1,7 +1,7 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link, useParams } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChevronLeft, CircleCheck, CircleX, Lock } from 'lucide-react'
+import { ChevronLeft, CircleCheck, CircleX } from 'lucide-react'
 import { useState } from 'react'
 
 import { type Card, sortHand } from '~/lib/skat/cards'
@@ -197,14 +197,10 @@ function ExerciseView({ id }: { id: string }) {
 function LadderGate() {
   return (
     <section data-testid="tricks-ladder-gate" {...stylex.props(styles.openResult)}>
-      <div {...stylex.props(styles.verdict)}>
-        <span aria-hidden="true" {...stylex.props(styles.verdictIcon, styles.gateIcon)}>
-          <Lock size={icon.inline} strokeWidth={icon.outline} />
-        </span>
-        <div {...stylex.props(styles.verdictText)}>
-          <p {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_ladder_gate_title()}</p>
-          <p {...stylex.props(typography.body, styles.para)}>{m.tricks_ladder_gate_text({ n: LADDER_FREE })}</p>
-        </div>
+      {/* No lock: an invitation, not a barrier (SKATGO-112, the human: 「这个锁的图标不要显示了」). */}
+      <div {...stylex.props(styles.verdictText)}>
+        <p {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{m.tricks_ladder_gate_title()}</p>
+        <p {...stylex.props(typography.body, styles.para)}>{m.tricks_ladder_gate_text({ n: LADDER_FREE })}</p>
       </div>
       <div {...stylex.props(styles.actions)}>
         <SignInButton mode="modal">
@@ -517,7 +513,6 @@ const styles = stylex.create({
   verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },
   good: { color: color.good },
   bad: { color: color.bad },
-  gateIcon: { color: color.slate },
   verdictText: { display: 'flex', flexDirection: 'column', gap: space.x8, minWidth: 0 },
   verdictTitle: { margin: 0, color: color.navy },
   para: { margin: 0, color: color.text },

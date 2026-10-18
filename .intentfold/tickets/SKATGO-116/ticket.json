@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-116",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "auto-merge",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-116",
+  "branch": "SKATGO-116-docs-sync",
+  "base": "c18bd379cf382413be4b730a6f40685b802ad331",
+  "ports": { "web": 55116, "multiplayer": 56116, "database": 57116 }
+}

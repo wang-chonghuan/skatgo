@@ -174,7 +174,7 @@ describe('the Skat-Tricks exercises', () => {
         expect(readOpen(s)).toEqual(solveOpen(recordOfOpen(s)))
         expect(readOpen(s).play.win).toHaveLength(1)
       })
-      it(`${s.id}: every way through the play is legal and ends won`, () => {
+      it(`${s.id}: every way through the play is legal; right cards all the way win, any wrong card loses`, () => {
         const e = readOpen(s)
         const won = (g: Game) => {
           const declarer = g.declarer!
@@ -188,16 +188,20 @@ describe('the Skat-Tricks exercises', () => {
           expect(next, `${s.id}: ${cardId(card)}`).not.toBe(at)
           return next.phase === 'trickEnd' ? collectTrick(next) : next
         }
-        const walk = (g: Game, n: OpenNode) => {
-          expect(n.win.length, s.id).toBeGreaterThan(0)
+        // Every card the learner may play has its answers (SKATGO-111: a wrong card is played on to the end); while
+        // every card so far was right one still wins, and after a wrong one none does.
+        const walk = (g: Game, n: OpenNode, right: boolean) => {
+          expect(n.win.length > 0, s.id).toBe(right)
+          expect(n.after.map((a) => cardId(a.card)).sort(), s.id).toEqual(n.values.map((v) => cardId(v.card)).sort())
           for (const a of n.after) {
+            const still = right && n.win.some((c) => sameCard(c, a.card))
             let at = apply(g, a.card)
             for (const p of a.plays) at = apply(at, p.card)
-            if (a.next) walk(at, a.next)
-            else expect(won(at), `${s.id}: decided for the learner after ${cardId(a.card)}`).toBe(true)
+            if (a.next) walk(at, a.next, still)
+            else expect(won(at), `${s.id}: decided after ${cardId(a.card)}`).toBe(still)
           }
         }
-        walk(e.game, e.play)
+        walk(e.game, e.play, true)
       })
     }
   })

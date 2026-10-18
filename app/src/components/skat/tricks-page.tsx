@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChevronDown, ChevronRight, ChevronUp, CircleCheck, CircleX, Lock } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, ChevronUp, CircleCheck, CircleX, Lock, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { EXERCISE_TEXT, SHOWN_TYPES, exercisesOf } from '~/lib/skat/tricks/exercises'
@@ -17,7 +17,7 @@ import { elev, pose } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { Pill } from './ui'
+import { Pill, linkLook } from './ui'
 
 /**
  * The Skat-Tricks section's page (SKATGO-103, before it the first article of SKATGO-82): the twelve kinds
@@ -64,6 +64,13 @@ export function TricksPage() {
             const ladder = type === 'offenes-endspiel'
             const nextUp = ladder ? exercises.find((e) => !steps[e.id]?.solved)?.id : undefined
             const Chevron = isOpen ? ChevronUp : ChevronDown
+            // The open-card endgames as levels (SKATGO-111).
+            if (ladder)
+              return (
+                <li key={type} id={type} {...stylex.props(styles.item)}>
+                  <Levels type={type} steps={steps} account={account} />
+                </li>
+              )
             return (
               <li key={type} id={type} {...stylex.props(styles.item)}>
                 <details
@@ -145,6 +152,73 @@ export function TricksPage() {
         </nav>
       </div>
     </div>
+  )
+}
+
+/**
+ * The open-card endgames as levels (SKATGO-111, the human: 「像那种两步杀，消消乐那种，有一种简介，直接，内聚的感觉」): a numbered
+ * square per puzzle — solved, missed and not yet solved, next, or locked for a guest, with its wrong answers counted in
+ * its corner (SKATGO-109: 「要记下来哪题错了」) — and one button to the next.
+ */
+function Levels({ type, steps, account }: { type: ExerciseType; steps: ReturnType<typeof useLadder>['steps']; account: string | null | undefined }) {
+  const text = EXERCISE_TEXT[getLocale()]
+  const exercises = exercisesOf(type)
+  const next = exercises.find((e) => !steps[e.id]?.solved) ?? exercises[0]
+  return (
+    <section data-testid="tricks-type" data-type={type} {...stylex.props(styles.card, styles.cardFeatured, styles.levels)}>
+      <div {...stylex.props(styles.levelsHead)}>
+        <h2 {...stylex.props(typography.optionTitle, styles.optionTitle)}>{text.types[type].title}</h2>
+        <span data-testid="tricks-ladder-progress" {...stylex.props(typography.meta, styles.levelsCount)}>
+          {m.tricks_ladder_progress({ n: exercises.filter((e) => steps[e.id]?.solved).length, count: exercises.length })}
+        </span>
+      </div>
+      <ol {...stylex.props(styles.grid)}>
+        {exercises.map((e, k) => {
+          const record = steps[e.id]
+          const misses = record?.misses ?? 0
+          const mark = record?.solved ? 'solved' : misses ? 'missed' : account === null && k >= LADDER_FREE ? 'locked' : undefined
+          const isNext = e.id === next.id && !record?.solved
+          const said = [
+            m.tricks_hub_task({ n: k + 1 }),
+            mark === 'solved' ? m.tricks_ladder_solved() : mark === 'missed' ? m.tricks_ladder_missed() : mark === 'locked' ? m.tricks_ladder_locked() : null,
+            misses ? m.tricks_ladder_misses({ n: misses }) : null,
+          ].filter(Boolean)
+          return (
+            <li key={e.id} {...stylex.props(styles.level)}>
+              <Link
+                to="/skat-tricks/$exercise"
+                params={{ exercise: e.id }}
+                data-testid="tricks-exercise-link"
+                data-mark={mark}
+                data-misses={misses}
+                data-next={isNext ? 'true' : undefined}
+                aria-label={said.join(' · ')}
+                title={said.join(' · ')}
+                {...stylex.props(styles.levelLink, mark === 'solved' && styles.levelSolved, mark === 'missed' && styles.levelMissed, mark === 'locked' && styles.levelLocked, isNext && styles.levelNext)}
+              >
+                {mark === 'solved' ? (
+                  <Check aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                ) : mark === 'missed' ? (
+                  <X aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                ) : mark === 'locked' ? (
+                  <Lock aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                ) : (
+                  <span aria-hidden="true" {...stylex.props(typography.smallBold)}>{k + 1}</span>
+                )}
+                {misses ? (
+                  <span aria-hidden="true" data-testid="tricks-level-misses" {...stylex.props(typography.micro, styles.levelMisses)}>
+                    {misses}
+                  </span>
+                ) : null}
+              </Link>
+            </li>
+          )
+        })}
+      </ol>
+      <Link to="/skat-tricks/$exercise" params={{ exercise: next.id }} data-testid="tricks-level-play" {...linkLook('go', 'lg')}>
+        {m.tricks_open_play({ n: exercises.indexOf(next) + 1 })}
+      </Link>
+    </section>
   )
 }
 
@@ -252,6 +326,33 @@ const styles = stylex.create({
   taskNumber: { color: color.slate },
   taskTitle: { color: color.navy },
   taskArrow: { flexShrink: 0, color: color.go },
+  // The levels (SKATGO-111): the settings' grid of choices, a square per puzzle as tall as an icon button.
+  levels: { display: 'flex', flexDirection: 'column', gap: space.x16, padding: { default: space.x20, [bp.phone]: space.x16 } },
+  levelsHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: space.x12 },
+  levelsCount: { color: color.slate, whiteSpace: 'nowrap' },
+  grid: { listStyleType: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: dims.backChoices, gap: space.x8 },
+  level: { margin: 0 },
+  levelLink: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: dims.iconButton,
+    boxSizing: 'border-box',
+    borderRadius: radii.panel,
+    borderWidth: border.tile,
+    borderStyle: 'solid',
+    borderColor: { default: color.hairline, ':hover': color.go },
+    backgroundColor: color.page,
+    color: color.navy,
+    textDecoration: 'none',
+    ...focus,
+  },
+  levelSolved: { backgroundColor: color.goodSoft, borderColor: color.goodSoft, color: color.good },
+  levelMissed: { backgroundColor: color.badSoft, borderColor: color.badSoft, color: color.bad },
+  levelLocked: { color: color.slate },
+  levelNext: { borderColor: color.go },
+  levelMisses: { position: 'absolute', top: space.x2, right: space.x4, color: color.bad },
   links: { display: 'flex', flexWrap: 'wrap', gap: space.x16 },
   articleLink: {
     color: color.info,

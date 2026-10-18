@@ -23,6 +23,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { CardRowView, Fan } from './card-row'
 import { type OpenMistake, OpenTable } from './open-endgame'
+import type { OpenEndgame } from '~/lib/skat/tricks/exercises/open'
 import { PlayingCard } from './playing-card'
 import { Choice, Pick, Play } from './exercises'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
@@ -80,6 +81,29 @@ function ExerciseView({ id }: { id: string }) {
     setAttempt((a) => a + 1)
   }
   const missedLater = miss && !miss.first ? miss.at : null
+  if (exercise.open) {
+    const e = exercise.open
+    // The game's own table, every hand open (SKATGO-110), filling the screen as free play's does, and nothing else:
+    // the place in the list, the heading and the goal on its board, the result over it (SKATGO-111, the human:
+    // 「打牌界面那种效果，各种尺寸屏幕都刚好全屏」). A step that needs an account waits under the sign-in.
+    return (
+      <div data-testid="tricks-exercise" data-exercise={exercise.id} data-result={result ?? ''} {...stylex.props(styles.openRoot)}>
+        <OpenTable
+          key={attempt}
+          e={e}
+          title={openTitle(e)}
+          kicker={m.tricks_ladder_kicker({ n, count: siblings.length })}
+          hold={locked && !ladder.account}
+          onSolved={callbacks.onSolved}
+          onMistake={(at) => {
+            setMiss(at)
+            callbacks.onMistake()
+          }}
+          after={result ? <OpenResult e={e} result={result} miss={miss} explain={words.explain} following={following?.id} onAgain={again} /> : locked && ladder.account === null ? <LadderGate /> : undefined}
+        />
+      </div>
+    )
+  }
   return (
     <div data-testid="tricks-exercise" data-exercise={exercise.id} data-result={result ?? ''} {...stylex.props(styles.root)}>
       <div {...stylex.props(styles.column)}>
@@ -91,49 +115,26 @@ function ExerciseView({ id }: { id: string }) {
             </span>
           </Link>
           {/* A ladder step's kicker is short, so it shares the back button's line on a phone (SKATGO-109). */}
-          <Pill>{exercise.endgame || exercise.open ? m.tricks_ladder_kicker({ n, count: siblings.length }) : m.tricks_ex_kicker({ type: text.types[exercise.type].title, n, count: siblings.length })}</Pill>
+          <Pill>{exercise.endgame ? m.tricks_ladder_kicker({ n, count: siblings.length }) : m.tricks_ex_kicker({ type: text.types[exercise.type].title, n, count: siblings.length })}</Pill>
         </nav>
         {/* Every ladder step has the same heading; the step itself is on the felt (SKATGO-109, the human:
             「标题就要continue this deal之类的，统一」). */}
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{exercise.open ? m.tricks_open_heading() : exercise.endgame ? m.tricks_ladder_heading() : words.title}</h1>
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{exercise.endgame ? m.tricks_ladder_heading() : words.title}</h1>
 
-        {locked && ladder.account === undefined ? (
-          <section {...stylex.props(styles.card)}>
-            <p data-testid="tricks-ladder-waiting" {...stylex.props(typography.loading, styles.para)}>{m.loading()}</p>
-          </section>
-        ) : locked && ladder.account === null ? (
-          <LadderGate />
-        ) : exercise.open ? (
-          // The game's own table, every hand open (SKATGO-110); the task over it.
-          <section key={attempt} data-testid="tricks-open" {...stylex.props(styles.openStack)}>
-            <p data-testid="tricks-open-task" {...stylex.props(typography.body, styles.para)}>
-              <Rich text={words.prompt} />
-            </p>
-            <OpenTable
-              e={exercise.open}
-              onSolved={callbacks.onSolved}
-              onMistake={(at) => {
-                setMiss(at)
-                callbacks.onMistake()
-              }}
-            />
-          </section>
-        ) : (
-          <section {...stylex.props(styles.card)}>
-            <SituationView situation={exercise.situation} />
-            <div key={attempt}>
-              {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
-              {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
-              {exercise.ask.kind === 'play' && exercise.endgame ? (
-                <Play step={{ ...playStep(exercise, words), prompt: '' }} table={<LadderTable e={exercise.endgame} />} handLabel={m.tricks_row_cards()} {...callbacks} />
-              ) : exercise.ask.kind === 'play' ? (
-                <Play step={playStep(exercise, words)} {...callbacks} />
-              ) : null}
-            </div>
-          </section>
-        )}
+        <section {...stylex.props(styles.card)}>
+          <SituationView situation={exercise.situation} />
+          <div key={attempt}>
+            {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
+            {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
+            {exercise.ask.kind === 'play' && exercise.endgame ? (
+              <Play step={{ ...playStep(exercise, words), prompt: '' }} table={<LadderTable e={exercise.endgame} />} handLabel={m.tricks_row_cards()} {...callbacks} />
+            ) : exercise.ask.kind === 'play' ? (
+              <Play step={playStep(exercise, words)} {...callbacks} />
+            ) : null}
+          </div>
+        </section>
 
-        {result ? (
+        {result && !exercise.open ? (
           <div data-testid="tricks-exercise-result" data-result={result} {...stylex.props(styles.result)}>
             <Panel tone={result === 'right' ? 'good' : 'bad'}>
               <div {...stylex.props(styles.verdict)}>
@@ -195,7 +196,7 @@ function ExerciseView({ id }: { id: string }) {
  *  the page; once signed in, the step is there. */
 function LadderGate() {
   return (
-    <section data-testid="tricks-ladder-gate" {...stylex.props(styles.card)}>
+    <section data-testid="tricks-ladder-gate" {...stylex.props(styles.openResult)}>
       <div {...stylex.props(styles.verdict)}>
         <span aria-hidden="true" {...stylex.props(styles.verdictIcon, styles.gateIcon)}>
           <Lock size={icon.inline} strokeWidth={icon.outline} />
@@ -213,6 +214,65 @@ function LadderGate() {
         </SignInButton>
       </div>
     </section>
+  )
+}
+
+/** What is played and the learner's side, in one line: "Karo · du bist Alleinspieler". */
+const openTitle = (e: OpenEndgame) =>
+  e.role === 'declarer' ? m.tricks_open_title_declarer({ game: contractName(e.game.declaration!.contract) }) : m.tricks_open_title_defender({ game: contractName(e.game.declaration!.contract) })
+
+/**
+ * An open-card endgame's result, over the table once the game is decided (SKATGO-111): solved or not, the card that
+ * mattered — the one that wins, or the learner's first wrong card and the one that would have won there — and the
+ * way on. Why, only when asked.
+ */
+function OpenResult({ e, result, miss, explain, following, onAgain }: { e: OpenEndgame; result: 'right' | 'wrong'; miss: OpenMistake | null; explain: string; following?: string; onAgain: () => void }) {
+  const [why, setWhy] = useState(false)
+  const later = miss && !miss.first ? miss.at : null
+  const cards = (later ?? e.play).win.map((c) => `**${cardLabel(c)}**`).join(' / ')
+  const line = result === 'right' || !miss ? m.tricks_open_key({ card: cards }) : m.tricks_open_mistake({ card: `**${cardLabel(miss.card)}**`, answer: cards })
+  return (
+    <div data-testid="tricks-exercise-result" data-result={result} {...stylex.props(styles.openResult)}>
+      <div {...stylex.props(styles.verdict)}>
+        <span aria-hidden="true" {...stylex.props(styles.verdictIcon, result === 'right' ? styles.good : styles.bad)}>
+          {result === 'right' ? <CircleCheck size={icon.inline} strokeWidth={icon.outline} /> : <CircleX size={icon.inline} strokeWidth={icon.outline} />}
+        </span>
+        <p {...stylex.props(typography.dialogTitle, styles.verdictTitle)}>{result === 'right' ? m.tricks_open_solved() : m.tricks_open_failed()}</p>
+      </div>
+      <p data-testid="tricks-exercise-answer" {...stylex.props(typography.body, styles.para)}>
+        <Rich text={line} />
+      </p>
+      {why ? (
+        <p data-testid="tricks-exercise-explain" {...stylex.props(typography.bodySmall, styles.para)}>
+          <Rich
+            text={
+              later
+                ? m.tricks_open_later({ answer: cards, values: later.values.map((v) => `${cardLabel(v.card)} ${v.points}`).join(', ') })
+                : explain
+            }
+          />
+        </p>
+      ) : null}
+      <div {...stylex.props(styles.actions)}>
+        {following ? (
+          <Link to="/skat-tricks/$exercise" params={{ exercise: following }} data-testid="tricks-exercise-next" {...linkLook('go', 'md')}>
+            {m.tricks_ex_next()}
+          </Link>
+        ) : (
+          <Link to="/skat-tricks" data-testid="tricks-exercise-done" {...linkLook('go', 'md')}>
+            {m.tricks_ex_done()}
+          </Link>
+        )}
+        {why ? null : (
+          <Btn testId="tricks-open-why" tone="quiet" onClick={() => setWhy(true)}>
+            {m.tricks_open_why()}
+          </Btn>
+        )}
+        <Btn testId="tricks-exercise-again" tone="quiet" onClick={onAgain}>
+          {m.tricks_ex_again()}
+        </Btn>
+      </div>
+    </div>
   )
 }
 
@@ -450,7 +510,9 @@ const styles = stylex.create({
   lineRow: { display: 'flex', alignItems: 'center', gap: space.x6 },
   lineEnd: { marginLeft: 'auto' },
   result: { display: 'flex', flexDirection: 'column', gap: space.x16 },
-  openStack: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  // An open-card endgame: the table and nothing else, the screen's whole height (SKATGO-111).
+  openRoot: { display: 'flex', flexDirection: 'column', flexGrow: 1 },
+  openResult: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   verdict: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },
   verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },
   good: { color: color.good },

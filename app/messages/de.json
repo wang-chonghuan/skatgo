@@ -614,6 +614,17 @@
   "tricks_ladder_gate_title": "Weiter mit einem kostenlosen Konto",
   "tricks_ladder_gate_text": "Die ersten {n} Aufgaben kannst du ohne Konto lösen. Ab hier meldest du dich an – dann merken wir uns, welche du gelöst hast und welche du falsch hattest.",
   "tricks_ladder_gate_button": "Kostenlos anmelden",
-  "tricks_open_heading": "Spiel es zu Ende",
-  "tricks_open_later": "Bis hierher war alles richtig. An dieser Stelle gewinnt nur {answer}. So viele Augen hat der Alleinspieler am Ende, je nach Karte: {values}."
+  "tricks_open_later": "Bis hierher war alles richtig. An dieser Stelle gewinnt nur {answer}. So viele Augen hat der Alleinspieler am Ende, je nach Karte: {values}.",
+  "tricks_open_title_declarer": "{game} · du bist Alleinspieler",
+  "tricks_open_title_defender": "{game} · du verteidigst",
+  "tricks_open_you": "Du: {n}",
+  "tricks_open_declarer": "Alleinspieler: {n}",
+  "tricks_open_goal_declarer": "Ziel 61",
+  "tricks_open_goal_defender": "Ziel: unter 61",
+  "tricks_open_solved": "Gelöst!",
+  "tricks_open_failed": "Nicht gelöst",
+  "tricks_open_key": "Schlüsselkarte: {card}",
+  "tricks_open_why": "Warum?",
+  "tricks_open_play": "Aufgabe {n} spielen",
+  "tricks_open_mistake": "Dein Fehler: {card}. Richtig war {answer}."
 }

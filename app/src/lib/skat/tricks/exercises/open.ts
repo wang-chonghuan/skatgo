@@ -8,7 +8,9 @@ import { type Position, openPoints } from './solve'
 // seat 0's turn — the learner's, as declarer or as a defender — and every hand is shown. With every card open and
 // both sides playing their best, exactly one of the learner's cards wins (the declarer to 61 card points, or the
 // defenders below it). The learner then plays on, card by card, until the game is decided: at each turn every card
-// that still wins is right, and the others answer with their best. Everything is worked out here, in the generator
+// that still wins is right, and the others answer with their best. A wrong card does not stop the game: the learner
+// plays on to the end, against the same best answers, and is told only then (SKATGO-111, the human: 「我觉得可以打完，
+// 打完后告诉它错了，记下来，但是可以重试」). Everything is worked out here, in the generator
 // (multiplayer/scripts/make-open-endgames.ts) and in the tests; the browser reads it as stored.
 
 /** One card played, and by whom. */
@@ -16,15 +18,14 @@ export type Played = { seat: Seat; card: Card }
 
 /**
  * Seat 0's turn: what the declarer ends up with after each card it may play, both sides playing their best from
- * there; the cards that keep seat 0's side winning — any of them is right; after each of those, what the others
- * play until seat 0's next turn (or none, once the game is decided); and after each of the others, the best play
- * of everybody to the end, which shows why it loses.
+ * there; the cards that keep seat 0's side winning — any of them is right, and once a wrong one is played there are
+ * none; and after each card it may play, what the others play, at their best, until seat 0's next turn (or none,
+ * once the game is decided).
  */
 export type OpenNode = {
   values: { card: Card; points: number }[]
   win: Card[]
   after: { card: Card; plays: Played[]; next: OpenNode | null }[]
-  refute: { card: Card; plays: Played[] }[]
 }
 
 /** A move as stored: cards by id. */
@@ -43,7 +44,6 @@ type StoredNode = {
   values: { card: string; points: number }[]
   win: string[]
   after: { card: string; plays: [Seat, string][]; next: StoredNode | null }[]
-  refute: { card: string; plays: [Seat, string][] }[]
 }
 export type StoredOpen = OpenRecord & { play: StoredNode }
 
@@ -132,23 +132,13 @@ export function solveOpen(r: OpenRecord): OpenEndgame {
     const top = forDeclarer ? Math.max(...rated.map((x) => x.v)) : Math.min(...rated.map((x) => x.v))
     return rated.filter((x) => x.v === top).reduce((a, b) => (pointsOf([b.card]) < pointsOf([a.card]) ? b : a)).card
   }
-  /** Everybody's best from `at` to the last card. */
-  const playOut = (at: At): Played[] => {
-    const out: Played[] = []
-    while (at.p.hands.some((h) => h.length)) {
-      const card = best(at)
-      out.push({ seat: at.p.turn, card })
-      at = step(at, card, contract, declarer)
-    }
-    return out
-  }
   const nodeAt = (at: At): OpenNode => {
     const values = legal(at).map((card) => ({ card, points: end(step(at, card, contract, declarer)) }))
     const win = values.filter((v) => wins(v.points)).map((v) => v.card)
     return {
       values,
       win,
-      after: win.map((card) => {
+      after: values.map(({ card }) => {
         let next = step(at, card, contract, declarer)
         const plays: Played[] = []
         while (!decided(next) && next.p.turn !== 0) {
@@ -158,7 +148,6 @@ export function solveOpen(r: OpenRecord): OpenEndgame {
         }
         return { card, plays, next: decided(next) ? null : nodeAt(next) }
       }),
-      refute: values.filter((v) => !wins(v.points)).map((v) => ({ card: v.card, plays: playOut(step(at, v.card, contract, declarer)) })),
     }
   }
   const at: At = { p: { hands: g.hands, trick: g.trick, turn: 0 }, have: haveOf(g) }
@@ -177,7 +166,6 @@ function nodeOut(n: OpenNode): StoredNode {
     values: n.values.map((v) => ({ card: cardId(v.card), points: v.points })),
     win: n.win.map(cardId),
     after: n.after.map((a) => ({ card: cardId(a.card), plays: a.plays.map(playedOut), next: a.next && nodeOut(a.next) })),
-    refute: n.refute.map((x) => ({ card: cardId(x.card), plays: x.plays.map(playedOut) })),
   }
 }
 
@@ -186,7 +174,6 @@ function nodeIn(n: StoredNode): OpenNode {
     values: n.values.map((v) => ({ card: one(v.card), points: v.points })),
     win: n.win.map(one),
     after: n.after.map((a) => ({ card: one(a.card), plays: a.plays.map(playedIn), next: a.next && nodeIn(a.next) })),
-    refute: n.refute.map((x) => ({ card: one(x.card), plays: x.plays.map(playedIn) })),
   }
 }
 

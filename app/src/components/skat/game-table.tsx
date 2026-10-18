@@ -145,8 +145,13 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
 
 /** An open-card endgame of the Skat-Tricks (SKATGO-110): a deal stopped a few tricks before its end, every hand
  *  open as at an Ouvert, the learner's cards judged and the others' answers played by the exercise. No hints, no
- *  assistant and no settlement: the exercise's page says how it went. */
-export type ExerciseTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'>
+ *  assistant, no settlement — and since SKATGO-111 nothing round the felt but the exercise's own: its goal in the
+ *  info board's place and its result over the table; no words line, no side panel. */
+export type ExerciseTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'> & {
+  top?: ReactNode
+  /** Over the table once the exercise is over. */
+  after?: ReactNode
+}
 
 type Props = {
   /** Called once per game, when it is settled. */
@@ -365,10 +370,12 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // and either way the learner can fold it (SKATGO-29). Crossing the width puts it back to its default.
   // Free play's table is browser-only (client-part.tsx), so the query can be read at once; a lesson's
   // table has no side panel to pin.
-  const [pinned, setPinned] = useState(() => fullScreen && window.matchMedia(pinnedQuery).matches)
+  // An exercise's full-screen table has no side panel (SKATGO-111), and is rendered on the server too.
+  const panelled = fullScreen && !exercise
+  const [pinned, setPinned] = useState(() => panelled && window.matchMedia(pinnedQuery).matches)
   const [panelOpen, setPanelOpen] = useState(pinned)
   useEffect(() => {
-    if (!fullScreen) return
+    if (!panelled) return
     const query = window.matchMedia(pinnedQuery)
     const change = () => {
       setPinned(query.matches)
@@ -376,7 +383,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     }
     query.addEventListener('change', change)
     return () => query.removeEventListener('change', change)
-  }, [fullScreen])
+  }, [panelled])
   const [settingsOpen, setSettingsOpen] = useState(false)
   // The side panel shows the game, or the rules with a way back (SKATGO-75).
   const [panelView, setPanelView] = useState<'game' | 'rules'>('game')
@@ -417,7 +424,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     : null
 
   return (
-    <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>
+    <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded, fullScreen && exercise && styles.tableAlone)}>
       <div data-testid="skat-felt" {...stylex.props(styles.felt, fullScreen && styles.feltFull)}>
         {/* The felt's cloth on a layer of its own (SKATGO-41): the noise and the gradient are painted
             once, and cards moving over them never paint them again. */}
@@ -427,12 +434,12 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             learner asked for, or why a card was refused, each until it is closed. The stage keeps this
             band clear (SKATGO-34): nothing on the table reaches into it. */}
         <div data-testid="skat-top" {...stylex.props(styles.top, (hint !== null || refusal !== null) && styles.topTip)}>
-          <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} deal={dealOf} />
+          {exercise?.top ?? <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} deal={dealOf} />}
           {!acting && !waiting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
               {game.phase === 'trickEnd' && winner !== null ? (
                 <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
-              ) : revealing && game.declarer !== null && game.early ? (
+              ) : exercise ? null : revealing && game.declarer !== null && game.early ? (
                 <span data-testid="skat-reveal" data-early={game.early.kind}>
                   <Pill tone="amber">{earlyLine(game.declarer, game.early, nameOf, room !== undefined)}</Pill>
                 </span>
@@ -473,7 +480,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             left and right edges, running off the felt so only part of each shows (SKATGO-26). */}
         {([1, 2] as Seat[]).map((seat) => (
           // An exercise shows every hand, as the table shows an Ouvert declarer's (SKATGO-110).
-          <Stack key={seat} seat={seat} game={game} shown={exercise ? game.hands[seat] : rest?.[seat]} />
+          <Stack key={seat} seat={seat} game={game} shown={exercise ? game.hands[seat] : rest?.[seat]} big={!!exercise} />
         ))}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
@@ -575,7 +582,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         {/* The tab that folds the side panel away and brings it back, mirroring the hint tab on the right
             edge (SKATGO-29). It lives on the felt, so it keeps the hint tab's height at any size; over a
             drawer that is open it sits at the drawer's edge. */}
-        {fullScreen ? (
+        {panelled ? (
           <button
             type="button"
             aria-label={m.table_panel_toggle()}
@@ -603,6 +610,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         </div>
       </div>
 
+      {exercise ? null : (
       <aside
         data-testid="skat-panel"
         data-open={String(panelOpen)}
@@ -688,6 +696,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         </div>
         )}
       </aside>
+      )}
+
+      {/* An exercise's result, over the table (SKATGO-111). */}
+      {exercise?.after ? <Dialog>{exercise.after}</Dialog> : null}
 
       {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
 
@@ -701,7 +713,16 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
       {/* The way out (SKATGO-96), in the felt's top right corner and over the dialogs on the table, so it can
           always be pressed (SKATGO-100); an open drawer covers the felt, and it with it. */}
-      {fullScreen && (pinned || !panelOpen) ? <TableMenu leave={tournament ? '/daily' : room ? '/with-friends' : '/'} newRound={server?.newRound} /> : null}
+      {/* An exercise has no side panel, so its settings wait in the felt's top left corner, across from the way out
+          (SKATGO-111, the human: 「设置按钮要放一个地方」). */}
+      {fullScreen && exercise ? (
+        <div {...stylex.props(styles.settingsCorner)}>
+          <button type="button" aria-label={m.settings_open()} title={m.settings_open()} data-testid="settings-open-table" onClick={() => setSettingsOpen(true)} {...stylex.props(styles.menuButton)}>
+            <Settings aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
+          </button>
+        </div>
+      ) : null}
+      {fullScreen && (exercise || pinned || !panelOpen) ? <TableMenu leave={exercise ? '/skat-tricks' : tournament ? '/daily' : room ? '/with-friends' : '/'} newRound={server?.newRound} /> : null}
     </div>
   )
 }
@@ -790,7 +811,7 @@ function ActionsFor({
 
 /** An opponent's hand: the same card as the learner's, turned sideways, stacked down the felt's edge
  *  and running off it — face up for an Ouvert declarer, face down otherwise. */
-function Stack({ seat, game, shown }: { seat: Seat; game: Game; shown?: Card[] }) {
+function Stack({ seat, game, shown, big }: { seat: Seat; game: Game; shown?: Card[]; big?: boolean }) {
   // `shown`: the cards this seat held when the deal was decided early, laid open in place (SKATGO-65).
   // On the right, an open card is turned the other way and each covers the top of the one under it,
   // so every card's index is on the part that shows. Open cards — those, or an Ouvert declarer's — are
@@ -799,11 +820,12 @@ function Stack({ seat, game, shown }: { seat: Seat; game: Game; shown?: Card[] }
   const held = shown ?? game.hands[seat]
   const cards = open && game.declaration ? sortHand(held, game.declaration.contract) : held
   const flip = open && seat === 2
+  // `big`: an open endgame's hands, each card as big as the learner's and more of it on the felt (SKATGO-111).
   return (
-    <div data-testid={`skat-stack-${seat}`} aria-hidden={open ? undefined : 'true'} {...stylex.props(styles.stack, seat === 1 ? styles.stackLeft : styles.stackRight, flip && styles.stackOpenRight)}>
+    <div data-testid={`skat-stack-${seat}`} aria-hidden={open ? undefined : 'true'} {...stylex.props(styles.stack, seat === 1 ? styles.stackLeft : styles.stackRight, flip && styles.stackOpenRight, big && styles.stackBig, big && (seat === 1 ? styles.stackBigLeft : styles.stackBigRight))}>
       {(flip ? [...cards].reverse() : cards).map((c, i) => (
-        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot, open && styles.sideSlotSpread, flip && styles.sideSlotOpenRight, flip && styles.sideSlotSpreadRight)}>
-          <span {...stylex.props(styles.sideCard, flip && styles.sideCardOpenRight)}>
+        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot, open && styles.sideSlotSpread, flip && styles.sideSlotOpenRight, flip && styles.sideSlotSpreadRight, big && styles.sideSlotBig, big && flip && styles.sideSlotBigRight)}>
+          <span {...stylex.props(styles.sideCard, flip && styles.sideCardOpenRight, big && styles.sideCardBig)}>
             <PlayingCard card={c} faceDown={!open} size="fill" />
           </span>
         </div>
@@ -1390,7 +1412,7 @@ function useCardSounds(game: Game) {
  * playing, give up free play's round for a new one (asked once more first), or leave the table. Leaving loses
  * nothing: free play's game waits in this browser, the tournament's on the server, a private table's in its room.
  */
-function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends'; newRound?: () => void }) {
+function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends' | '/skat-tricks'; newRound?: () => void }) {
   const [open, setOpen] = useState(false)
   const [asking, setAsking] = useState(false)
   const box = useRef<HTMLDivElement>(null)
@@ -1473,6 +1495,14 @@ const styles = stylex.create({
     alignItems: 'flex-end',
     gap: space.x8,
   },
+  // An exercise's settings (SKATGO-111): the way out's mirror, in the felt's top left corner.
+  settingsCorner: {
+    position: 'absolute',
+    gridArea: dims.feltCell,
+    top: { default: space.x16, [bp.phone]: space.x8 },
+    left: { default: space.x16, [bp.phone]: space.x8 },
+    zIndex: layer.tip,
+  },
   menuButton: {
     display: 'flex',
     alignItems: 'center',
@@ -1512,6 +1542,8 @@ const styles = stylex.create({
   tableFull: { gridTemplateColumns: { default: dims.oneColumn, [bp.pinned]: dims.feltAndPanel }, height: dims.screenDynamic },
   // Inside a lesson: the panel stacks under the felt.
   tableEmbedded: { gridTemplateColumns: dims.oneColumn, borderRadius: radii.panel },
+  // An open-card endgame fills the screen as free play does, with no panel beside it (SKATGO-111).
+  tableAlone: { gridTemplateColumns: dims.oneColumn },
 
   // The felt is the stage's size container (SKATGO-34): everything on it is measured in its unit, so it
   // needs a height of its own — the screen in free play, a fixed one inside a lesson.
@@ -1559,6 +1591,14 @@ const styles = stylex.create({
   sideSlotSpread: { marginTop: { default: stage.stackStepOpen, ':first-child': 0 } },
   sideSlotSpreadRight: { marginTop: 0, marginBottom: { default: stage.stackStepOpen, ':first-child': 0 } },
   sideCardOpenRight: { transform: pose.sidewaysOpen },
+  // An open endgame's hands (SKATGO-111): cards as big as the learner's, beside the frame's middle — the
+  // exercise has no edge tabs for their foot to clear.
+  stackBig: { top: stage.frameCentre },
+  stackBigLeft: { left: stage.openStackInset },
+  stackBigRight: { right: stage.openStackInset },
+  sideSlotBig: { width: stage.openStackSlot, height: stage.handCard, marginTop: { default: stage.openStackStep, ':first-child': 0 } },
+  sideSlotBigRight: { marginTop: 0, marginBottom: { default: stage.openStackStep, ':first-child': 0 } },
+  sideCardBig: { width: stage.handCard },
 
   frame: {
     position: 'absolute',

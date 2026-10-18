@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-111",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-111",
+  "branch": "SKATGO-111-compact-puzzle",
+  "base": "68d60edbfcc9e6cc35648d2a0d6418ebc204b534",
+  "ports": { "web": 55111, "multiplayer": 56111, "database": 57111 }
+}

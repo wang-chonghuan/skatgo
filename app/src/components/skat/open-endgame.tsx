@@ -1,9 +1,16 @@
-import { useEffect, useState } from 'react'
+import * as stylex from '@stylexjs/stylex'
+import { type ReactNode, useEffect, useState } from 'react'
 
-import { cardId, sameCard } from '~/lib/skat/cards'
+import { type Card, cardId, pointsOf, sameCard } from '~/lib/skat/cards'
 import { type Game, type Move, collectTrick, playCard } from '~/lib/skat/game'
 import type { OpenEndgame, OpenNode, Played } from '~/lib/skat/tricks/exercises/open'
+import { m } from '~/paraglide/messages'
+import { color } from '../../theme/color.stylex'
+import { space } from '../../theme/scale.stylex'
+import { dims } from '../../theme/shape.stylex'
+import { typography } from '../../theme/type'
 import { BOT_DELAY, GameTable } from './game-table'
+import { ProgressBar } from './ui'
 
 /**
  * An open-card endgame played out on the game's own table (SKATGO-110, the human: 「出的就跟打牌界面一样……都是明牌，
@@ -15,7 +22,7 @@ import { BOT_DELAY, GameTable } from './game-table'
 /** Where a wrong card was played: the turn it was played at, and whether that was the first. */
 export type OpenMistake = { at: OpenNode; first: boolean }
 
-export function OpenTable({ e, onSolved, onMistake }: { e: OpenEndgame; onSolved: () => void; onMistake: (m: OpenMistake) => void }) {
+export function OpenTable({ e, onSolved, onMistake, after }: { e: OpenEndgame; onSolved: () => void; onMistake: (m: OpenMistake) => void; after?: ReactNode }) {
   const [game, setGame] = useState<Game>(e.game)
   // The learner's turn now, with what it asks; null while the others play or once it is over.
   const [node, setNode] = useState<OpenNode | null>(e.play)
@@ -23,6 +30,9 @@ export function OpenTable({ e, onSolved, onMistake }: { e: OpenEndgame; onSolved
   const [queue, setQueue] = useState<Played[]>([])
   const [then, setThen] = useState<OpenNode | null>(null)
   const [state, setState] = useState<'play' | 'right' | 'wrong'>('play')
+  // The learner's cards as judged, and on a wrong one the cards that would have won (SKATGO-111).
+  const [judged, setJudged] = useState<{ card: Card; verdict: 'good' | 'bad' }[]>([])
+  const [missed, setMissed] = useState<Card[]>([])
 
   function send(move: Move) {
     if (move.type !== 'play' || !node || state !== 'play') return
@@ -31,6 +41,7 @@ export function OpenTable({ e, onSolved, onMistake }: { e: OpenEndgame; onSolved
     const right = node.after.find((a) => sameCard(a.card, move.card))
     setGame(played)
     setNode(null)
+    setJudged((j) => [...j, { card: move.card, verdict: right ? 'good' : 'bad' }])
     if (right) {
       setQueue(right.plays)
       setThen(right.next)
@@ -38,6 +49,7 @@ export function OpenTable({ e, onSolved, onMistake }: { e: OpenEndgame; onSolved
     }
     setQueue(node.refute.find((r) => sameCard(r.card, move.card))?.plays ?? [])
     setState('wrong')
+    setMissed(node.win)
     onMistake({ at: node, first: node === e.play })
   }
 
@@ -69,11 +81,45 @@ export function OpenTable({ e, onSolved, onMistake }: { e: OpenEndgame; onSolved
     send,
     collect: () => setGame((g) => (g.phase === 'trickEnd' ? collectTrick(g) : g)),
     next: () => {},
+    top: <Goal game={game} role={e.role} />,
+    verdicts: judged,
+    glow: missed,
+    // Once the others have played it out.
+    after: state !== 'play' && !queue.length ? after : undefined,
   }
   return (
     // The cards that win now, for scripted checks; the table itself never tells.
-    <div data-testid="open-endgame" data-state={state} data-turn={String(!!node && state === 'play')} data-win={node ? node.win.map(cardId).join(' ') : ''}>
+    <div
+      data-testid="open-endgame"
+      data-state={state}
+      data-turn={String(!!node && state === 'play')}
+      data-win={node ? node.win.map(cardId).join(' ') : ''}
+      data-judged={judged.map((j) => `${cardId(j.card)}:${j.verdict}`).join(' ')}
+      data-glow={missed.map(cardId).join(' ')}
+    >
       <GameTable exercise={exercise} />
     </div>
   )
 }
+
+/** The goal over the felt, in the info board's place (SKATGO-111, the human: 「像那种两步杀，消消乐那种」): the declarer's card
+ *  points so far — the skat and its tricks — against 61, as a bar that grows with every trick it takes. */
+function Goal({ game, role }: { game: Game; role: OpenEndgame['role'] }) {
+  const have = pointsOf(game.skat) + game.tricks.filter((t) => t.winner === game.declarer).reduce((n, t) => n + pointsOf(t.cards.map((p) => p.card)), 0)
+  return (
+    <div data-testid="open-goal" data-have={have} {...stylex.props(styles.goal)}>
+      <div {...stylex.props(styles.goalRow)}>
+        <span {...stylex.props(typography.infoLabel, styles.onFelt)}>{role === 'declarer' ? m.tricks_open_you({ n: have }) : m.tricks_open_declarer({ n: have })}</span>
+        <span {...stylex.props(typography.infoLabel, styles.goalText)}>{role === 'declarer' ? m.tricks_open_goal_declarer() : m.tricks_open_goal_defender()}</span>
+      </div>
+      <ProgressBar value={have / 61} label={m.tricks_open_goal_declarer()} />
+    </div>
+  )
+}
+
+const styles = stylex.create({
+  goal: { display: 'flex', flexDirection: 'column', gap: space.x6, width: '100%', maxWidth: dims.tipWidth, marginInline: 'auto', boxSizing: 'border-box', paddingInline: space.x12, paddingTop: space.x8 },
+  goalRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: space.x12 },
+  onFelt: { color: color.onColor },
+  goalText: { color: color.amber },
+})

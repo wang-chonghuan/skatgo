@@ -614,6 +614,17 @@
   "tricks_ladder_gate_title": "Keep going with a free account",
   "tricks_ladder_gate_text": "You can solve the first {n} puzzles without an account. From here on, sign in – then we keep track of which ones you solved and which ones you got wrong.",
   "tricks_ladder_gate_button": "Sign in for free",
-  "tricks_open_heading": "Play it out",
-  "tricks_open_later": "Everything was right up to here. At this point only {answer} wins. The declarer’s card points at the end, card by card: {values}."
+  "tricks_open_later": "Everything was right up to here. At this point only {answer} wins. The declarer’s card points at the end, card by card: {values}.",
+  "tricks_open_title_declarer": "{game} · you declare",
+  "tricks_open_title_defender": "{game} · you defend",
+  "tricks_open_you": "You: {n}",
+  "tricks_open_declarer": "Declarer: {n}",
+  "tricks_open_goal_declarer": "Goal 61",
+  "tricks_open_goal_defender": "Goal: below 61",
+  "tricks_open_solved": "Solved!",
+  "tricks_open_failed": "Not solved",
+  "tricks_open_key": "Key card: {card}",
+  "tricks_open_here": "Here only {answer} wins.",
+  "tricks_open_why": "Why?",
+  "tricks_open_play": "Play puzzle {n}"
 }

@@ -145,8 +145,17 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
 
 /** An open-card endgame of the Skat-Tricks (SKATGO-110): a deal stopped a few tricks before its end, every hand
  *  open as at an Ouvert, the learner's cards judged and the others' answers played by the exercise. No hints, no
- *  assistant and no settlement: the exercise's page says how it went. */
-export type ExerciseTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'>
+ *  assistant, no settlement — and since SKATGO-111 nothing round the felt but the exercise's own: its goal in the
+ *  info board's place, its marks on the cards, and its result over the table; no words line, no side panel. */
+export type ExerciseTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'> & {
+  top?: ReactNode
+  /** A card judged right or wrong, on the table or in the hand. */
+  verdicts?: { card: Card; verdict: 'good' | 'bad' }[]
+  /** The cards in the hand that would have won. */
+  glow?: Card[]
+  /** Over the table once the exercise is over. */
+  after?: ReactNode
+}
 
 type Props = {
   /** Called once per game, when it is settled. */
@@ -427,12 +436,12 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             learner asked for, or why a card was refused, each until it is closed. The stage keeps this
             band clear (SKATGO-34): nothing on the table reaches into it. */}
         <div data-testid="skat-top" {...stylex.props(styles.top, (hint !== null || refusal !== null) && styles.topTip)}>
-          <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} deal={dealOf} />
+          {exercise?.top ?? <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} deal={dealOf} />}
           {!acting && !waiting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
               {game.phase === 'trickEnd' && winner !== null ? (
                 <Pill tone="amber">{winner === ME ? m.table_trick_you() : m.table_trick_other({ name: nameOf(winner) })}</Pill>
-              ) : revealing && game.declarer !== null && game.early ? (
+              ) : exercise ? null : revealing && game.declarer !== null && game.early ? (
                 <span data-testid="skat-reveal" data-early={game.early.kind}>
                   <Pill tone="amber">{earlyLine(game.declarer, game.early, nameOf, room !== undefined)}</Pill>
                 </span>
@@ -508,7 +517,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                     {...stylex.props(styles.trickCard, !landed.includes(cardId(p.card)) && styles.layered, positions[p.seat])}
                   >
                     <div {...stylex.props(styles.trickFace, landed.includes(cardId(p.card)) && styles.trickFaceLanded)}>
-                      <PlayingCard card={p.card} size="fill" glow={game.phase === 'trickEnd' && winner === p.seat} />
+                      <PlayingCard card={p.card} size="fill" glow={game.phase === 'trickEnd' && winner === p.seat} verdict={exercise?.verdicts?.find((v) => sameCard(v.card, p.card))?.verdict} />
                     </div>
                   </motion.div>
                 ))}
@@ -598,11 +607,13 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             onPick={onCard}
             selected={picked}
             legal={legal}
-            glow={hint?.card ? [hint.card] : hint?.cards ?? []}
+            glow={exercise?.glow ?? (hint?.card ? [hint.card] : hint?.cards ?? [])}
+            verdicts={exercise?.verdicts}
           />
         </div>
       </div>
 
+      {exercise ? null : (
       <aside
         data-testid="skat-panel"
         data-open={String(panelOpen)}
@@ -688,6 +699,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         </div>
         )}
       </aside>
+      )}
+
+      {/* An exercise's result, over the table (SKATGO-111). */}
+      {exercise?.after ? <Dialog>{exercise.after}</Dialog> : null}
 
       {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
 

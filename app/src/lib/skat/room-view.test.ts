@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { issueTicket, TICKET_MS, ticketValid } from '../room-ticket'
+import { createHmac, hkdfSync } from 'node:crypto'
+
+import { issueTicket, TICKET_MS, ticketClaims } from '../room-ticket'
 import { fullDeck } from './cards'
 import { type Seat, applyMove, deal } from './game'
 import { type RoomPublic, roomGame, roomSeat, viewSeat } from './room-view'
@@ -64,21 +66,32 @@ describe('a private table seen from each seat', () => {
 
 describe('a private table\'s admission ticket', () => {
   const key = 'k'.repeat(64)
+  const open = { purpose: 'open', user: 'user:user_2abc' } as const
   it('is good for two minutes with the key that signed it', () => {
     const now = 1_000_000
-    const t = issueTicket(key, now)
-    expect(ticketValid(key, t, now)).toBe(true)
-    expect(ticketValid(key, t, now + TICKET_MS - 1)).toBe(true)
-    expect(ticketValid(key, t, now + TICKET_MS)).toBe(false)
-    expect(ticketValid('x'.repeat(64), t, now)).toBe(false)
+    const t = issueTicket(key, open, now)
+    expect(ticketClaims(key, t, now)).toEqual(open)
+    expect(ticketClaims(key, t, now + TICKET_MS - 1)).toEqual(open)
+    expect(ticketClaims(key, t, now + TICKET_MS)).toBeNull()
+    expect(ticketClaims('x'.repeat(64), t, now)).toBeNull()
+  })
+  it('says what it is for: opening names the account, joining names none (SKATGO-117)', () => {
+    expect(ticketClaims(key, issueTicket(key, { purpose: 'join' }))).toEqual({ purpose: 'join' })
+    expect(ticketClaims(key, issueTicket(key, open))).toEqual(open)
+    // A ticket from before purposes (signed as the web signed it then) only sits down.
+    const body = Buffer.from(JSON.stringify({ v: 1, exp: Date.now() + TICKET_MS - 1000 })).toString('base64url')
+    const mac = createHmac('sha256', Buffer.from(hkdfSync('sha256', key, Buffer.alloc(0), 'skatgo-room-ticket/1', 32))).update(body).digest('base64url')
+    expect(ticketClaims(key, `${body}.${mac}`)).toEqual({ purpose: 'join' })
   })
   it('is refused when altered or malformed', () => {
-    const t = issueTicket(key)
+    const t = issueTicket(key, open)
     const [body, mac] = t.split('.')
-    const longer = Buffer.from(JSON.stringify({ v: 1, exp: Date.now() + 10 * TICKET_MS })).toString('base64url')
-    expect(ticketValid(key, `${longer}.${mac}`)).toBe(false)
-    expect(ticketValid(key, `${body}.${mac}x`)).toBe(false)
-    expect(ticketValid(key, `${body}`)).toBe(false)
-    expect(ticketValid(key, 42)).toBe(false)
+    const longer = Buffer.from(JSON.stringify({ v: 1, exp: Date.now() + 10 * TICKET_MS, p: 'open', u: 'user:user_2abc' })).toString('base64url')
+    expect(ticketClaims(key, `${longer}.${mac}`)).toBeNull()
+    expect(ticketClaims(key, `${body}.${mac}x`)).toBeNull()
+    expect(ticketClaims(key, `${body}`)).toBeNull()
+    expect(ticketClaims(key, 42)).toBeNull()
+    const noUser = Buffer.from(JSON.stringify({ v: 1, exp: Date.now() + TICKET_MS - 1000, p: 'open' })).toString('base64url')
+    expect(ticketClaims(key, `${noUser}.${mac}`)).toBeNull()
   })
 })

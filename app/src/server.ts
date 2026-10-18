@@ -36,7 +36,7 @@ defineCustomServerStrategy('custom-skatgo', {
 // router: it is a server route, not a page — no language prefix, no redirect, and nothing that reads
 // the page route tree has to know about it. The daily tournament's endpoints (SKATGO-35,
 // lib/daily-handler.ts), free play's (SKATGO-40, lib/free-handler.ts) and a private table's admission
-// (SKATGO-61, lib/room-handler.ts) and the ladder's record (SKATGO-109, lib/tricks-handler.ts) are answered
+// and its referral (SKATGO-61, SKATGO-117, lib/room-handler.ts) and the ladder's record (SKATGO-109, lib/tricks-handler.ts) are answered
 // here for the same reason.
 export default {
   fetch(req: Request): Promise<Response> {
@@ -44,7 +44,7 @@ export default {
     if (url.pathname === '/api/ask') return handleAsk(req)
     if (url.pathname.startsWith('/api/daily/')) return handleDaily(req)
     if (url.pathname.startsWith('/api/free/')) return handleFree(req)
-    if (url.pathname.startsWith('/api/room/')) return Promise.resolve(handleRoom(req))
+    if (url.pathname.startsWith('/api/room/')) return handleRoom(req)
     if (url.pathname.startsWith('/api/tricks/')) return handleTricks(req)
     const moved = movedTo(url.pathname, url.search)
     // Keep the public scheme when TLS terminates at the reverse proxy.

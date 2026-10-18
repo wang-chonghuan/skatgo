@@ -53,7 +53,11 @@ Two kinds of client come in. Trusted integration clients (the tests) send the
 admission key. Browsers — a private table on the site (SKATGO-61) — never see the key:
 the web server's `/api/room/ticket` signs a two-minute ticket with it
 (`app/src/lib/room-ticket.ts`), and the room accepts `ticket` in place of
-`admissionKey`. Both ride in the SDK's join options.
+`admissionKey`. Both ride in the SDK's join options. A ticket says what it is for
+(SKATGO-117): `open` names the account opening a table (`user:<id>`) and is the only
+ticket a browser can create a table with — the snapshot keeps that account as `host`;
+`join` sits down at a table or takes a seat back. The web issues tickets only while
+`/readyz` answers, so during a deploy browsers wait and try again.
 
 Using `@colyseus/sdk`, create two independent 32-byte random hex values per table —
 the invite token (shared with invited participants) and each participant's seat token
@@ -96,7 +100,9 @@ played; the skat is public once the deal is over, as at a real table. No other
 original hand is published.
 
 Send `command` with `{ id, revision, action }`. IDs are 1-80 alphanumeric, underscore
-or hyphen characters and unique per seat. Use the latest public revision.
+or hyphen characters and unique per seat. Use the latest public revision. A move is
+stale only if the game itself changed since its revision (`played`, SKATGO-117):
+someone else dropping or coming back does not make it stale.
 
 | Action | Body |
 |---|---|
@@ -116,6 +122,15 @@ the prior receipt is returned without another transition. Reusing its ID for a
 different action is rejected. A stale revision is rejected, not silently replayed
 against a different turn. Ignore neither rejections nor the current public actor.
 Trick collection and computer turns are server-owned.
+
+A guest who signs up at a table is recorded as brought by its host: `POST /rooms/referral`
+with the admission key and `{ account, roomId, seatToken }` (the web checks the account is
+new) writes `account_referrals` once per account; the host's own seat, an unknown seat
+and a table without a host are refused.
+
+A room admits six connections for three seats, so a dropped person's reconnection
+reservation never locks a full table against its own players; who may sit is decided
+by the seat rules above.
 
 Snapshots carry `schema: 2`. A table stored by an earlier schema is not restored and
 expires like any other.

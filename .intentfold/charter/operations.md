@@ -29,8 +29,10 @@ that.
 The independent **`multiplayer`** Colyseus service uses PostgreSQL for durable rooms
 (SKATGO-20, human-approved 2026-09-27). It supports 1-3 humans, fills other seats with AI,
 and gives disconnected players 30 seconds before temporary AI control. Original players
-can recover the same seat within the room's 24-hour inactivity lifetime. No frontend
-admission flow for rooms is shipped yet: integration clients require a separate admission secret.
+can recover the same seat within the room's 24-hour inactivity lifetime. Browsers come in through
+the web's `/api/room/ticket` (SKATGO-61): opening a table needs an account (SKATGO-117), and a ticket
+is issued only while the service is ready, so during a deploy the pages wait and come back by
+themselves. Integration clients use the admission key.
 The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily` and free play
 (SKATGO-40) under `/free`. Their one client is the web service, which holds the admission key. Free
 play stores nothing: each game is an encrypted token keyed from the admission key, so changing that
@@ -74,8 +76,8 @@ diagnostic origin for DNS and TLS checks. No staging.
   `CNAME`s — `clerk`, `accounts`, `clkmail`, `clk._domainkey`, `clk2._domainkey` →
   `*.clerk.services` — stay **DNS-only (grey)**, as Clerk requires (SKATGO-12).
 - **Accounts**: Clerk application `app_3JhPKJFpPIJR7rHWf9A8neRvdFU`. Production instance
-  `ins_3JhhbSlXDnOOpj1GJJg4eh6972K` on skatgo.com — email and password; Google is switched off until it
-  has its own OAuth credentials. A development instance serves local work.
+  `ins_3JhhbSlXDnOOpj1GJJg4eh6972K` on skatgo.com — email and password, and Google (on, observed
+  2026-10-18: accounts signed up with it). A development instance serves local work.
 - **The assistant's model**: Azure OpenAI deployment `gpt-5.6-luna`, reasoning effort medium, on the
   same Azure OpenAI resource as Trovestep.
 - **Multiplayer data**: a separate paid Render PostgreSQL database; no Redis, persistent
@@ -165,11 +167,12 @@ npm --prefix app run build
 - **No seeded data.** A fresh browser context is a signed-out learner who has done nothing. To start
   a check further into the course, write progress the way the product stores it
   (`app/src/lib/skat/progress.ts`) rather than clicking through earlier lessons.
-- **A signed-in check uses the Clerk development instance.** Make its account with
-  `clerk users create --app app_3JhPKJFpPIJR7rHWf9A8neRvdFU --instance dev --email <name>+clerk_test@example.com --password <password> --yes`,
-  keeping the password in the ticket's `tmp/`. A `+clerk_test` address takes Clerk's fixed
-  verification code `424242` when Clerk asks to confirm a new device. Accounts in the production
-  instance are production data (Redline 2).
+- **A signed-in check uses a local test account** (SKATGO-117; engineering.md Key decisions):
+  `SKATGO_TEST_ACCOUNTS=1` in the checkout's `app/.env`, and the cookie
+  `skatgo_test_account=<name>.<created ms>` (name `[a-z0-9]`, 1–24 characters) on the
+  `127.0.0.1` / `localhost` origin, set in the browser context or on the request. The page and every
+  server route then see the account `test_<name>`, made at that time. Clerk's own sign-in window is
+  not exercised. Accounts in the production instance are production data (Redline 2).
 - Exercises and deals are random. Locate the expected answer through the rules engine or a stable
   `data-*` attribute, never by matching generated text.
 
@@ -184,7 +187,8 @@ writes them). The built server reads them from its environment, so load the file
 Locally `app/.env` also carries `MULTIPLAYER_URL` (the local multiplayer service,
 `http://127.0.0.1:<multiplayer-port>`) and `MULTIPLAYER_ADMISSION_KEY` (the value in
 `multiplayer/.env`); without them `/api/daily/*` and `/api/free/*` answer 503. `POSTHOG_PROJECT_KEY`
-is optional locally: without it analytics is not loaded. The daily tournament,
+is optional locally: without it analytics is not loaded. `SKATGO_TEST_ACCOUNTS=1` is local only, for
+signed-in acceptance (Acceptance above); production never carries it. The daily tournament,
 free play and lesson 11's game run locally with both services and the local database started as Build
 and tests says.
 
@@ -227,7 +231,9 @@ releases `skatgo-multiplayer`, which has its own deploy below (found while deplo
 
 For multiplayer-only releases, do not redeploy `web`. A release that changes both — the daily
 tournament's routes and the web's proxy to them — deploys `multiplayer` first, so the web never
-calls routes that are not live yet. After a merged revision:
+calls routes that are not live yet. A release that changes a private table's ticket (SKATGO-117)
+deploys `web` first instead: its tickets stay `v:1`, which the running multiplayer accepts, and only
+the new multiplayer then requires an `open` ticket to create a table. After a merged revision:
 
 ```bash
 node multiplayer/scripts/render.mjs deploy

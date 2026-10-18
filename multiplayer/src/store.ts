@@ -74,6 +74,10 @@ export class Store {
         -- wrong answer counted. SKATGO-110 put new puzzles under the same step numbers, so the first table's
         -- records went with the old puzzles (the human: 「原有答题记录可以删除」).
         DROP TABLE IF EXISTS ladder_steps;
+        -- Whose private table brought an account (SKATGO-117): a guest who signed up at a table, recorded once.
+        CREATE TABLE IF NOT EXISTS account_referrals (
+          account text PRIMARY KEY, referrer text NOT NULL, room_id text NOT NULL, created_at bigint NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS ladder_answers (
           player text NOT NULL, step text NOT NULL, solved_at bigint, misses integer NOT NULL DEFAULT 0,
           updated_at bigint NOT NULL, PRIMARY KEY (player, step)

@@ -6,6 +6,7 @@ import { dailyRoutes, nameUnnamed, prepareDays } from './daily'
 import { freeRoutes, loadPool } from './free'
 import { ladderRoutes } from './ladder'
 import { loadPolicy, type Policy } from './skatzero/policy'
+import { referralRoutes } from './referral'
 import { makeRoom, RESTORE } from './room'
 import { Store } from './store'
 
@@ -51,6 +52,7 @@ app.get(['/healthz', '/readyz'], async (req, res) => {
 app.use('/daily', dailyRoutes(store, key, () => ready && !stopping, () => policy))
 app.use('/free', freeRoutes(key, () => ready && !stopping, () => policy, () => pool))
 app.use('/ladder', ladderRoutes(store, key, () => ready && !stopping))
+app.use('/rooms', referralRoutes(store, key, () => ready && !stopping))
 const httpServer = createServer(app)
 const server = new Server({
   transport: new WebSocketTransport({ server: httpServer, maxPayload: 16 * 1024, pingInterval: 5000, pingMaxRetries: 2 }),

@@ -5,6 +5,8 @@ import { Theme } from '@astryxdesign/core/theme'
 
 import { ProductAnalytics } from '~/components/product-analytics'
 import { readProjectKey } from '~/lib/analytics'
+import { readTestAccount } from '~/lib/test-account'
+import { TestAccount } from '~/lib/use-account'
 import { clerkAppearance } from '~/lib/clerk-appearance'
 import { LANG_TAG } from '~/lib/site'
 import { m } from '~/paraglide/messages'
@@ -29,8 +31,9 @@ import '~/styles/app.css'
 
 export const Route = createRootRoute({
   // The PostHog project key (SKATGO-25), read on the server and handed to the page with its data. It
-  // never changes while a page is open, so client navigations do not ask again.
-  loader: () => ({ posthogKey: readProjectKey() }),
+  // never changes while a page is open, so client navigations do not ask again. A local test account
+  // (SKATGO-117, lib/test-account.ts) comes the same way.
+  loader: () => ({ posthogKey: readProjectKey(), testAccount: readTestAccount() }),
   staleTime: Infinity,
   // Only what every page shares. Each route writes its own title, description, canonical URL, hreflang
   // links, Open Graph and Twitter tags and structured data (lib/head.ts, SKATGO-29); a route's title and
@@ -66,10 +69,12 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
-  const { posthogKey } = Route.useLoaderData()
+  const { posthogKey, testAccount } = Route.useLoaderData()
   return (
     <RootDocument posthogKey={posthogKey}>
-      <SkatLayout />
+      <TestAccount.Provider value={testAccount}>
+        <SkatLayout />
+      </TestAccount.Provider>
     </RootDocument>
   )
 }

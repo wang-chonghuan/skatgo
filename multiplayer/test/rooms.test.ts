@@ -151,14 +151,65 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       }))
       assert.equal((await sql.query('SELECT count(*)::int AS n FROM multiplayer_rooms')).rows[0].n, 0)
     })
+    const open = { purpose: 'open', user: 'user:test_anna' } as const
     await t.test('a browser comes in with a signed ticket; a forged or expired one, or no nickname, is refused', async () => {
-      const room = await new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey), seatToken: token(), inviteToken: token(), nickname: 'Anna' })
+      const room = await new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, open), seatToken: token(), inviteToken: token(), nickname: 'Anna' })
       const p = await attach(room, '', 0)
       assert.equal(p.public.seats[0].nickname, 'Anna')
-      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(token()), seatToken: token(), inviteToken: token(), nickname: 'Anna' }))
-      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, Date.now() - TICKET_MS - 1000), seatToken: token(), inviteToken: token(), nickname: 'Anna' }))
+      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(token(), open), seatToken: token(), inviteToken: token(), nickname: 'Anna' }))
+      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, open, Date.now() - TICKET_MS - 1000), seatToken: token(), inviteToken: token(), nickname: 'Anna' }))
       await assert.rejects(new Client(endpoint).create('skat', { admissionKey, seatToken: token(), inviteToken: token() }))
       await assert.rejects(new Client(endpoint).create('skat', { admissionKey, seatToken: token(), inviteToken: token(), nickname: 'skatgo.com' }))
+    })
+    await t.test('a browser opens a table only with an open ticket, which names its host; a join ticket only sits down', async () => {
+      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, { purpose: 'join' }), seatToken: token(), inviteToken: token(), nickname: 'Anna' }), /admission_denied/)
+      const inviteToken = token()
+      const room = await new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, open), seatToken: token(), inviteToken, nickname: 'Anna' })
+      await attach(room, '', 0)
+      assert.equal((await snapshot(room.roomId)).host, 'user:test_anna')
+      const guest = await new Client(endpoint).joinById(room.roomId, { ticket: issueTicket(admissionKey, { purpose: 'join' }), seatToken: token(), inviteToken, nickname: 'Ben' })
+      assert.equal((await attach(guest, '', 1)).public.seats[1].nickname, 'Ben')
+    })
+    await t.test('a guest who signs up at the table is recorded as brought by its host, once', async () => {
+      const referral = (body: object) => fetch(`${endpoint}/rooms/referral`, {
+        method: 'POST', headers: { 'content-type': 'application/json', 'x-admission-key': admissionKey }, body: JSON.stringify(body),
+      })
+      const hostSeat = token(), guestSeat = token(), inviteToken = token()
+      const room = await new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, open), seatToken: hostSeat, inviteToken, nickname: 'Anna' })
+      await attach(room, hostSeat, 0)
+      await attach(await new Client(endpoint).joinById(room.roomId, { ticket: issueTicket(admissionKey, { purpose: 'join' }), seatToken: guestSeat, inviteToken, nickname: 'Ben' }), guestSeat, 1)
+      assert.equal((await fetch(`${endpoint}/rooms/referral`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })).status, 403)
+      assert.equal((await (await referral({ account: 'user:test_ben', roomId: room.roomId, seatToken: hostSeat })).json()).error, 'not_a_guest')
+      assert.equal((await (await referral({ account: 'user:test_ben', roomId: room.roomId, seatToken: token() })).json()).error, 'not_a_guest')
+      assert.equal((await (await referral({ account: 'user:test_ben', roomId: room.roomId, seatToken: guestSeat })).json()).recorded, true)
+      assert.equal((await (await referral({ account: 'user:test_ben', roomId: room.roomId, seatToken: guestSeat })).json()).recorded, false)
+      const rows = (await sql.query('SELECT account, referrer, room_id FROM account_referrals')).rows
+      assert.deepEqual(rows, [{ account: 'user:test_ben', referrer: 'user:test_anna', room_id: room.roomId }])
+      // A table an integration client opened has no host to credit.
+      const { p, group } = await create(2)
+      assert.equal((await (await referral({ account: 'user:test_cleo', roomId: p.room.roomId, seatToken: group[1].token })).json()).error, 'no_host')
+    })
+    await t.test('at a full table a dropped person gets back in with the seat token while the SDK still holds the old place', async () => {
+      const { p, group } = await create(3)
+      assert((await send(p, { type: 'start' })).ok)
+      const second = group[1]
+      second.room.connection.close()
+      await until(() => !p.public.seats[1].connected)
+      const back = await join(p.room.roomId, second.token, 1)
+      await until(() => p.public.seats[1].connected)
+      assert.equal(back.private.seat, 1)
+    })
+    await t.test('a move made while someone else drops or comes back is not stale', async () => {
+      const { p, group } = await create(3)
+      assert((await send(p, { type: 'start' })).ok)
+      await until(() => group.every(x => x.public.phase === 'bidding'))
+      const mover = await until(() => group.find(x => x.public.actor === x.seat))
+      const at = mover.public.revision
+      const other = group.find(x => x !== mover)!
+      other.room.connection.close()
+      await until(() => mover.public.revision > at)
+      const receipt = await send(mover, move(mover), randomUUID(), at)
+      assert.equal(receipt.ok, true, JSON.stringify(receipt))
     })
     for (const count of [1, 2, 3]) {
       await t.test(`${count} humans plus ${3 - count} computers complete a legal private game`, async () => {

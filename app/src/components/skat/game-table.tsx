@@ -141,6 +141,8 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
   names: [string, string, string]
   /** Under the result: this deal's scores and the running totals. */
   standings: ReactNode
+  /** Over the felt, where the table's messages go: while the connection comes back (SKATGO-117). */
+  notice?: ReactNode
 }
 
 /** An open-card endgame of the Skat-Tricks (SKATGO-110): a deal stopped a few tricks before its end, every hand
@@ -450,8 +452,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               )}
             </div>
           ) : null}
-          {refusal || hint || server?.problem ? (
+          {refusal || hint || server?.problem || room?.notice ? (
             <div data-testid="skat-messages" {...stylex.props(styles.messages)}>
+              {room?.notice}
               {server?.problem ? (
                 <Panel tone="bad">
                   <div data-testid="server-problem" role="alert" {...stylex.props(styles.message)}>

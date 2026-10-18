@@ -81,10 +81,32 @@ function ExerciseView({ id }: { id: string }) {
     setAttempt((a) => a + 1)
   }
   const missedLater = miss && !miss.first ? miss.at : null
+  if (exercise.open) {
+    const e = exercise.open
+    // The game's own table, every hand open (SKATGO-110), filling the screen as free play's does, and nothing else:
+    // the place in the list, the heading and the goal on its board, the result over it (SKATGO-111, the human:
+    // 「打牌界面那种效果，各种尺寸屏幕都刚好全屏」). A step that needs an account waits under the sign-in.
+    return (
+      <div data-testid="tricks-exercise" data-exercise={exercise.id} data-result={result ?? ''} {...stylex.props(styles.openRoot)}>
+        <OpenTable
+          key={attempt}
+          e={e}
+          title={openTitle(e)}
+          kicker={m.tricks_ladder_kicker({ n, count: siblings.length })}
+          hold={locked && !ladder.account}
+          onSolved={callbacks.onSolved}
+          onMistake={(at) => {
+            setMiss(at)
+            callbacks.onMistake()
+          }}
+          after={result ? <OpenResult e={e} result={result} miss={miss} explain={words.explain} following={following?.id} onAgain={again} /> : locked && ladder.account === null ? <LadderGate /> : undefined}
+        />
+      </div>
+    )
+  }
   return (
     <div data-testid="tricks-exercise" data-exercise={exercise.id} data-result={result ?? ''} {...stylex.props(styles.root)}>
-      {/* An open-card endgame keeps its table on the screen: the page's spacing closes up round it (SKATGO-111). */}
-      <div {...stylex.props(styles.column, exercise.open && styles.columnTight)}>
+      <div {...stylex.props(styles.column)}>
         <nav {...stylex.props(styles.top)}>
           <Link to="/skat-tricks" hash={exercise.type} data-testid="tricks-exercise-back" {...linkLook('quiet', 'sm')}>
             <span {...stylex.props(styles.backInner)}>
@@ -93,48 +115,24 @@ function ExerciseView({ id }: { id: string }) {
             </span>
           </Link>
           {/* A ladder step's kicker is short, so it shares the back button's line on a phone (SKATGO-109). */}
-          <Pill>{exercise.endgame || exercise.open ? m.tricks_ladder_kicker({ n, count: siblings.length }) : m.tricks_ex_kicker({ type: text.types[exercise.type].title, n, count: siblings.length })}</Pill>
+          <Pill>{exercise.endgame ? m.tricks_ladder_kicker({ n, count: siblings.length }) : m.tricks_ex_kicker({ type: text.types[exercise.type].title, n, count: siblings.length })}</Pill>
         </nav>
         {/* Every ladder step has the same heading; the step itself is on the felt (SKATGO-109, the human:
             「标题就要continue this deal之类的，统一」). */}
-        {/* An open-card endgame says only what is played and which side the learner is on (SKATGO-111, the human:
-            「乱七八糟的文字太多」); the rest is on the table. */}
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{exercise.open ? openTitle(exercise.open) : exercise.endgame ? m.tricks_ladder_heading() : words.title}</h1>
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{exercise.endgame ? m.tricks_ladder_heading() : words.title}</h1>
 
-        {locked && ladder.account === undefined ? (
-          <section {...stylex.props(styles.card)}>
-            <p data-testid="tricks-ladder-waiting" {...stylex.props(typography.loading, styles.para)}>{m.loading()}</p>
-          </section>
-        ) : locked && ladder.account === null ? (
-          <LadderGate />
-        ) : exercise.open ? (
-          // The game's own table, every hand open (SKATGO-110), and nothing else: the goal, the marks and the result
-          // are on it (SKATGO-111).
-          <section key={attempt} data-testid="tricks-open" {...stylex.props(styles.openStack)}>
-            <OpenTable
-              e={exercise.open}
-              onSolved={callbacks.onSolved}
-              onMistake={(at) => {
-                setMiss(at)
-                callbacks.onMistake()
-              }}
-              after={result ? <OpenResult e={exercise.open} result={result} miss={miss} explain={words.explain} following={following?.id} onAgain={again} /> : undefined}
-            />
-          </section>
-        ) : (
-          <section {...stylex.props(styles.card)}>
-            <SituationView situation={exercise.situation} />
-            <div key={attempt}>
-              {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
-              {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
-              {exercise.ask.kind === 'play' && exercise.endgame ? (
-                <Play step={{ ...playStep(exercise, words), prompt: '' }} table={<LadderTable e={exercise.endgame} />} handLabel={m.tricks_row_cards()} {...callbacks} />
-              ) : exercise.ask.kind === 'play' ? (
-                <Play step={playStep(exercise, words)} {...callbacks} />
-              ) : null}
-            </div>
-          </section>
-        )}
+        <section {...stylex.props(styles.card)}>
+          <SituationView situation={exercise.situation} />
+          <div key={attempt}>
+            {exercise.ask.kind === 'choice' ? <Choice step={choiceStep(exercise, words)} {...callbacks} /> : null}
+            {exercise.ask.kind === 'pick' ? <Pick step={pickStep(exercise, words)} {...callbacks} /> : null}
+            {exercise.ask.kind === 'play' && exercise.endgame ? (
+              <Play step={{ ...playStep(exercise, words), prompt: '' }} table={<LadderTable e={exercise.endgame} />} handLabel={m.tricks_row_cards()} {...callbacks} />
+            ) : exercise.ask.kind === 'play' ? (
+              <Play step={playStep(exercise, words)} {...callbacks} />
+            ) : null}
+          </div>
+        </section>
 
         {result && !exercise.open ? (
           <div data-testid="tricks-exercise-result" data-result={result} {...stylex.props(styles.result)}>
@@ -198,7 +196,7 @@ function ExerciseView({ id }: { id: string }) {
  *  the page; once signed in, the step is there. */
 function LadderGate() {
   return (
-    <section data-testid="tricks-ladder-gate" {...stylex.props(styles.card)}>
+    <section data-testid="tricks-ladder-gate" {...stylex.props(styles.openResult)}>
       <div {...stylex.props(styles.verdict)}>
         <span aria-hidden="true" {...stylex.props(styles.verdictIcon, styles.gateIcon)}>
           <Lock size={icon.inline} strokeWidth={icon.outline} />
@@ -512,8 +510,8 @@ const styles = stylex.create({
   lineRow: { display: 'flex', alignItems: 'center', gap: space.x6 },
   lineEnd: { marginLeft: 'auto' },
   result: { display: 'flex', flexDirection: 'column', gap: space.x16 },
-  openStack: { display: 'flex', flexDirection: 'column', gap: space.x12 },
-  columnTight: { gap: { default: space.x6, [bp.phone]: space.x8 }, paddingTop: { default: space.x4, [bp.phone]: space.x8 } },
+  // An open-card endgame: the table and nothing else, the screen's whole height (SKATGO-111).
+  openRoot: { display: 'flex', flexDirection: 'column', flexGrow: 1 },
   openResult: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   verdict: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },
   verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },

@@ -370,10 +370,12 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // and either way the learner can fold it (SKATGO-29). Crossing the width puts it back to its default.
   // Free play's table is browser-only (client-part.tsx), so the query can be read at once; a lesson's
   // table has no side panel to pin.
-  const [pinned, setPinned] = useState(() => fullScreen && window.matchMedia(pinnedQuery).matches)
+  // An exercise's full-screen table has no side panel (SKATGO-111), and is rendered on the server too.
+  const panelled = fullScreen && !exercise
+  const [pinned, setPinned] = useState(() => panelled && window.matchMedia(pinnedQuery).matches)
   const [panelOpen, setPanelOpen] = useState(pinned)
   useEffect(() => {
-    if (!fullScreen) return
+    if (!panelled) return
     const query = window.matchMedia(pinnedQuery)
     const change = () => {
       setPinned(query.matches)
@@ -381,7 +383,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     }
     query.addEventListener('change', change)
     return () => query.removeEventListener('change', change)
-  }, [fullScreen])
+  }, [panelled])
   const [settingsOpen, setSettingsOpen] = useState(false)
   // The side panel shows the game, or the rules with a way back (SKATGO-75).
   const [panelView, setPanelView] = useState<'game' | 'rules'>('game')
@@ -422,7 +424,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     : null
 
   return (
-    <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded)}>
+    <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded, fullScreen && exercise && styles.tableAlone)}>
       <div data-testid="skat-felt" {...stylex.props(styles.felt, fullScreen && styles.feltFull)}>
         {/* The felt's cloth on a layer of its own (SKATGO-41): the noise and the gradient are painted
             once, and cards moving over them never paint them again. */}
@@ -580,7 +582,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         {/* The tab that folds the side panel away and brings it back, mirroring the hint tab on the right
             edge (SKATGO-29). It lives on the felt, so it keeps the hint tab's height at any size; over a
             drawer that is open it sits at the drawer's edge. */}
-        {fullScreen ? (
+        {panelled ? (
           <button
             type="button"
             aria-label={m.table_panel_toggle()}
@@ -711,7 +713,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
       {/* The way out (SKATGO-96), in the felt's top right corner and over the dialogs on the table, so it can
           always be pressed (SKATGO-100); an open drawer covers the felt, and it with it. */}
-      {fullScreen && (pinned || !panelOpen) ? <TableMenu leave={tournament ? '/daily' : room ? '/with-friends' : '/'} newRound={server?.newRound} /> : null}
+      {fullScreen && (exercise || pinned || !panelOpen) ? <TableMenu leave={exercise ? '/skat-tricks' : tournament ? '/daily' : room ? '/with-friends' : '/'} newRound={server?.newRound} /> : null}
     </div>
   )
 }
@@ -1401,7 +1403,7 @@ function useCardSounds(game: Game) {
  * playing, give up free play's round for a new one (asked once more first), or leave the table. Leaving loses
  * nothing: free play's game waits in this browser, the tournament's on the server, a private table's in its room.
  */
-function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends'; newRound?: () => void }) {
+function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends' | '/skat-tricks'; newRound?: () => void }) {
   const [open, setOpen] = useState(false)
   const [asking, setAsking] = useState(false)
   const box = useRef<HTMLDivElement>(null)
@@ -1523,6 +1525,8 @@ const styles = stylex.create({
   tableFull: { gridTemplateColumns: { default: dims.oneColumn, [bp.pinned]: dims.feltAndPanel }, height: dims.screenDynamic },
   // Inside a lesson: the panel stacks under the felt.
   tableEmbedded: { gridTemplateColumns: dims.oneColumn, borderRadius: radii.panel },
+  // An open-card endgame fills the screen as free play does, with no panel beside it (SKATGO-111).
+  tableAlone: { gridTemplateColumns: dims.oneColumn },
 
   // The felt is the stage's size container (SKATGO-34): everything on it is measured in its unit, so it
   // needs a height of its own — the screen in free play, a fixed one inside a lesson.

@@ -49,6 +49,9 @@ export function useSection(): Section {
 /** Which frame a path wears: the tables fill the screen; every other page, lessons included, wears the
  *  front page's header (SKATGO-43, SKATGO-47). The router has already removed the language prefix. */
 export function frameOf(pathname: string): 'landing' | 'table' {
+  // An open-card endgame is played on the table, one screen at any size, as free play is (SKATGO-111, the human:
+  // 「如何能做到打牌界面那种效果，各种尺寸屏幕都刚好全屏」).
+  if (pathname.startsWith('/skat-tricks/offenes-endspiel-')) return 'table'
   return sectionOf(pathname) === 'play' ? 'table' : 'landing'
 }
 

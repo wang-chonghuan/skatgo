@@ -146,13 +146,9 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
 /** An open-card endgame of the Skat-Tricks (SKATGO-110): a deal stopped a few tricks before its end, every hand
  *  open as at an Ouvert, the learner's cards judged and the others' answers played by the exercise. No hints, no
  *  assistant, no settlement — and since SKATGO-111 nothing round the felt but the exercise's own: its goal in the
- *  info board's place, its marks on the cards, and its result over the table; no words line, no side panel. */
+ *  info board's place and its result over the table; no words line, no side panel. */
 export type ExerciseTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'> & {
   top?: ReactNode
-  /** A card judged right or wrong, on the table or in the hand. */
-  verdicts?: { card: Card; verdict: 'good' | 'bad' }[]
-  /** The cards in the hand that would have won. */
-  glow?: Card[]
   /** Over the table once the exercise is over. */
   after?: ReactNode
 }
@@ -517,7 +513,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                     {...stylex.props(styles.trickCard, !landed.includes(cardId(p.card)) && styles.layered, positions[p.seat])}
                   >
                     <div {...stylex.props(styles.trickFace, landed.includes(cardId(p.card)) && styles.trickFaceLanded)}>
-                      <PlayingCard card={p.card} size="fill" glow={game.phase === 'trickEnd' && winner === p.seat} verdict={exercise?.verdicts?.find((v) => sameCard(v.card, p.card))?.verdict} />
+                      <PlayingCard card={p.card} size="fill" glow={game.phase === 'trickEnd' && winner === p.seat} />
                     </div>
                   </motion.div>
                 ))}
@@ -607,8 +603,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             onPick={onCard}
             selected={picked}
             legal={legal}
-            glow={exercise?.glow ?? (hint?.card ? [hint.card] : hint?.cards ?? [])}
-            verdicts={exercise?.verdicts}
+            glow={hint?.card ? [hint.card] : hint?.cards ?? []}
           />
         </div>
       </div>

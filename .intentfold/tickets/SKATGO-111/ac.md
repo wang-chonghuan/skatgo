@@ -4,9 +4,8 @@
 
 1. **关卡格：** 20 个方块，没有逐题标题；状态正确（勾、叉、下一关、锁），答错次数在角上；「Aufgabe n spielen」按钮直达下一关。
 2. **做题页：** 一行标题加带分数条的牌桌；没有任务说明（`tricks-open-task`）、信息栏（`skat-info`）、侧边面板（`skat-panel`）和叫牌记录（`skat-history`）；牌桌底边不超出屏幕。
-3. **反馈：**
-   - 出对的牌判 good；
-   - 出错的牌判 bad，能赢的牌发光；
-   - 结束时牌桌上显示小卡（Gelöst / Nicht gelöst、关键牌或「Richtig ist」、下一关、Warum?、Noch mal）；
+3. **反馈**（返工 2 后）：
+   - 出牌时不标对错，出错后也不停，由学员自己接着出，对手按最强打法应对，直到胜负已定；
+   - 结束时牌桌上显示小卡（Gelöst + 关键牌，或 Nicht gelöst +「Dein Fehler: … Richtig war …」，以及下一关、Warum?、Noch mal）；
    - 「Warum?」点开前不显示解释。
 4. **其余照常：** 第 3 关起要登录，没有控制台报错。

@@ -224,14 +224,15 @@ const openTitle = (e: OpenEndgame) =>
   e.role === 'declarer' ? m.tricks_open_title_declarer({ game: contractName(e.game.declaration!.contract) }) : m.tricks_open_title_defender({ game: contractName(e.game.declaration!.contract) })
 
 /**
- * An open-card endgame's result, over the table (SKATGO-111): solved or not, the card that mattered — the one that
- * wins, or at a later turn the one that would have — and the way on. Why, only when asked.
+ * An open-card endgame's result, over the table once the game is decided (SKATGO-111): solved or not, the card that
+ * mattered — the one that wins, or the learner's first wrong card and the one that would have won there — and the
+ * way on. Why, only when asked.
  */
 function OpenResult({ e, result, miss, explain, following, onAgain }: { e: OpenEndgame; result: 'right' | 'wrong'; miss: OpenMistake | null; explain: string; following?: string; onAgain: () => void }) {
   const [why, setWhy] = useState(false)
   const later = miss && !miss.first ? miss.at : null
   const cards = (later ?? e.play).win.map((c) => `**${cardLabel(c)}**`).join(' / ')
-  const line = result === 'right' ? m.tricks_open_key({ card: cards }) : later ? m.tricks_open_here({ answer: cards }) : m.tricks_ex_answer({ answer: cards })
+  const line = result === 'right' || !miss ? m.tricks_open_key({ card: cards }) : m.tricks_open_mistake({ card: `**${cardLabel(miss.card)}**`, answer: cards })
   return (
     <div data-testid="tricks-exercise-result" data-result={result} {...stylex.props(styles.openResult)}>
       <div {...stylex.props(styles.verdict)}>

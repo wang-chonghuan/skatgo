@@ -624,7 +624,7 @@
   "tricks_open_solved": "Solved!",
   "tricks_open_failed": "Not solved",
   "tricks_open_key": "Key card: {card}",
-  "tricks_open_here": "Here only {answer} wins.",
   "tricks_open_why": "Why?",
-  "tricks_open_play": "Play puzzle {n}"
+  "tricks_open_play": "Play puzzle {n}",
+  "tricks_open_mistake": "Your mistake: {card}. The right card was {answer}."
 }

@@ -14,13 +14,13 @@ import { ProgressBar } from './ui'
 
 /**
  * An open-card endgame played out on the game's own table (SKATGO-110, the human: 「出的就跟打牌界面一样……都是明牌，
- * 形式就是有人打明手时的桌面的样子」): every hand open, the learner in seat 0. Each card the learner plays is judged by
- * the worked-out play: one that still wins is right, and the others then play their best answers, card by card, until
- * it is the learner's turn again or the game is decided; one that loses is wrong, and the others show why by playing
- * the rest out, everybody at their best. Nothing is worked out here.
+ * 形式就是有人打明手时的桌面的样子」): every hand open, the learner in seat 0. After each card the learner plays, the
+ * others play their best answers from the worked-out play, card by card, until it is the learner's turn again or the
+ * game is decided. A wrong card is not marked: the learner plays on to the end and is told then (SKATGO-111, the
+ * human: 「我觉得可以打完，打完后告诉它错了，记下来，但是可以重试」). Nothing is worked out here.
  */
-/** Where a wrong card was played: the turn it was played at, and whether that was the first. */
-export type OpenMistake = { at: OpenNode; first: boolean }
+/** The first wrong card: the turn it was played at, the card, and whether that was the first turn. */
+export type OpenMistake = { at: OpenNode; card: Card; first: boolean }
 
 export function OpenTable({ e, onSolved, onMistake, after }: { e: OpenEndgame; onSolved: () => void; onMistake: (m: OpenMistake) => void; after?: ReactNode }) {
   const [game, setGame] = useState<Game>(e.game)
@@ -30,27 +30,19 @@ export function OpenTable({ e, onSolved, onMistake, after }: { e: OpenEndgame; o
   const [queue, setQueue] = useState<Played[]>([])
   const [then, setThen] = useState<OpenNode | null>(null)
   const [state, setState] = useState<'play' | 'right' | 'wrong'>('play')
-  // The learner's cards as judged, and on a wrong one the cards that would have won (SKATGO-111).
-  const [judged, setJudged] = useState<{ card: Card; verdict: 'good' | 'bad' }[]>([])
-  const [missed, setMissed] = useState<Card[]>([])
+  const [miss, setMiss] = useState<OpenMistake | null>(null)
 
   function send(move: Move) {
     if (move.type !== 'play' || !node || state !== 'play') return
     const played = playCard(game, move.card)
     if (played === game) return
-    const right = node.after.find((a) => sameCard(a.card, move.card))
+    const answer = node.after.find((a) => sameCard(a.card, move.card))
+    if (!answer) return
     setGame(played)
     setNode(null)
-    setJudged((j) => [...j, { card: move.card, verdict: right ? 'good' : 'bad' }])
-    if (right) {
-      setQueue(right.plays)
-      setThen(right.next)
-      return
-    }
-    setQueue(node.refute.find((r) => sameCard(r.card, move.card))?.plays ?? [])
-    setState('wrong')
-    setMissed(node.win)
-    onMistake({ at: node, first: node === e.play })
+    if (!miss && !node.win.some((c) => sameCard(c, move.card))) setMiss({ at: node, card: move.card, first: node === e.play })
+    setQueue(answer.plays)
+    setThen(answer.next)
   }
 
   // The others' cards, one by one at the computers' pace; a finished trick waits for the table to gather it in.
@@ -64,10 +56,13 @@ export function OpenTable({ e, onSolved, onMistake, after }: { e: OpenEndgame; o
       }, BOT_DELAY)
       return () => clearTimeout(t)
     }
-    // All shown — after the last trick too, when the game is over.
+    // All shown — after the last trick too, when the game is over; only then is the learner told.
     if (state !== 'play' || node) return
     if (then) setNode(then)
-    else {
+    else if (miss) {
+      setState('wrong')
+      onMistake(miss)
+    } else {
       setState('right')
       onSolved()
     }
@@ -82,10 +77,8 @@ export function OpenTable({ e, onSolved, onMistake, after }: { e: OpenEndgame; o
     collect: () => setGame((g) => (g.phase === 'trickEnd' ? collectTrick(g) : g)),
     next: () => {},
     top: <Goal game={game} role={e.role} />,
-    verdicts: judged,
-    glow: missed,
-    // Once the others have played it out.
-    after: state !== 'play' && !queue.length ? after : undefined,
+    // Once the game is decided.
+    after: state !== 'play' ? after : undefined,
   }
   return (
     // The cards that win now, for scripted checks; the table itself never tells.
@@ -94,8 +87,7 @@ export function OpenTable({ e, onSolved, onMistake, after }: { e: OpenEndgame; o
       data-state={state}
       data-turn={String(!!node && state === 'play')}
       data-win={node ? node.win.map(cardId).join(' ') : ''}
-      data-judged={judged.map((j) => `${cardId(j.card)}:${j.verdict}`).join(' ')}
-      data-glow={missed.map(cardId).join(' ')}
+      data-miss={miss ? cardId(miss.card) : ''}
     >
       <GameTable exercise={exercise} />
     </div>

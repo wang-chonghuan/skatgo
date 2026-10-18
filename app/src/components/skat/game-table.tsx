@@ -482,7 +482,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             left and right edges, running off the felt so only part of each shows (SKATGO-26). */}
         {([1, 2] as Seat[]).map((seat) => (
           // An exercise shows every hand, as the table shows an Ouvert declarer's (SKATGO-110).
-          <Stack key={seat} seat={seat} game={game} shown={exercise ? game.hands[seat] : rest?.[seat]} />
+          <Stack key={seat} seat={seat} game={game} shown={exercise ? game.hands[seat] : rest?.[seat]} big={!!exercise} />
         ))}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
@@ -805,7 +805,7 @@ function ActionsFor({
 
 /** An opponent's hand: the same card as the learner's, turned sideways, stacked down the felt's edge
  *  and running off it — face up for an Ouvert declarer, face down otherwise. */
-function Stack({ seat, game, shown }: { seat: Seat; game: Game; shown?: Card[] }) {
+function Stack({ seat, game, shown, big }: { seat: Seat; game: Game; shown?: Card[]; big?: boolean }) {
   // `shown`: the cards this seat held when the deal was decided early, laid open in place (SKATGO-65).
   // On the right, an open card is turned the other way and each covers the top of the one under it,
   // so every card's index is on the part that shows. Open cards — those, or an Ouvert declarer's — are
@@ -814,11 +814,12 @@ function Stack({ seat, game, shown }: { seat: Seat; game: Game; shown?: Card[] }
   const held = shown ?? game.hands[seat]
   const cards = open && game.declaration ? sortHand(held, game.declaration.contract) : held
   const flip = open && seat === 2
+  // `big`: an open endgame's hands, each card as big as the learner's and more of it on the felt (SKATGO-111).
   return (
-    <div data-testid={`skat-stack-${seat}`} aria-hidden={open ? undefined : 'true'} {...stylex.props(styles.stack, seat === 1 ? styles.stackLeft : styles.stackRight, flip && styles.stackOpenRight)}>
+    <div data-testid={`skat-stack-${seat}`} aria-hidden={open ? undefined : 'true'} {...stylex.props(styles.stack, seat === 1 ? styles.stackLeft : styles.stackRight, flip && styles.stackOpenRight, big && styles.stackBig, big && (seat === 1 ? styles.stackBigLeft : styles.stackBigRight))}>
       {(flip ? [...cards].reverse() : cards).map((c, i) => (
-        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot, open && styles.sideSlotSpread, flip && styles.sideSlotOpenRight, flip && styles.sideSlotSpreadRight)}>
-          <span {...stylex.props(styles.sideCard, flip && styles.sideCardOpenRight)}>
+        <div key={open ? cardId(c) : i} {...stylex.props(styles.sideSlot, open && styles.sideSlotSpread, flip && styles.sideSlotOpenRight, flip && styles.sideSlotSpreadRight, big && styles.sideSlotBig, big && flip && styles.sideSlotBigRight)}>
+          <span {...stylex.props(styles.sideCard, flip && styles.sideCardOpenRight, big && styles.sideCardBig)}>
             <PlayingCard card={c} faceDown={!open} size="fill" />
           </span>
         </div>
@@ -1574,6 +1575,14 @@ const styles = stylex.create({
   sideSlotSpread: { marginTop: { default: stage.stackStepOpen, ':first-child': 0 } },
   sideSlotSpreadRight: { marginTop: 0, marginBottom: { default: stage.stackStepOpen, ':first-child': 0 } },
   sideCardOpenRight: { transform: pose.sidewaysOpen },
+  // An open endgame's hands (SKATGO-111): cards as big as the learner's, beside the frame's middle — the
+  // exercise has no edge tabs for their foot to clear.
+  stackBig: { top: stage.frameCentre },
+  stackBigLeft: { left: stage.openStackInset },
+  stackBigRight: { right: stage.openStackInset },
+  sideSlotBig: { width: stage.openStackSlot, height: stage.handCard, marginTop: { default: stage.openStackStep, ':first-child': 0 } },
+  sideSlotBigRight: { marginTop: 0, marginBottom: { default: stage.openStackStep, ':first-child': 0 } },
+  sideCardBig: { width: stage.handCard },
 
   frame: {
     position: 'absolute',

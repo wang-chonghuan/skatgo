@@ -75,4 +75,12 @@ export const stage = stylex.defineVars({
   trickThird: { default: `calc(50% - ${u} * 41)`, [bp.portrait]: `calc(50% - ${u} * 30)` },
   /** How far a stack runs off the felt's edge: 82u of it shows (46u). */
   stackInset: { default: `calc(${u} * -58)`, [bp.portrait]: `calc(${u} * -80)` },
+  /** An open endgame's stacks (SKATGO-111, the human: 「左右两家的牌，尺寸要和我的手牌一样大…不一定完整显示，但是要大」):
+   *  each card as big as the learner's (`handCard`), lying sideways in a slot as wide as it is tall,
+   *  182u (134u in portrait). */
+  openStackSlot: { default: `calc(${u} * 182)`, [bp.portrait]: `calc(${u} * 134)` },
+  /** 52u of each card shows (46u in portrait): its index and a good part of its face. */
+  openStackStep: { default: `calc(${u} * -78)`, [bp.portrait]: `calc(${u} * -50)` },
+  /** 146u of a card runs onto the felt (56u in portrait, up to the seat's plate). */
+  openStackInset: { default: `calc(${u} * -36)`, [bp.portrait]: `calc(${u} * -78)` },
 })

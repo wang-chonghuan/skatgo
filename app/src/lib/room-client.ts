@@ -14,7 +14,8 @@ import type { RoomPrivate, RoomPublic } from './skat/room-view'
 
 const STORE = 'skatgo-table/'
 
-export type Saved = { seat: string; invite?: string }
+/** `noSignUp`: a guest turned the sign-up line away at this table (SKATGO-117). */
+export type Saved = { seat: string; invite?: string; noSignUp?: true }
 
 export function savedSeat(roomId: string): Saved | null {
   try {
@@ -24,7 +25,7 @@ export function savedSeat(roomId: string): Saved | null {
     return null
   }
 }
-function save(roomId: string, saved: Saved) {
+export function save(roomId: string, saved: Saved) {
   try {
     localStorage.setItem(STORE + roomId, JSON.stringify(saved))
   } catch {
@@ -35,12 +36,19 @@ function save(roomId: string, saved: Saved) {
 const token = () => Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, '0')).join('')
 
 /** Why the service refused, as the page says it. */
-export type TableError = 'room_started' | 'room_full' | 'invite_denied' | 'nickname_refused' | 'room_not_found' | 'room_capacity' | 'slow_down' | 'unreachable'
+export type TableError =
+  | 'room_started' | 'room_full' | 'invite_denied' | 'nickname_refused' | 'room_not_found' | 'room_capacity' | 'slow_down'
+  | 'sign_in_required' | 'seat_taken' | 'not_ready' | 'unreachable'
+/** Refusals that pass by themselves — the service restarting, this seat still open in a connection that
+ *  is going away, the network — so a way back keeps trying (SKATGO-117). */
+export const PASSING: ReadonlySet<TableError> = new Set(['not_ready', 'seat_taken', 'unreachable', 'slow_down'])
 
-async function ticket(): Promise<{ endpoint: string; ticket: string } | TableError> {
+async function ticket(purpose: 'open' | 'join'): Promise<{ endpoint: string; ticket: string } | TableError> {
   try {
-    const r = await fetch('/api/room/ticket', { method: 'POST' })
+    const r = await fetch('/api/room/ticket', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ for: purpose }) })
     if (r.status === 429) return 'slow_down'
+    if (r.status === 401) return 'sign_in_required'
+    if (r.status === 503) return 'not_ready'
     if (!r.ok) return 'unreachable'
     return (await r.json()) as { endpoint: string; ticket: string }
   } catch {
@@ -49,14 +57,20 @@ async function ticket(): Promise<{ endpoint: string; ticket: string } | TableErr
 }
 
 const KNOWN: TableError[] = ['room_started', 'room_full', 'invite_denied', 'nickname_refused', 'room_not_found', 'room_capacity']
+/** The service's own words for a refusal, as the page names it. */
 const reason = (e: unknown): TableError => {
   const text = e instanceof Error ? e.message : String(e)
-  return KNOWN.find((k) => text.includes(k)) ?? (/not found|no rooms/i.test(text) ? 'room_not_found' : 'unreachable')
+  const known = KNOWN.find((k) => text.includes(k))
+  if (known) return known
+  if (text.includes('seat_already_connected')) return 'seat_taken'
+  if (/locked/i.test(text)) return 'room_full'
+  if (/admission_denied|not_ready/.test(text)) return 'not_ready'
+  return /not found|no rooms/i.test(text) ? 'room_not_found' : 'unreachable'
 }
 
 /** Opens a new table with the host in seat 0. */
 export async function openTable(nickname: string): Promise<{ room: Room; invite: string } | TableError> {
-  const t = await ticket()
+  const t = await ticket('open')
   if (typeof t === 'string') return t
   const seat = token()
   const invite = token()
@@ -73,7 +87,7 @@ export async function openTable(nickname: string): Promise<{ room: Room; invite:
 export async function sitDown(roomId: string, join?: { invite: string; nickname: string }): Promise<Room | TableError> {
   const saved = savedSeat(roomId)
   if (!saved && !join) return 'invite_denied'
-  const t = await ticket()
+  const t = await ticket('join')
   if (typeof t === 'string') return t
   const seat = saved?.seat ?? token()
   try {
@@ -103,7 +117,18 @@ export function readState(room: Room): TableState | null {
   return { pub: JSON.parse(state.publicData) as RoomPublic, mine }
 }
 
-/** One move or table action, sent with the revision it was made at; the service answers with a receipt. */
-export function sendAction(room: Room, revision: number, action: Move | { type: 'start' } | { type: 'next' }) {
-  room.send('command', { id: token().slice(0, 32), revision, action })
+/** One move or table action, sent with the revision it was made at; the service answers with a receipt
+ *  carrying the returned id. */
+export function sendAction(room: Room, revision: number, action: Move | { type: 'start' } | { type: 'next' }): string {
+  const id = token().slice(0, 32)
+  room.send('command', { id, revision, action })
+  return id
+}
+
+/** A guest who has just signed up at this table: whose table it was is recorded (SKATGO-117). The
+ *  service decides whether it counts; nothing here waits for the answer. */
+export function sayBrought(roomId: string) {
+  const saved = savedSeat(roomId)
+  if (!saved) return
+  void fetch('/api/room/referral', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ roomId, seatToken: saved.seat }) }).catch(() => {})
 }

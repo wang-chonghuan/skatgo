@@ -3,7 +3,7 @@ import { StateView } from '@colyseus/schema'
 import { z } from 'zod'
 import { actor, collectTrick, type Seat } from '../../app/src/lib/skat/game'
 import { cleanNickname } from '../../app/src/lib/skat/nickname'
-import { ticketValid } from '../../app/src/lib/room-ticket'
+import { TICKET_MAX, ticketClaims, type TicketClaims } from '../../app/src/lib/room-ticket'
 import { computerTurn, decided, type Logged } from './computers'
 import { deckOf, plan, poolDealIndex, type Pool } from './free'
 import {
@@ -17,18 +17,20 @@ import { Store } from './store'
 export const RESTORE = Symbol('trusted-restore')
 /** Who may come in: a trusted integration client with the admission key, or a browser with a ticket
  *  the web server signed with it (SKATGO-61). A new seat needs a nickname; a seat token alone takes a
- *  seat back. */
+ *  seat back. A browser opens a table only with an `open` ticket, which names the host's account
+ *  (SKATGO-117). */
 const admission = z.object({
   admissionKey: z.string().min(32).max(256).optional(),
-  ticket: z.string().max(200).optional(),
+  ticket: z.string().max(TICKET_MAX).optional(),
   seatToken: tokenSchema,
   inviteToken: tokenSchema.optional(),
   nickname: z.string().max(200).optional(),
 }).strict()
 
 export function makeRoom(store: Store, key: string, ready: () => boolean, aiDelay: number, policy: () => Policy | null, pool: () => Pool | null) {
-  const admitted = (o: z.infer<typeof admission>) =>
-    (o.admissionKey !== undefined && secretEquals(o.admissionKey, key)) || ticketValid(key, o.ticket)
+  /** `key` for an integration client, the ticket's claims for a browser, or null. */
+  const admitted = (o: z.infer<typeof admission>): 'key' | TicketClaims | null =>
+    o.admissionKey !== undefined && secretEquals(o.admissionKey, key) ? 'key' : ticketClaims(key, o.ticket)
   /** A deal from free play's pool with this dealer, every seat's bidding with it. */
   const pick = (dealer: Seat): PoolDeal => {
     const p = pool()
@@ -39,13 +41,18 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
   return class SkatRoom extends Room<{ state: InstanceType<typeof MatchState> }> {
     state = new MatchState()
     autoDispose = false
-    maxClients = 3
+    // Three seats, and room for a dropped person's reconnection beside whoever takes the seat meanwhile:
+    // at three a full table locks itself and turns its own players away when they come back (SKATGO-117).
+    // Who may sit is onJoin's to decide.
+    maxClients = 6
     maxMessagesPerSecond = 20
     private snapshot!: Snapshot
     private serial: Promise<unknown> = Promise.resolve()
     private timer?: ReturnType<typeof setTimeout>
     private disposed = false
     private pendingDrops = new Map<string, { seat: number; at: number }>()
+    /** Failed turns of the table in a row, for the retry's back-off. */
+    private failures = 0
 
     async onCreate(options: unknown) {
       if ((options as { restore?: unknown })?.restore === RESTORE) {
@@ -64,12 +71,13 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         this.snapshot = restored.snapshot
       } else {
         const o = admission.parse(options)
-        if (!ready() || !admitted(o)) throw new ServerError(403, 'admission_denied')
+        const by = admitted(o)
+        if (!ready() || !by || (by !== 'key' && by.purpose !== 'open')) throw new ServerError(403, 'admission_denied')
         const nickname = cleanNickname(o.nickname ?? '')
         if (!o.inviteToken) throw new ServerError(400, 'creation_options_required')
         if (!nickname) throw new ServerError(400, 'nickname_refused')
         this.snapshot = {
-          schema: 2, id: this.roomId, revision: 0, humanSeats: 0,
+          schema: 2, id: this.roomId, revision: 0, played: 0, humanSeats: 0, host: by === 'key' ? null : by.user,
           inviteHash: hash(o.inviteToken), game: null, plans: null, deals: 0, scored: 0, scores: [0, 0, 0],
           expiresAt: Date.now() + TTL_MS, nextActionAt: Date.now(),
           seats: Array.from({ length: 3 }, (_, i) => ({
@@ -193,8 +201,11 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           if (prior.rows[0].fingerprint !== fingerprint) throw new Rejected('command_id_reused')
           return { changed: false, value: prior.rows[0].receipt }
         }
-        if (cmd.revision !== s.revision) throw new Rejected('stale_revision')
+        // Stale only if the game changed since the move was made: someone else dropping or coming back
+        // changes the table, not the game (SKATGO-117).
+        if (cmd.revision < (s.played ?? s.revision) || cmd.revision > s.revision) throw new Rejected('stale_revision')
         applyAction(s, seat, cmd.action, pick)
+        s.played = s.revision + 1
         s.nextActionAt = Date.now() + aiDelay
         s.expiresAt = Date.now() + TTL_MS
         const receipt = { id: cmd.id, ok: true, revision: s.revision + 1 }
@@ -228,15 +239,23 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
       this.timer = setTimeout(() => {
         this.enqueue(() => this.advance()).catch(e => {
           if (e instanceof Rejected && e.message === 'room_expired') void this.expire()
-          else this.retry()
+          else this.retry(e)
         })
       }, Math.max(10, Math.min(...deadlines) - Date.now()))
     }
-    private retry() {
+    /** The table's turn again after a failure, later each time it fails in a row (up to 30 s), with the
+     *  failure's own reason in the log; not ready yet is no failure (SKATGO-117). */
+    private retry(e?: unknown) {
       if (this.disposed) return
-      console.error('room_storage_unavailable')
+      let wait = 1000
+      if (e !== undefined) {
+        this.failures++
+        wait = Math.min(1000 * 2 ** (this.failures - 1), 30_000)
+        const reason = e instanceof Rejected ? e.message : e instanceof Error ? e.name : 'unknown'
+        console.error(JSON.stringify({ event: 'room_turn_failed', reason, failures: this.failures }))
+      }
       clearTimeout(this.timer)
-      this.timer = setTimeout(() => this.enqueue(() => this.advance()).catch(() => this.retry()), 1000)
+      this.timer = setTimeout(() => this.enqueue(() => this.advance()).catch(err => this.retry(err)), wait)
     }
     private async advance() {
       if (!ready()) { this.retry(); return }
@@ -267,10 +286,12 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           scoreEnded(s)
           s.nextActionAt = now + aiDelay
           s.expiresAt = now + TTL_MS
+          s.played = s.revision + 1
           changed = true
         }
         return { changed, value: null }
       })
+      this.failures = 0
       this.publish(result.snapshot)
     }
     /** Whether the table waits for the computers: a trick to collect, a deal already decided, or a
@@ -283,11 +304,19 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
       const turn = actor(g)
       return turn !== null && s.seats[turn].autopilot
     }
+    /** A table past its lifetime goes, and so do its people; if the database will not let it go yet, it
+     *  asks again later rather than failing the process (SKATGO-117). */
     private async expire() {
-      this.disposed = true
       clearTimeout(this.timer)
-      await store.remove(this.roomId)
-      await this.disconnect()
+      try {
+        await store.remove(this.roomId)
+      } catch {
+        console.error(JSON.stringify({ event: 'room_expire_failed' }))
+        this.timer = setTimeout(() => void this.expire(), 30_000)
+        return
+      }
+      this.disposed = true
+      await this.disconnect().catch(() => {})
     }
     onDispose() {
       this.disposed = true

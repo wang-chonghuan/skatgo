@@ -64,6 +64,12 @@ export type Snapshot = {
   schema: 2
   id: string
   revision: number
+  /** The revision written by the last change to the game itself (SKATGO-117): a move made at or after
+   *  it is not stale. Absent on tables stored before, where every change counts. */
+  played?: number
+  /** The account that opened the table (`user:<id>`, SKATGO-117); null when an integration client
+   *  opened it, absent on tables stored before. */
+  host?: string | null
   /** People at the table, fixed at the start; 0 while it waits in the lobby. */
   humanSeats: number
   inviteHash: string

@@ -67,6 +67,13 @@ mid-round keeps the game and the round (SKATGO-79, SKATGO-88), and so does a rel
 day (SKATGO-96: 「刷新一下页面，当deal丢了，连game也丢了」). The player may give up a round for a new one,
 never one deal alone, so a round's total stays honest; the tournament cannot be given up.
 
+Private tables at `/with-friends` (SKATGO-61): a host opens a table and sends its link; up to two
+friends sit down with a name, and the AI takes an empty seat. Opening a table takes an account,
+joining one does not (SKATGO-117, the human: 「我现在想把 private table的改为必须注册用户才能玩」, then,
+after comparing other products, 「可以吧」 to the host signing in and the invited playing as guests). A
+guest who signs up while sitting at someone's table is recorded once as brought by its host, so it
+shows who brings players in; nothing else is recorded about it, and it needs no consent banner.
+
 A rules reference: the whole rules at `/rules`, with anchors for what people look up by name (Grand,
 Null ouvert, Ramsch); the bidding table; and two printables, a score sheet and a short version of the
 rules, each also as a PDF (SKATGO-29, SKATGO-50, SKATGO-53). Every number in them is the rules

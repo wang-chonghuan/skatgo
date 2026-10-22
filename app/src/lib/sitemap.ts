@@ -8,7 +8,7 @@ import { isIndexable } from './indexability'
 // new language cannot leave it stale; sitemap.test.ts holds the page list to the route tree.
 
 /** The route paths of the pages that are the same in every language. */
-export const PAGES = ['/', '/daily', '/daily/play', '/course', '/course/quick-start', '/rules', '/rules/bidding-table', '/rules/score-sheet', '/rules/printable', '/skat-tricks', '/skat-tricks/12-tricks', '/play', '/with-friends', '/privacy', '/terms']
+export const PAGES = ['/', '/daily', '/daily/play', '/course', '/course/quick-start', '/rules', '/rules/bidding-table', '/rules/score-sheet', '/rules/printable', '/skat-tricks', '/skat-tricks/12-tricks', '/forum', '/play', '/with-friends', '/privacy', '/terms']
 
 /** Every page as its path in each language. */
 export function sitemapPages(): Record<Locale, string>[] {
@@ -18,7 +18,13 @@ export function sitemapPages(): Record<Locale, string>[] {
 }
 
 export function buildSitemap(): string {
-  const entries = sitemapPages().flatMap((paths) =>
+  return sitemapXml(sitemapPages())
+}
+
+/** A sitemap of pages that exist in every language, each with its alternates and German as x-default — the
+ *  site's pages here, the forum's posts in /sitemap-forum.xml (SKATGO-118). */
+export function sitemapXml(pages: Record<Locale, string>[]): string {
+  const entries = pages.flatMap((paths) =>
     locales.map((locale) =>
       [
         '  <url>',

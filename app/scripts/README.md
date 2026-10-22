@@ -55,6 +55,13 @@ and soft 404s must fail through the same crawler. New source-backed static pages
 coverage automatically; unknown dynamic page families fail discovery until their authoritative
 source is supported. No fixed page count or copied page inventory is used.
 
+Forum posts (SKATGO-118) are the one page family that comes from a database (`DATA_PAGES` in
+`src/lib/indexability.ts`): they are listed in `/sitemap-forum.xml` at their address in each language, with
+the same alternates as every page, and every listed post is checked like any other page; an unknown post must
+be a 404.
+Where the forum does not answer (a preview without the multiplayer service), that sitemap answers 503
+and the posts are reported as not checked; on the published site a 503 fails.
+
 `HEADED=1` runs Chromium visibly. Engineering's mechanical defence includes both commands.
 Passing protects rendered SEO contracts; it does not promise indexing, selected canonical, rankings
 or traffic, and cannot verify account settings or ownership DNS records.

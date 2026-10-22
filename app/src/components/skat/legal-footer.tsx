@@ -9,7 +9,8 @@ import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 
 // The legal links under every header page (SKATGO-46). Its own file, apart from the legal pages' text, so
-// every page's code does not carry the privacy policy and the terms (SKATGO-107).
+// every page's code does not carry the privacy policy and the terms (SKATGO-107). It also links the Skat-Tricks and
+// the forum (SKATGO-118).
 
 export function LegalFooter() {
   return (
@@ -19,6 +20,7 @@ export function LegalFooter() {
         <Link to="/terms" {...stylex.props(typography.link, styles.link)}>{m.terms_title()}</Link>
         <Link to="/terms" hash="legal-operator" {...stylex.props(typography.link, styles.link)}>{m.legal_operator()}</Link>
         <Link to="/skat-tricks" {...stylex.props(typography.link, styles.link)}>{m.tricks_title()}</Link>
+        <Link to="/forum" {...stylex.props(typography.link, styles.link)}>{m.forum_title()}</Link>
       </nav>
     </footer>
   )

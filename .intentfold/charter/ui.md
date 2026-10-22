@@ -74,7 +74,7 @@ fixed light palette, not a light/dark pair.
 | **Colour tile** | a section on the front page: ♣ the course (`tileOrange`), ♠ free play (`tileGreen`), the tricks (`tileNavy`), a private table (`tileRed`) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
 | **Felt** | where cards lie: the table, a drill's hand | `fill.felt` (`feltInner` → `feltOuter`, with a fine grain) | `color.onColor`; highlights `color.gold` / `color.amber` |
 | **Board and plates** | the table's info board, the seat plates, dark pills | `color.board` with `color.boardLine`; `color.plate` | `color.onColor`, quieter `color.onColorSoft`; the player's own numbers — their score, their side's card points — in `color.amber` (SKATGO-79) |
-| **Footer** | the legal links under every header page (SKATGO-46) | `color.surface` with a `hairline` rule | links in `color.info` |
+| **Footer** | the legal links under every header page (SKATGO-46), and the Skat-Tricks and the forum (SKATGO-118) | `color.surface` with a `hairline` rule | links in `color.info` |
 
 **Colour roles** (`color`)
 
@@ -185,6 +185,8 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `ProgressBar` | `value`, `label` | progress through a lesson |
 | `Stars` | `n` of 3 | a lesson's result |
 | `Rich` | — | every piece of course text: renders `**bold**` and each suit glyph in its suit's colour |
+| `Toggle` / `toggleLook(pressed)` | pressed or not; a button, or the same pill on a router `<Link>` | a choice that is on or off: the daily tournament's two lengths, a forum post's section, the forum's section filter (SKATGO-118) |
+| `TextField` / `TextArea` | one line (Enter submits) / several, starting a control's height and growing with the text | a name, a forum post's title and text, a comment, a reason |
 
 **Components — the course's and the table's widgets**
 
@@ -198,6 +200,8 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `ScoreSheet` | `daily-comparison.tsx` | a score sheet (SKATGO-79): the three seats' Seeger-Fabian scores of one deal or of a tournament, the player's line, tagged "Du" in `navy`, over the AI's, tagged "AI" in `info`; no other number beside them (SKATGO-81); under a deal's line, what that deal was. The AI's line is left out for days dealt before it played them. Free play and lesson 11 show it after every game, the AI's line once the review has worked it out, with a note while it does or when it cannot (SKATGO-86) |
 | `VsAiTable` | `daily-comparison.tsx` | the daily tournament's comparison with the computer (SKATGO-48, SKATGO-79): one row per finished deal — the deal's number, the player's and the AI's Seeger-Fabian score each with its role under the heading "Punkte", signed, never `good` / `bad` (SKATGO-81) — that opens to the deal's `ScoreSheet` and play record; under the rows, the tournament's `ScoreSheet`. Rows collapse instead of scrolling sideways; the newest opens after a deal and on `/daily` mid-day. On `/daily` while the day runs (`DayDeals`, "Die Spiele von heute", also rendered on the server; SKATGO-63) every deal of the chosen tournament has a row: the ones not finished follow by number, "läuft" for the one being played and "offen" for the rest, with nothing of their cards; the total appears once a deal is finished. Free play's round result, "Deine Runde", is the same table over its six deals (SKATGO-88) |
 | `DealAnalysis` / `TrickReplay` | `daily-comparison.tsx` | a finished deal's play record, "Spielverlauf" (SKATGO-79), after a daily deal, on a `/daily` row and after a free game; open, never folded, with no button. On top, in one line, the player's card that fell furthest below the AI's choice and the AI's card. Then a row per trick: its three cards in the order played, each under its player's name, the player's own bold, and who took the trick with its card points; under a row the player taps, and only that one, the player's hand before that trick, folded again by a tap anywhere else, with no icon (SKATGO-100). Wherever the AI would have played another card, that card stands under the player's, in the same column, with an `info` "AI" tag after it; the furthest trick's rows are `badSoft`. Under the tricks, a line for those left unplayed when the deal was decided early, and the skat |
+| `ForumBody` | `forum-body.tsx` | a forum post's or comment's text (SKATGO-118): paragraphs, `##` headings, lists, `**bold**` and suits through `Rich`, links in `info` (a player's `ugc nofollow`), and a line `[♠A ♠10 ♥K]` as a `CardRowView`; built as elements, never as HTML |
+| `AnnouncementLine` | `forum-announcement.tsx` | the forum's newest announcement of the last two weeks as one line — a `good` "Neu" `Pill` and its title as an underlined `info` link — on the front page and `/daily` (SKATGO-118); nothing when there is none |
 | `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards and the skat are as big as the hand's; the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68). An open hand at the side — an Ouvert declarer's, or the cards laid open when a deal is decided early — is spread at `stage.stackStepOpen`, wider than a closed one, so every card reads (SKATGO-79). As an exercise's table (`exercise`, SKATGO-110/111) every hand is open, the side hands at the learner's card size, and the exercise supplies the board at the top and the dialog at the end; there is no side panel, hint tab, assistant or settlement |
 
 Recurring patterns — reuse them rather than inventing a neighbour:
@@ -214,9 +218,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   endgame's page among them (SKATGO-111) — wears the
   public site's header (SKATGO-43; lessons too since SKATGO-47). The header has:
   - the SkatGo mark (`dims.landingMark`) and name (`landingBrand`), "SkatGo" without ".com" (SKATGO-105);
-  - the five links, in this order (SKATGO-69, SKATGO-82): the daily tournament, learning (the course),
-    free play, a private table, and the tricks ("Tricks", which took the place of the greyed-out
-    "Aufgaben");
+  - the six links, in this order (SKATGO-69, SKATGO-82, SKATGO-118): the daily tournament, learning (the
+    course), free play, a private table, the tricks ("Tricks", which took the place of the greyed-out
+    "Aufgaben"), and the forum ("Forum" in both languages; it fits the 1100px header in German with 41px to
+    spare on either side);
   - on the right, the language switch — both flags side by side, bare, one tap switching; the language in
     use in full colour ringed in `color.go`, the other in its own colours faded (`opacity.flagOff`, never
     grey; SKATGO-104) — the settings gear (the
@@ -228,7 +233,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   header is the same on every page; it shows no current-page highlight (its links carry
   `aria-current`).
 - **The front page** (`entry-page.tsx`), on white:
-  - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
+  - the hero: over its headline, the forum's newest announcement as one line while it is two weeks old or
+    less (`AnnouncementLine`, SKATGO-118); the daily tournament's headline (`landingHero`) and lead
+    (`landingHeroLead`) in navy;
     its one green landing action (play today's deals) and beside it a white `quiet` one, "Skat-Aufgaben
     lösen" / "Solve Skat puzzles", to the open-card endgames (SKATGO-109); a quiet ✓ line of what a first visitor wants to
     know; and the human's illustration (SKATGO-33). Never on felt (Redline 4);
@@ -240,8 +247,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the short rules, the daily tournament, the Skat-Tricks' page and their article, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
-  tournament's page puts a switch of two pills under its lead, "6 Spiele | 12 Spiele" (SKATGO-77,
-  `Toggle` in `daily-page.tsx`), 6 chosen first; under it everything is the chosen tournament's: its one
+  tournament's page puts the forum's announcement line under its lead when there is one (SKATGO-118), then a
+  switch of two pills, "6 Spiele | 12 Spiele" (SKATGO-77, the kit's `Toggle`), 6 chosen first; under it everything is the chosen tournament's: its one
   `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",
   "Gestern", or the weekday and date — and steps through the last seven days with two round arrow
   buttons at the right, earlier on the left, the one at the end of the range spent (SKATGO-80). Once the
@@ -284,6 +291,23 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
   lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,
   its section of the rules, and all lessons.
+- **The forum** (`forum-page.tsx`, SKATGO-118) is two sub-pages on the grey page in the reading column. The
+  list: its H1, with no lead under it, and beside it the one `go` button — "Anmelden" for a guest, "Neuer Beitrag"
+  for a player, which opens the composer in a white card (the human: 「sign in放在 Forum 的旁边，放个按钮就行」) — the sections the author may use as
+  `Toggle`s, the title (`TextField`), the text (`TextArea`) with a line on its marks, "Veröffentlichen" (`go`) and
+  "Abbrechen" (`quiet`); for the official, while there are any, the open reports in a `tip` panel, each with its reasons, a link to
+  it, a reason field, "Ausblenden" and "Ignorieren" (`quiet`); the section filter as `toggleLook` links, "Alle"
+  first; the small `info` link to the Skat-Tricks article (all sections and articles); then the posts as white
+  option cards — the title (`optionDesc`, navy, a link) over one line of small facts (`meta`): the section in
+  slate, the author in navy or "SkatGo" in `go` (`smallBold`), the date and the count of comments. A post: "← Alle Beiträge" and its
+  section as links, then the post in a white card of its own, as each comment is (the human: 「每一个帖子或回复，都放在
+  卡片里」): the H1, the same line of facts, a hidden post's reason in a `bad` panel for its author and
+  the official, the text (`ForumBody`), the viewer's `quiet` small actions — "Melden", "Löschen" for their own
+  (asked once more, "Ja, löschen" `stop`), and for the official "Ausblenden" / "Wieder anzeigen" and a player's
+  post that is not hidden "Für Suchmaschinen freigeben" — then "Kommentare": each a white card with its line of facts, text and
+  actions, in the order written, with no way to reply to one, and the comment box under them (a `TextArea`, the
+  "@Name" hint, "Kommentieren" `go`), or for a guest the invitation with the `go` sign-in. Dates are the day in
+  UTC, the same on the server and in the browser.
 - **The tables** (`/play`, `/daily/play`, a private table, and an open-card endgame's page since SKATGO-111):
   the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a

@@ -92,7 +92,7 @@ async function sourceData() {
     },
   })
   try {
-    const [{ GUIDES, lessonPath }, { PRIVATE_PAGES }, { paraglideOptions }, { EXERCISES }] = await Promise.all([
+    const [{ GUIDES, lessonPath }, { PRIVATE_PAGES, DATA_PAGES }, { paraglideOptions }, { EXERCISES }] = await Promise.all([
       import('../src/lib/skat/lessons/guide.ts'),
       import('../src/lib/indexability.ts'),
       import('../paraglide.options.ts'),
@@ -101,18 +101,19 @@ async function sourceData() {
     // A private route whose addresses come from the source (a Skat-Tricks exercise, SKATGO-103) is checked at
     // a real one: an unknown exercise is a missing page.
     const samples = { '/skat-tricks/$exercise': `/skat-tricks/${EXERCISES[0].id}` }
-    return { guides: GUIDES, lessonPath, privatePaths: [...PRIVATE_PAGES], patterns: paraglideOptions.urlPatterns, samples }
+    return { guides: GUIDES, lessonPath, privatePaths: [...PRIVATE_PAGES], dataPaths: [...DATA_PAGES], patterns: paraglideOptions.urlPatterns, samples }
   } finally {
     hooks.deregister()
   }
 }
 
-export function deriveInventory({ routes, pages, guides, courseIds, lessonPath, privatePaths, patterns, locales, tags, site, samples = {} }) {
+export function deriveInventory({ routes, pages, guides, courseIds, lessonPath, privatePaths, dataPaths = [], patterns, locales, tags, site, samples = {} }) {
   assert.ok(locales.length > 0, 'Derived no configured locales')
   assert.ok(locales.includes('de') && locales.includes('en'), 'German and English must remain independent')
   const staticRoutes = routes.filter((path) => !path.includes('$'))
   assert.deepEqual([...pages].sort(), [...staticRoutes].sort(), 'Sitemap page registry / file route coverage')
   for (const path of privatePaths) assert.ok(routes.includes(path), `Private page has no route: ${path}`)
+  for (const path of dataPaths) assert.ok(routes.includes(path), `Data page has no route: ${path}`)
   const ids = Object.keys(guides[locales[0]] ?? {})
   assert.ok(ids.length > 0, 'Derived no lesson guides')
   for (const locale of locales) {
@@ -123,7 +124,9 @@ export function deriveInventory({ routes, pages, guides, courseIds, lessonPath, 
   const lessons = ids.map((id) => Object.fromEntries(locales.map((locale) => [locale, lessonPath(id, locale)])))
   // A private route with a parameter (a private table, SKATGO-61) has no source-backed targets: it is
   // checked as personal, at one sample address.
-  const dynamic = routes.filter((path) => path.includes('$') && !privatePaths.includes(path))
+  // A route whose addresses come from a database (a forum post, SKATGO-118) has its own sitemap; the checker
+  // derives its targets from there.
+  const dynamic = routes.filter((path) => path.includes('$') && !privatePaths.includes(path) && !dataPaths.includes(path))
   assert.ok(dynamic.length > 0, 'Derived no lesson routes')
   const matchRoute = (path, route) => new URLPattern(route.replace(/\$([A-Za-z0-9_]+)/g, ':$1'), site).test(new URL(path, site))
   for (const route of dynamic) {
@@ -153,8 +156,18 @@ export function deriveInventory({ routes, pages, guides, courseIds, lessonPath, 
   const entries = [...staticRoutes.filter((path) => !privatePaths.includes(path)).map(same), ...lessons].flatMap(entriesFor)
   assert.ok(entries.length > 0, 'Derived no indexable pages')
   assert.equal(new Set(entries.map((entry) => entry.loc)).size, entries.length, 'Independent page/language URLs must not collapse')
+  // Each data route's address pattern per language tag, for telling its sitemap's addresses apart.
+  const dataRoutes = dataPaths.map((route) => {
+    const pattern = patterns.find((item) => item.pattern === route.replace(/\$([A-Za-z0-9_]+)/g, ':$1'))
+    assert.ok(pattern, `${route}: no localized URL pattern`)
+    return Object.fromEntries(locales.map((locale) => {
+      const template = pattern.localized.find(([language]) => language === locale)?.[1]
+      assert.ok(template, `${route}: missing URL pattern for ${locale}`)
+      return [tags[locale], template]
+    }))
+  })
   return {
-    site, locales, tags, entries,
+    site, locales, tags, entries, dataRoutes,
     privateEntries: privatePaths.map((path) => same(samples[path] ?? path.replace(/\$[A-Za-z0-9_]+/g, 'sample'))).flatMap(entriesFor),
     lessonEntries: lessons.flatMap(entriesFor),
   }

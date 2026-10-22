@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { clientPage } from '~/components/skat/client-page'
 import { faq } from '~/lib/faq'
+import { readAnnouncement } from '~/lib/forum-api'
 import { DAILY_LENGTHS } from '~/lib/daily'
 import { organization, pageHead, samePath } from '~/lib/head'
 import { SITE_URL, localizedUrl } from '~/lib/site'
@@ -9,6 +10,8 @@ import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 
 export const Route = createFileRoute('/')({
+  // The forum's newest announcement, as a line on the page (SKATGO-118).
+  loader: () => readAnnouncement(),
   head: () =>
     pageHead({
       title: m.home_meta_title(),

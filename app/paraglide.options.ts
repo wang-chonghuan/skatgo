@@ -78,6 +78,21 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/skat-tricks/:exercise'],
       ],
     },
+    // The forum (SKATGO-118): one per language, and each post in its own language only.
+    {
+      pattern: '/forum',
+      localized: [
+        ['en', '/en/forum'],
+        ['de', '/de/forum'],
+      ],
+    },
+    {
+      pattern: '/forum/:post',
+      localized: [
+        ['en', '/en/forum/:post'],
+        ['de', '/de/forum/:post'],
+      ],
+    },
     // The bidding table (SKATGO-50), a page of the rules.
     {
       pattern: '/rules/bidding-table',

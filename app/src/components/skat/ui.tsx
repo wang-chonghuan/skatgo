@@ -103,6 +103,41 @@ export function TextField({ id, testId, value, onChange, onEnter, invalid, autoC
   )
 }
 
+/** Text over several lines — a forum post or comment (SKATGO-118). It starts a control's height and grows with
+ *  what is written (where the browser can; elsewhere it can be dragged taller). */
+export function TextArea({ id, testId, value, onChange, invalid }: {
+  id: string
+  testId?: string
+  value: string
+  onChange: (value: string) => void
+  invalid?: boolean
+}) {
+  return (
+    <textarea
+      id={id}
+      data-testid={testId}
+      value={value}
+      aria-invalid={invalid}
+      onChange={(e) => onChange(e.target.value)}
+      {...stylex.props(typography.appText, typography.control, styles.input, styles.area)}
+    />
+  )
+}
+
+/** A choice that is on or off, as a pill: the day's tournaments, the board's day, a forum post's section. */
+export function Toggle({ pressed, onClick, testId, children }: { pressed: boolean; onClick: () => void; testId: string; children: ReactNode }) {
+  return (
+    <button type="button" data-testid={testId} aria-pressed={pressed} onClick={onClick} {...stylex.props(typography.toggle, styles.switch, pressed && styles.switchOn)}>
+      {children}
+    </button>
+  )
+}
+
+/** The same pill for a router `<Link>` — a view of a page, such as the forum filtered by section. */
+export function toggleLook(pressed: boolean) {
+  return stylex.props(typography.toggle, styles.switch, styles.switchLink, pressed && styles.switchOn)
+}
+
 /** A white card on the grey page (the design's option card), or a judged / tip panel. */
 export function Panel({ children, tone = 'card', pad = true }: { children: ReactNode; tone?: 'card' | 'tip' | 'good' | 'bad'; pad?: boolean }) {
   return <div {...stylex.props(styles.panel, panelTones[tone], pad && styles.panelPad)}>{children}</div>
@@ -179,6 +214,24 @@ const styles = stylex.create({
     outlineStyle: 'none',
     boxShadow: { default: 'none', ':focus': elev.focus },
   },
+  area: { width: '100%', resize: 'vertical', fieldSizing: 'content' },
+  switch: {
+    minHeight: dims.control,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.hairline,
+    backgroundColor: color.surface,
+    color: color.navy,
+    borderRadius: radii.pill,
+    paddingInline: space.x16,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  switchLink: { display: 'inline-flex', alignItems: 'center', boxSizing: 'border-box', textDecoration: 'none' },
+  switchOn: { backgroundColor: color.goodSoft, borderColor: color.go },
   strong: { color: color.navy },
   btn: {
     display: 'inline-flex',

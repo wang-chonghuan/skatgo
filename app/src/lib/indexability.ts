@@ -14,3 +14,7 @@ const PUBLIC_PAGES = ['/skat-tricks/12-tricks']
 export function isIndexable(path: string): boolean {
   return PUBLIC_PAGES.includes(path) || !PRIVATE_PAGES.some((page) => matches(path, page))
 }
+
+/** Routes whose addresses come from the forum's database (SKATGO-118): each post says whether it may be indexed
+ *  (`postIndexable` in lib/forum.ts), and the indexable ones are listed in /sitemap-forum.xml, not /sitemap.xml. */
+export const DATA_PAGES = ['/forum/$post'] as const

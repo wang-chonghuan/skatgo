@@ -61,6 +61,9 @@ test('source-backed new pages and lessons join coverage; omissions and empty sou
   assert.throws(() => deriveInventory({ ...input, guides: { de: input.guides.de, en: {} } }), /lesson language coverage/)
   assert.throws(() => deriveInventory({ ...input, courseIds: { de: ['one', 'missing'], en: ['one', 'missing'] } }), /course \/ lesson guide coverage/)
   assert.throws(() => deriveInventory({ ...input, routes: [...input.routes, '/new/$id'] }), /no source-backed targets/)
+  // A database-backed route (a forum post, SKATGO-118) needs a route and its language patterns.
+  assert.throws(() => deriveInventory({ ...input, dataPaths: ['/missing/$id'] }), /Data page has no route/)
+  assert.throws(() => deriveInventory({ ...input, routes: [...input.routes, '/new/$id'], dataPaths: ['/new/$id'] }), /no localized URL pattern/)
 })
 
 test('crawler groups, wildcards and longest allow rules are interpreted', () => {
@@ -192,6 +195,21 @@ test('owned preview and same crawler reject actual broken responses', { timeout:
             return {}
           }, /Preserve query/],
           ['English root kept', async ({ url, requestHeaders }) => url.pathname === '/' && /^en/.test(requestHeaders['accept-language'] ?? '') && !requestHeaders.cookie ? { status: 200 } : undefined, /Root for en/],
+          // The forum's sitemap (SKATGO-118), answered here whether or not a forum runs behind this preview.
+          ['forum post at a wrong address', async ({ url }) => url.pathname === '/sitemap-forum.xml' ? { status: 200, body: [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url>',
+            '<loc>https://skatgo.com/de/forum/1-x</loc>',
+            '<xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/forum/1-x"/>',
+            '<xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/de/forum/1-x"/>',
+            '<xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/de/forum/1-x"/>',
+            '</url></urlset>',
+          ].join('') } : undefined, /forum post address in en/],
+          ['forum soft 404', async ({ url, status }) => {
+            // A forum must answer for its missing posts to be asked for: an empty one stands in when none runs here.
+            if (url.pathname === '/sitemap-forum.xml' && status === 503) return { status: 200, body: '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>' }
+            if (url.pathname.endsWith('/forum/999999999999-missing')) return { status: 200 }
+          }, /Unknown forum post/],
           ['soft 404', async ({ url }) => url.pathname.includes('this-page-does-not-exist') ? { status: 200 } : undefined, /Unknown URL/],
         ]
         try {

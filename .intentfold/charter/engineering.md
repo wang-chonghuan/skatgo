@@ -17,14 +17,15 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   when present, identifies the learner for rate limiting but never gates the answer (SKATGO-13/14).
   Its other server endpoints are answered there too and pass requests on to `multiplayer/`:
   `/api/daily/*` (SKATGO-35), naming the player — the Clerk account, or else a device id from an
-  httpOnly cookie, sent on only as its hash — and `/api/free/*`, free play (SKATGO-40).
+  httpOnly cookie, sent on only as its hash — `/api/free/*`, free play (SKATGO-40), and `/api/forum/*`, the
+  forum (SKATGO-118), which also answers `/sitemap-forum.xml`.
 - **Paraglide** (`@inlang/paraglide-js`) owns the two languages: messages in `app/messages/{en,de}.json`,
   translated addresses in `app/paraglide.options.ts`, compiled into `app/src/paraglide/` (generated).
 - **PostHog** (`posthog-js`, SKATGO-25) counts page views and product events from the browser
   (`app/src/lib/analytics.ts`), only when `POSTHOG_PROJECT_KEY` is set.
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
   here. Accounts are optional: neither the course nor the assistant requires one; opening a private
-  table does (SKATGO-117).
+  table does (SKATGO-117), and so does writing in the forum (SKATGO-118).
 - **StyleX, compiled through Astryx's build integration** (`astryxStylex()`), with Astryx's reset and
   theme CSS underneath. `ui.md` owns styling.
 - **Nitro** produces the deployable server (`app/.output/server/index.mjs`).
@@ -48,6 +49,13 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   entry's Seeger-Fabian total (`daily_entries.total`, SKATGO-81), ties to the earlier finish, with the
   AI's total from the player's seat beside it, from the deals' stored `benchmark` (SKATGO-80). The web
   service is its only client.
+- **The forum runs in `multiplayer/`** (SKATGO-118), as plain HTTP routes under `/forum` behind the admission
+  key, its posts, comments and reports in multiplayer's PostgreSQL (`forum_posts`, `forum_comments`,
+  `forum_reports`). The web's `/api/forum/*` names the viewer — the Clerk account or nobody — and whether the
+  account is the official's: `FORUM_OFFICIALS`, a comma list of Clerk account ids in the web's environment. The
+  rules both sides share — sections, limits, what may be indexed, the text's marks, the address — are
+  `app/src/lib/forum.ts`. Only names leave the service: an author stands under their leaderboard name
+  (`nameOf` in `src/daily.ts`), and whether something is the viewer's travels as `mine`. Nothing notifies anyone.
 - **The tournament's computers play their cards with SkatZero** (SKATGO-38): nine pinned ONNX models
   from github.com/Jimboom7/SkatZero `1fe5cab` (MIT), committed under `multiplayer/skatzero/` with a
   hash manifest and run by `onnxruntime-node` (exact version, human-approved 2026-10-02) — in
@@ -84,11 +92,11 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/skat/` | the rules engine (ISkO): cards, trick-taking, game value, settlement, the whole-game state machine, and the computer players (`ai.ts`, which also writes every hint) |
 | `app/src/lib/skat/lessons/` | the course: `content.ts` (lessons), `drills.ts` (randomised exercises whose answers the engine computes), `types.ts` |
 | `app/src/lib/skat/progress.ts` | learner progress in `localStorage` |
-| `app/src/components/skat/` | every page and widget, and the product's own small UI kit (`ui.tsx`). One file per page: `entry-page.tsx` (the front page), `course-home.tsx`, `lesson-page.tsx` (around `lesson-player.tsx`), `rules-page.tsx`, `bidding-table-page.tsx`, `score-sheet-page.tsx`, `rules-summary-page.tsx`, `daily-page.tsx`, `free-play.tsx`, `legal-page.tsx` (privacy and terms; the footer is `legal-footer.tsx`, so every page does not carry their text), `not-found.tsx`; routes reach them only through `client-page.tsx`, which loads each page as its own chunk (SKATGO-107) |
+| `app/src/components/skat/` | every page and widget, and the product's own small UI kit (`ui.tsx`). One file per page: `entry-page.tsx` (the front page), `course-home.tsx`, `lesson-page.tsx` (around `lesson-player.tsx`), `rules-page.tsx`, `bidding-table-page.tsx`, `score-sheet-page.tsx`, `rules-summary-page.tsx`, `daily-page.tsx`, `free-play.tsx`, `legal-page.tsx` (privacy and terms; the footer is `legal-footer.tsx`, so every page does not carry their text), `forum-page.tsx` (the forum's list and a post, SKATGO-118), `not-found.tsx`; routes reach them only through `client-page.tsx`, which loads each page as its own chunk (SKATGO-107) |
 | `app/src/lib/ask/` | the assistant's server side: the page context it is given, the limits, the model call, and the `/api/ask` handler (with an optional session lookup for rate-limit identity) |
 | `app/src/start.ts` | Clerk's request middleware, which hands each page its session state |
 | `app/src/skat-layout.tsx` | the frame around every page: the front page's header over every page but the tables (lessons included since SKATGO-47; the rail, tab bar and coloured band are gone), or the full-screen table; the legal footer and the floating assistant. The header's pieces — links, language menu, card-colour settings, sign-in — are `components/skat/frame.tsx` |
-| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/quick-start` ("Skat in 5 Minuten", SKATGO-89; its Paraglide pattern stands ahead of the lessons' so its address is never read as a slug), `/course/$slug` (a lesson), `/rules`, `/rules/bidding-table` (SKATGO-50), `/rules/score-sheet` and `/rules/printable` (the printables, SKATGO-53), `/daily` and `/daily/play` (`?deals=12` for the 12-deal tournament, SKATGO-77), `/play`, `/with-friends` and `/table/$id` (private tables, SKATGO-61), `/skat-tricks` (the exercises, SKATGO-103), `/skat-tricks/12-tricks` (the first article, SKATGO-82) and `/skat-tricks/$exercise` (one exercise, noindex; an open-card endgame's wears the table frame, `frame.tsx` `frameOf`, SKATGO-111), `/privacy`, `/terms`; each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
+| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/quick-start` ("Skat in 5 Minuten", SKATGO-89; its Paraglide pattern stands ahead of the lessons' so its address is never read as a slug), `/course/$slug` (a lesson), `/rules`, `/rules/bidding-table` (SKATGO-50), `/rules/score-sheet` and `/rules/printable` (the printables, SKATGO-53), `/daily` and `/daily/play` (`?deals=12` for the 12-deal tournament, SKATGO-77), `/play`, `/with-friends` and `/table/$id` (private tables, SKATGO-61), `/skat-tricks` (the exercises, SKATGO-103), `/skat-tricks/12-tricks` (the first article, SKATGO-82) and `/skat-tricks/$exercise` (one exercise, noindex; an open-card endgame's wears the table frame, `frame.tsx` `frameOf`, SKATGO-111), `/forum` and `/forum/$post` (SKATGO-118; a post's address is its number and its title, in each language of the site), `/privacy`, `/terms`; each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`, and `logo-mark.png`, the clear-ground logo that turns while a table loads) is cut from it by `.intentfold/tickets/SKATGO-93/icons.mjs`, about the centre of the three outer suits — regenerate them, never edit them |
 | `app/brand/cards/`, `app/public/cards/` | the playing cards' pictures (SKATGO-66): the court figures of both decks, the German Daus and suit symbols, and the back, generated with Azure OpenAI `gpt-image-2` by `generate.sh` from `prompts/`, each call in `calls.txt` and each master's request beside it (`masters/*.png.json`); the masters are lossless WebP, pixel for pixel the model's PNGs, which stay out of git; `PROVENANCE.md` says how and that no commercial deck was copied. The served WebP files are cut from the masters by `app/scripts/make-card-images.mjs` — regenerate them, never edit them. |
@@ -98,6 +106,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36), and the names a player is given (SKATGO-90): the agreed word list and `pickName`, which takes the first free name in an order fixed by the player's id, a number only once every name without one is taken |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
 | `app/src/lib/room-handler.ts`, `room-ticket.ts`, `room-client.ts`, `app/src/components/skat/table-room.tsx`; `multiplayer/src/room.ts`, `referral.ts` | private tables (SKATGO-61): `/api/room/ticket` and `/api/room/referral`, the signed admission ticket, the browser's room client and way back, the table's pages; the room and the referral route |
+| `app/src/lib/forum.ts`, `forum-handler.ts`, `forum-api.ts`, `app/src/components/skat/forum-page.tsx`, `forum-body.tsx`, `forum-announcement.tsx`; `multiplayer/src/forum.ts` | the forum (SKATGO-118): the shared rules (sections, `DAILY_LIMITS`, `postIndexable`, `slugOf`, the text's marks in `parseBody`), the web's `/api/forum/*` and `/sitemap-forum.xml`, the loaders' reads (`createIsomorphicFn`: on the server straight to the forum as the request's viewer, in the browser through `/api/forum`; the announcement cached a minute on the server), the pages, and the service's routes; tested by `lib/forum.test.ts` and `multiplayer/test/forum.test.ts` |
 | `app/src/lib/test-account.ts` | local test accounts for acceptance (SKATGO-117), read only by `session.ts` and the root route |
 | `app/src/components/skat/rules-page.tsx`, `bidding-table-page.tsx`, `app/src/lib/skat/rules/` | the rules reference and its text, with anchored sub-headings for topics looked up by name (`#grand`, `#null-ouvert`, `#ramsch`), the bidding table (SKATGO-50), and the printable short version (`rules-summary-page.tsx`, text in `rules/summary.{de,en}.ts`, SKATGO-53). Every number on these pages — card points, base and Null values, the bid ladder, the multiplier limits — is rendered from `value.ts` and `cards.ts` |
 | `app/public/cards/backs/`, `app/src/lib/skat/backs.ts` | the card backs to choose from in the settings (SKATGO-102) besides the earlier `app/public/cards/back.webp`: four in its style, generated by `app/brand/cards/generate.sh` (kind `back2`, masters `back-*.webp`), cut to 500×700 with the logo in the middle by `.intentfold/tickets/SKATGO-102/make-backs.mjs` — regenerate them, never edit them |
@@ -123,7 +132,11 @@ also built from the repository root. Neither project imports the other's runtime
   or browser language is not German to `/en` (`lib/locale.ts` `rootLocale`, answered in `server.ts`
   before the middleware; SKATGO-113); a request that names no language gets the German root. Paraglide patterns own translated
   addresses; canonical, page-specific hreflang, internal links and sitemap agree with them.
-  `lib/indexability.ts` owns exclusion of personal execution pages; those routes declare noindex.
+  `lib/indexability.ts` owns exclusion of personal execution pages; those routes declare noindex. A forum post
+  (SKATGO-118, `DATA_PAGES`) comes from the forum's database, in whatever language its author wrote, at an address
+  in each language of the site (the page's own words translated); it is indexable only when `postIndexable` says
+  so, and the indexable ones are in `/sitemap-forum.xml` (announced in `robots.txt`), with the same alternates as
+  the pages in `/sitemap.xml`, which is built from the source alone.
 - **The tournament's cards and scores are the server's** (SKATGO-35). The browser receives only seat
   0's view of the current deal (`seatView`): its own hand, what has been played, the skat only once it
   may know it, an Ouvert declarer's hand. A deal is stored as its deck and dealer plus the human's
@@ -274,7 +287,8 @@ release-identity guard first. Routes, sitemap registry, lesson guides, indexabil
 patterns derive coverage without a second hand-written page list. The checker verifies visible
 SSR content, reciprocal alternates, self-canonical URLs, Googlebot/Bingbot robots, unique metadata,
 JSON-LD, assets, internal links, the root's language rule (SKATGO-113), proxy-safe redirects, noindex personal pages and
-404s. A file a page links to, such as a printable's PDF, must instead name a sitemap page as its
+404s, and every post in `/sitemap-forum.xml` (SKATGO-118; where the forum does not answer, off the published site,
+it says so and checks the rest). A file a page links to, such as a printable's PDF, must instead name a sitemap page as its
 canonical in a Link header (SKATGO-53). Empty or incomplete derivation fails. `npm run test:seo`
 exercises actual broken HTTP responses, not only validator objects. See
 [SEO check usage](../../app/scripts/README.md).

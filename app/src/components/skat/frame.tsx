@@ -27,7 +27,7 @@ import { Btn, suitText } from './ui'
 // carries only what skatgo
 // has (SKATGO-29: nothing announced).
 
-type Section = 'home' | 'daily' | 'course' | 'rules' | 'play'
+type Section = 'home' | 'daily' | 'course' | 'rules' | 'play' | 'forum'
 
 /** Which section a path belongs to. The router has already removed the language prefix. */
 export function sectionOf(pathname: string): Section {
@@ -39,6 +39,8 @@ export function sectionOf(pathname: string): Section {
   if (pathname.startsWith('/course')) return 'course'
   if (pathname.startsWith('/rules')) return 'rules'
   if (pathname.startsWith('/play')) return 'play'
+  // The forum's pages are sub-pages on the grey page (SKATGO-118).
+  if (pathname.startsWith('/forum')) return 'forum'
   return 'home'
 }
 
@@ -62,13 +64,14 @@ export function useFrame() {
 /** The front page's links, in this order (the human, 2026-10-01): today's deals, guided free play, the
  *  course, the rules. No separate "Play" button beside them. */
 // The header's links, in the human's order (SKATGO-69): the tournament, learning, free play, a private table,
-// then the tricks (SKATGO-82), which took the place of the greyed-out puzzles.
-const HEADER_LINKS: { to: '/daily' | '/course' | '/play' | '/with-friends' | '/skat-tricks'; label: () => string }[] = [
+// then the tricks (SKATGO-82), which took the place of the greyed-out puzzles, and the forum (SKATGO-118).
+const HEADER_LINKS: { to: '/daily' | '/course' | '/play' | '/with-friends' | '/skat-tricks' | '/forum'; label: () => string }[] = [
   { to: '/daily', label: () => m.nav_header_daily() },
   { to: '/course', label: () => m.nav_header_learn() },
   { to: '/play', label: () => m.nav_header_free() },
   { to: '/with-friends', label: () => m.nav_header_friends() },
   { to: '/skat-tricks', label: () => m.nav_header_tricks() },
+  { to: '/forum', label: () => m.nav_header_forum() },
 ]
 
 /** The front page's header: the public site's white bar, also over the tournament, the course and the

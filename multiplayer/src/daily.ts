@@ -386,9 +386,9 @@ const NAME_LOCK = 7392030
 /**
  * A player's current name (SKATGO-90): the one they set or were given, or — the first time they need one —
  * a name of two words given now: the first in the player's own order that nobody holds and no board shows,
- * a number only once every name without one is taken.
+ * a number only once every name without one is taken. The forum's authors stand under it too (SKATGO-118).
  */
-async function nameOf(c: pg.PoolClient, who: string, now: number): Promise<string> {
+export async function nameOf(c: pg.PoolClient, who: string, now: number): Promise<string> {
   const held = async () => (await c.query('SELECT nickname FROM daily_players WHERE player = $1', [who])).rows[0]?.nickname as string | undefined
   const known = await held()
   if (known) return known

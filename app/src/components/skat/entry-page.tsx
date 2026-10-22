@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useLoaderData } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { type ReactNode, useEffect, useState } from 'react'
 
@@ -15,6 +15,7 @@ import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { AnnouncementLine } from './forum-announcement'
 import { PlayingCard } from './playing-card'
 import { linkLook } from './ui'
 
@@ -36,11 +37,13 @@ export function EntryPage() {
   const course = lessons()
   const finished = course.filter((l) => l.id in done).length
   const next = course.find((l) => !(l.id in done))?.id ?? course[course.length - 1].id
+  const announcement = useLoaderData({ from: '/' })
 
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.heroText)}>
+          <AnnouncementLine announcement={announcement} />
           <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
           <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
           <div {...stylex.props(styles.cta)}>

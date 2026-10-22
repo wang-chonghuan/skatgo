@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://skatgo.com/sitemap.xml
+Sitemap: https://skatgo.com/sitemap-forum.xml

@@ -300,7 +300,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   first; the small `info` link to the Skat-Tricks article (all sections and articles); then the posts as white
   option cards — the title (`optionDesc`, navy, a link) over one line of small facts (`meta`): the section in
   slate, the author in navy or "SkatGo" in `go` (`smallBold`), the date and the count of comments. A post: "← Alle Beiträge" and its
-  section as links, the H1, the same line of facts, a hidden post's reason in a `bad` panel for its author and
+  section as links, then the post in a white card of its own, as each comment is (the human: 「每一个帖子或回复，都放在
+  卡片里」): the H1, the same line of facts, a hidden post's reason in a `bad` panel for its author and
   the official, the text (`ForumBody`), the viewer's `quiet` small actions — "Melden", "Löschen" for their own
   (asked once more, "Ja, löschen" `stop`), and for the official "Ausblenden" / "Wieder anzeigen" and a player's
   post that is not hidden "Für Suchmaschinen freigeben" — then "Kommentare": each a white card with its line of facts, text and

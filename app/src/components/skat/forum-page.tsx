@@ -259,11 +259,14 @@ export function ForumPostPage() {
           <Link to="/forum" {...stylex.props(typography.appLink, styles.link)}>{`← ${m.forum_back()}`}</Link>
           <Link to="/forum" search={{ section: post.section }} {...stylex.props(typography.appLink, styles.link)}>{SECTION_NAME[post.section]()}</Link>
         </nav>
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{post.title}</h1>
-        <Meta of={post} />
-        {post.hidden !== null ? <Panel tone="bad"><p data-testid="forum-hidden" {...stylex.props(typography.appText, styles.note)}>{m.forum_hidden_note({ reason: post.hidden })}</p></Panel> : null}
-        <ForumBody text={post.body} official={post.official} />
-        <Actions viewer={viewer} post={post} />
+        {/* The post in a card of its own, as each comment under it (the human: 「每一个帖子或回复，都放在卡片里」). */}
+        <div data-testid="forum-post-card" {...stylex.props(styles.card, styles.postCard)}>
+          <h1 {...stylex.props(typography.landingHeading, styles.title)}>{post.title}</h1>
+          <Meta of={post} />
+          {post.hidden !== null ? <Panel tone="bad"><p data-testid="forum-hidden" {...stylex.props(typography.appText, styles.note)}>{m.forum_hidden_note({ reason: post.hidden })}</p></Panel> : null}
+          <ForumBody text={post.body} official={post.official} />
+          <Actions viewer={viewer} post={post} />
+        </div>
         <section aria-labelledby="forum-comments" {...stylex.props(styles.comments)}>
           <h2 id="forum-comments" {...stylex.props(typography.optionDesc, styles.title)}>{m.forum_comments_title()}</h2>
           {post.thread.length === 0 ? <p {...stylex.props(typography.appText, styles.quiet)}>{m.forum_no_comments()}</p> : null}
@@ -453,6 +456,7 @@ const styles = stylex.create({
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
+  postCard: { gap: space.x16 },
   meta: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: space.x12, rowGap: space.x4 },
   author: { color: color.navy },
   official: { color: color.go },

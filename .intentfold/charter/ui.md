@@ -263,12 +263,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`CardRowView`, the points as captions), then a `tip` panel with the `go` button to free play, and links
   to the course and the rules. Its ways in: an option card under the course's lead, ahead of the progress
   card; on the front page a second `quiet` button, "5-Minuten-Crashkurs" — a crash course, never read as a quick game or a summary (the human: 「其实就是5分钟速成的意思」) — beside the course tile's own, always, whether or not a lesson was taken (the human: 「看起来不够明显」; SKATGO-92: 「必须还放在学习卡上」); and a link under the rules' lead. Not in the header. The Skat-Tricks' page (`tricks-page.tsx`,
-  SKATGO-103) is its H1 and lead, then the open-card endgames as levels (SKATGO-111): a heading with the count
-  solved, a grid of numbered square tiles — solved `good` with a check, gone wrong `bad` with a cross and the
-  number of wrong answers in its corner, the next one ringed `go`, and for a guest a lock from the third — and
-  under it one `go` button to the next ("Aufgabe n spielen"); under that, small `info` links to the article
-  and the rules. Under the levels, the other kinds of SKATGO-103 as option cards, numbered from one, each a
-  `<details>` opening to its exercises (hidden by SKATGO-110, shown again by SKATGO-119). An open-card
+  SKATGO-103) is its H1 and lead, then every kind of exercise as an option card, numbered, each a `<details>`
+  closed at first (one named in the address, as the front page's "Skat-Aufgaben lösen" names the first, opens by
+  itself and stops under the header): first the open-card endgames (SKATGO-119, the human: 「这个要可折叠，像其他题
+  一样，它作为第一类练习题」), their count solved in the head, opening to levels (SKATGO-111) — a grid of numbered
+  square tiles, solved `good` with a check, gone wrong `bad` with a cross and the number of wrong answers in its
+  corner, the next one ringed `go`, and for a guest a lock from the third, and under it one `go` button to the
+  next ("Aufgabe n spielen"); then the other kinds of SKATGO-103, each opening to its exercises (hidden by
+  SKATGO-110, shown again by SKATGO-119); under the cards, small `info` links to the article and the rules. An open-card
   endgame's page (`tricks-exercise-page.tsx`, `open-endgame.tsx`) is the game's full-screen table (SKATGO-111,
   the human: 「打牌界面那种效果，各种尺寸屏幕都刚好全屏」): no site header, every hand open, the opponents' cards
   as big as the learner's (`stage.openStack*`); at the top, in the info board's place and make, a board with

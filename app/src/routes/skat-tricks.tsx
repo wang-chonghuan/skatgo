@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { clientPage } from '~/components/skat/client-page'
 import { breadcrumbs, pageHead, samePath } from '~/lib/head'
+import { EXERCISES } from '~/lib/skat/tricks/exercises'
 import { m } from '~/paraglide/messages'
 
 // The Skat-Tricks section (SKATGO-82): since SKATGO-103 its page is the exercises, by kind; the first
@@ -9,7 +10,7 @@ import { m } from '~/paraglide/messages'
 export const Route = createFileRoute('/skat-tricks')({
   head: () =>
     pageHead({
-      title: m.tricks_hub_meta_title(),
+      title: m.tricks_hub_meta_title({ n: EXERCISES.length }),
       description: m.tricks_hub_meta_description(),
       paths: samePath('/skat-tricks'),
       image: 'tricks-exercises',

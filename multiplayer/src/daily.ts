@@ -6,7 +6,7 @@ import { type Card, shuffle } from '../../app/src/lib/skat/cards'
 import { chooseDeclaration, declarationAdvice } from '../../app/src/lib/skat/ai'
 import { actor, aiBid, deal, next, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import {
-  BOARD_DAYS, DAILY_DEALS, DAILY_SIZES, DAILY_TIME_ZONE, PLAYER, auctionOf, seatView, summarize, totals, type DailySize, type DailyStatus,
+  BOARD_DAYS, DAILY_DEALS, DAILY_TIME_ZONE, PLAYER, auctionOf, seatView, summarize, totals, type DailyStatus,
   type DealReview, type DealSummary,
   type SeatView,
 } from '../../app/src/lib/skat/tournament'
@@ -17,9 +17,10 @@ import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzer
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, judgePlays, playsOf, raw, replayLog, reviewOf, skatzeroTurn } from './computers'
 import type { Store } from './store'
 
-// The daily tournament (SKATGO-35). Every day has one tournament per size — 6 deals and 12 (SKATGO-77) —
-// each with its own deals, the same for every player, each played by one human in seat 0 against the two
-// computers, and its own board. Every row is keyed by its day and size. The server owns the cards: a deal is its deck and
+// The daily tournament (SKATGO-35). Every day has one tournament of six deals, the same for every player, each
+// played by one human in seat 0 against the two computers, and its board. Rows are keyed by their day and size:
+// the twelve-deal tournament of SKATGO-77 is gone (SKATGO-119), its stored rows kept, so every query names the six
+// deals (`DAILY_DEALS`). The server owns the cards: a deal is its deck and
 // dealer plus the human's moves, replayed through the engine, and the score is what that replay
 // settles — never a number a browser sends. Only seat 0's view of the current deal leaves here.
 //
@@ -66,9 +67,9 @@ export function dayOf(now: number): string {
 
 /** A tournament's deals: fresh crypto-shuffled decks; the first dealer is random, then the deal passes
  *  clockwise, so the player sits in each position equally often (twice in six deals). */
-export function dealDay(size: DailySize): DealSpec[] {
+export function dealDay(): DealSpec[] {
   let dealer = randomInt(3) as Seat
-  return Array.from({ length: size }, () => {
+  return Array.from({ length: DAILY_DEALS }, () => {
     const spec = { dealer, deck: secureDeck() }
     dealer = next(dealer)
     return spec
@@ -121,31 +122,27 @@ async function computerTurn(g: Game, policy: Policy, spec: DealSpec, computer: s
 }
 
 const player = z.string().regex(/^(user:[A-Za-z0-9_]{1,64}|anon:[a-f0-9]{64})$/)
-/** Which tournament (SKATGO-77); a request naming none means the six-deal one, as every request did before. */
-const size = z.custom<DailySize>((n) => (DAILY_SIZES as readonly unknown[]).includes(n)).optional().transform((n) => n ?? DAILY_DEALS)
-const stateInput = z.object({ player, size, open: z.boolean().optional() }).strict()
+const stateInput = z.object({ player, open: z.boolean().optional() }).strict()
 const actInput = z.object({
   player,
-  size,
   day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  deal: z.number().int().min(0).max(Math.max(...DAILY_SIZES) - 1),
+  deal: z.number().int().min(0).max(DAILY_DEALS - 1),
   revision: z.number().int().nonnegative(),
   action: actionSchema,
 }).strict()
-// A name is the player's, not a tournament's (SKATGO-90): the size a page still sends is accepted and not used.
-const nameInput = z.object({ player, size, nickname: z.string().max(200) }).strict()
+const nameInput = z.object({ player, nickname: z.string().max(200) }).strict()
 // The board's day: how many days back, today 0 (SKATGO-80); `today` and `yesterday` are how pages before it ask.
 const boardInput = z.object({
-  player: player.nullable(), size, day: z.union([z.enum(['today', 'yesterday']), z.number().int().min(0).max(BOARD_DAYS - 1)]),
+  player: player.nullable(), day: z.union([z.enum(['today', 'yesterday']), z.number().int().min(0).max(BOARD_DAYS - 1)]),
 }).strict()
-const reviewInput = z.object({ player, size, deal: z.number().int().min(0).max(Math.max(...DAILY_SIZES) - 1) }).strict()
+const reviewInput = z.object({ player, deal: z.number().int().min(0).max(DAILY_DEALS - 1) }).strict()
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
 
 /** Where the player stands. The computer's result of a deal goes with the player's own, only once the
  *  player has finished that deal (SKATGO-42); days dealt before it have none. Each finished deal's
  *  auction, the player's and the computer's, is replayed from the recorded moves (SKATGO-57): nothing
  *  more is stored, and the engine gives the same auction every time. */
-function status(day: string, size: DailySize, e: Entry | null, specs: DealSpec[], computer: string): DailyStatus {
+function status(day: string, e: Entry | null, specs: DealSpec[], computer: string): DailyStatus {
   const deals = e?.deals ?? []
   const benchmarks = deals.map((_, i) => specs[i]?.benchmark?.summary ?? null)
   const auctions = deals.map((_, i) =>
@@ -156,22 +153,20 @@ function status(day: string, size: DailySize, e: Entry | null, specs: DealSpec[]
     const b = specs[i]?.benchmark
     return b ? auctionOf(replayLog(specs[i].dealer, specs[i].deck, b.log)) : null
   })
-  return { day, of: size, deal: deals.length, deals, totals: totals(deals), started: !!e, finished: !!e?.finished_at, benchmarks, auctions, benchmarkAuctions }
+  return { day, of: DAILY_DEALS, deal: deals.length, deals, totals: totals(deals), started: !!e, finished: !!e?.finished_at, benchmarks, auctions, benchmarkAuctions }
 }
 
 /** A tournament's deals that day. Requests never deal: a day is dealt ahead by prepareDays; one that is
  *  not there yet is being prepared, and the request says so. */
-async function dayOfDeals(c: pg.PoolClient, day: string, size: DailySize): Promise<Day> {
-  const { rows } = await c.query('SELECT deals, computer FROM daily_deals WHERE day = $1 AND size = $2', [day, size])
+async function dayOfDeals(c: pg.PoolClient, day: string): Promise<Day> {
+  const { rows } = await c.query('SELECT deals, computer FROM daily_deals WHERE day = $1 AND size = $2', [day, DAILY_DEALS])
   if (!rows[0]) throw new DayPreparing(day)
   return rows[0]
 }
 
-/** The order a computer tries the 231 possible skats in: fixed by the deal, the same every time. The
- *  six-deal tournament keeps the seed it had before there were two. */
-export function skatOrder(day: string, deal: number, seat: Seat, size: DailySize = DAILY_DEALS): [number, number][] {
-  const which = size === DAILY_DEALS ? '' : `|${size}`
-  const h = createHash('sha256').update(`skatgo-daily|${day}|${deal}|${seat}${which}`).digest()
+/** The order a computer tries the 231 possible skats in: fixed by the deal, the same every time. */
+export function skatOrder(day: string, deal: number, seat: Seat): [number, number][] {
+  const h = createHash('sha256').update(`skatgo-daily|${day}|${deal}|${seat}`).digest()
   let a = h.readUInt32LE(0)
   // mulberry32
   const rand = () => {
@@ -187,27 +182,26 @@ export function skatOrder(day: string, deal: number, seat: Seat, size: DailySize
  *  hour (SKATGO-77, the human: 「上限设置为1小时即可，别画地为牢」). Only one preparation runs at a time. */
 const PREPARE_MS = 60 * 60 * 1000
 
-/** Deal `day`'s tournament of `size` deals and work out both computers' bidding for them, unless it is
- *  already dealt. Runs in the leader; yields between steps, so the service keeps answering while it works. */
-export async function prepareDay(store: Store, policy: Policy, day: string, size: DailySize, now = Date.now): Promise<'dealt' | 'present'> {
-  const { rows } = await store.pool.query('SELECT 1 FROM daily_deals WHERE day = $1 AND size = $2', [day, size])
+/** Deal `day`'s tournament and work out both computers' bidding for it, unless it is already dealt. Runs in the leader; yields between steps, so the service keeps answering while it works. */
+export async function prepareDay(store: Store, policy: Policy, day: string, now = Date.now): Promise<'dealt' | 'present'> {
+  const { rows } = await store.pool.query('SELECT 1 FROM daily_deals WHERE day = $1 AND size = $2', [day, DAILY_DEALS])
   if (rows[0]) return 'present'
   const started = now()
-  const specs: DealSpec[] = dealDay(size)
+  const specs: DealSpec[] = dealDay()
   for (const [i, spec] of specs.entries()) {
     const g = deal(spec.dealer, spec.deck)
     const computers = {} as Record<'1' | '2', StoredBidding>
     for (const seat of [1, 2] as Seat[]) {
-      const r = await seatBidding(policy, g.hands[seat].map(raw), POSITION[roleOf(seat, spec.dealer)], skatOrder(day, i, seat, size))
+      const r = await seatBidding(policy, g.hands[seat].map(raw), POSITION[roleOf(seat, spec.dealer)], skatOrder(day, i, seat))
       computers[String(seat) as '1' | '2'] = { maxBid: r.maxBid, pickup: r.pickup, hand: r.hand }
       if (now() - started > PREPARE_MS) throw new Error('daily_prepare_timeout')
     }
     spec.computers = computers
-    spec.benchmark = await benchmark(policy, spec, day, i, size)
+    spec.benchmark = await benchmark(policy, spec, day, i)
     if (now() - started > PREPARE_MS) throw new Error('daily_prepare_timeout')
   }
   await store.transaction(async (c) => {
-    await c.query('INSERT INTO daily_deals (day, size, deals, computer) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING', [day, size, JSON.stringify(specs), COMPUTER])
+    await c.query('INSERT INTO daily_deals (day, size, deals, computer) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING', [day, DAILY_DEALS, JSON.stringify(specs), COMPUTER])
   })
   return 'dealt'
 }
@@ -215,9 +209,9 @@ export async function prepareDay(store: Store, policy: Policy, day: string, size
 /** A deal played out by SkatZero in all three seats (SKATGO-42): the player's seat gets its own
  *  bidding, worked out like the computers' (its skats tried in the deal's fixed order for seat 0);
  *  the other two play from their prepared plans, exactly as they do against the player. */
-async function benchmark(policy: Policy, spec: DealSpec, day: string, i: number, size: DailySize): Promise<Benchmark> {
+async function benchmark(policy: Policy, spec: DealSpec, day: string, i: number): Promise<Benchmark> {
   const start = deal(spec.dealer, spec.deck)
-  const own = await seatBidding(policy, start.hands[PLAYER].map(raw), POSITION[roleOf(PLAYER, spec.dealer)], skatOrder(day, i, PLAYER, size))
+  const own = await seatBidding(policy, start.hands[PLAYER].map(raw), POSITION[roleOf(PLAYER, spec.dealer)], skatOrder(day, i, PLAYER))
   const plan = (b: StoredBidding): SeatPlan => ({ maxBid: b.maxBid, skatOrHand: (bid) => skatOrHand(b, bid) })
   const plans: Record<Seat, SeatPlan> = { 0: plan(own), 1: plan(spec.computers!['1']), 2: plan(spec.computers!['2']) }
   const log: Logged[] = []
@@ -230,18 +224,16 @@ async function benchmark(policy: Policy, spec: DealSpec, day: string, i: number,
   return { summary: summarize(end), log }
 }
 
-/** Today and tomorrow, every tournament, dealt ahead — one preparation at a time, today's first. */
+/** Today and tomorrow dealt ahead — one preparation at a time, today's first. */
 let preparing: Promise<void> | null = null
 export function prepareDays(store: Store, policy: Policy, now = Date.now): Promise<void> {
   preparing ??= (async () => {
     try {
       for (const offset of [0, 1]) {
         const day = dayOf(now() + offset * 24 * 60 * 60 * 1000)
-        for (const size of DAILY_SIZES) {
-          const t = Date.now()
-          const r = await prepareDay(store, policy, day, size, now)
-          if (r === 'dealt') console.log(JSON.stringify({ event: 'daily_prepared', day, size, ms: Date.now() - t, rss: process.memoryUsage().rss }))
-        }
+        const t = Date.now()
+        const r = await prepareDay(store, policy, day, now)
+        if (r === 'dealt') console.log(JSON.stringify({ event: 'daily_prepared', day, size: DAILY_DEALS, ms: Date.now() - t, rss: process.memoryUsage().rss }))
       }
     } catch (e) {
       console.error(JSON.stringify({ event: 'daily_prepare_failed', reason: e instanceof Error ? e.message : String(e) }))
@@ -252,16 +244,16 @@ export function prepareDays(store: Store, policy: Policy, now = Date.now): Promi
   return preparing
 }
 
-async function entryOf(c: pg.PoolClient, day: string, size: DailySize, who: string): Promise<Entry | null> {
+async function entryOf(c: pg.PoolClient, day: string, who: string): Promise<Entry | null> {
   const { rows } = await c.query(
-    'SELECT actions, deals, total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3 FOR UPDATE', [day, size, who])
+    'SELECT actions, deals, total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3 FOR UPDATE', [day, DAILY_DEALS, who])
   return rows[0] ?? null
 }
 
-async function save(c: pg.PoolClient, day: string, size: DailySize, who: string, e: Entry) {
+async function save(c: pg.PoolClient, day: string, who: string, e: Entry) {
   await c.query(
     'UPDATE daily_entries SET actions = $4, deals = $5, total = $6, finished_at = $7 WHERE day = $1 AND size = $2 AND player = $3',
-    [day, size, who, JSON.stringify(e.actions), JSON.stringify(e.deals), e.total, e.finished_at])
+    [day, DAILY_DEALS, who, JSON.stringify(e.actions), JSON.stringify(e.deals), e.total, e.finished_at])
 }
 
 /** Record every deal that is over, so the entry always points at a deal still to be played. */
@@ -295,23 +287,23 @@ async function settleRecorded(specs: DealSpec[], e: Entry, now: number, policy: 
   return null
 }
 
-export async function dailyState(store: Store, policy: Policy, who: string, size: DailySize, open: boolean, now = Date.now()) {
+export async function dailyState(store: Store, policy: Policy, who: string, open: boolean, now = Date.now()) {
   const day = dayOf(now)
   return store.transaction(async c => {
-    const { deals: specs, computer } = await dayOfDeals(c, day, size)
-    let e = await entryOf(c, day, size, who)
-    if (!e && !open) return { status: status(day, size, null, specs, computer), view: null, revision: 0 }
+    const { deals: specs, computer } = await dayOfDeals(c, day)
+    let e = await entryOf(c, day, who)
+    if (!e && !open) return { status: status(day, null, specs, computer), view: null, revision: 0 }
     if (!e) {
       await c.query('INSERT INTO daily_entries (day, size, player, actions, deals, total, created_at) VALUES ($1, $2, $3, $4, $5, 0, $6)',
-        [day, size, who, JSON.stringify([[]]), '[]', now])
+        [day, DAILY_DEALS, who, JSON.stringify([[]]), '[]', now])
       e = { actions: [[]], deals: [], total: 0, finished_at: null }
     }
-    if (e.finished_at || !open) return { status: status(day, size, e, specs, computer), view: null, revision: 0 }
+    if (e.finished_at || !open) return { status: status(day, e, specs, computer), view: null, revision: 0 }
     const before = JSON.stringify(e)
     const g = computer === HEURISTIC ? settleEnded(specs, e, now) : await settleRecorded(specs, e, now, policy, computer)
-    if (JSON.stringify(e) !== before) await save(c, day, size, who, e)
-    if (e.finished_at) await nameFinished(c, day, size, who, now)
-    return { status: status(day, size, e, specs, computer), view: g ? seatView(g) : null, revision: g ? e.actions[e.deals.length].length : 0 }
+    if (JSON.stringify(e) !== before) await save(c, day, who, e)
+    if (e.finished_at) await nameFinished(c, day, DAILY_DEALS, who, now)
+    return { status: status(day, e, specs, computer), view: g ? seatView(g) : null, revision: g ? e.actions[e.deals.length].length : 0 }
   })
 }
 
@@ -321,8 +313,8 @@ export async function dailyAct(store: Store, policy: Policy, input: z.infer<type
   const day = dayOf(now)
   if (input.day !== day) throw new Rejected('day_over')
   return store.transaction(async c => {
-    const { deals: specs, computer } = await dayOfDeals(c, day, input.size)
-    const e = await entryOf(c, day, input.size, input.player)
+    const { deals: specs, computer } = await dayOfDeals(c, day)
+    const e = await entryOf(c, day, input.player)
     if (!e) throw new Rejected('not_started')
     if (e.finished_at) throw new Rejected('day_finished')
     if (input.deal !== e.deals.length) throw new Rejected('wrong_deal')
@@ -349,10 +341,10 @@ export async function dailyAct(store: Store, policy: Policy, input: z.infer<type
       await advance(g, log, (x) => computerTurn(x, policy, specs[input.deal], computer), steps)
       current = await settleRecorded(specs, e, now, policy, computer)
     }
-    await save(c, day, input.size, input.player, e)
-    if (e.finished_at) await nameFinished(c, day, input.size, input.player, now)
+    await save(c, day, input.player, e)
+    if (e.finished_at) await nameFinished(c, day, DAILY_DEALS, input.player, now)
     return {
-      status: status(day, input.size, e, specs, computer),
+      status: status(day, e, specs, computer),
       steps: steps.map(seatView) as SeatView[],
       revision: current ? e.actions[e.deals.length].length : 0,
     }
@@ -405,7 +397,7 @@ export async function nameOf(c: pg.PoolClient, who: string, now: number): Promis
 
 /** A finished entry goes on its board under the player's current name (SKATGO-90: no name to fill in). A
  *  name an entry already has is never changed — the human's red line: 「禁止改变任何已经有的用户的名字」. */
-async function nameFinished(c: pg.PoolClient, day: string, size: DailySize, who: string, now: number) {
+async function nameFinished(c: pg.PoolClient, day: string, size: number, who: string, now: number) {
   await c.query(
     'UPDATE daily_entries SET nickname = $4 WHERE day = $1 AND size = $2 AND player = $3 AND finished_at IS NOT NULL AND nickname IS NULL',
     [day, size, who, await nameOf(c, who, now)])
@@ -446,7 +438,7 @@ export async function dailyName(store: Store, who: string, raw: string, now = Da
 const BOARD_ROWS = 100
 
 /**
- * A tournament's leaderboard for a day (SKATGO-36, one per size since SKATGO-77; today or one of the six
+ * The tournament's leaderboard for a day (SKATGO-36; today or one of the six
  * days before, SKATGO-80): the finished entries — each on it under its name, given when it finished
  * (SKATGO-90) — by their Seeger-Fabian total, the standard German players know (SKATGO-81, the
  * human: 「按他们习惯的标准来」; SKATGO-79's Saldo is gone); equal totals share a rank
@@ -456,13 +448,13 @@ const BOARD_ROWS = 100
  * same for every player — shown to everyone, its total only (the human: 「都显示，只在leader board上显示
  * 总成绩即可」); null when a deal of that day has none.
  */
-export async function dailyBoard(store: Store, who: string | null, size: DailySize, which: 'today' | 'yesterday' | number, now = Date.now()) {
+export async function dailyBoard(store: Store, who: string | null, which: 'today' | 'yesterday' | number, now = Date.now()) {
   const back = which === 'today' ? 0 : which === 'yesterday' ? 1 : which
   let day = dayOf(now)
   for (let i = 0; i < back; i++) day = dayBefore(day)
   const { rows: found } = await store.pool.query(
     `SELECT player, nickname, total, finished_at FROM daily_entries
-      WHERE day = $1 AND size = $2 AND finished_at IS NOT NULL AND nickname IS NOT NULL`, [day, size])
+      WHERE day = $1 AND size = $2 AND finished_at IS NOT NULL AND nickname IS NOT NULL`, [day, DAILY_DEALS])
   const rows = found.sort((a, b) => b.total - a.total || Number(a.finished_at) - Number(b.finished_at))
   const ranked = rows.map((r, i) => ({
     rank: i === 0 || rows[i - 1].total !== r.total ? i + 1 : 0,
@@ -474,14 +466,14 @@ export async function dailyBoard(store: Store, who: string | null, size: DailySi
   let me = null
   if (who) {
     const own = await store.pool.query(
-      'SELECT nickname, total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, size, who])
+      'SELECT nickname, total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, DAILY_DEALS, who])
     const e = own.rows[0]
     if (e) {
       const rank = 1 + ranked.filter(r => r.total > e.total).length
       me = { finished: !!e.finished_at, total: e.total as number, nickname: e.nickname as string | null, rank: e.finished_at ? rank : null }
     }
   }
-  const { rows: dealt } = await store.pool.query('SELECT deals FROM daily_deals WHERE day = $1 AND size = $2', [day, size])
+  const { rows: dealt } = await store.pool.query('SELECT deals FROM daily_deals WHERE day = $1 AND size = $2', [day, DAILY_DEALS])
   const played = ((dealt[0]?.deals ?? []) as DealSpec[]).map((spec) => spec.benchmark?.summary)
   const ai = played.length > 0 && played.every((b) => b) ? { total: totals(played as DealSummary[])[PLAYER] } : null
   return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, ai }
@@ -493,12 +485,12 @@ export async function dailyBoard(store: Store, who: string | null, size: DailySi
  * choice; where theirs was not the best, the furthest below it first. Only the player's own hand and the trick as
  * it stood go into it — nothing they could not see — with the deal's result beside the AI's.
  */
-export async function dailyReview(store: Store, policy: Policy, who: string, size: DailySize, index: number, now = Date.now()): Promise<DealReview> {
+export async function dailyReview(store: Store, policy: Policy, who: string, index: number, now = Date.now()): Promise<DealReview> {
   const day = dayOf(now)
-  const { rows: dealt } = await store.pool.query('SELECT deals, computer FROM daily_deals WHERE day = $1 AND size = $2', [day, size])
+  const { rows: dealt } = await store.pool.query('SELECT deals, computer FROM daily_deals WHERE day = $1 AND size = $2', [day, DAILY_DEALS])
   if (!dealt[0]) throw new DayPreparing(day)
   const { rows: entered } = await store.pool.query(
-    'SELECT actions, deals FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, size, who])
+    'SELECT actions, deals FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, DAILY_DEALS, who])
   const e = entered[0] as Pick<Entry, 'actions' | 'deals'> | undefined
   if (!e || index >= e.deals.length) throw new Rejected('not_finished')
   const spec = (dealt[0].deals as DealSpec[])[index]
@@ -556,7 +548,7 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
   }
   router.post('/state', run(async body => {
     const i = stateInput.parse(body)
-    return dailyState(store, policy()!, i.player, i.size, i.open ?? false)
+    return dailyState(store, policy()!, i.player, i.open ?? false)
   }))
   router.post('/act', run(async body => dailyAct(store, policy()!, actInput.parse(body))))
   router.post('/name', run(async body => {
@@ -565,11 +557,11 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
   }))
   router.post('/board', run(async body => {
     const i = boardInput.parse(body)
-    return dailyBoard(store, i.player, i.size, i.day)
+    return dailyBoard(store, i.player, i.day)
   }))
   router.post('/review', run(async body => {
     const i = reviewInput.parse(body)
-    return dailyReview(store, policy()!, i.player, i.size, i.deal)
+    return dailyReview(store, policy()!, i.player, i.deal)
   }))
   router.post('/claim', run(async body => {
     const i = claimInput.parse(body)

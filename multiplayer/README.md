@@ -168,11 +168,11 @@ keep every move of every deal.
 From SKATGO-39 the bidding is SkatZero's as well (`src/skatzero/bidding.ts`, a literal port of
 `bidding/bidder.py` and `api.py`'s BID / SKAT_OR_HAND_DECL / DISCARD_AND_DECL, with the eight
 tables in `skatzero/bidding/`, hashed in the manifest). Because one computer's bidding simulates
-all 231 possible skats, the leader prepares today's and tomorrow's tournaments ahead — since
-SKATGO-77 two a day, 6 and 12 deals, each its own row keyed by day and `size`, prepared one at a
-time and abandoned after an hour (`prepareDays` in `src/daily.ts`) — and stores each computer's
-highest bid and pick-up/Hand tables with the deal; every `/daily` route takes an optional `size`
-(6 when absent); in
+all 231 possible skats, the leader prepares today's and tomorrow's tournaments ahead — one a day of
+six deals, its row keyed by day and `size` (6; SKATGO-77's twelve-deal tournament is gone since
+SKATGO-119, its stored rows kept), prepared one at a time and abandoned after an hour (`prepareDays` in
+`src/daily.ts`) — and stores each computer's highest bid and pick-up/Hand tables with the deal; a `/daily`
+request that names a `size` is refused; in
 play only the discard and game after a pick-up are computed. The model outputs differ in the last
 digits between ONNX Runtime builds (macOS vs Linux), which is why the result is stored rather than
 recomputed elsewhere.

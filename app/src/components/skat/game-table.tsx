@@ -411,8 +411,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           <DealAnalysis
             deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null, hand: startHand(game) }}
             names={[nameOf(0), nameOf(1), nameOf(2)]}
-            ask={dailyAsk(tournament.of, tournament.deal)}
-            cacheKey={`${tournament.day}|${tournament.of}|${tournament.deal}`}
+            ask={dailyAsk(tournament.deal)}
+            cacheKey={`${tournament.day}|${tournament.deal}`}
           />
         ) : null,
         day: (

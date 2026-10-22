@@ -20,22 +20,22 @@ import { typography } from '../../theme/type'
 import { Pill, linkLook } from './ui'
 
 /**
- * The Skat-Tricks section's page (SKATGO-103, before it the first article of SKATGO-82): the twelve kinds
- * of exercise as option cards, each opening to its three exercises, and under them the way to the article.
+ * The Skat-Tricks section's page (SKATGO-103, before it the first article of SKATGO-82): the open-card endgames as
+ * levels first, then the other kinds of exercise as option cards, each opening to its exercises, and under them the
+ * way to the article.
  * Each card is a native <details>: closed, its exercises are still in the page a search engine reads (the
  * human: 「题目页要收录……很好的引流材料」). A card named in the address (#druecken, from a trick of the
  * article) opens by itself.
  *
- * Since SKATGO-110 only the open-card endgames are shown (`SHOWN_TYPES`; the other kinds are hidden, not deleted),
- * and since SKATGO-111 as levels (`Levels`): twenty tiles in rising order, the ones answered right checked, the ones
+ * SKATGO-110 hid every kind but the open-card endgames and SKATGO-119 brought them back (`SHOWN_TYPES`). The
+ * open-card endgames are levels since SKATGO-111 (`Levels`): twenty tiles in rising order, the ones answered right checked, the ones
  * answered wrong and not yet right crossed with their wrong answers counted in the corner, and the next one marked;
  * for a guest, the steps that need an account carry a lock (SKATGO-109). The record is the account's, or for
  * a guest this browser's (ladder-progress.ts), applied after mount.
  */
 export function TricksPage() {
   const text = EXERCISE_TEXT[getLocale()]
-  // With one kind shown (SKATGO-110), its card is open from the start.
-  const [open, setOpen] = useState<ReadonlySet<ExerciseType>>(() => new Set(SHOWN_TYPES.length === 1 ? SHOWN_TYPES : []))
+  const [open, setOpen] = useState<ReadonlySet<ExerciseType>>(() => new Set())
   const { steps, account } = useLadder()
   useEffect(() => {
     const hash = window.location.hash.slice(1)
@@ -64,13 +64,6 @@ export function TricksPage() {
             const ladder = type === 'offenes-endspiel'
             const nextUp = ladder ? exercises.find((e) => !steps[e.id]?.solved)?.id : undefined
             const Chevron = isOpen ? ChevronUp : ChevronDown
-            // The open-card endgames as levels (SKATGO-111).
-            if (ladder)
-              return (
-                <li key={type} id={type} {...stylex.props(styles.item)}>
-                  <Levels type={type} steps={steps} account={account} />
-                </li>
-              )
             return (
               <li key={type} id={type} {...stylex.props(styles.item)}>
                 <details
@@ -93,48 +86,54 @@ export function TricksPage() {
                       <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
                     </span>
                   </summary>
-                  <ol {...stylex.props(styles.tasks)}>
-                    {exercises.map((e, k) => {
-                      const record = ladder ? steps[e.id] : undefined
-                      const misses = record?.misses ?? 0
-                      const mark = record?.solved ? 'solved' : misses ? 'missed' : ladder && account === null && k >= LADDER_FREE ? 'locked' : undefined
-                      return (
-                        <li key={e.id} {...stylex.props(styles.task)}>
-                          <Link
-                            to="/skat-tricks/$exercise"
-                            params={{ exercise: e.id }}
-                            data-testid="tricks-exercise-link"
-                            data-mark={mark}
-                            data-misses={ladder ? misses : undefined}
-                            {...stylex.props(styles.taskLink)}
-                          >
-                            <span {...stylex.props(styles.taskText)}>
-                              <span {...stylex.props(typography.meta, styles.taskNumber)}>
-                                {/* The wrong answers stay counted, also once the step is solved (the human: 「要记下来哪题错了」). */}
-                                {misses ? `${m.tricks_hub_task({ n: k + 1 })} · ${m.tricks_ladder_misses({ n: misses })}` : m.tricks_hub_task({ n: k + 1 })}
+                  {/* The open-card endgames open to their levels (SKATGO-111), a card like every kind (SKATGO-119, the
+                      human: 「这个要可折叠，像其他题一样，它作为第一类练习题」). */}
+                  {ladder ? (
+                    <Levels type={type} steps={steps} account={account} />
+                  ) : (
+                    <ol {...stylex.props(styles.tasks)}>
+                      {exercises.map((e, k) => {
+                        const record = ladder ? steps[e.id] : undefined
+                        const misses = record?.misses ?? 0
+                        const mark = record?.solved ? 'solved' : misses ? 'missed' : ladder && account === null && k >= LADDER_FREE ? 'locked' : undefined
+                        return (
+                          <li key={e.id} {...stylex.props(styles.task)}>
+                            <Link
+                              to="/skat-tricks/$exercise"
+                              params={{ exercise: e.id }}
+                              data-testid="tricks-exercise-link"
+                              data-mark={mark}
+                              data-misses={ladder ? misses : undefined}
+                              {...stylex.props(styles.taskLink)}
+                            >
+                              <span {...stylex.props(styles.taskText)}>
+                                <span {...stylex.props(typography.meta, styles.taskNumber)}>
+                                  {/* The wrong answers stay counted, also once the step is solved (the human: 「要记下来哪题错了」). */}
+                                  {misses ? `${m.tricks_hub_task({ n: k + 1 })} · ${m.tricks_ladder_misses({ n: misses })}` : m.tricks_hub_task({ n: k + 1 })}
+                                </span>
+                                <span {...stylex.props(typography.appBtnStrong, styles.taskTitle)}>{text.exercises[e.id].title}</span>
                               </span>
-                              <span {...stylex.props(typography.appBtnStrong, styles.taskTitle)}>{text.exercises[e.id].title}</span>
-                            </span>
-                            {mark === 'solved' ? (
-                              <span data-testid="tricks-ladder-solved" aria-label={m.tricks_ladder_solved()} {...stylex.props(styles.mark, styles.solved)}>
-                                <CircleCheck aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
-                              </span>
-                            ) : mark === 'missed' ? (
-                              <span data-testid="tricks-ladder-missed" aria-label={m.tricks_ladder_missed()} {...stylex.props(styles.mark, styles.missed)}>
-                                <CircleX aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
-                              </span>
-                            ) : mark === 'locked' ? (
-                              <span data-testid="tricks-ladder-locked" aria-label={m.tricks_ladder_locked()} {...stylex.props(styles.mark, styles.locked)}>
-                                <Lock aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
-                              </span>
-                            ) : null}
-                            {e.id === nextUp ? <Pill tone="go">{m.tricks_ladder_next()}</Pill> : null}
-                            <ChevronRight aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.taskArrow)} />
-                          </Link>
-                        </li>
-                      )
-                    })}
-                  </ol>
+                              {mark === 'solved' ? (
+                                <span data-testid="tricks-ladder-solved" aria-label={m.tricks_ladder_solved()} {...stylex.props(styles.mark, styles.solved)}>
+                                  <CircleCheck aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                                </span>
+                              ) : mark === 'missed' ? (
+                                <span data-testid="tricks-ladder-missed" aria-label={m.tricks_ladder_missed()} {...stylex.props(styles.mark, styles.missed)}>
+                                  <CircleX aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                                </span>
+                              ) : mark === 'locked' ? (
+                                <span data-testid="tricks-ladder-locked" aria-label={m.tricks_ladder_locked()} {...stylex.props(styles.mark, styles.locked)}>
+                                  <Lock aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                                </span>
+                              ) : null}
+                              {e.id === nextUp ? <Pill tone="go">{m.tricks_ladder_next()}</Pill> : null}
+                              <ChevronRight aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.taskArrow)} />
+                            </Link>
+                          </li>
+                        )
+                      })}
+                    </ol>
+                  )}
                 </details>
               </li>
             )
@@ -161,17 +160,10 @@ export function TricksPage() {
  * its corner (SKATGO-109: 「要记下来哪题错了」) — and one button to the next.
  */
 function Levels({ type, steps, account }: { type: ExerciseType; steps: ReturnType<typeof useLadder>['steps']; account: string | null | undefined }) {
-  const text = EXERCISE_TEXT[getLocale()]
   const exercises = exercisesOf(type)
   const next = exercises.find((e) => !steps[e.id]?.solved) ?? exercises[0]
   return (
-    <section data-testid="tricks-type" data-type={type} {...stylex.props(styles.card, styles.cardFeatured, styles.levels)}>
-      <div {...stylex.props(styles.levelsHead)}>
-        <h2 {...stylex.props(typography.optionTitle, styles.optionTitle)}>{text.types[type].title}</h2>
-        <span data-testid="tricks-ladder-progress" {...stylex.props(typography.meta, styles.levelsCount)}>
-          {m.tricks_ladder_progress({ n: exercises.filter((e) => steps[e.id]?.solved).length, count: exercises.length })}
-        </span>
-      </div>
+    <div data-testid="tricks-levels" {...stylex.props(styles.levels)}>
       <ol {...stylex.props(styles.grid)}>
         {exercises.map((e, k) => {
           const record = steps[e.id]
@@ -218,7 +210,7 @@ function Levels({ type, steps, account }: { type: ExerciseType; steps: ReturnTyp
       <Link to="/skat-tricks/$exercise" params={{ exercise: next.id }} data-testid="tricks-level-play" {...linkLook('go', 'lg')}>
         {m.tricks_open_play({ n: exercises.indexOf(next) + 1 })}
       </Link>
-    </section>
+    </div>
   )
 }
 
@@ -248,7 +240,8 @@ const styles = stylex.create({
   title: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.slate },
   list: { listStyleType: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: space.x12 },
-  item: { margin: 0 },
+  // A card opened from the address (#reizen, #offenes-endspiel) stops under the sticky header, not behind it.
+  item: { margin: 0, scrollMarginTop: dims.landingHeader },
   card: {
     borderRadius: radii.option,
     borderWidth: border.tile,
@@ -327,9 +320,16 @@ const styles = stylex.create({
   taskTitle: { color: color.navy },
   taskArrow: { flexShrink: 0, color: color.go },
   // The levels (SKATGO-111): the settings' grid of choices, a square per puzzle as tall as an icon button.
-  levels: { display: 'flex', flexDirection: 'column', gap: space.x16, padding: { default: space.x20, [bp.phone]: space.x16 } },
-  levelsHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: space.x12 },
-  levelsCount: { color: color.slate, whiteSpace: 'nowrap' },
+  // Opened like a kind's list: under the same hairline (SKATGO-119).
+  levels: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x16,
+    padding: { default: space.x20, [bp.phone]: space.x16 },
+    borderTopWidth: border.hair,
+    borderTopStyle: 'solid',
+    borderTopColor: color.hairline,
+  },
   grid: { listStyleType: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: dims.backChoices, gap: space.x8 },
   level: { margin: 0 },
   levelLink: {

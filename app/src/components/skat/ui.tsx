@@ -103,13 +103,14 @@ export function TextField({ id, testId, value, onChange, onEnter, invalid, autoC
   )
 }
 
-/** Text over several lines — a forum post or comment (SKATGO-118). It starts a control's height and grows with
- *  what is written (where the browser can; elsewhere it can be dragged taller). */
-export function TextArea({ id, testId, value, onChange, invalid }: {
+/** Text over several lines — a forum post's text or a comment (SKATGO-118). It starts a few lines tall for what it
+ *  holds (SKATGO-119) and grows with what is written (where the browser can; elsewhere it can be dragged taller). */
+export function TextArea({ id, testId, value, onChange, size, invalid }: {
   id: string
   testId?: string
   value: string
   onChange: (value: string) => void
+  size: 'post' | 'comment'
   invalid?: boolean
 }) {
   return (
@@ -119,7 +120,7 @@ export function TextArea({ id, testId, value, onChange, invalid }: {
       value={value}
       aria-invalid={invalid}
       onChange={(e) => onChange(e.target.value)}
-      {...stylex.props(typography.appText, typography.control, styles.input, styles.area)}
+      {...stylex.props(typography.appText, typography.control, styles.input, styles.area, size === 'post' ? styles.areaPost : styles.areaComment)}
     />
   )
 }
@@ -215,6 +216,8 @@ const styles = stylex.create({
     boxShadow: { default: 'none', ':focus': elev.focus },
   },
   area: { width: '100%', resize: 'vertical', fieldSizing: 'content' },
+  areaPost: { minHeight: dims.textPost },
+  areaComment: { minHeight: dims.textComment },
   switch: {
     minHeight: dims.control,
     borderWidth: border.hair,

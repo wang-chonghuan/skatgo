@@ -94,6 +94,9 @@ export function ForumPage() {
             {data.more ? <Link to="/forum" search={{ section, page: page + 1 }} {...stylex.props(typography.appLink, styles.link)}>{m.forum_older()}</Link> : null}
           </div>
         ) : null}
+        {/* What the forum is for, in small print at the foot — not under the title (SKATGO-119, the human chose
+            「摘要+底部小字」 after the lead went in SKATGO-118). The empty and unreachable lines say it themselves. */}
+        {data?.posts.length ? <p data-testid="forum-about" {...stylex.props(typography.note, styles.quiet)}>{m.forum_about()}</p> : null}
       </section>
     </div>
   )
@@ -103,6 +106,7 @@ function PostCard({ post }: { post: ForumPostSummary }) {
   return (
     <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} {...stylex.props(styles.card)}>
       <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.optionDesc, styles.cardTitle)}>{post.title}</Link>
+      {post.excerpt ? <p data-testid="forum-excerpt" {...stylex.props(typography.bodySmall, styles.excerpt)}>{post.excerpt}</p> : null}
       <Meta of={post} />
       {post.hidden !== null ? <p {...stylex.props(typography.small, styles.hidden)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
     </li>
@@ -173,7 +177,7 @@ function Composer({ official, initial, onCancel }: { official: boolean; initial?
         <label htmlFor={`${id}-title`} {...stylex.props(typography.label, styles.label)}>{m.forum_field_title()}</label>
         <TextField id={`${id}-title`} testId="forum-title" value={title} onChange={setTitle} />
         <label htmlFor={`${id}-body`} {...stylex.props(typography.label, styles.label)}>{m.forum_field_body()}</label>
-        <TextArea id={`${id}-body`} testId="forum-body" value={body} onChange={setBody} />
+        <TextArea id={`${id}-body`} testId="forum-body" size="post" value={body} onChange={setBody} />
         <p {...stylex.props(typography.note, styles.quiet)}>{m.forum_format_hint()}</p>
         {error ? <p role="alert" {...stylex.props(typography.appText, styles.error)}>{error}</p> : null}
         <div {...stylex.props(styles.row)}>
@@ -403,7 +407,7 @@ function CommentBox({ viewer, post }: { viewer: ForumViewer; post: ForumPost }) 
   return (
     <div data-testid="forum-comment-box" {...stylex.props(styles.form)}>
       <label htmlFor={`${id}-comment`} {...stylex.props(typography.label, styles.label)}>{m.forum_comment_send()}</label>
-      <TextArea id={`${id}-comment`} testId="forum-comment-body" value={body} onChange={setBody} />
+      <TextArea id={`${id}-comment`} testId="forum-comment-body" size="comment" value={body} onChange={setBody} />
       <p {...stylex.props(typography.note, styles.quiet)}>{m.forum_mention_hint()}</p>
       {error ? <p role="alert" {...stylex.props(typography.appText, styles.error)}>{error}</p> : null}
       <div {...stylex.props(styles.row)}>
@@ -457,6 +461,7 @@ const styles = stylex.create({
     outlineOffset: border.focusOffset,
   },
   postCard: { gap: space.x16 },
+  excerpt: { margin: 0, color: color.text, overflowWrap: 'anywhere' },
   meta: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: space.x12, rowGap: space.x4 },
   author: { color: color.navy },
   official: { color: color.go },

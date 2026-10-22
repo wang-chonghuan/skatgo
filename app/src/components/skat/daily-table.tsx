@@ -1,12 +1,12 @@
 import * as stylex from '@stylexjs/stylex'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Link, useNavigate, useSearch } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { type DailyError, dailyAct, dailyBoard, dailyName, dailyState, isError } from '~/lib/daily-api'
 import type { Move } from '~/lib/skat/game'
-import { BOARD_DAYS, type BoardRow, DAILY_DEALS, DAILY_TIME_ZONE, type DailyBoard, type DailyReply, type DailySize, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
+import { BOARD_DAYS, type BoardRow, DAILY_DEALS, DAILY_TIME_ZONE, type DailyBoard, type DailyReply, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { color } from '../../theme/color.stylex'
@@ -15,7 +15,6 @@ import { border, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { DayDeals, VsAiTable, Who } from './daily-comparison'
-import { sizeSearch } from './daily-page'
 import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, TextField, linkLook } from './ui'
 import { TableLoading } from './table-loading'
@@ -32,14 +31,14 @@ const signed = (n: number) => (n > 0 ? `+${n}` : String(n))
 
 /** The day's deals and the start / continue link to the table, or the day's result once it is played;
  *  then the board. `waiting` stands in while the status loads: the server's rendering of the same. */
-export function DailyEntry({ size, waiting }: { size: DailySize; waiting?: ReactNode }) {
+export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
   const [status, setStatus] = useState<DailyStatus | DailyError | null>(null)
   // The board's day, how many days before today (SKATGO-80: the last `BOARD_DAYS`), and the boards fetched.
   const [back, setBack] = useState(0)
   const [boards, setBoards] = useState<Partial<Record<number, DailyBoard | DailyError>>>({})
-  const loadBoard = (b: number) => void dailyBoard(size, b).then((r) => setBoards((all) => ({ ...all, [b]: r })))
+  const loadBoard = (b: number) => void dailyBoard(b).then((r) => setBoards((all) => ({ ...all, [b]: r })))
   useEffect(() => {
-    void dailyState(size, false).then((r) => setStatus(isError(r) ? r : r.status))
+    void dailyState(false).then((r) => setStatus(isError(r) ? r : r.status))
     loadBoard(0)
   }, [])
   function show(b: number) {
@@ -52,12 +51,12 @@ export function DailyEntry({ size, waiting }: { size: DailySize; waiting?: React
   return (
     <div {...stylex.props(styles.stack)}>
       {status.finished ? (
-        <DailyResult size={size} status={status} />
+        <DailyResult status={status} />
       ) : (
         <div {...stylex.props(styles.stack)}>
           {/* The way in first, its own width so it reads as a button (SKATGO-63). */}
           <div {...stylex.props(styles.action)}>
-            <Link to="/daily/play" search={sizeSearch(size)} data-testid="daily-cta" onClick={() => { if (!status.started) track('daily_started', { deals: size }) }} {...linkLook('go', 'lg', 'landing')}>
+            <Link to="/daily/play" data-testid="daily-cta" onClick={() => { if (!status.started) track('daily_started', { deals: DAILY_DEALS }) }} {...linkLook('go', 'lg', 'landing')}>
               {status.started ? m.daily_continue({ n: status.deal + 1, of: status.of }) : m.daily_cta()}
             </Link>
           </div>
@@ -215,12 +214,12 @@ function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }
 }
 
 /** The tournament's deals and the total, as the server recorded them. */
-function DailyResult({ size, status }: { size: DailySize; status: DailyStatus }) {
+function DailyResult({ status }: { status: DailyStatus }) {
   return (
     <Panel>
       <section data-testid="daily-result" data-total={status.totals[PLAYER]} {...stylex.props(styles.result)}>
         <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_result_title()}</h2>
-        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} analysis={{ size, day: status.day }} />
+        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} analysis={{ day: status.day }} />
       </section>
     </Panel>
   )
@@ -229,9 +228,8 @@ function DailyResult({ size, status }: { size: DailySize; status: DailyStatus })
 /** The table for the current deal of one of the day's tournaments. After its last deal, or when the day
  *  is over, back to that tournament on /daily. */
 export function DailyTable() {
-  const size = useSearch({ from: '/daily_/play' }).deals ?? DAILY_DEALS
   const navigate = useNavigate()
-  const onLeave = () => void navigate({ to: '/daily', search: sizeSearch(size) })
+  const onLeave = () => void navigate({ to: '/daily' })
   const [reply, setReply] = useState<DailyReply | null>(null)
   const [shown, setShown] = useState<SeatView | null>(null)
   const [queue, setQueue] = useState<SeatView[]>([])
@@ -246,7 +244,7 @@ export function DailyTable() {
   const before = useRef<[number, number, number]>([0, 0, 0])
 
   async function load() {
-    const r = await dailyState(size, true)
+    const r = await dailyState(true)
     if (isError(r)) return setFailed(true)
     if (r.status.finished || !r.view) return onLeave()
     setFailed(false)
@@ -279,13 +277,13 @@ export function DailyTable() {
     if (!reply) return
     setSending(true)
     before.current = reply.status.totals
-    const r = await dailyAct(size, { day: reply.status.day, deal, revision: reply.revision }, move)
+    const r = await dailyAct({ day: reply.status.day, deal, revision: reply.revision }, move)
     setSending(false)
     // Refused — a new day began, or this page is behind another tab: take the server's word for where
     // things stand. A deal never restarts; the same cards come back as they were left.
     if (isError(r)) return r.error === 'day_over' ? onLeave() : void load()
     if (!r.steps?.length) return void load()
-    if (r.status.finished && !reply.status.finished) track('daily_finished', { deals: size, total: r.status.totals[PLAYER] })
+    if (r.status.finished && !reply.status.finished) track('daily_finished', { deals: DAILY_DEALS, total: r.status.totals[PLAYER] })
     setReply(r)
     setShown(r.steps[0])
     setQueue(r.steps.slice(1))

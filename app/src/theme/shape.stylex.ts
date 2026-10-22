@@ -64,6 +64,11 @@ export const dims = stylex.defineVars({
   // Sub-page
   pageColumn: '1287px',
   readingColumn: '860px',
+  /** The forum's text boxes (SKATGO-119, the human: 「发帖框高一点」, 「不要给的行太多」): a post's text starts about six
+   *  lines tall, a comment about three, and both grow with what is written. A line is the box's own line height
+   *  (`lh`); 22px is its padding and border. */
+  textPost: 'calc(6lh + 22px)',
+  textComment: 'calc(3lh + 22px)',
   /** A table of values on the rules page (SKATGO-29): two columns, a name and a number. */
   rulesTable: '480px',
   /** One row of the printable score sheet: room for a handwritten number, 36 rows and the Seeger-Fabian

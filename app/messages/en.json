@@ -695,5 +695,6 @@
   "forum_page_title": "{title} – Skat Forum | SkatGo",
   "forum_page_description": "{excerpt} – from the SkatGo Skat forum",
   "forum_new_badge": "New",
-  "forum_announcement": "Announcement"
+  "forum_announcement": "Announcement",
+  "forum_about": "The SkatGo forum has announcements from SkatGo, articles about Skat and your questions, ideas and feedback. Anyone can read; to write, you need a free SkatGo account."
 }

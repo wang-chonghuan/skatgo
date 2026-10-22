@@ -4,7 +4,7 @@ import { z } from 'zod'
 import {
   ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_SECTIONS, OFFICIAL_SECTIONS, PAGE_SIZE, POST_MAX,
   REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumAnnouncement, type ForumComment, type ForumList, type ForumPost,
-  type ForumPostSummary, type ForumReport, type ForumSection, type ForumThread, postIndexable,
+  type ForumPostSummary, type ForumReport, type ForumSection, type ForumThread, plainText, postIndexable,
 } from '../../app/src/lib/forum'
 import { nameOf } from './daily'
 import { Rejected, secretEquals } from './model'
@@ -57,7 +57,7 @@ type PostRow = {
 
 function summary(r: PostRow, who: string | null): ForumPostSummary {
   const p = {
-    id: num(r.id), section: r.section as ForumSection, title: r.title,
+    id: num(r.id), section: r.section as ForumSection, title: r.title, excerpt: plainText(r.body, 160),
     author: r.name ?? '', official: r.official, createdAt: num(r.created_at), lastActivity: num(r.last_activity),
     comments: num(r.comments), indexed: r.indexed, hidden: r.hidden_reason, mine: who !== null && r.author === who,
   }

@@ -298,8 +298,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   "Abbrechen" (`quiet`); for the official, while there are any, the open reports in a `tip` panel, each with its reasons, a link to
   it, a reason field, "Ausblenden" and "Ignorieren" (`quiet`); the section filter as `toggleLook` links, "Alle"
   first; the small `info` link to the Skat-Tricks article (all sections and articles); then the posts as white
-  option cards — the title (`optionDesc`, navy, a link) over one line of small facts (`meta`): the section in
-  slate, the author in navy or "SkatGo" in `go` (`smallBold`), the date and the count of comments. A post: "← Alle Beiträge" and its
+  option cards — the title (`optionDesc`, navy, a link), the start of its text (`bodySmall`, SKATGO-119), and one
+  line of small facts (`meta`): the section in slate, the author in navy or "SkatGo" in `go` (`smallBold`), the
+  date and the count of comments; at the foot of the list, in small slate print, a line on what the forum is for
+  (the human chose 「摘要+底部小字」, SKATGO-119; nothing under the title). A post: "← Alle Beiträge" and its
   section as links, then the post in a white card of its own, as each comment is (the human: 「每一个帖子或回复，都放在
   卡片里」): the H1, the same line of facts, a hidden post's reason in a `bad` panel for its author and
   the official, the text (`ForumBody`), the viewer's `quiet` small actions — "Melden", "Löschen" for their own

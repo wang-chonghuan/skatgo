@@ -94,6 +94,9 @@ export function ForumPage() {
             {data.more ? <Link to="/forum" search={{ section, page: page + 1 }} {...stylex.props(typography.appLink, styles.link)}>{m.forum_older()}</Link> : null}
           </div>
         ) : null}
+        {/* What the forum is for, in small print at the foot — not under the title (SKATGO-119, the human chose
+            「摘要+底部小字」 after the lead went in SKATGO-118). The empty and unreachable lines say it themselves. */}
+        {data?.posts.length ? <p data-testid="forum-about" {...stylex.props(typography.note, styles.quiet)}>{m.forum_about()}</p> : null}
       </section>
     </div>
   )
@@ -103,6 +106,7 @@ function PostCard({ post }: { post: ForumPostSummary }) {
   return (
     <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} {...stylex.props(styles.card)}>
       <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.optionDesc, styles.cardTitle)}>{post.title}</Link>
+      {post.excerpt ? <p data-testid="forum-excerpt" {...stylex.props(typography.bodySmall, styles.excerpt)}>{post.excerpt}</p> : null}
       <Meta of={post} />
       {post.hidden !== null ? <p {...stylex.props(typography.small, styles.hidden)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
     </li>
@@ -457,6 +461,7 @@ const styles = stylex.create({
     outlineOffset: border.focusOffset,
   },
   postCard: { gap: space.x16 },
+  excerpt: { margin: 0, color: color.text, overflowWrap: 'anywhere' },
   meta: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: space.x12, rowGap: space.x4 },
   author: { color: color.navy },
   official: { color: color.go },

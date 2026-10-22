@@ -36,6 +36,8 @@ export type ForumPostSummary = {
   id: number
   section: ForumSection
   title: string
+  /** The text's start, without its marks, for the list (SKATGO-119). */
+  excerpt: string
   /** The author's name on the leaderboard — never an account id or an email address. */
   author: string
   official: boolean

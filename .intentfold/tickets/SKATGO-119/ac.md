@@ -13,3 +13,6 @@ Local: web 55119, multiplayer 56119, database 57119 (built server, headed Chromi
    start); a six-deal day can be started, a move played, the board and a review read.
 4. **Data kept** — size-12 rows in `daily_deals` / `daily_entries` counted before and after (local database seeded
    with size-12 rows by the previous code); production counted read-only before and after deploy.
+5. **Forum list text** (added in development, the human's choice 「摘要+底部小字」) — with only one short post in the
+   forum, each card shows the start of its text under the title, the foot of the list has the line on what the
+   forum is for, and `npm run check:seo -- --built` (forum running) passes.

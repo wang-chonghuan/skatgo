@@ -19,7 +19,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ForumBody } from './forum-body'
-import { Btn, Panel, Pill, TextArea, TextField, Toggle, toggleLook } from './ui'
+import { Btn, Panel, TextArea, TextField, Toggle, toggleLook } from './ui'
 
 // The forum (SKATGO-118): the list of a language's posts with its sections, the composer and, for the official, the
 // open reports; and one post with its comments, flat, in the order written. Both are rendered on the server from
@@ -35,8 +35,8 @@ const SECTION_NAME: Record<ForumSection, () => string> = {
 /** A date the same on the server and in the browser: the day, as UTC sees it. */
 const dateOf = (ms: number) => new Intl.DateTimeFormat(LANG_TAG[getLocale()], { dateStyle: 'medium', timeZone: 'UTC' }).format(ms)
 
-function errorText(error: string): string {
-  if (error === 'limit_reached') return m.forum_error_limit(DAILY_LIMITS)
+function errorText(error: string, kind: 'posts' | 'comments' | 'reports' = 'posts'): string {
+  if (error === 'limit_reached') return { posts: m.forum_error_limit_posts, comments: m.forum_error_limit_comments, reports: m.forum_error_limit_reports }[kind]({ n: DAILY_LIMITS[kind] })
   if (error === 'signed_out') return m.forum_error_signed_out()
   return m.forum_error_failed()
 }
@@ -110,9 +110,13 @@ function Meta({ of }: { of: ForumPostSummary | ForumComment }) {
   const post = 'section' in of ? of : null
   return (
     <div {...stylex.props(styles.meta)}>
-      {post ? <Pill>{post.section === 'news' ? m.forum_announcement() : SECTION_NAME[post.section]()}</Pill> : null}
+      {post ? <span {...stylex.props(typography.meta, styles.quiet)}>{post.section === 'news' ? m.forum_announcement() : SECTION_NAME[post.section]()}</span> : null}
       {/* The official writes as SkatGo, not under a player's name. */}
-      {of.official ? <Pill tone="good">{m.forum_official()}</Pill> : <span data-testid="forum-author" {...stylex.props(typography.meta, styles.author)}>{of.author}</span>}
+      {of.official ? (
+        <span data-testid="forum-official" {...stylex.props(typography.smallBold, styles.official)}>{m.forum_official()}</span>
+      ) : (
+        <span data-testid="forum-author" {...stylex.props(typography.meta, styles.author)}>{of.author}</span>
+      )}
       <span {...stylex.props(typography.meta, styles.quiet)}>{dateOf(of.createdAt)}</span>
       {post ? (
         <span {...stylex.props(typography.meta, styles.quiet)}>{post.comments === 1 ? m.forum_comment_one() : m.forum_comment_many({ n: post.comments })}</span>
@@ -198,12 +202,11 @@ function Reports() {
   useEffect(() => {
     void load()
   }, [load])
-  if (!reports) return null
+  if (!reports?.length) return null
   return (
     <Panel tone="tip">
       <div data-testid="forum-reports" {...stylex.props(styles.form)}>
         <h2 {...stylex.props(typography.dialogTitle, styles.title)}>{m.forum_reports_title()}</h2>
-        {reports.length === 0 ? <p {...stylex.props(typography.appText, styles.note)}>{m.forum_reports_none()}</p> : null}
         {reports.map((r) => <ReportItem key={r.id} report={r} onDone={() => void load()} />)}
       </div>
     </Panel>
@@ -304,7 +307,7 @@ function Actions({ viewer, post, comment }: { viewer: ForumViewer; post: ForumPo
   if (!viewer.signedIn) return null
   const run = async (done: Promise<{ ok: boolean; error?: string }>, after: () => void) => {
     const answer = await done
-    if (!answer.ok) return setError(errorText((answer as { error: string }).error))
+    if (!answer.ok) return setError(errorText((answer as { error: string }).error, mode === 'report' ? 'reports' : 'posts'))
     setError(null)
     after()
   }
@@ -323,12 +326,12 @@ function Actions({ viewer, post, comment }: { viewer: ForumViewer; post: ForumPo
           {viewer.official && item.hidden !== null ? (
             <Btn tone="quiet" size="sm" testId="forum-restore" onClick={() => void run(moderate({ action: 'restore', ...target }), reload)}>{m.forum_restore()}</Btn>
           ) : null}
-          {viewer.official && markable ? (
+          {viewer.official && markable && post.hidden === null ? (
             <Btn tone="quiet" size="sm" testId="forum-index" onClick={() => void run(moderate({ action: post.indexed ? 'unindex' : 'index', post: post.id }), reload)}>
               {post.indexed ? m.forum_unindex() : m.forum_index()}
             </Btn>
           ) : null}
-          {markable && post.indexed ? <span {...stylex.props(typography.meta, styles.quiet)}>{m.forum_indexed()}</span> : null}
+          {viewer.official && markable && post.indexed && post.hidden === null ? <span {...stylex.props(typography.meta, styles.quiet)}>{m.forum_indexed()}</span> : null}
         </div>
       ) : null}
       {mode === 'reported' ? <p {...stylex.props(typography.small, styles.quiet)}>{m.forum_reported()}</p> : null}
@@ -396,7 +399,7 @@ function CommentBox({ viewer, post }: { viewer: ForumViewer; post: ForumPost }) 
     setBusy(true)
     const answer = await addComment(post.id, b)
     setBusy(false)
-    if (!answer.ok) return setError(errorText(answer.error))
+    if (!answer.ok) return setError(errorText(answer.error, 'comments'))
     setBody('')
     setError(null)
     void router.invalidate()
@@ -457,8 +460,9 @@ const styles = stylex.create({
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
-  meta: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
+  meta: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: space.x12, rowGap: space.x4 },
   author: { color: color.navy },
+  official: { color: color.go },
   report: {
     display: 'flex',
     flexDirection: 'column',

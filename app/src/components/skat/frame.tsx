@@ -27,7 +27,7 @@ import { Btn, suitText } from './ui'
 // carries only what skatgo
 // has (SKATGO-29: nothing announced).
 
-type Section = 'home' | 'daily' | 'course' | 'rules' | 'play'
+type Section = 'home' | 'daily' | 'course' | 'rules' | 'play' | 'forum'
 
 /** Which section a path belongs to. The router has already removed the language prefix. */
 export function sectionOf(pathname: string): Section {
@@ -39,6 +39,8 @@ export function sectionOf(pathname: string): Section {
   if (pathname.startsWith('/course')) return 'course'
   if (pathname.startsWith('/rules')) return 'rules'
   if (pathname.startsWith('/play')) return 'play'
+  // The forum's pages are sub-pages on the grey page (SKATGO-118).
+  if (pathname.startsWith('/forum')) return 'forum'
   return 'home'
 }
 

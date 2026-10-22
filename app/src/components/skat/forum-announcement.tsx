@@ -14,7 +14,7 @@ export function AnnouncementLine({ announcement }: { announcement: ForumAnnounce
   if (!announcement) return null
   return (
     <Link to="/forum/$post" params={{ post: postParam(announcement) }} data-testid="forum-announcement" {...stylex.props(styles.line)}>
-      <Pill tone="go">{m.forum_new_badge()}</Pill>
+      <Pill tone="good">{m.forum_new_badge()}</Pill>
       <span {...stylex.props(typography.appLink, styles.title)}>{announcement.title}</span>
     </Link>
   )
@@ -32,5 +32,5 @@ const styles = stylex.create({
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
-  title: { color: { default: color.navy, ':hover': color.info }, overflowWrap: 'anywhere' },
+  title: { color: color.info, textDecoration: { default: 'underline', ':hover': 'none' }, overflowWrap: 'anywhere' },
 })

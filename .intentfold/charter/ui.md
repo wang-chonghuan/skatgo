@@ -186,7 +186,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `Stars` | `n` of 3 | a lesson's result |
 | `Rich` | — | every piece of course text: renders `**bold**` and each suit glyph in its suit's colour |
 | `Toggle` / `toggleLook(pressed)` | pressed or not; a button, or the same pill on a router `<Link>` | a choice that is on or off: the daily tournament's two lengths, a forum post's section, the forum's section filter (SKATGO-118) |
-| `TextField` / `TextArea` | one line (Enter submits) / several, starting a control's height and growing with the text | a name, a forum post's title and text, a comment, a reason |
+| `TextField` / `TextArea` | one line (Enter submits) / several: `size` `post` starts about six lines tall, `comment` about three (`dims.textPost`, `textComment`; SKATGO-119), both growing with the text | a name, a forum post's title and text, a comment, a reason |
 
 **Components — the course's and the table's widgets**
 

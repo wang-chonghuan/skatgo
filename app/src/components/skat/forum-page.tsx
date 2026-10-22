@@ -173,7 +173,7 @@ function Composer({ official, initial, onCancel }: { official: boolean; initial?
         <label htmlFor={`${id}-title`} {...stylex.props(typography.label, styles.label)}>{m.forum_field_title()}</label>
         <TextField id={`${id}-title`} testId="forum-title" value={title} onChange={setTitle} />
         <label htmlFor={`${id}-body`} {...stylex.props(typography.label, styles.label)}>{m.forum_field_body()}</label>
-        <TextArea id={`${id}-body`} testId="forum-body" value={body} onChange={setBody} />
+        <TextArea id={`${id}-body`} testId="forum-body" size="post" value={body} onChange={setBody} />
         <p {...stylex.props(typography.note, styles.quiet)}>{m.forum_format_hint()}</p>
         {error ? <p role="alert" {...stylex.props(typography.appText, styles.error)}>{error}</p> : null}
         <div {...stylex.props(styles.row)}>
@@ -403,7 +403,7 @@ function CommentBox({ viewer, post }: { viewer: ForumViewer; post: ForumPost }) 
   return (
     <div data-testid="forum-comment-box" {...stylex.props(styles.form)}>
       <label htmlFor={`${id}-comment`} {...stylex.props(typography.label, styles.label)}>{m.forum_comment_send()}</label>
-      <TextArea id={`${id}-comment`} testId="forum-comment-body" value={body} onChange={setBody} />
+      <TextArea id={`${id}-comment`} testId="forum-comment-body" size="comment" value={body} onChange={setBody} />
       <p {...stylex.props(typography.note, styles.quiet)}>{m.forum_mention_hint()}</p>
       {error ? <p role="alert" {...stylex.props(typography.appText, styles.error)}>{error}</p> : null}
       <div {...stylex.props(styles.row)}>

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-119",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-119",
+  "branch": "SKATGO-119-tall-box-six-deals",
+  "base": "9cb721b5792ca911bf3703d90e68ef50dcacff90",
+  "ports": { "web": 55119, "multiplayer": 56119, "database": 57119 }
+}

@@ -5,13 +5,13 @@ import { useCallback, useEffect, useId, useState } from 'react'
 
 import {
   COMMENT_MAX, DAILY_LIMITS, FORUM_SECTIONS, POST_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumComment, type ForumPost,
-  type ForumPostSummary, type ForumReport, type ForumSection, type ForumViewer, postParam, postPath, sectionsFor,
+  type ForumPostSummary, type ForumReport, type ForumSection, type ForumViewer, postParam, sectionsFor,
 } from '~/lib/forum'
 import { addComment, createPost, deleteOwn, moderate, readReports, report } from '~/lib/forum-api'
 import { LANG_TAG } from '~/lib/site'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
-import { getLocale, localizeHref } from '~/paraglide/runtime'
+import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { elev } from '../../theme/elevation.stylex'
@@ -163,7 +163,7 @@ function Composer({ official, initial, onCancel }: { official: boolean; initial?
     if (t.length < TITLE_MIN || t.length > TITLE_MAX) return setError(m.forum_error_title())
     if (!b || b.length > POST_MAX) return setError(m.forum_error_body({ max: POST_MAX }))
     setBusy(true)
-    const answer = await createPost({ locale: getLocale(), section, title: t, body: b })
+    const answer = await createPost({ section, title: t, body: b })
     setBusy(false)
     if (!answer.ok) return setError(errorText(answer.error))
     void navigate({ to: '/forum/$post', params: { post: postParam(answer.data) } })
@@ -230,7 +230,7 @@ function ReportItem({ report: r, onDone }: { report: ForumReport; onDone: () => 
       </p>
       <p {...stylex.props(typography.appText, styles.note)}>{r.excerpt}</p>
       {r.reasons.length ? <p {...stylex.props(typography.small, styles.quiet)}>{r.reasons.map((x) => `„${x}“`).join(' ')}</p> : null}
-      <a href={localizeHref(postPath({ id: r.postId, title: r.postTitle }), { locale: r.locale })} {...stylex.props(typography.appLink, styles.link)}>{m.forum_open()}</a>
+      <Link to="/forum/$post" params={{ post: postParam({ id: r.postId, title: r.postTitle }) }} {...stylex.props(typography.appLink, styles.link)}>{m.forum_open()}</Link>
       <label htmlFor={`${id}-reason`} {...stylex.props(typography.label, styles.label)}>{m.forum_hide_reason()}</label>
       <div {...stylex.props(styles.row)}>
         <TextField id={`${id}-reason`} testId="forum-hide-reason" value={reason} onChange={setReason} />

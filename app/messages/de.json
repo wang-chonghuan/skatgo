@@ -696,7 +696,8 @@
   "forum_unindex": "Nicht mehr für Suchmaschinen",
   "forum_indexed": "Für Suchmaschinen freigegeben",
   "forum_hidden_note": "Von SkatGo ausgeblendet: {reason}",
-  "forum_page_title": "{title} – SkatGo Forum",
+  "forum_page_title": "{title} – Skat-Forum | SkatGo",
+  "forum_page_description": "{excerpt} – aus dem Skat-Forum von SkatGo",
   "forum_new_badge": "Neu",
   "forum_announcement": "Ankündigung"
 }

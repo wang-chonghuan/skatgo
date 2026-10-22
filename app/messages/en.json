@@ -696,7 +696,8 @@
   "forum_unindex": "Stop search engines indexing it",
   "forum_indexed": "Indexed by search engines",
   "forum_hidden_note": "Hidden by SkatGo: {reason}",
-  "forum_page_title": "{title} – SkatGo Forum",
+  "forum_page_title": "{title} – Skat Forum | SkatGo",
+  "forum_page_description": "{excerpt} – from the SkatGo Skat forum",
   "forum_new_badge": "New",
   "forum_announcement": "Announcement"
 }

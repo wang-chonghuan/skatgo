@@ -8,8 +8,8 @@ import { SITE_URL, localizedUrl } from '~/lib/site'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 
-// One forum post and its comments (SKATGO-118), in the one language it was written in. An unknown or hidden post
-// is a missing page; a post asked for in the other language sends the reader to this language's forum; an old
+// One forum post and its comments (SKATGO-118), at an address in each language of the site: the page's words are
+// the site's language, the post's whatever its author wrote. An unknown or hidden post is a missing page; an old
 // or mistyped title in the address is corrected. Indexed only when the post may be (lib/forum.ts).
 export const Route = createFileRoute('/forum_/$post')({
   loader: async ({ params }) => {
@@ -21,7 +21,6 @@ export const Route = createFileRoute('/forum_/$post')({
       return { post: null, viewer: null }
     }
     const { post } = answer.data
-    if (post.locale !== getLocale()) throw redirect({ to: '/forum' })
     if (params.post !== postParam(post)) throw redirect({ to: '/forum/$post', params: { post: postParam(post) }, statusCode: 301 })
     return answer.data
   },
@@ -31,7 +30,8 @@ export const Route = createFileRoute('/forum_/$post')({
     const locale = getLocale()
     const path = postPath(post)
     const url = localizedUrl(path, locale)
-    const description = plainText(post.body) || post.title
+    // The same post stands at an address in each language; the words around it tell the two apart.
+    const description = m.forum_page_description({ excerpt: plainText(post.body, 120) || post.title })
     const published = new Date(post.createdAt).toISOString()
     const publisher = { '@type': 'Organization', name: m.site_name(), url: SITE_URL }
     return pageHead({
@@ -40,7 +40,6 @@ export const Route = createFileRoute('/forum_/$post')({
       paths: samePath(path),
       image: 'forum',
       indexable: post.indexable,
-      only: post.locale,
       jsonLd: [
         post.official
           ? { '@type': 'Article', headline: post.title, description, url, inLanguage: locale, image: ogImageUrl('forum', locale), datePublished: published, author: publisher, publisher }

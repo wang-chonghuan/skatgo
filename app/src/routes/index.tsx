@@ -11,7 +11,7 @@ import { getLocale } from '~/paraglide/runtime'
 
 export const Route = createFileRoute('/')({
   // The forum's newest announcement, as a line on the page (SKATGO-118).
-  loader: () => readAnnouncement(getLocale()),
+  loader: () => readAnnouncement(),
   head: () =>
     pageHead({
       title: m.home_meta_title(),

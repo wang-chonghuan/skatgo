@@ -1,14 +1,14 @@
 import { postPath } from '~/lib/forum'
+import { samePath } from '~/lib/head'
 import { signedInUser } from '~/lib/session'
-import { LANG_TAG, localizedUrl } from '~/lib/site'
-import type { Locale } from '~/paraglide/runtime'
+import { sitemapXml } from '~/lib/sitemap'
 
 // POST /api/forum/<op> — the forum's only way in from the browser (SKATGO-118). The forum lives in the
 // multiplayer service; this handler says who is asking — the signed-in account or nobody — and whether that
 // account is the official's (FORUM_OFFICIALS, a comma list of Clerk account ids), and passes the request on
 // with the service's key. Reading needs no account; every write does. Nothing here sets a cookie.
 //
-// Also /sitemap-forum.xml: the posts search engines may read, one language each.
+// Also /sitemap-forum.xml: the posts search engines may read.
 //
 // Wired in src/server.ts before the page router, like /api/daily: it is not a page.
 
@@ -60,28 +60,13 @@ export async function handleForum(request: Request): Promise<Response> {
   return json(answer.status, answer.body as object)
 }
 
-/** The forum's sitemap: every post search engines may read, in its one language — so its only alternate is
- *  itself. 503 when the forum does not answer, so a crawler comes back rather than forgetting the posts. */
+/** The forum's sitemap: every post search engines may read, at its address in each language of the site, as the
+ *  site's pages are in /sitemap.xml. 503 when the forum does not answer, so a crawler comes back rather than
+ *  forgetting the posts. */
 export async function forumSitemap(): Promise<Response> {
   const answer = await askForum('sitemap', {}, null)
   if (answer.status !== 200) return new Response('forum unavailable\n', { status: 503, headers: { 'content-type': 'text/plain; charset=utf-8', 'retry-after': '600' } })
-  const posts = (answer.body as { posts: { id: number; locale: Locale; title: string; lastActivity: number }[] }).posts
-  const entries = posts.map((p) => {
-    const loc = localizedUrl(postPath(p), p.locale)
-    return [
-      '  <url>',
-      `    <loc>${loc}</loc>`,
-      `    <lastmod>${new Date(p.lastActivity).toISOString()}</lastmod>`,
-      `    <xhtml:link rel="alternate" hreflang="${LANG_TAG[p.locale]}" href="${loc}"/>`,
-      '  </url>',
-    ].join('\n')
-  })
-  const xml = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
-    ...entries,
-    '</urlset>',
-    '',
-  ].join('\n')
+  const posts = (answer.body as { posts: { id: number; title: string }[] }).posts
+  const xml = sitemapXml(posts.map((p) => samePath(postPath(p))))
   return new Response(xml, { headers: { 'content-type': 'application/xml; charset=utf-8' } })
 }

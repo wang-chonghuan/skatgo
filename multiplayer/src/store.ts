@@ -78,14 +78,14 @@ export class Store {
         CREATE TABLE IF NOT EXISTS account_referrals (
           account text PRIMARY KEY, referrer text NOT NULL, room_id text NOT NULL, created_at bigint NOT NULL
         );
-        -- The forum (SKATGO-118): posts per language and section, flat comments, and reports — once per reporter
+        -- The forum (SKATGO-118): posts per section, flat comments, and reports — once per reporter
         -- and thing reported. An author's delete removes the row and what hangs from it.
         CREATE TABLE IF NOT EXISTS forum_posts (
-          id bigserial PRIMARY KEY, locale text NOT NULL, section text NOT NULL, author text NOT NULL,
+          id bigserial PRIMARY KEY, section text NOT NULL, author text NOT NULL,
           official boolean NOT NULL, title text NOT NULL, body text NOT NULL, indexed boolean NOT NULL DEFAULT false,
           hidden_reason text, created_at bigint NOT NULL, last_activity bigint NOT NULL
         );
-        CREATE INDEX IF NOT EXISTS forum_posts_list ON forum_posts (locale, last_activity DESC);
+        CREATE INDEX IF NOT EXISTS forum_posts_list ON forum_posts (last_activity DESC);
         CREATE INDEX IF NOT EXISTS forum_posts_author ON forum_posts (author, created_at);
         CREATE TABLE IF NOT EXISTS forum_comments (
           id bigserial PRIMARY KEY, post_id bigint NOT NULL REFERENCES forum_posts(id) ON DELETE CASCADE,

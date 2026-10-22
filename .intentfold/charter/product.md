@@ -105,7 +105,7 @@ reached only by a small link under them. Every article leads to the daily tourna
 compared with the AI. The articles' text is SkatGo's own: no book's passages, examples or order are copied,
 and the articles recommend no books. After every deal, the play record links to the exercises.
 
-A forum at `/forum` (SKATGO-118), one per language, in the product's own code: the human wanted
+A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted
 「官方发公告，官方发一些技术的文章，用户可以评论，用户也可以发文章……就做一个简单版本的。以后既能用来seo又有个公告和用户交流，放文章的地方」.
 Four sections: announcements, which only SkatGo writes; articles, by SkatGo or a player; discussion; and feedback.
 The list shows them together, newest activity first, the latest announcement of the last two weeks on top, and
@@ -116,7 +116,9 @@ an email address; SkatGo writes as SkatGo. SkatGo's posts are for search engines
 marks it, and feedback never. The latest announcement also stands as one line on the front page and on `/daily`
 for two weeks. The least moderation the law asks of a host: anyone signed in may report a post or comment,
 SkatGo hides with a reason its author sees, an author may delete their own, and each account writes only so much
-a day. The forum's articles section links to the Skat-Tricks article, which stays where it is. Not in it, by the
+a day. It is one forum for both languages (the human, in review: 「德语和英语论坛不要分开」): its own words follow the
+site's language, and a post or comment is in whatever language its author writes (「别人想发什么语言就发什么语言」);
+a way to translate them comes later, not now. The forum's articles section links to the Skat-Tricks article, which stays where it is. Not in it, by the
 human's agreement (「都同意」): notifications, nested replies, pictures, search, profiles, likes, blocking (with the
 apps later) and competitions (later, in the product itself).
 

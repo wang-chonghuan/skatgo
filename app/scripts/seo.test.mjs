@@ -196,14 +196,15 @@ test('owned preview and same crawler reject actual broken responses', { timeout:
           }, /Preserve query/],
           ['English root kept', async ({ url, requestHeaders }) => url.pathname === '/' && /^en/.test(requestHeaders['accept-language'] ?? '') && !requestHeaders.cookie ? { status: 200 } : undefined, /Root for en/],
           // The forum's sitemap (SKATGO-118), answered here whether or not a forum runs behind this preview.
-          ['forum post in two languages', async ({ url }) => url.pathname === '/sitemap-forum.xml' ? { status: 200, body: [
+          ['forum post at a wrong address', async ({ url }) => url.pathname === '/sitemap-forum.xml' ? { status: 200, body: [
             '<?xml version="1.0" encoding="UTF-8"?>',
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url>',
             '<loc>https://skatgo.com/de/forum/1-x</loc>',
             '<xhtml:link rel="alternate" hreflang="de" href="https://skatgo.com/de/forum/1-x"/>',
-            '<xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/en/forum/1-x"/>',
+            '<xhtml:link rel="alternate" hreflang="en" href="https://skatgo.com/de/forum/1-x"/>',
+            '<xhtml:link rel="alternate" hreflang="x-default" href="https://skatgo.com/de/forum/1-x"/>',
             '</url></urlset>',
-          ].join('') } : undefined, /one-language alternate/],
+          ].join('') } : undefined, /forum post address in en/],
           ['forum soft 404', async ({ url, status }) => {
             // A forum must answer for its missing posts to be asked for: an empty one stands in when none runs here.
             if (url.pathname === '/sitemap-forum.xml' && status === 503) return { status: 200, body: '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>' }

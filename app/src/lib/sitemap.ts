@@ -18,7 +18,13 @@ export function sitemapPages(): Record<Locale, string>[] {
 }
 
 export function buildSitemap(): string {
-  const entries = sitemapPages().flatMap((paths) =>
+  return sitemapXml(sitemapPages())
+}
+
+/** A sitemap of pages that exist in every language, each with its alternates and German as x-default — the
+ *  site's pages here, the forum's posts in /sitemap-forum.xml (SKATGO-118). */
+export function sitemapXml(pages: Record<Locale, string>[]): string {
+  const entries = pages.flatMap((paths) =>
     locales.map((locale) =>
       [
         '  <url>',

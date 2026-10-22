@@ -2,7 +2,7 @@ import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
 import {
-  ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_LOCALES, FORUM_SECTIONS, OFFICIAL_SECTIONS, PAGE_SIZE, POST_MAX,
+  ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_SECTIONS, OFFICIAL_SECTIONS, PAGE_SIZE, POST_MAX,
   REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumAnnouncement, type ForumComment, type ForumList, type ForumPost,
   type ForumPostSummary, type ForumReport, type ForumSection, type ForumThread, postIndexable,
 } from '../../app/src/lib/forum'
@@ -10,7 +10,7 @@ import { nameOf } from './daily'
 import { Rejected, secretEquals } from './model'
 import type { Store } from './store'
 
-// The forum (SKATGO-118): posts in four sections per language, flat comments, and the least moderation the law
+// The forum (SKATGO-118): posts in four sections, in whatever language their authors write, flat comments, and the least moderation the law
 // asks of a host — a report, the official hiding with a reason, authors deleting their own. The web service
 // calls these routes with the admission key and names the viewer: a signed-in account (`user:<Clerk id>`) or
 // nobody, and whether the account is the official's. Only names leave here, never a player id: whether
@@ -24,16 +24,15 @@ class TooMany extends Error {}
 
 const player = z.string().regex(/^user:[A-Za-z0-9_]{1,64}$/)
 const id = z.number().int().positive().max(Number.MAX_SAFE_INTEGER)
-const locale = z.enum(FORUM_LOCALES)
 const section = z.enum(FORUM_SECTIONS)
 const text = (min: number, max: number) => z.string().transform((s) => s.trim()).pipe(z.string().min(min).max(max))
 const viewer = { player: player.nullable(), official: z.boolean() }
 const author = { player, official: z.boolean() }
 const target = z.union([z.object({ post: id }).strict(), z.object({ comment: id }).strict()])
 
-const listInput = z.object({ ...viewer, locale, section: section.optional(), page: z.number().int().min(1).max(1000).optional() }).strict()
+const listInput = z.object({ ...viewer, section: section.optional(), page: z.number().int().min(1).max(1000).optional() }).strict()
 const postInput = z.object({ ...viewer, id }).strict()
-const createInput = z.object({ ...author, locale, section, title: text(TITLE_MIN, TITLE_MAX), body: text(1, POST_MAX) }).strict()
+const createInput = z.object({ ...author, section, title: text(TITLE_MIN, TITLE_MAX), body: text(1, POST_MAX) }).strict()
 const commentInput = z.object({ ...author, post: id, body: text(1, COMMENT_MAX) }).strict()
 const deleteInput = z.object({ ...author, post: id.optional(), comment: id.optional() }).strict()
 const reportInput = z.object({ ...author, post: id.optional(), comment: id.optional(), reason: text(0, REASON_MAX).optional() }).strict()
@@ -44,7 +43,7 @@ const moderateInput = z.discriminatedUnion('action', [
   z.object({ ...author, action: z.literal('dismiss'), report: id }).strict(),
   z.object({ ...author, action: z.enum(['index', 'unindex']), post: id }).strict(),
 ])
-const latestInput = z.object({ locale }).strict()
+const latestInput = z.object({}).strict()
 
 /** Exactly one of a post or a comment. */
 const one = (i: { post?: number; comment?: number }) => target.parse(i.post !== undefined ? { post: i.post } : { comment: i.comment })
@@ -52,13 +51,13 @@ const one = (i: { post?: number; comment?: number }) => target.parse(i.post !== 
 const num = (v: unknown) => Number(v)
 
 type PostRow = {
-  id: string; locale: string; section: string; author: string; official: boolean; title: string; body: string
+  id: string; section: string; author: string; official: boolean; title: string; body: string
   indexed: boolean; hidden_reason: string | null; created_at: string; last_activity: string; name: string | null; comments: string
 }
 
 function summary(r: PostRow, who: string | null): ForumPostSummary {
   const p = {
-    id: num(r.id), locale: r.locale as ForumPostSummary['locale'], section: r.section as ForumSection, title: r.title,
+    id: num(r.id), section: r.section as ForumSection, title: r.title,
     author: r.name ?? '', official: r.official, createdAt: num(r.created_at), lastActivity: num(r.last_activity),
     comments: num(r.comments), indexed: r.indexed, hidden: r.hidden_reason, mine: who !== null && r.author === who,
   }
@@ -73,17 +72,17 @@ const POSTS = `
     FROM forum_posts p LEFT JOIN daily_players d ON d.player = p.author`
 const VISIBLE = `(p.hidden_reason IS NULL OR $2::boolean OR p.author = $1)`
 
-/** One page of a language's posts, newest activity first; the newest announcement of the last two weeks first
+/** One page of the posts, newest activity first; the newest announcement of the last two weeks first
  *  of all, on the first page of the whole list or of the announcements. */
 export async function forumList(store: Store, i: z.infer<typeof listInput>, now = Date.now()): Promise<ForumList> {
   const page = i.page ?? 1
   // The announcement stands first on the first page, and is left out of every page's own rows.
-  const pinned = !i.section || i.section === 'news' ? await latest(store.pool, i.locale, now) : null
+  const pinned = !i.section || i.section === 'news' ? await latest(store.pool, now) : null
   const lead = pinned && page === 1 ? 1 : 0
   const { rows } = await store.pool.query(
-    `${POSTS} WHERE p.locale = $3 AND ${VISIBLE} AND ($4::text IS NULL OR p.section = $4) AND p.id <> $5
-      ORDER BY p.last_activity DESC, p.id DESC LIMIT $6 OFFSET $7`,
-    [i.player, i.official, i.locale, i.section ?? null, pinned?.id ?? 0, PAGE_SIZE - lead + 1, Math.max(0, (page - 1) * PAGE_SIZE - (pinned ? 1 : 0))],
+    `${POSTS} WHERE ${VISIBLE} AND ($3::text IS NULL OR p.section = $3) AND p.id <> $4
+      ORDER BY p.last_activity DESC, p.id DESC LIMIT $5 OFFSET $6`,
+    [i.player, i.official, i.section ?? null, pinned?.id ?? 0, PAGE_SIZE - lead + 1, Math.max(0, (page - 1) * PAGE_SIZE - (pinned ? 1 : 0))],
   )
   const first = lead ? (await store.pool.query(`${POSTS} WHERE p.id = $1`, [pinned!.id])).rows : []
   const posts = [...first, ...rows].map((r) => summary(r, i.player))
@@ -120,9 +119,9 @@ export async function forumCreate(store: Store, i: z.infer<typeof createInput>, 
     // The author stands under their leaderboard name, given now if they have none yet (SKATGO-90).
     await nameOf(c, i.player, now)
     const { rows } = await c.query(
-      `INSERT INTO forum_posts (locale, section, author, official, title, body, created_at, last_activity)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $7) RETURNING id`,
-      [i.locale, i.section, i.player, i.official, i.title, i.body, now],
+      `INSERT INTO forum_posts (section, author, official, title, body, created_at, last_activity)
+       VALUES ($1, $2, $3, $4, $5, $6, $6) RETURNING id`,
+      [i.section, i.player, i.official, i.title, i.body, now],
     )
     return { id: num(rows[0].id), title: i.title }
   })
@@ -181,17 +180,17 @@ export async function forumReports(store: Store, i: z.infer<typeof reportsInput>
   const { rows } = await store.pool.query(`
     SELECT max(r.id) AS id, r.post_id, r.comment_id, min(r.created_at) AS created_at, count(*)::int AS count,
            array_remove(array_agg(r.reason ORDER BY r.created_at), NULL) AS reasons,
-           p.title, p.locale, coalesce(c.body, p.body) AS body, coalesce(c.hidden_reason, p.hidden_reason) AS hidden,
+           p.title, coalesce(c.body, p.body) AS body, coalesce(c.hidden_reason, p.hidden_reason) AS hidden,
            d.nickname AS name
       FROM forum_reports r JOIN forum_posts p ON p.id = r.post_id
       LEFT JOIN forum_comments c ON c.id = r.comment_id
       LEFT JOIN daily_players d ON d.player = coalesce(c.author, p.author)
      WHERE r.resolved_at IS NULL
-     GROUP BY r.post_id, r.comment_id, p.title, p.locale, c.body, p.body, c.hidden_reason, p.hidden_reason, d.nickname
+     GROUP BY r.post_id, r.comment_id, p.title, c.body, p.body, c.hidden_reason, p.hidden_reason, d.nickname
      ORDER BY min(r.created_at)`)
   return {
     reports: rows.map((r) => ({
-      id: num(r.id), postId: num(r.post_id), postTitle: r.title, locale: r.locale, commentId: r.comment_id === null ? null : num(r.comment_id),
+      id: num(r.id), postId: num(r.post_id), postTitle: r.title, commentId: r.comment_id === null ? null : num(r.comment_id),
       author: r.name ?? '', excerpt: String(r.body).slice(0, 280), hidden: r.hidden, reasons: r.reasons, count: r.count, createdAt: num(r.created_at),
     })),
   }
@@ -233,25 +232,25 @@ export async function forumModerate(store: Store, i: z.infer<typeof moderateInpu
   })
 }
 
-async function latest(db: pg.Pool | pg.PoolClient, lang: string, now: number): Promise<ForumAnnouncement | null> {
+async function latest(db: pg.Pool | pg.PoolClient, now: number): Promise<ForumAnnouncement | null> {
   const { rows } = await db.query(
-    `SELECT id, title, created_at FROM forum_posts WHERE locale = $1 AND section = 'news' AND hidden_reason IS NULL AND created_at > $2
+    `SELECT id, title, created_at FROM forum_posts WHERE section = 'news' AND hidden_reason IS NULL AND created_at > $1
       ORDER BY created_at DESC, id DESC LIMIT 1`,
-    [lang, now - ANNOUNCEMENT_DAYS * DAY])
+    [now - ANNOUNCEMENT_DAYS * DAY])
   return rows[0] ? { id: num(rows[0].id), title: rows[0].title, createdAt: num(rows[0].created_at) } : null
 }
 
 /** The announcement of the last two weeks, for the line on the front page and /daily, or null. */
-export async function forumLatest(store: Store, i: z.infer<typeof latestInput>, now = Date.now()) {
-  return { announcement: await latest(store.pool, i.locale, now) }
+export async function forumLatest(store: Store, _i: z.infer<typeof latestInput>, now = Date.now()) {
+  return { announcement: await latest(store.pool, now) }
 }
 
 /** Every post search engines may read, for the forum's sitemap. */
 export async function forumSitemap(store: Store) {
   const { rows } = await store.pool.query(
-    `SELECT id, locale, title, last_activity FROM forum_posts
+    `SELECT id, title, last_activity FROM forum_posts
       WHERE hidden_reason IS NULL AND section <> 'feedback' AND (official OR indexed) ORDER BY id`)
-  return { posts: rows.map((r) => ({ id: num(r.id), locale: r.locale, title: r.title, lastActivity: num(r.last_activity) })) }
+  return { posts: rows.map((r) => ({ id: num(r.id), title: r.title, lastActivity: num(r.last_activity) })) }
 }
 
 /** The routes, behind the admission key. */

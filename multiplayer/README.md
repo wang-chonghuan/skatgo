@@ -202,9 +202,9 @@ misses } } }` and keeps the larger count, so the same record sent twice changes 
 web's `FORUM_OFFICIALS` — and the browser can name neither. The rules shared with the pages (sections, limits, what
 may be indexed, the text's marks) are `app/src/lib/forum.ts`.
 
-- Reads: `list` (`{ player, official, locale, section?, page? }`: a language's posts, newest activity first, the
+- Reads: `list` (`{ player, official, section?, page? }`: the posts, in whatever language they were written, newest activity first, the
   announcement of the last two weeks first), `post` (`{ player, official, id }`: a post and its comments, flat,
-  oldest first), `latest` (`{ locale }`: that announcement or `null`), `sitemap` (`{}`: every post search engines
+  oldest first), `latest` (`{}`: that announcement or `null`), `sitemap` (`{}`: every post search engines
   may read). Hidden posts and comments are returned only to their author and the official. Only names leave
   here — authors stand under their leaderboard name (`daily_players`, given by `nameOf` at their first write) —
   and whether something is the viewer's own travels as `mine`.

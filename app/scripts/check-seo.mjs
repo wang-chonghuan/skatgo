@@ -105,8 +105,9 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
     for (const expected of inventory.entries) {
       assert.deepEqual(byUrl.get(expected.loc).alternates, expected.alternates, `${expected.loc}: source-backed sitemap alternates`)
     }
-    // The forum's posts (SKATGO-118) come from its database, each in one language, in a sitemap of their own. Off
-    // the published site the forum may not be running; there its 503 is accepted and said, never on the site.
+    // The forum's posts (SKATGO-118) come from its database, in a sitemap of their own; like every page they have an
+    // address in each language. Off the published site the forum may not be running; there its 503 is accepted and
+    // said, never on the site.
     const forumSitemap = await request.get(new URL('/sitemap-forum.xml', target).href, { maxRedirects: 0 })
     const forumUp = forumSitemap.status() === 200
     if (!forumUp) {
@@ -118,9 +119,9 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
     const forumAddress = (loc, tag) => inventory.dataRoutes.some((route) => route[tag] && new URLPattern(route[tag], site).test(loc))
     for (const entry of forumEntries) {
       assert.ok(!urls.has(entry.loc), `${entry.loc}: forum post also in sitemap.xml`)
-      const tags = Object.keys(entry.alternates)
-      assert.ok(tags.length === 1 && entry.alternates[tags[0]] === entry.loc, `${entry.loc}: forum post has its one-language alternate only`)
-      assert.ok(forumAddress(entry.loc, tags[0]), `${entry.loc}: forum post address in its language`)
+      for (const [tag, url] of Object.entries(entry.alternates)) {
+        if (tag !== 'x-default') assert.ok(forumAddress(url, tag), `${entry.loc}: forum post address in ${tag}`)
+      }
       entries.push(entry)
       urls.add(entry.loc)
       byUrl.set(entry.loc, entry)
@@ -144,10 +145,8 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
     const files = new Set()
   const snapshots = []
     for (const entry of entries) {
-      if (!entry.forum) {
-        assert.deepEqual(Object.keys(entry.alternates).sort(), [...locales, 'x-default'].sort(), `${entry.loc}: language coverage`)
-        assert.equal(entry.alternates['x-default'], entry.alternates.de, `${entry.loc}: German default`)
-      }
+      assert.deepEqual(Object.keys(entry.alternates).sort(), [...locales, 'x-default'].sort(), `${entry.loc}: language coverage`)
+      assert.equal(entry.alternates['x-default'], entry.alternates.de, `${entry.loc}: German default`)
       for (const alternate of Object.values(entry.alternates)) assert.ok(urls.has(alternate), `${entry.loc}: alternate missing from sitemap`)
       const response = await page.goto(local(entry.loc), { waitUntil: 'domcontentloaded' })
       await page.locator('link[rel="stylesheet"][href^="/assets/"]').waitFor({ state: 'attached' })

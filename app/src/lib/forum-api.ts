@@ -1,7 +1,7 @@
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest, setResponseHeader } from '@tanstack/react-start/server'
 
-import type { ForumAnnouncement, ForumList, ForumLocale, ForumReport, ForumSection, ForumThread } from './forum'
+import type { ForumAnnouncement, ForumList, ForumReport, ForumSection, ForumThread } from './forum'
 import { askForum } from './forum-handler'
 
 // The forum's calls (SKATGO-118). The pages' reads run in their routes' loaders: on the server they ask the
@@ -25,19 +25,17 @@ async function viaApi<T>(op: string, payload: object): Promise<ForumAnswer<T>> {
   }
 }
 
-/** The announcement line asks on every front page; on the server one answer per language serves a minute. */
+/** The announcement line asks on every front page; on the server one answer serves a minute. */
 const LATEST_MS = 60_000
-const latestSeen = new Map<string, { at: number; answer: ForumAnswer<unknown> }>()
+let latestSeen: { at: number; answer: ForumAnswer<unknown> } | null = null
 
 const read = createIsomorphicFn()
   .server(async (op: 'list' | 'post' | 'latest', payload: object): Promise<ForumAnswer<unknown>> => {
     if (op === 'latest') {
-      const key = JSON.stringify(payload)
-      const seen = latestSeen.get(key)
-      if (seen && Date.now() - seen.at < LATEST_MS) return seen.answer
+      if (latestSeen && Date.now() - latestSeen.at < LATEST_MS) return latestSeen.answer
       const { status, body } = await askForum(op, payload, null)
       const answer = answerOf(status, body)
-      latestSeen.set(key, { at: Date.now(), answer })
+      latestSeen = { at: Date.now(), answer }
       return answer
     }
     const { status, body } = await askForum(op, payload, getRequest())
@@ -49,17 +47,17 @@ const read = createIsomorphicFn()
   })
   .client((op: 'list' | 'post' | 'latest', payload: object): Promise<ForumAnswer<unknown>> => viaApi(op, payload))
 
-export const readForumList = (input: { locale: ForumLocale; section?: ForumSection; page?: number }) => read('list', input) as Promise<ForumAnswer<ForumList>>
+export const readForumList = (input: { section?: ForumSection; page?: number }) => read('list', input) as Promise<ForumAnswer<ForumList>>
 export const readForumPost = (id: number) => read('post', { id }) as Promise<ForumAnswer<ForumThread>>
 
 /** The newest announcement of the last two weeks, or null — also when the forum does not answer: the line
  *  simply is not there. */
-export async function readAnnouncement(locale: ForumLocale): Promise<ForumAnnouncement | null> {
-  const answer = (await read('latest', { locale })) as ForumAnswer<{ announcement: ForumAnnouncement | null }>
+export async function readAnnouncement(): Promise<ForumAnnouncement | null> {
+  const answer = (await read('latest', {})) as ForumAnswer<{ announcement: ForumAnnouncement | null }>
   return answer.ok ? answer.data.announcement : null
 }
 
-export const createPost = (input: { locale: ForumLocale; section: ForumSection; title: string; body: string }) =>
+export const createPost = (input: { section: ForumSection; title: string; body: string }) =>
   viaApi<{ id: number; title: string }>('create', input)
 export const addComment = (post: number, body: string) => viaApi<{ id: number }>('comment', { post, body })
 export const deleteOwn = (what: { post: number } | { comment: number }) => viaApi<{ deleted: true }>('delete', what)

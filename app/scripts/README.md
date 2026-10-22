@@ -56,8 +56,9 @@ coverage automatically; unknown dynamic page families fail discovery until their
 source is supported. No fixed page count or copied page inventory is used.
 
 Forum posts (SKATGO-118) are the one page family that comes from a database (`DATA_PAGES` in
-`src/lib/indexability.ts`): they are listed in `/sitemap-forum.xml`, each with its one language as its
-only alternate, and every listed post is checked like any other page; an unknown post must be a 404.
+`src/lib/indexability.ts`): they are listed in `/sitemap-forum.xml` at their address in each language, with
+the same alternates as every page, and every listed post is checked like any other page; an unknown post must
+be a 404.
 Where the forum does not answer (a preview without the multiplayer service), that sitemap answers 503
 and the posts are reported as not checked; on the published site a 503 fails.
 

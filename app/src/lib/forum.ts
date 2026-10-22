@@ -4,6 +4,10 @@ import { type Card, type Rank, type Suit } from './skat/cards'
 // every post — the human: 「评论不要搞嵌套……用户自己 @ 一个人就行，也不用通知」. One forum per language. The
 // rules here are shared by the multiplayer service, which stores and judges every write, and by the pages,
 // which show and link what it answers. Nothing here sends a notification, and nothing ever will.
+//
+// One forum for both languages (the human, in review: 「德语和英语论坛不要分开」): the pages' own words follow the
+// site's language, and a post or comment is in whatever language its author writes (「别人想发什么语言就发什么语言」);
+// nothing records which. Translating them is for later.
 
 export const FORUM_SECTIONS = ['news', 'articles', 'talk', 'feedback'] as const
 export type ForumSection = (typeof FORUM_SECTIONS)[number]
@@ -13,9 +17,6 @@ export const OFFICIAL_SECTIONS: readonly ForumSection[] = ['news']
 
 /** The sections an author may post in. */
 export const sectionsFor = (official: boolean): ForumSection[] => FORUM_SECTIONS.filter((s) => official || !OFFICIAL_SECTIONS.includes(s))
-
-export const FORUM_LOCALES = ['de', 'en'] as const
-export type ForumLocale = (typeof FORUM_LOCALES)[number]
 
 export const TITLE_MIN = 3
 export const TITLE_MAX = 120
@@ -33,7 +34,6 @@ export const ANNOUNCEMENT_DAYS = 14
 
 export type ForumPostSummary = {
   id: number
-  locale: ForumLocale
   section: ForumSection
   title: string
   /** The author's name on the leaderboard — never an account id or an email address. */
@@ -79,7 +79,6 @@ export type ForumReport = {
   id: number
   postId: number
   postTitle: string
-  locale: ForumLocale
   commentId: number | null
   author: string
   excerpt: string

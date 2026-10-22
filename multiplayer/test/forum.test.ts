@@ -38,20 +38,19 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   const tick = () => ++clock
 
   // Only the official announces.
-  await assert.rejects(forumCreate(store, { ...anna, locale: 'de', section: 'news', title: 'Neu hier', body: 'Hallo' }, tick()), { name: 'Error' })
-  const news = await forumCreate(store, { ...admin, locale: 'de', section: 'news', title: 'Turnier am Sonntag', body: 'Alle sind eingeladen.' }, tick())
-  const article = await forumCreate(store, { ...admin, locale: 'de', section: 'articles', title: 'Wann Grand?', body: '## Regel\n[♣B ♠B ♥A]' }, tick())
-  const post = await forumCreate(store, { ...anna, locale: 'de', section: 'talk', title: 'Frage zum Reizen', body: 'Wie weit reize ich?' }, tick())
-  const feedback = await forumCreate(store, { ...anna, locale: 'de', section: 'feedback', title: 'Fehler beim Tisch', body: 'Die Karte hing.' }, tick())
-  await forumCreate(store, { ...ben, locale: 'en', section: 'talk', title: 'Hello', body: 'From Ohio' }, tick())
+  await assert.rejects(forumCreate(store, { ...anna, section: 'news', title: 'Neu hier', body: 'Hallo' }, tick()), { name: 'Error' })
+  const news = await forumCreate(store, { ...admin, section: 'news', title: 'Turnier am Sonntag', body: 'Alle sind eingeladen.' }, tick())
+  const article = await forumCreate(store, { ...admin, section: 'articles', title: 'Wann Grand?', body: '## Regel\n[♣B ♠B ♥A]' }, tick())
+  const post = await forumCreate(store, { ...anna, section: 'talk', title: 'Frage zum Reizen', body: 'Wie weit reize ich?' }, tick())
+  const feedback = await forumCreate(store, { ...anna, section: 'feedback', title: 'Fehler beim Tisch', body: 'Die Karte hing.' }, tick())
+  await forumCreate(store, { ...ben, section: 'talk', title: 'Hello', body: 'From Ohio' }, tick())
 
-  // One forum per language; the announcement first; names, never ids.
-  const de = await forumList(store, { ...guest, locale: 'de' })
-  assert.deepEqual(de.posts.map((p) => p.id), [news.id, feedback.id, post.id, article.id])
-  assert.ok(de.posts.every((p) => p.author && !p.author.startsWith('user:') && !p.mine))
-  assert.deepEqual((await forumList(store, { ...guest, locale: 'en' })).posts.map((p) => p.title), ['Hello'])
-  assert.deepEqual((await forumList(store, { ...guest, locale: 'de', section: 'feedback' })).posts.map((p) => p.id), [feedback.id])
-  assert.equal((await forumList(store, { ...anna, locale: 'de' })).posts.find((p) => p.id === post.id)?.mine, true)
+  // One forum for every language; the announcement first; names, never ids.
+  const list = await forumList(store, { ...guest })
+  assert.deepEqual(list.posts.map((p) => p.title), ['Turnier am Sonntag', 'Hello', 'Fehler beim Tisch', 'Frage zum Reizen', 'Wann Grand?'])
+  assert.ok(list.posts.every((p) => p.author && !p.author.startsWith('user:') && !p.mine))
+  assert.deepEqual((await forumList(store, { ...guest, section: 'feedback' })).posts.map((p) => p.id), [feedback.id])
+  assert.equal((await forumList(store, { ...anna })).posts.find((p) => p.id === post.id)?.mine, true)
 
   // Flat comments, in order; a comment moves the post up.
   const first = await forumComment(store, { ...ben, post: post.id, body: '@Anna bis 18' }, tick())
@@ -59,7 +58,7 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   const thread = (await forumPost(store, { ...guest, id: post.id })).post
   assert.deepEqual(thread.thread.map((c) => c.body), ['@Anna bis 18', 'Siehe Artikel'])
   assert.equal(thread.comments, 2)
-  assert.equal((await forumList(store, { ...guest, locale: 'de' })).posts[1].id, post.id)
+  assert.equal((await forumList(store, { ...guest })).posts[1].id, post.id)
 
   // Search engines: the official's posts; a player's once marked; feedback never.
   const indexed = async () => (await forumSitemap(store)).posts.map((p) => p.id).sort((a, b) => a - b)
@@ -82,7 +81,7 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   await assert.rejects(forumPost(store, { ...guest, id: post.id }))
   assert.equal((await forumPost(store, { ...anna, id: post.id })).post.hidden, 'Werbung')
   assert.equal((await forumPost(store, { ...admin, id: post.id })).post.hidden, 'Werbung')
-  assert.ok(!(await forumList(store, { ...guest, locale: 'de' })).posts.some((p) => p.id === post.id))
+  assert.ok(!(await forumList(store, { ...guest })).posts.some((p) => p.id === post.id))
   assert.deepEqual(await indexed(), [news.id, article.id])
   await forumModerate(store, { ...admin, action: 'restore', post: post.id })
   await forumModerate(store, { ...admin, action: 'dismiss', report: (await forumReports(store, { ...admin })).reports[0].id })
@@ -96,12 +95,11 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
 
   // The announcement line: two weeks.
   const now = tick()
-  assert.equal((await forumLatest(store, { locale: 'de' }, now)).announcement?.id, news.id)
-  assert.equal((await forumLatest(store, { locale: 'de' }, now + (ANNOUNCEMENT_DAYS + 1) * DAY)).announcement, null)
-  assert.equal((await forumLatest(store, { locale: 'en' }, now)).announcement, null)
+  assert.equal((await forumLatest(store, {}, now)).announcement?.id, news.id)
+  assert.equal((await forumLatest(store, {}, now + (ANNOUNCEMENT_DAYS + 1) * DAY)).announcement, null)
 
   // A day's posts, then refused; the official has no limit.
-  for (let n = 1; n < DAILY_LIMITS.posts; n++) await forumCreate(store, { ...ben, locale: 'en', section: 'talk', title: `Post ${n}`, body: 'x' })
-  await assert.rejects(forumCreate(store, { ...ben, locale: 'en', section: 'talk', title: 'One more', body: 'x' }))
-  await forumCreate(store, { ...admin, locale: 'en', section: 'talk', title: 'Official', body: 'x' })
+  for (let n = 1; n < DAILY_LIMITS.posts; n++) await forumCreate(store, { ...ben, section: 'talk', title: `Post ${n}`, body: 'x' })
+  await assert.rejects(forumCreate(store, { ...ben, section: 'talk', title: 'One more', body: 'x' }))
+  await forumCreate(store, { ...admin, section: 'talk', title: 'Official', body: 'x' })
 })

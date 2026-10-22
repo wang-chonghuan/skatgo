@@ -20,22 +20,22 @@ import { typography } from '../../theme/type'
 import { Pill, linkLook } from './ui'
 
 /**
- * The Skat-Tricks section's page (SKATGO-103, before it the first article of SKATGO-82): the twelve kinds
- * of exercise as option cards, each opening to its three exercises, and under them the way to the article.
+ * The Skat-Tricks section's page (SKATGO-103, before it the first article of SKATGO-82): the open-card endgames as
+ * levels first, then the other kinds of exercise as option cards, each opening to its exercises, and under them the
+ * way to the article.
  * Each card is a native <details>: closed, its exercises are still in the page a search engine reads (the
  * human: 「题目页要收录……很好的引流材料」). A card named in the address (#druecken, from a trick of the
  * article) opens by itself.
  *
- * Since SKATGO-110 only the open-card endgames are shown (`SHOWN_TYPES`; the other kinds are hidden, not deleted),
- * and since SKATGO-111 as levels (`Levels`): twenty tiles in rising order, the ones answered right checked, the ones
+ * SKATGO-110 hid every kind but the open-card endgames and SKATGO-119 brought them back (`SHOWN_TYPES`). The
+ * open-card endgames are levels since SKATGO-111 (`Levels`): twenty tiles in rising order, the ones answered right checked, the ones
  * answered wrong and not yet right crossed with their wrong answers counted in the corner, and the next one marked;
  * for a guest, the steps that need an account carry a lock (SKATGO-109). The record is the account's, or for
  * a guest this browser's (ladder-progress.ts), applied after mount.
  */
 export function TricksPage() {
   const text = EXERCISE_TEXT[getLocale()]
-  // With one kind shown (SKATGO-110), its card is open from the start.
-  const [open, setOpen] = useState<ReadonlySet<ExerciseType>>(() => new Set(SHOWN_TYPES.length === 1 ? SHOWN_TYPES : []))
+  const [open, setOpen] = useState<ReadonlySet<ExerciseType>>(() => new Set())
   const { steps, account } = useLadder()
   useEffect(() => {
     const hash = window.location.hash.slice(1)
@@ -81,7 +81,8 @@ export function TricksPage() {
                   {...stylex.props(styles.card, isOpen && styles.cardOpen, ladder && styles.cardFeatured)}
                 >
                   <summary data-testid="tricks-type-head" {...stylex.props(styles.summary)}>
-                    <span aria-hidden="true" {...stylex.props(typography.smallBold, styles.number)}>{i + 1}</span>
+                    {/* The kinds counted after the levels, from one. */}
+                    <span aria-hidden="true" {...stylex.props(typography.smallBold, styles.number)}>{i}</span>
                     <span {...stylex.props(styles.heading)}>
                       <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{text.types[type].title}</span>
                       <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{text.types[type].blurb}</span>

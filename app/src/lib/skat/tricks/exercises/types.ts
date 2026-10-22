@@ -9,7 +9,7 @@ import type { OpenEndgame } from './open'
 // answer to beating the second choice by a margin.
 
 export const EXERCISE_TYPES = [
-  // The open-card endgames (SKATGO-110): since then the only kind shown (index.ts `SHOWN_TYPES`).
+  // The open-card endgames (SKATGO-110), shown first, as levels (SKATGO-111).
   'offenes-endspiel',
   // The ladder (SKATGO-108) comes first: Skat's mate-in-N, closed cards, 30 steps of four tricks (SKATGO-110).
   'sieg-sichern',

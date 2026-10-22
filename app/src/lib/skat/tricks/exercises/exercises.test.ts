@@ -158,10 +158,10 @@ describe('the Skat-Tricks exercises', () => {
   })
 
   describe('the open-card endgames (SKATGO-110)', () => {
-    it('are the only exercises shown; the others are hidden, not deleted', () => {
-      expect(SHOWN_TYPES).toEqual(['offenes-endspiel'])
-      expect(exerciseById('offenes-endspiel-1')).toBeTruthy()
-      for (const e of EXERCISES.filter((x) => x.type !== 'offenes-endspiel')) expect(exerciseById(e.id), e.id).toBeUndefined()
+    it('come first; every other kind is shown again (SKATGO-119)', () => {
+      expect(SHOWN_TYPES).toEqual(EXERCISE_TYPES)
+      expect(SHOWN_TYPES[0]).toBe('offenes-endspiel')
+      for (const e of EXERCISES) expect(exerciseById(e.id), e.id).toBeTruthy()
     })
     it('twenty, three to five tricks to go, declarer and defender both', () => {
       const all = OPEN_STORED.map(readOpen)

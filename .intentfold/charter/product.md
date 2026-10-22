@@ -81,9 +81,8 @@ rules, each also as a PDF (SKATGO-29, SKATGO-50, SKATGO-53). Every number in the
 engine's.
 
 Skat-Tricks at `/skat-tricks` (SKATGO-82, SKATGO-103): practice and strategy articles for players past the
-basics. The section's own page is its exercises. Since SKATGO-110 these are twenty open-card endgames (the
-human: 「把tricks卡片的内容，彻底改成明牌残局练习，以前的所有练习，都隐藏掉，先不删」 — the twelve kinds of
-SKATGO-103 are hidden, not deleted): positions from real deals with three to five tricks to go, every hand
+basics. The section's own page is its exercises. First come twenty open-card endgames (SKATGO-110, the
+human: 「把tricks卡片的内容，彻底改成明牌残局练习」): positions from real deals with three to five tricks to go, every hand
 open, where with both sides at their best exactly one of the learner's cards wins, as declarer or as a
 defender. They climb in order as numbered levels (SKATGO-111, the human: 「像那种两步杀，消消乐那种……简洁，
 直接，内聚」). A puzzle is played on the game's own table, the learner's side's card points against what that
@@ -93,7 +92,9 @@ mistake and the card that would have won (SKATGO-111, the human: 「打完后告
 any puzzle can be played again. The first two are free; from the third the learner signs in (SKATGO-109,
 the human: 「前2题不登录可以做，第三题必须登录才可以做」), and every answer is recorded — a guest's in this
 browser, an account's on the server — so the levels show which were solved and which went wrong, and how
-often. Every answer is an exact solver's or the rules engine's; positions may draw on Skat books (the
+often. Under them come the kinds SKATGO-110 had hidden, shown again since SKATGO-119 (the human:
+「恢复以前删掉的那些专题练习题」): the "Sieg sichern" ladder of closed-card endgames and twelve kinds of three
+exercises each, each kind a card opening to its exercises; they need no account and record nothing. Every answer is an exact solver's or the rules engine's; positions may draw on Skat books (the
 human, SKATGO-103: 「可以参考书上的」). The list of exercises is a search entry in both languages, a single
 exercise is not (the human: 「单页不收录，但是题目页要收录」). The articles are in plain
 words — the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」 — the first, twelve tricks for bidding,

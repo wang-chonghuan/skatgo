@@ -267,7 +267,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   solved, a grid of numbered square tiles — solved `good` with a check, gone wrong `bad` with a cross and the
   number of wrong answers in its corner, the next one ringed `go`, and for a guest a lock from the third — and
   under it one `go` button to the next ("Aufgabe n spielen"); under that, small `info` links to the article
-  and the rules. (The twelve kinds of SKATGO-103 as option cards are hidden, SKATGO-110.) An open-card
+  and the rules. Under the levels, the other kinds of SKATGO-103 as option cards, numbered from one, each a
+  `<details>` opening to its exercises (hidden by SKATGO-110, shown again by SKATGO-119). An open-card
   endgame's page (`tricks-exercise-page.tsx`, `open-endgame.tsx`) is the game's full-screen table (SKATGO-111,
   the human: 「打牌界面那种效果，各种尺寸屏幕都刚好全屏」): no site header, every hand open, the opponents' cards
   as big as the learner's (`stage.openStack*`); at the top, in the info board's place and make, a board with

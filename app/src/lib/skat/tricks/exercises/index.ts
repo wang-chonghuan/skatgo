@@ -9,9 +9,9 @@ export { EXERCISES, EXERCISE_TYPES }
 /** The exercises' words in each language (SKATGO-103). */
 export const EXERCISE_TEXT: Record<Locale, ExercisesText> = { en: EXERCISES_EN, de: EXERCISES_DE }
 
-/** The kinds the site shows (SKATGO-110, the human: 「以前的所有练习，都隐藏掉，先不删」): the open-card endgames only.
- *  The others stay here, proven by their tests, and come back by being listed again. */
-export const SHOWN_TYPES: readonly ExerciseType[] = ['offenes-endspiel']
+/** The kinds the site shows: all of them. SKATGO-110 hid every kind but the open-card endgames (the human:
+ *  「以前的所有练习，都隐藏掉，先不删」); SKATGO-119 brought them back (the human: 「恢复以前删掉的那些专题练习题」). */
+export const SHOWN_TYPES: readonly ExerciseType[] = EXERCISE_TYPES
 
 const shown = EXERCISES.filter((e) => SHOWN_TYPES.includes(e.type))
 

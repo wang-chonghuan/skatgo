@@ -292,8 +292,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,
   its section of the rules, and all lessons.
 - **The forum** (`forum-page.tsx`, SKATGO-118) is two sub-pages on the grey page in the reading column. The
-  list: its H1 and lead; for a guest a line inviting them to sign in (a `quiet` button), for a player the one
-  `go` button, "Neuer Beitrag", which opens the composer in a white card — the sections the author may use as
+  list: its H1, with no lead under it, and beside it the one `go` button — "Anmelden" for a guest, "Neuer Beitrag"
+  for a player, which opens the composer in a white card (the human: 「sign in放在 Forum 的旁边，放个按钮就行」) — the sections the author may use as
   `Toggle`s, the title (`TextField`), the text (`TextArea`) with a line on its marks, "Veröffentlichen" (`go`) and
   "Abbrechen" (`quiet`); for the official, while there are any, the open reports in a `tip` panel, each with its reasons, a link to
   it, a reason field, "Ausblenden" and "Ignorieren" (`quiet`); the section filter as `toggleLook` links, "Alle"

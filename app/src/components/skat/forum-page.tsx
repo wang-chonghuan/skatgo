@@ -56,13 +56,17 @@ export function ForumPage() {
   const answer = useLoaderData({ from: '/forum' })
   const { section, page = 1 } = useSearch({ from: '/forum' })
   const data = answer.ok ? answer.data : null
+  const [writing, setWriting] = useState(false)
   useViewerSync(data?.viewer ?? null)
   return (
     <div {...stylex.props(styles.root)}>
       <section data-testid="forum" {...stylex.props(styles.column)}>
-        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.forum_title()}</h1>
-        <p {...stylex.props(typography.landingBody, styles.lead)}>{m.forum_lead()}</p>
-        {data ? <Writer viewer={data.viewer} initial={section} /> : null}
+        {/* The way to write sits beside the title (the human: 「sign in放在 Forum 的旁边，放个按钮就行」). */}
+        <div {...stylex.props(styles.head)}>
+          <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.forum_title()}</h1>
+          {data && !writing ? <WriteButton viewer={data.viewer} onWrite={() => setWriting(true)} /> : null}
+        </div>
+        {data && writing ? <Composer official={data.viewer.official} initial={section} onCancel={() => setWriting(false)} /> : null}
         {data?.viewer.official ? <Reports /> : null}
         <nav aria-label={m.forum_sections()} data-testid="forum-sections" {...stylex.props(styles.pills)}>
           <Link to="/forum" search={{}} aria-current={section ? undefined : 'page'} {...toggleLook(!section)}>{m.forum_all()}</Link>
@@ -125,27 +129,16 @@ function Meta({ of }: { of: ForumPostSummary | ForumComment }) {
   )
 }
 
-/** The way to write: a guest is asked to sign in; a player opens the composer. */
-function Writer({ viewer, initial }: { viewer: ForumViewer; initial?: ForumSection }) {
-  const [open, setOpen] = useState(false)
+/** The way to write, beside the title: a guest's sign-in, a player's "Neuer Beitrag", which opens the composer. */
+function WriteButton({ viewer, onWrite }: { viewer: ForumViewer; onWrite: () => void }) {
   if (!viewer.signedIn) {
     return (
-      <div data-testid="forum-sign-in" {...stylex.props(styles.row)}>
-        <p {...stylex.props(typography.appText, styles.note)}>{m.forum_sign_in_to_write()}</p>
-        <SignInButton mode="modal">
-          <Btn tone="quiet" size="sm">{m.auth_sign_in()}</Btn>
-        </SignInButton>
-      </div>
+      <SignInButton mode="modal">
+        <Btn testId="forum-sign-in">{m.auth_sign_in()}</Btn>
+      </SignInButton>
     )
   }
-  if (!open) {
-    return (
-      <div {...stylex.props(styles.row)}>
-        <Btn testId="forum-new" onClick={() => setOpen(true)}>{m.forum_new()}</Btn>
-      </div>
-    )
-  }
-  return <Composer official={viewer.official} initial={initial} onCancel={() => setOpen(false)} />
+  return <Btn testId="forum-new" onClick={onWrite}>{m.forum_new()}</Btn>
 }
 
 function Composer({ official, initial, onCancel }: { official: boolean; initial?: ForumSection; onCancel: () => void }) {
@@ -431,7 +424,7 @@ const styles = stylex.create({
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
   title: { margin: 0, color: color.navy },
-  lead: { margin: 0, color: color.navy },
+  head: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x16 },
   note: { margin: 0, color: color.text },
   quiet: { margin: 0, color: color.slate },
   error: { margin: 0, color: color.bad },

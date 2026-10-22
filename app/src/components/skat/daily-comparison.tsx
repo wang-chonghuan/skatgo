@@ -534,7 +534,8 @@ const styles = stylex.create({
   // A narrow column (the table inside the settlement on a phone) shortens the role, never overlaps it.
   role: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   chevron: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end' },
-  headWho: { display: 'flex', alignItems: 'center', gap: space.x6 },
+  // On a phone a column is too narrow for the tag and its word side by side: the word goes under it (SKATGO-119).
+  headWho: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: space.x6, rowGap: space.x2, minWidth: 0 },
   end: { textAlign: 'end' },
   muted: { color: color.slate },
   detail: {

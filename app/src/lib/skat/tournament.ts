@@ -7,20 +7,14 @@ import type { Card } from './cards'
 import type { Bidding, Game, Phase, Played, Seat } from './game'
 import type { Declaration } from './value'
 
-/** The day's tournaments, by their number of deals (SKATGO-77): a short round of six (SKATGO-62: a
- *  day is a short round, not an evening) and a longer one of twelve. Each has its own deals and board. */
-export const DAILY_SIZES = [6, 12] as const
-export type DailySize = (typeof DAILY_SIZES)[number]
-
 /** How many days back a leaderboard can be looked at, today included (SKATGO-80, the human: 「要保留显示最近7天
  *  的」). */
 export const BOARD_DAYS = 7
 
-/** The tournament a player is shown first, and the one every entry before SKATGO-77 belongs to. */
-export const DAILY_DEALS: DailySize = 6
-
-/** A requested tournament size, or the first one when it names none of them. */
-export const dailySize = (n: unknown): DailySize => (DAILY_SIZES as readonly unknown[]).includes(n) ? (n as DailySize) : DAILY_DEALS
+/** The day's tournament: six deals (SKATGO-62: a day is a short round, not an evening). The longer one of twelve
+ *  (SKATGO-77) is gone (SKATGO-119, the human: 「取消每日锦标赛12幅牌的，只保留6幅牌」); its stored rows stay, keyed by
+ *  their size as everything is. */
+export const DAILY_DEALS = 6
 
 /** New deals start at midnight in this time zone. */
 export const DAILY_TIME_ZONE = 'Europe/Berlin'
@@ -222,8 +216,8 @@ export type DealReview = {
 export type DailyStatus = {
   /** The tournament day, YYYY-MM-DD in Berlin. */
   day: string
-  /** Which of the day's tournaments, by its number of deals (SKATGO-77). */
-  of: DailySize
+  /** How many deals the day's tournament has. */
+  of: number
   /** The deal being played (0-based); equals `deals.length` until the day is finished. */
   deal: number
   deals: DealSummary[]

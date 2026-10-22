@@ -17,13 +17,14 @@ wants to play first, "Skat in 5 Minuten" under the course (SKATGO-89) is the twe
 his son, after which he could play on SkatGo (「他听完就会在skatgo上打牌了」) — kept as the human said
 them, translated and nothing added — then the way to the table.
 
-A daily Skat tournament at `/daily`, in two lengths (SKATGO-77): every day the same 6 deals for every
-player (SKATGO-62), shown first, and separately the same 12 deals for every player; each deal played
-against two computer players, Lina and Noah, and scored by Seeger-Fabian; one entry per player per
-tournament per day; scores are the server's, from the cards actually played. A player who sees too many
-deals ahead does not start, so the short one leads (the human, 2026-10-10: 「用户看到太多，就不想打了」).
+A daily Skat tournament at `/daily`: every day the same 6 deals for every player (SKATGO-62), each deal
+played against two computer players, Lina and Noah, and scored by Seeger-Fabian; one entry per player per
+day; scores are the server's, from the cards actually played. A player who sees too many deals ahead does
+not start (the human, 2026-10-10: 「用户看到太多，就不想打了」). The second, twelve-deal tournament of SKATGO-77
+is gone (SKATGO-119, the human: 「取消每日锦标赛12幅牌的，只保留6幅牌。数据库可以先不删」): nothing shows or
+serves it, and its stored deals and entries stay in the database.
 Results are ranked and compared by the player's own Seeger-Fabian total, the standard German players
-know from their clubs and tournaments (SKATGO-81, the human: 「按他们习惯的标准来」). Each tournament has a
+know from their clubs and tournaments (SKATGO-81, the human: 「按他们习惯的标准来」). The tournament has a
 leaderboard per day, which can be looked at for seven days, today's included (SKATGO-80, the human:
 「要保留显示最近7天的」), ranked by that total; every entry stands by its own. A finished entry stands on
 its board at once, with nothing to fill in (SKATGO-90, the human: 「让用户填名字，太麻烦了」), under the player's
@@ -51,7 +52,7 @@ engine's record and SkatZero's choices only: no language model explains it (the 
 「解读太麻烦了」). A deal all players passed has no play record. The tournament's page keeps a row per
 finished deal with the player's and the AI's score, opening to that deal's score sheet and play
 record, and under the rows the score sheet of the whole tournament so far; the newest row opens after
-each deal and on the tournament's page mid-day (SKATGO-48). The page lists all of the chosen
+each deal and on the tournament's page mid-day (SKATGO-48). The page lists all of the
 tournament's deals from the start (SKATGO-63): the finished ones in that comparison, the rest by number
 as in progress or not yet played, never with their cards.
 

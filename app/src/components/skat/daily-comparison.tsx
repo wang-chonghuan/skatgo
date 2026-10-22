@@ -7,7 +7,7 @@ import { dailyReview } from '~/lib/daily-api'
 import { type Card, pointsOf, sameCard } from '~/lib/skat/cards'
 import type { Game } from '~/lib/skat/game'
 import { cardLabel, contractName } from '~/lib/skat/i18n'
-import { type DailyStatus, type DealReview, type DealSummary, type Differ, PLAYER, dailySize, totals } from '~/lib/skat/tournament'
+import { type DailyStatus, type DealReview, type DealSummary, type Differ, PLAYER, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -214,7 +214,7 @@ export function TrickReplay({ tricks, names, skat, hand, differs = null, early =
 export type AskReview = () => Promise<DealReview | { error: string }>
 
 /** A deal of one of today's tournaments, reviewed through /api/daily. */
-export const dailyAsk = (size: number, deal: number): AskReview => () => dailyReview(dailySize(size), deal)
+export const dailyAsk = (deal: number): AskReview => () => dailyReview(deal)
 
 /** What this page already fetched, so reopening a deal does not ask again. */
 const reviews = new Map<string, DealReview>()
@@ -350,7 +350,7 @@ export function DayDeals({ of, status }: { of: number; status?: DailyStatus }) {
           benchmarks={status?.benchmarks}
           of={of}
           current={status?.started ? status.deal : null}
-          analysis={status ? { size: of, day: status.day } : undefined}
+          analysis={status ? { day: status.day } : undefined}
           openLatest
         />
       </section>
@@ -364,7 +364,7 @@ export function DayDeals({ of, status }: { of: number; status?: DailyStatus }) {
  *  `of` (SKATGO-63): the day's number of deals; those not finished follow as rows of their number and
  *  whether they are `current` or still to play — nothing of their cards, which every player shares.
  *  `analysis`: the tournament and day whose finished deals can be gone through. */
-export function VsAiTable({ deals, benchmarks, openLatest = false, of, current = null, analysis }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; openLatest?: boolean; of?: number; current?: number | null; analysis?: { size: number; day: string } }) {
+export function VsAiTable({ deals, benchmarks, openLatest = false, of, current = null, analysis }: { deals: DealSummary[]; benchmarks?: (DealSummary | null)[]; openLatest?: boolean; of?: number; current?: number | null; analysis?: { day: string } }) {
   const latest = deals.length - 1
   const [open, setOpen] = useState<number[]>(openLatest ? [latest] : [])
   useEffect(() => {
@@ -414,7 +414,7 @@ export function VsAiTable({ deals, benchmarks, openLatest = false, of, current =
                 <div id={id} data-testid="daily-vs-ai-detail" {...stylex.props(styles.detail)}>
                   <DealVsAi mine={d} ai={b} />
                   {analysis && d.declarer !== null ? (
-                    <DealAnalysis ask={dailyAsk(analysis.size, i)} cacheKey={`${analysis.day}|${analysis.size}|${i}`} />
+                    <DealAnalysis ask={dailyAsk(i)} cacheKey={`${analysis.day}|${i}`} />
                   ) : null}
                 </div>
               ) : null}

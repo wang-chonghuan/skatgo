@@ -1,5 +1,5 @@
 import type { Move } from '~/lib/skat/game'
-import type { DailyBoard, DailyReply, DailySize, DealReview } from '~/lib/skat/tournament'
+import type { DailyBoard, DailyReply, DealReview } from '~/lib/skat/tournament'
 
 // The browser's side of the daily tournament (SKATGO-35, SKATGO-36): its requests to /api/daily
 // (lib/daily-handler.ts). Who is playing travels in the session or the tournament's own cookie, never
@@ -20,18 +20,18 @@ async function post<T extends object>(op: 'state' | 'act' | 'name' | 'board' | '
 // Every call names which of the day's tournaments it is about, by its number of deals (SKATGO-77).
 
 /** Where the player stands today; `open` also opens the current deal and returns it. */
-export const dailyState = (size: DailySize, open: boolean) => post<DailyReply>('state', { size, open })
+export const dailyState = (open: boolean) => post<DailyReply>('state', { open })
 
 /** One move in the current deal, quoting the day, the deal and how many moves came before it. */
-export const dailyAct = (size: DailySize, at: { day: string; deal: number; revision: number }, action: Move) => post<DailyReply>('act', { size, ...at, action })
+export const dailyAct = (at: { day: string; deal: number; revision: number }, action: Move) => post<DailyReply>('act', { ...at, action })
 
 /** Change the player's name: from now on, and on today's finished entries (SKATGO-90). */
 export const dailyName = (nickname: string) => post<{ nickname: string }>('name', { nickname })
 
 /** A day's leaderboard, `back` days before today (0: today's; up to `BOARD_DAYS` − 1, SKATGO-80). */
-export const dailyBoard = (size: DailySize, back: number) => post<DailyBoard>('board', { size, day: back })
+export const dailyBoard = (back: number) => post<DailyBoard>('board', { day: back })
 
 /** A finished deal trick by trick, with SkatZero's card wherever the player's was not (SKATGO-79). */
-export const dailyReview = (size: DailySize, deal: number) => post<DealReview>('review', { size, deal })
+export const dailyReview = (deal: number) => post<DealReview>('review', { deal })
 
 export const isError = <T extends object>(r: T | DailyError): r is DailyError => 'error' in r

@@ -4,7 +4,7 @@ type LegalSection = { id: string; title: string; paragraphs: string[]; contact?:
 type LegalDocument = { intro: string; sections: LegalSection[] }
 type LegalCopy = { privacy: LegalDocument; terms: LegalDocument }
 
-export const LEGAL_UPDATED = '2026-10-22'
+export const LEGAL_UPDATED = '2026-10-23'
 
 export const LEGAL_OPERATOR = {
   name: 'Olena Holub',
@@ -66,7 +66,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Games and public results',
           paragraphs: [
             'The daily tournament stores a player identifier, moves, results, scores and timestamps on the server. When you finish a tournament, your entry appears with its score and rank on the public leaderboard under a name of two words assigned at random, which you can change. Do not choose a name that reveals information you do not want to publish.',
-            'Signing in can attach today\'s guest entries on this device to your account, one per tournament. Daily records do not automatically disappear at midnight. Free-play state is instead held in an encrypted game token that is valid for one day. This browser keeps it, with the round\'s finished deals, so that a reload continues the game; the server stores nothing per game.',
+            'Signing in can attach today\'s guest entry on this device to your account. Daily records do not automatically disappear at midnight. Free-play state is instead held in an encrypted game token that is valid for one day. This browser keeps it, with the round\'s finished deals, so that a reload continues the game; the server stores nothing per game.',
             'Opening a private table takes an account; joining one does not. If you sit at someone else\'s table as a guest and sign up while you are there, we record once whose table it was, so that it is known who invited you.',
           ],
         },
@@ -130,7 +130,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'fair-play',
           title: 'Fair play and public nicknames',
           paragraphs: [
-            'The daily tournament allows one entry per player per day in each of its two tournaments (6 or 12 deals). Its scores are calculated from the moves recorded by the server. Do not manipulate scores, create extra identities to gain an advantage, automate abusive requests or interfere with other players.',
+            'The daily tournament of six deals allows one entry per player per day. Its scores are calculated from the moves recorded by the server. Do not manipulate scores, create extra identities to gain an advantage, automate abusive requests or interfere with other players.',
             'Leaderboard names, whether assigned at random or chosen by you, appear publicly with tournament results. Do not impersonate someone, disclose private information or use illegal or abusive content. SkatGo may remove an unsuitable nickname or restrict abusive access.',
           ],
         },
@@ -197,7 +197,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Spiele und öffentliche Ergebnisse',
           paragraphs: [
             'Das Tagesturnier speichert Spielerkennung, Spielzüge, Ergebnisse, Punkte und Zeitangaben auf dem Server. Wenn du ein Turnier beendest, erscheint dein Eintrag mit Punktzahl und Rang in der öffentlichen Bestenliste – unter einem zufällig vergebenen Namen aus zwei Wörtern, den du ändern kannst. Wähle keinen Namen, der unerwünschte persönliche Informationen offenlegt.',
-            'Bei der Anmeldung können die heutigen Gasteinträge dieses Geräts deinem Konto zugeordnet werden, einer pro Turnier. Turnierdaten werden nicht automatisch um Mitternacht gelöscht. Beim freien Spiel liegt der Spielstand dagegen in einem verschlüsselten Spiel-Token, das einen Tag gültig ist. Dieser Browser speichert es mit den fertigen Spielen der Runde, damit Neuladen das Spiel fortsetzt; der Server speichert pro Spiel nichts.',
+            'Bei der Anmeldung können der heutige Gasteintrag dieses Geräts deinem Konto zugeordnet werden. Turnierdaten werden nicht automatisch um Mitternacht gelöscht. Beim freien Spiel liegt der Spielstand dagegen in einem verschlüsselten Spiel-Token, das einen Tag gültig ist. Dieser Browser speichert es mit den fertigen Spielen der Runde, damit Neuladen das Spiel fortsetzt; der Server speichert pro Spiel nichts.',
             'Einen privaten Tisch eröffnest du mit einem Konto, mitspielen kannst du ohne. Wenn du als Gast an einem fremden Tisch sitzt und dich dort registrierst, speichern wir einmalig, an wessen Tisch das war – damit bekannt ist, wer dich eingeladen hat.',
           ],
         },
@@ -261,7 +261,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'fair-play',
           title: 'Fair spielen und Spitznamen wählen',
           paragraphs: [
-            'Im Tagesturnier ist in jedem seiner beiden Turniere (6 oder 12 Spiele) ein Eintrag pro Spieler und Tag vorgesehen. Der Server berechnet die Punkte aus den gespeicherten Spielzügen. Manipuliere keine Ergebnisse, lege keine zusätzlichen Identitäten zur Vorteilsnahme an und störe andere Spieler oder den Dienst nicht durch automatisierte missbräuchliche Anfragen.',
+            'Im Tagesturnier mit sechs Spielen ist ein Eintrag pro Spieler und Tag vorgesehen. Der Server berechnet die Punkte aus den gespeicherten Spielzügen. Manipuliere keine Ergebnisse, lege keine zusätzlichen Identitäten zur Vorteilsnahme an und störe andere Spieler oder den Dienst nicht durch automatisierte missbräuchliche Anfragen.',
             'Namen in der Rangliste – zufällig vergeben oder von dir gewählt – erscheinen öffentlich mit den Turnierergebnissen. Gib dich nicht als andere Person aus und veröffentliche keine privaten, rechtswidrigen oder beleidigenden Inhalte. SkatGo kann ungeeignete Spitznamen entfernen und missbräuchliche Zugriffe beschränken.',
           ],
         },

@@ -5,8 +5,9 @@
 //   DATABASE_URL=… node multiplayer/scripts/redeal-days.mjs 2026-10-03 2026-10-04          (dry run)
 //   DATABASE_URL=… node multiplayer/scripts/redeal-days.mjs 2026-10-03 2026-10-04 --yes    (delete)
 //
-// Prints, per day, each tournament's computer label and how many entries and finished entries it has
-// (two tournaments a day, 6 and 12 deals, since SKATGO-77).
+// Prints, per day, each tournament's computer label and how many entries and finished entries it has. Only the
+// six-deal tournament is deleted and dealt anew: the twelve-deal one (SKATGO-77) is gone, and its stored rows
+// stay (SKATGO-119, the human: 「数据库可以先不删」).
 import pg from 'pg'
 
 const yes = process.argv.includes('--yes')
@@ -33,8 +34,8 @@ try {
     })
     const before = { day, tournaments }
     if (yes) {
-      const e = await c.query('DELETE FROM daily_entries WHERE day = $1', [day])
-      const d = await c.query('DELETE FROM daily_deals WHERE day = $1', [day])
+      const e = await c.query('DELETE FROM daily_entries WHERE day = $1 AND size = 6', [day])
+      const d = await c.query('DELETE FROM daily_deals WHERE day = $1 AND size = 6', [day])
       console.log(JSON.stringify({ ...before, deletedEntries: e.rowCount, deletedDeals: d.rowCount }))
     } else {
       console.log(JSON.stringify({ ...before, dryRun: true }))

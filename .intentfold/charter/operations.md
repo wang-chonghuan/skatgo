@@ -51,12 +51,12 @@ The service is ready only once two things are in place:
 A missing or altered model or pool stops the service at start. Its image is `node:24-slim`
 (onnxruntime-node needs glibc) and carries the committed models; nothing is downloaded at build or
 run time, and onnxruntime's telemetry is off (`ORT_DISABLE_TELEMETRY`).
-The leader deals each tournament of today and tomorrow ahead, one at a time, with the computers'
+The leader deals today's and tomorrow's tournament ahead, one at a time, with the computers'
 bidding (SKATGO-39; logged as `daily_prepared` with its day, size and duration, or
 `daily_prepare_failed`). Since SKATGO-42 that includes the computer's own play of each deal from the
 player's seat. The 6-deal tournament (SKATGO-62) takes about 15–16 s on a laptop and about 3 min on the
-production instance (177–191 s, about 285 MB, measured 2026-10-09); the 12-deal one (SKATGO-77) about
-30 s on a laptop (measured 2026-10-10), so about 6 min on production by the same ratio. A preparation
+production instance (177–191 s, about 285 MB, measured 2026-10-09); SKATGO-77's 12-deal tournament is no
+longer prepared (SKATGO-119). A preparation
 still running after an hour is abandoned for the next hourly try (SKATGO-77).
 Readiness does not wait for it; until a tournament of today is prepared, its `/daily` requests answer
 `503 day_preparing`. When a release adds a tournament, the first start prepares it, so it answers that
@@ -313,13 +313,13 @@ render deploys list "$SERVICE_ID" --output json --confirm
 # take an unsuitable name off the boards (SKATGO-36, SKATGO-90) — only when the human names it, since a
 # name already on a board is otherwise never changed (the human's red line). The entries and their scores
 # stay; the player's current name goes too, so when the multiplayer service next starts the entries, and
-# the player, are given a new random name. Every day and both tournaments; add `AND day = '<YYYY-MM-DD>'`
+# the player, are given a new random name. Every day and size; add `AND day = '<YYYY-MM-DD>'`
 # to the first statement for one day.
 render psql skatgo-multiplayer-db --confirm --output text \
   --command "UPDATE daily_entries SET nickname = NULL WHERE nickname = '<nickname>'; DELETE FROM daily_players WHERE nickname = '<nickname>'"
 
-# re-deal named days (SKATGO-42): deletes those days' deals, both tournaments', and every entry played
-# on them, so the leader deals them anew. Players' entries are lost for good: run it only for days the
+# re-deal named days (SKATGO-42): deletes those days' six-deal deals and every six-deal entry played on
+# them, so the leader deals them anew; SKATGO-77's twelve-deal rows stay (SKATGO-119). Players' entries are lost for good: run it only for days the
 # human named, and in production only with the human's explicit go-ahead.
 # Without --yes it is a dry run printing, per tournament of each day, its computer label and entry
 # counts. Reach the production database as below.

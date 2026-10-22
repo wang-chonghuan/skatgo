@@ -330,7 +330,7 @@
   "daily_about_title": "Gleiche Karten für alle",
   "daily_about_intro": "Im täglichen Skat-Turnier spielst du {n} Spiele gegen zwei KI-Gegner. Alle Teilnehmer erhalten dieselben Karten und sitzen auf demselben Platz. So kannst du vergleichen, was du aus einer Hand gemacht hast. Deine Runde kannst du auf demselben Gerät fortsetzen; mit einem Konto wird sie deinem Konto zugeordnet. Jeder Spieler hat eine Runde pro Tag.",
   "daily_scoring_title": "Abrechnung und Rangliste",
-  "daily_scoring_text": "Die Spiele werden nach Seeger-Fabian gewertet und zur Tagespunktzahl addiert. Am Ende siehst du deine Ergebnisse und stehst sofort auf der Rangliste – unter einem zufälligen Namen, den du ändern kannst. Für jedes beendete Spiel kannst du deine Punktzahl mit der KI auf deinem Platz vergleichen. Jedes Turnier hat seine eigene Rangliste, geordnet nach der Gesamtpunktzahl nach Seeger-Fabian, mit der KI zum Vergleich; sie zeigt die letzten sieben Tage. Um Mitternacht nach Berliner Zeit beginnt ein neuer Turniertag.",
+  "daily_scoring_text": "Die Spiele werden nach Seeger-Fabian gewertet und zur Tagespunktzahl addiert. Am Ende siehst du deine Ergebnisse und stehst sofort auf der Rangliste – unter einem zufälligen Namen, den du ändern kannst. Für jedes beendete Spiel kannst du deine Punktzahl mit der KI auf deinem Platz vergleichen. Die Rangliste ist geordnet nach der Gesamtpunktzahl nach Seeger-Fabian, mit der KI zum Vergleich; sie zeigt die letzten sieben Tage. Um Mitternacht nach Berliner Zeit beginnt ein neuer Turniertag.",
   "daily_play_description": "Spiele deine heutige Turnierrunde weiter. Die Karten, der Spielstand und das Ergebnis gehören zu deiner persönlichen Runde.",
   "entry_new_title": "Neu beim Skat?",
   "entry_new_text": "{count} kurze, interaktive Lektionen führen dich von den 32 Karten bis zum ganzen Spiel. Du spielst dabei echte Blätter, statt Regeln auswendig zu lernen.",
@@ -696,5 +696,5 @@
   "forum_page_description": "{excerpt} – aus dem Skat-Forum von SkatGo",
   "forum_new_badge": "Neu",
   "forum_announcement": "Ankündigung",
-  "forum_about": "Im SkatGo-Forum stehen Ankündigungen von SkatGo, Artikel über Skat und eure Fragen, Ideen und Rückmeldungen. Lesen kann jeder; zum Schreiben brauchst du ein kostenloses SkatGo-Konto."
+  "forum_about": "Das SkatGo-Forum: Ankündigungen, Artikel über Skat und eure Fragen und Rückmeldungen."
 }

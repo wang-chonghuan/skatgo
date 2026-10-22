@@ -325,8 +325,9 @@ render psql skatgo-multiplayer-db --confirm --output text \
 # counts. Reach the production database as below.
 DATABASE_URL=… node multiplayer/scripts/redeal-days.mjs <YYYY-MM-DD>… [--yes]
 
-# query the production database (read or write): ips-render-ops cap5. Its IP allow list is closed by
-# default; open it for the session, run the work, then close it again (an empty list).
+# query the production database (read or write): ips-render-ops cap5. It is open to the internet
+# (allow list 0.0.0.0/0) and protected by its password alone (the human, SKATGO-119: 「render这个数据库允许外网访问，
+# 密码对即可，不要搞白名单了」); do not close or narrow the allow list.
 
 # custom domains and TLS: ips-render-ops cap9
 curl -s "https://api.render.com/v1/services/$SERVICE_ID/custom-domains" \

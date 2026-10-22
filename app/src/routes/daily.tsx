@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { clientPage } from '~/components/skat/client-page'
 import { DAILY_DEALS, DAILY_LENGTHS, type DailySize, dailySize } from '~/lib/daily'
+import { readAnnouncement } from '~/lib/forum-api'
 import { breadcrumbs, pageHead, samePath } from '~/lib/head'
 import { m } from '~/paraglide/messages'
 import { localizedUrl } from '~/lib/site'
@@ -13,6 +14,8 @@ export const Route = createFileRoute('/daily')({
     const deals = dailySize(search.deals)
     return deals === DAILY_DEALS ? {} : { deals }
   },
+  // The forum's newest announcement, as a line on the page (SKATGO-118).
+  loader: () => readAnnouncement(getLocale()),
   head: () =>
     pageHead({
       title: m.daily_meta_title(),

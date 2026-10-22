@@ -3,6 +3,7 @@ import express from 'express'
 import { Server, matchMaker } from '@colyseus/core'
 import { WebSocketTransport } from '@colyseus/ws-transport'
 import { dailyRoutes, nameUnnamed, prepareDays } from './daily'
+import { forumRoutes } from './forum'
 import { freeRoutes, loadPool } from './free'
 import { ladderRoutes } from './ladder'
 import { loadPolicy, type Policy } from './skatzero/policy'
@@ -53,6 +54,7 @@ app.use('/daily', dailyRoutes(store, key, () => ready && !stopping, () => policy
 app.use('/free', freeRoutes(key, () => ready && !stopping, () => policy, () => pool))
 app.use('/ladder', ladderRoutes(store, key, () => ready && !stopping))
 app.use('/rooms', referralRoutes(store, key, () => ready && !stopping))
+app.use('/forum', forumRoutes(store, key, () => ready && !stopping))
 const httpServer = createServer(app)
 const server = new Server({
   transport: new WebSocketTransport({ server: httpServer, maxPayload: 16 * 1024, pingInterval: 5000, pingMaxRetries: 2 }),

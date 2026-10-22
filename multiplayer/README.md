@@ -194,6 +194,29 @@ only (`LADDER_FREE` in `app/src/lib/skat/tricks/exercises/ladder.ts`) — as `{ 
 misses } } }` and keeps the larger count, so the same record sent twice changes nothing. Each answers
 `{ steps }`, the account's whole record.
 
+## The forum (SKATGO-118)
+
+`POST /forum/<op>`, behind the admission key like `/daily`, hold the forum in `forum_posts`, `forum_comments` and
+`forum_reports`. The web's `/api/forum/*` (`app/src/lib/forum-handler.ts`) is their one client: it names the viewer
+— `player`, a signed-in account (`user:<Clerk id>`) or `null`, and `official`, whether that account is listed in the
+web's `FORUM_OFFICIALS` — and the browser can name neither. The rules shared with the pages (sections, limits, what
+may be indexed, the text's marks) are `app/src/lib/forum.ts`.
+
+- Reads: `list` (`{ player, official, locale, section?, page? }`: a language's posts, newest activity first, the
+  announcement of the last two weeks first), `post` (`{ player, official, id }`: a post and its comments, flat,
+  oldest first), `latest` (`{ locale }`: that announcement or `null`), `sitemap` (`{}`: every post search engines
+  may read). Hidden posts and comments are returned only to their author and the official. Only names leave
+  here — authors stand under their leaderboard name (`daily_players`, given by `nameOf` at their first write) —
+  and whether something is the viewer's own travels as `mine`.
+- Writes: `create`, `comment` and `delete` (an author's own, for good; a post takes its comments with it),
+  `report` (once per reporter and thing). Announcements (`news`) are the official's only (403); each account may
+  write `DAILY_LIMITS` a day (429 `limit_reached`); the official has no limit.
+- The official: `reports` (open reports, grouped by what they report) and `moderate` (`hide` with a reason,
+  `restore`, `dismiss` a report, `index` / `unindex` a player's post; the official's own posts are always
+  indexable and feedback never, 409 `not_markable`).
+
+Nothing here notifies anyone. Tests: `test/forum.test.ts`, against a database of its own.
+
 ## Deployment
 
 API-managed, not Blueprint-managed. `render.json` records the approved resource

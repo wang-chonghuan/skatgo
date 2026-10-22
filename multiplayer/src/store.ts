@@ -78,6 +78,27 @@ export class Store {
         CREATE TABLE IF NOT EXISTS account_referrals (
           account text PRIMARY KEY, referrer text NOT NULL, room_id text NOT NULL, created_at bigint NOT NULL
         );
+        -- The forum (SKATGO-118): posts per language and section, flat comments, and reports — once per reporter
+        -- and thing reported. An author's delete removes the row and what hangs from it.
+        CREATE TABLE IF NOT EXISTS forum_posts (
+          id bigserial PRIMARY KEY, locale text NOT NULL, section text NOT NULL, author text NOT NULL,
+          official boolean NOT NULL, title text NOT NULL, body text NOT NULL, indexed boolean NOT NULL DEFAULT false,
+          hidden_reason text, created_at bigint NOT NULL, last_activity bigint NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS forum_posts_list ON forum_posts (locale, last_activity DESC);
+        CREATE INDEX IF NOT EXISTS forum_posts_author ON forum_posts (author, created_at);
+        CREATE TABLE IF NOT EXISTS forum_comments (
+          id bigserial PRIMARY KEY, post_id bigint NOT NULL REFERENCES forum_posts(id) ON DELETE CASCADE,
+          author text NOT NULL, official boolean NOT NULL, body text NOT NULL, hidden_reason text, created_at bigint NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS forum_comments_post ON forum_comments (post_id, created_at);
+        CREATE INDEX IF NOT EXISTS forum_comments_author ON forum_comments (author, created_at);
+        CREATE TABLE IF NOT EXISTS forum_reports (
+          id bigserial PRIMARY KEY, post_id bigint NOT NULL REFERENCES forum_posts(id) ON DELETE CASCADE,
+          comment_id bigint REFERENCES forum_comments(id) ON DELETE CASCADE, reporter text NOT NULL, reason text,
+          created_at bigint NOT NULL, resolved_at bigint
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS forum_reports_once ON forum_reports (reporter, post_id, (coalesce(comment_id, 0)));
         CREATE TABLE IF NOT EXISTS ladder_answers (
           player text NOT NULL, step text NOT NULL, solved_at bigint, misses integer NOT NULL DEFAULT 0,
           updated_at bigint NOT NULL, PRIMARY KEY (player, step)

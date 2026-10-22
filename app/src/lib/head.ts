@@ -18,6 +18,12 @@ export type PageHead = {
   /** The file name (without language and extension) of the page's picture in /og. */
   image: string
   jsonLd: JsonLd[]
+  /** Whether search engines may index the page, when its data decides rather than its route (a forum post). */
+  indexable?: boolean
+  /** A page that exists in one language only (a forum post, SKATGO-118): its only alternate is itself. */
+  only?: Locale
+  /** The query of a page that is a view of another (the forum filtered by section): never indexed. */
+  search?: string
 }
 
 /** The same route path in every language — every page but a lesson. */
@@ -26,11 +32,11 @@ export const samePath = (path: string): Record<Locale, string> =>
 
 export const ogImageUrl = (image: string, locale: Locale) => `${SITE_URL}/og/${image}-${locale}.png`
 
-export function pageHead({ title, description, paths, image, jsonLd }: PageHead) {
+export function pageHead({ title, description, paths, image, jsonLd, indexable: indexed, only, search }: PageHead) {
   const locale = getLocale()
-  const url = localizedUrl(paths[locale], locale)
+  const url = `${localizedUrl(paths[locale], locale)}${search ?? ''}`
   const picture = ogImageUrl(image, locale)
-  const indexable = isIndexable(paths[locale])
+  const indexable = !search && (indexed ?? isIndexable(paths[locale]))
   return {
     meta: [
       { title },
@@ -56,7 +62,8 @@ export function pageHead({ title, description, paths, image, jsonLd }: PageHead)
     ],
     links: [
       { rel: 'canonical', href: url },
-      ...(indexable ? [
+      ...(indexable && only ? [{ rel: 'alternate', hrefLang: LANG_TAG[only], href: url }] : []),
+      ...(indexable && !only ? [
         ...locales.map((l) => ({ rel: 'alternate', hrefLang: LANG_TAG[l], href: localizedUrl(paths[l], l) })),
         { rel: 'alternate', hrefLang: 'x-default', href: localizedUrl(paths.de, 'de') },
       ] : []),

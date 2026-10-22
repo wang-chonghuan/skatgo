@@ -2,6 +2,8 @@ import handler from '@tanstack/react-start/server-entry'
 
 import { handleAsk } from './lib/ask/handler'
 import { handleDaily } from './lib/daily-handler'
+import { UNAVAILABLE } from './lib/forum-api'
+import { forumSitemap, handleForum } from './lib/forum-handler'
 import { handleFree } from './lib/free-handler'
 import { handleRoom } from './lib/room-handler'
 import { handleTricks } from './lib/tricks-handler'
@@ -27,6 +29,8 @@ defineCustomServerStrategy('custom-skatgo', {
 // Answered here, before the middleware and without the page router (SKATGO-29):
 //   moved pages   301 to where they live now (lib/moved.ts);
 //   sitemap.xml   built from the page list (lib/sitemap.ts);
+//   sitemap-forum.xml  the forum's posts search engines may read, from the forum (SKATGO-118,
+//                 lib/forum-handler.ts);
 //   /             a visitor whose language is not German goes to /en, the query kept (SKATGO-113,
 //                 lib/locale.ts rootLocale) — here and not in the middleware, which redirects only a
 //                 browser's document request and would otherwise serve English at the German address.
@@ -36,8 +40,8 @@ defineCustomServerStrategy('custom-skatgo', {
 // router: it is a server route, not a page — no language prefix, no redirect, and nothing that reads
 // the page route tree has to know about it. The daily tournament's endpoints (SKATGO-35,
 // lib/daily-handler.ts), free play's (SKATGO-40, lib/free-handler.ts) and a private table's admission
-// and its referral (SKATGO-61, SKATGO-117, lib/room-handler.ts) and the ladder's record (SKATGO-109, lib/tricks-handler.ts) are answered
-// here for the same reason.
+// and its referral (SKATGO-61, SKATGO-117, lib/room-handler.ts), the ladder's record (SKATGO-109, lib/tricks-handler.ts)
+// and the forum (SKATGO-118, lib/forum-handler.ts) are answered here for the same reason.
 export default {
   fetch(req: Request): Promise<Response> {
     const url = new URL(req.url)
@@ -46,9 +50,11 @@ export default {
     if (url.pathname.startsWith('/api/free/')) return handleFree(req)
     if (url.pathname.startsWith('/api/room/')) return handleRoom(req)
     if (url.pathname.startsWith('/api/tricks/')) return handleTricks(req)
+    if (url.pathname.startsWith('/api/forum/')) return handleForum(req)
     const moved = movedTo(url.pathname, url.search)
     // Keep the public scheme when TLS terminates at the reverse proxy.
     if (moved) return Promise.resolve(new Response(null, { status: 301, headers: { location: moved } }))
+    if (url.pathname === '/sitemap-forum.xml') return forumSitemap()
     if (url.pathname === '/sitemap.xml') return Promise.resolve(new Response(buildSitemap(), { headers: { 'content-type': 'application/xml; charset=utf-8' } }))
     if (url.pathname === '/') {
       const vary = { vary: 'Accept-Language, Cookie' }
@@ -56,8 +62,18 @@ export default {
         return Promise.resolve(new Response(null, { status: 307, headers: { location: `/en${url.search}`, ...vary } }))
       return paraglideMiddleware(req, () => handler.fetch(req)).then((res) => withHeaders(res, vary))
     }
-    return paraglideMiddleware(req, () => handler.fetch(req))
+    return paraglideMiddleware(req, () => handler.fetch(req)).then(unavailable)
   },
+}
+
+/** A page whose data could not be read (a forum post while the forum does not answer, SKATGO-118) is marked by
+ *  its loader; it goes out as a 503, so a crawler comes back instead of dropping it. */
+function unavailable(res: Response): Response {
+  if (!res.headers.has(UNAVAILABLE)) return res
+  const out = new Response(res.body, { status: 503, statusText: 'Service Unavailable', headers: res.headers })
+  out.headers.delete(UNAVAILABLE)
+  out.headers.set('retry-after', '600')
+  return out
 }
 
 /** The response with these headers added; a fresh one when its own headers are immutable. */

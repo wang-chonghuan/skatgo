@@ -20,8 +20,10 @@ printables' PDFs under `/downloads/`, each with a canonical Link header naming i
 Random exercises, cards and personal progress run in the browser. The German root is a 200 page for
 a German browser or a request that names no language, and a 307 to `/en` (query kept) for any other
 language or a saved English choice (SKATGO-113); the old German homepage address redirects permanently
-to it (SKATGO-44). `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*` and
-`/api/free/*`. They pass the daily tournament's and free play's requests on to `multiplayer`. Free
+to it (SKATGO-44). `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*`,
+`/api/free/*` and `/api/forum/*` (SKATGO-118). They pass the daily tournament's, free play's and the forum's
+requests on to `multiplayer`; `/sitemap-forum.xml` is built from the forum and answers 503 while it does not
+answer. Free
 play includes lesson 11's game (SKATGO-40). `/api/free/*` is limited per address to 300 new games an
 hour and 200 other requests — moves, resumes and reviews — per 10 s, and answers `429 slow_down` beyond
 that.
@@ -33,8 +35,9 @@ can recover the same seat within the room's 24-hour inactivity lifetime. Browser
 the web's `/api/room/ticket` (SKATGO-61): opening a table needs an account (SKATGO-117), and a ticket
 is issued only while the service is ready, so during a deploy the pages wait and come back by
 themselves. Integration clients use the admission key.
-The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily` and free play
-(SKATGO-40) under `/free`. Their one client is the web service, which holds the admission key. Free
+The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily`, free play
+(SKATGO-40) under `/free` and the forum (SKATGO-118) under `/forum`, whose posts, comments and reports are in its
+PostgreSQL. Their one client is the web service, which holds the admission key. Free
 play stores nothing: each game is an encrypted token keyed from the admission key, so changing that
 key ends the games in progress. A finished deal's review — the AI's cards in its play record, and in free
 play the AI's own game from the player's seat (SKATGO-86) — is SkatZero's work on this instance, per
@@ -188,7 +191,9 @@ Locally `app/.env` also carries `MULTIPLAYER_URL` (the local multiplayer service
 `http://127.0.0.1:<multiplayer-port>`) and `MULTIPLAYER_ADMISSION_KEY` (the value in
 `multiplayer/.env`); without them `/api/daily/*` and `/api/free/*` answer 503. `POSTHOG_PROJECT_KEY`
 is optional locally: without it analytics is not loaded. `SKATGO_TEST_ACCOUNTS=1` is local only, for
-signed-in acceptance (Acceptance above); production never carries it. The daily tournament,
+signed-in acceptance (Acceptance above); production never carries it. `FORUM_OFFICIALS` (SKATGO-118) lists, comma
+separated, the Clerk account ids that write as SkatGo in the forum and moderate it; locally a test account's id
+(`test_admin`) makes that account the official. The daily tournament,
 free play and lesson 11's game run locally with both services and the local database started as Build
 and tests says.
 
@@ -196,7 +201,7 @@ In production the Render Web Service carries exactly the application configurati
 `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `CLERK_SECRET_KEY`,
 `CLERK_PUBLISHABLE_KEY`, `MULTIPLAYER_URL` (the `skatgo-multiplayer` service's own Render hostname)
 and `MULTIPLAYER_ADMISSION_KEY` (the multiplayer service's value; SKATGO-35), plus
-`POSTHOG_PROJECT_KEY` (SKATGO-25); Render supplies `PORT` and its own `RENDER_*` runtime variables. List
+`POSTHOG_PROJECT_KEY` (SKATGO-25) and `FORUM_OFFICIALS` (the owner's Clerk account id; SKATGO-118); Render supplies `PORT` and its own `RENDER_*` runtime variables. List
 application keys without printing values:
 
 ```bash
@@ -230,7 +235,7 @@ releases `skatgo-multiplayer`, which has its own deploy below (found while deplo
 **Post-deploy check**
 
 For multiplayer-only releases, do not redeploy `web`. A release that changes both — the daily
-tournament's routes and the web's proxy to them — deploys `multiplayer` first, so the web never
+tournament's or the forum's routes and the web's proxy to them — deploys `multiplayer` first, so the web never
 calls routes that are not live yet. A release that changes a private table's ticket (SKATGO-117)
 deploys `web` first instead: its tickets stay `v:1`, which the running multiplayer accepts, and only
 the new multiplayer then requires an `open` ticket to create a table. After a merged revision:

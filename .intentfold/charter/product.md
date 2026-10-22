@@ -105,6 +105,21 @@ reached only by a small link under them. Every article leads to the daily tourna
 compared with the AI. The articles' text is SkatGo's own: no book's passages, examples or order are copied,
 and the articles recommend no books. After every deal, the play record links to the exercises.
 
+A forum at `/forum` (SKATGO-118), one per language, in the product's own code: the human wanted
+「官方发公告，官方发一些技术的文章，用户可以评论，用户也可以发文章……就做一个简单版本的。以后既能用来seo又有个公告和用户交流，放文章的地方」.
+Four sections: announcements, which only SkatGo writes; articles, by SkatGo or a player; discussion; and feedback.
+The list shows them together, newest activity first, the latest announcement of the last two weeks on top, and
+can be narrowed to one. Under every post, comments in the order written, flat — no reply to a comment; whom one
+means is "@Name" in the text (the human: 「评论不要搞嵌套，太麻烦，用户自己 @ 一个人就行，也不用通知」). Nothing in the forum
+notifies anyone. Anyone reads; writing takes an account, and a player writes under their leaderboard name, never
+an email address; SkatGo writes as SkatGo. SkatGo's posts are for search engines; a player's post only once SkatGo
+marks it, and feedback never. The latest announcement also stands as one line on the front page and on `/daily`
+for two weeks. The least moderation the law asks of a host: anyone signed in may report a post or comment,
+SkatGo hides with a reason its author sees, an author may delete their own, and each account writes only so much
+a day. The forum's articles section links to the Skat-Tricks article, which stays where it is. Not in it, by the
+human's agreement (「都同意」): notifications, nested replies, pictures, search, profiles, likes, blocking (with the
+apps later) and competitions (later, in the product itself).
+
 **Who it is for**
 
 Learners from 6 to 99 (the human, 2026-09-21: 「年龄改为6-99岁」), who want to be able to sit down at a
@@ -131,8 +146,8 @@ exposure. Neither alone proves that learners can play, and delayed search report
   themselves. The homepage `skatgo.com/` follows the visitor's language: a German browser, or a request
   that names no language, gets the German homepage; any other language goes to `/en`; a language the
   visitor picked in the header wins (SKATGO-113).
-- It is the course, free play, the daily tournament, private tables with friends, the Skat-Tricks and
-  the rules reference — nothing from
+- It is the course, free play, the daily tournament, private tables with friends, the Skat-Tricks, the
+  rules reference and the forum — nothing from
   Parrottoon, from which it was split on 2026-09-21: none of Parrottoon's English content, and no link
   back to it.
 

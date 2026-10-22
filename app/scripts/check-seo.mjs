@@ -54,6 +54,20 @@ export function validatePage(data, entry) {
   assert.ok(data.assets.some((url) => new URL(url).pathname.startsWith('/assets/')), `${entry.loc}: built assets`)
 }
 
+/** A sitemap's entries with their alternates, read in the page (DOMParser). */
+function parseSitemap(xml) {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml')
+  if (doc.querySelector('parsererror')) throw Error('Invalid sitemap XML')
+  return [...doc.getElementsByTagNameNS('http://www.sitemaps.org/schemas/sitemap/0.9', 'url')].map((node) => ({
+    loc: node.getElementsByTagNameNS('*', 'loc')[0]?.textContent.trim(),
+    alternates: (() => {
+      const pairs = [...node.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'link')].map((link) => [link.getAttribute('hreflang'), link.getAttribute('href')])
+      if (new Set(pairs.map(([lang]) => lang)).size !== pairs.length) throw Error('Duplicate sitemap alternate')
+      return Object.fromEntries(pairs)
+    })(),
+  }))
+}
+
 export async function checkSeo(origin, { signal, quiet = false } = {}) {
   const inventory = await loadInventory()
   const { site, locales } = inventory
@@ -82,18 +96,7 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
     const sitemap = await request.get(new URL('/sitemap.xml', target).href, { maxRedirects: 0 })
     assert.equal(sitemap.status(), 200, 'Sitemap status')
     await page.goto(new URL('/', target).href, { waitUntil: 'domcontentloaded' })
-    const entries = await page.evaluate((xml) => {
-      const doc = new DOMParser().parseFromString(xml, 'application/xml')
-      if (doc.querySelector('parsererror')) throw Error('Invalid sitemap XML')
-      return [...doc.getElementsByTagNameNS('http://www.sitemaps.org/schemas/sitemap/0.9', 'url')].map((node) => ({
-        loc: node.getElementsByTagNameNS('*', 'loc')[0]?.textContent.trim(),
-        alternates: (() => {
-          const pairs = [...node.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'link')].map((link) => [link.getAttribute('hreflang'), link.getAttribute('href')])
-          if (new Set(pairs.map(([lang]) => lang)).size !== pairs.length) throw Error('Duplicate sitemap alternate')
-          return Object.fromEntries(pairs)
-        })(),
-      }))
-    }, await sitemap.text())
+    const entries = await page.evaluate(parseSitemap, await sitemap.text())
     assert.ok(entries.length > 0, 'Derived no sitemap pages')
     const urls = new Set(entries.map((entry) => entry.loc))
     assert.equal(urls.size, entries.length, 'Duplicate sitemap URLs')
@@ -102,10 +105,31 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
     for (const expected of inventory.entries) {
       assert.deepEqual(byUrl.get(expected.loc).alternates, expected.alternates, `${expected.loc}: source-backed sitemap alternates`)
     }
+    // The forum's posts (SKATGO-118) come from its database, each in one language, in a sitemap of their own. Off
+    // the published site the forum may not be running; there its 503 is accepted and said, never on the site.
+    const forumSitemap = await request.get(new URL('/sitemap-forum.xml', target).href, { maxRedirects: 0 })
+    const forumUp = forumSitemap.status() === 200
+    if (!forumUp) {
+      assert.equal(forumSitemap.status(), 503, 'Forum sitemap status')
+      assert.notEqual(target.origin, site, 'Forum sitemap unavailable on the published site')
+      log('Forum not answering here: its posts are not checked')
+    }
+    const forumEntries = forumUp ? (await page.evaluate(parseSitemap, await forumSitemap.text())).map((entry) => ({ ...entry, forum: true })) : []
+    const forumAddress = (loc, tag) => inventory.dataRoutes.some((route) => route[tag] && new URLPattern(route[tag], site).test(loc))
+    for (const entry of forumEntries) {
+      assert.ok(!urls.has(entry.loc), `${entry.loc}: forum post also in sitemap.xml`)
+      const tags = Object.keys(entry.alternates)
+      assert.ok(tags.length === 1 && entry.alternates[tags[0]] === entry.loc, `${entry.loc}: forum post has its one-language alternate only`)
+      assert.ok(forumAddress(entry.loc, tags[0]), `${entry.loc}: forum post address in its language`)
+      entries.push(entry)
+      urls.add(entry.loc)
+      byUrl.set(entry.loc, entry)
+    }
     const robots = await request.get(new URL('/robots.txt', target).href, { maxRedirects: 0 })
     assert.equal(robots.status(), 200, 'Robots status')
     const robotsText = await robots.text()
-    validateRobots(robotsText, site, [...entries.map((entry) => new URL(entry.loc).pathname), '/sitemap.xml'])
+    validateRobots(robotsText, site, [...entries.map((entry) => new URL(entry.loc).pathname), '/sitemap.xml', '/sitemap-forum.xml'])
+    assert.match(robotsText, new RegExp(`^Sitemap:\\s*${site}/sitemap-forum\\.xml\\s*$`, 'mi'), 'robots.txt: must announce the forum sitemap')
     for (const entry of entries) {
       for (const alternate of Object.values(entry.alternates)) {
         assert.ok(byUrl.has(alternate), `${entry.loc}: alternate is indexable`)
@@ -120,8 +144,10 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
     const files = new Set()
   const snapshots = []
     for (const entry of entries) {
-      assert.deepEqual(Object.keys(entry.alternates).sort(), [...locales, 'x-default'].sort(), `${entry.loc}: language coverage`)
-      assert.equal(entry.alternates['x-default'], entry.alternates.de, `${entry.loc}: German default`)
+      if (!entry.forum) {
+        assert.deepEqual(Object.keys(entry.alternates).sort(), [...locales, 'x-default'].sort(), `${entry.loc}: language coverage`)
+        assert.equal(entry.alternates['x-default'], entry.alternates.de, `${entry.loc}: German default`)
+      }
       for (const alternate of Object.values(entry.alternates)) assert.ok(urls.has(alternate), `${entry.loc}: alternate missing from sitemap`)
       const response = await page.goto(local(entry.loc), { waitUntil: 'domcontentloaded' })
       await page.locator('link[rel="stylesheet"][href^="/assets/"]').waitFor({ state: 'attached' })
@@ -281,12 +307,23 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
         assert.match(await response.text(), /noindex/, 'Missing pages noindex')
       }
     }
+    // A forum post that does not exist is a missing page, in every language (when the forum answers).
+    if (forumUp) {
+      for (const route of inventory.dataRoutes) {
+        for (const template of Object.values(route)) {
+          const path = template.replace(/:[A-Za-z0-9_]+/g, '999999999999-missing')
+          const response = await request.get(new URL(path, target).href, { maxRedirects: 0 })
+          assert.equal(response.status(), 404, `Unknown forum post ${path}`)
+          assert.match(await response.text(), /noindex/, 'Missing forum post noindex')
+        }
+      }
+    }
     // Exercise the same validator on deliberately broken observations, not a passing happy-path only.
     const sample = snapshots[0]
     assert.throws(() => validatePage({ ...sample.data, canonical: [`${site}/wrong`] }, sample.entry), /self canonical/)
     assert.throws(() => validatePage({ ...sample.data, text: '' }, sample.entry), /SSR content/)
-    const result = { pages: entries.length, privatePages: privatePages.size, assets: assets.size, files: files.size }
-    log(`OK SEO: ${result.pages} indexable pages, ${result.privatePages} noindex pages, ${result.assets} assets, ${result.files} linked files; negative controls rejected`)
+    const result = { pages: entries.length - forumEntries.length, forumPosts: forumUp ? forumEntries.length : null, privatePages: privatePages.size, assets: assets.size, files: files.size }
+    log(`OK SEO: ${result.pages} indexable pages, ${forumUp ? `${result.forumPosts} forum posts` : 'forum not checked'}, ${result.privatePages} noindex pages, ${result.assets} assets, ${result.files} linked files; negative controls rejected`)
     log('This checks rendered SEO contracts, not Google/Bing indexing, selected canonical, rankings or traffic. No console/DNS changes or indexing submissions.')
     return result
   } finally {

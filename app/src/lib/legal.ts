@@ -4,7 +4,7 @@ type LegalSection = { id: string; title: string; paragraphs: string[]; contact?:
 type LegalDocument = { intro: string; sections: LegalSection[] }
 type LegalCopy = { privacy: LegalDocument; terms: LegalDocument }
 
-export const LEGAL_UPDATED = '2026-10-19'
+export const LEGAL_UPDATED = '2026-10-22'
 
 export const LEGAL_OPERATOR = {
   name: 'Olena Holub',
@@ -71,6 +71,14 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           ],
         },
         {
+          id: 'forum',
+          title: 'The forum',
+          paragraphs: [
+            'Reading the forum needs no account. If you write a post, comment or report there, we store it on the server with your account identifier and the time. Posts and comments are public and appear under your leaderboard name, never your email address. Announcements and articles by SkatGo appear under SkatGo.',
+            'A report and its optional reason are seen only by the operator. If the operator hides a post or comment, the reason is stored with it and shown to you. The forum sends no notifications. You can delete your own posts and comments at any time; deleting a post also deletes its comments. Posts the operator approves can be indexed by search engines; feedback posts never are.',
+          ],
+        },
+        {
           id: 'assistant',
           title: 'Questions sent to the assistant',
           paragraphs: [
@@ -124,6 +132,14 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           paragraphs: [
             'The daily tournament allows one entry per player per day in each of its two tournaments (6 or 12 deals). Its scores are calculated from the moves recorded by the server. Do not manipulate scores, create extra identities to gain an advantage, automate abusive requests or interfere with other players.',
             'Leaderboard names, whether assigned at random or chosen by you, appear publicly with tournament results. Do not impersonate someone, disclose private information or use illegal or abusive content. SkatGo may remove an unsuitable nickname or restrict abusive access.',
+          ],
+        },
+        {
+          id: 'forum',
+          title: 'Writing in the forum',
+          paragraphs: [
+            'Be friendly and stay on topic: Skat, SkatGo and feedback. Do not post illegal content, insults, harassment, advertising or spam, other people\'s personal data, or content you have no right to publish. One account may write a limited number of posts, comments and reports a day.',
+            'Anyone signed in can report a post or comment. SkatGo may hide content that breaks these rules or the law; the author sees the reason and can contact the operator to object. You keep the rights to what you write and allow SkatGo to show it in the forum and its search results until you delete it.',
           ],
         },
         {
@@ -186,6 +202,14 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           ],
         },
         {
+          id: 'forum',
+          title: 'Das Forum',
+          paragraphs: [
+            'Zum Lesen des Forums brauchst du kein Konto. Wenn du dort einen Beitrag, Kommentar oder eine Meldung schreibst, speichern wir ihn mit deiner Kontokennung und der Uhrzeit auf dem Server. Beiträge und Kommentare sind öffentlich und erscheinen unter deinem Namen auf der Rangliste, nie unter deiner E-Mail-Adresse. Ankündigungen und Artikel von SkatGo erscheinen unter SkatGo.',
+            'Eine Meldung und ihr optionaler Grund sind nur für die Betreiberin sichtbar. Blendet die Betreiberin einen Beitrag oder Kommentar aus, wird der Grund dazu gespeichert und dir angezeigt. Das Forum verschickt keine Benachrichtigungen. Deine eigenen Beiträge und Kommentare kannst du jederzeit löschen; mit einem Beitrag werden auch seine Kommentare gelöscht. Beiträge, die die Betreiberin freigibt, können von Suchmaschinen erfasst werden; Feedback-Beiträge nie.',
+          ],
+        },
+        {
           id: 'assistant',
           title: 'Fragen an den Assistenten',
           paragraphs: [
@@ -239,6 +263,14 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           paragraphs: [
             'Im Tagesturnier ist in jedem seiner beiden Turniere (6 oder 12 Spiele) ein Eintrag pro Spieler und Tag vorgesehen. Der Server berechnet die Punkte aus den gespeicherten Spielzügen. Manipuliere keine Ergebnisse, lege keine zusätzlichen Identitäten zur Vorteilsnahme an und störe andere Spieler oder den Dienst nicht durch automatisierte missbräuchliche Anfragen.',
             'Namen in der Rangliste – zufällig vergeben oder von dir gewählt – erscheinen öffentlich mit den Turnierergebnissen. Gib dich nicht als andere Person aus und veröffentliche keine privaten, rechtswidrigen oder beleidigenden Inhalte. SkatGo kann ungeeignete Spitznamen entfernen und missbräuchliche Zugriffe beschränken.',
+          ],
+        },
+        {
+          id: 'forum',
+          title: 'Im Forum schreiben',
+          paragraphs: [
+            'Bleib freundlich und beim Thema: Skat, SkatGo und Feedback. Keine rechtswidrigen Inhalte, Beleidigungen, Belästigung, Werbung oder Spam, keine personenbezogenen Daten anderer und nichts, was du nicht veröffentlichen darfst. Ein Konto kann am Tag nur eine begrenzte Zahl von Beiträgen, Kommentaren und Meldungen schreiben.',
+            'Wer angemeldet ist, kann einen Beitrag oder Kommentar melden. SkatGo kann Inhalte ausblenden, die gegen diese Regeln oder das Gesetz verstoßen; der Autor sieht den Grund und kann sich bei der Betreiberin dagegen wenden. Die Rechte an deinen Texten behältst du; du erlaubst SkatGo, sie im Forum und in dessen Suchergebnissen zu zeigen, bis du sie löschst.',
           ],
         },
         {

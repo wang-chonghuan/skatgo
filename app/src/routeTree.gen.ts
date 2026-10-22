@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DailyRouteImport } from './routes/daily'
+import { Route as ForumRouteImport } from './routes/forum'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RulesRouteImport } from './routes/rules'
@@ -21,6 +22,7 @@ import { Route as CourseIndexRouteImport } from './routes/course.index'
 import { Route as CourseSlugRouteImport } from './routes/course.$slug'
 import { Route as CourseQuickStartRouteImport } from './routes/course.quick-start'
 import { Route as DailyPlayRouteImport } from './routes/daily_.play'
+import { Route as ForumPostRouteImport } from './routes/forum_.$post'
 import { Route as RulesBiddingTableRouteImport } from './routes/rules_.bidding-table'
 import { Route as RulesPrintableRouteImport } from './routes/rules_.printable'
 import { Route as RulesScoreSheetRouteImport } from './routes/rules_.score-sheet'
@@ -36,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
 const DailyRoute = DailyRouteImport.update({
   id: '/daily',
   path: '/daily',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForumRoute = ForumRouteImport.update({
+  id: '/forum',
+  path: '/forum',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayRoute = PlayRouteImport.update({
@@ -88,6 +95,11 @@ const DailyPlayRoute = DailyPlayRouteImport.update({
   path: '/daily/play',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForumPostRoute = ForumPostRouteImport.update({
+  id: '/forum_/$post',
+  path: '/forum/$post',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RulesBiddingTableRoute = RulesBiddingTableRouteImport.update({
   id: '/rules_/bidding-table',
   path: '/rules/bidding-table',
@@ -122,6 +134,7 @@ const TableIdRoute = TableIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/daily': typeof DailyRoute
+  '/forum': typeof ForumRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
   '/rules': typeof RulesRoute
@@ -131,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/course/$slug': typeof CourseSlugRoute
   '/course/quick-start': typeof CourseQuickStartRoute
   '/daily/play': typeof DailyPlayRoute
+  '/forum/$post': typeof ForumPostRoute
   '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/rules/printable': typeof RulesPrintableRoute
   '/rules/score-sheet': typeof RulesScoreSheetRoute
@@ -142,6 +156,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/daily': typeof DailyRoute
+  '/forum': typeof ForumRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
   '/rules': typeof RulesRoute
@@ -151,6 +166,7 @@ export interface FileRoutesByTo {
   '/course/$slug': typeof CourseSlugRoute
   '/course/quick-start': typeof CourseQuickStartRoute
   '/daily/play': typeof DailyPlayRoute
+  '/forum/$post': typeof ForumPostRoute
   '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/rules/printable': typeof RulesPrintableRoute
   '/rules/score-sheet': typeof RulesScoreSheetRoute
@@ -163,6 +179,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/daily': typeof DailyRoute
+  '/forum': typeof ForumRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
   '/rules': typeof RulesRoute
@@ -172,6 +189,7 @@ export interface FileRoutesById {
   '/course/$slug': typeof CourseSlugRoute
   '/course/quick-start': typeof CourseQuickStartRoute
   '/daily_/play': typeof DailyPlayRoute
+  '/forum_/$post': typeof ForumPostRoute
   '/rules_/bidding-table': typeof RulesBiddingTableRoute
   '/rules_/printable': typeof RulesPrintableRoute
   '/rules_/score-sheet': typeof RulesScoreSheetRoute
@@ -185,6 +203,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/daily'
+    | '/forum'
     | '/play'
     | '/privacy'
     | '/rules'
@@ -194,6 +213,7 @@ export interface FileRouteTypes {
     | '/course/$slug'
     | '/course/quick-start'
     | '/daily/play'
+    | '/forum/$post'
     | '/rules/bidding-table'
     | '/rules/printable'
     | '/rules/score-sheet'
@@ -205,6 +225,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/daily'
+    | '/forum'
     | '/play'
     | '/privacy'
     | '/rules'
@@ -214,6 +235,7 @@ export interface FileRouteTypes {
     | '/course/$slug'
     | '/course/quick-start'
     | '/daily/play'
+    | '/forum/$post'
     | '/rules/bidding-table'
     | '/rules/printable'
     | '/rules/score-sheet'
@@ -225,6 +247,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/daily'
+    | '/forum'
     | '/play'
     | '/privacy'
     | '/rules'
@@ -234,6 +257,7 @@ export interface FileRouteTypes {
     | '/course/$slug'
     | '/course/quick-start'
     | '/daily_/play'
+    | '/forum_/$post'
     | '/rules_/bidding-table'
     | '/rules_/printable'
     | '/rules_/score-sheet'
@@ -246,6 +270,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DailyRoute: typeof DailyRoute
+  ForumRoute: typeof ForumRoute
   PlayRoute: typeof PlayRoute
   PrivacyRoute: typeof PrivacyRoute
   RulesRoute: typeof RulesRoute
@@ -255,6 +280,7 @@ export interface RootRouteChildren {
   CourseSlugRoute: typeof CourseSlugRoute
   CourseQuickStartRoute: typeof CourseQuickStartRoute
   DailyPlayRoute: typeof DailyPlayRoute
+  ForumPostRoute: typeof ForumPostRoute
   RulesBiddingTableRoute: typeof RulesBiddingTableRoute
   RulesPrintableRoute: typeof RulesPrintableRoute
   RulesScoreSheetRoute: typeof RulesScoreSheetRoute
@@ -278,6 +304,13 @@ declare module '@tanstack/react-router' {
       path: '/daily'
       fullPath: '/daily'
       preLoaderRoute: typeof DailyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forum': {
+      id: '/forum'
+      path: '/forum'
+      fullPath: '/forum'
+      preLoaderRoute: typeof ForumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/play': {
@@ -350,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DailyPlayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forum_/$post': {
+      id: '/forum_/$post'
+      path: '/forum/$post'
+      fullPath: '/forum/$post'
+      preLoaderRoute: typeof ForumPostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rules_/bidding-table': {
       id: '/rules_/bidding-table'
       path: '/rules/bidding-table'
@@ -398,6 +438,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DailyRoute: DailyRoute,
+  ForumRoute: ForumRoute,
   PlayRoute: PlayRoute,
   PrivacyRoute: PrivacyRoute,
   RulesRoute: RulesRoute,
@@ -407,6 +448,7 @@ const rootRouteChildren: RootRouteChildren = {
   CourseSlugRoute: CourseSlugRoute,
   CourseQuickStartRoute: CourseQuickStartRoute,
   DailyPlayRoute: DailyPlayRoute,
+  ForumPostRoute: ForumPostRoute,
   RulesBiddingTableRoute: RulesBiddingTableRoute,
   RulesPrintableRoute: RulesPrintableRoute,
   RulesScoreSheetRoute: RulesScoreSheetRoute,

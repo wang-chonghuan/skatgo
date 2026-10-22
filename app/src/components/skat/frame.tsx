@@ -62,13 +62,14 @@ export function useFrame() {
 /** The front page's links, in this order (the human, 2026-10-01): today's deals, guided free play, the
  *  course, the rules. No separate "Play" button beside them. */
 // The header's links, in the human's order (SKATGO-69): the tournament, learning, free play, a private table,
-// then the tricks (SKATGO-82), which took the place of the greyed-out puzzles.
-const HEADER_LINKS: { to: '/daily' | '/course' | '/play' | '/with-friends' | '/skat-tricks'; label: () => string }[] = [
+// then the tricks (SKATGO-82), which took the place of the greyed-out puzzles, and the forum (SKATGO-118).
+const HEADER_LINKS: { to: '/daily' | '/course' | '/play' | '/with-friends' | '/skat-tricks' | '/forum'; label: () => string }[] = [
   { to: '/daily', label: () => m.nav_header_daily() },
   { to: '/course', label: () => m.nav_header_learn() },
   { to: '/play', label: () => m.nav_header_free() },
   { to: '/with-friends', label: () => m.nav_header_friends() },
   { to: '/skat-tricks', label: () => m.nav_header_tricks() },
+  { to: '/forum', label: () => m.nav_header_forum() },
 ]
 
 /** The front page's header: the public site's white bar, also over the tournament, the course and the

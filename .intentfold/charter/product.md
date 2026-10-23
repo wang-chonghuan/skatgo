@@ -19,7 +19,8 @@ them, translated and nothing added — then the way to the table.
 
 A daily Skat tournament at `/daily`: every day the same 6 deals for every player (SKATGO-62), each deal
 played against two computer players, Lina and Noah, and scored by Seeger-Fabian; one entry per player per
-day; scores are the server's, from the cards actually played. A player who sees too many deals ahead does
+day; scores are the server's, from the cards actually played. Playing it needs a free account (SKATGO-123,
+the human: 「要求参加锦标赛必须登录」); its page and boards are open to everyone. A player who sees too many deals ahead does
 not start (the human, 2026-10-10: 「用户看到太多，就不想打了」). The second, twelve-deal tournament of SKATGO-77
 is gone (SKATGO-119, the human: 「取消每日锦标赛12幅牌的，只保留6幅牌。数据库可以先不删」): nothing shows or
 serves it, and its stored deals and entries stay in the database.
@@ -47,7 +48,7 @@ expectation), K 40 for a player's first 30 days and 20 after; everyone starts at
 1700, the scale's anchor (players' day totals beat its total about a quarter of the time). A number is
 provisional under five days; staying away costs nothing. A day counts once it is over, its field complete. One
 person under several ids — guest days on other devices, a guest who signed up later — counts as one, as the
-human names them (「ju开头那几个人，算一个人……mark也是同一个人」). The front page shows the ten highest with the AI's
+human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」). The front page shows the ten highest with the AI's
 number among them, and how it is counted.
 
 After each deal the player sees how the computer, named "AI", played the same deal from their seat

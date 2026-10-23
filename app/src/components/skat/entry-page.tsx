@@ -59,9 +59,10 @@ export function EntryPage() {
                 {m.entry_forum_cta()}
               </Link>
             </div>
-            {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). */}
+            {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). "No
+                sign-up" is gone since the tournament needs an account (SKATGO-123). */}
             <ul data-testid="entry-points" {...stylex.props(styles.points, beside && styles.startRow)}>
-              {[m.entry_point_free(), m.entry_point_no_signup(), m.entry_point_ai()].map((point) => (
+              {[m.entry_point_free(), m.entry_point_ai()].map((point) => (
                 <li key={point} {...stylex.props(typography.appText, styles.point)}>
                   <span aria-hidden="true" {...stylex.props(styles.check)}>✓</span>
                   {point}

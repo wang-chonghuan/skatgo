@@ -6,6 +6,9 @@ import { signedInUser } from '~/lib/session'
 // multiplayer service, which owns the cards and the scores; this handler only says who is playing and
 // passes the request on with the service's key.
 //
+// Playing needs an account (SKATGO-123, the human: 「要求参加锦标赛必须登录」): opening the day's deals or making a
+// move as a guest is refused with 401; looking — the day's status, the boards — stays open to everyone.
+//
 // Who is playing: the signed-in account, or else this device — a random id in an httpOnly cookie,
 // stored at the service only as its hash. The cookie is strictly necessary and nothing else: it is
 // set only when a guest actually starts the day's deals, never for looking at /daily, so the site
@@ -64,6 +67,7 @@ export async function handleDaily(request: Request): Promise<Response> {
   const userId = await signedInUser(request)
   // Opening the deals (state with `open`) or making a move is playing; anything else only looks.
   const playing = op === 'act' || (op === 'state' && (body as { open?: unknown }).open === true)
+  if (playing && !userId) return json(401, { error: 'sign_in_required' })
   // Looking at the board needs no player: a visitor nobody knows yet asks as nobody. The Elo board is
   // everyone's, asked as nobody whoever looks.
   const player = op === 'elo' ? null : userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null

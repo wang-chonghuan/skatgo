@@ -25,7 +25,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   (`app/src/lib/analytics.ts`), only when `POSTHOG_PROJECT_KEY` is set.
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
   here. Accounts are optional: neither the course nor the assistant requires one; opening a private
-  table does (SKATGO-117), and so does writing in the forum (SKATGO-118).
+  table does (SKATGO-117), writing in the forum (SKATGO-118), and playing the daily tournament
+  (SKATGO-123: `/api/daily/*` refuses a guest's opening of the deals and moves with 401; looking stays open).
 - **StyleX, compiled through Astryx's build integration** (`astryxStylex()`), with Astryx's reset and
   theme CSS underneath. `ui.md` owns styling.
 - **Nitro** produces the deployable server (`app/.output/server/index.mjs`).

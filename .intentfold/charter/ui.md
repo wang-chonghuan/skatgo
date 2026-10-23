@@ -272,6 +272,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   tournament is finished, the board's first line is the player's name, "Auf der Rangliste als …", with a
   `go` "Ändern" (SKATGO-97, the human: 「放到排行榜第一行」「改为绿色，否则太不明显」) that opens the name in place — a text field and its save button, and a refusal in `bad`
   when the name may not be used or another player holds it (SKATGO-90); there is no form to join the board.
+  A guest finds, in the way in's place, a `go` "Anmelden und mitspielen" opening Clerk's sign-in, the lead above
+  saying it is played with a free account (SKATGO-123); a guest who reaches the table is sent back to the page.
   A printable has its download beside the title (`TitleWithDownload`). Skat in 5 Minuten
   (`quick-start-page.tsx`, SKATGO-89) is one reading column: its H1 and one-line lead, a small picture of
   the table in a real game in the page's language — no wider than the front page's picture (`dims.heroArt`),

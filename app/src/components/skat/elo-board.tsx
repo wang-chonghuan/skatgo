@@ -6,8 +6,8 @@ import { ELO_PROVISIONAL_DAYS, ELO_START, type EloBoard as Board, eloK } from '~
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { carouselStepMs, icon, phoneQuery } from '../../theme/constants'
-import { timing } from '../../theme/effects.stylex'
+import { icon } from '../../theme/constants'
+import { marqueeSlide, timing } from '../../theme/effects.stylex'
 import { elev } from '../../theme/elevation.stylex'
 import { border, layer, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
@@ -17,8 +17,8 @@ import { Panel } from './ui'
 
 type Line = { row: Board['rows'][number] } | { ki: number }
 
-/** A line's coming in, in the folded board's carousel. */
-const fadeIn = stylex.keyframes({ from: { opacity: 0 }, to: { opacity: 1 } })
+/** The folded board's names, running sideways without end. */
+const slide = stylex.keyframes({ from: { transform: marqueeSlide.start }, to: { transform: marqueeSlide.end } })
 
 /**
  * The tournament's Elo board in the front page's hero (SKATGO-123, the human: 「这个名单要显示出来，放到hero区域」):
@@ -26,20 +26,12 @@ const fadeIn = stylex.keyframes({ from: { opacity: 0 }, to: { opacity: 1 } })
  * any player with the same, taking no rank. How it is counted, and what a "?" means, open from a circled
  * question mark beside the title, over the page (the human: 「how it counted用一个圆圈问号图标，放在 elo标题旁边，
  * 作为toast」). `fill`: as tall as where it sits, the list scrolling inside (「可以滚动，不要那么高」), its rows dense
- * and in two columns, first down the left (「A和B」). On a phone it is folded behind one line that goes through the
- * players one by one (「手机上可能要折叠一下排名榜」, 「名字要能像carousel那样自动轮换」); a tap opens it.
+ * and in two columns, first down the left (「A和B」). On a phone it is folded behind one line where the players run
+ * slowly sideways, without end (「手机上可能要折叠一下排名榜」, 「横向持续缓慢滚动」); a tap opens it.
  */
 export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean }) {
   const [open, setOpen] = useState(false)
   const [how, setHow] = useState(false)
-  // The player the folded line shows; it moves on while the line is folded and seen, on a phone.
-  const [shown, setShown] = useState(0)
-  const count = board.rows.length
-  useEffect(() => {
-    if (open || count < 2 || !window.matchMedia(phoneQuery).matches) return
-    const t = setInterval(() => setShown((i) => (i + 1) % count), carouselStepMs)
-    return () => clearInterval(t)
-  }, [open, count])
   const head = useRef<HTMLDivElement>(null)
   // The explanation closes on Escape and on a tap anywhere else.
   useEffect(() => {
@@ -56,7 +48,7 @@ export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean
   const lines: Line[] = board.rows.map((row) => ({ row }))
   const at = board.rows.findIndex((r) => r.elo < board.ki)
   lines.splice(at >= 0 ? at : lines.length, 0, { ki: board.ki })
-  const current = board.rows[shown % Math.max(count, 1)]
+  const names = board.rows.map((r) => `${r.rank}. ${r.nickname} · ${r.elo}`)
   // Two columns, the first down the left: 1–5 there, the rest beside it.
   const half = Math.ceil(lines.length / 2)
   return (
@@ -73,12 +65,20 @@ export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean
             {...stylex.props(styles.toggle)}
           >
             <span {...stylex.props(typography.dialogTitle, styles.title, styles.oneLine)}>{m.elo_title()}</span>
-            {current && !open ? (
-              <span key={shown} aria-hidden="true" data-testid="elo-board-carousel" {...stylex.props(typography.appText, styles.leader, styles.turn)}>
-                {`${current.rank}. ${current.nickname} · ${current.elo}`}
+            {names.length > 0 && !open ? (
+              <span aria-hidden="true" data-testid="elo-board-marquee" {...stylex.props(typography.appText, styles.marquee)}>
+                <span {...stylex.props(styles.track)}>
+                  {[0, 1].map((copy) => (
+                    <span key={copy} {...stylex.props(styles.copy)}>
+                      {names.map((n) => <span key={n}>{n}</span>)}
+                    </span>
+                  ))}
+                </span>
               </span>
             ) : null}
-            {open ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />}
+            <span {...stylex.props(styles.chevron)}>
+              {open ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />}
+            </span>
           </button>
           <button
             type="button"
@@ -166,8 +166,18 @@ const styles = stylex.create({
   },
   // The folded line stays one line: the title whole, a long name cut short.
   oneLine: { flexShrink: 0, whiteSpace: 'nowrap' },
-  leader: { flexGrow: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: color.slate },
-  turn: { animationName: { default: fadeIn, [bp.reducedMotion]: 'none' }, animationDuration: timing.progress },
+  // The names in a window of their own, running from right to left; under reduced motion they stand still.
+  marquee: { display: 'flex', flexGrow: 1, minWidth: 0, overflow: 'hidden', color: color.slate },
+  track: {
+    display: 'flex',
+    flexShrink: 0,
+    animationName: { default: slide, [bp.reducedMotion]: 'none' },
+    animationDuration: timing.marquee,
+    animationTimingFunction: timing.steady,
+    animationIterationCount: 'infinite',
+  },
+  chevron: { display: 'inline-flex', flexShrink: 0 },
+  copy: { display: 'flex', flexShrink: 0, gap: space.x24, paddingInlineEnd: space.x24, whiteSpace: 'nowrap' },
   help: {
     display: 'inline-flex',
     alignItems: 'center',

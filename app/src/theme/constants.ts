@@ -8,10 +8,6 @@ export const phoneQuery = '(max-width: 480px)'
 /** The table's pinned side panel as a `matchMedia` query — the same width as `bp.pinned`. */
 export const pinnedQuery = '(min-width: 900px)'
 
-/** How long each player's line stands in the folded Elo board on a phone before the next one comes
- *  (SKATGO-123, the human: 「手机上的，名字要能像carousel那样自动轮换」). */
-export const carouselStepMs = 3000
-
 /** The browser's toolbar colour on phones: the page's white surface (`color.surface`), which a meta tag
  *  cannot read as a variable. */
 export const themeColor = '#FFFFFF'

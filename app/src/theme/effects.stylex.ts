@@ -27,6 +27,8 @@ export const timing = stylex.defineVars({
   /** One turn of the logo while a table loads (SKATGO-93), at an even pace. */
   spin: '2.4s',
   steady: 'linear',
+  /** One pass of the folded Elo board's names across a phone's line (SKATGO-123), slow enough to read. */
+  marquee: '40s',
 })
 
 /** One whole turn, start to end: the logo while a table loads (SKATGO-93, the human: 「最好让它会旋转，因为本来就是个
@@ -34,6 +36,13 @@ export const timing = stylex.defineVars({
 export const turn = stylex.defineConsts({
   start: 'rotate(0deg)',
   end: 'rotate(360deg)',
+})
+
+/** The folded Elo board's names running sideways (SKATGO-123, the human: 「横向持续缓慢滚动」): the line holds them twice,
+ *  so moving by one copy's width — half the line — starts the same picture again. */
+export const marqueeSlide = stylex.defineConsts({
+  start: 'translateX(0)',
+  end: 'translateX(-50%)',
 })
 
 /** A compositing hint for things that move over the felt (SKATGO-41): each gets its own layer, so the

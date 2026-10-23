@@ -222,7 +222,9 @@ const styles = stylex.create({
     flexShrink: 0,
     gap: space.x12,
     paddingBlock: space.x2,
-    paddingInline: space.x4,
+    // The number keeps clear of the list's scroll bar (the human: 「数字的右padding太小吧」).
+    paddingInlineStart: space.x8,
+    paddingInlineEnd: space.x16,
     borderBottomWidth: border.hair,
     borderBottomStyle: 'solid',
     borderBottomColor: color.hairline,

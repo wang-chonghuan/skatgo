@@ -1,10 +1,13 @@
 import { signedInUser } from '~/lib/session'
 
-// POST /api/daily/state, /act, /name, /board and /review — the daily tournament's only way in from the
+// POST /api/daily/state, /act, /name, /board, /review and /elo — the daily tournament's only way in from the
 // browser (SKATGO-35, SKATGO-36: a finished player's nickname, and the leaderboard; SKATGO-79: a finished
-// deal's replay with SkatZero's card wherever the player's was not). The tournament itself runs in the
+// deal's replay with SkatZero's card wherever the player's was not; SKATGO-123: the Elo board, everyone's). The tournament itself runs in the
 // multiplayer service, which owns the cards and the scores; this handler only says who is playing and
 // passes the request on with the service's key.
+//
+// Playing needs an account (SKATGO-123, the human: 「要求参加锦标赛必须登录」): opening the day's deals or making a
+// move as a guest is refused with 401; looking — the day's status, the boards — stays open to everyone.
 //
 // Who is playing: the signed-in account, or else this device — a random id in an httpOnly cookie,
 // stored at the service only as its hash. The cookie is strictly necessary and nothing else: it is
@@ -18,10 +21,23 @@ const COOKIE = 'skatgo_daily'
 const COOKIE_PATH = '/api/daily'
 /** 400 days, the longest a browser keeps a cookie. */
 const COOKIE_MAX_AGE = 400 * 24 * 60 * 60
-const OPS = new Set(['state', 'act', 'name', 'board', 'review'])
+const OPS = new Set(['state', 'act', 'name', 'board', 'review', 'elo'])
 
 const json = (status: number, body: object, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } })
+
+/** A call to the tournament service with its key; null when this server is not given the service. */
+export function callDaily(path: string, payload: object): Promise<Response> | null {
+  const base = process.env.MULTIPLAYER_URL
+  const key = process.env.MULTIPLAYER_ADMISSION_KEY
+  if (!base || !key) return null
+  return fetch(new URL(`/daily/${path}`, base), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-admission-key': key },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(10_000),
+  })
+}
 
 function deviceId(request: Request): string | null {
   const found = (request.headers.get('cookie') ?? '').split(';').map((c) => c.trim().split('=')).find(([name]) => name === COOKIE)
@@ -34,9 +50,7 @@ export async function handleDaily(request: Request): Promise<Response> {
   if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const op = new URL(request.url).pathname.slice(`${COOKIE_PATH}/`.length)
   if (!OPS.has(op)) return json(404, { error: 'not found' })
-  const base = process.env.MULTIPLAYER_URL
-  const key = process.env.MULTIPLAYER_ADMISSION_KEY
-  if (!base || !key) return json(503, { error: 'unavailable' })
+  if (!process.env.MULTIPLAYER_URL || !process.env.MULTIPLAYER_ADMISSION_KEY) return json(503, { error: 'unavailable' })
 
   let body: unknown
   try {
@@ -53,17 +67,13 @@ export async function handleDaily(request: Request): Promise<Response> {
   const userId = await signedInUser(request)
   // Opening the deals (state with `open`) or making a move is playing; anything else only looks.
   const playing = op === 'act' || (op === 'state' && (body as { open?: unknown }).open === true)
-  // Looking at the board needs no player: a visitor nobody knows yet asks as nobody.
-  const player = userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null
+  if (playing && !userId) return json(401, { error: 'sign_in_required' })
+  // Looking at the board needs no player: a visitor nobody knows yet asks as nobody. The Elo board is
+  // everyone's, asked as nobody whoever looks.
+  const player = op === 'elo' ? null : userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null
   if ((op === 'name' || op === 'review') && !player) return json(409, { error: 'not_finished' })
 
-  const call = (path: string, payload: object) =>
-    fetch(new URL(`/daily/${path}`, base), {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-admission-key': key },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(10_000),
-    })
+  const call = (path: string, payload: object) => callDaily(path, payload)!
 
   try {
     if (userId && known && (op === 'state' || op === 'board')) await call('claim', { from: anon, to: `user:${userId}` })

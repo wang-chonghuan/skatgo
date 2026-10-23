@@ -13,6 +13,7 @@ import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { EloBoard } from './elo-board'
 import { AnnouncementLine } from './forum-announcement'
 import { PlayingCard } from './playing-card'
 import { linkLook } from './ui'
@@ -20,8 +21,8 @@ import { linkLook } from './ui'
 
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
 // tournament as the headline and its one green call to action (the way into the course is the header's
-// and the course tile's — the human, 2026-10-01) and a strip of facts, set in the middle with no picture beside it
-// (SKATGO-120, the human: 「pc上我也不想要那个图片了」) — then the two other ways into Skat as the app's colour tiles, one suit
+// and the course tile's — the human, 2026-10-01) and a strip of facts, with no picture (SKATGO-120, the human:
+// 「pc上我也不想要那个图片了」) and beside it the tournament's Elo board (SKATGO-123) — then the two other ways into Skat as the app's colour tiles, one suit
 // each (♣ the course, ♠ free play, ♥ a private table with friends — SKATGO-61), and the questions people ask (SKATGO-29). The hero's copy leads the
 // tournament itself (the human, 2026-09-30: 「文案先行」).
 //
@@ -29,44 +30,47 @@ import { linkLook } from './ui'
 // the suits as outline icons. Rendered on the server; the learner's progress is applied after mount.
 export function EntryPage() {
   const course = lessons()
-  const announcement = useLoaderData({ from: '/' })
+  const { announcement, elo } = useLoaderData({ from: '/' })
+  // With the board beside it the text keeps to the left of its column; without one, as before, in the middle.
+  const beside = !!elo && elo.rows.length > 0
 
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
-      <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
-        <div {...stylex.props(styles.heroText)}>
-          {/* Only when there is one: an empty line would still take a gap above the headline. */}
-          {announcement ? (
-            <div {...stylex.props(styles.news)}>
-              <AnnouncementLine announcement={announcement} />
-            </div>
-          ) : null}
-          <div {...stylex.props(styles.head)}>
+      <section data-testid="entry-hero" {...stylex.props(styles.hero, beside && styles.heroBeside)}>
+        <div {...stylex.props(styles.heroText, beside && styles.start)}>
+          <div {...stylex.props(styles.head, beside && styles.start)}>
             <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
             <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
           </div>
-          <div {...stylex.props(styles.cta)}>
-            <div {...stylex.props(styles.actions)}>
+          <div {...stylex.props(styles.cta, beside && styles.start)}>
+            <div {...stylex.props(styles.actions, beside && styles.startRow)}>
               <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
                 {m.entry_cta()}
               </Link>
-              {/* The forum beside it, white, so the tournament stays the one green action (SKATGO-120, the human:
-                  「把solve puzzles 换成论坛按钮」; the puzzles keep their tile below). */}
-              <Link to="/forum" data-testid="entry-forum" onClick={() => heroClick('forum')} {...linkLook('quiet', 'lg', 'landing')}>
-                {m.entry_forum_cta()}
-              </Link>
+              {/* Beside it, the forum: its newest announcement while there is one, as the announcement line has always
+                  looked — the pill, then the title as a link — the pill saying it is the forum's (SKATGO-123, the human:
+                  「换成以前你删掉的那个我的公告的链接，开头明显有new forum等类似的badge」); otherwise the white way to the forum
+                  (SKATGO-120: 「把solve puzzles 换成论坛按钮」), so the tournament stays the one green action. */}
+              {announcement ? (
+                <div data-testid="entry-forum" onClick={() => heroClick('forum')} {...stylex.props(styles.newest)}>
+                  <AnnouncementLine announcement={announcement} badge={m.forum_new_in()} />
+                </div>
+              ) : (
+                <Link to="/forum" data-testid="entry-forum" onClick={() => heroClick('forum')} {...linkLook('quiet', 'lg', 'landing')}>
+                  {m.entry_forum_cta()}
+                </Link>
+              )}
             </div>
-            {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). */}
-            <ul data-testid="entry-points" {...stylex.props(styles.points)}>
-              {[m.entry_point_free(), m.entry_point_no_signup(), m.entry_point_ai()].map((point) => (
-                <li key={point} {...stylex.props(typography.appText, styles.point)}>
-                  <span aria-hidden="true" {...stylex.props(styles.check)}>✓</span>
-                  {point}
-                </li>
-              ))}
-            </ul>
+            {/* The ✓ line of facts under the buttons is gone (SKATGO-123, the human: 「✓Free ✓AI analysis 这行去掉」). */}
           </div>
         </div>
+        {beside ? (
+          <div {...stylex.props(styles.side)}>
+            <div {...stylex.props(styles.sideFill)}>
+              <EloBoard board={elo} fill />
+            </div>
+          </div>
+        ) : null}
       </section>
 
       {/* The four ways in, each a tile that is its own link with a title that says where it goes, nothing else
@@ -170,6 +174,25 @@ const styles = stylex.create({
   // the headline only the page's own top, and the lead held close under it as one block (the human:
   // 「这句话上方的空白太多……缩小它」, then 「我感觉它上下空白还是太多」).
   hero: { display: 'flex', flexDirection: 'column' },
+  // Beside the Elo board (SKATGO-123, the human: 「hero区域在pc上就是左右两栏的布局了」): two equal columns, the text
+  // on the left, the board on the right; under `bp.cards` one column, the board under the text.
+  heroBeside: {
+    display: 'grid',
+    gridTemplateColumns: { default: dims.twoColumns, [bp.cards]: dims.oneColumn },
+    // The headline stays right under the header, as without the board; the room the board needs is below the type.
+    alignItems: 'start',
+    columnGap: space.x48,
+    rowGap: { default: space.x32, [bp.phone]: space.x24 },
+  },
+  start: { alignItems: 'flex-start', textAlign: 'start' },
+  // The announcement line in the button's place, centred on the button's height.
+  newest: { display: 'flex', alignItems: 'center', minWidth: 0, maxWidth: '100%' },
+  startRow: { justifyContent: 'flex-start' },
+  // On PC the board takes the type's height, no more, its list scrolling inside (the human: 「elo列表的高度，和hero
+  // 区域的高度一样，可以滚动，不要那么高，破坏我布局」): it stands out of the grid's flow, so the type alone sets the
+  // row. In one column it is in the flow again.
+  side: { position: { default: 'relative', [bp.cards]: 'static' }, alignSelf: 'stretch', minWidth: 0 },
+  sideFill: { position: { default: 'absolute', [bp.cards]: 'static' }, top: 0, right: 0, bottom: 0, left: 0 },
   heroText: {
     display: 'flex',
     flexDirection: 'column',
@@ -178,7 +201,6 @@ const styles = stylex.create({
     minWidth: 0,
     gap: { default: space.x24, [bp.phone]: space.x16 },
   },
-  news: { display: 'flex', justifyContent: { default: 'center', [bp.phone]: 'flex-start' } },
   head: {
     display: 'flex',
     flexDirection: 'column',
@@ -188,14 +210,10 @@ const styles = stylex.create({
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
   lead: { margin: 0, maxWidth: dims.readingColumn, color: color.slate, textWrap: 'balance' },
-  // The facts under the call to action: one quiet line that wraps on a phone.
-  points: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, columnGap: space.x16, rowGap: space.x4, margin: 0, padding: 0, listStyleType: 'none' },
-  point: { display: 'inline-flex', gap: space.x6, margin: 0, color: color.slate },
-  check: { color: color.go },
 
-  // The call to action with its facts right under it.
-  cta: { display: 'flex', flexDirection: 'column', alignItems: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12 },
-  actions: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12 },
+  // The call to action and the forum beside it.
+  cta: { display: 'flex', flexDirection: 'column', alignItems: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12, minWidth: 0, maxWidth: '100%' },
+  actions: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12, minWidth: 0, maxWidth: '100%' },
   // The two ways in, side by side; stacked on a phone.
   ways: {
     display: 'grid',

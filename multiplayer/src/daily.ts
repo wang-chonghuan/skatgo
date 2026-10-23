@@ -11,6 +11,7 @@ import {
   type SeatView,
 } from '../../app/src/lib/skat/tournament'
 import { cleanNickname, pickName } from '../../app/src/lib/skat/nickname'
+import { ELO_KI, ELO_PROVISIONAL_DAYS, type EloBoard, type EloDay, eloRatings } from '../../app/src/lib/skat/elo'
 import { actionSchema, applySeatMove, computerMove, refuseUnlawful, Rejected, secretEquals, secureDeck } from './model'
 import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
 import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzero/bidding'
@@ -137,6 +138,8 @@ const boardInput = z.object({
 }).strict()
 const reviewInput = z.object({ player, deal: z.number().int().min(0).max(DAILY_DEALS - 1) }).strict()
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
+// The Elo board is everyone's: it asks as nobody.
+const eloInput = z.object({ player: z.null() }).strict()
 
 /** Where the player stands. The computer's result of a deal goes with the player's own, only once the
  *  player has finished that deal (SKATGO-42); days dealt before it have none. Each finished deal's
@@ -479,6 +482,50 @@ export async function dailyBoard(store: Store, who: string | null, which: 'today
   return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, ai }
 }
 
+/** How many players the Elo board names (SKATGO-123). */
+const ELO_ROWS = 10
+
+/**
+ * The tournament's Elo (SKATGO-123): every ended day replayed from the first with the shared rule
+ * (`lib/skat/elo.ts`) — each finished entry's total against that day's others and the AI's from the player's
+ * seat, the same total the daily board shows. Today counts once it has ended, its field complete. Ids that
+ * `player_aliases` names as one person count as that person, under the name they hold now; of their two
+ * entries on one day, the earlier finish. Only names leave here, as on the daily board.
+ */
+export async function dailyElo(store: Store, now = Date.now()): Promise<EloBoard> {
+  const today = dayOf(now)
+  const { rows: entries } = await store.pool.query(
+    `SELECT e.day, coalesce(a.same_as, e.player) AS player, e.total FROM daily_entries e
+       LEFT JOIN player_aliases a ON a.player = e.player
+      WHERE e.size = $1 AND e.finished_at IS NOT NULL AND e.day < $2
+      ORDER BY e.day, e.finished_at`, [DAILY_DEALS, today])
+  const { rows: dealt } = await store.pool.query('SELECT day, deals FROM daily_deals WHERE size = $1 AND day < $2', [DAILY_DEALS, today])
+  const ki = new Map<string, number | null>(dealt.map((d) => {
+    const played = (d.deals as DealSpec[]).map((spec) => spec.benchmark?.summary)
+    return [d.day as string, played.length > 0 && played.every((b) => b) ? totals(played as DealSummary[])[PLAYER] : null]
+  }))
+  const days: (EloDay & { day: string })[] = []
+  for (const e of entries) {
+    if (days.at(-1)?.day !== e.day) days.push({ day: e.day, ki: ki.get(e.day) ?? null, totals: [] })
+    const day = days.at(-1)!
+    if (!day.totals.some((t) => t.player === e.player)) day.totals.push({ player: e.player, total: e.total })
+  }
+  const standing = [...eloRatings(days)].map(([player, s]) => ({ player, elo: Math.round(s.elo), days: s.days }))
+    .sort((a, b) => b.elo - a.elo)
+  const top = standing.slice(0, ELO_ROWS)
+  const { rows: named } = await store.pool.query(
+    `SELECT p AS player, coalesce((SELECT nickname FROM daily_players WHERE player = p),
+       (SELECT nickname FROM daily_entries WHERE player = p AND nickname IS NOT NULL ORDER BY day DESC LIMIT 1)) AS nickname
+       FROM unnest($1::text[]) AS p`, [top.map((s) => s.player)])
+  const nameOfPlayer = new Map(named.map((r) => [r.player as string, (r.nickname as string | null) ?? '']))
+  const rows = top.map((s, i) => ({
+    rank: i === 0 || top[i - 1].elo !== s.elo ? i + 1 : 0,
+    nickname: nameOfPlayer.get(s.player) ?? '', elo: s.elo, provisional: s.days < ELO_PROVISIONAL_DAYS,
+  }))
+  for (let i = 1; i < rows.length; i++) if (rows[i].rank === 0) rows[i].rank = rows[i - 1].rank
+  return { rows, total: standing.length, ki: ELO_KI }
+}
+
 /**
  * The review of one deal the player has finished (SKATGO-79): the deal replayed from their recorded moves,
  * and at each card they played with a choice, every legal card valued by SkatZero as it weighs its own
@@ -558,6 +605,10 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
   router.post('/board', run(async body => {
     const i = boardInput.parse(body)
     return dailyBoard(store, i.player, i.day)
+  }))
+  router.post('/elo', run(async body => {
+    eloInput.parse(body)
+    return dailyElo(store)
   }))
   router.post('/review', run(async body => {
     const i = reviewInput.parse(body)

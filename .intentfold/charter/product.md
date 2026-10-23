@@ -19,7 +19,8 @@ them, translated and nothing added — then the way to the table.
 
 A daily Skat tournament at `/daily`: every day the same 6 deals for every player (SKATGO-62), each deal
 played against two computer players, Lina and Noah, and scored by Seeger-Fabian; one entry per player per
-day; scores are the server's, from the cards actually played. A player who sees too many deals ahead does
+day; scores are the server's, from the cards actually played. Playing it needs a free account (SKATGO-123,
+the human: 「要求参加锦标赛必须登录」); its page and boards are open to everyone. A player who sees too many deals ahead does
 not start (the human, 2026-10-10: 「用户看到太多，就不想打了」). The second, twelve-deal tournament of SKATGO-77
 is gone (SKATGO-119, the human: 「取消每日锦标赛12幅牌的，只保留6幅牌。数据库可以先不删」): nothing shows or
 serves it, and its stored deals and entries stay in the database.
@@ -35,8 +36,20 @@ on, to a name no other player holds. A name already on a board is never changed 
 「禁止改变任何已经有的用户的名字……这是绝对红线」). The AI stands on it too, for
 everyone, today's board included: its total over the tournament from the player's seat, among the
 players', after any player with the same, taking no rank — its total only, never a deal (SKATGO-80, the
-human: 「都显示，只在leader board上显示总成绩即可」). There is no other measure beside it (SKATGO-81, the human:
-「saldo都移除吧」).
+human: 「都显示，只在leader board上显示总成绩即可」). There is no other measure on the daily board (SKATGO-81, the
+human: 「saldo都移除吧」).
+
+Beside the daily boards stands the tournament's Elo, one number per player (SKATGO-123, the human: 「既专业，
+又简单，别人容易理解，还能从给我的系统里产生出来的elo排名……别人看了，觉得不离谱，觉得能理解，还想通过我的系统来参与」),
+made as chess makes it so anyone can follow and check it: each ended tournament day is one game against
+everyone else who played it and against the AI, won by the higher Seeger-Fabian total of the day, an equal one
+drawn; the expectation is FIDE's formula against each opponent, averaged; the number moves by K × (score −
+expectation), K 40 for a player's first 30 days and 20 after; everyone starts at 1500 and the AI stands fixed at
+1700, the scale's anchor (players' day totals beat its total about a quarter of the time). A number is
+provisional under five days; staying away costs nothing. A day counts once it is over, its field complete. One
+person under several ids — guest days on other devices, a guest who signed up later — counts as one, as the
+human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」). The front page shows the ten highest with the AI's
+number among them, and how it is counted.
 
 After each deal the player sees how the computer, named "AI", played the same deal from their seat
 (SKATGO-42): a score sheet of all three seats' scores, the player's deal over the AI's, each with a

@@ -25,7 +25,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   (`app/src/lib/analytics.ts`), only when `POSTHOG_PROJECT_KEY` is set.
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
   here. Accounts are optional: neither the course nor the assistant requires one; opening a private
-  table does (SKATGO-117), and so does writing in the forum (SKATGO-118).
+  table does (SKATGO-117), writing in the forum (SKATGO-118), and playing the daily tournament
+  (SKATGO-123: `/api/daily/*` refuses a guest's opening of the deals and moves with 401; looking stays open).
 - **StyleX, compiled through Astryx's build integration** (`astryxStylex()`), with Astryx's reset and
   theme CSS underneath. `ui.md` owns styling.
 - **Nitro** produces the deployable server (`app/.output/server/index.mjs`).
@@ -48,8 +49,12 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   before without a name when it starts. Changing the name rewrites only today's finished entries. A route that is sent a size
   refuses it (400). The leaderboard is computed from those rows on request, ranked by the
   entry's Seeger-Fabian total (`daily_entries.total`, SKATGO-81), ties to the earlier finish, with the
-  AI's total from the player's seat beside it, from the deals' stored `benchmark` (SKATGO-80). The web
-  service is its only client.
+  AI's total from the player's seat beside it, from the deals' stored `benchmark` (SKATGO-80). The
+  tournament's Elo (SKATGO-123) is computed the same way, on request, from those rows: `POST /daily/elo` replays
+  every ended day with the rule in `app/src/lib/skat/elo.ts` (held to its worked examples by `elo.test.ts`),
+  counting the ids `player_aliases` names as one person as that person — rows written by hand, never ids in
+  code — and answers the top ten by name. The front page reads it on the server (`lib/elo-api.ts`, a minute's
+  answer cached), the browser through `/api/daily/elo`. The web service is its only client.
 - **The forum runs in `multiplayer/`** (SKATGO-118), as plain HTTP routes under `/forum` behind the admission
   key, its posts, comments and reports in multiplayer's PostgreSQL (`forum_posts`, `forum_comments`,
   `forum_reports`). The web's `/api/forum/*` names the viewer — the Clerk account or nobody — and whether the

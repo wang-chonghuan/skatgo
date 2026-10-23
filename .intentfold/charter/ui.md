@@ -233,17 +233,31 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   header is the same on every page; it shows no current-page highlight (its links carry
   `aria-current`).
 - **The front page** (`entry-page.tsx`), on white:
-  - the hero: over its headline, the forum's newest announcement as one line while it is two weeks old or
-    less (`AnnouncementLine`, SKATGO-118); the daily tournament's headline (`landingHero`) and lead
-    (`landingHeroLead`) in navy;
-    its one green landing action (play today's deals) and beside it a white `quiet` one, "Zum Skat-Forum" /
-    "Visit Skat forum", to the forum (SKATGO-120, the human: 「把solve puzzles 换成论坛按钮」; the puzzles' button there since SKATGO-109); a quiet ✓ line of what a first visitor wants to
-    know. No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
+  - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
+    its one green landing action (play today's deals) and beside it a white `quiet` one to the forum (SKATGO-120, the
+    human: 「把solve puzzles 换成论坛按钮」; the puzzles' button there since SKATGO-109): the forum's newest announcement
+    while it is two weeks old or less, as the announcement line (`AnnouncementLine`, SKATGO-118) has always looked —
+    its `good` pill, here "Neu im Forum" / "New in the forum", then the title as a link (SKATGO-123, the human:
+    「换成以前你删掉的那个我的公告的链接，开头明显有new forum等类似的badge」; until then the line stood over the headline) —
+    otherwise "Zum Skat-Forum" / "Visit Skat forum"; no line of facts under them (SKATGO-123, the
+    human: 「✓Free ✓AI analysis 这行去掉」). No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
     设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it
-    (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the announcement line, the headline at 48px
+    (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the headline at 48px
     (`fHero`, 「pc版上slogan字太大」) with the lead held close under it (12px), the lead within the reading column,
-    balanced, the two buttons and the ✓ line — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
-    on felt (Redline 4);
+    balanced, the two buttons — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
+    on felt (Redline 4). With the tournament's Elo board beside it (SKATGO-123, the human: 「hero区域在pc上就是左右两栏的
+    布局了」) the hero is two equal columns (`dims.twoColumns`), the type on the left and kept to the left, the board
+    on the right, both from the top, the board exactly as tall as the type, its list scrolling inside (「elo列表的
+    高度，和hero区域的高度一样，可以滚动，不要那么高，破坏我布局」); under `bp.cards` one column, the board under the type.
+    The board (`elo-board.tsx`) is a white panel like the daily board: its title (`dialogTitle`) with a circled
+    question mark beside it (`info`) that opens, over the page, a white card saying how it is counted and what "?"
+    means, closed by a tap elsewhere or Escape (「how it counted用一个圆圈问号图标，放在 elo标题旁边，作为toast」); the ten
+    highest players — rank, name, number, a slate "?" when provisional — with the AI's row (its blue tag, no rank)
+    standing among them by its number, in close rows at the text's size (`appText`, 「我刚都没说让你改成14」), one
+    column (「你换成单列吧」). On a phone it is folded behind one line, its title and the players — rank, name, number — running
+    slowly sideways without end (`marqueeSlide`, `timing.marquee`; still under reduced motion) — 「你这个还不如横向
+    持续缓慢滚动」 — and a tap opens it, one column (「手机上可能要折叠一下排名榜」).
+    Without a board the hero stays as above, centred;
   - the sections as colour tiles, each one link with only a title that says where it goes — no text, no button
     (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」) — as tall as its title, its
     card art kept and cropped at the edge (「包裹着文字就行了，禁止大片空白，牌的背景还保留，但是可以剪裁」), rising on
@@ -263,6 +277,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   tournament is finished, the board's first line is the player's name, "Auf der Rangliste als …", with a
   `go` "Ändern" (SKATGO-97, the human: 「放到排行榜第一行」「改为绿色，否则太不明显」) that opens the name in place — a text field and its save button, and a refusal in `bad`
   when the name may not be used or another player holds it (SKATGO-90); there is no form to join the board.
+  A guest finds, in the way in's place, a `go` "Anmelden und mitspielen" opening Clerk's sign-in, the lead above
+  saying it is played with a free account (SKATGO-123); a guest who reaches the table is sent back to the page.
   A printable has its download beside the title (`TitleWithDownload`). Skat in 5 Minuten
   (`quick-start-page.tsx`, SKATGO-89) is one reading column: its H1 and one-line lead, a small picture of
   the table in a real game in the page's language — no wider than the front page's picture (`dims.heroArt`),

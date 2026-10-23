@@ -1,10 +1,12 @@
 import * as stylex from '@stylexjs/stylex'
+import { SignInButton } from '@clerk/tanstack-react-start'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { type DailyError, dailyAct, dailyBoard, dailyName, dailyState, isError } from '~/lib/daily-api'
+import { useAccount } from '~/lib/use-account'
 import type { Move } from '~/lib/skat/game'
 import { BOARD_DAYS, type BoardRow, DAILY_DEALS, DAILY_TIME_ZONE, type DailyBoard, type DailyReply, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -37,10 +39,14 @@ export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
   const [back, setBack] = useState(0)
   const [boards, setBoards] = useState<Partial<Record<number, DailyBoard | DailyError>>>({})
   const loadBoard = (b: number) => void dailyBoard(b).then((r) => setBoards((all) => ({ ...all, [b]: r })))
+  const account = useAccount()
+  // Read again once the browser knows who is here, and after a sign-in: the day may be the account's.
   useEffect(() => {
+    if (account === undefined) return
     void dailyState(false).then((r) => setStatus(isError(r) ? r : r.status))
     loadBoard(0)
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account])
   function show(b: number) {
     setBack(b)
     if (!boards[b]) loadBoard(b)
@@ -54,12 +60,21 @@ export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
         <DailyResult status={status} />
       ) : (
         <div {...stylex.props(styles.stack)}>
-          {/* The way in first, its own width so it reads as a button (SKATGO-63). */}
-          <div {...stylex.props(styles.action)}>
-            <Link to="/daily/play" data-testid="daily-cta" onClick={() => { if (!status.started) track('daily_started', { deals: DAILY_DEALS }) }} {...linkLook('go', 'lg', 'landing')}>
-              {status.started ? m.daily_continue({ n: status.deal + 1, of: status.of }) : m.daily_cta()}
-            </Link>
-          </div>
+          {/* The way in first, its own width so it reads as a button (SKATGO-63); for a guest, signing in, since
+              playing needs an account (SKATGO-123: 「要求参加锦标赛必须登录」). */}
+          {account === null ? (
+            <div data-testid="daily-sign-in" {...stylex.props(styles.action)}>
+              <SignInButton mode="modal">
+                <Btn testId="daily-sign-in-go" size="lg">{m.daily_sign_in()}</Btn>
+              </SignInButton>
+            </div>
+          ) : (
+            <div {...stylex.props(styles.action)}>
+              <Link to="/daily/play" data-testid="daily-cta" onClick={() => { if (!status.started) track('daily_started', { deals: DAILY_DEALS }) }} {...linkLook('go', 'lg', 'landing')}>
+                {status.started ? m.daily_continue({ n: status.deal + 1, of: status.of }) : m.daily_cta()}
+              </Link>
+            </div>
+          )}
           {/* Every deal of the day (SKATGO-63), the finished ones against the AI (SKATGO-42), so a reload
               shows the day so far at once. */}
           <DayDeals of={status.of} status={status} />
@@ -230,6 +245,12 @@ function DailyResult({ status }: { status: DailyStatus }) {
 export function DailyTable() {
   const navigate = useNavigate()
   const onLeave = () => void navigate({ to: '/daily' })
+  // A guest has no table to sit at (SKATGO-123): back to the tournament's page, where signing in is offered.
+  const account = useAccount()
+  useEffect(() => {
+    if (account === null) onLeave()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account])
   const [reply, setReply] = useState<DailyReply | null>(null)
   const [shown, setShown] = useState<SeatView | null>(null)
   const [queue, setQueue] = useState<SeatView[]>([])

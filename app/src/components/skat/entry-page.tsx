@@ -59,16 +59,7 @@ export function EntryPage() {
                 {m.entry_forum_cta()}
               </Link>
             </div>
-            {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). "No
-                sign-up" is gone since the tournament needs an account (SKATGO-123). */}
-            <ul data-testid="entry-points" {...stylex.props(styles.points, beside && styles.startRow)}>
-              {[m.entry_point_free(), m.entry_point_ai()].map((point) => (
-                <li key={point} {...stylex.props(typography.appText, styles.point)}>
-                  <span aria-hidden="true" {...stylex.props(styles.check)}>✓</span>
-                  {point}
-                </li>
-              ))}
-            </ul>
+            {/* The ✓ line of facts under the buttons is gone (SKATGO-123, the human: 「✓Free ✓AI analysis 这行去掉」). */}
           </div>
         </div>
         {beside ? (
@@ -216,12 +207,8 @@ const styles = stylex.create({
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
   lead: { margin: 0, maxWidth: dims.readingColumn, color: color.slate, textWrap: 'balance' },
-  // The facts under the call to action: one quiet line that wraps on a phone.
-  points: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, columnGap: space.x16, rowGap: space.x4, margin: 0, padding: 0, listStyleType: 'none' },
-  point: { display: 'inline-flex', gap: space.x6, margin: 0, color: color.slate },
-  check: { color: color.go },
 
-  // The call to action with its facts right under it.
+  // The call to action and the forum beside it.
   cta: { display: 'flex', flexDirection: 'column', alignItems: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12 },
   actions: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12 },
   // The two ways in, side by side; stacked on a phone.

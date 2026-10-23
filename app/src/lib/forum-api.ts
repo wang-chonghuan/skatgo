@@ -26,17 +26,19 @@ async function viaApi<T>(op: string, payload: object): Promise<ForumAnswer<T>> {
   }
 }
 
-/** The announcement line asks on every front page; on the server one answer serves a minute. */
+/** The announcement line asks on every front page; on the server one answer serves a minute, per language. */
 const LATEST_MS = 60_000
-let latestSeen: { at: number; answer: ForumAnswer<unknown> } | null = null
+const latestSeen = new Map<string, { at: number; answer: ForumAnswer<unknown> }>()
 
 const read = createIsomorphicFn()
   .server(async (op: 'list' | 'post' | 'latest', payload: object): Promise<ForumAnswer<unknown>> => {
     if (op === 'latest') {
-      if (latestSeen && Date.now() - latestSeen.at < LATEST_MS) return latestSeen.answer
+      const lang = String((payload as { lang?: unknown }).lang ?? '')
+      const seen = latestSeen.get(lang)
+      if (seen && Date.now() - seen.at < LATEST_MS) return seen.answer
       const { status, body } = await askForum(op, payload, null)
       const answer = answerOf(status, body)
-      latestSeen = { at: Date.now(), answer }
+      latestSeen.set(lang, { at: Date.now(), answer })
       return answer
     }
     const { status, body } = await askForum(op, payload, getRequest())
@@ -55,7 +57,7 @@ export const readForumPost = (id: number) => read('post', { id, lang: getLocale(
 /** The newest announcement of the last two weeks, or null — also when the forum does not answer: the line
  *  simply is not there. */
 export async function readAnnouncement(): Promise<ForumAnnouncement | null> {
-  const answer = (await read('latest', {})) as ForumAnswer<{ announcement: ForumAnnouncement | null }>
+  const answer = (await read('latest', { lang: getLocale() })) as ForumAnswer<{ announcement: ForumAnnouncement | null }>
   return answer.ok ? answer.data.announcement : null
 }
 

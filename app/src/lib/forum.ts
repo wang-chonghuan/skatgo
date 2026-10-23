@@ -84,7 +84,8 @@ export type ForumList = { posts: ForumPostSummary[]; more: boolean; viewer: Foru
 
 export type ForumThread = { post: ForumPost; viewer: ForumViewer }
 
-export type ForumAnnouncement = { id: number; title: string; createdAt: number }
+/** `translated`: its title in the reader's language when written in another (SKATGO-124). */
+export type ForumAnnouncement = { id: number; title: string; createdAt: number; translated: { from: string; title: string } | null }
 
 /** One reported post or comment, as the official's list shows it. */
 export type ForumReport = {

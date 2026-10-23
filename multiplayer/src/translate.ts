@@ -48,6 +48,16 @@ export function translateForAll(store: Store, texts: string[]) {
   for (const t of texts) if (t.trim()) for (const lang of FORUM_LANGS) translateLater(store, t, lang)
 }
 
+/** Everything the forum shows, translated ahead when the service starts (the human: 「德语用翻译的，但是提前做好」), so no
+ *  reader meets a text before its translation; what is translated already costs a lookup, no model. */
+export async function translateForum(store: Store) {
+  const { rows } = await store.pool.query(
+    `SELECT title AS t, body AS b FROM forum_posts WHERE hidden_reason IS NULL
+     UNION ALL SELECT NULL, c.body FROM forum_comments c JOIN forum_posts p ON p.id = c.post_id
+      WHERE c.hidden_reason IS NULL AND p.hidden_reason IS NULL`)
+  translateForAll(store, rows.flatMap((r) => [r.t, r.b].filter((x): x is string => typeof x === 'string')))
+}
+
 const waiting = new Map<string, { text: string; lang: ForumLang }>()
 let working = false
 
@@ -63,6 +73,11 @@ async function work(store: Store) {
   try {
     for (const [key, { text, lang }] of waiting) {
       try {
+        const { rowCount } = await store.pool.query('SELECT 1 FROM translations WHERE hash = $1 AND lang = $2', [hashOf(text), lang])
+        if (rowCount) {
+          waiting.delete(key)
+          continue
+        }
         const done = await translate(text, lang)
         await store.pool.query(
           'INSERT INTO translations (hash, lang, source_lang, text, created_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',

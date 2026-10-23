@@ -18,7 +18,7 @@ export function AnnouncementLine({ announcement, badge }: { announcement: ForumA
       <span {...stylex.props(styles.badge)}>
         <Pill tone="good">{badge ?? m.forum_new_badge()}</Pill>
       </span>
-      <span {...stylex.props(typography.appLink, styles.title)}>{announcement.title}</span>
+      <span {...stylex.props(typography.appLink, styles.title)}>{announcement.translated?.title ?? announcement.title}</span>
     </Link>
   )
 }

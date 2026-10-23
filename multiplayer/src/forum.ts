@@ -46,7 +46,7 @@ const moderateInput = z.discriminatedUnion('action', [
   z.object({ ...author, action: z.literal('dismiss'), report: id }).strict(),
   z.object({ ...author, action: z.enum(['index', 'unindex']), post: id }).strict(),
 ])
-const latestInput = z.object({}).strict()
+const latestInput = z.object({ lang }).strict()
 
 /** Exactly one of a post or a comment. */
 const one = (i: { post?: number; comment?: number }) => target.parse(i.post !== undefined ? { post: i.post } : { comment: i.comment })
@@ -268,12 +268,16 @@ async function latest(db: pg.Pool | pg.PoolClient, now: number): Promise<ForumAn
     `SELECT id, title, created_at FROM forum_posts WHERE section = 'news' AND hidden_reason IS NULL AND created_at > $1
       ORDER BY created_at DESC, id DESC LIMIT 1`,
     [now - ANNOUNCEMENT_DAYS * DAY])
-  return rows[0] ? { id: num(rows[0].id), title: rows[0].title, createdAt: num(rows[0].created_at) } : null
+  return rows[0] ? { id: num(rows[0].id), title: rows[0].title, createdAt: num(rows[0].created_at), translated: null } : null
 }
 
-/** The announcement of the last two weeks, for the line on the front page and /daily, or null. */
-export async function forumLatest(store: Store, _i: z.infer<typeof latestInput>, now = Date.now()) {
-  return { announcement: await latest(store.pool, now) }
+/** The announcement of the last two weeks, for the line on the front page and /daily, or null; its title in the
+ *  reader's language (SKATGO-124). */
+export async function forumLatest(store: Store, i: z.infer<typeof latestInput>, now = Date.now()) {
+  const found = await latest(store.pool, now)
+  if (!found || !i.lang) return { announcement: found }
+  const t = other(await translationsOf(store, [found.title], i.lang), found.title, i.lang)
+  return { announcement: { ...found, translated: t ? { from: t.from, title: t.text } : null } }
 }
 
 /** Every post search engines may read, for the forum's sitemap. */

@@ -4,6 +4,7 @@ import { Server, matchMaker } from '@colyseus/core'
 import { WebSocketTransport } from '@colyseus/ws-transport'
 import { dailyRoutes, nameUnnamed, prepareDays } from './daily'
 import { forumRoutes } from './forum'
+import { translateForum } from './translate'
 import { freeRoutes, loadPool } from './free'
 import { ladderRoutes } from './ladder'
 import { loadPolicy, type Policy } from './skatzero/policy'
@@ -82,6 +83,8 @@ async function elect() {
       void prepareDays(store, policy!)
       // Entries finished before SKATGO-90 without a name go on their boards under one.
       void nameUnnamed(store).catch(() => console.error('daily_naming_failed'))
+      // The forum in both languages ahead of its readers (SKATGO-124).
+      void translateForum(store).catch(() => console.error('forum_translation_start_failed'))
       setInterval(() => { if (ready && !stopping) void prepareDays(store, policy!) }, 60 * 60 * 1000).unref()
       console.log(JSON.stringify({ event: 'ready', version, port }))
       return

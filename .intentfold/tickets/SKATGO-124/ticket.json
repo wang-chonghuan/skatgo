@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-124",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-124",
+  "branch": "SKATGO-124-forum-translate",
+  "base": "e9186f2ef2e7a1f6314c48e6ba9629cafc15661b",
+  "ports": { "web": 55124, "multiplayer": 56124, "database": 57124 }
+}

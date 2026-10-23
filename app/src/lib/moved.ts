@@ -23,16 +23,15 @@ export function movedTo(pathname: string, search: string): string | null {
   const course = /^\/de\/course(\/.*)?$/.exec(pathname)
   if (course) return `/de/kurs${course[1] ?? ''}${search}`
   if (/^\/de\/play\/?$/.test(pathname)) return `/de/spielen${search}`
-  const tricks = /^\/(en|de)\/skat-tricks\/12-tricks\/?$/.exec(pathname)
+  // Since SKATGO-124 one post, the English, read in German as its translation; the German post's address leads there.
+  const tricks = /^\/(en|de)\/(?:skat-tricks\/12-tricks|forum\/2(?:-[^/]*)?)\/?$/.exec(pathname)
   if (tricks) {
     const locale = tricks[1] as 'en' | 'de'
-    return `${localizeHref(postPath(TRICKS_POSTS[locale]), { locale })}${search}`
+    return `${localizeHref(postPath(TRICKS_POST), { locale })}${search}`
   }
   return null
 }
 
-/** The 12 Skat tricks in the forum's articles (production posts 2 and 3); the forum corrects a changed title's slug. */
-const TRICKS_POSTS = {
-  de: { id: 2, title: 'Skat Tricks: 12 Tricks, mit denen du sofort besser spielst' },
-  en: { id: 3, title: 'Skat Tricks: 12 tricks that make you a better player right away' },
-} as const
+/** The 12 Skat tricks in the forum's articles: production post 3, the English one (the human, SKATGO-124: 「12 个 Skat
+ *  技巧会出现两次。保留英文版」); post 2, the German, is hidden. The forum corrects a changed title's slug. */
+const TRICKS_POST = { id: 3, title: 'Skat Tricks: 12 tricks that make you a better player right away' }

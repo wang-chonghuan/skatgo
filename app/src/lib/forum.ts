@@ -7,7 +7,9 @@ import { type Card, type Rank, type Suit } from './skat/cards'
 //
 // One forum for both languages (the human, in review: 「德语和英语论坛不要分开」): the pages' own words follow the
 // site's language, and a post or comment is in whatever language its author writes (「别人想发什么语言就发什么语言」);
-// nothing records which. Translating them is for later.
+// nothing records which. Each reader sees them in the site's language they read it in, machine-translated once per
+// language and kept (SKATGO-124, the human: 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版」), the text as written one
+// tap away.
 
 export const FORUM_SECTIONS = ['news', 'articles', 'talk', 'feedback'] as const
 export type ForumSection = (typeof FORUM_SECTIONS)[number]
@@ -32,6 +34,10 @@ export const PAGE_SIZE = 30
 /** How long an announcement stands first in the list and as the line on the front page and /daily. */
 export const ANNOUNCEMENT_DAYS = 14
 
+/** The languages a forum text is shown in: the site's (SKATGO-124). */
+export const FORUM_LANGS = ['de', 'en'] as const
+export type ForumLang = (typeof FORUM_LANGS)[number]
+
 export type ForumPostSummary = {
   id: number
   section: ForumSection
@@ -52,6 +58,9 @@ export type ForumPostSummary = {
   hidden: string | null
   /** Written by the viewer. */
   mine: boolean
+  /** In the reader's language, when it was written in another (SKATGO-124): the language it was written in, the title
+   *  and the excerpt translated, and on a post's own page its body. Null while the translation is being made. */
+  translated: { from: string; title: string; excerpt: string; body?: string } | null
 }
 
 export type ForumComment = {
@@ -62,6 +71,8 @@ export type ForumComment = {
   createdAt: number
   hidden: string | null
   mine: boolean
+  /** In the reader's language, when it was written in another (SKATGO-124); null otherwise or while being made. */
+  translated: { from: string; body: string } | null
 }
 
 export type ForumPost = ForumPostSummary & { body: string; thread: ForumComment[] }
@@ -73,7 +84,8 @@ export type ForumList = { posts: ForumPostSummary[]; more: boolean; viewer: Foru
 
 export type ForumThread = { post: ForumPost; viewer: ForumViewer }
 
-export type ForumAnnouncement = { id: number; title: string; createdAt: number }
+/** `translated`: its title in the reader's language when written in another (SKATGO-124). */
+export type ForumAnnouncement = { id: number; title: string; createdAt: number; translated: { from: string; title: string } | null }
 
 /** One reported post or comment, as the official's list shows it. */
 export type ForumReport = {

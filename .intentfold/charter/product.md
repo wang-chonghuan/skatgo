@@ -112,9 +112,11 @@ human, SKATGO-103: 「可以参考书上的」). The list of exercises is a sear
 exercise is not (the human: 「单页不收录，但是题目页要收录」). The articles are in plain
 words — the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」 — and are SkatGo's posts in the forum's
 Articles, nowhere else on the site (SKATGO-120, the human: 「移除这个文章在app里的所有其他引用的，就放论坛里」). The
-first, twelve tricks for bidding, playing alone and defending, written for the search "Skat Tricks", is two
-posts, the German original and the English one, each trick linking to the exercises that practise it; its
-old address, `/skat-tricks/12-tricks`, leads to the post in its language. A later article is another post,
+first, twelve tricks for bidding, playing alone and defending, written for the search "Skat Tricks", is one
+post, in English, read in German as its translation (SKATGO-124, the human: 「12 个 Skat 技巧会出现两次。保留英文版」;
+the German post is hidden), each trick linking to the exercises that practise it; its old address,
+`/skat-tricks/12-tricks`, and the German post's lead to it. SkatGo's announcement is in English too, its German the
+translation, made ahead (「公告也保留英文版，德语用翻译的，但是提前做好」). A later article is another post,
 for its own search term. The articles are for search engines (the human, SKATGO-105: 「只用于seo」): the
 site's ways in — the front page's tile, the course, the header — lead to the exercises. Every article leads to the daily tournament, where each trick can be tried and
 compared with the AI. The articles' text is SkatGo's own: no book's passages, examples or order are copied,
@@ -133,7 +135,11 @@ for two weeks. The least moderation the law asks of a host: anyone signed in may
 SkatGo hides with a reason its author sees, an author may delete their own, and each account writes only so much
 a day. It is one forum for both languages (the human, in review: 「德语和英语论坛不要分开」): its own words follow the
 site's language, and a post or comment is in whatever language its author writes (「别人想发什么语言就发什么语言」);
-a way to translate them comes later, not now. The forum's articles section links to the Skat-Tricks article, which stays where it is. Not in it, by the
+and each reader sees it in the language they read the site in: machine-translated by the site's model, once per text
+and language and kept, saying so in a small line with the text as written one tap away (SKATGO-124, the human:
+「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版。用便宜的翻译功能实现」, 「用户可以点击查看原文，有个非常小的链接式的
+小按钮」); a text already in the reader's language, or saying it in both, stands as written. The Skat-Tricks' articles
+are SkatGo's posts in its articles section (SKATGO-120). Not in it, by the
 human's agreement (「都同意」): notifications, nested replies, pictures, search, profiles, likes, blocking (with the
 apps later) and competitions (later, in the product itself).
 

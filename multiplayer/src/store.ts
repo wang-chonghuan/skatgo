@@ -84,6 +84,13 @@ export class Store {
         CREATE TABLE IF NOT EXISTS account_referrals (
           account text PRIMARY KEY, referrer text NOT NULL, room_id text NOT NULL, created_at bigint NOT NULL
         );
+        -- What people write, in each language of the site (SKATGO-124): one row per text and language, keyed by the
+        -- text's sha256, so a text is translated once wherever it stands. source_lang is the language it was written
+        -- in; text is it in lang, as written when the two are the same.
+        CREATE TABLE IF NOT EXISTS translations (
+          hash text NOT NULL, lang text NOT NULL, source_lang text NOT NULL, text text NOT NULL, created_at bigint NOT NULL,
+          PRIMARY KEY (hash, lang)
+        );
         -- The forum (SKATGO-118): posts per section, flat comments, and reports — once per reporter
         -- and thing reported. An author's delete removes the row and what hangs from it.
         CREATE TABLE IF NOT EXISTS forum_posts (

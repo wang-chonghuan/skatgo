@@ -201,7 +201,10 @@ In production the Render Web Service carries exactly the application configurati
 `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `CLERK_SECRET_KEY`,
 `CLERK_PUBLISHABLE_KEY`, `MULTIPLAYER_URL` (the `skatgo-multiplayer` service's own Render hostname)
 and `MULTIPLAYER_ADMISSION_KEY` (the multiplayer service's value; SKATGO-35), plus
-`POSTHOG_PROJECT_KEY` (SKATGO-25) and `FORUM_OFFICIALS` (the owner's Clerk account id; SKATGO-118); Render supplies `PORT` and its own `RENDER_*` runtime variables. List
+`POSTHOG_PROJECT_KEY` (SKATGO-25) and `FORUM_OFFICIALS` (the owner's Clerk account id; SKATGO-118); Render supplies `PORT` and its own `RENDER_*` runtime variables.
+The `skatgo-multiplayer` service carries `DATABASE_URL` and `MULTIPLAYER_ADMISSION_KEY`, and `LLM_BASE_URL` and
+`LLM_API_KEY` — the web's values — for the forum's translations (SKATGO-124). Locally the multiplayer service is
+started for review with those two from `app/.env`; `multiplayer/.env` does not carry them, so its tests call no model. List
 application keys without printing values:
 
 ```bash

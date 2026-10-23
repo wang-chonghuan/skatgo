@@ -237,10 +237,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
     its one green landing action (play today's deals) and beside it a white `quiet` one to the forum (SKATGO-120, the
     human: 「把solve puzzles 换成论坛按钮」; the puzzles' button there since SKATGO-109): the forum's newest announcement
-    while it is two weeks old or less — a `go` pill "Neu im Forum" / "New in the forum" first, then its title, cut
-    short when the column is narrower (SKATGO-123, the human: 「开头明显有new forum等类似的badge，让用户知道这里是论坛，然后
-    这个是最新帖子」; until then it was a line over the headline, SKATGO-118) — otherwise "Zum Skat-Forum" / "Visit
-    Skat forum"; no line of facts under them (SKATGO-123, the
+    while it is two weeks old or less, as the announcement line (`AnnouncementLine`, SKATGO-118) has always looked —
+    its `good` pill, here "Neu im Forum" / "New in the forum", then the title as a link (SKATGO-123, the human:
+    「换成以前你删掉的那个我的公告的链接，开头明显有new forum等类似的badge」; until then the line stood over the headline) —
+    otherwise "Zum Skat-Forum" / "Visit Skat forum"; no line of facts under them (SKATGO-123, the
     human: 「✓Free ✓AI analysis 这行去掉」). No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
     设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it
     (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the headline at 48px

@@ -71,8 +71,8 @@ export function Btn({ children, onClick, tone = 'go', shape = 'pill', size = 'md
 }
 
 /** The same look for a router <Link>: navigation is a link, an action is a button. */
-export function linkLook(tone: Tone = 'go', size: Size = 'md', shape: Shape = 'pill', extra?: stylex.StyleXStyles) {
-  return stylex.props(btnType(shape, size), styles.btn, shapes[shape], sizes[size], tones[tone], shape === 'landing' && landingTones[tone], styles.link, extra)
+export function linkLook(tone: Tone = 'go', size: Size = 'md', shape: Shape = 'pill') {
+  return stylex.props(btnType(shape, size), styles.btn, shapes[shape], sizes[size], tones[tone], shape === 'landing' && landingTones[tone], styles.link)
 }
 
 /** A one-line text field — a name, as the daily leaderboard and a private table ask for it. Enter

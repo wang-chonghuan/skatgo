@@ -3,7 +3,6 @@ import * as stylex from '@stylexjs/stylex'
 
 import { track } from '~/lib/analytics'
 import { faq } from '~/lib/faq'
-import { postParam } from '~/lib/forum'
 import type { Card } from '~/lib/skat/cards'
 import { lessons } from '~/lib/skat/lessons/content'
 import { m } from '~/paraglide/messages'
@@ -15,8 +14,9 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { EloBoard } from './elo-board'
+import { AnnouncementLine } from './forum-announcement'
 import { PlayingCard } from './playing-card'
-import { Pill, linkLook } from './ui'
+import { linkLook } from './ui'
 
 
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
@@ -47,22 +47,14 @@ export function EntryPage() {
               <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
                 {m.entry_cta()}
               </Link>
-              {/* The forum beside it, white, so the tournament stays the one green action (SKATGO-120, the human:
-                  「把solve puzzles 换成论坛按钮」): the forum's newest announcement while there is one, a badge first saying it
-                  is the forum's and new (SKATGO-123, the human: 「开头明显有new forum等类似的badge，让用户知道这里是论坛，然后这个是
-                  最新帖子」); otherwise the way to the forum. */}
+              {/* Beside it, the forum: its newest announcement while there is one, as the announcement line has always
+                  looked — the pill, then the title as a link — the pill saying it is the forum's (SKATGO-123, the human:
+                  「换成以前你删掉的那个我的公告的链接，开头明显有new forum等类似的badge」); otherwise the white way to the forum
+                  (SKATGO-120: 「把solve puzzles 换成论坛按钮」), so the tournament stays the one green action. */}
               {announcement ? (
-                <Link
-                  to="/forum/$post"
-                  params={{ post: postParam(announcement) }}
-                  data-testid="entry-forum"
-                  data-post={announcement.id}
-                  onClick={() => heroClick('forum')}
-                  {...linkLook('quiet', 'lg', 'landing', styles.newest)}
-                >
-                  <Pill tone="go">{m.forum_new_in()}</Pill>
-                  <span {...stylex.props(typography.appBtn, styles.newestTitle)}>{announcement.title}</span>
-                </Link>
+                <div data-testid="entry-forum" onClick={() => heroClick('forum')} {...stylex.props(styles.newest)}>
+                  <AnnouncementLine announcement={announcement} badge={m.forum_new_in()} />
+                </div>
               ) : (
                 <Link to="/forum" data-testid="entry-forum" onClick={() => heroClick('forum')} {...linkLook('quiet', 'lg', 'landing')}>
                   {m.entry_forum_cta()}
@@ -193,9 +185,8 @@ const styles = stylex.create({
     rowGap: { default: space.x32, [bp.phone]: space.x24 },
   },
   start: { alignItems: 'flex-start', textAlign: 'start' },
-  // The newest announcement as the white button: its badge, then its title, cut short when the column is narrower.
-  newest: { gap: space.x8, minWidth: 0, maxWidth: '100%' },
-  newestTitle: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: color.navy },
+  // The announcement line in the button's place, centred on the button's height.
+  newest: { display: 'flex', alignItems: 'center', minWidth: 0, maxWidth: '100%' },
   startRow: { justifyContent: 'flex-start' },
   // On PC the board takes the type's height, no more, its list scrolling inside (the human: 「elo列表的高度，和hero
   // 区域的高度一样，可以滚动，不要那么高，破坏我布局」): it stands out of the grid's flow, so the type alone sets the

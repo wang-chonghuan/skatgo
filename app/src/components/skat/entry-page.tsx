@@ -73,7 +73,9 @@ export function EntryPage() {
         </div>
         {beside ? (
           <div {...stylex.props(styles.side)}>
-            <EloBoard board={elo} />
+            <div {...stylex.props(styles.sideFill)}>
+              <EloBoard board={elo} fill />
+            </div>
           </div>
         ) : null}
       </section>
@@ -191,7 +193,11 @@ const styles = stylex.create({
   },
   start: { alignItems: 'flex-start', textAlign: 'start' },
   startRow: { justifyContent: 'flex-start' },
-  side: { minWidth: 0 },
+  // On PC the board takes the type's height, no more, its list scrolling inside (the human: 「elo列表的高度，和hero
+  // 区域的高度一样，可以滚动，不要那么高，破坏我布局」): it stands out of the grid's flow, so the type alone sets the
+  // row. In one column it is in the flow again.
+  side: { position: { default: 'relative', [bp.cards]: 'static' }, alignSelf: 'stretch', minWidth: 0 },
+  sideFill: { position: { default: 'absolute', [bp.cards]: 'static' }, top: 0, right: 0, bottom: 0, left: 0 },
   heroText: {
     display: 'flex',
     flexDirection: 'column',

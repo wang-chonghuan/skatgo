@@ -139,9 +139,10 @@ export function toggleLook(pressed: boolean) {
   return stylex.props(typography.toggle, styles.switch, styles.switchLink, pressed && styles.switchOn)
 }
 
-/** A white card on the grey page (the design's option card), or a judged / tip panel. */
-export function Panel({ children, tone = 'card', pad = true }: { children: ReactNode; tone?: 'card' | 'tip' | 'good' | 'bad'; pad?: boolean }) {
-  return <div {...stylex.props(styles.panel, panelTones[tone], pad && styles.panelPad)}>{children}</div>
+/** A white card on the grey page (the design's option card), or a judged / tip panel. `fill` makes it as tall as
+ *  where it sits, its content a column that may scroll inside (the hero's Elo board, SKATGO-123). */
+export function Panel({ children, tone = 'card', pad = true, fill = false }: { children: ReactNode; tone?: 'card' | 'tip' | 'good' | 'bad'; pad?: boolean; fill?: boolean }) {
+  return <div {...stylex.props(styles.panel, panelTones[tone], pad && styles.panelPad, fill && styles.panelFill)}>{children}</div>
 }
 
 /** A tip: the tip panel around the words. */
@@ -259,6 +260,7 @@ const styles = stylex.create({
   btnDisabled: { opacity: opacity.disabled, cursor: 'not-allowed', boxShadow: 'none', filter: 'none' },
   panel: { borderRadius: radii.option, borderWidth: border.hair, borderStyle: 'solid' },
   panelPad: { padding: { default: space.x24, [bp.phone]: space.x16 } },
+  panelFill: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, boxSizing: 'border-box' },
   // A pill is never wider than where it sits (SKATGO-58): a fact too long for its row wraps inside the
   // pill instead of running out of the panel. A short one looks as it always did.
   pill: {

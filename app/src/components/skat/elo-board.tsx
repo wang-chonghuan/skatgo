@@ -1,14 +1,15 @@
 import * as stylex from '@stylexjs/stylex'
-import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useState } from 'react'
+import { ChevronDown, ChevronUp, CircleHelp } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 
 import { ELO_PROVISIONAL_DAYS, ELO_START, type EloBoard as Board, eloK } from '~/lib/skat/elo'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
-import { border, space } from '../../theme/scale.stylex'
-import { radii } from '../../theme/shape.stylex'
+import { elev } from '../../theme/elevation.stylex'
+import { border, layer, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Who } from './daily-comparison'
 import { Panel } from './ui'
@@ -18,33 +19,73 @@ type Line = { row: Board['rows'][number] } | { ki: number }
 /**
  * The tournament's Elo board in the front page's hero (SKATGO-123, the human: 「这个名单要显示出来，放到hero区域」):
  * the top players by their number, the KI's fixed number standing among them as on the daily board — after
- * any player with the same, taking no rank — what a "?" means, and a fold saying how it is counted, so a
- * visitor can follow it (「别人看了，觉得不离谱，觉得能理解」). Kept short, so the tiles under the hero still show on
- * a laptop's first screen (SKATGO-120: 「要让用户快点看到四个功能卡」). On a phone it is folded behind one line with
- * the leader (「手机上可能要折叠一下排名榜」); a tap opens it.
+ * any player with the same, taking no rank. How it is counted, and what a "?" means, open from a circled
+ * question mark beside the title, over the page (the human: 「how it counted用一个圆圈问号图标，放在 elo标题旁边，
+ * 作为toast」). `fill`: as tall as where it sits, the list scrolling inside (「可以滚动，不要那么高」). On a phone
+ * it is folded behind one line with the leader (「手机上可能要折叠一下排名榜」); a tap opens it.
  */
-export function EloBoard({ board }: { board: Board }) {
+export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean }) {
   const [open, setOpen] = useState(false)
+  const [how, setHow] = useState(false)
+  const head = useRef<HTMLDivElement>(null)
+  // The explanation closes on Escape and on a tap anywhere else.
+  useEffect(() => {
+    if (!how) return
+    const away = (e: PointerEvent) => { if (!head.current?.contains(e.target as Node)) setHow(false) }
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setHow(false) }
+    document.addEventListener('pointerdown', away)
+    document.addEventListener('keydown', key)
+    return () => {
+      document.removeEventListener('pointerdown', away)
+      document.removeEventListener('keydown', key)
+    }
+  }, [how])
   const lines: Line[] = board.rows.map((row) => ({ row }))
   const at = board.rows.findIndex((r) => r.elo < board.ki)
   lines.splice(at >= 0 ? at : lines.length, 0, { ki: board.ki })
   const leader = board.rows[0]
   return (
-    <Panel>
+    <Panel fill={fill}>
       <section data-testid="elo-board" aria-labelledby="elo-board-title" {...stylex.props(styles.board)}>
-        <h2 id="elo-board-title" {...stylex.props(typography.dialogTitle, styles.title, styles.wide)}>{m.elo_title()}</h2>
-        <button
-          type="button"
-          data-testid="elo-board-toggle"
-          aria-expanded={open}
-          aria-controls="elo-board-body"
-          onClick={() => setOpen(!open)}
-          {...stylex.props(styles.toggle)}
-        >
-          <span {...stylex.props(typography.dialogTitle, styles.title)}>{m.elo_title()}</span>
-          {leader ? <span {...stylex.props(typography.appText, styles.leader)}>{`${leader.rank}. ${leader.nickname} · ${leader.elo}`}</span> : null}
-          {open ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />}
-        </button>
+        <div ref={head} {...stylex.props(styles.head)}>
+          <h2 id="elo-board-title" {...stylex.props(typography.dialogTitle, styles.title, styles.wide)}>{m.elo_title()}</h2>
+          <button
+            type="button"
+            data-testid="elo-board-toggle"
+            aria-expanded={open}
+            aria-controls="elo-board-body"
+            onClick={() => setOpen(!open)}
+            {...stylex.props(styles.toggle)}
+          >
+            <span {...stylex.props(typography.dialogTitle, styles.title)}>{m.elo_title()}</span>
+            {leader ? <span {...stylex.props(typography.appText, styles.leader)}>{`${leader.rank}. ${leader.nickname} · ${leader.elo}`}</span> : null}
+            {open ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />}
+          </button>
+          <button
+            type="button"
+            data-testid="elo-board-how"
+            aria-label={m.elo_how()}
+            title={m.elo_how()}
+            aria-expanded={how}
+            aria-controls="elo-board-how-text"
+            onClick={() => setHow(!how)}
+            {...stylex.props(styles.help)}
+          >
+            <CircleHelp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+          </button>
+          {how ? (
+            <div id="elo-board-how-text" role="dialog" aria-label={m.elo_how()} data-testid="elo-board-how-text" {...stylex.props(typography.appText, styles.howText)}>
+              <p {...stylex.props(styles.howLine)}>{m.elo_lead()}</p>
+              <ul {...stylex.props(styles.howList)}>
+                <li>{m.elo_how_win()}</li>
+                <li>{m.elo_how_start({ start: ELO_START, ki: board.ki })}</li>
+                <li>{m.elo_how_change({ first: eloK(0), after: eloK(30) })}</li>
+                <li>{m.elo_how_day()}</li>
+                <li>{m.elo_how_provisional({ n: ELO_PROVISIONAL_DAYS })}</li>
+              </ul>
+            </div>
+          ) : null}
+        </div>
         <div id="elo-board-body" data-open={open ? 'true' : undefined} {...stylex.props(styles.body, !open && styles.folded)}>
           <ol aria-label={m.elo_column()} {...stylex.props(styles.rows)}>
             {lines.map((l) =>
@@ -66,22 +107,6 @@ export function EloBoard({ board }: { board: Board }) {
               ),
             )}
           </ol>
-          {/* What the "?" means, where it is seen. */}
-          {board.rows.some((r) => r.provisional) ? (
-            <p data-testid="elo-board-legend" {...stylex.props(typography.micro, styles.muted)}>{m.elo_how_provisional({ n: ELO_PROVISIONAL_DAYS })}</p>
-          ) : null}
-          <details data-testid="elo-board-how" {...stylex.props(styles.how)}>
-            <summary {...stylex.props(typography.appLink, styles.summary)}>{m.elo_how()}</summary>
-            <div {...stylex.props(typography.appText, styles.howText)}>
-              <p {...stylex.props(styles.howLead)}>{m.elo_lead()}</p>
-              <ul {...stylex.props(styles.howList)}>
-                <li>{m.elo_how_win()}</li>
-                <li>{m.elo_how_start({ start: ELO_START, ki: board.ki })}</li>
-                <li>{m.elo_how_change({ first: eloK(0), after: eloK(30) })}</li>
-                <li>{m.elo_how_day()}</li>
-              </ul>
-            </div>
-          </details>
         </div>
       </section>
     </Panel>
@@ -89,15 +114,17 @@ export function EloBoard({ board }: { board: Board }) {
 }
 
 const styles = stylex.create({
-  board: { display: 'flex', flexDirection: 'column', gap: space.x12 },
-  // The title on its own wherever the board is open by itself; on a phone the line that folds it says it.
+  board: { display: 'flex', flexDirection: 'column', gap: space.x12, flexGrow: 1, minHeight: 0 },
+  // The title and the question mark; on a phone the line that folds the board says the title.
+  head: { position: 'relative', display: 'flex', alignItems: 'center', gap: space.x8 },
   title: { margin: 0, color: color.navy },
   wide: { display: { default: 'block', [bp.phone]: 'none' } },
   toggle: {
     display: { default: 'none', [bp.phone]: 'flex' },
+    flexGrow: 1,
+    minWidth: 0,
     alignItems: 'center',
     gap: space.x12,
-    width: '100%',
     margin: 0,
     padding: 0,
     borderWidth: 0,
@@ -112,13 +139,54 @@ const styles = stylex.create({
     borderRadius: radii.column,
   },
   leader: { flexGrow: 1, minWidth: 0, color: color.slate },
-  body: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  help: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 0,
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: color.info,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+    borderRadius: radii.column,
+  },
+  // The explanation, over the page under the title: a white card of its own.
+  howText: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    zIndex: layer.tip,
+    width: '100%',
+    maxWidth: dims.readingColumn,
+    boxSizing: 'border-box',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x8,
+    marginTop: space.x8,
+    padding: space.x16,
+    backgroundColor: color.surface,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.hairline,
+    borderRadius: radii.option,
+    boxShadow: elev.panel,
+    color: color.text,
+  },
+  howLine: { margin: 0, color: color.text },
+  howList: { display: 'flex', flexDirection: 'column', gap: space.x4, margin: 0, paddingInlineStart: space.x20 },
+  body: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 },
   folded: { display: { default: 'flex', [bp.phone]: 'none' } },
   muted: { margin: 0, color: color.slate, flexShrink: 0 },
-  rows: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
+  rows: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0, overflowY: 'auto', margin: 0, padding: 0, listStyle: 'none' },
   row: {
     display: 'flex',
     alignItems: 'baseline',
+    flexShrink: 0,
     gap: space.x12,
     paddingBlock: space.x4,
     paddingInline: space.x8,
@@ -130,9 +198,4 @@ const styles = stylex.create({
   rank: { minWidth: space.x24 },
   what: { flexGrow: 1, minWidth: 0 },
   score: { flexShrink: 0 },
-  how: { color: color.text },
-  summary: { color: color.info, cursor: 'pointer' },
-  howText: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x8, color: color.text },
-  howLead: { margin: 0, color: color.text },
-  howList: { display: 'flex', flexDirection: 'column', gap: space.x4, margin: 0, paddingInlineStart: space.x20 },
 })

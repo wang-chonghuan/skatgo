@@ -4,7 +4,6 @@ import * as stylex from '@stylexjs/stylex'
 import { track } from '~/lib/analytics'
 import { faq } from '~/lib/faq'
 import type { Card } from '~/lib/skat/cards'
-import { lessons } from '~/lib/skat/lessons/content'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -29,7 +28,6 @@ import { linkLook } from './ui'
 // Every picture here is skatgo's own: the public-domain deck the course plays with, fanned on felt, and
 // the suits as outline icons. Rendered on the server; the learner's progress is applied after mount.
 export function EntryPage() {
-  const course = lessons()
   const { announcement, elo } = useLoaderData({ from: '/' })
   // With the board beside it the text keeps to the left of its column; without one, as before, in the middle.
   const beside = !!elo && elo.rows.length > 0
@@ -77,7 +75,7 @@ export function EntryPage() {
           (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」). */}
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
         <Link to="/course" data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, styles.tileLink, tileTones.course)}>
-          <Face art={COURSE_ART} title={m.entry_new_title({ count: course.length })} />
+          <Face art={COURSE_ART} title={m.entry_new_title()} />
         </Link>
         <Link to="/play" data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, styles.tileLink, tileTones.play)}>
           <Face art={PLAY_ART} title={m.entry_game_title()} />

@@ -57,6 +57,12 @@ export function CourseHome() {
             <Pill tone="quiet">{m.home_pill_age()}</Pill>
             <Pill tone="quiet">{m.home_pill_saved()}</Pill>
           </div>
+          {/* For who would rather play than take lessons: the twelve rules in five minutes, then the table — a large
+              button of its own (SKATGO-127, the human: 「学习页面里，要有明显的按钮，5分钟快速入门开始打牌」); white, so the
+              course's own way in stays the one green action. */}
+          <div {...stylex.props(styles.quick)}>
+            <Link to="/course/quick-start" data-testid="course-quick" {...linkLook('quiet', 'lg', 'landing')}>{m.course_quick_cta()}</Link>
+          </div>
         </section>
 
         {/* The featured card: where the learner is and the one way on — the lesson to take next, or, once
@@ -151,6 +157,8 @@ const styles = stylex.create({
   intro: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   lead: { margin: 0, color: color.slate },
   pills: { display: 'flex', flexWrap: 'wrap', gap: space.x8 },
+  // A row of its own, so the button keeps its width.
+  quick: { display: 'flex', paddingTop: space.x4 },
   // The featured option card: full width, the deeper shadow, an arrow disc on the right.
   featured: {
     position: 'relative',

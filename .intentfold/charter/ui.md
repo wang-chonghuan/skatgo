@@ -224,7 +224,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     spare on either side);
   - on the right, the language switch — both flags side by side, bare, one tap switching; the language in
     use in full colour ringed in `color.go`, the other in its own colours faded (`opacity.flagOff`, never
-    grey; SKATGO-104) — the settings gear (for an account first its nickname — a text field, "Speichern", a refusal in
+    grey; SKATGO-104) — the settings gear (for an account first its nickname — a text field and beside it "Speichern" as tall and as rounded
+    (`block`, `md`), a refusal in
     `bad` when the name may not be used or another player holds it (SKATGO-126) — then the
     choice of deck: the Turnierblatt by default, the Deutsches Blatt, or the Turnierblatt with English
     letters J / Q / K / A — SKATGO-66), and sign-in

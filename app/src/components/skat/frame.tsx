@@ -238,7 +238,9 @@ function Nickname() {
       <label htmlFor="settings-nickname" {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_nickname()}</label>
       <div {...stylex.props(styles.nickRow)}>
         <TextField id="settings-nickname" testId="settings-nickname-field" autoComplete="nickname" value={value} invalid={problem !== null} onChange={(v) => { setValue(v); setProblem(null) }} onEnter={() => { if (!saving && !unchanged) void save() }} />
-        <Btn testId="settings-nickname-save" size="sm" disabled={saving || unchanged} onClick={() => void save()}>{m.daily_nick_save()}</Btn>
+        {/* The field's height and corners, as the settings' cards have them (the human: 「按钮的圆角和其他的按钮的圆角怎么不一样，
+            按钮和输入框的高度也不同」). */}
+        <Btn testId="settings-nickname-save" shape="block" size="md" disabled={saving || unchanged} onClick={() => void save()}>{m.daily_nick_save()}</Btn>
       </div>
       {problem ? (
         <p data-testid="settings-nickname-refused" data-problem={problem} role="alert" {...stylex.props(typography.small, styles.refused)}>
@@ -503,7 +505,8 @@ const styles = stylex.create({
   },
   decks: { display: 'flex', flexDirection: 'column', gap: space.x10 },
   section: { display: 'flex', flexDirection: 'column', gap: space.x8 },
-  nickRow: { display: 'flex', alignItems: 'center', gap: space.x8 },
+  // The button takes the field's height.
+  nickRow: { display: 'flex', alignItems: 'stretch', gap: space.x8 },
   refused: { margin: 0, color: color.bad },
   sectionTitle: { margin: 0, color: color.slate, textTransform: 'uppercase' },
   deck: {

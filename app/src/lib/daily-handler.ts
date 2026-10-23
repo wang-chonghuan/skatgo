@@ -21,7 +21,7 @@ const COOKIE = 'skatgo_daily'
 const COOKIE_PATH = '/api/daily'
 /** 400 days, the longest a browser keeps a cookie. */
 const COOKIE_MAX_AGE = 400 * 24 * 60 * 60
-const OPS = new Set(['state', 'act', 'name', 'board', 'review', 'elo'])
+const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'elo'])
 
 const json = (status: number, body: object, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } })
@@ -71,7 +71,9 @@ export async function handleDaily(request: Request): Promise<Response> {
   // Looking at the board needs no player: a visitor nobody knows yet asks as nobody. The Elo board is
   // everyone's, asked as nobody whoever looks.
   const player = op === 'elo' ? null : userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null
-  if ((op === 'name' || op === 'review') && !player) return json(409, { error: 'not_finished' })
+  if (op === 'review' && !player) return json(409, { error: 'not_finished' })
+  // The nickname is an account's, set in the settings (SKATGO-126).
+  if ((op === 'name' || op === 'nick') && !userId) return json(401, { error: 'sign_in_required' })
 
   const call = (path: string, payload: object) => callDaily(path, payload)!
 

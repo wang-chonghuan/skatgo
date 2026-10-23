@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-126",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-126",
+  "branch": "SKATGO-126-nickname-settings",
+  "base": "82a3c172ca0e0952113825ea5ad03a50007cbbd3",
+  "ports": { "web": 55126, "multiplayer": 56126, "database": 57126 }
+}

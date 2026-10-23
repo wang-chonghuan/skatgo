@@ -7,7 +7,7 @@ import type { DailyBoard, DailyReply, DealReview } from '~/lib/skat/tournament'
 
 export type DailyError = { error: string }
 
-async function post<T extends object>(op: 'state' | 'act' | 'name' | 'board' | 'review', body: object): Promise<T | DailyError> {
+async function post<T extends object>(op: 'state' | 'act' | 'name' | 'nick' | 'board' | 'review', body: object): Promise<T | DailyError> {
   try {
     const res = await fetch(`/api/daily/${op}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
     const data = (await res.json()) as T | DailyError
@@ -27,6 +27,9 @@ export const dailyAct = (at: { day: string; deal: number; revision: number }, ac
 
 /** Change the player's name: from now on, and on today's finished entries (SKATGO-90). */
 export const dailyName = (nickname: string) => post<{ nickname: string }>('name', { nickname })
+
+/** The signed-in account's nickname now, for the settings (SKATGO-126); null before it has one. */
+export const dailyNick = () => post<{ nickname: string | null }>('nick', {})
 
 /** A day's leaderboard, `back` days before today (0: today's; up to `BOARD_DAYS` − 1, SKATGO-80). */
 export const dailyBoard = (back: number) => post<DailyBoard>('board', { day: back })

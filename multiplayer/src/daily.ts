@@ -132,6 +132,7 @@ const actInput = z.object({
   action: actionSchema,
 }).strict()
 const nameInput = z.object({ player, nickname: z.string().max(200) }).strict()
+const nickInput = z.object({ player }).strict()
 // The board's day: how many days back, today 0 (SKATGO-80); `today` and `yesterday` are how pages before it ask.
 const boardInput = z.object({
   player: player.nullable(), day: z.union([z.enum(['today', 'yesterday']), z.number().int().min(0).max(BOARD_DAYS - 1)]),
@@ -416,25 +417,28 @@ export async function nameUnnamed(store: Store, now = Date.now()) {
   if (rows.length) console.log(JSON.stringify({ event: 'daily_named', entries: rows.length }))
 }
 
-/** A player changes their name (SKATGO-90): from now on, and on today's finished entries — never an
- *  earlier day's (the red line). A refused name is refused without saying why; a name another player
- *  holds is taken, whatever its case. */
+/** A player sets their nickname in the settings (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行
+ *  榜就用这个昵称，改一次，整体都改」): one name, shown on every board — today's and earlier days' — the Elo board and
+ *  the forum, since they all read it from here. The system itself never changes a player's name (SKATGO-90's red
+ *  line). A refused name is refused without saying why; a name another player holds is taken, whatever its case. */
 export async function dailyName(store: Store, who: string, raw: string, now = Date.now()) {
   const nickname = cleanNickname(raw)
   if (!nickname) throw new Rejected('nickname_refused')
-  const day = dayOf(now)
   return store.transaction(async c => {
-    const { rows: done } = await c.query('SELECT 1 FROM daily_entries WHERE player = $1 AND finished_at IS NOT NULL LIMIT 1', [who])
-    if (!done[0]) throw new Rejected('not_finished')
     await c.query('SELECT pg_advisory_xact_lock($1)', [NAME_LOCK])
     const { rows: clash } = await c.query('SELECT 1 FROM daily_players WHERE lower(nickname) = lower($1) AND player <> $2', [nickname, who])
     if (clash[0]) throw new Rejected('nickname_taken')
     await c.query(
       'INSERT INTO daily_players (player, nickname, created_at) VALUES ($1, $2, $3) ON CONFLICT (player) DO UPDATE SET nickname = EXCLUDED.nickname',
       [who, nickname, now])
-    await c.query('UPDATE daily_entries SET nickname = $3 WHERE day = $1 AND player = $2 AND finished_at IS NOT NULL', [day, who, nickname])
     return { nickname }
   })
+}
+
+/** A player's nickname now, for the settings; null before they have one. */
+export async function dailyNick(store: Store, who: string) {
+  const { rows } = await store.pool.query('SELECT nickname FROM daily_players WHERE player = $1', [who])
+  return { nickname: (rows[0]?.nickname as string | undefined) ?? null }
 }
 
 /** How many rows the board shows; a player below them gets their own row apart. */
@@ -456,8 +460,11 @@ export async function dailyBoard(store: Store, who: string | null, which: 'today
   let day = dayOf(now)
   for (let i = 0; i < back; i++) day = dayBefore(day)
   const { rows: found } = await store.pool.query(
-    `SELECT player, nickname, total, finished_at FROM daily_entries
-      WHERE day = $1 AND size = $2 AND finished_at IS NOT NULL AND nickname IS NOT NULL`, [day, DAILY_DEALS])
+    // Each entry under its player's name now (SKATGO-126: 「改一次，整体都改」); the name written with it only for a
+    // player who has none.
+    `SELECT e.player, coalesce(p.nickname, e.nickname) AS nickname, e.total, e.finished_at FROM daily_entries e
+       LEFT JOIN daily_players p ON p.player = e.player
+      WHERE e.day = $1 AND e.size = $2 AND e.finished_at IS NOT NULL AND coalesce(p.nickname, e.nickname) IS NOT NULL`, [day, DAILY_DEALS])
   const rows = found.sort((a, b) => b.total - a.total || Number(a.finished_at) - Number(b.finished_at))
   const ranked = rows.map((r, i) => ({
     rank: i === 0 || rows[i - 1].total !== r.total ? i + 1 : 0,
@@ -469,7 +476,8 @@ export async function dailyBoard(store: Store, who: string | null, which: 'today
   let me = null
   if (who) {
     const own = await store.pool.query(
-      'SELECT nickname, total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, DAILY_DEALS, who])
+      `SELECT coalesce(p.nickname, e.nickname) AS nickname, e.total, e.finished_at FROM daily_entries e
+         LEFT JOIN daily_players p ON p.player = e.player WHERE e.day = $1 AND e.size = $2 AND e.player = $3`, [day, DAILY_DEALS, who])
     const e = own.rows[0]
     if (e) {
       const rank = 1 + ranked.filter(r => r.total > e.total).length
@@ -602,6 +610,7 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
     const i = nameInput.parse(body)
     return dailyName(store, i.player, i.nickname)
   }))
+  router.post('/nick', run(async body => dailyNick(store, nickInput.parse(body).player)))
   router.post('/board', run(async body => {
     const i = boardInput.parse(body)
     return dailyBoard(store, i.player, i.day)

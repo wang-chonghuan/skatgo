@@ -236,8 +236,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - the hero: over its headline, the forum's newest announcement as one line while it is two weeks old or
     less (`AnnouncementLine`, SKATGO-118); the daily tournament's headline (`landingHero`) and lead
     (`landingHeroLead`) in navy;
-    its one green landing action (play today's deals) and beside it a white `quiet` one, "Skat-Aufgaben
-    lösen" / "Solve Skat puzzles", to the open-card endgames (SKATGO-109); a quiet ✓ line of what a first visitor wants to
+    its one green landing action (play today's deals) and beside it a white `quiet` one, "Forum", to the
+    forum (SKATGO-120, the human: 「把solve puzzles 换成论坛按钮」; the puzzles' button there since SKATGO-109); a quiet ✓ line of what a first visitor wants to
     know. No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
     设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it
     (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the announcement line, the headline at 48px
@@ -273,7 +273,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   5-Minuten-Crashkurs" — nowhere else, neither the front page nor the course (SKATGO-120, the human: 「5分钟的按钮，
   放到规则页面的一个按钮中，其他地方别放了」). The Skat-Tricks' page (`tricks-page.tsx`,
   SKATGO-103) is its H1 and lead, then every kind of exercise as an option card, numbered, each a `<details>`
-  closed at first (one named in the address, as the front page's "Skat-Aufgaben lösen" names the first, opens by
+  closed at first (one named in the address, as `#offenes-endspiel` names the first, opens by
   itself and stops under the header): first the open-card endgames (SKATGO-119, the human: 「这个要可折叠，像其他题
   一样，它作为第一类练习题」), their count solved in the head, opening to levels (SKATGO-111) — a grid of numbered
   square tiles, solved `good` with a check, gone wrong `bad` with a cross and the number of wrong answers in its

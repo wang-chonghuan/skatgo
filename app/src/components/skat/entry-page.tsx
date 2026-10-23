@@ -50,10 +50,10 @@ export function EntryPage() {
               <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
                 {m.entry_cta()}
               </Link>
-              {/* The ladder beside it (SKATGO-109, the human: 「这个练习的按钮放到每日tournament的按钮旁边」), white, so the
-                  tournament stays the one green action; it opens the exercises' page, since SKATGO-110 the open-card endgames. */}
-              <Link to="/skat-tricks" hash="offenes-endspiel" data-testid="entry-ladder" onClick={() => heroClick('ladder')} {...linkLook('quiet', 'lg', 'landing')}>
-                {m.entry_ladder_cta()}
+              {/* The forum beside it, white, so the tournament stays the one green action (SKATGO-120, the human:
+                  「把solve puzzles 换成论坛按钮」; the puzzles keep their tile below). */}
+              <Link to="/forum" data-testid="entry-forum" onClick={() => heroClick('forum')} {...linkLook('quiet', 'lg', 'landing')}>
+                {m.nav_header_forum()}
               </Link>
             </div>
             {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). */}
@@ -107,8 +107,8 @@ export function EntryPage() {
   )
 }
 
-/** The hero's buttons (SKATGO-29; renamed by SKATGO-74's tracking plan; the ladder's since SKATGO-109). */
-const heroClick = (button: 'primary' | 'ladder') => track('home_cta_clicked', { button })
+/** The hero's buttons (SKATGO-29; renamed by SKATGO-74's tracking plan; the forum's since SKATGO-120). */
+const heroClick = (button: 'primary' | 'forum') => track('home_cta_clicked', { button })
 
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })

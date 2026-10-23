@@ -14,6 +14,7 @@ import { timing } from '../../theme/effects.stylex'
 import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
+import { phoneQuery } from '../../theme/constants'
 import { typography } from '../../theme/type'
 import { AnnouncementLine } from './forum-announcement'
 import { PlayingCard } from './playing-card'
@@ -140,10 +141,15 @@ const PRACTICE_ART = [card('D', 'A'), card('D', '10'), card('D', 'K')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
 /** The hero's picture: three players at a club-shaped table (the human's illustration, SKATGO-33), shown whole. */
+/** Not on a phone (SKATGO-120, the human: 「手机版不要显示那个图片了，占用空间，要让用户快点看到四个功能卡」): the box is
+ *  not drawn there, and the phone's source is empty, so the picture is not fetched either. */
 function HeroArt() {
   return (
     <div data-testid="entry-art" {...stylex.props(styles.heroArt)}>
-      <img src="/hero-table.webp" alt={m.entry_art_alt()} {...stylex.props(styles.heroImage)} />
+      <picture>
+        <source media={phoneQuery} srcSet="data:," />
+        <img src="/hero-table.webp" alt={m.entry_art_alt()} {...stylex.props(styles.heroImage)} />
+      </picture>
     </div>
   )
 }
@@ -210,6 +216,7 @@ const styles = stylex.create({
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
   lead: { margin: 0, color: color.slate },
   heroArt: {
+    display: { default: 'block', [bp.phone]: 'none' },
     aspectRatio: dims.heroArtRatio,
     borderRadius: radii.tile,
     boxShadow: elev.eventCard,

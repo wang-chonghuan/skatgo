@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-120",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-120",
+  "branch": "SKATGO-120-phone-hero",
+  "base": "4b81a4a8fb5fd1199fd46ad77d0b5fbbdbd4c512",
+  "ports": { "web": 55120, "multiplayer": 56120, "database": 57120 }
+}

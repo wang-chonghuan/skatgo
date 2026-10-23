@@ -238,7 +238,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (`landingHeroLead`) in navy;
     its one green landing action (play today's deals) and beside it a white `quiet` one, "Skat-Aufgaben
     lösen" / "Solve Skat puzzles", to the open-card endgames (SKATGO-109); a quiet ✓ line of what a first visitor wants to
-    know; and the human's illustration (SKATGO-33). Never on felt (Redline 4);
+    know; and the human's illustration (SKATGO-33) — not on a phone, where it is neither drawn nor fetched so the four tiles come sooner (SKATGO-120, the human: 「手机版不要显示那个图片了，占用空间，要让用户快点看到四个功能卡」). Never on felt (Redline 4);
   - the sections as colour tiles, each with its card art and a `quiet` button: the course, free play,
     the tricks ("Skat-Tricks", `tileNavy`, SKATGO-82; it held the puzzles' "coming soon" before; its words and
     button, "Jetzt üben", lead to the exercises, SKATGO-105) and a private table (`tileRed`);

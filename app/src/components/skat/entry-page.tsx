@@ -53,7 +53,7 @@ export function EntryPage() {
               {/* The forum beside it, white, so the tournament stays the one green action (SKATGO-120, the human:
                   「把solve puzzles 换成论坛按钮」; the puzzles keep their tile below). */}
               <Link to="/forum" data-testid="entry-forum" onClick={() => heroClick('forum')} {...linkLook('quiet', 'lg', 'landing')}>
-                {m.nav_header_forum()}
+                {m.entry_forum_cta()}
               </Link>
             </div>
             {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). */}

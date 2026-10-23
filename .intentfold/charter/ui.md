@@ -236,8 +236,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - the hero: over its headline, the forum's newest announcement as one line while it is two weeks old or
     less (`AnnouncementLine`, SKATGO-118); the daily tournament's headline (`landingHero`) and lead
     (`landingHeroLead`) in navy;
-    its one green landing action (play today's deals) and beside it a white `quiet` one, "Forum", to the
-    forum (SKATGO-120, the human: 「把solve puzzles 换成论坛按钮」; the puzzles' button there since SKATGO-109); a quiet ✓ line of what a first visitor wants to
+    its one green landing action (play today's deals) and beside it a white `quiet` one, "Zum Skat-Forum" /
+    "Visit Skat forum", to the forum (SKATGO-120, the human: 「把solve puzzles 换成论坛按钮」; the puzzles' button there since SKATGO-109); a quiet ✓ line of what a first visitor wants to
     know. No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
     设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it
     (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the announcement line, the headline at 48px

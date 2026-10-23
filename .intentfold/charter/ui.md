@@ -264,8 +264,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」) — as tall as its title, its
     card art kept and cropped at the edge (「包裹着文字就行了，禁止大片空白，牌的背景还保留，但是可以剪裁」), rising on
     hover, two by two and one above the other below `bp.cards` so a title never runs onto its cards:
-    "Skat lernen" (the course; no count of lessons, which scares people off — SKATGO-127, the human:
-    「把11课字样去掉，会把人吓跑」), "Skat gegen die KI spielen" (free play), "Mit Skat-Aufgaben
+    "Skat interaktiv lernen" (the course; no count of lessons, which scares people off — SKATGO-127, the human:
+    「把11课字样去掉，会把人吓跑」, 「入口卡片叫交互式学习skat」), "Skat gegen die KI spielen" (free play), "Mit Skat-Aufgaben
     üben" (the exercises, `tileNavy`) and "Skat mit Freunden spielen" (a private table, `tileRed`);
   - plain links to the rules and the course, and the questions people ask.
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
@@ -289,7 +289,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`CardRowView`, the points as captions), then a `tip` panel with the `go` button to free play, and links
   to the course and the rules. Its ways in: a `quiet` button under the rules' lead, "Neu beim Skat? Der
   5-Minuten-Crashkurs" (SKATGO-120, the human: 「5分钟的按钮，放到规则页面的一个按钮中」), and on the course page under its
-  facts a large `quiet` landing button, "5-Minuten-Schnellstart, dann spielen" (SKATGO-127, the human:
+  one-sentence lead — no facts pills, no "no rulebook" line (SKATGO-127) — a large `quiet` landing button, "5-Minuten-Schnellstart, dann spielen" (SKATGO-127, the human:
   「学习页面里，要有明显的按钮，5分钟快速入门开始打牌」) — not the front page. The Skat-Tricks' page (`tricks-page.tsx`,
   SKATGO-103) is its H1 and lead, then every kind of exercise as an option card, numbered, each a `<details>`
   closed at first (one named in the address, as `#offenes-endspiel` names the first, opens by

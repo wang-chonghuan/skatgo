@@ -691,6 +691,7 @@
   "forum_hidden_note": "Von SkatGo ausgeblendet: {reason}",
   "forum_page_title": "{title} – Skat-Forum | SkatGo",
   "forum_page_description": "{excerpt} – aus dem Skat-Forum von SkatGo",
+  "forum_new_in": "Neu im Forum",
   "forum_new_badge": "Neu",
   "forum_announcement": "Ankündigung",
   "forum_about": "Das SkatGo-Forum: Ankündigungen, Artikel über Skat und eure Fragen und Rückmeldungen."

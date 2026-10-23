@@ -3,6 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 
 import { track } from '~/lib/analytics'
 import { faq } from '~/lib/faq'
+import { postParam } from '~/lib/forum'
 import type { Card } from '~/lib/skat/cards'
 import { lessons } from '~/lib/skat/lessons/content'
 import { m } from '~/paraglide/messages'
@@ -14,9 +15,8 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { EloBoard } from './elo-board'
-import { AnnouncementLine } from './forum-announcement'
 import { PlayingCard } from './playing-card'
-import { linkLook } from './ui'
+import { Pill, linkLook } from './ui'
 
 
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
@@ -38,12 +38,6 @@ export function EntryPage() {
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <section data-testid="entry-hero" {...stylex.props(styles.hero, beside && styles.heroBeside)}>
         <div {...stylex.props(styles.heroText, beside && styles.start)}>
-          {/* Only when there is one: an empty line would still take a gap above the headline. */}
-          {announcement ? (
-            <div {...stylex.props(styles.news, beside && styles.startRow)}>
-              <AnnouncementLine announcement={announcement} />
-            </div>
-          ) : null}
           <div {...stylex.props(styles.head, beside && styles.start)}>
             <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
             <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
@@ -54,10 +48,26 @@ export function EntryPage() {
                 {m.entry_cta()}
               </Link>
               {/* The forum beside it, white, so the tournament stays the one green action (SKATGO-120, the human:
-                  「把solve puzzles 换成论坛按钮」; the puzzles keep their tile below). */}
-              <Link to="/forum" data-testid="entry-forum" onClick={() => heroClick('forum')} {...linkLook('quiet', 'lg', 'landing')}>
-                {m.entry_forum_cta()}
-              </Link>
+                  「把solve puzzles 换成论坛按钮」): the forum's newest announcement while there is one, a badge first saying it
+                  is the forum's and new (SKATGO-123, the human: 「开头明显有new forum等类似的badge，让用户知道这里是论坛，然后这个是
+                  最新帖子」); otherwise the way to the forum. */}
+              {announcement ? (
+                <Link
+                  to="/forum/$post"
+                  params={{ post: postParam(announcement) }}
+                  data-testid="entry-forum"
+                  data-post={announcement.id}
+                  onClick={() => heroClick('forum')}
+                  {...linkLook('quiet', 'lg', 'landing', styles.newest)}
+                >
+                  <Pill tone="go">{m.forum_new_in()}</Pill>
+                  <span {...stylex.props(typography.appBtn, styles.newestTitle)}>{announcement.title}</span>
+                </Link>
+              ) : (
+                <Link to="/forum" data-testid="entry-forum" onClick={() => heroClick('forum')} {...linkLook('quiet', 'lg', 'landing')}>
+                  {m.entry_forum_cta()}
+                </Link>
+              )}
             </div>
             {/* The ✓ line of facts under the buttons is gone (SKATGO-123, the human: 「✓Free ✓AI analysis 这行去掉」). */}
           </div>
@@ -183,6 +193,9 @@ const styles = stylex.create({
     rowGap: { default: space.x32, [bp.phone]: space.x24 },
   },
   start: { alignItems: 'flex-start', textAlign: 'start' },
+  // The newest announcement as the white button: its badge, then its title, cut short when the column is narrower.
+  newest: { gap: space.x8, minWidth: 0, maxWidth: '100%' },
+  newestTitle: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: color.navy },
   startRow: { justifyContent: 'flex-start' },
   // On PC the board takes the type's height, no more, its list scrolling inside (the human: 「elo列表的高度，和hero
   // 区域的高度一样，可以滚动，不要那么高，破坏我布局」): it stands out of the grid's flow, so the type alone sets the
@@ -197,7 +210,6 @@ const styles = stylex.create({
     minWidth: 0,
     gap: { default: space.x24, [bp.phone]: space.x16 },
   },
-  news: { display: 'flex', justifyContent: { default: 'center', [bp.phone]: 'flex-start' } },
   head: {
     display: 'flex',
     flexDirection: 'column',
@@ -209,8 +221,8 @@ const styles = stylex.create({
   lead: { margin: 0, maxWidth: dims.readingColumn, color: color.slate, textWrap: 'balance' },
 
   // The call to action and the forum beside it.
-  cta: { display: 'flex', flexDirection: 'column', alignItems: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12 },
-  actions: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12 },
+  cta: { display: 'flex', flexDirection: 'column', alignItems: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12, minWidth: 0, maxWidth: '100%' },
+  actions: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12, minWidth: 0, maxWidth: '100%' },
   // The two ways in, side by side; stacked on a phone.
   ways: {
     display: 'grid',

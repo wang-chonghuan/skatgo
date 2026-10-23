@@ -1,12 +1,10 @@
 import { Link, useLoaderData } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { faq } from '~/lib/faq'
 import type { Card } from '~/lib/skat/cards'
 import { lessons } from '~/lib/skat/lessons/content'
-import { type LessonRecord, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -20,7 +18,6 @@ import { AnnouncementLine } from './forum-announcement'
 import { PlayingCard } from './playing-card'
 import { linkLook } from './ui'
 
-const NOTHING_DONE: Record<string, LessonRecord> = {}
 
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
 // tournament as the headline and its one green call to action (the way into the course is the header's
@@ -31,13 +28,7 @@ const NOTHING_DONE: Record<string, LessonRecord> = {}
 // Every picture here is skatgo's own: the public-domain deck the course plays with, fanned on felt, and
 // the suits as outline icons. Rendered on the server; the learner's progress is applied after mount.
 export function EntryPage() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  const storedDone = useProgress((s) => s.done)
-  const done = mounted ? storedDone : NOTHING_DONE
   const course = lessons()
-  const finished = course.filter((l) => l.id in done).length
-  const next = course.find((l) => !(l.id in done))?.id ?? course[course.length - 1].id
   const announcement = useLoaderData({ from: '/' })
 
   return (
@@ -72,41 +63,22 @@ export function EntryPage() {
         <HeroArt />
       </section>
 
+      {/* The four ways in, each a tile that is its own link with a title that says where it goes, nothing else
+          (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」). */}
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
-        <section data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, tileTones.course)}>
-          <Face art={COURSE_ART} title={m.entry_new_title()} text={m.entry_new_text({ count: course.length })}>
-            <Link to="/course" data-testid="entry-course" {...linkLook('quiet', 'md', 'landing')}>
-              {finished === 0 ? m.entry_new_cta() : m.course_continue({ n: next })}
-            </Link>
-            {/* The twelve rules (SKATGO-89), a button as plain to see as the course's (the human: 「学习卡上那个5分钟，
-                看起来不够明显」), always — whether or not a lesson was taken (SKATGO-92, the human: 「必须还放在学习卡上」). */}
-            <Link to="/course/quick-start" data-testid="entry-quick" {...linkLook('quiet', 'md', 'landing')}>{m.quick_entry_link()}</Link>
-            {/* No count of lessons done under the buttons: the course page shows it (SKATGO-93, the human: 「这个小字也给我删了」). */}
-          </Face>
-        </section>
-        <section data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, tileTones.play)}>
-          <Face art={PLAY_ART} title={m.entry_game_title()} text={m.entry_game_text()}>
-            <Link to="/play" data-testid="entry-play" {...linkLook('quiet', 'md', 'landing')}>
-              {m.entry_game_cta()}
-            </Link>
-          </Face>
-        </section>
-        {/* The tricks (SKATGO-82): the tile that held the puzzles' place, leading straight to the exercises
-            (SKATGO-105); the article is only for search engines. */}
-        <section data-testid="entry-card" data-section="tricks" {...stylex.props(styles.tile, tileTones.practice)}>
-          <Face art={PRACTICE_ART} title={m.entry_practice_title()} text={m.entry_practice_text()}>
-            <Link to="/skat-tricks" data-testid="entry-tricks" {...linkLook('quiet', 'md', 'landing')}>
-              {m.entry_practice_cta()}
-            </Link>
-          </Face>
-        </section>
-        <section data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, tileTones.friends)}>
-          <Face art={FRIENDS_ART} title={m.entry_friends_title()} text={m.entry_friends_text()}>
-            <Link to="/with-friends" data-testid="entry-friends" {...linkLook('quiet', 'md', 'landing')}>
-              {m.table_open()}
-            </Link>
-          </Face>
-        </section>
+        <Link to="/course" data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, styles.tileLink, tileTones.course)}>
+          <Face art={COURSE_ART} title={m.entry_new_title({ count: course.length })} />
+        </Link>
+        <Link to="/play" data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, styles.tileLink, tileTones.play)}>
+          <Face art={PLAY_ART} title={m.entry_game_title()} />
+        </Link>
+        {/* The tricks (SKATGO-82): straight to the exercises (SKATGO-105); the article is only for search engines. */}
+        <Link to="/skat-tricks" data-testid="entry-card" data-section="tricks" {...stylex.props(styles.tile, styles.tileLink, tileTones.practice)}>
+          <Face art={PRACTICE_ART} title={m.entry_practice_title()} />
+        </Link>
+        <Link to="/with-friends" data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, styles.tileLink, tileTones.friends)}>
+          <Face art={FRIENDS_ART} title={m.entry_friends_title()} />
+        </Link>
       </div>
 
       <nav aria-label={m.game_learning_title()} {...stylex.props(styles.actions)}>
@@ -154,9 +126,8 @@ function HeroArt() {
   )
 }
 
-/** A tile's face: three of skatgo's cards in the corner under the tile's colour, the title and its text at
- *  the top left, and the foot at the bottom left. */
-function Face({ art, title, text, children }: { art: Card[]; title: string; text: string; children: ReactNode }) {
+/** A tile's face: three of skatgo's cards in the corner under the tile's colour, and its title at the top left. */
+function Face({ art, title }: { art: Card[]; title: string }) {
   return (
     <>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
@@ -169,8 +140,6 @@ function Face({ art, title, text, children }: { art: Card[]; title: string; text
       <span aria-hidden="true" {...stylex.props(styles.veil)} />
       <div {...stylex.props(styles.body)}>
         <h2 {...stylex.props(typography.tileTitle, styles.tileTitle)}>{title}</h2>
-        <p {...stylex.props(typography.tileSub, styles.tileText)}>{text}</p>
-        <div {...stylex.props(styles.foot)}>{children}</div>
       </div>
     </>
   )
@@ -245,13 +214,24 @@ const styles = stylex.create({
     position: 'relative',
     display: 'flex',
     flexDirection: 'column',
-    minHeight: dims.tileHeight,
+    // On a phone a tile is as tall as its title (SKATGO-120: the four come into sight sooner).
+    minHeight: { default: dims.tileHeight, [bp.phone]: 'auto' },
     boxSizing: 'border-box',
     padding: space.x27,
     overflow: 'hidden',
     borderRadius: radii.tile,
     color: color.onColor,
     textDecoration: 'none',
+  },
+  // The whole tile is the link: it rises on hover and shows the focus ring, as a course card does.
+  tileLink: {
+    transform: { default: pose.rest, ':hover': pose.lift },
+    transitionProperty: 'transform',
+    transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
   },
   art: {
     position: 'absolute',
@@ -265,8 +245,6 @@ const styles = stylex.create({
   veil: { position: 'absolute', inset: 0, backgroundColor: 'inherit', opacity: veil.tile, pointerEvents: 'none' },
   body: { position: 'relative', display: 'flex', flexDirection: 'column', flexGrow: 1, gap: space.x8 },
   tileTitle: { margin: 0, color: color.onColor },
-  tileText: { margin: 0, color: color.onColor },
-  foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, marginTop: 'auto', paddingTop: space.x8 },
   readingLink: { color: color.info, textDecoration: 'underline' },
 
   faq: { display: 'flex', flexDirection: 'column', gap: space.x24 },

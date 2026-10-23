@@ -26,7 +26,7 @@ const slide = stylex.keyframes({ from: { transform: marqueeSlide.start }, to: { 
  * any player with the same, taking no rank. How it is counted, and what a "?" means, open from a circled
  * question mark beside the title, over the page (the human: 「how it counted用一个圆圈问号图标，放在 elo标题旁边，
  * 作为toast」). `fill`: as tall as where it sits, the list scrolling inside (「可以滚动，不要那么高」), its rows close
- * together and in two columns, first down the left (「A和B」), at the text's size (「我刚都没说让你改成14」). On a phone it is folded behind one line where the players run
+ * together, one column (「你换成单列吧」), at the text's size (「我刚都没说让你改成14」). On a phone it is folded behind one line where the players run
  * slowly sideways, without end (「手机上可能要折叠一下排名榜」, 「横向持续缓慢滚动」); a tap opens it.
  */
 export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean }) {
@@ -49,8 +49,6 @@ export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean
   const at = board.rows.findIndex((r) => r.elo < board.ki)
   lines.splice(at >= 0 ? at : lines.length, 0, { ki: board.ki })
   const names = board.rows.map((r) => `${r.rank}. ${r.nickname} · ${r.elo}`)
-  // Two columns, the first down the left: 1–5 there, the rest beside it.
-  const half = Math.ceil(lines.length / 2)
   return (
     <Panel fill={fill}>
       <section data-testid="elo-board" aria-labelledby="elo-board-title" {...stylex.props(styles.board)}>
@@ -106,13 +104,9 @@ export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean
           ) : null}
         </div>
         <div id="elo-board-body" data-open={open ? 'true' : undefined} {...stylex.props(styles.body, !open && styles.folded)}>
-          <div {...stylex.props(styles.scroll)}>
-            {[lines.slice(0, half), lines.slice(half)].map((column, c) => (
-              <ol key={c} aria-label={m.elo_column()} start={c === 0 ? undefined : half + 1} {...stylex.props(styles.rows)}>
-                {column.map((l) => <EloLine key={'ki' in l ? 'ki' : `${l.row.rank}-${l.row.nickname}`} line={l} />)}
-              </ol>
-            ))}
-          </div>
+          <ol aria-label={m.elo_column()} {...stylex.props(styles.rows)}>
+            {lines.map((l) => <EloLine key={'ki' in l ? 'ki' : `${l.row.rank}-${l.row.nickname}`} line={l} />)}
+          </ol>
         </div>
       </section>
     </Panel>
@@ -221,17 +215,7 @@ const styles = stylex.create({
   body: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 },
   folded: { display: { default: 'flex', [bp.phone]: 'none' } },
   muted: { margin: 0, color: color.slate, flexShrink: 0 },
-  // The two columns scroll together; on a phone, opened, they stand one under the other.
-  scroll: {
-    display: 'grid',
-    gridTemplateColumns: { default: dims.twoColumns, [bp.phone]: dims.oneColumn },
-    alignContent: 'start',
-    columnGap: space.x16,
-    flexGrow: 1,
-    minHeight: 0,
-    overflowY: 'auto',
-  },
-  rows: { display: 'flex', flexDirection: 'column', minWidth: 0, margin: 0, padding: 0, listStyle: 'none' },
+  rows: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0, overflowY: 'auto', margin: 0, padding: 0, listStyle: 'none' },
   row: {
     display: 'flex',
     alignItems: 'baseline',

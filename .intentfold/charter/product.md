@@ -97,13 +97,13 @@ often. Under them come the kinds SKATGO-110 had hidden, shown again since SKATGO
 exercises each, each kind a card opening to its exercises; they need no account and record nothing. Every answer is an exact solver's or the rules engine's; positions may draw on Skat books (the
 human, SKATGO-103: 「可以参考书上的」). The list of exercises is a search entry in both languages, a single
 exercise is not (the human: 「单页不收录，但是题目页要收录」). The articles are in plain
-words — the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」 — the first, twelve tricks for bidding,
-playing alone and defending, written for the search "Skat Tricks", at `/skat-tricks/12-tricks`, each trick
-linking to the exercises that practise it; later articles get their own addresses under the section, each
+words — the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」 — and are SkatGo's posts in the forum's
+Articles, nowhere else on the site (SKATGO-120, the human: 「移除这个文章在app里的所有其他引用的，就放论坛里」). The
+first, twelve tricks for bidding, playing alone and defending, written for the search "Skat Tricks", is two
+posts, the German original and the English one, each trick linking to the exercises that practise it; its
+old address, `/skat-tricks/12-tricks`, leads to the post in its language. A later article is another post,
 for its own search term. The articles are for search engines (the human, SKATGO-105: 「只用于seo」): the
-site's ways in — the front page's tile and the button beside the daily tournament's (SKATGO-109), the
-course, the header — lead to the exercises, and an article is
-reached only by a small link under them. Every article leads to the daily tournament, where each trick can be tried and
+site's ways in — the front page's tile, the course, the header — lead to the exercises. Every article leads to the daily tournament, where each trick can be tried and
 compared with the AI. The articles' text is SkatGo's own: no book's passages, examples or order are copied,
 and the articles recommend no books. After every deal, the play record links to the exercises.
 

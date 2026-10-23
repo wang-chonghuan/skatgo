@@ -76,9 +76,6 @@ export function ForumPage() {
             </Link>
           ))}
         </nav>
-        {!section || section === 'articles' ? (
-          <Link to="/skat-tricks/12-tricks" data-testid="forum-tricks-article" {...stylex.props(typography.appLink, styles.link)}>{m.forum_tricks_link()}</Link>
-        ) : null}
         {!data ? (
           <p {...stylex.props(typography.appText, styles.note)}>{m.forum_unavailable()}</p>
         ) : data.posts.length === 0 ? (

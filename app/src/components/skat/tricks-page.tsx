@@ -139,14 +139,14 @@ export function TricksPage() {
             )
           })}
         </ol>
-        {/* The article that was this page before (SKATGO-82), now at its own address, and the rules to look a
-            point up in: small links under the cards. */}
+        {/* The rules and the bidding table to look a point or a value up in: small links under the cards. The 12
+            tricks that were an article here (SKATGO-82) are a forum post since SKATGO-120. */}
         <nav {...stylex.props(styles.links)}>
-          <Link to="/skat-tricks/12-tricks" data-testid="tricks-article-link" {...stylex.props(typography.appLink, styles.articleLink)}>
-            {m.tricks_article_link()}
-          </Link>
           <Link to="/rules" data-testid="tricks-rules-link" {...stylex.props(typography.appLink, styles.articleLink)}>
             {m.tricks_rules_link()}
+          </Link>
+          <Link to="/rules/bidding-table" data-testid="tricks-bidding-link" {...stylex.props(typography.appLink, styles.articleLink)}>
+            {m.bidding_title()}
           </Link>
         </nav>
       </div>

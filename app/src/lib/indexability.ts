@@ -7,12 +7,8 @@ export const PRIVATE_PAGES = ['/play', '/daily/play', '/table/$id', '/skat-trick
 
 const matches = (path: string, route: string) => new RegExp(`^${route.replace(/\$[A-Za-z0-9_]+/g, '[^/]+')}$`).test(path)
 
-/** Pages a private route's pattern would also match, which are search entries all the same: the article
- *  under /skat-tricks (SKATGO-103). */
-const PUBLIC_PAGES = ['/skat-tricks/12-tricks']
-
 export function isIndexable(path: string): boolean {
-  return PUBLIC_PAGES.includes(path) || !PRIVATE_PAGES.some((page) => matches(path, page))
+  return !PRIVATE_PAGES.some((page) => matches(path, page))
 }
 
 /** Routes whose addresses come from the forum's database (SKATGO-118): each post says whether it may be indexed

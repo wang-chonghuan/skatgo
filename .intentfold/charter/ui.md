@@ -290,12 +290,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the card that would have won; "Nächste Aufgabe" (`go`), "Warum?" (the reason, only when asked) and "Noch
   mal" (`quiet`). For a guest from the third puzzle the table waits under the sign-in dialog, an invitation
   with no lock (SKATGO-112). An
-  article of the Skat-Tricks (`tricks-article-page.tsx`, SKATGO-82) reads like the rules: its H1 and lead, section headings, each trick a
-  numbered sub-heading over short paragraphs, and three ways into the daily tournament — at the start, in
-  the middle and at the end — each a `tip` panel with its line and the `go` button; one action repeated
-  down a long page, not rival primaries (the human chose green for all three). Each trick that has
-  exercises links to them. It ends with its links to read on. It is for search engines (the human, SKATGO-105: 「只用于seo」):
-  the small link under the exercises is its only way in from the site. The course lists the exercises as
+  article of the Skat-Tricks is a post in the forum's Articles and reads as any post: its headings, short
+  paragraphs and links, each trick a numbered sub-heading, the ways into the daily tournament and to the
+  exercises as links; nothing outside the forum links it (SKATGO-120, the human: 「就放论坛里」). The course lists the exercises as
   an option card under the lessons. The header and the footer link the Skat-Tricks' page, and the table's rules panel and the
   play record ("Interaktive Übungen – spiel besser Skat") link it in a new tab, so a game is never left
   behind. A lesson starts playing at once: under its title only a

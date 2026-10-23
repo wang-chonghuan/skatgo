@@ -86,7 +86,7 @@ function describeEntry(course: Lesson[], locale: Locale): string {
   return [
     'CURRENT PAGE: the front page of skatgo.com. Its headline is "free Skat online", and the line under it invites the visitor to play the AI, friends or the whole community, with an AI coach for learning and practice. The site offers: an AI coach, free play, a daily tournament where everyone gets the same deals (with a ranking and each deal compared with the AI), private tables with friends, and practice exercises with a ranking, which are not available yet. Never invent the rules, scoring, prizes or dates of the tournament beyond what is said here, nor anything about the practice exercises.',
     'Below the headline it offers two ways in (quoted as the page names them), then questions and answers:',
-    `- "${m.entry_new_title({ count: course.length }, { locale })}", the course: ${course.length} short interactive lessons, from the 32 cards to a whole game.`,
+    `- "${m.entry_new_title({}, { locale })}", the course: ${course.length} short interactive lessons, from the 32 cards to a whole game.`,
     `- ${name(m.entry_game_title)}, free play: a free game against two AI players, Lina and Noah.`,
     'The site also has a rules page, a reference of the whole game. These are all the site offers: never invent or promise other features.',
     '',

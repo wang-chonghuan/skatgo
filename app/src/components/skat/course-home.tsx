@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { useEffect, useState } from 'react'
 
-import { Pill, Stars, linkLook } from './ui'
+import { Stars, linkLook } from './ui'
 import { PrintLinks } from './print-links'
 import { track } from '~/lib/analytics'
 import { lessons } from '~/lib/skat/lessons/content'
@@ -43,7 +43,6 @@ export function CourseHome() {
   const course = lessons()
   const finished = course.filter((l) => l.id in done).length
   const current = course.find((l) => !(l.id in done))
-  const totalMinutes = course.reduce((n, l) => n + l.minutes, 0)
   const guides = GUIDES[getLocale()]
 
   return (
@@ -52,10 +51,11 @@ export function CourseHome() {
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.course_title()}</h1>
         <section {...stylex.props(styles.intro)}>
           <p {...stylex.props(typography.appText, styles.lead)}>{m.course_lead({ count: course.length })}</p>
-          <div {...stylex.props(styles.pills)}>
-            <Pill tone="quiet">{m.home_pill_length({ count: course.length, minutes: totalMinutes })}</Pill>
-            <Pill tone="quiet">{m.home_pill_age()}</Pill>
-            <Pill tone="quiet">{m.home_pill_saved()}</Pill>
+          {/* For who would rather play than take lessons: the twelve rules in five minutes, then the table — a large
+              button of its own (SKATGO-127, the human: 「学习页面里，要有明显的按钮，5分钟快速入门开始打牌」); white, so the
+              course's own way in stays the one green action. */}
+          <div {...stylex.props(styles.quick)}>
+            <Link to="/course/quick-start" data-testid="course-quick" {...linkLook('quiet', 'lg', 'landing')}>{m.course_quick_cta()}</Link>
           </div>
         </section>
 
@@ -150,7 +150,8 @@ const styles = stylex.create({
   title: { margin: 0, color: color.navy },
   intro: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   lead: { margin: 0, color: color.slate },
-  pills: { display: 'flex', flexWrap: 'wrap', gap: space.x8 },
+  // A row of its own, so the button keeps its width.
+  quick: { display: 'flex', paddingTop: space.x4 },
   // The featured option card: full width, the deeper shadow, an arrow disc on the right.
   featured: {
     position: 'relative',

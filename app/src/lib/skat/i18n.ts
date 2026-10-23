@@ -7,7 +7,8 @@ import { m } from '~/paraglide/messages'
 import { type Card, type Contract, type Rank, type Suit, SUIT_SYMBOL } from './cards'
 import type { Role } from './game'
 import type { AdviceReason } from './ai'
-import type { MultiplierPart, SettleReason } from './value'
+import type { Declaration, MultiplierPart, SettleReason, Settlement } from './value'
+import { SEEGER_FABIAN } from './tournament'
 
 export function suitName(s: Suit): string {
   return { C: m.suit_clubs, S: m.suit_spades, H: m.suit_hearts, D: m.suit_diamonds }[s]()
@@ -64,6 +65,34 @@ export function partLabel(p: MultiplierPart, matadors: { with: boolean; count: n
     case 'ouvert':
       return 'Ouvert'
   }
+}
+
+/** A deal's whole calculation in one line, the score at its end — won, lost and doubled, or overbid (SKATGO-127,
+ *  a player's suggestion: 「Display the full calculation at the end of the game」). */
+export function settlementFormula(r: Settlement, d: Declaration, bid: number, seeger: boolean): string {
+  const isNull = d.contract.kind === 'null'
+  const worth = isNull ? r.value : r.base * r.multiplier
+  const calculation = isNull
+    ? m.result_null_formula({ contract: `Null${d.hand ? ' Hand' : ''}${d.ouvert ? ' Ouvert' : ''}`, value: r.value })
+    : m.result_formula_mult({
+        parts: r.parts.map((p, i) => (i === 0 ? partLabel(p, r.matadors) : `${partLabel(p, r.matadors)} 1`)).join(' + '),
+        mult: r.multiplier,
+        contract: contractName(d.contract),
+        base: r.base,
+        value: worth,
+      })
+  // Ends in the score the table counts: Seeger-Fabian — +50 for a won game, −50 more for a lost one, and 40 for each
+  // defender then — or the game value alone. The same minus sign as in "−2 ×".
+  const sf = SEEGER_FABIAN
+  const lostBy = r.overbid ? m.result_formula_overbid({ bid, worth, value: r.value }) : ''
+  const outcome = r.won
+    ? seeger
+      ? m.result_formula_won_sf({ value: r.value, bonus: sf.won, score: `+${r.value + sf.won}` })
+      : m.result_formula_won({ score: `+${r.score}` })
+    : seeger
+      ? m.result_formula_lost_sf({ value: r.value, bonus: sf.lost, score: `−${2 * r.value + sf.lost}`, defender: sf.defender })
+      : m.result_formula_lost({ value: r.value, score: `−${Math.abs(r.score)}` })
+  return [calculation, lostBy, outcome].filter(Boolean).join(' · ')
 }
 
 export function settleReason(r: SettleReason): string {

@@ -396,4 +396,11 @@ export function runningPoints(g: Game): { declarer: number; defenders: number } 
   return { declarer: sum(true), defenders: sum(false) }
 }
 
+/** The tricks each side has taken so far (SKATGO-127): what a player sees at a real table without counting points. */
+export function runningTricks(g: Game): { declarer: number; defenders: number } {
+  if (g.declarer === null) return { declarer: 0, defenders: 0 }
+  const declarer = g.tricks.filter((t) => t.winner === g.declarer).length
+  return { declarer, defenders: g.tricks.length - declarer }
+}
+
 export const contractOf = (g: Game): Contract | null => g.declaration?.contract ?? null

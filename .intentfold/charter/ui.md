@@ -264,7 +264,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」) — as tall as its title, its
     card art kept and cropped at the edge (「包裹着文字就行了，禁止大片空白，牌的背景还保留，但是可以剪裁」), rising on
     hover, two by two and one above the other below `bp.cards` so a title never runs onto its cards:
-    "Skat lernen in 11 Lektionen" (the course), "Skat gegen die KI spielen" (free play), "Mit Skat-Aufgaben
+    "Skat interaktiv lernen" (the course; no count of lessons, which scares people off — SKATGO-127, the human:
+    「把11课字样去掉，会把人吓跑」, 「入口卡片叫交互式学习skat」), "Skat gegen die KI spielen" (free play), "Mit Skat-Aufgaben
     üben" (the exercises, `tileNavy`) and "Skat mit Freunden spielen" (a private table, `tileRed`);
   - plain links to the rules and the course, and the questions people ask.
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
@@ -286,9 +287,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   with a caption naming what is where (the human: 「不要占空间太大，主要是让读者产生直觉」) — the twelve rules
   numbered, each a line of text, the ones that name points or an order with that row of cards under them
   (`CardRowView`, the points as captions), then a `tip` panel with the `go` button to free play, and links
-  to the course and the rules. Its one way in: a `quiet` button under the rules' lead, "Neu beim Skat? Der
-  5-Minuten-Crashkurs" — nowhere else, neither the front page nor the course (SKATGO-120, the human: 「5分钟的按钮，
-  放到规则页面的一个按钮中，其他地方别放了」). The Skat-Tricks' page (`tricks-page.tsx`,
+  to the course and the rules. Its ways in: a `quiet` button under the rules' lead, "Neu beim Skat? Der
+  5-Minuten-Crashkurs" (SKATGO-120, the human: 「5分钟的按钮，放到规则页面的一个按钮中」), and on the course page under its
+  one-sentence lead — no facts pills, no "no rulebook" line (SKATGO-127) — a large `quiet` landing button, "5-Minuten-Schnellstart, dann spielen" (SKATGO-127, the human:
+  「学习页面里，要有明显的按钮，5分钟快速入门开始打牌」) — not the front page. The Skat-Tricks' page (`tricks-page.tsx`,
   SKATGO-103) is its H1 and lead, then every kind of exercise as an option card, numbered, each a `<details>`
   closed at first (one named in the address, as `#offenes-endspiel` names the first, opens by
   itself and stops under the header): first the open-card endgames (SKATGO-119, the human: 「这个要可折叠，像其他题
@@ -361,7 +363,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **The info board** (SKATGO-100): a cell's content never runs past its padding. Hand and Ouvert stand on
   the small line under the contract; a long name wraps, a small line ends in an ellipsis; the three running
   totals share the cell in equal columns, smaller on a phone (`infoTotal`) and smaller again once one has four
-  digits (`infoTotalLong`).
+  digits (`infoTotalLong`). The "Augen" cell is a button with nothing of a button's look: a tap switches it to
+  "Stiche", the tricks each side has taken, and back, and the choice stays in this browser (SKATGO-127, the human:
+  「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」); the strip's pill follows it.
+- **A deal's result** carries its whole calculation in one line (SKATGO-127): the multiplier's parts, base ×
+  multiplier = value, then the score — won, lost and doubled, or overbid with its bid — ending in the score the
+  table counts: Seeger-Fabian (+50 won, −50 more lost, each defender +40) wherever the totals are Seeger-Fabian,
+  the game value alone in the course's own game; on a private table in the settlement, in free play right after the score sheet against the AI, in the tournament under the comparison.
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
   without JavaScript, in the lobby's own tokens and typography — never hidden keyword text or new
   decorative containers.

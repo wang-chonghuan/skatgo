@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-127",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-127",
+  "branch": "SKATGO-127-points-breakdown",
+  "base": "0bc40873cf95d0dd1d5fe87df9143982d25fd868",
+  "ports": { "web": 55127, "multiplayer": 56127, "database": 57127 }
+}

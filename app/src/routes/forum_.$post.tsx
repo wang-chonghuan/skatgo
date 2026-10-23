@@ -30,21 +30,24 @@ export const Route = createFileRoute('/forum_/$post')({
     const locale = getLocale()
     const path = postPath(post)
     const url = localizedUrl(path, locale)
-    // The same post stands at an address in each language; the words around it tell the two apart.
-    const description = m.forum_page_description({ excerpt: plainText(post.body, 120) || post.title })
+    // The same post stands at an address in each language; the words around it tell the two apart, and the post
+    // itself is in that language when it was written in the other (SKATGO-124).
+    const title = post.translated?.title ?? post.title
+    const body = post.translated?.body ?? post.body
+    const description = m.forum_page_description({ excerpt: plainText(body, 120) || title })
     const published = new Date(post.createdAt).toISOString()
     const publisher = { '@type': 'Organization', name: m.site_name(), url: SITE_URL }
     return pageHead({
-      title: m.forum_page_title({ title: post.title }),
+      title: m.forum_page_title({ title }),
       description,
       paths: samePath(path),
       image: 'forum',
       indexable: post.indexable,
       jsonLd: [
         post.official
-          ? { '@type': 'Article', headline: post.title, description, url, inLanguage: locale, image: ogImageUrl('forum', locale), datePublished: published, author: publisher, publisher }
-          : { '@type': 'DiscussionForumPosting', headline: post.title, text: plainText(post.body, 500), url, inLanguage: locale, datePublished: published, author: { '@type': 'Person', name: post.author }, commentCount: post.comments },
-        breadcrumbs([[m.forum_title(), '/forum'], [post.title, path]]),
+          ? { '@type': 'Article', headline: title, description, url, inLanguage: locale, image: ogImageUrl('forum', locale), datePublished: published, author: publisher, publisher }
+          : { '@type': 'DiscussionForumPosting', headline: title, text: plainText(body, 500), url, inLanguage: locale, datePublished: published, author: { '@type': 'Person', name: post.author }, commentCount: post.comments },
+        breadcrumbs([[m.forum_title(), '/forum'], [title, path]]),
       ],
     })
   },

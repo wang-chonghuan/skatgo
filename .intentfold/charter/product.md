@@ -133,7 +133,11 @@ for two weeks. The least moderation the law asks of a host: anyone signed in may
 SkatGo hides with a reason its author sees, an author may delete their own, and each account writes only so much
 a day. It is one forum for both languages (the human, in review: 「德语和英语论坛不要分开」): its own words follow the
 site's language, and a post or comment is in whatever language its author writes (「别人想发什么语言就发什么语言」);
-a way to translate them comes later, not now. The forum's articles section links to the Skat-Tricks article, which stays where it is. Not in it, by the
+and each reader sees it in the language they read the site in: machine-translated by the site's model, once per text
+and language and kept, saying so in a small line with the text as written one tap away (SKATGO-124, the human:
+「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版。用便宜的翻译功能实现」, 「用户可以点击查看原文，有个非常小的链接式的
+小按钮」); a text already in the reader's language, or saying it in both, stands as written. The Skat-Tricks' articles
+are SkatGo's posts in its articles section (SKATGO-120). Not in it, by the
 human's agreement (「都同意」): notifications, nested replies, pictures, search, profiles, likes, blocking (with the
 apps later) and competitions (later, in the product itself).
 

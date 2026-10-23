@@ -2,13 +2,14 @@ import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
 import {
-  ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_SECTIONS, OFFICIAL_SECTIONS, PAGE_SIZE, POST_MAX,
+  ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_LANGS, FORUM_SECTIONS, OFFICIAL_SECTIONS, PAGE_SIZE, POST_MAX,
   REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumAnnouncement, type ForumComment, type ForumList, type ForumPost,
-  type ForumPostSummary, type ForumReport, type ForumSection, type ForumThread, plainText, postIndexable,
+  type ForumLang, type ForumPostSummary, type ForumReport, type ForumSection, type ForumThread, plainText, postIndexable,
 } from '../../app/src/lib/forum'
 import { nameOf } from './daily'
 import { Rejected, secretEquals } from './model'
 import type { Store } from './store'
+import { type Translation, translateForAll, translationsOf } from './translate'
 
 // The forum (SKATGO-118): posts in four sections, in whatever language their authors write, flat comments, and the least moderation the law
 // asks of a host — a report, the official hiding with a reason, authors deleting their own. The web service
@@ -30,8 +31,10 @@ const viewer = { player: player.nullable(), official: z.boolean() }
 const author = { player, official: z.boolean() }
 const target = z.union([z.object({ post: id }).strict(), z.object({ comment: id }).strict()])
 
-const listInput = z.object({ ...viewer, section: section.optional(), page: z.number().int().min(1).max(1000).optional() }).strict()
-const postInput = z.object({ ...viewer, id }).strict()
+// The reader's language (SKATGO-124): what is written in another comes translated into it.
+const lang = z.enum(FORUM_LANGS).optional()
+const listInput = z.object({ ...viewer, section: section.optional(), page: z.number().int().min(1).max(1000).optional(), lang }).strict()
+const postInput = z.object({ ...viewer, id, lang }).strict()
 const createInput = z.object({ ...author, section, title: text(TITLE_MIN, TITLE_MAX), body: text(1, POST_MAX) }).strict()
 const commentInput = z.object({ ...author, post: id, body: text(1, COMMENT_MAX) }).strict()
 const deleteInput = z.object({ ...author, post: id.optional(), comment: id.optional() }).strict()
@@ -55,13 +58,24 @@ type PostRow = {
   indexed: boolean; hidden_reason: string | null; created_at: string; last_activity: string; name: string | null; comments: string
 }
 
-function summary(r: PostRow, who: string | null): ForumPostSummary {
+/** A text's translation when it was written in a language other than `lang`. */
+const other = (known: Map<string, Translation>, text: string, lang: ForumLang | undefined) => {
+  const t = known.get(text)
+  return t && lang && t.from !== lang ? t : null
+}
+
+function summary(r: PostRow, who: string | null, known: Map<string, Translation> = new Map(), lang?: ForumLang): ForumPostSummary {
+  const body = other(known, r.body, lang)
+  const title = other(known, r.title, lang)
   const p = {
     id: num(r.id), section: r.section as ForumSection, title: r.title, excerpt: plainText(r.body, 160),
     author: r.name ?? '', official: r.official, createdAt: num(r.created_at), lastActivity: num(r.last_activity),
     comments: num(r.comments), indexed: r.indexed, hidden: r.hidden_reason, mine: who !== null && r.author === who,
   }
-  return { ...p, indexable: postIndexable(p) }
+  const translated = body || title
+    ? { from: (body ?? title)!.from, title: title?.text ?? r.title, excerpt: body ? plainText(body.text, 160) : p.excerpt }
+    : null
+  return { ...p, indexable: postIndexable(p), translated }
 }
 
 // A post with its author's name and the count of comments everyone sees. Hidden posts and comments are seen
@@ -85,7 +99,9 @@ export async function forumList(store: Store, i: z.infer<typeof listInput>, now 
     [i.player, i.official, i.section ?? null, pinned?.id ?? 0, PAGE_SIZE - lead + 1, Math.max(0, (page - 1) * PAGE_SIZE - (pinned ? 1 : 0))],
   )
   const first = lead ? (await store.pool.query(`${POSTS} WHERE p.id = $1`, [pinned!.id])).rows : []
-  const posts = [...first, ...rows].map((r) => summary(r, i.player))
+  const all: PostRow[] = [...first, ...rows]
+  const known = i.lang ? await translationsOf(store, all.flatMap((r) => [r.title, r.body]), i.lang) : new Map<string, Translation>()
+  const posts = all.map((r) => summary(r, i.player, known, i.lang))
   return { posts: posts.slice(0, PAGE_SIZE), more: posts.length > PAGE_SIZE, viewer: { signedIn: i.player !== null, official: i.official } }
 }
 
@@ -98,11 +114,19 @@ export async function forumPost(store: Store, i: z.infer<typeof postInput>): Pro
       WHERE c.post_id = $3 AND (c.hidden_reason IS NULL OR $2::boolean OR c.author = $1) ORDER BY c.created_at, c.id`,
     [i.player, i.official, i.id],
   )
-  const thread: ForumComment[] = comments.map((c) => ({
-    id: num(c.id), author: c.name ?? '', official: c.official, body: c.body, createdAt: num(c.created_at),
-    hidden: c.hidden_reason, mine: i.player !== null && c.author === i.player,
-  }))
-  const post: ForumPost = { ...summary(rows[0], i.player), body: rows[0].body, thread }
+  const known = i.lang
+    ? await translationsOf(store, [rows[0].title, rows[0].body, ...comments.map((c) => c.body as string)], i.lang)
+    : new Map<string, Translation>()
+  const thread: ForumComment[] = comments.map((c) => {
+    const t = other(known, c.body, i.lang)
+    return {
+      id: num(c.id), author: c.name ?? '', official: c.official, body: c.body, createdAt: num(c.created_at),
+      hidden: c.hidden_reason, mine: i.player !== null && c.author === i.player, translated: t ? { from: t.from, body: t.text } : null,
+    }
+  })
+  const head = summary(rows[0], i.player, known, i.lang)
+  const body = other(known, rows[0].body, i.lang)
+  const post: ForumPost = { ...head, body: rows[0].body, thread, translated: head.translated && { ...head.translated, body: body?.text ?? rows[0].body } }
   return { post, viewer: { signedIn: i.player !== null, official: i.official } }
 }
 
@@ -124,6 +148,10 @@ export async function forumCreate(store: Store, i: z.infer<typeof createInput>, 
       [i.section, i.player, i.official, i.title, i.body, now],
     )
     return { id: num(rows[0].id), title: i.title }
+  }).then((made) => {
+    // Translated now, so readers of the other language find it ready.
+    translateForAll(store, [i.title, i.body])
+    return made
   })
 }
 
@@ -139,6 +167,9 @@ export async function forumComment(store: Store, i: z.infer<typeof commentInput>
     )
     await c.query('UPDATE forum_posts SET last_activity = $2 WHERE id = $1', [i.post, now])
     return { id: num(made[0].id) }
+  }).then((made) => {
+    translateForAll(store, [i.body])
+    return made
   })
 }
 

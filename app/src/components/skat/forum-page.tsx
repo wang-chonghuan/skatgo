@@ -102,8 +102,9 @@ export function ForumPage() {
 function PostCard({ post }: { post: ForumPostSummary }) {
   return (
     <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} {...stylex.props(styles.card)}>
-      <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.optionDesc, styles.cardTitle)}>{post.title}</Link>
-      {post.excerpt ? <p data-testid="forum-excerpt" {...stylex.props(typography.bodySmall, styles.excerpt)}>{post.excerpt}</p> : null}
+      {/* In the reader's language (SKATGO-124); the original is one tap away on the post's page. */}
+      <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.optionDesc, styles.cardTitle)}>{post.translated?.title ?? post.title}</Link>
+      {post.excerpt ? <p data-testid="forum-excerpt" {...stylex.props(typography.bodySmall, styles.excerpt)}>{post.translated?.excerpt ?? post.excerpt}</p> : null}
       <Meta of={post} />
       {post.hidden !== null ? <p {...stylex.props(typography.small, styles.hidden)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
     </li>
@@ -253,6 +254,14 @@ export function ForumPostPage() {
     )
   }
   const { post, viewer } = data
+  return <Thread post={post} viewer={viewer} />
+}
+
+/** A post and its comments, each in the reader's language when written in another (SKATGO-124), with the way to the
+ *  text as written under it. */
+function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
+  const [original, setOriginal] = useState(false)
+  const shown = post.translated && !original ? post.translated : null
   return (
     <div {...stylex.props(styles.root)}>
       <article data-testid="forum-thread" data-post-id={post.id} data-indexable={post.indexable} {...stylex.props(styles.column)}>
@@ -262,10 +271,11 @@ export function ForumPostPage() {
         </nav>
         {/* The post in a card of its own, as each comment under it (the human: 「每一个帖子或回复，都放在卡片里」). */}
         <div data-testid="forum-post-card" {...stylex.props(styles.card, styles.postCard)}>
-          <h1 {...stylex.props(typography.landingHeading, styles.title)}>{post.title}</h1>
+          <h1 {...stylex.props(typography.landingHeading, styles.title)}>{shown?.title ?? post.title}</h1>
           <Meta of={post} />
           {post.hidden !== null ? <Panel tone="bad"><p data-testid="forum-hidden" {...stylex.props(typography.appText, styles.note)}>{m.forum_hidden_note({ reason: post.hidden })}</p></Panel> : null}
-          <ForumBody text={post.body} official={post.official} />
+          <ForumBody text={shown?.body ?? post.body} official={post.official} />
+          {post.translated ? <Translated original={original} onSwitch={() => setOriginal(!original)} /> : null}
           <Actions viewer={viewer} post={post} />
         </div>
         <section aria-labelledby="forum-comments" {...stylex.props(styles.comments)}>
@@ -273,20 +283,40 @@ export function ForumPostPage() {
           {post.thread.length === 0 ? <p {...stylex.props(typography.appText, styles.quiet)}>{m.forum_no_comments()}</p> : null}
           {post.thread.length ? (
             <ol {...stylex.props(styles.list)}>
-              {post.thread.map((c) => (
-                <li key={c.id} data-testid="forum-comment" data-comment-id={c.id} {...stylex.props(styles.card)}>
-                  <Meta of={c} />
-                  {c.hidden !== null ? <p {...stylex.props(typography.small, styles.hidden)}>{m.forum_hidden_note({ reason: c.hidden })}</p> : null}
-                  <ForumBody text={c.body} official={c.official} />
-                  <Actions viewer={viewer} post={post} comment={c} />
-                </li>
-              ))}
+              {post.thread.map((c) => <CommentCard key={c.id} comment={c} post={post} viewer={viewer} />)}
             </ol>
           ) : null}
           <CommentBox viewer={viewer} post={post} />
         </section>
       </article>
     </div>
+  )
+}
+
+/** A comment, in the reader's language when written in another, the text as written one tap away. */
+function CommentCard({ comment: c, post, viewer }: { comment: ForumComment; post: ForumPost; viewer: ForumViewer }) {
+  const [original, setOriginal] = useState(false)
+  return (
+    <li data-testid="forum-comment" data-comment-id={c.id} {...stylex.props(styles.card)}>
+      <Meta of={c} />
+      {c.hidden !== null ? <p {...stylex.props(typography.small, styles.hidden)}>{m.forum_hidden_note({ reason: c.hidden })}</p> : null}
+      <ForumBody text={c.translated && !original ? c.translated.body : c.body} official={c.official} />
+      {c.translated ? <Translated original={original} onSwitch={() => setOriginal(!original)} /> : null}
+      <Actions viewer={viewer} post={post} comment={c} />
+    </li>
+  )
+}
+
+/** That a text is the machine's translation, and a very small link-like button to the text as written and back (the
+ *  human: 「用户可以点击查看原文，有个非常小的链接式的小按钮」). */
+function Translated({ original, onSwitch }: { original: boolean; onSwitch: () => void }) {
+  return (
+    <p data-testid="forum-translated" {...stylex.props(typography.micro, styles.translated)}>
+      {original ? null : <span>{m.forum_translated()}</span>}
+      <button type="button" data-testid="forum-original" onClick={onSwitch} {...stylex.props(typography.micro, styles.originalBtn)}>
+        {original ? m.forum_show_translation() : m.forum_show_original()}
+      </button>
+    </p>
   )
 }
 
@@ -415,6 +445,21 @@ function CommentBox({ viewer, post }: { viewer: ForumViewer; post: ForumPost }) 
 }
 
 const styles = stylex.create({
+  // The small line under a translated text: quiet words, the button a small link.
+  translated: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: space.x8, margin: 0, color: color.slate },
+  originalBtn: {
+    margin: 0,
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: color.info,
+    textDecoration: { default: 'underline', ':hover': 'none' },
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
   root: { display: 'flex', flexDirection: 'column' },
   column: {
     display: 'flex',

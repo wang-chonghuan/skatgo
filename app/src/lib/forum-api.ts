@@ -3,6 +3,7 @@ import { getRequest, setResponseHeader } from '@tanstack/react-start/server'
 
 import type { ForumAnnouncement, ForumList, ForumReport, ForumSection, ForumThread } from './forum'
 import { askForum } from './forum-handler'
+import { getLocale } from '~/paraglide/runtime'
 
 // The forum's calls (SKATGO-118). The pages' reads run in their routes' loaders: on the server they ask the
 // forum directly, as the request's viewer, so its lists and posts are in the HTML; in the browser they go
@@ -47,8 +48,9 @@ const read = createIsomorphicFn()
   })
   .client((op: 'list' | 'post' | 'latest', payload: object): Promise<ForumAnswer<unknown>> => viaApi(op, payload))
 
-export const readForumList = (input: { section?: ForumSection; page?: number }) => read('list', input) as Promise<ForumAnswer<ForumList>>
-export const readForumPost = (id: number) => read('post', { id }) as Promise<ForumAnswer<ForumThread>>
+// Read in the page's language: what is written in the other comes translated (SKATGO-124).
+export const readForumList = (input: { section?: ForumSection; page?: number }) => read('list', { ...input, lang: getLocale() }) as Promise<ForumAnswer<ForumList>>
+export const readForumPost = (id: number) => read('post', { id, lang: getLocale() }) as Promise<ForumAnswer<ForumThread>>
 
 /** The newest announcement of the last two weeks, or null — also when the forum does not answer: the line
  *  simply is not there. */

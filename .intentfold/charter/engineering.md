@@ -62,6 +62,12 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   rules both sides share — sections, limits, what may be indexed, the text's marks, the address — are
   `app/src/lib/forum.ts`. Only names leave the service: an author stands under their leaderboard name
   (`nameOf` in `src/daily.ts`), and whether something is the viewer's travels as `mine`. Nothing notifies anyone.
+  What people write comes in the reader's language (SKATGO-124): list and post take the page's `lang`, and each text
+  written in another carries `translated`. `multiplayer/src/translate.ts` keeps one table, `translations` (a text's
+  sha256, the language, the language it was written in, the text in that language), for any text anywhere; what is
+  missing is translated in the background, one at a time, by the site's model (`gpt-5.6-luna`, effort low, through
+  the service's `LLM_BASE_URL` / `LLM_API_KEY`), a new post or comment as it is written. A page never waits for the
+  model, and without the keys nothing is translated.
 - **The tournament's computers play their cards with SkatZero** (SKATGO-38): nine pinned ONNX models
   from github.com/Jimboom7/SkatZero `1fe5cab` (MIT), committed under `multiplayer/skatzero/` with a
   hash manifest and run by `onnxruntime-node` (exact version, human-approved 2026-10-02) — in

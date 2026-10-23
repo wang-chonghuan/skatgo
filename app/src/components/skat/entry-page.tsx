@@ -214,8 +214,8 @@ const styles = stylex.create({
     position: 'relative',
     display: 'flex',
     flexDirection: 'column',
-    // On a phone a tile is as tall as its title (SKATGO-120: the four come into sight sooner).
-    minHeight: { default: dims.tileHeight, [bp.phone]: 'auto' },
+    // As tall as its title, no more; the cards' art is cropped at its edge (SKATGO-120, the human: 「包裹着文字就行了，
+    // 禁止大片空白，牌的背景还保留，但是可以剪裁」).
     boxSizing: 'border-box',
     padding: space.x27,
     overflow: 'hidden',

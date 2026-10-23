@@ -239,9 +239,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     its one green landing action (play today's deals) and beside it a white `quiet` one, "Skat-Aufgaben
     lösen" / "Solve Skat puzzles", to the open-card endgames (SKATGO-109); a quiet ✓ line of what a first visitor wants to
     know; and the human's illustration (SKATGO-33) — not on a phone, where it is neither drawn nor fetched so the four tiles come sooner (SKATGO-120, the human: 「手机版不要显示那个图片了，占用空间，要让用户快点看到四个功能卡」). Never on felt (Redline 4);
-  - the sections as colour tiles, each with its card art and a `quiet` button: the course, free play,
-    the tricks ("Skat-Tricks", `tileNavy`, SKATGO-82; it held the puzzles' "coming soon" before; its words and
-    button, "Jetzt üben", lead to the exercises, SKATGO-105) and a private table (`tileRed`);
+  - the sections as colour tiles, each one link with only a title that says where it goes — no text, no button
+    (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」) — as tall as its title, its
+    card art kept and cropped at the edge (「包裹着文字就行了，禁止大片空白，牌的背景还保留，但是可以剪裁」), rising on
+    hover: "Skat lernen in 11 Lektionen" (the course), "Skat gegen die KI spielen" (free play), "Mit Skat-Aufgaben
+    üben" (the exercises, `tileNavy`) and "Skat mit Freunden spielen" (a private table, `tileRed`);
   - plain links to the rules and the course, and the questions people ask.
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
   the short rules, the daily tournament, the Skat-Tricks' page and their article, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
@@ -261,8 +263,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   with a caption naming what is where (the human: 「不要占空间太大，主要是让读者产生直觉」) — the twelve rules
   numbered, each a line of text, the ones that name points or an order with that row of cards under them
   (`CardRowView`, the points as captions), then a `tip` panel with the `go` button to free play, and links
-  to the course and the rules. Its ways in: an option card under the course's lead, ahead of the progress
-  card; on the front page a second `quiet` button, "5-Minuten-Crashkurs" — a crash course, never read as a quick game or a summary (the human: 「其实就是5分钟速成的意思」) — beside the course tile's own, always, whether or not a lesson was taken (the human: 「看起来不够明显」; SKATGO-92: 「必须还放在学习卡上」); and a link under the rules' lead. Not in the header. The Skat-Tricks' page (`tricks-page.tsx`,
+  to the course and the rules. Its one way in: a `quiet` button under the rules' lead, "Neu beim Skat? Der
+  5-Minuten-Crashkurs" — nowhere else, neither the front page nor the course (SKATGO-120, the human: 「5分钟的按钮，
+  放到规则页面的一个按钮中，其他地方别放了」). The Skat-Tricks' page (`tricks-page.tsx`,
   SKATGO-103) is its H1 and lead, then every kind of exercise as an option card, numbered, each a `<details>`
   closed at first (one named in the address, as the front page's "Skat-Aufgaben lösen" names the first, opens by
   itself and stops under the header): first the open-card endgames (SKATGO-119, the human: 「这个要可折叠，像其他题

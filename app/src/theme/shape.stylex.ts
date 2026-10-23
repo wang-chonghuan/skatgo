@@ -59,7 +59,6 @@ export const dims = stylex.defineVars({
   /** The hero's picture (app/public/hero-table.webp, the human's illustration, 1448×1086, SKATGO-33): its
    *  box keeps these proportions at every width, so the whole picture shows, never cropped. */
   heroArtRatio: '1448 / 1086',
-  tileHeight: '223px',
 
   // Sub-page
   pageColumn: '1287px',

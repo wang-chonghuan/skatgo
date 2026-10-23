@@ -114,7 +114,7 @@ words — the human: 「文章要写得深入浅出，让用户能看懂，别�
 Articles, nowhere else on the site (SKATGO-120, the human: 「移除这个文章在app里的所有其他引用的，就放论坛里」). The
 first, twelve tricks for bidding, playing alone and defending, written for the search "Skat Tricks", is one
 post, in English, read in German as its translation (SKATGO-124, the human: 「12 个 Skat 技巧会出现两次。保留英文版」;
-the German post is hidden), each trick linking to the exercises that practise it; its old address,
+the German post deleted, SKATGO-125: 「你彻底删掉」), each trick linking to the exercises that practise it; its old address,
 `/skat-tricks/12-tricks`, and the German post's lead to it. SkatGo's announcement is in English too, its German the
 translation, made ahead (「公告也保留英文版，德语用翻译的，但是提前做好」). A later article is another post,
 for its own search term. The articles are for search engines (the human, SKATGO-105: 「只用于seo」): the

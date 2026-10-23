@@ -46,7 +46,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   (`daily_players`, SKATGO-90) is what a newly finished entry is written with: the last name the player
   set before, or one given at the first finish under an advisory lock, so no two players are given the
   same; a sign-in carries a device's name to an account without one. The leader names entries finished
-  before without a name when it starts. Changing the name rewrites only today's finished entries. A route that is sent a size
+  before without a name when it starts. An account sets its name from the settings (`/daily/name`, read with `/daily/nick`; SKATGO-126), and every board shows
+  each entry under its player's name now, the name written with the entry only when there is none. A route that is sent a size
   refuses it (400). The leaderboard is computed from those rows on request, ranked by the
   entry's Seeger-Fabian total (`daily_entries.total`, SKATGO-81), ties to the earlier finish, with the
   AI's total from the player's seat beside it, from the deals' stored `benchmark` (SKATGO-80). The

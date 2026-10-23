@@ -31,9 +31,12 @@ leaderboard per day, which can be looked at for seven days, today's included (SK
 its board at once, with nothing to fill in (SKATGO-90, the human: 「让用户填名字，太麻烦了」), under the player's
 name: the one they set before, or a name of two friendly German words given at random — never the
 email address, never words of cards, a number only when every name without one is taken; the same
-device, or the same account, keeps its name. A player may change it, for today's entries and from now
-on, to a name no other player holds. A name already on a board is never changed (the human's red line:
-「禁止改变任何已经有的用户的名字……这是绝对红线」). The AI stands on it too, for
+device, or the same account, keeps its name. An account sets its nickname in the settings, to a name no other
+player holds, and it shows everywhere at once — on every day's board, earlier days' included, the Elo board and the
+forum (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行榜就用这个昵称，改一次，整体都改」); the board
+itself offers no renaming (「禁止改名了」). The system never changes a player's name (the human's red line:
+「禁止改变任何已经有的用户的名字……这是绝对红线」). A name cannot be hidden from the boards: the name is the
+player's own choice, the default one says nothing about who plays (SKATGO-126). The AI stands on it too, for
 everyone, today's board included: its total over the tournament from the player's seat, among the
 players', after any player with the same, taking no rank — its total only, never a deal (SKATGO-80, the
 human: 「都显示，只在leader board上显示总成绩即可」). There is no other measure on the daily board (SKATGO-81, the

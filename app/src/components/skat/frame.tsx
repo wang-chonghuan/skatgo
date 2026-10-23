@@ -10,6 +10,9 @@ import { CARD_BACKS, DEFAULT_BACK, backSrc, isCardBack } from '~/lib/skat/backs'
 import { type Deck, useSettings } from '~/lib/skat/settings'
 import { m } from '~/paraglide/messages'
 import { carryGame } from '~/lib/free-api'
+import { dailyName, dailyNick, isError } from '~/lib/daily-api'
+import { track } from '~/lib/analytics'
+import { useAccount } from '~/lib/use-account'
 import { type Locale, getLocale, locales, setLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -20,7 +23,7 @@ import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { FlagDE, FlagEN } from '../../theme/flags'
 import { typography } from '../../theme/type'
-import { Btn, suitText } from './ui'
+import { Btn, TextField, suitText } from './ui'
 
 // The frame pieces of the lobby design (SKATGO-26, reference.md): the public site's white header over
 // every page but the tables (SKATGO-43, SKATGO-47), with the language menu, the deck settings and the account. Navigation
@@ -202,6 +205,50 @@ export function SettingsButton() {
   )
 }
 
+/** The account's nickname, first in the settings (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行
+ *  榜就用这个昵称，改一次，整体都改」): the name every board, the Elo board and the forum show. Nothing for a guest. */
+function Nickname() {
+  const account = useAccount()
+  const [value, setValue] = useState('')
+  const [saved, setSaved] = useState<string | null>(null)
+  const [problem, setProblem] = useState<'refused' | 'taken' | null>(null)
+  const [saving, setSaving] = useState(false)
+  useEffect(() => {
+    if (!account) return
+    void dailyNick().then((r) => {
+      if (isError(r)) return
+      setValue(r.nickname ?? '')
+      setSaved(r.nickname)
+    })
+  }, [account])
+  if (!account) return null
+  async function save() {
+    setSaving(true)
+    const r = await dailyName(value)
+    setSaving(false)
+    if (isError(r)) return setProblem(r.error === 'nickname_taken' ? 'taken' : 'refused')
+    track('daily_nickname_set')
+    setProblem(null)
+    setValue(r.nickname)
+    setSaved(r.nickname)
+  }
+  const unchanged = value.trim() === '' || value.trim() === saved
+  return (
+    <section data-testid="settings-nickname" {...stylex.props(styles.section)}>
+      <label htmlFor="settings-nickname" {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_nickname()}</label>
+      <div {...stylex.props(styles.nickRow)}>
+        <TextField id="settings-nickname" testId="settings-nickname-field" autoComplete="nickname" value={value} invalid={problem !== null} onChange={(v) => { setValue(v); setProblem(null) }} onEnter={() => { if (!saving && !unchanged) void save() }} />
+        <Btn testId="settings-nickname-save" size="sm" disabled={saving || unchanged} onClick={() => void save()}>{m.daily_nick_save()}</Btn>
+      </div>
+      {problem ? (
+        <p data-testid="settings-nickname-refused" data-problem={problem} role="alert" {...stylex.props(typography.small, styles.refused)}>
+          {problem === 'taken' ? m.daily_nick_taken() : m.daily_nick_refused()}
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
 /** The settings (SKATGO-66, SKATGO-75): the deck, how a finished trick goes, and the language. A choice
  *  applies at once — the language reloads the page in it, as the header's menu does, so both always show
  *  the same one. While it is open the page behind it neither scrolls nor takes a touch: the dialog lies
@@ -242,6 +289,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             <X size={icon.menu} strokeWidth={icon.outline} />
           </button>
         </div>
+        <Nickname />
         <section {...stylex.props(styles.section)}>
           <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_title()}</h3>
           <div role="radiogroup" aria-label={m.settings_title()} {...stylex.props(styles.decks)}>
@@ -455,6 +503,8 @@ const styles = stylex.create({
   },
   decks: { display: 'flex', flexDirection: 'column', gap: space.x10 },
   section: { display: 'flex', flexDirection: 'column', gap: space.x8 },
+  nickRow: { display: 'flex', alignItems: 'center', gap: space.x8 },
+  refused: { margin: 0, color: color.bad },
   sectionTitle: { margin: 0, color: color.slate, textTransform: 'uppercase' },
   deck: {
     display: 'flex',

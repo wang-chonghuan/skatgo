@@ -2,10 +2,10 @@ import * as stylex from '@stylexjs/stylex'
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { track } from '~/lib/analytics'
-import { type DailyError, dailyAct, dailyBoard, dailyName, dailyState, isError } from '~/lib/daily-api'
+import { type DailyError, dailyAct, dailyBoard, dailyState, isError } from '~/lib/daily-api'
 import { useAccount } from '~/lib/use-account'
 import type { Move } from '~/lib/skat/game'
 import { BOARD_DAYS, type BoardRow, DAILY_DEALS, DAILY_TIME_ZONE, type DailyBoard, type DailyReply, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
@@ -18,7 +18,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { DayDeals, VsAiTable, Who } from './daily-comparison'
 import { BOT_DELAY, GameTable } from './game-table'
-import { Btn, Panel, TextField, linkLook } from './ui'
+import { Btn, Panel, linkLook } from './ui'
 import { TableLoading } from './table-loading'
 
 // The daily tournament in the browser (SKATGO-35, SKATGO-36): the button on /daily that starts or
@@ -53,7 +53,6 @@ export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
   }
   if (!status) return waiting ?? null
   if ('error' in status) return <p data-testid="daily-unavailable" {...stylex.props(typography.appText, styles.text)}>{m.daily_unavailable()}</p>
-  const today = boards[0] && !isError(boards[0]) ? boards[0] : null
   return (
     <div {...stylex.props(styles.stack)}>
       {status.finished ? (
@@ -84,7 +83,6 @@ export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
         back={back}
         board={boards[back] ?? null}
         onShow={show}
-        name={status.finished && today ? <Nickname key={today.me?.nickname ?? ''} board={today} onNamed={() => loadBoard(0)} /> : null}
       />
     </div>
   )
@@ -108,7 +106,7 @@ function dayName(back: number, day: string | undefined): string {
  *  7天的」). The AI stands among the players by its total, after any player with the same, taking no rank
  *  (SKATGO-80); when it falls below the rows shown it follows them, with the player's own row. With nobody
  *  on the board yet it stands there alone, under the line that says so. */
-function Leaderboard({ back, board, onShow, name }: { back: number; board: DailyBoard | DailyError | null; onShow: (back: number) => void; name?: ReactNode }) {
+function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard | DailyError | null; onShow: (back: number) => void }) {
   const shown = board && !isError(board) ? board : null
   const rows = shown?.rows ?? []
   const ai = shown?.ai?.total ?? null
@@ -121,9 +119,6 @@ function Leaderboard({ back, board, onShow, name }: { back: number; board: Daily
   return (
     <Panel>
       <section data-testid="daily-board" data-day={shown?.day} {...stylex.props(styles.result)}>
-        {/* The player's name and the way to change it, the board's first line (SKATGO-97, the human: 「名字和改名字的那一行，
-            放到排行榜第一行」). */}
-        {name}
         <div {...stylex.props(styles.boardHead)}>
           <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_board_title()}</h2>
           <span data-testid="daily-board-day" data-back={back} {...stylex.props(typography.toggle, styles.text, styles.what)}>{dayName(back, shown?.day)}</span>
@@ -180,51 +175,6 @@ function Leaderboard({ back, board, onShow, name }: { back: number; board: Daily
         )}
       </section>
     </Panel>
-  )
-}
-
-/** The player's name on the board (SKATGO-90): given when the tournament finished — nothing to fill in —
- *  shown, and changed in place. A change holds from now on and for today's entries, never an earlier day's. */
-function Nickname({ board, onNamed }: { board: DailyBoard; onNamed: () => void }) {
-  const me = board.me
-  const [editing, setEditing] = useState(false)
-  const [value, setValue] = useState(me?.nickname ?? '')
-  const [problem, setProblem] = useState<'refused' | 'taken' | null>(null)
-  const [saving, setSaving] = useState(false)
-  const id = useId()
-  if (!me?.finished || !me.nickname) return null
-  async function save() {
-    setSaving(true)
-    const r = await dailyName(value)
-    setSaving(false)
-    if (isError(r)) return setProblem(r.error === 'nickname_taken' ? 'taken' : 'refused')
-    track('daily_nickname_set')
-    setProblem(null)
-    setEditing(false)
-    onNamed()
-  }
-  if (!editing) {
-    return (
-      <div data-testid="daily-nickname-set" data-name={me.nickname} {...stylex.props(styles.nickRow)}>
-        <p {...stylex.props(typography.appText, styles.text, styles.what)}>{m.daily_nick_on({ name: me.nickname })}</p>
-        {/* Green, or it is not seen (SKATGO-97, the human: 「改名字change的按钮改为绿色，否则太不明显」). */}
-        <Btn testId="daily-nickname-change" tone="go" size="sm" onClick={() => setEditing(true)}>{m.daily_nick_change()}</Btn>
-      </div>
-    )
-  }
-  return (
-    <div {...stylex.props(styles.nickForm)}>
-      <label htmlFor={id} {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_nick_label()}</label>
-      <div {...stylex.props(styles.nickRow)}>
-        <TextField id={id} testId="daily-nickname" autoComplete="nickname" value={value} invalid={problem !== null} onChange={setValue} onEnter={() => { if (!saving) void save() }} />
-        <Btn testId="daily-nickname-save" disabled={saving || value.trim() === ''} onClick={() => void save()}>{m.daily_nick_save()}</Btn>
-      </div>
-      {problem ? (
-        <p data-testid="daily-nickname-refused" data-problem={problem} role="alert" {...stylex.props(typography.appText, styles.refused)}>
-          {problem === 'taken' ? m.daily_nick_taken() : m.daily_nick_refused()}
-        </p>
-      ) : null}
-    </div>
   )
 }
 
@@ -375,9 +325,6 @@ const styles = stylex.create({
   boardRow: { paddingInline: space.x8 },
   mine: { backgroundColor: color.goodSoft, borderRadius: radii.column },
   gap: { marginTop: space.x16 },
-  nickForm: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x8 },
-  nickRow: { display: 'flex', alignItems: 'center', gap: space.x10, flexWrap: 'wrap' },
-  refused: { margin: 0, color: color.bad },
   result: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   rows: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
   row: {

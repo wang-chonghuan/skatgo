@@ -34,7 +34,10 @@ for (const path of pages) {
   await page.goto(`${base}/${locale}`, { waitUntil: 'networkidle' })
   await page.evaluate(
     ({ h1, site }) => {
-      const art = document.querySelector('[data-testid="entry-art"]').cloneNode(true)
+      // The human's illustration (SKATGO-33), from its file: the front page no longer shows it (SKATGO-120).
+      const art = document.createElement('div')
+      art.style.cssText = 'aspect-ratio:1448/1086;border-radius:28px;overflow:hidden;box-shadow:0 18px 44px rgba(2,38,87,0.18)'
+      art.innerHTML = '<img src="/hero-table.webp" alt="" style="display:block;width:100%;height:100%;object-fit:contain">'
       document.body.innerHTML = ''
       document.body.style.margin = '0'
       const frame = document.createElement('div')

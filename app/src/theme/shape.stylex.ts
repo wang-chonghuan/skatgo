@@ -56,9 +56,6 @@ export const dims = stylex.defineVars({
   // The front page's tiles and hero picture
   tileArtRight: '-18px',
   tileArtBottom: '-38px',
-  /** The hero's picture (app/public/hero-table.webp, the human's illustration, 1448×1086, SKATGO-33): its
-   *  box keeps these proportions at every width, so the whole picture shows, never cropped. */
-  heroArtRatio: '1448 / 1086',
 
   // Sub-page
   pageColumn: '1287px',
@@ -189,7 +186,6 @@ export const dims = stylex.defineVars({
    *  chevron. Every row is its own grid, so the columns line up only if none sizes to its content. */
   vsAiColumns: '3.5em minmax(0, 1fr) minmax(0, 1fr) 5em',
   /** The front page's hero: the headline two thirds, the picture one third (the human, SKATGO-29). */
-  heroColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
   contractColumns: 'repeat(6, 1fr)',
   contractColumnsPhone: 'repeat(3, 1fr)',
   /** The contracts in the pinned side panel (SKATGO-34): two by three, the panel is narrow. */

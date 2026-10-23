@@ -12,7 +12,6 @@ import { timing } from '../../theme/effects.stylex'
 import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
-import { phoneQuery } from '../../theme/constants'
 import { typography } from '../../theme/type'
 import { AnnouncementLine } from './forum-announcement'
 import { PlayingCard } from './playing-card'
@@ -21,7 +20,8 @@ import { linkLook } from './ui'
 
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
 // tournament as the headline and its one green call to action (the way into the course is the header's
-// and the course tile's — the human, 2026-10-01), a picture, and a strip of facts — then the two other ways into Skat as the app's colour tiles, one suit
+// and the course tile's — the human, 2026-10-01) and a strip of facts, set in the middle with no picture beside it
+// (SKATGO-120, the human: 「pc上我也不想要那个图片了」) — then the two other ways into Skat as the app's colour tiles, one suit
 // each (♣ the course, ♠ free play, ♥ a private table with friends — SKATGO-61), and the questions people ask (SKATGO-29). The hero's copy leads the
 // tournament itself (the human, 2026-09-30: 「文案先行」).
 //
@@ -35,7 +35,9 @@ export function EntryPage() {
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.heroText)}>
-          <AnnouncementLine announcement={announcement} />
+          <div {...stylex.props(styles.news)}>
+            <AnnouncementLine announcement={announcement} />
+          </div>
           <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
           <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
           <div {...stylex.props(styles.cta)}>
@@ -60,7 +62,6 @@ export function EntryPage() {
             </ul>
           </div>
         </div>
-        <HeroArt />
       </section>
 
       {/* The four ways in, each a tile that is its own link with a title that says where it goes, nothing else
@@ -113,19 +114,6 @@ const PRACTICE_ART = [card('D', 'A'), card('D', '10'), card('D', 'K')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
 /** The hero's picture: three players at a club-shaped table (the human's illustration, SKATGO-33), shown whole. */
-/** Not on a phone (SKATGO-120, the human: 「手机版不要显示那个图片了，占用空间，要让用户快点看到四个功能卡」): the box is
- *  not drawn there, and the phone's source is empty, so the picture is not fetched either. */
-function HeroArt() {
-  return (
-    <div data-testid="entry-art" {...stylex.props(styles.heroArt)}>
-      <picture>
-        <source media={phoneQuery} srcSet="data:," />
-        <img src="/hero-table.webp" alt={m.entry_art_alt()} {...stylex.props(styles.heroImage)} />
-      </picture>
-    </div>
-  )
-}
-
 /** A tile's face: three of skatgo's cards in the corner under the tile's colour, and its title at the top left. */
 function Face({ art, title }: { art: Card[]; title: string }) {
   return (
@@ -173,38 +161,35 @@ const styles = stylex.create({
     paddingBottom: space.x72,
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
-  hero: {
-    display: 'grid',
-    gridTemplateColumns: { default: dims.heroColumns, [bp.hero]: dims.oneColumn },
-    // The headline's first line starts level with the top of the picture (SKATGO-29).
-    alignItems: 'start',
-    gap: { default: space.x32, [bp.phone]: space.x24 },
+  // Type alone, in the middle, with room above it; on a phone it keeps to the left edge as the rest of the page
+  // (SKATGO-120).
+  hero: { display: 'flex', flexDirection: 'column', paddingTop: { default: space.x48, [bp.phone]: 0 } },
+  heroText: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: { default: 'center', [bp.phone]: 'flex-start' },
+    textAlign: { default: 'center', [bp.phone]: 'start' },
+    minWidth: 0,
+    gap: { default: space.x24, [bp.phone]: space.x16 },
   },
-  heroText: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0, gap: { default: space.x24, [bp.phone]: space.x16 } },
+  news: { display: 'flex', justifyContent: { default: 'center', [bp.phone]: 'flex-start' } },
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
-  lead: { margin: 0, color: color.slate },
-  heroArt: {
-    display: { default: 'block', [bp.phone]: 'none' },
-    aspectRatio: dims.heroArtRatio,
-    borderRadius: radii.tile,
-    boxShadow: elev.eventCard,
-    overflow: 'hidden',
-  },
-  // The whole screenshot, never cropped: the box has its proportions.
-  heroImage: { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
+  lead: { margin: 0, maxWidth: dims.readingColumn, color: color.slate, textWrap: 'balance' },
   // The facts under the call to action: one quiet line that wraps on a phone.
-  points: { display: 'flex', flexWrap: 'wrap', columnGap: space.x16, rowGap: space.x4, margin: 0, padding: 0, listStyleType: 'none' },
+  points: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, columnGap: space.x16, rowGap: space.x4, margin: 0, padding: 0, listStyleType: 'none' },
   point: { display: 'inline-flex', gap: space.x6, margin: 0, color: color.slate },
   check: { color: color.go },
 
   // The call to action with its facts right under it.
-  cta: { display: 'flex', flexDirection: 'column', gap: space.x12 },
-  actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
+  cta: { display: 'flex', flexDirection: 'column', alignItems: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12 },
+  actions: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12 },
   // The two ways in, side by side; stacked on a phone.
   ways: {
     display: 'grid',
-    gridTemplateColumns: { default: dims.twoColumns, [bp.phone]: dims.oneColumn },
+    // Two by two, each title on one line clear of its cards (four in a row crowded the titles onto the art,
+    // SKATGO-120); below the width where that holds, one above the other, as the course's cards.
+    gridTemplateColumns: { default: dims.twoColumns, [bp.cards]: dims.oneColumn },
     columnGap: space.x15,
     rowGap: space.x15,
   },

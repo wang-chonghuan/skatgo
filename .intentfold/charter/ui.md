@@ -238,11 +238,16 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (`landingHeroLead`) in navy;
     its one green landing action (play today's deals) and beside it a white `quiet` one, "Skat-Aufgaben
     lösen" / "Solve Skat puzzles", to the open-card endgames (SKATGO-109); a quiet ✓ line of what a first visitor wants to
-    know; and the human's illustration (SKATGO-33) — not on a phone, where it is neither drawn nor fetched so the four tiles come sooner (SKATGO-120, the human: 「手机版不要显示那个图片了，占用空间，要让用户快点看到四个功能卡」). Never on felt (Redline 4);
+    know. No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
+    设计审美来做好没有这个图片后的布局」): the hero is type alone, centred under room of its own (`space.x48`) — the
+    announcement line, the headline, the lead within the reading column, balanced, the two buttons and the ✓ line
+    — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
+    on felt (Redline 4);
   - the sections as colour tiles, each one link with only a title that says where it goes — no text, no button
     (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」) — as tall as its title, its
     card art kept and cropped at the edge (「包裹着文字就行了，禁止大片空白，牌的背景还保留，但是可以剪裁」), rising on
-    hover: "Skat lernen in 11 Lektionen" (the course), "Skat gegen die KI spielen" (free play), "Mit Skat-Aufgaben
+    hover, two by two and one above the other below `bp.cards` so a title never runs onto its cards:
+    "Skat lernen in 11 Lektionen" (the course), "Skat gegen die KI spielen" (free play), "Mit Skat-Aufgaben
     üben" (the exercises, `tileNavy`) and "Skat mit Freunden spielen" (a private table, `tileRed`);
   - plain links to the rules and the course, and the questions people ask.
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,

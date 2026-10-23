@@ -35,9 +35,12 @@ export function EntryPage() {
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.heroText)}>
-          <div {...stylex.props(styles.news)}>
-            <AnnouncementLine announcement={announcement} />
-          </div>
+          {/* Only when there is one: an empty line would still take a gap above the headline. */}
+          {announcement ? (
+            <div {...stylex.props(styles.news)}>
+              <AnnouncementLine announcement={announcement} />
+            </div>
+          ) : null}
           <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
           <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
           <div {...stylex.props(styles.cta)}>
@@ -161,9 +164,10 @@ const styles = stylex.create({
     paddingBottom: space.x72,
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
-  // Type alone, in the middle, with room above it; on a phone it keeps to the left edge as the rest of the page
-  // (SKATGO-120).
-  hero: { display: 'flex', flexDirection: 'column', paddingTop: { default: space.x48, [bp.phone]: 0 } },
+  // Type alone, in the middle; on a phone it keeps to the left edge as the rest of the page (SKATGO-120). Above
+  // the headline, with the page's own top, the same 48px that parts the hero from the tiles: one rhythm, no more
+  // (the human: 「这句话上方的空白太多……缩小它」).
+  hero: { display: 'flex', flexDirection: 'column', paddingTop: { default: space.x16, [bp.phone]: 0 } },
   heroText: {
     display: 'flex',
     flexDirection: 'column',

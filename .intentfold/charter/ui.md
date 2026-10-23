@@ -245,11 +245,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     balanced, the two buttons and the ✓ line — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
     on felt (Redline 4). With the tournament's Elo board beside it (SKATGO-123, the human: 「hero区域在pc上就是左右两栏的
     布局了」) the hero is two equal columns (`dims.twoColumns`), the type on the left and kept to the left, the board
-    on the right, the two centred on each other; under `bp.cards` one column, the board under the type. The board
-    (`elo-board.tsx`) is a white panel like the daily board: its title (`dialogTitle`), one line saying how it is
-    counted, the ten highest players — rank, name, number, a slate "?" when provisional — with the AI's row (its blue
-    tag, no rank) standing among them by its number, and a fold, "So wird gerechnet", with the rule's numbers. On a
-    phone it is folded behind one line, its title and the leader, that a tap opens (「手机上可能要折叠一下排名榜」).
+    on the right, both from the top; under `bp.cards` one column, the board under the type. The board
+    (`elo-board.tsx`) is a white panel like the daily board, kept short so a laptop's first screen still shows the
+    tiles (SKATGO-120: 「要让用户快点看到四个功能卡」): its title (`dialogTitle`), the ten highest players — rank, name,
+    number, a slate "?" when provisional — with the AI's row (its blue tag, no rank) standing among them by its
+    number, one quiet line saying what "?" means, and a fold, "So wird gerechnet", with the rule in words and
+    numbers. On a phone it is folded behind one line, its title and the leader, that a tap opens
+    (「手机上可能要折叠一下排名榜」).
     Without a board the hero stays as above, centred;
   - the sections as colour tiles, each one link with only a title that says where it goes — no text, no button
     (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」) — as tall as its title, its

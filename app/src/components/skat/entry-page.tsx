@@ -183,7 +183,8 @@ const styles = stylex.create({
   heroBeside: {
     display: 'grid',
     gridTemplateColumns: { default: dims.twoColumns, [bp.cards]: dims.oneColumn },
-    alignItems: 'center',
+    // The headline stays right under the header, as without the board; the room the board needs is below the type.
+    alignItems: 'start',
     columnGap: space.x48,
     rowGap: { default: space.x32, [bp.phone]: space.x24 },
   },

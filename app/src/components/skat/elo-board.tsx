@@ -18,9 +18,10 @@ type Line = { row: Board['rows'][number] } | { ki: number }
 /**
  * The tournament's Elo board in the front page's hero (SKATGO-123, the human: 「这个名单要显示出来，放到hero区域」):
  * the top players by their number, the KI's fixed number standing among them as on the daily board — after
- * any player with the same, taking no rank — and how it is counted, one line and a fold with the numbers, so a
- * visitor can follow it (「别人看了，觉得不离谱，觉得能理解」). On a phone it is folded behind one line with the
- * leader (「手机上可能要折叠一下排名榜」); a tap opens it.
+ * any player with the same, taking no rank — what a "?" means, and a fold saying how it is counted, so a
+ * visitor can follow it (「别人看了，觉得不离谱，觉得能理解」). Kept short, so the tiles under the hero still show on
+ * a laptop's first screen (SKATGO-120: 「要让用户快点看到四个功能卡」). On a phone it is folded behind one line with
+ * the leader (「手机上可能要折叠一下排名榜」); a tap opens it.
  */
 export function EloBoard({ board }: { board: Board }) {
   const [open, setOpen] = useState(false)
@@ -45,12 +46,7 @@ export function EloBoard({ board }: { board: Board }) {
           {open ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />}
         </button>
         <div id="elo-board-body" data-open={open ? 'true' : undefined} {...stylex.props(styles.body, !open && styles.folded)}>
-          <p {...stylex.props(typography.appText, styles.muted)}>{m.elo_lead()}</p>
-          <ol {...stylex.props(styles.rows)}>
-            <li aria-hidden="true" {...stylex.props(typography.micro, styles.headRow, styles.muted)}>
-              <span {...stylex.props(styles.what)} />
-              <span>{m.elo_column()}</span>
-            </li>
+          <ol aria-label={m.elo_column()} {...stylex.props(styles.rows)}>
             {lines.map((l) =>
               'ki' in l ? (
                 <li key="ki" data-testid="elo-board-ki" data-elo={l.ki} {...stylex.props(typography.appText, styles.row)}>
@@ -70,15 +66,21 @@ export function EloBoard({ board }: { board: Board }) {
               ),
             )}
           </ol>
+          {/* What the "?" means, where it is seen. */}
+          {board.rows.some((r) => r.provisional) ? (
+            <p data-testid="elo-board-legend" {...stylex.props(typography.micro, styles.muted)}>{m.elo_how_provisional({ n: ELO_PROVISIONAL_DAYS })}</p>
+          ) : null}
           <details data-testid="elo-board-how" {...stylex.props(styles.how)}>
             <summary {...stylex.props(typography.appLink, styles.summary)}>{m.elo_how()}</summary>
-            <ul {...stylex.props(typography.appText, styles.howList)}>
-              <li>{m.elo_how_win()}</li>
-              <li>{m.elo_how_start({ start: ELO_START, ki: board.ki })}</li>
-              <li>{m.elo_how_change({ first: eloK(0), after: eloK(30) })}</li>
-              <li>{m.elo_how_day()}</li>
-              <li>{m.elo_how_provisional({ n: ELO_PROVISIONAL_DAYS })}</li>
-            </ul>
+            <div {...stylex.props(typography.appText, styles.howText)}>
+              <p {...stylex.props(styles.howLead)}>{m.elo_lead()}</p>
+              <ul {...stylex.props(styles.howList)}>
+                <li>{m.elo_how_win()}</li>
+                <li>{m.elo_how_start({ start: ELO_START, ki: board.ki })}</li>
+                <li>{m.elo_how_change({ first: eloK(0), after: eloK(30) })}</li>
+                <li>{m.elo_how_day()}</li>
+              </ul>
+            </div>
           </details>
         </div>
       </section>
@@ -114,12 +116,11 @@ const styles = stylex.create({
   folded: { display: { default: 'flex', [bp.phone]: 'none' } },
   muted: { margin: 0, color: color.slate, flexShrink: 0 },
   rows: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
-  headRow: { display: 'flex', paddingInline: space.x8, paddingBottom: space.x4 },
   row: {
     display: 'flex',
     alignItems: 'baseline',
     gap: space.x12,
-    paddingBlock: space.x6,
+    paddingBlock: space.x4,
     paddingInline: space.x8,
     borderBottomWidth: border.hair,
     borderBottomStyle: 'solid',
@@ -131,5 +132,7 @@ const styles = stylex.create({
   score: { flexShrink: 0 },
   how: { color: color.text },
   summary: { color: color.info, cursor: 'pointer' },
-  howList: { display: 'flex', flexDirection: 'column', gap: space.x4, margin: 0, paddingTop: space.x8, paddingInlineStart: space.x20, color: color.text },
+  howText: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x8, color: color.text },
+  howLead: { margin: 0, color: color.text },
+  howList: { display: 'flex', flexDirection: 'column', gap: space.x4, margin: 0, paddingInlineStart: space.x20 },
 })

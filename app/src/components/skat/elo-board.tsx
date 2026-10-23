@@ -25,8 +25,8 @@ const slide = stylex.keyframes({ from: { transform: marqueeSlide.start }, to: { 
  * the top players by their number, the KI's fixed number standing among them as on the daily board — after
  * any player with the same, taking no rank. How it is counted, and what a "?" means, open from a circled
  * question mark beside the title, over the page (the human: 「how it counted用一个圆圈问号图标，放在 elo标题旁边，
- * 作为toast」). `fill`: as tall as where it sits, the list scrolling inside (「可以滚动，不要那么高」), its rows dense
- * and in two columns, first down the left (「A和B」). On a phone it is folded behind one line where the players run
+ * 作为toast」). `fill`: as tall as where it sits, the list scrolling inside (「可以滚动，不要那么高」), its rows close
+ * together and in two columns, first down the left (「A和B」), at the text's size (「我刚都没说让你改成14」). On a phone it is folded behind one line where the players run
  * slowly sideways, without end (「手机上可能要折叠一下排名榜」, 「横向持续缓慢滚动」); a tap opens it.
  */
 export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean }) {
@@ -122,13 +122,13 @@ export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean
 /** One row: a player's rank, name and number, or the AI's number by its blue tag. */
 function EloLine({ line: l }: { line: Line }) {
   return 'ki' in l ? (
-    <li data-testid="elo-board-ki" data-elo={l.ki} {...stylex.props(typography.boardDense, styles.row)}>
+    <li data-testid="elo-board-ki" data-elo={l.ki} {...stylex.props(typography.appText, styles.row)}>
       <span {...stylex.props(styles.rank)} />
       <span {...stylex.props(styles.what)}><Who side="ai" /></span>
       <span {...stylex.props(styles.score)}>{l.ki}</span>
     </li>
   ) : (
-    <li data-testid="elo-board-row" data-rank={l.row.rank} data-elo={l.row.elo} {...stylex.props(typography.boardDense, styles.row)}>
+    <li data-testid="elo-board-row" data-rank={l.row.rank} data-elo={l.row.elo} {...stylex.props(typography.appText, styles.row)}>
       <span {...stylex.props(styles.muted, styles.rank)}>{l.row.rank}</span>
       <span data-testid="elo-board-name" {...stylex.props(styles.what)}>{l.row.nickname}</span>
       <span {...stylex.props(styles.score)}>

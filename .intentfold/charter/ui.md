@@ -121,8 +121,7 @@ sets one, leading. Colour is not part of a role — the surface decides it.
   - the public site: `landingHero`, `landingHeroLead`, `landingBrand`, `landingHeading` (the h1 of
     every sub-page, and the front page's section headings), `landingBody`, `landingNav`, `landingBtn`,
     `landingCta`;
-  - the app's pages: `appText`, `appBtn`, `appBtnStrong`, `appLink`, `boardDense` (the front page's Elo rows,
-    SKATGO-123), `optionTitle`, `optionDesc`,
+  - the app's pages: `appText`, `appBtn`, `appBtnStrong`, `appLink`, `optionTitle`, `optionDesc`,
     `tileTitle`, `tileSub`, `dialogTitle`;
   - the course and its exercises: `prompt`, `body`, `bodySmall`, `note`, `context`, `loading`,
     `emphasis` (**bold** in course text), `link`, `small`, `meta`, `smallBold`, `label`, `micro`,
@@ -254,8 +253,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     question mark beside it (`info`) that opens, over the page, a white card saying how it is counted and what "?"
     means, closed by a tap elsewhere or Escape (「how it counted用一个圆圈问号图标，放在 elo标题旁边，作为toast」); the ten
     highest players — rank, name, number, a slate "?" when provisional — with the AI's row (its blue tag, no rank)
-    standing among them by its number, in dense rows (`boardDense`) and two columns, first down the left, so more
-    show at once (「A和B」). On a phone it is folded behind one line, its title and the players — rank, name, number — running
+    standing among them by its number, in close rows at the text's size (`appText`, 「我刚都没说让你改成14」) and two
+    columns, first down the left, so more show at once (「A和B」). On a phone it is folded behind one line, its title and the players — rank, name, number — running
     slowly sideways without end (`marqueeSlide`, `timing.marquee`; still under reduced motion) — 「你这个还不如横向
     持续缓慢滚动」 — and a tap opens it, one column (「手机上可能要折叠一下排名榜」).
     Without a board the hero stays as above, centred;

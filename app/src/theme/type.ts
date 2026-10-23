@@ -85,9 +85,6 @@ export const typography = stylex.create({
   tricksLabel: { fontSize: fontSize.f14_21, fontWeight: weight.ui, lineHeight: leading.tight },
   auctionHead: { fontSize: fontSize.f21_45, fontWeight: weight.ui, lineHeight: leading.tight },
   panelLabel: { fontSize: fontSize.f14, fontWeight: weight.bold, lineHeight: leading.ui },
-  /** A ranking's row where many must fit in little height: the front page's Elo board (SKATGO-123, the human
-   *  chose it — 「A和B」: rows from 16px down to 14px). */
-  boardDense: { fontSize: fontSize.f14, fontWeight: weight.text, lineHeight: leading.ui },
   bidChip: { fontFamily: family.numeral, fontSize: fontSize.f20, fontWeight: weight.regular, lineHeight: leading.glyph },
   contractTile: { fontFamily: 'inherit', fontSize: fontSize.f18, fontWeight: weight.bold, lineHeight: leading.tight },
   // The table's info board: a small caps label over a large value, and a quieter second line.

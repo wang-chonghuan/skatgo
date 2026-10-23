@@ -331,8 +331,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   section as links, then the post in a white card of its own, as each comment is (the human: 「每一个帖子或回复，都放在
   卡片里」): the H1, the same line of facts, a hidden post's reason in a `bad` panel for its author and
   the official, the text (`ForumBody`) — the post and each comment in the reader's language when written in another,
-  under it one small slate line, "Automatisch übersetzt", and a very small underlined `info` button, "Original
-  anzeigen" / "Übersetzung anzeigen" (`micro`; SKATGO-124, the human: 「有个非常小的链接式的小按钮」) — the viewer's `quiet` small actions — "Melden", "Löschen" for their own
+  with one small slate line, "Automatisch übersetzt", and a very small underlined `info` button, "Original
+  anzeigen" / "Übersetzung anzeigen" (`micro`; SKATGO-124, the human: 「有个非常小的链接式的小按钮」): a post's under its
+  line of facts, where it is seen before a long text, a comment's under its text — the viewer's `quiet` small actions — "Melden", "Löschen" for their own
   (asked once more, "Ja, löschen" `stop`), and for the official "Ausblenden" / "Wieder anzeigen" and a player's
   post that is not hidden "Für Suchmaschinen freigeben" — then "Kommentare": each a white card with its line of facts, text and
   actions, in the order written, with no way to reply to one, and the comment box under them (a `TextArea`, the

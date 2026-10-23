@@ -273,9 +273,10 @@ function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
         <div data-testid="forum-post-card" {...stylex.props(styles.card, styles.postCard)}>
           <h1 {...stylex.props(typography.landingHeading, styles.title)}>{shown?.title ?? post.title}</h1>
           <Meta of={post} />
+          {/* Under the facts, where it is seen before a long text is read. */}
+          {post.translated ? <Translated original={original} onSwitch={() => setOriginal(!original)} /> : null}
           {post.hidden !== null ? <Panel tone="bad"><p data-testid="forum-hidden" {...stylex.props(typography.appText, styles.note)}>{m.forum_hidden_note({ reason: post.hidden })}</p></Panel> : null}
           <ForumBody text={shown?.body ?? post.body} official={post.official} />
-          {post.translated ? <Translated original={original} onSwitch={() => setOriginal(!original)} /> : null}
           <Actions viewer={viewer} post={post} />
         </div>
         <section aria-labelledby="forum-comments" {...stylex.props(styles.comments)}>

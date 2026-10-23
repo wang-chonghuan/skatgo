@@ -22,7 +22,7 @@ Reply with JSON only: {"from": "<ISO 639-1 code of the language the text is writ
 If the text is already in ${NAME[lang]}, or already says it in ${NAME[lang]} beside another language (two languages side by side, as in "Hello · Hallo"), reply {"from": "${lang}"} and nothing else.
 Translate faithfully: nothing added, nothing left out, the same tone.
 Keep exactly as they are: line breaks; the marks ##, ###, "- ", "1. " and **…**; links [text](url) — translate the text, never the url; bare urls; card rows in square brackets such as [♠A ♠10 ♥K]; @names; numbers; emoji.
-Keep the German words a Skat table uses as they are: Grand, Null, Hand, Schneider, Schwarz, Ouvert, Ramsch, Bock, Kontra, Re, Skat, Matador, Bube, Dame.`
+Keep the German words a Skat table uses as they are: Grand, Null, Hand, Schneider, Schwarz, Ouvert, Matador, Ramsch, Bock, Kontra, Re, Skat. Cards and suits are translated as words (Bube is Jack in English, Kreuz is clubs), never inside a card row.`
 
 export type Translation = { from: string; text: string }
 

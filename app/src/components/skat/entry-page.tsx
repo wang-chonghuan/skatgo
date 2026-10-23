@@ -13,6 +13,7 @@ import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { EloBoard } from './elo-board'
 import { AnnouncementLine } from './forum-announcement'
 import { PlayingCard } from './playing-card'
 import { linkLook } from './ui'
@@ -20,8 +21,8 @@ import { linkLook } from './ui'
 
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
 // tournament as the headline and its one green call to action (the way into the course is the header's
-// and the course tile's — the human, 2026-10-01) and a strip of facts, set in the middle with no picture beside it
-// (SKATGO-120, the human: 「pc上我也不想要那个图片了」) — then the two other ways into Skat as the app's colour tiles, one suit
+// and the course tile's — the human, 2026-10-01) and a strip of facts, with no picture (SKATGO-120, the human:
+// 「pc上我也不想要那个图片了」) and beside it the tournament's Elo board (SKATGO-123) — then the two other ways into Skat as the app's colour tiles, one suit
 // each (♣ the course, ♠ free play, ♥ a private table with friends — SKATGO-61), and the questions people ask (SKATGO-29). The hero's copy leads the
 // tournament itself (the human, 2026-09-30: 「文案先行」).
 //
@@ -29,24 +30,26 @@ import { linkLook } from './ui'
 // the suits as outline icons. Rendered on the server; the learner's progress is applied after mount.
 export function EntryPage() {
   const course = lessons()
-  const announcement = useLoaderData({ from: '/' })
+  const { announcement, elo } = useLoaderData({ from: '/' })
+  // With the board beside it the text keeps to the left of its column; without one, as before, in the middle.
+  const beside = !!elo && elo.rows.length > 0
 
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
-      <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
-        <div {...stylex.props(styles.heroText)}>
+      <section data-testid="entry-hero" {...stylex.props(styles.hero, beside && styles.heroBeside)}>
+        <div {...stylex.props(styles.heroText, beside && styles.start)}>
           {/* Only when there is one: an empty line would still take a gap above the headline. */}
           {announcement ? (
-            <div {...stylex.props(styles.news)}>
+            <div {...stylex.props(styles.news, beside && styles.startRow)}>
               <AnnouncementLine announcement={announcement} />
             </div>
           ) : null}
-          <div {...stylex.props(styles.head)}>
+          <div {...stylex.props(styles.head, beside && styles.start)}>
             <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
             <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
           </div>
-          <div {...stylex.props(styles.cta)}>
-            <div {...stylex.props(styles.actions)}>
+          <div {...stylex.props(styles.cta, beside && styles.start)}>
+            <div {...stylex.props(styles.actions, beside && styles.startRow)}>
               <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
                 {m.entry_cta()}
               </Link>
@@ -57,7 +60,7 @@ export function EntryPage() {
               </Link>
             </div>
             {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). */}
-            <ul data-testid="entry-points" {...stylex.props(styles.points)}>
+            <ul data-testid="entry-points" {...stylex.props(styles.points, beside && styles.startRow)}>
               {[m.entry_point_free(), m.entry_point_no_signup(), m.entry_point_ai()].map((point) => (
                 <li key={point} {...stylex.props(typography.appText, styles.point)}>
                   <span aria-hidden="true" {...stylex.props(styles.check)}>✓</span>
@@ -67,6 +70,11 @@ export function EntryPage() {
             </ul>
           </div>
         </div>
+        {beside ? (
+          <div {...stylex.props(styles.side)}>
+            <EloBoard board={elo} />
+          </div>
+        ) : null}
       </section>
 
       {/* The four ways in, each a tile that is its own link with a title that says where it goes, nothing else
@@ -170,6 +178,18 @@ const styles = stylex.create({
   // the headline only the page's own top, and the lead held close under it as one block (the human:
   // 「这句话上方的空白太多……缩小它」, then 「我感觉它上下空白还是太多」).
   hero: { display: 'flex', flexDirection: 'column' },
+  // Beside the Elo board (SKATGO-123, the human: 「hero区域在pc上就是左右两栏的布局了」): two equal columns, the text
+  // on the left, the board on the right; under `bp.cards` one column, the board under the text.
+  heroBeside: {
+    display: 'grid',
+    gridTemplateColumns: { default: dims.twoColumns, [bp.cards]: dims.oneColumn },
+    alignItems: 'center',
+    columnGap: space.x48,
+    rowGap: { default: space.x32, [bp.phone]: space.x24 },
+  },
+  start: { alignItems: 'flex-start', textAlign: 'start' },
+  startRow: { justifyContent: 'flex-start' },
+  side: { minWidth: 0 },
   heroText: {
     display: 'flex',
     flexDirection: 'column',

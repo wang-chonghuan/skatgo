@@ -70,6 +70,12 @@ export class Store {
           SELECT DISTINCT ON (player) player, nickname, created_at FROM daily_entries WHERE nickname IS NOT NULL
            ORDER BY player, day DESC, finished_at DESC NULLS LAST
           ON CONFLICT DO NOTHING;
+        -- One person under several ids — guest days on other devices, a guest who signed up later — written by
+        -- hand (SKATGO-123, the human: 「ju开头那几个人，算一个人……mark也是同一个人」): the tournament's Elo counts
+        -- the days of player as those of same_as.
+        CREATE TABLE IF NOT EXISTS player_aliases (
+          player text PRIMARY KEY, same_as text NOT NULL
+        );
         -- The "Sieg sichern" ladder's record per account (SKATGO-109): solved once answered right, and every
         -- wrong answer counted. SKATGO-110 put new puzzles under the same step numbers, so the first table's
         -- records went with the old puzzles (the human: 「原有答题记录可以删除」).

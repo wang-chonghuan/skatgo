@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-123",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-123",
+  "branch": "SKATGO-123-elo-ranking",
+  "base": "6277c22cf9e28e5d848d0aa7d6044bd8a913eb82",
+  "ports": { "web": 55123, "multiplayer": 56123, "database": 57123 }
+}

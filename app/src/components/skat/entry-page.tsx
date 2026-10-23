@@ -41,8 +41,10 @@ export function EntryPage() {
               <AnnouncementLine announcement={announcement} />
             </div>
           ) : null}
-          <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
-          <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
+          <div {...stylex.props(styles.head)}>
+            <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
+            <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
+          </div>
           <div {...stylex.props(styles.cta)}>
             <div {...stylex.props(styles.actions)}>
               <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
@@ -165,9 +167,9 @@ const styles = stylex.create({
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
   // Type alone, in the middle; on a phone it keeps to the left edge as the rest of the page (SKATGO-120). Above
-  // the headline, with the page's own top, the same 48px that parts the hero from the tiles: one rhythm, no more
-  // (the human: 「这句话上方的空白太多……缩小它」).
-  hero: { display: 'flex', flexDirection: 'column', paddingTop: { default: space.x16, [bp.phone]: 0 } },
+  // the headline only the page's own top, and the lead held close under it as one block (the human:
+  // 「这句话上方的空白太多……缩小它」, then 「我感觉它上下空白还是太多」).
+  hero: { display: 'flex', flexDirection: 'column' },
   heroText: {
     display: 'flex',
     flexDirection: 'column',
@@ -177,6 +179,12 @@ const styles = stylex.create({
     gap: { default: space.x24, [bp.phone]: space.x16 },
   },
   news: { display: 'flex', justifyContent: { default: 'center', [bp.phone]: 'flex-start' } },
+  head: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: { default: 'center', [bp.phone]: 'flex-start' },
+    gap: { default: space.x12, [bp.phone]: space.x16 },
+  },
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
   lead: { margin: 0, maxWidth: dims.readingColumn, color: color.slate, textWrap: 'balance' },

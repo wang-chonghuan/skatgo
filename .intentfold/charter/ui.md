@@ -236,12 +236,20 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - the hero: over its headline, the forum's newest announcement as one line while it is two weeks old or
     less (`AnnouncementLine`, SKATGO-118); the daily tournament's headline (`landingHero`) and lead
     (`landingHeroLead`) in navy;
-    its one green landing action (play today's deals) and beside it a white `quiet` one, "Skat-Aufgaben
-    lösen" / "Solve Skat puzzles", to the open-card endgames (SKATGO-109); a quiet ✓ line of what a first visitor wants to
-    know; and the human's illustration (SKATGO-33). Never on felt (Redline 4);
-  - the sections as colour tiles, each with its card art and a `quiet` button: the course, free play,
-    the tricks ("Skat-Tricks", `tileNavy`, SKATGO-82; it held the puzzles' "coming soon" before; its words and
-    button, "Jetzt üben", lead to the exercises, SKATGO-105) and a private table (`tileRed`);
+    its one green landing action (play today's deals) and beside it a white `quiet` one, "Zum Skat-Forum" /
+    "Visit Skat forum", to the forum (SKATGO-120, the human: 「把solve puzzles 换成论坛按钮」; the puzzles' button there since SKATGO-109); a quiet ✓ line of what a first visitor wants to
+    know. No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
+    设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it
+    (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the announcement line, the headline at 48px
+    (`fHero`, 「pc版上slogan字太大」) with the lead held close under it (12px), the lead within the reading column,
+    balanced, the two buttons and the ✓ line — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
+    on felt (Redline 4);
+  - the sections as colour tiles, each one link with only a title that says where it goes — no text, no button
+    (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」) — as tall as its title, its
+    card art kept and cropped at the edge (「包裹着文字就行了，禁止大片空白，牌的背景还保留，但是可以剪裁」), rising on
+    hover, two by two and one above the other below `bp.cards` so a title never runs onto its cards:
+    "Skat lernen in 11 Lektionen" (the course), "Skat gegen die KI spielen" (free play), "Mit Skat-Aufgaben
+    üben" (the exercises, `tileNavy`) and "Skat mit Freunden spielen" (a private table, `tileRed`);
   - plain links to the rules and the course, and the questions people ask.
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
   the short rules, the daily tournament, the Skat-Tricks' page and their article, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
@@ -261,10 +269,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   with a caption naming what is where (the human: 「不要占空间太大，主要是让读者产生直觉」) — the twelve rules
   numbered, each a line of text, the ones that name points or an order with that row of cards under them
   (`CardRowView`, the points as captions), then a `tip` panel with the `go` button to free play, and links
-  to the course and the rules. Its ways in: an option card under the course's lead, ahead of the progress
-  card; on the front page a second `quiet` button, "5-Minuten-Crashkurs" — a crash course, never read as a quick game or a summary (the human: 「其实就是5分钟速成的意思」) — beside the course tile's own, always, whether or not a lesson was taken (the human: 「看起来不够明显」; SKATGO-92: 「必须还放在学习卡上」); and a link under the rules' lead. Not in the header. The Skat-Tricks' page (`tricks-page.tsx`,
+  to the course and the rules. Its one way in: a `quiet` button under the rules' lead, "Neu beim Skat? Der
+  5-Minuten-Crashkurs" — nowhere else, neither the front page nor the course (SKATGO-120, the human: 「5分钟的按钮，
+  放到规则页面的一个按钮中，其他地方别放了」). The Skat-Tricks' page (`tricks-page.tsx`,
   SKATGO-103) is its H1 and lead, then every kind of exercise as an option card, numbered, each a `<details>`
-  closed at first (one named in the address, as the front page's "Skat-Aufgaben lösen" names the first, opens by
+  closed at first (one named in the address, as `#offenes-endspiel` names the first, opens by
   itself and stops under the header): first the open-card endgames (SKATGO-119, the human: 「这个要可折叠，像其他题
   一样，它作为第一类练习题」), their count solved in the head, opening to levels (SKATGO-111) — a grid of numbered
   square tiles, solved `good` with a check, gone wrong `bad` with a cross and the number of wrong answers in its
@@ -281,12 +290,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the card that would have won; "Nächste Aufgabe" (`go`), "Warum?" (the reason, only when asked) and "Noch
   mal" (`quiet`). For a guest from the third puzzle the table waits under the sign-in dialog, an invitation
   with no lock (SKATGO-112). An
-  article of the Skat-Tricks (`tricks-article-page.tsx`, SKATGO-82) reads like the rules: its H1 and lead, section headings, each trick a
-  numbered sub-heading over short paragraphs, and three ways into the daily tournament — at the start, in
-  the middle and at the end — each a `tip` panel with its line and the `go` button; one action repeated
-  down a long page, not rival primaries (the human chose green for all three). Each trick that has
-  exercises links to them. It ends with its links to read on. It is for search engines (the human, SKATGO-105: 「只用于seo」):
-  the small link under the exercises is its only way in from the site. The course lists the exercises as
+  article of the Skat-Tricks is a post in the forum's Articles and reads as any post: its headings, short
+  paragraphs and links, each trick a numbered sub-heading, the ways into the daily tournament and to the
+  exercises as links; nothing outside the forum links it (SKATGO-120, the human: 「就放论坛里」). The course lists the exercises as
   an option card under the lessons. The header and the footer link the Skat-Tricks' page, and the table's rules panel and the
   play record ("Interaktive Übungen – spiel besser Skat") link it in a new tab, so a game is never left
   behind. A lesson starts playing at once: under its title only a

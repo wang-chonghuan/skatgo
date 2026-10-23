@@ -36,8 +36,12 @@ export function RulesPage() {
             <Rich text={text} />
           </p>
         ))}
-        {/* For a beginner who only wants to start (SKATGO-89): the twelve rules on one page. */}
-        <Link to="/course/quick-start" data-testid="rules-quick" {...stylex.props(typography.appLink, styles.lessonLink)}>{m.quick_rules_link()}</Link>
+        {/* For a beginner who only wants to start (SKATGO-89): the twelve rules on one page — its one way in, a button
+            here and nowhere else (SKATGO-120, the human: 「5分钟的按钮，放到规则页面的一个按钮中，其他地方别放了」); white,
+            so the course stays the page's one green action. */}
+        <div {...stylex.props(styles.quick)}>
+          <Link to="/course/quick-start" data-testid="rules-quick" {...linkLook('quiet', 'md')}>{m.quick_rules_link()}</Link>
+        </div>
         <Ways />
         <PrintLinks />
 
@@ -336,6 +340,7 @@ const styles = stylex.create({
   across: { textAlign: 'center', color: color.text },
   // A link is no use on paper (SKATGO-53).
   screenOnly: { display: { default: 'inline', [bp.print]: 'none' } },
+  quick: { display: 'flex' },
   lessonLink: {
     alignSelf: 'flex-start',
     color: color.info,

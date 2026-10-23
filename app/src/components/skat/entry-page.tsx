@@ -1,12 +1,10 @@
 import { Link, useLoaderData } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { faq } from '~/lib/faq'
 import type { Card } from '~/lib/skat/cards'
 import { lessons } from '~/lib/skat/lessons/content'
-import { type LessonRecord, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -19,42 +17,43 @@ import { AnnouncementLine } from './forum-announcement'
 import { PlayingCard } from './playing-card'
 import { linkLook } from './ui'
 
-const NOTHING_DONE: Record<string, LessonRecord> = {}
 
 // The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
 // tournament as the headline and its one green call to action (the way into the course is the header's
-// and the course tile's — the human, 2026-10-01), a picture, and a strip of facts — then the two other ways into Skat as the app's colour tiles, one suit
+// and the course tile's — the human, 2026-10-01) and a strip of facts, set in the middle with no picture beside it
+// (SKATGO-120, the human: 「pc上我也不想要那个图片了」) — then the two other ways into Skat as the app's colour tiles, one suit
 // each (♣ the course, ♠ free play, ♥ a private table with friends — SKATGO-61), and the questions people ask (SKATGO-29). The hero's copy leads the
 // tournament itself (the human, 2026-09-30: 「文案先行」).
 //
 // Every picture here is skatgo's own: the public-domain deck the course plays with, fanned on felt, and
 // the suits as outline icons. Rendered on the server; the learner's progress is applied after mount.
 export function EntryPage() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  const storedDone = useProgress((s) => s.done)
-  const done = mounted ? storedDone : NOTHING_DONE
   const course = lessons()
-  const finished = course.filter((l) => l.id in done).length
-  const next = course.find((l) => !(l.id in done))?.id ?? course[course.length - 1].id
   const announcement = useLoaderData({ from: '/' })
 
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <section data-testid="entry-hero" {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.heroText)}>
-          <AnnouncementLine announcement={announcement} />
-          <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
-          <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
+          {/* Only when there is one: an empty line would still take a gap above the headline. */}
+          {announcement ? (
+            <div {...stylex.props(styles.news)}>
+              <AnnouncementLine announcement={announcement} />
+            </div>
+          ) : null}
+          <div {...stylex.props(styles.head)}>
+            <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
+            <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
+          </div>
           <div {...stylex.props(styles.cta)}>
             <div {...stylex.props(styles.actions)}>
               <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
                 {m.entry_cta()}
               </Link>
-              {/* The ladder beside it (SKATGO-109, the human: 「这个练习的按钮放到每日tournament的按钮旁边」), white, so the
-                  tournament stays the one green action; it opens the exercises' page, since SKATGO-110 the open-card endgames. */}
-              <Link to="/skat-tricks" hash="offenes-endspiel" data-testid="entry-ladder" onClick={() => heroClick('ladder')} {...linkLook('quiet', 'lg', 'landing')}>
-                {m.entry_ladder_cta()}
+              {/* The forum beside it, white, so the tournament stays the one green action (SKATGO-120, the human:
+                  「把solve puzzles 换成论坛按钮」; the puzzles keep their tile below). */}
+              <Link to="/forum" data-testid="entry-forum" onClick={() => heroClick('forum')} {...linkLook('quiet', 'lg', 'landing')}>
+                {m.entry_forum_cta()}
               </Link>
             </div>
             {/* What a first-time visitor wants to know before pressing it, quietly (the human, 2026-10-01). */}
@@ -68,44 +67,24 @@ export function EntryPage() {
             </ul>
           </div>
         </div>
-        <HeroArt />
       </section>
 
+      {/* The four ways in, each a tile that is its own link with a title that says where it goes, nothing else
+          (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」). */}
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
-        <section data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, tileTones.course)}>
-          <Face art={COURSE_ART} title={m.entry_new_title()} text={m.entry_new_text({ count: course.length })}>
-            <Link to="/course" data-testid="entry-course" {...linkLook('quiet', 'md', 'landing')}>
-              {finished === 0 ? m.entry_new_cta() : m.course_continue({ n: next })}
-            </Link>
-            {/* The twelve rules (SKATGO-89), a button as plain to see as the course's (the human: 「学习卡上那个5分钟，
-                看起来不够明显」), always — whether or not a lesson was taken (SKATGO-92, the human: 「必须还放在学习卡上」). */}
-            <Link to="/course/quick-start" data-testid="entry-quick" {...linkLook('quiet', 'md', 'landing')}>{m.quick_entry_link()}</Link>
-            {/* No count of lessons done under the buttons: the course page shows it (SKATGO-93, the human: 「这个小字也给我删了」). */}
-          </Face>
-        </section>
-        <section data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, tileTones.play)}>
-          <Face art={PLAY_ART} title={m.entry_game_title()} text={m.entry_game_text()}>
-            <Link to="/play" data-testid="entry-play" {...linkLook('quiet', 'md', 'landing')}>
-              {m.entry_game_cta()}
-            </Link>
-          </Face>
-        </section>
-        {/* The tricks (SKATGO-82): the tile that held the puzzles' place, leading straight to the exercises
-            (SKATGO-105); the article is only for search engines. */}
-        <section data-testid="entry-card" data-section="tricks" {...stylex.props(styles.tile, tileTones.practice)}>
-          <Face art={PRACTICE_ART} title={m.entry_practice_title()} text={m.entry_practice_text()}>
-            <Link to="/skat-tricks" data-testid="entry-tricks" {...linkLook('quiet', 'md', 'landing')}>
-              {m.entry_practice_cta()}
-            </Link>
-          </Face>
-        </section>
-        <section data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, tileTones.friends)}>
-          <Face art={FRIENDS_ART} title={m.entry_friends_title()} text={m.entry_friends_text()}>
-            <Link to="/with-friends" data-testid="entry-friends" {...linkLook('quiet', 'md', 'landing')}>
-              {m.table_open()}
-            </Link>
-          </Face>
-        </section>
+        <Link to="/course" data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, styles.tileLink, tileTones.course)}>
+          <Face art={COURSE_ART} title={m.entry_new_title({ count: course.length })} />
+        </Link>
+        <Link to="/play" data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, styles.tileLink, tileTones.play)}>
+          <Face art={PLAY_ART} title={m.entry_game_title()} />
+        </Link>
+        {/* The tricks (SKATGO-82): straight to the exercises (SKATGO-105); the article is only for search engines. */}
+        <Link to="/skat-tricks" data-testid="entry-card" data-section="tricks" {...stylex.props(styles.tile, styles.tileLink, tileTones.practice)}>
+          <Face art={PRACTICE_ART} title={m.entry_practice_title()} />
+        </Link>
+        <Link to="/with-friends" data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, styles.tileLink, tileTones.friends)}>
+          <Face art={FRIENDS_ART} title={m.entry_friends_title()} />
+        </Link>
       </div>
 
       <nav aria-label={m.game_learning_title()} {...stylex.props(styles.actions)}>
@@ -128,8 +107,8 @@ export function EntryPage() {
   )
 }
 
-/** The hero's buttons (SKATGO-29; renamed by SKATGO-74's tracking plan; the ladder's since SKATGO-109). */
-const heroClick = (button: 'primary' | 'ladder') => track('home_cta_clicked', { button })
+/** The hero's buttons (SKATGO-29; renamed by SKATGO-74's tracking plan; the forum's since SKATGO-120). */
+const heroClick = (button: 'primary' | 'forum') => track('home_cta_clicked', { button })
 
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
@@ -140,17 +119,8 @@ const PRACTICE_ART = [card('D', 'A'), card('D', '10'), card('D', 'K')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
 /** The hero's picture: three players at a club-shaped table (the human's illustration, SKATGO-33), shown whole. */
-function HeroArt() {
-  return (
-    <div data-testid="entry-art" {...stylex.props(styles.heroArt)}>
-      <img src="/hero-table.webp" alt={m.entry_art_alt()} {...stylex.props(styles.heroImage)} />
-    </div>
-  )
-}
-
-/** A tile's face: three of skatgo's cards in the corner under the tile's colour, the title and its text at
- *  the top left, and the foot at the bottom left. */
-function Face({ art, title, text, children }: { art: Card[]; title: string; text: string; children: ReactNode }) {
+/** A tile's face: three of skatgo's cards in the corner under the tile's colour, and its title at the top left. */
+function Face({ art, title }: { art: Card[]; title: string }) {
   return (
     <>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
@@ -163,8 +133,6 @@ function Face({ art, title, text, children }: { art: Card[]; title: string; text
       <span aria-hidden="true" {...stylex.props(styles.veil)} />
       <div {...stylex.props(styles.body)}>
         <h2 {...stylex.props(typography.tileTitle, styles.tileTitle)}>{title}</h2>
-        <p {...stylex.props(typography.tileSub, styles.tileText)}>{text}</p>
-        <div {...stylex.props(styles.foot)}>{children}</div>
       </div>
     </>
   )
@@ -198,37 +166,42 @@ const styles = stylex.create({
     paddingBottom: space.x72,
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
-  hero: {
-    display: 'grid',
-    gridTemplateColumns: { default: dims.heroColumns, [bp.hero]: dims.oneColumn },
-    // The headline's first line starts level with the top of the picture (SKATGO-29).
-    alignItems: 'start',
-    gap: { default: space.x32, [bp.phone]: space.x24 },
+  // Type alone, in the middle; on a phone it keeps to the left edge as the rest of the page (SKATGO-120). Above
+  // the headline only the page's own top, and the lead held close under it as one block (the human:
+  // 「这句话上方的空白太多……缩小它」, then 「我感觉它上下空白还是太多」).
+  hero: { display: 'flex', flexDirection: 'column' },
+  heroText: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: { default: 'center', [bp.phone]: 'flex-start' },
+    textAlign: { default: 'center', [bp.phone]: 'start' },
+    minWidth: 0,
+    gap: { default: space.x24, [bp.phone]: space.x16 },
   },
-  heroText: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0, gap: { default: space.x24, [bp.phone]: space.x16 } },
+  news: { display: 'flex', justifyContent: { default: 'center', [bp.phone]: 'flex-start' } },
+  head: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: { default: 'center', [bp.phone]: 'flex-start' },
+    gap: { default: space.x12, [bp.phone]: space.x16 },
+  },
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
-  lead: { margin: 0, color: color.slate },
-  heroArt: {
-    aspectRatio: dims.heroArtRatio,
-    borderRadius: radii.tile,
-    boxShadow: elev.eventCard,
-    overflow: 'hidden',
-  },
-  // The whole screenshot, never cropped: the box has its proportions.
-  heroImage: { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
+  lead: { margin: 0, maxWidth: dims.readingColumn, color: color.slate, textWrap: 'balance' },
   // The facts under the call to action: one quiet line that wraps on a phone.
-  points: { display: 'flex', flexWrap: 'wrap', columnGap: space.x16, rowGap: space.x4, margin: 0, padding: 0, listStyleType: 'none' },
+  points: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, columnGap: space.x16, rowGap: space.x4, margin: 0, padding: 0, listStyleType: 'none' },
   point: { display: 'inline-flex', gap: space.x6, margin: 0, color: color.slate },
   check: { color: color.go },
 
   // The call to action with its facts right under it.
-  cta: { display: 'flex', flexDirection: 'column', gap: space.x12 },
-  actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
+  cta: { display: 'flex', flexDirection: 'column', alignItems: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12 },
+  actions: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12 },
   // The two ways in, side by side; stacked on a phone.
   ways: {
     display: 'grid',
-    gridTemplateColumns: { default: dims.twoColumns, [bp.phone]: dims.oneColumn },
+    // Two by two, each title on one line clear of its cards (four in a row crowded the titles onto the art,
+    // SKATGO-120); below the width where that holds, one above the other, as the course's cards.
+    gridTemplateColumns: { default: dims.twoColumns, [bp.cards]: dims.oneColumn },
     columnGap: space.x15,
     rowGap: space.x15,
   },
@@ -238,13 +211,24 @@ const styles = stylex.create({
     position: 'relative',
     display: 'flex',
     flexDirection: 'column',
-    minHeight: dims.tileHeight,
+    // As tall as its title, no more; the cards' art is cropped at its edge (SKATGO-120, the human: 「包裹着文字就行了，
+    // 禁止大片空白，牌的背景还保留，但是可以剪裁」).
     boxSizing: 'border-box',
     padding: space.x27,
     overflow: 'hidden',
     borderRadius: radii.tile,
     color: color.onColor,
     textDecoration: 'none',
+  },
+  // The whole tile is the link: it rises on hover and shows the focus ring, as a course card does.
+  tileLink: {
+    transform: { default: pose.rest, ':hover': pose.lift },
+    transitionProperty: 'transform',
+    transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
   },
   art: {
     position: 'absolute',
@@ -258,8 +242,6 @@ const styles = stylex.create({
   veil: { position: 'absolute', inset: 0, backgroundColor: 'inherit', opacity: veil.tile, pointerEvents: 'none' },
   body: { position: 'relative', display: 'flex', flexDirection: 'column', flexGrow: 1, gap: space.x8 },
   tileTitle: { margin: 0, color: color.onColor },
-  tileText: { margin: 0, color: color.onColor },
-  foot: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12, marginTop: 'auto', paddingTop: space.x8 },
   readingLink: { color: color.info, textDecoration: 'underline' },
 
   faq: { display: 'flex', flexDirection: 'column', gap: space.x24 },

@@ -1,11 +1,14 @@
 import { localizeHref } from '~/paraglide/runtime'
+import { postPath } from './forum'
 import { GUIDES, lessonPath } from './skat/lessons/guide'
 
 // Addresses that have moved, answered with a permanent redirect before the language middleware sees
 // them (src/server.ts):
 //   /zh/...            the Chinese pages, removed in SKATGO-28 — the same page in English;
 //   /{l}/lesson/{id}   a lesson by number, before SKATGO-29 — the lesson under its own slug;
-//   /de/course, /de/play — German pages now have German addresses (SKATGO-29): /de/kurs, /de/spielen.
+//   /de/course, /de/play — German pages now have German addresses (SKATGO-29): /de/kurs, /de/spielen;
+//   /{l}/skat-tricks/12-tricks — the article, a forum post since SKATGO-120 (the human: 「移除这个文章在app里的
+//                      所有其他引用的，就放论坛里」): the German original and the English one, each its own post.
 // Returns the new path (with the query) or null when the address has not moved.
 export function movedTo(pathname: string, search: string): string | null {
   if (/^\/de\/?$/.test(pathname)) return `/${search}`
@@ -20,5 +23,16 @@ export function movedTo(pathname: string, search: string): string | null {
   const course = /^\/de\/course(\/.*)?$/.exec(pathname)
   if (course) return `/de/kurs${course[1] ?? ''}${search}`
   if (/^\/de\/play\/?$/.test(pathname)) return `/de/spielen${search}`
+  const tricks = /^\/(en|de)\/skat-tricks\/12-tricks\/?$/.exec(pathname)
+  if (tricks) {
+    const locale = tricks[1] as 'en' | 'de'
+    return `${localizeHref(postPath(TRICKS_POSTS[locale]), { locale })}${search}`
+  }
   return null
 }
+
+/** The 12 Skat tricks in the forum's articles (production posts 2 and 3); the forum corrects a changed title's slug. */
+const TRICKS_POSTS = {
+  de: { id: 2, title: 'Skat Tricks: 12 Tricks, mit denen du sofort besser spielst' },
+  en: { id: 3, title: 'Skat Tricks: 12 tricks that make you a better player right away' },
+} as const

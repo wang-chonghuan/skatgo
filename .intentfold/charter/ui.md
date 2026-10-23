@@ -121,7 +121,8 @@ sets one, leading. Colour is not part of a role — the surface decides it.
   - the public site: `landingHero`, `landingHeroLead`, `landingBrand`, `landingHeading` (the h1 of
     every sub-page, and the front page's section headings), `landingBody`, `landingNav`, `landingBtn`,
     `landingCta`;
-  - the app's pages: `appText`, `appBtn`, `appBtnStrong`, `appLink`, `optionTitle`, `optionDesc`,
+  - the app's pages: `appText`, `appBtn`, `appBtnStrong`, `appLink`, `boardDense` (the front page's Elo rows,
+    SKATGO-123), `optionTitle`, `optionDesc`,
     `tileTitle`, `tileSub`, `dialogTitle`;
   - the course and its exercises: `prompt`, `body`, `bodySmall`, `note`, `context`, `loading`,
     `emphasis` (**bold** in course text), `link`, `small`, `meta`, `smallBold`, `label`, `micro`,
@@ -251,8 +252,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     question mark beside it (`info`) that opens, over the page, a white card saying how it is counted and what "?"
     means, closed by a tap elsewhere or Escape (「how it counted用一个圆圈问号图标，放在 elo标题旁边，作为toast」); the ten
     highest players — rank, name, number, a slate "?" when provisional — with the AI's row (its blue tag, no rank)
-    standing among them by its number. On a phone it is folded behind one line, its title and the leader, that a
-    tap opens (「手机上可能要折叠一下排名榜」).
+    standing among them by its number, in dense rows (`boardDense`) and two columns, first down the left, so more
+    show at once (「A和B」). On a phone it is folded behind one line, its title and one player's rank, name and number,
+    going through the players every `carouselStepMs`, each fading in (none under reduced motion) — 「名字要能像carousel
+    那样自动轮换」 — and a tap opens it, one column (「手机上可能要折叠一下排名榜」).
     Without a board the hero stays as above, centred;
   - the sections as colour tiles, each one link with only a title that says where it goes — no text, no button
     (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」) — as tall as its title, its

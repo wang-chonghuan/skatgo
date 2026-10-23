@@ -9,8 +9,8 @@ import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/ska
 import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { playSound } from '~/lib/skat/sounds'
 import { visibleTable } from '~/lib/skat/table-view'
-import { useTapToCollect } from '~/lib/skat/settings'
-import { cardLabel, contractName, ledName, partLabel, roleName, settleReason } from '~/lib/skat/i18n'
+import { useBoardTricks, useSettings, useTapToCollect } from '~/lib/skat/settings'
+import { cardLabel, contractName, ledName, roleName, settleReason, settlementFormula } from '~/lib/skat/i18n'
 import {
   type Game,
   type Move,
@@ -31,6 +31,7 @@ import {
   normalise,
   roleOf,
   runningPoints,
+  runningTricks,
   trickWinner,
 } from '~/lib/skat/game'
 import { type DealSummary, seegerFabian, summarize, totals } from '~/lib/skat/tournament'
@@ -329,6 +330,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   const myHand = useMemo(() => sortHand(game.hands[ME], contract ?? draft?.contract ?? null), [game.hands, contract, draft])
   const legal = game.phase === 'play' && myTurn ? legalFor(game, ME) : undefined
   const points = runningPoints(game)
+  const tricksTaken = runningTricks(game)
+  const boardTricks = useBoardTricks()
   const winner = trickWinner(game)
 
   function onCard(card: Card) {
@@ -436,7 +439,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             learner asked for, or why a card was refused, each until it is closed. The stage keeps this
             band clear (SKATGO-34): nothing on the table reaches into it. */}
         <div data-testid="skat-top" {...stylex.props(styles.top, (hint !== null || refusal !== null) && styles.topTip)}>
-          {exercise?.top ?? <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={points} deal={dealOf} />}
+          {exercise?.top ?? <InfoBoard game={game} scores={tournament?.totals ?? room?.totals ?? scores} points={boardTricks ? tricksTaken : points} tricks={boardTricks} deal={dealOf} />}
           {!acting && !waiting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
               {game.phase === 'trickEnd' && winner !== null ? (
@@ -692,7 +695,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             {game.declarer !== null ? <Pill tone="quiet">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
             {game.phase === 'play' || game.phase === 'trickEnd' ? (
               <>
-                <Pill tone="quiet">{m.table_points({ declarer: points.declarer, defenders: points.defenders })}</Pill>
+                <Pill tone="quiet">{boardTricks ? m.table_tricks({ declarer: tricksTaken.declarer, defenders: tricksTaken.defenders }) : m.table_points({ declarer: points.declarer, defenders: points.defenders })}</Pill>
               </>
             ) : null}
           </div>
@@ -900,7 +903,8 @@ function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: bo
 /** The info board across the top of the felt: what is being played, by whom, how the hand stands, and
  *  the running totals — each a small label over its value, divided by fine rules. Under the points, which
  *  deal of how many this is, not which trick (SKATGO-93, the human: 「当前是第几墩，没必要，应该改为显示，当前是第几个deal」). */
-function InfoBoard({ game, scores, points, deal }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number }; deal: { n: number; of: number } | null }) {
+function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number }; tricks: boolean; deal: { n: number; of: number } | null }) {
+  const setTricks = useSettings((s) => s.setBoardTricks)
   const nameOf = useNameOf()
   const contract = game.declaration?.contract ?? null
   const playing = game.phase === 'play' || game.phase === 'trickEnd'
@@ -923,8 +927,18 @@ function InfoBoard({ game, scores, points, deal }: { game: Game; scores: [number
         <span {...stylex.props(typography.infoValue, styles.boardValue)}>{game.declarer === null ? '—' : nameOf(game.declarer)}</span>
         <span {...stylex.props(typography.infoSub, styles.boardSub)}>{game.declarer === null ? '' : m.info_bid() + ' ' + game.bid}</span>
       </div>
-      <div data-testid="skat-info-points" {...stylex.props(styles.boardCell)}>
-        <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_points()}</span>
+      {/* A tap switches it between the card points and the tricks each side has taken, and it stays so (SKATGO-127,
+          the human: 「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」). */}
+      <button
+        type="button"
+        data-testid="skat-info-points"
+        data-shows={tricks ? 'tricks' : 'points'}
+        aria-pressed={tricks}
+        title={tricks ? m.info_show_points() : m.info_show_tricks()}
+        onClick={() => setTricks(!tricks)}
+        {...stylex.props(styles.boardCell, styles.boardSwitch)}
+      >
+        <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{tricks ? m.info_tricks() : m.info_points()}</span>
         {/* The player's side's card points in the board's amber, as the player's total is beside them —
             the declarer's when they declare, the defenders' when they defend — so which number is theirs
             reads at a glance (SKATGO-79, the human: 「我是庄家，则庄家的分显示橙色，我是防家，则防家的分显示橙色」). */}
@@ -940,7 +954,7 @@ function InfoBoard({ game, scores, points, deal }: { game: Game; scores: [number
           )}
         </span>
         <span data-testid="skat-info-deal" {...stylex.props(typography.infoSub, styles.boardSub)}>{deal ? m.info_deal(deal) : ''}</span>
-      </div>
+      </button>
       <div data-testid="skat-info-totals" {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_totals()}</span>
         <div {...stylex.props(styles.totals)}>
@@ -1197,15 +1211,8 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
   useEffect(() => {
     panel.current?.closest('[role="dialog"]')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [])
-  const formula = isNull
-    ? m.result_null_formula({ contract: `Null${d.hand ? ' Hand' : ''}${d.ouvert ? ' Ouvert' : ''}`, value: r.value })
-    : m.result_formula_mult({
-        parts: r.parts.map((p, i) => (i === 0 ? partLabel(p, r.matadors) : `${partLabel(p, r.matadors)} 1`)).join(' + '),
-        mult: r.multiplier,
-        contract: contractName(d.contract),
-        base: r.base,
-        value: r.base * r.multiplier,
-      })
+  const formula = settlementFormula(r, d, game.bid)
+  const formulaLine = <p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>
   // How the game was settled, line by line: the whole settlement in free play, the details in the
   // tournament, where the deal against the AI comes first (SKATGO-57).
   const early = game.early ? (
@@ -1230,7 +1237,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
           <Rich text={m.result_points({ declarer: r.declarerPoints, defenders: r.defenderPoints })} />
         </p>
       )}
-      <p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>
+      {formulaLine}
       <p {...stylex.props(typography.note, styles.note)}>
         <Rich text={scoreLine(declarer, r.won, r.score > 0 ? `+${r.score}` : String(r.score), nameOf)} />
       </p>
@@ -1256,6 +1263,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
         <div {...stylex.props(styles.resultBody)}>
           {early}
           {daily.compare}
+          {formulaLine}
           {daily.day}
           {next}
           {daily.analysis}
@@ -1272,13 +1280,13 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
             </div>
           </Panel>
           <FreeVsAi mine={summarize(game)} ask={askReviewed} />
+          {formulaLine}
           {next}
           <DealAnalysis
             testId="free-play-record"
             deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null, hand: startHand(game) }}
             names={[nameOf(0), nameOf(1), nameOf(2)]}
             ask={askReviewed}
-            footer={<p data-testid="skat-result-formula" {...stylex.props(typography.note, styles.note)}>{m.result_formula({ formula })}</p>}
           />
         </>
       ) : (
@@ -1734,6 +1742,21 @@ const styles = stylex.create({
     borderBottomRightRadius: radii.panel,
     backgroundColor: color.board,
     color: color.onColor,
+  },
+  // The card points' cell as a button: the cell's look, nothing of a button's own, the focus ring when focused.
+  boardSwitch: {
+    margin: 0,
+    backgroundColor: 'transparent',
+    font: 'inherit',
+    color: 'inherit',
+    cursor: 'pointer',
+    // The cell's own rules are its left and top ones; a button's right and bottom borders go.
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
   },
   boardCell: {
     display: 'flex',

@@ -57,7 +57,8 @@ number among them, and how it is counted.
 After each deal the player sees how the computer, named "AI", played the same deal from their seat
 (SKATGO-42): a score sheet of all three seats' scores, the player's deal over the AI's, each with a
 line saying what the deal was — declarer, game and bid, won or lost with the card points,
-Schneider, Schwarz or overbid; then the tournament so far in one line; then the deal's play record
+Schneider, Schwarz or overbid; the deal's whole calculation in one line, base value, multiplier and score
+(SKATGO-127, a player's suggestion); then the tournament so far in one line; then the deal's play record
 ("Spielverlauf", SKATGO-79). The play record is open, never folded: trick by trick, who played which card
 in order and who took it with how many card points, and, for the trick the player taps, their hand before it
 (SKATGO-100).

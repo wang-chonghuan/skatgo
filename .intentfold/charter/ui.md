@@ -361,7 +361,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **The info board** (SKATGO-100): a cell's content never runs past its padding. Hand and Ouvert stand on
   the small line under the contract; a long name wraps, a small line ends in an ellipsis; the three running
   totals share the cell in equal columns, smaller on a phone (`infoTotal`) and smaller again once one has four
-  digits (`infoTotalLong`).
+  digits (`infoTotalLong`). The "Augen" cell is a button with nothing of a button's look: a tap switches it to
+  "Stiche", the tricks each side has taken, and back, and the choice stays in this browser (SKATGO-127, the human:
+  「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」); the strip's pill follows it.
+- **A deal's result** carries its whole calculation in one line (SKATGO-127): the multiplier's parts, base ×
+  multiplier = value, then the score — won, lost and doubled, or overbid with its bid — on a private table in the
+  settlement, in free play right after the score sheet against the AI, in the tournament under the comparison.
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
   without JavaScript, in the lobby's own tokens and typography — never hidden keyword text or new
   decorative containers.

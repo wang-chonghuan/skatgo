@@ -24,6 +24,10 @@ type SettingsState = {
   /** SKATGO-102: the cards' back, to choose in the settings (lib/skat/backs.ts). */
   back: CardBack
   setBack: (back: CardBack) => void
+  /** SKATGO-127: the info board's "Augen" cell shows the tricks each side has taken instead, for a player who keeps
+   *  count themselves; switched by a tap on the cell, off (card points) by default. */
+  boardTricks: boolean
+  setBoardTricks: (on: boolean) => void
 }
 
 export const useSettings = create<SettingsState>()(
@@ -37,11 +41,13 @@ export const useSettings = create<SettingsState>()(
       setSounds: (sounds) => set({ sounds }),
       back: DEFAULT_BACK,
       setBack: (back) => set({ back }),
+      boardTricks: false,
+      setBoardTricks: (boardTricks) => set({ boardTricks }),
     }),
     {
       name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back }),
+      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks }),
     },
   ),
 )
@@ -59,6 +65,15 @@ export function useDeck(): Deck {
  *  render, like the deck; a stored choice applies at once after mount. */
 export function useTapToCollect(): boolean {
   const stored = useSettings((s) => s.tapToCollect)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  return mounted && stored
+}
+
+/** Whether the info board counts tricks instead of card points (SKATGO-127): off on the server and in the first
+ *  browser render, like the deck; a stored choice applies at once after mount. */
+export function useBoardTricks(): boolean {
+  const stored = useSettings((s) => s.boardTricks)
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   return mounted && stored

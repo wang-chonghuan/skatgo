@@ -223,7 +223,7 @@ const reviews = new Map<string, DealReview>()
  * A finished deal's play record, open (SKATGO-79, the human: 「本次牌谱要显示出来，不要折叠，用专业名词说
  * 这个牌谱」): the move most worth improving in one line on top, then the deal trick by trick with the
  * player's hand before each and the AI's card wherever it would have played another — at once, with no
- * button (the human: 「不需要按钮就直接打开」) — the skat, and `footer` (free play's sum). Every word of it is
+ * button (the human: 「不需要按钮就直接打开」) — and the skat. Every word of it is
  * SkatZero's choice and the rules engine's record; no model explains it (the human: 「解读太麻烦了」). `deal`
  * is the deal when the page has it (the settlement), shown while the AI's cards are fetched.
  */
@@ -241,10 +241,9 @@ type AnalysisProps = {
   names?: string[]
   ask: AskReview
   cacheKey?: string
-  footer?: ReactNode
 }
 
-function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
+function AnalysisBody({ deal, names, ask, cacheKey }: AnalysisProps) {
   const [review, setReview] = useState<DealReview | null>(cacheKey ? (reviews.get(cacheKey) ?? null) : null)
   const [failed, setFailed] = useState(false)
   useEffect(() => {
@@ -289,7 +288,6 @@ function AnalysisBody({ deal, names, ask, cacheKey, footer }: AnalysisProps) {
       ) : failed ? null : (
         <p {...stylex.props(typography.note, styles.muted)}>{m.loading()}</p>
       )}
-      {footer}
     </div>
   )
 }

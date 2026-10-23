@@ -239,9 +239,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     its one green landing action (play today's deals) and beside it a white `quiet` one, "Skat-Aufgaben
     lösen" / "Solve Skat puzzles", to the open-card endgames (SKATGO-109); a quiet ✓ line of what a first visitor wants to
     know. No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
-    设计审美来做好没有这个图片后的布局」): the hero is type alone, centred under room of its own (`space.x48`) — the
-    announcement line, the headline, the lead within the reading column, balanced, the two buttons and the ✓ line
-    — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
+    设计审美来做好没有这个图片后的布局」): the hero is type alone, centred under room of its own as tall as the gap
+    down to the tiles (48px, 「The Skat card game, free online 这句话上方的空白太多」) — the announcement line, the
+    headline at 48px (`fHero`, 「pc版上slogan字太大」), the lead within the reading column, balanced, the two
+    buttons and the ✓ line — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
     on felt (Redline 4);
   - the sections as colour tiles, each one link with only a title that says where it goes — no text, no button
     (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」) — as tall as its title, its

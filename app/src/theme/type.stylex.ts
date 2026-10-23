@@ -39,9 +39,10 @@ export const fontSize = stylex.defineVars({
   f25: '25px',
   f26_95: '26.95px',
   f72: '72px',
-  /** The front page's headline (SKATGO-69): as large as fits one line of „Skat online kostenlos", up to
-   *  66px (36px on a phone), following the screen's width so it never breaks. The human, 2026-10-09. */
-  fHero: 'min(66px, 5.2vw)',
+  /** The front page's headline (SKATGO-69): one line of „Skat online kostenlos", following the screen's width
+   *  so it never breaks, up to 48px (36px on a phone) — one fourth above the 36px section headings, now that
+   *  the hero is type alone (SKATGO-120, the human: 「pc版上slogan字太大」; it was 66px beside the picture). */
+  fHero: 'min(48px, 5.2vw)',
   fHeroPhone: 'min(36px, 8.6vw)',
   /** The table's three running totals on a phone (SKATGO-100): they share one cell of the info board, so they
    *  shrink with the screen rather than run past it. */

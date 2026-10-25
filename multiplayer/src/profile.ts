@@ -1,18 +1,17 @@
 import type { DealSummary } from '../../app/src/lib/skat/tournament'
-import { PLAYER } from '../../app/src/lib/skat/tournament'
-import type { ProfileDeal } from '../../app/src/lib/skat/profile'
+import type { ProfileDeal, Scores } from '../../app/src/lib/skat/profile'
 import type { Store } from './store'
 
 // A player's record of play (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，而且每个deal都要算和ai的
 // 差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's, from its
 // entries and its days' benchmarks, and free play's, recorded here when a signed-in player's finished deal is
-// reviewed (`/free/review`); both scored by Seeger-Fabian from the player's seat.
+// reviewed (`/free/review`); all three seats' Seeger-Fabian scores, in the player's game and in the AI's.
 
 /** A finished free deal of a signed-in player, once per game however often its review is asked. */
-export async function recordFreeDeal(store: Store, d: { player: string; game: string; day: string; at: number; score: number; ai: number }) {
+export async function recordFreeDeal(store: Store, d: { player: string; game: string; day: string; at: number; mine: Scores; ai: Scores }) {
   await store.pool.query(
-    'INSERT INTO play_deals (player, game, day, at, score, ai) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING',
-    [d.player, d.game, d.day, d.at, d.score, d.ai])
+    'INSERT INTO play_deals (player, game, day, at, mine, ai) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING',
+    [d.player, d.game, d.day, d.at, JSON.stringify(d.mine), JSON.stringify(d.ai)])
 }
 
 /**
@@ -35,11 +34,11 @@ export async function playProfile(store: Store, who: string): Promise<{ deals: P
     const specs = e.specs as { benchmark?: { summary: DealSummary } }[]
     ;(e.deals as DealSummary[]).forEach((mine, i) => deals.push({
       day: e.day, source: 'daily', at: Number(e.created_at) + i,
-      score: mine.scores[PLAYER], ai: specs[i]?.benchmark?.summary.scores[PLAYER] ?? null,
+      mine: mine.scores, ai: specs[i]?.benchmark?.summary.scores ?? null,
     }))
   }
-  const { rows: free } = await store.pool.query('SELECT day, at, score, ai FROM play_deals WHERE player = ANY($1)', [players])
-  for (const f of free) deals.push({ day: f.day, source: 'free', at: Number(f.at), score: f.score, ai: f.ai })
+  const { rows: free } = await store.pool.query('SELECT day, at, mine, ai FROM play_deals WHERE player = ANY($1)', [players])
+  for (const f of free) deals.push({ day: f.day, source: 'free', at: Number(f.at), mine: f.mine, ai: f.ai })
   deals.sort((a, b) => a.day.localeCompare(b.day) || a.at - b.at)
   return { deals: deals.map(({ at: _, ...d }) => d) }
 }

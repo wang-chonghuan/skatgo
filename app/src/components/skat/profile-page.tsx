@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 
 import { Btn, Panel, linkLook } from './ui'
 import { dailyProfile, isError } from '~/lib/daily-api'
-import { type ProfileDeal, againstAi, daysOf } from '~/lib/skat/profile'
+import { type ProfileDay, type ProfileDeal, daysOf, trendOf } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
@@ -19,7 +19,8 @@ import { typography } from '../../theme/type'
 /**
  * A player's record of play (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，而且每个deal都要算和ai的
  * 差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's and free
- * play's — as one curve of their score minus the AI's, deal by deal, and the days with how many deals each.
+ * play's — judged against the whole table and compared with the AI's game of the same cards (`lib/skat/profile.ts`):
+ * a curve of the average per deal, day by day, whether the last day was better than before, and the days.
  * Personal, never indexed; its title and lead render on the server, the record in the browser for an account.
  */
 export function ProfilePage() {
@@ -69,18 +70,25 @@ const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 
 function Record({ deals }: { deals: ProfileDeal[] }) {
   const days = daysOf(deals)
-  const judged = deals.map(againstAi).filter((d): d is number => d !== null)
-  const average = judged.length ? Math.round(judged.reduce((a, b) => a + b, 0) / judged.length) : 0
+  const trend = trendOf(deals)
   const date = new Intl.DateTimeFormat(getLocale(), { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
+  const dayName = (day: string) => date.format(new Date(`${day}T00:00:00Z`))
   return (
     <>
-      <p data-testid="profile-summary" {...stylex.props(typography.appText, styles.text)}>
-        {m.profile_summary({ deals: deals.length, days: days.length, average: signed(average) })}
-      </p>
+      <div {...stylex.props(styles.stackTight)}>
+        <p data-testid="profile-summary" {...stylex.props(typography.appText, styles.text)}>
+          {m.profile_summary({ deals: deals.length, days: days.length })}
+        </p>
+        {trend ? (
+          <p data-testid="profile-trend" data-verdict={trend.verdict} {...stylex.props(typography.appText, styles.lead)}>
+            {(trend.verdict === 'up' ? m.profile_trend_up : trend.verdict === 'down' ? m.profile_trend_down : m.profile_trend_same)({ last: signed(trend.last), before: signed(trend.before) })}
+          </p>
+        ) : null}
+      </div>
       <Panel>
         <div {...stylex.props(styles.stack)}>
           <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_curve_title()}</h2>
-          <Curve deals={deals} />
+          <Curve days={days} dayName={dayName} />
           <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_curve_note()}</p>
         </div>
       </Panel>
@@ -88,11 +96,11 @@ function Record({ deals }: { deals: ProfileDeal[] }) {
         <div {...stylex.props(styles.stack)}>
           <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_days_title()}</h2>
           <ol data-testid="profile-days" {...stylex.props(styles.days)}>
-            {days.map((d) => (
+            {[...days].reverse().map((d) => (
               <li key={d.day} data-testid="profile-day" data-day={d.day} data-deals={d.deals} {...stylex.props(styles.day)}>
-                <span {...stylex.props(typography.appText, styles.date)}>{date.format(new Date(`${d.day}T00:00:00Z`))}</span>
+                <span {...stylex.props(typography.appText, styles.date)}>{dayName(d.day)}</span>
                 <span {...stylex.props(typography.appText, styles.quiet)}>{m.profile_day_deals({ count: d.deals })}</span>
-                <span {...stylex.props(typography.appText, styles.figure)}>{m.profile_day_against({ diff: signed(d.againstAi) })}</span>
+                <span {...stylex.props(typography.appText, styles.figure)}>{d.perDeal === null ? '–' : m.profile_day_against({ diff: signed(d.perDeal) })}</span>
               </li>
             ))}
           </ol>
@@ -102,37 +110,38 @@ function Record({ deals }: { deals: ProfileDeal[] }) {
   )
 }
 
-/** One point per deal, the player's score minus the AI's, in the order played; a zero line, and a hairline where a
- *  new day begins. A deal without the AI's score keeps its place and has no point. */
-function Curve({ deals }: { deals: ProfileDeal[] }) {
+/** One point per day, oldest on the left: the day's average per deal against the AI, on a line; a zero line, and
+ *  the first and the last day's date under it. A day with no deal the AI played has no point. */
+function Curve({ days, dayName }: { days: ProfileDay[]; dayName: (day: string) => string }) {
   const { width, height, pad, dot, line } = profileChart
-  const diffs = deals.map(againstAi)
-  const known = diffs.filter((d): d is number => d !== null)
+  const known = days.flatMap((d) => (d.perDeal === null ? [] : [d.perDeal]))
   const top = Math.max(0, ...known)
   const bottom = Math.min(0, ...known)
   const span = top - bottom || 1
-  const x = (i: number) => pad + (deals.length > 1 ? (i * (width - 2 * pad)) / (deals.length - 1) : (width - 2 * pad) / 2)
+  const x = (i: number) => pad + (days.length > 1 ? (i * (width - 2 * pad)) / (days.length - 1) : (width - 2 * pad) / 2)
   const y = (v: number) => pad + ((top - v) * (height - 2 * pad)) / span
-  const points = diffs.flatMap((d, i) => (d === null ? [] : [{ i, d }]))
-  const dayStarts = deals.flatMap((d, i) => (i > 0 && d.day !== deals[i - 1].day ? [i] : []))
+  const points = days.flatMap((d, i) => (d.perDeal === null ? [] : [{ i, d }]))
   return (
-    <div {...stylex.props(styles.chart)}>
-      <div aria-hidden {...stylex.props(typography.meta, styles.scale)}>
-        <span>{signed(top)}</span>
-        <span>{signed(bottom)}</span>
+    <div {...stylex.props(styles.stackTight)}>
+      <div {...stylex.props(styles.chart)}>
+        <div aria-hidden {...stylex.props(typography.meta, styles.scale)}>
+          <span>{signed(top)}</span>
+          <span>{signed(bottom)}</span>
+        </div>
+        <svg data-testid="profile-curve" role="img" aria-label={m.profile_curve_title()} viewBox={`0 0 ${width} ${height}`} {...stylex.props(styles.svg)}>
+          <line x1={pad} x2={width - pad} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
+          <polyline points={points.map((p) => `${x(p.i)},${y(p.d.perDeal!)}`).join(' ')} strokeWidth={line} vectorEffect="non-scaling-stroke" {...stylex.props(styles.curve)} />
+          {points.map((p) => (
+            <circle key={p.d.day} data-testid="profile-point" data-day={p.d.day} data-per-deal={p.d.perDeal} cx={x(p.i)} cy={y(p.d.perDeal!)} r={dot} {...stylex.props(styles.point)}>
+              <title>{m.profile_point({ date: dayName(p.d.day), diff: signed(p.d.perDeal!), count: p.d.deals })}</title>
+            </circle>
+          ))}
+        </svg>
       </div>
-      <svg data-testid="profile-curve" role="img" aria-label={m.profile_curve_title()} viewBox={`0 0 ${width} ${height}`} {...stylex.props(styles.svg)}>
-        {dayStarts.map((i) => (
-          <line key={i} x1={(x(i - 1) + x(i)) / 2} x2={(x(i - 1) + x(i)) / 2} y1={0} y2={height} vectorEffect="non-scaling-stroke" {...stylex.props(styles.dayLine)} />
-        ))}
-        <line x1={pad} x2={width - pad} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
-        <polyline points={points.map((p) => `${x(p.i)},${y(p.d)}`).join(' ')} strokeWidth={line} vectorEffect="non-scaling-stroke" {...stylex.props(styles.curve)} />
-        {points.map((p) => (
-          <circle key={p.i} data-testid="profile-point" data-diff={p.d} cx={x(p.i)} cy={y(p.d)} r={dot} {...stylex.props(styles.point)}>
-            <title>{m.profile_point({ deal: p.i + 1, diff: signed(p.d) })}</title>
-          </circle>
-        ))}
-      </svg>
+      <div aria-hidden {...stylex.props(typography.meta, styles.axis)}>
+        <span>{dayName(days[0].day)}</span>
+        {days.length > 1 ? <span>{dayName(days[days.length - 1].day)}</span> : null}
+      </div>
     </div>
   )
 }
@@ -157,12 +166,13 @@ const styles = stylex.create({
   date: { margin: 0, color: color.text, flexGrow: 1 },
   figure: { margin: 0, color: color.navy, textAlign: 'end' },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  stackTight: { display: 'flex', flexDirection: 'column', gap: space.x4 },
+  axis: { display: 'flex', justifyContent: 'space-between', color: color.slate },
   actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
   chart: { display: 'flex', alignItems: 'stretch', gap: space.x8 },
   scale: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: color.slate, textAlign: 'end' },
   svg: { display: 'block', flexGrow: 1, minWidth: 0, width: '100%', height: 'auto', overflow: 'visible' },
   zero: { stroke: color.slate },
-  dayLine: { stroke: color.hairline },
   curve: { fill: 'none', stroke: color.info, strokeLinejoin: 'round' },
   point: { fill: color.info },
   days: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },

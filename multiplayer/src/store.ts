@@ -113,10 +113,11 @@ export class Store {
         );
         CREATE UNIQUE INDEX IF NOT EXISTS forum_reports_once ON forum_reports (reporter, post_id, (coalesce(comment_id, 0)));
         -- A signed-in player's finished free deals (SKATGO-128), for their record of play: once per game (its pool, deal
-        -- and start), with the day it was played, the player's Seeger-Fabian score and the AI's on the same deal.
+        -- and start), with the day it was played and the three seats' Seeger-Fabian scores ([0] the player's) in the
+        -- player's game and in the AI's game of the same deal.
         CREATE TABLE IF NOT EXISTS play_deals (
-          player text NOT NULL, game text NOT NULL, day text NOT NULL, at bigint NOT NULL, score integer NOT NULL,
-          ai integer NOT NULL, PRIMARY KEY (player, game)
+          player text NOT NULL, game text NOT NULL, day text NOT NULL, at bigint NOT NULL, mine jsonb NOT NULL,
+          ai jsonb NOT NULL, PRIMARY KEY (player, game)
         );
         CREATE TABLE IF NOT EXISTS ladder_answers (
           player text NOT NULL, step text NOT NULL, solved_at bigint, misses integer NOT NULL DEFAULT 0,

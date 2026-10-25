@@ -88,8 +88,12 @@ never one deal alone, so a round's total stays honest; the tournament cannot be 
 A signed-in player's record of play at `/profile` (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，
 而且每个deal都要算和ai的差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's,
 from its first day, the twelve-deal tournament's kept rows included (「他的全档案必须建立好」), and free play's (lesson 11's game included), recorded from SKATGO-128 on for a signed-in player
-when the deal's comparison is worked out — counted per day, and as one curve of their Seeger-Fabian score minus the
-AI's from the same seat, deal by deal. It is the player's own: no one else sees it, and a guest is asked to sign in.
+when the deal's comparison is worked out — counted per day. A deal is judged against the whole table and against the AI (the human: 「每个deal的差值=用户-lina+
+用户-noah……然后比较用户的差值和ai的差值，算这个差值的差」): the player's Seeger-Fabian score minus each opponent's, less the
+same for the AI's game of the same cards from the same seat, so defence counts too. The curve is one point a day, the
+day's average per deal, so whether the player gets better shows from the first days, not after a fixed number of
+deals (「30副不行」); the last day stands against the days before, better or worse only beyond the noise of single
+deals, also under a finished tournament, as the reason to come back (「我主要想让这个做为一个留存点」). It is the player's own: no one else sees it, and a guest is asked to sign in.
 The ids one person plays under count as one, as on the Elo board. Free play stays free and needs no account; only
 an account's deals are recorded. A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
 

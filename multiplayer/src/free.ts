@@ -199,7 +199,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
       const now = Date.now()
       await recordFreeDeal(store, {
         player: i.player, game: `free:${t.pool}:${t.id}:${t.t}`, day: dayOf(now), at: now,
-        score: seegerFabian(end)[PLAYER], ai: seegerFabian(ai)[PLAYER],
+        mine: seegerFabian(end), ai: seegerFabian(ai),
       })
     }
     return reviewOf(end, await judgePlays(policy()!, playsOf(d.dealer, deck, t.log)), { ai: summarize(ai), aiAuction: auctionOf(ai) })

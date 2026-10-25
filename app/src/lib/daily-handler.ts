@@ -22,7 +22,38 @@ const COOKIE = 'skatgo_daily'
 const COOKIE_PATH = '/api/daily'
 /** 400 days, the longest a browser keeps a cookie. */
 const COOKIE_MAX_AGE = 400 * 24 * 60 * 60
-const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'elo', 'profile'])
+const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'elo', 'profile', 'share', 'shared', 'practice-new', 'practice-act'])
+/** The shared deal of the day's operations (SKATGO-132), answered by the service's /share routes: the player's code
+ *  for today's finished deal; what a code shares; a past day's deal played as practice. */
+const SHARE_PATHS: Record<string, string> = { share: 'code', shared: 'read', 'practice-new': 'practice/new', 'practice-act': 'practice/act' }
+
+/** A shared deal's card (SKATGO-132): `/api/card/<code>-<de|en>.png`, drawn by the service, kept a day by
+ *  whoever fetches it. Anything else under /api/card is not found. */
+export async function handleCard(request: Request): Promise<Response> {
+  const m = /^\/api\/card\/([a-z0-9]{8})-(de|en)\.png$/.exec(new URL(request.url).pathname)
+  if (!m) return json(404, { error: 'not found' })
+  try {
+    const upstream = await callShare('card', { code: m[1], lang: m[2] })
+    if (!upstream) return json(503, { error: 'unavailable' })
+    if (!upstream.ok) return json(upstream.status, { error: 'not found' })
+    return new Response(await upstream.arrayBuffer(), { headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' } })
+  } catch {
+    return json(503, { error: 'unavailable' })
+  }
+}
+
+/** A call to the service's /share routes with its key; null when this server is not given the service. */
+export function callShare(path: string, payload: object): Promise<Response> | null {
+  const base = process.env.MULTIPLAYER_URL
+  const key = process.env.MULTIPLAYER_ADMISSION_KEY
+  if (!base || !key) return null
+  return fetch(new URL(`/share/${path}`, base), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-admission-key': key },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(10_000),
+  })
+}
 
 const json = (status: number, body: object, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } })
@@ -73,6 +104,16 @@ export async function handleDaily(request: Request): Promise<Response> {
   // Looking at the board needs no player: a visitor nobody knows yet asks as nobody. The Elo board is
   // everyone's, asked as nobody whoever looks.
   const player = op === 'elo' ? null : userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null
+  // A code, a practice game: nobody's (SKATGO-132). The player's own code needs who they are, guest or account.
+  if (op in SHARE_PATHS) {
+    if (op === 'share' && !player) return json(409, { error: 'not_finished' })
+    try {
+      const upstream = await callShare(SHARE_PATHS[op], op === 'share' ? { player } : body)!
+      return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
+    } catch {
+      return json(503, { error: 'unavailable' })
+    }
+  }
   if (op === 'review' && !player) return json(409, { error: 'not_finished' })
   // The nickname is an account's, set in the settings (SKATGO-126).
   // So is the record of play (SKATGO-128).

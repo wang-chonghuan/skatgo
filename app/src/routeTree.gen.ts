@@ -22,6 +22,7 @@ import { Route as WithFriendsRouteImport } from './routes/with-friends'
 import { Route as CourseIndexRouteImport } from './routes/course.index'
 import { Route as CourseSlugRouteImport } from './routes/course.$slug'
 import { Route as CourseQuickStartRouteImport } from './routes/course.quick-start'
+import { Route as DCodeRouteImport } from './routes/d.$code'
 import { Route as DailyPlayRouteImport } from './routes/daily_.play'
 import { Route as ForumPostRouteImport } from './routes/forum_.$post'
 import { Route as RulesBiddingTableRouteImport } from './routes/rules_.bidding-table'
@@ -29,6 +30,7 @@ import { Route as RulesPrintableRouteImport } from './routes/rules_.printable'
 import { Route as RulesScoreSheetRouteImport } from './routes/rules_.score-sheet'
 import { Route as SkatTricksExerciseRouteImport } from './routes/skat-tricks_.$exercise'
 import { Route as TableIdRouteImport } from './routes/table.$id'
+import { Route as DCodePlayRouteImport } from './routes/d_.$code.play'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -95,6 +97,11 @@ const CourseQuickStartRoute = CourseQuickStartRouteImport.update({
   path: '/course/quick-start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DCodeRoute = DCodeRouteImport.update({
+  id: '/d/$code',
+  path: '/d/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DailyPlayRoute = DailyPlayRouteImport.update({
   id: '/daily_/play',
   path: '/daily/play',
@@ -130,6 +137,11 @@ const TableIdRoute = TableIdRouteImport.update({
   path: '/table/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DCodePlayRoute = DCodePlayRouteImport.update({
+  id: '/d_/$code/play',
+  path: '/d/$code/play',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -144,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/with-friends': typeof WithFriendsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/course/quick-start': typeof CourseQuickStartRoute
+  '/d/$code': typeof DCodeRoute
   '/daily/play': typeof DailyPlayRoute
   '/forum/$post': typeof ForumPostRoute
   '/rules/bidding-table': typeof RulesBiddingTableRoute
@@ -152,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/skat-tricks/$exercise': typeof SkatTricksExerciseRoute
   '/table/$id': typeof TableIdRoute
   '/course/': typeof CourseIndexRoute
+  '/d/$code/play': typeof DCodePlayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -166,6 +180,7 @@ export interface FileRoutesByTo {
   '/with-friends': typeof WithFriendsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/course/quick-start': typeof CourseQuickStartRoute
+  '/d/$code': typeof DCodeRoute
   '/daily/play': typeof DailyPlayRoute
   '/forum/$post': typeof ForumPostRoute
   '/rules/bidding-table': typeof RulesBiddingTableRoute
@@ -174,6 +189,7 @@ export interface FileRoutesByTo {
   '/skat-tricks/$exercise': typeof SkatTricksExerciseRoute
   '/table/$id': typeof TableIdRoute
   '/course': typeof CourseIndexRoute
+  '/d/$code/play': typeof DCodePlayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -189,6 +205,7 @@ export interface FileRoutesById {
   '/with-friends': typeof WithFriendsRoute
   '/course/$slug': typeof CourseSlugRoute
   '/course/quick-start': typeof CourseQuickStartRoute
+  '/d/$code': typeof DCodeRoute
   '/daily_/play': typeof DailyPlayRoute
   '/forum_/$post': typeof ForumPostRoute
   '/rules_/bidding-table': typeof RulesBiddingTableRoute
@@ -197,6 +214,7 @@ export interface FileRoutesById {
   '/skat-tricks_/$exercise': typeof SkatTricksExerciseRoute
   '/table/$id': typeof TableIdRoute
   '/course/': typeof CourseIndexRoute
+  '/d_/$code/play': typeof DCodePlayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -213,6 +231,7 @@ export interface FileRouteTypes {
     | '/with-friends'
     | '/course/$slug'
     | '/course/quick-start'
+    | '/d/$code'
     | '/daily/play'
     | '/forum/$post'
     | '/rules/bidding-table'
@@ -221,6 +240,7 @@ export interface FileRouteTypes {
     | '/skat-tricks/$exercise'
     | '/table/$id'
     | '/course/'
+    | '/d/$code/play'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -235,6 +255,7 @@ export interface FileRouteTypes {
     | '/with-friends'
     | '/course/$slug'
     | '/course/quick-start'
+    | '/d/$code'
     | '/daily/play'
     | '/forum/$post'
     | '/rules/bidding-table'
@@ -243,6 +264,7 @@ export interface FileRouteTypes {
     | '/skat-tricks/$exercise'
     | '/table/$id'
     | '/course'
+    | '/d/$code/play'
   id:
     | '__root__'
     | '/'
@@ -257,6 +279,7 @@ export interface FileRouteTypes {
     | '/with-friends'
     | '/course/$slug'
     | '/course/quick-start'
+    | '/d/$code'
     | '/daily_/play'
     | '/forum_/$post'
     | '/rules_/bidding-table'
@@ -265,6 +288,7 @@ export interface FileRouteTypes {
     | '/skat-tricks_/$exercise'
     | '/table/$id'
     | '/course/'
+    | '/d_/$code/play'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -280,6 +304,7 @@ export interface RootRouteChildren {
   WithFriendsRoute: typeof WithFriendsRoute
   CourseSlugRoute: typeof CourseSlugRoute
   CourseQuickStartRoute: typeof CourseQuickStartRoute
+  DCodeRoute: typeof DCodeRoute
   DailyPlayRoute: typeof DailyPlayRoute
   ForumPostRoute: typeof ForumPostRoute
   RulesBiddingTableRoute: typeof RulesBiddingTableRoute
@@ -288,6 +313,7 @@ export interface RootRouteChildren {
   SkatTricksExerciseRoute: typeof SkatTricksExerciseRoute
   TableIdRoute: typeof TableIdRoute
   CourseIndexRoute: typeof CourseIndexRoute
+  DCodePlayRoute: typeof DCodePlayRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -383,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CourseQuickStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/d/$code': {
+      id: '/d/$code'
+      path: '/d/$code'
+      fullPath: '/d/$code'
+      preLoaderRoute: typeof DCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/daily_/play': {
       id: '/daily_/play'
       path: '/daily/play'
@@ -432,6 +465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TableIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/d_/$code/play': {
+      id: '/d_/$code/play'
+      path: '/d/$code/play'
+      fullPath: '/d/$code/play'
+      preLoaderRoute: typeof DCodePlayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -448,6 +488,7 @@ const rootRouteChildren: RootRouteChildren = {
   WithFriendsRoute: WithFriendsRoute,
   CourseSlugRoute: CourseSlugRoute,
   CourseQuickStartRoute: CourseQuickStartRoute,
+  DCodeRoute: DCodeRoute,
   DailyPlayRoute: DailyPlayRoute,
   ForumPostRoute: ForumPostRoute,
   RulesBiddingTableRoute: RulesBiddingTableRoute,
@@ -456,6 +497,7 @@ const rootRouteChildren: RootRouteChildren = {
   SkatTricksExerciseRoute: SkatTricksExerciseRoute,
   TableIdRoute: TableIdRoute,
   CourseIndexRoute: CourseIndexRoute,
+  DCodePlayRoute: DCodePlayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

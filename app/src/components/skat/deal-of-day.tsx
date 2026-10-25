@@ -1,18 +1,23 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
+import { Link as LinkIcon, Share2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { type DailyError, dailyBoard, dailyState, isError } from '~/lib/daily-api'
-import { share, shareText } from '~/lib/share'
+import { type Platform, cardUrl, platformLinks, shareSheet, shareText, shareUrl } from '~/lib/share'
+import { shareCode } from '~/lib/share-api'
 import { DAILY_TIME_ZONE, DEAL_OF_DAY, type DailyBoard, type DailyStatus, PLAYER } from '~/lib/skat/tournament'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
+import { icon } from '../../theme/constants'
 import { color } from '../../theme/color.stylex'
-import { space } from '../../theme/scale.stylex'
+import { border, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { VsAiTable, Who, signed } from './daily-comparison'
+import { BrandIcon } from './brand-icon'
+import { VsAiTable } from './daily-comparison'
 import { Leaderboard } from './daily-table'
 import { Btn, Panel, linkLook } from './ui'
 
@@ -62,7 +67,7 @@ export function DealOfDay({ waiting }: { waiting?: ReactNode }) {
   if ('error' in status) return <p data-testid="daily-unavailable" {...stylex.props(typography.appText, styles.text)}>{m.daily_unavailable()}</p>
   return (
     <div data-testid="dod" data-finished={status.finished ? 'true' : 'false'} {...stylex.props(styles.stack)}>
-      {status.finished ? <Result status={status} board={board} /> : <DealOfDayWayIn started={status.started} />}
+      {status.finished ? <Result status={status} /> : <DealOfDayWayIn started={status.started} />}
       <Leaderboard back={back} board={shown} onShow={show} />
       {/* Under the board, as agreed: how the AI played this deal, folded, only for whoever has played it; then free play. */}
       {status.finished ? (
@@ -89,41 +94,65 @@ export function DealOfDayWayIn({ started = false }: { started?: boolean }) {
   )
 }
 
-function Result({ status, board }: { status: DailyStatus; board: DailyBoard | DailyError | null }) {
+function Result({ status }: { status: DailyStatus }) {
   const score = status.totals[PLAYER]
   const ai = status.benchmarks?.[0]?.scores[PLAYER] ?? null
-  const ranked = board && !isError(board) ? board : null
   const [said, setSaid] = useState<'copied' | 'failed' | null>(null)
-  async function onShare() {
-    const r = await share(shareText(getLocale(), { day: status.day, score, ai }))
-    track('dod_shared', { how: r })
+  // The result's code (SKATGO-132): the link carries it, never the score.
+  const [code, setCode] = useState<string | null>(null)
+  useEffect(() => {
+    void shareCode().then((r) => setCode('error' in r ? null : r.code))
+  }, [])
+  const locale = getLocale()
+  const text = shareText(locale, { day: status.day, score })
+  async function onShare(via: Platform) {
+    if (!code) return
+    const r = await shareSheet(text, shareUrl(locale, code, via))
+    track('dod_shared', { how: r === 'shared' ? 'sheet' : r === 'copied' ? 'copy' : 'failed' })
     setSaid(r === 'shared' ? null : r)
   }
+  async function onCopy() {
+    if (!code) return
+    const done = await navigator.clipboard.writeText(`${text} ${shareUrl(locale, code, 'copy')}`).then(() => true, () => false)
+    track('dod_shared', { how: done ? 'copy' : 'failed' })
+    setSaid(done ? 'copied' : 'failed')
+  }
+  const links = code ? platformLinks(locale, code, text) : null
   return (
     <Panel>
       <section data-testid="dod-result" data-score={score} data-ai={ai ?? undefined} {...stylex.props(styles.stack)}>
-        <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.dod_result_title()}</h2>
-        <div {...stylex.props(styles.scores)}>
-          <div {...stylex.props(styles.score)}>
-            <span {...stylex.props(typography.landingHeading, styles.text)}>{signed(score)}</span>
-            <span {...stylex.props(typography.appText, styles.muted)}><Who side="you" /></span>
-          </div>
-          {ai === null ? null : (
-            <div {...stylex.props(styles.score)}>
-              <span {...stylex.props(typography.landingHeading, styles.text)}>{signed(ai)}</span>
-              <span {...stylex.props(typography.appText, styles.muted)}><Who side="ai" /></span>
-            </div>
-          )}
+        {/* What is done and what sharing is for — no scores here, the card below has them (the human: 「我不懂你显示这些垃圾
+            干什么……你完成了same one deal today, 分享给朋友，看看他们能打几分」). */}
+        <div {...stylex.props(styles.head)}>
+          <h2 {...stylex.props(typography.dialogTitle, styles.text)}>{m.dod_result_title()}</h2>
+          <p {...stylex.props(typography.appText, styles.muted)}>{m.dod_result_lead()}</p>
         </div>
-        {ranked?.me?.rank ? (
-          <p data-testid="dod-rank" data-rank={ranked.me.rank} data-players={ranked.total} {...stylex.props(typography.appText, styles.text)}>
-            {m.dod_rank({ n: ranked.total, rank: ranked.me.rank })}
-          </p>
-        ) : null}
         <div {...stylex.props(styles.action)}>
-          <Btn testId="dod-share" size="lg" onClick={() => void onShare()}>{m.dod_share()}</Btn>
+          <Btn testId="dod-share" size="lg" disabled={!code} onClick={() => void onShare('sheet')}>
+            <Share2 aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+            {m.dod_share()}
+          </Btn>
         </div>
+        {/* Each platform its own way out, with its mark (the human: 「whatsapp, instagram, facebook, telegram, x」, then
+            「picture不要了，不分享instagram。全部都要图标」), white, so "share" stays the one green action. */}
+        {links ? (
+          <div data-testid="dod-platforms" {...stylex.props(styles.platforms)}>
+            {(['whatsapp', 'facebook', 'telegram', 'x'] as const).map((p) => (
+              <a key={p} href={links[p]} target="_blank" rel="noopener noreferrer" data-testid={`share-${p}`} onClick={() => track('dod_shared', { how: p })} {...linkLook('quiet', 'sm')}>
+                <BrandIcon brand={p} />
+                {PLATFORM_NAME[p]}
+              </a>
+            ))}
+            <button type="button" data-testid="share-copy" onClick={() => void onCopy()} {...linkLook('quiet', 'sm')}>
+              <LinkIcon aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+              {m.share_copy()}
+            </button>
+          </div>
+        ) : null}
         {said ? <p role="status" {...stylex.props(typography.small, styles.muted)}>{said === 'copied' ? m.dod_copied() : m.dod_share_failed()}</p> : null}
+        {/* The card the link goes out with, under the buttons, so it is seen before it is sent (the human: 「最好让用户看到待
+            显示的卡片，再可以点发送，分享按钮可以在页面上面显示，下面是待分享的卡片」). */}
+        {code ? <img data-testid="dod-card" src={cardUrl(locale, code)} alt={m.share_card_alt()} {...stylex.props(styles.card)} /> : null}
         <Countdown />
       </section>
     </Panel>
@@ -148,14 +177,29 @@ function Countdown() {
   return <p data-testid="dod-next" {...stylex.props(typography.appText, styles.muted)}>{m.dod_next({ h, min })}</p>
 }
 
+/** The platforms by their own names, the same in every language. */
+const PLATFORM_NAME = { whatsapp: 'WhatsApp', facebook: 'Facebook', telegram: 'Telegram', x: 'X' }
+
 const styles = stylex.create({
+  platforms: { display: 'flex', flexWrap: 'wrap', gap: space.x8 },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   action: { display: 'flex' },
   text: { margin: 0, color: color.navy },
   muted: { margin: 0, color: color.slate },
   link: { alignSelf: 'flex-start', color: color.info },
-  scores: { display: 'flex', gap: space.x32, alignItems: 'flex-end' },
-  score: { display: 'flex', flexDirection: 'column', gap: space.x4 },
+  head: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   details: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  card: {
+    display: 'block',
+    width: '100%',
+    maxWidth: dims.shareCard,
+    aspectRatio: dims.shareCardRatio,
+    boxSizing: 'border-box',
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.hairline,
+    borderRadius: radii.panel,
+    backgroundColor: color.surface,
+  },
   summary: { color: color.info, cursor: 'pointer' },
 })

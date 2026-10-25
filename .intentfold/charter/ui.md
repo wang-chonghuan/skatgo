@@ -241,7 +241,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     the hero (it was since SKATGO-120); no line of facts under them (SKATGO-123, the
     human: 「✓Free ✓AI analysis 这行去掉」). No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
     设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it
-    (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the headline at 48px
+    (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the headline, the slogan (`entry_title`: "Free Skat play and progress", German "Skat kostenlos spielen und
+    besser werden", SKATGO-132, the human: 「slogan换成 free skat play and progress」; never reworded otherwise), at 48px
     (`fHero`, 「pc版上slogan字太大」) with the lead held close under it (12px), the lead within the reading column,
     balanced, the two buttons — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
     on felt (Redline 4). With the tournament's Elo board beside it (SKATGO-123, the human: 「hero区域在pc上就是左右两栏的
@@ -269,13 +270,21 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the short rules, the daily tournament, the Skat-Tricks' page and their article, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
-  tournament's page puts the forum's announcement line under its lead when there is one (SKATGO-118), then a
+  tournament's page has no lead under its title (SKATGO-132, the human: 「你显示着一坨垃圾干什么啊」), then the forum's
+  announcement line when there is one (SKATGO-118), then a
   toggle of two `toggleLook` links, "1 Spiel heute" | "Turnier · 6 Spiele" (SKATGO-131; SKATGO-77's 6 | 12 once stood
   there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
   its one `go` button to its table (`/daily/play?size=1`, where after the last card the result stands a moment and the
-  page comes back here); once played, a white card with the player's score and the AI's (`landingHeading`, each
-  tagged), "Heute n Spieler · du bist auf Platz k", "Ergebnis teilen" as the one `go` (the system's share sheet on a
-  phone, the clipboard elsewhere; no card or contract in it), the time until the next deal; then its board as the tournament's, the
+  page comes back here); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
+  gespielt" (`dialogTitle`) over "Deine Freunde bekommen dieselben Karten – schau, wie viele Punkte sie holen." — and no
+  scores, no place: the card below carries them (SKATGO-132, 「我不懂你显示这些垃圾干什么……你完成了same one deal today,
+  分享给朋友，看看他们能打几分」, 「1 played today · you're #1 这个不要显示」) — "Mit Freunden teilen" as the one `go`
+  with lucide's `Share2` (the phone's share sheet with the line and the link, the clipboard elsewhere; no card or
+  contract in it), under it `quiet` small buttons, each with its icon (「全部都要图标」) — the platforms' own marks in their brand
+  colours (`brand-icon.tsx`, Simple Icons, CC0) and names, WhatsApp, Facebook, Telegram, X, then lucide's `Link` and
+  "Link kopieren" (SKATGO-132; no Instagram, no picture download), then the card itself as it goes out (the link's
+  preview, at most 600px, a `hairline` border: 「最好让用户看到待显示的卡片，再可以点发送……下面是待分享的卡片」), the time
+  until the next deal; then its board as the tournament's, the
   AI's row on it (a guest who has not played sees it too, under the `go` "Jetzt spielen · 2 Min."); then, folded, how
   the AI played the deal (`VsAiTable`); then a link to free play.
   The tournament's side (six deals; SKATGO-77's twelve gone, SKATGO-119): its one
@@ -337,6 +346,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   week with an analysis, newest first — "Woche vom 19. Okt.", its deals and average per deal, then the analysis as a
   forum text (`ForumBody`: its points as a list, each led in bold, and the bold "Fazit"), in the page's language; then a white card, "Pro Tag", a row per day, newest first: the date, the deals, and the day's average per deal against the AI, signed. The same
   line of the last day against before stands under a finished tournament's heading, with the link to the profile.
+- **A shared result** (`shared-page.tsx`, SKATGO-132), `/d/<code>`: the H1 "Kannst du das schlagen?", a line of its
+  day, a white card with the table's three scores — the shared one ("Zu schlagen") marked `goodSoft`, the declarer's
+  name followed by an `amber` pill ("Alleinspieler") — and the one `go`, "Dieses Spiel spielen · 2 Min.", with a line that it is practice and a link to today's; its practice
+  table is a full-screen table, and at its end a white card with the player's score and the shared one.
+  The card picture (`multiplayer/src/card.ts`) is the same on white: the logo with "SkatGo.com" (「logo文字后面加上.com」), "1 deal today · 2 min" as the site's green button with the day beside it (「1 deal today 这个字应该强调……否则看到的人不知道能要打几副」), the score large, the three
+  scores with the declarer's yellow badge, "Same cards – what will you score?" (German "Gleiche Karten – wie viele Punkte holst du?", the human: 「不要说can you beat me，应该说试试你能得几分」).
 - **The forum** (`forum-page.tsx`, SKATGO-118) is two sub-pages on the grey page in the reading column. The
   list: its H1, with no lead under it, and beside it the one `go` button — "Anmelden" for a guest, "Neuer Beitrag"
   for a player, which opens the composer in a white card (the human: 「sign in放在 Forum 的旁边，放个按钮就行」) — the sections the author may use as

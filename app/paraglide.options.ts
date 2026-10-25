@@ -129,6 +129,21 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/spielen'],
       ],
     },
+    // A shared deal of the day and its practice table (SKATGO-132): short, as links in messages are.
+    {
+      pattern: '/d/:code/play',
+      localized: [
+        ['en', '/en/d/:code/play'],
+        ['de', '/de/d/:code/spielen'],
+      ],
+    },
+    {
+      pattern: '/d/:code',
+      localized: [
+        ['en', '/en/d/:code'],
+        ['de', '/de/d/:code'],
+      ],
+    },
     // A player's record of play (SKATGO-128).
     {
       pattern: '/profile',

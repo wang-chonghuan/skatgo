@@ -377,6 +377,10 @@ same game state (for example, once it is the learner's turn), not after the same
 **Screenshots mid-animation differ.** Steps slide in and the progress bar animates; a pixel comparison
 taken before they settle shows a few anti-aliasing differences that are not real.
 
+**Show the human English.** Everything put before the human to look at — screenshots, preview links, cards,
+the handoff's Check list — is the English page (`/…`, not `/de/…`; the `-en-` card), the human:
+「让我审查任何东西，都是英文，我不看的德文」. German is checked by the acceptance scripts, not shown.
+
 **Diagnose DNS from a public resolver.** This machine's resolver can cache an earlier NXDOMAIN for up
 to half an hour; `dig +short <host> @8.8.8.8` and `curl --resolve` are the authorities.
 

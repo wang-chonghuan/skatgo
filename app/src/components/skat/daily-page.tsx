@@ -17,7 +17,7 @@ import { linkLook, toggleLook } from './ui'
 import { TableLoading } from './table-loading'
 
 /**
- * The daily Skat tournament's page (SKATGO-29, SKATGO-35): its title and lead, the day's deals and the way to
+ * The daily Skat tournament's page (SKATGO-29, SKATGO-35): its title (no lead under it, SKATGO-132), the day's deals and the way to
  * play — start, continue, or, once it is played, its result — and its board. One tournament of six deals since
  * SKATGO-119 (the twelve-deal one of SKATGO-77 is gone). Since SKATGO-131 the page opens on the deal of the day, a
  * toggle at the top leading to the tournament (`?t=6`). Rendered on the server; where the visitor stands today
@@ -47,7 +47,6 @@ export function DailyPage() {
     <div data-testid="daily" {...stylex.props(styles.root)}>
       <section {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.daily_title({ n: DAILY_DEALS })}</h1>
-        <p data-testid="daily-lead" {...stylex.props(typography.landingBody, styles.lead)}>{m.daily_static_lead()}</p>
         <AnnouncementLine announcement={announcement} />
         {/* The day's two competitions, each its own (SKATGO-131, the human: 「每日一副就是一副，每日6副就是6副」), as the
             six and twelve deals once stood (SKATGO-77): the deal of the day first. */}
@@ -116,5 +115,4 @@ const styles = stylex.create({
   action: { display: 'flex' },
   toggle: { display: 'flex', flexWrap: 'wrap', gap: space.x8 },
   title: { margin: 0, color: color.navy },
-  lead: { margin: 0, color: color.navy },
 })

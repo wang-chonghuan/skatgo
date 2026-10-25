@@ -50,7 +50,7 @@ type StoredBidding = Pick<SeatBidding, 'maxBid' | 'pickup' | 'hand'>
  *  once they have finished that deal, and its moves, kept for a later review. */
 type Benchmark = { summary: DealSummary; log: Logged[] }
 /** `pick`: the deal of the day's kind and contract, as it was chosen (SKATGO-131). */
-type DealSpec = { dealer: Seat; deck: Card[]; computers?: Record<'1' | '2', StoredBidding>; benchmark?: Benchmark; pick?: DealPick }
+export type DealSpec = { dealer: Seat; deck: Card[]; computers?: Record<'1' | '2', StoredBidding>; benchmark?: Benchmark; pick?: DealPick }
 type Entry = { actions: (Move | Logged)[][]; deals: DealSummary[]; total: number; finished_at: string | null }
 type Day = { deals: DealSpec[]; computer: string }
 
@@ -81,7 +81,7 @@ export function dealDay(): DealSpec[] {
   })
 }
 
-const ended = (g: Game) => g.phase === 'done' || g.phase === 'passedIn'
+export const ended = (g: Game) => g.phase === 'done' || g.phase === 'passedIn'
 
 /** Let the computers move until it is the player's turn or the deal is over; `steps` collects each
  *  state they leave behind, for the table to show in order. */
@@ -105,7 +105,7 @@ export function replay(spec: DealSpec, moves: Move[]): Game {
 /** The next decision of the computer whose turn it is, as the moves the engine knows. On a hybrid day
  *  the skat step of a computer declarer is three moves — pick up, put two away, declare — as the
  *  heuristics choose them; on a SkatZero day the auction and the skat step are SkatZero's. */
-async function computerTurn(g: Game, policy: Policy, spec: DealSpec, computer: string): Promise<Logged[]> {
+export async function computerTurn(g: Game, policy: Policy, spec: DealSpec, computer: string): Promise<Logged[]> {
   const seat = actor(g)!
   if (computer === COMPUTER && g.phase !== 'play') {
     const stored = spec.computers?.[String(seat) as '1' | '2']

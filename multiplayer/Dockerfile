@@ -22,6 +22,8 @@ ENV ORT_DISABLE_TELEMETRY=1
 COPY --from=build /repo/multiplayer/node_modules ./node_modules
 COPY --from=build /repo/multiplayer/dist ./dist
 COPY --from=build /repo/multiplayer/skatzero ./skatzero
+# The shared deal's card (SKATGO-132): the site's font files and its logo, read next to dist/ at start.
+COPY --from=build /repo/multiplayer/assets ./assets
 USER node
 EXPOSE 10000
 CMD ["node", "dist/server.mjs"]

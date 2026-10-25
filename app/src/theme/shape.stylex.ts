@@ -57,6 +57,11 @@ export const dims = stylex.defineVars({
   tileArtRight: '-18px',
   tileArtBottom: '-38px',
 
+  /** The share card shown under the result's share buttons (SKATGO-132): the link preview's own 1200×630, at most
+   *  half its size. */
+  shareCard: '600px',
+  shareCardRatio: '1200 / 630',
+
   // Sub-page
   pageColumn: '1287px',
   readingColumn: '860px',

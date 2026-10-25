@@ -17,6 +17,8 @@ export type PageHead = {
   paths: Record<Locale, string>
   /** The file name (without language and extension) of the page's picture in /og. */
   image: string
+  /** A picture of the page's own instead of the static one `image` names: a shared deal's card (SKATGO-132). */
+  imageUrl?: string
   jsonLd: JsonLd[]
   /** Whether search engines may index the page, when its data decides rather than its route (a forum post). */
   indexable?: boolean
@@ -30,10 +32,10 @@ export const samePath = (path: string): Record<Locale, string> =>
 
 export const ogImageUrl = (image: string, locale: Locale) => `${SITE_URL}/og/${image}-${locale}.png`
 
-export function pageHead({ title, description, paths, image, jsonLd, indexable: indexed, search }: PageHead) {
+export function pageHead({ title, description, paths, image, imageUrl, jsonLd, indexable: indexed, search }: PageHead) {
   const locale = getLocale()
   const url = `${localizedUrl(paths[locale], locale)}${search ?? ''}`
-  const picture = ogImageUrl(image, locale)
+  const picture = imageUrl ?? ogImageUrl(image, locale)
   const indexable = !search && (indexed ?? isIndexable(paths[locale]))
   return {
     meta: [

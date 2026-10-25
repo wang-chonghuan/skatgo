@@ -60,7 +60,9 @@ export type ProductEvents = {
   /** A tournament's last deal today was finished. */
   daily_finished: { deals: number; total: number }
   /** The deal of the day's result was shared (SKATGO-131): through the share sheet, copied, or neither worked. */
-  dod_shared: { how: 'shared' | 'copied' | 'failed' }
+  dod_shared: { how: 'whatsapp' | 'facebook' | 'telegram' | 'x' | 'sheet' | 'copy' | 'failed' }
+  /** A shared result's page was opened (SKATGO-132): through which platform's link, and whether on its own day. */
+  dod_share_opened: { via: string; today: boolean }
   /** Today's finished entry was put on the leaderboard under a nickname, or renamed. */
   daily_nickname_set: Empty
   /** A private table was opened. */

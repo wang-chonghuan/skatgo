@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-129",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-129",
+  "branch": "SKATGO-129-saldo-article",
+  "base": "6d5fee4ee4e365734af59a10a08d47ad834001e1",
+  "ports": {
+    "web": 55129,
+    "multiplayer": 56129,
+    "database": 57129
+  }
+}

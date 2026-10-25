@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { cardRow, inlineParts, parseBody, plainText, postIdOf, postIndexable, postParam, sectionsFor, slugOf } from './forum'
+import { cardRow, forumImagePath, inlineParts, parseBody, plainText, postIdOf, postIndexable, postParam, sectionsFor, slugOf } from './forum'
 
 // The forum's shared rules (SKATGO-118): what an address, a post's text and its indexing come to.
 
@@ -45,6 +45,19 @@ describe('a post\'s text', () => {
       { kind: 'cards', cards: [{ suit: 'C', rank: 'J' }, { suit: 'S', rank: '10' }, { suit: 'H', rank: 'Q' }, { suit: 'D', rank: '7' }] },
       { kind: 'p', lines: ['Ende'] },
     ])
+  })
+  it('reads a picture of the site’s own on a line of its own, and leaves anything else text (SKATGO-129)', () => {
+    expect(parseBody('Davor\n![Two curves, day by day](skatgo-saldo-defence.svg)\nDanach')).toEqual([
+      { kind: 'p', lines: ['Davor'] },
+      { kind: 'image', alt: 'Two curves, day by day', file: 'skatgo-saldo-defence.svg', line: '![Two curves, day by day](skatgo-saldo-defence.svg)' },
+      { kind: 'p', lines: ['Danach'] },
+    ])
+    // Another site's picture, a path, or a picture inside a sentence is not one.
+    for (const line of ['![x](https://example.com/a.svg)', '![x](../a.svg)', '![x](a.gif)', 'Sieh ![x](a.svg)']) {
+      expect(parseBody(line)).toEqual([{ kind: 'p', lines: [line] }])
+    }
+    expect(forumImagePath('a.svg', 'de')).toBe('/forum-images/de/a.svg')
+    expect(plainText('![Two curves](a.svg)\nText')).toBe('Text')
   })
   it('takes a row of cards only on a line of its own, and only of real cards', () => {
     expect(cardRow('[♠A ♥K]')).toEqual([{ suit: 'S', rank: 'A' }, { suit: 'H', rank: 'K' }])

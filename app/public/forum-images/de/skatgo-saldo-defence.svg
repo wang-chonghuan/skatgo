@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 470" width="600" height="470" font-family="'Red Hat Display', 'Helvetica Neue', Arial, sans-serif">
+<rect width="600" height="470" fill="#FFFFFF"/>
+<text x="16" y="38" font-size="25" font-weight="700" fill="#022657">Nur Verteidigung: Schnitt pro Spiel, pro Tag</text>
+<text x="16" y="68" font-size="17" fill="#5D6D7D">Spiele, in denen ich und die KI Gegenspieler waren</text>
+<line x1="62" x2="584" y1="350" y2="350" stroke="#E0E5EB" stroke-width="1"/>
+<text x="52" y="354" text-anchor="end" font-size="16" fill="#5D6D7D">-100</text>
+<line x1="62" x2="584" y1="300.8" y2="300.8" stroke="#E0E5EB" stroke-width="1"/>
+<text x="52" y="304.8" text-anchor="end" font-size="16" fill="#5D6D7D">-75</text>
+<line x1="62" x2="584" y1="251.6" y2="251.6" stroke="#E0E5EB" stroke-width="1"/>
+<text x="52" y="255.6" text-anchor="end" font-size="16" fill="#5D6D7D">-50</text>
+<line x1="62" x2="584" y1="202.4" y2="202.4" stroke="#E0E5EB" stroke-width="1"/>
+<text x="52" y="206.4" text-anchor="end" font-size="16" fill="#5D6D7D">-25</text>
+<line x1="62" x2="584" y1="153.2" y2="153.2" stroke="#5D6D7D" stroke-width="1"/>
+<text x="52" y="157.2" text-anchor="end" font-size="16" fill="#5D6D7D">0</text>
+<line x1="62" x2="584" y1="104" y2="104" stroke="#E0E5EB" stroke-width="1"/>
+<text x="52" y="108" text-anchor="end" font-size="16" fill="#5D6D7D">+25</text>
+<text x="62" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">9.</text>
+<text x="105.5" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">10.</text>
+<text x="149" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">11.</text>
+<text x="192.5" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">12.</text>
+<text x="236" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">13.</text>
+<text x="279.5" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">14.</text>
+<text x="323" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">15.</text>
+<text x="366.5" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">16.</text>
+<text x="410" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">17.</text>
+<text x="453.5" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">18.</text>
+<text x="497" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">19.</text>
+<text x="540.5" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">23.</text>
+<text x="584" y="370" text-anchor="middle" font-size="16" fill="#5D6D7D">24.</text>
+<text x="323" y="394" text-anchor="middle" font-size="16" fill="#5D6D7D">Oktober 2026</text>
+<polyline points="62.0,153.2 105.5,153.2 149.0,167.0 192.5,170.9 236.0,178.8 279.5,153.2 323.0,161.1 366.5,153.2 410.0,153.2 453.5,153.2 497.0,153.2 540.5,153.2 584.0,153.2" fill="none" stroke="#5D6D7D" stroke-width="3" stroke-linejoin="round" stroke-dasharray="7 5"/><circle cx="62.0" cy="153.2" r="5" fill="#5D6D7D"/><circle cx="105.5" cy="153.2" r="5" fill="#5D6D7D"/><circle cx="149.0" cy="167.0" r="5" fill="#5D6D7D"/><circle cx="192.5" cy="170.9" r="5" fill="#5D6D7D"/><circle cx="236.0" cy="178.8" r="5" fill="#5D6D7D"/><circle cx="279.5" cy="153.2" r="5" fill="#5D6D7D"/><circle cx="323.0" cy="161.1" r="5" fill="#5D6D7D"/><circle cx="366.5" cy="153.2" r="5" fill="#5D6D7D"/><circle cx="410.0" cy="153.2" r="5" fill="#5D6D7D"/><circle cx="453.5" cy="153.2" r="5" fill="#5D6D7D"/><circle cx="497.0" cy="153.2" r="5" fill="#5D6D7D"/><circle cx="540.5" cy="153.2" r="5" fill="#5D6D7D"/><circle cx="584.0" cy="153.2" r="5" fill="#5D6D7D"/>
+<polyline points="62.0,176.8 105.5,153.2 149.0,243.7 192.5,253.6 236.0,332.3 279.5,147.3 323.0,212.2 366.5,147.3 410.0,159.1 453.5,200.4 497.0,176.8 540.5,153.2 584.0,159.1" fill="none" stroke="#095ECF" stroke-width="3" stroke-linejoin="round"/><circle cx="62.0" cy="176.8" r="5" fill="#095ECF"/><circle cx="105.5" cy="153.2" r="5" fill="#095ECF"/><circle cx="149.0" cy="243.7" r="5" fill="#095ECF"/><circle cx="192.5" cy="253.6" r="5" fill="#095ECF"/><circle cx="236.0" cy="332.3" r="5" fill="#095ECF"/><circle cx="279.5" cy="147.3" r="5" fill="#095ECF"/><circle cx="323.0" cy="212.2" r="5" fill="#095ECF"/><circle cx="366.5" cy="147.3" r="5" fill="#095ECF"/><circle cx="410.0" cy="159.1" r="5" fill="#095ECF"/><circle cx="453.5" cy="200.4" r="5" fill="#095ECF"/><circle cx="497.0" cy="176.8" r="5" fill="#095ECF"/><circle cx="540.5" cy="153.2" r="5" fill="#095ECF"/><circle cx="584.0" cy="159.1" r="5" fill="#095ECF"/>
+<line x1="16" x2="44" y1="426" y2="426" stroke="#5D6D7D" stroke-width="3" stroke-dasharray="7 5"/><text x="54" y="432" font-size="17" fill="#29323D">Einfache Differenz (deine Punkte − die der KI)</text>
+<line x1="16" x2="44" y1="452" y2="452" stroke="#095ECF" stroke-width="3"/><text x="54" y="458" font-size="17" fill="#29323D">SkatGo-Saldo (gegen den ganzen Tisch)</text>
+</svg>

@@ -12,6 +12,9 @@ const FONTS = ['RedHatDisplay-Black.ttf', 'RedHatDisplay-Bold.ttf', 'RedHatDispl
 /** The clear-ground logo (app/public/logo-mark.png). */
 const LOGO = `data:image/png;base64,${readFileSync(new URL('logo-mark.png', assets)).toString('base64')}`
 
+/** The brand beside the logo, with the address (the human: 「卡片的logo文字后面加上.com」). */
+const BRAND = 'SkatGo.com'
+
 /** The site's colours (app/src/theme/color.stylex.ts). */
 const C = { white: '#FFFFFF', page: '#F2F4F7', navy: '#022657', slate: '#5D6D7D', go: '#00A336', goodSoft: '#E3F6EA', amber: '#FF9E10', plate: '#252525' }
 
@@ -50,10 +53,10 @@ function board(x: number, y: number, w: number, rowH: number, size: number, rows
 }
 
 export function cardSvg(t: CardText, shape: CardShape): string {
-  const head = (x: number, y: number, h: number) => `<image href="${LOGO}" x="${x}" y="${y}" width="${h}" height="${h}"/>${text(x + h * 1.22, y + h * 0.74, h * 0.62, 700, C.navy, 'SkatGo')}`
+  const head = (x: number, y: number, h: number) => `<image href="${LOGO}" x="${x}" y="${y}" width="${h}" height="${h}"/>${text(x + h * 1.22, y + h * 0.74, h * 0.62, 700, C.navy, BRAND)}`
   /** The slogan beside the brand, on the brand's line. */
   const slogan = (x: number, y: number, h: number, size: number) =>
-    text(x + h * 1.22 + width(h * 0.62, 700, 'SkatGo') + size, y + h * 0.74, size, 700, C.slate, t.slogan)
+    text(x + h * 1.22 + width(h * 0.62, 700, BRAND) + size, y + h * 0.74, size, 700, C.slate, t.slogan)
   if (shape === 'wide') {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="${C.white}"/>

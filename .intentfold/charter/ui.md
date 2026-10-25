@@ -343,7 +343,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   day, a white card with the table's three scores — the shared one ("Zu schlagen") marked `goodSoft`, the declarer's
   name followed by an `amber` pill ("Alleinspieler") — and the one `go`, "Dieses Spiel spielen · 2 Min.", with a line that it is practice and a link to today's; its practice
   table is a full-screen table, and at its end a white card with the player's score and the shared one.
-  The card picture (`multiplayer/src/card.ts`) is the same on white: the logo, the day, the score large, the three
+  The card picture (`multiplayer/src/card.ts`) is the same on white: the logo with "SkatGo.com" (「logo文字后面加上.com」), the day, the score large, the three
   scores with the declarer's yellow badge, "Same cards – what will you score?" (German "Gleiche Karten – wie viele Punkte holst du?", the human: 「不要说can you beat me，应该说试试你能得几分」).
 - **The forum** (`forum-page.tsx`, SKATGO-118) is two sub-pages on the grey page in the reading column. The
   list: its H1, with no lead under it, and beside it the one `go` button — "Anmelden" for a guest, "Neuer Beitrag"

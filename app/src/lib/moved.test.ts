@@ -21,7 +21,7 @@ describe('moved addresses', () => {
   })
 
   it('leaves current addresses alone', () => {
-    for (const path of ['/', '/en', '/en/course', '/de/kurs', '/en/play', '/de/spielen', '/en/rules', '/de/regeln', '/api/ask']) expect(movedTo(path, '')).toBeNull()
+    for (const path of ['/', '/en', '/en/course', '/de/kurs', '/en/play', '/de/spielen', '/en/rules', '/de/regeln', '/api/daily/state']) expect(movedTo(path, '')).toBeNull()
   })
 
   it('consolidates the German homepage with query preserved', () => {

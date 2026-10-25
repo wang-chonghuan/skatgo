@@ -27,45 +27,57 @@ async function dealOfDay(store: Store, day: string): Promise<{ spec: DealSpec; c
   return rows[0] ? { spec: (rows[0].deals as DealSpec[])[0], computer: rows[0].computer } : null
 }
 
-/** The code of the player's finished deal of today, made on the first ask. */
+/** The code of the player's finished deal of today, made on the first ask: the table's scores, and the player's place
+ *  among today's finished entries as it stands then (equal scores share a place). */
 export async function shareCode(store: Store, who: string, now = Date.now()): Promise<{ code: string }> {
   const day = dayOf(now)
   const { rows: entry } = await store.pool.query(
-    'SELECT total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, DEAL_OF_DAY, who])
+    'SELECT deals, total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, DEAL_OF_DAY, who])
   if (!entry[0]?.finished_at) throw new Rejected('not_finished')
   const { rows: had } = await store.pool.query('SELECT code FROM dod_shares WHERE day = $1 AND player = $2', [day, who])
   if (had[0]) return { code: had[0].code }
-  const ai = (await dealOfDay(store, day))?.spec.benchmark?.summary.scores[PLAYER] ?? null
+  const { rows: field } = await store.pool.query(
+    `SELECT count(*) FILTER (WHERE total > $3)::int AS above, count(*)::int AS players FROM daily_entries
+      WHERE day = $1 AND size = $2 AND finished_at IS NOT NULL`, [day, DEAL_OF_DAY, entry[0].total])
   const code = newCode()
   await store.pool.query(
-    'INSERT INTO dod_shares (code, day, player, score, ai, created_at) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (day, player) DO NOTHING',
-    [code, day, who, entry[0].total, ai, now])
+    'INSERT INTO dod_shares (code, day, player, scores, rank, players, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (day, player) DO NOTHING',
+    [code, day, who, JSON.stringify((entry[0].deals as DealSummary[])[0].scores), field[0].above + 1, field[0].players, now])
   const { rows } = await store.pool.query('SELECT code FROM dod_shares WHERE day = $1 AND player = $2', [day, who])
   return { code: rows[0].code }
 }
 
-export type Shared = { day: string; score: number; ai: number | null; today: boolean }
+export type Shared = { day: string; scores: [number, number, number]; rank: number; players: number; today: boolean }
 
-/** What a code shares: the day, the score and the AI's, and whether that day is today. Never who. */
+/** What a code shares: the day, the table's scores, the place then, and whether that day is today. Never who. */
 export async function sharedOf(store: Store, code: string, now = Date.now()): Promise<Shared> {
-  const { rows } = await store.pool.query('SELECT day, score, ai FROM dod_shares WHERE code = $1', [code])
+  const { rows } = await store.pool.query('SELECT day, scores, rank, players FROM dod_shares WHERE code = $1', [code])
   if (!rows[0]) throw new Rejected('no_such_share')
-  return { day: rows[0].day, score: rows[0].score, ai: rows[0].ai, today: rows[0].day === dayOf(now) }
+  return { day: rows[0].day, scores: rows[0].scores, rank: rows[0].rank, players: rows[0].players, today: rows[0].day === dayOf(now) }
 }
 
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 const WORDS = {
-  de: { label: '1 Spiel heute', ai: 'KI', challenge: 'Kannst du das schlagen?' },
-  en: { label: '1 deal today', ai: 'AI', challenge: 'Can you beat it?' },
+  de: { label: '1 Spiel heute', me: 'Ich', seats: ['Lina', 'Noah'], place: (r: number, n: number) => `Platz ${r} von ${n} heute`, first: 'Als Erster heute gespielt', challenge: 'Gleiche Karten – kannst du mich schlagen?' },
+  en: { label: '1 deal today', me: 'Me', seats: ['Lina', 'Noah'], place: (r: number, n: number) => `#${r} of ${n} today`, first: 'First to play today', challenge: 'Same cards – can you beat me?' },
 } as const
 
-/** The card of a code, in a language and a shape. */
+/** The card of a code, in a language and a shape: the place as the brag, the three seats' scores. */
 export async function shareCard(store: Store, code: string, lang: 'de' | 'en', shape: 'wide' | 'tall'): Promise<Buffer> {
   const s = await sharedOf(store, code)
   const w = WORDS[lang]
   const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${s.day}T00:00:00Z`))
   return cardPng(`${code}|${lang}|${shape}`, {
-    label: `${w.label} · ${date}`, score: signed(s.score), ai: s.ai === null ? null : `${w.ai} ${signed(s.ai)}`, challenge: w.challenge, site: 'skatgo.com',
+    label: `${w.label} · ${date}`,
+    score: signed(s.scores[PLAYER]),
+    brag: s.players > 1 ? w.place(s.rank, s.players) : w.first,
+    rows: [
+      { name: w.me, score: signed(s.scores[0]), me: true },
+      { name: w.seats[0], score: signed(s.scores[1]), me: false },
+      { name: w.seats[1], score: signed(s.scores[2]), me: false },
+    ],
+    challenge: w.challenge,
+    site: 'skatgo.com',
   }, shape)
 }
 

@@ -12,13 +12,12 @@ const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 
 export type Platform = 'whatsapp' | 'facebook' | 'telegram' | 'x' | 'instagram' | 'sheet' | 'copy' | 'download'
 
-/** The line shared: the site, the day, the player's score and the AI's, a ✅ when the player did as well or better,
- *  and the challenge. */
-export function shareText(locale: Locale, r: { day: string; score: number; ai: number | null }): string {
+/** The line shared: the site, the day, the player's score, their place today, and the invitation — no AI, as on the
+ *  card (the human: 「不要显示ai的」). */
+export function shareText(locale: Locale, r: { day: string; score: number; rank: number | null; players: number | null }): string {
   const date = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${r.day}T00:00:00Z`))
-  const ai = r.ai === null ? '' : ` ${m.dod_share_ai({ ai: signed(r.ai) }, { locale })}`
-  const mark = r.ai !== null && r.score >= r.ai ? ' ✅' : ''
-  return `SkatGo · ${date} · ${m.dod_share_title({}, { locale })} ${signed(r.score)}${ai}${mark} · ${m.shared_title({}, { locale })}`
+  const place = r.rank && r.players && r.players > 1 ? ` · ${m.shared_place({ rank: r.rank, n: r.players }, { locale })}` : ''
+  return `SkatGo · ${date} · ${m.dod_share_title({}, { locale })} ${signed(r.score)}${place} · ${m.shared_challenge({}, { locale })}`
 }
 
 /** The shared result's page, saying where the visitor came from (`via`, for counting what shares bring). */

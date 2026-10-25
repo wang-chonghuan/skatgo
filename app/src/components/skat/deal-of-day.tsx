@@ -101,7 +101,7 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
     void shareCode().then((r) => setCode('error' in r ? null : r.code))
   }, [])
   const locale = getLocale()
-  const text = shareText(locale, { day: status.day, score, ai })
+  const text = shareText(locale, { day: status.day, score, rank: ranked?.me?.rank ?? null, players: ranked?.total ?? null })
   async function onShare(via: Platform) {
     if (!code) return
     const r = await shareSheet(text, shareUrl(locale, code, via), cardUrl(locale, code, 'tall'))

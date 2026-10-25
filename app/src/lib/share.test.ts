@@ -8,12 +8,12 @@ import { platformLinks, shareText, shareUrl } from './share'
 
 describe('the shared result', () => {
   it('names the day, both scores and the challenge, in the page language', () => {
-    expect(shareText('de', { day: '2026-10-25', score: 96, ai: 72 })).toBe('SkatGo · 25. Okt. · 1 Spiel heute +96 (KI +72) ✅ · Kannst du das schlagen?')
-    expect(shareText('en', { day: '2026-10-25', score: -50, ai: 40 })).toBe('SkatGo · Oct 25 · 1 deal today −50 (AI +40) · Can you beat it?')
+    expect(shareText('de', { day: '2026-10-25', score: 96, rank: 1, players: 12 })).toBe('SkatGo · 25. Okt. · 1 Spiel heute +96 · Platz 1 von 12 heute · Gleiche Karten – kannst du mich schlagen?')
+    expect(shareText('en', { day: '2026-10-25', score: -50, rank: null, players: null })).toBe('SkatGo · Oct 25 · 1 deal today −50 · Same cards – can you beat me?')
   })
   it('carries no card and no contract', () => {
-    const text = shareText('en', { day: '2026-10-25', score: 120, ai: null })
-    expect(text).not.toMatch(/[♣♠♥♦]|Grand|Null|Hearts|Spades|Clubs|Diamonds|Kreuz|Pik|Herz|Karo/)
+    const text = shareText('en', { day: '2026-10-25', score: 120, rank: 3, players: 7 })
+    expect(text).not.toMatch(/[♣♠♥♦]|Grand|Null|Hearts|Spades|Clubs|Diamonds|Kreuz|Pik|Herz|Karo|AI|KI/)
   })
   it('links each platform to the shared page, saying which platform', () => {
     expect(shareUrl('de', 'abc12345', 'x')).toBe('https://skatgo.com/de/d/abc12345?via=x')

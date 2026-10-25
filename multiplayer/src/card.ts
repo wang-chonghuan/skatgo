@@ -1,58 +1,73 @@
 import { readFileSync } from 'node:fs'
 import { Resvg } from '@resvg/resvg-js'
 
-// The picture a shared deal of the day travels with (SKATGO-132, the human: 「分享出去要有精美的卡片」): the site's felt,
-// its logo, the day, the score shared large with the AI's beside it, and the challenge — no card face, no contract,
-// no name (the ticket). Drawn as SVG with the site's font and turned into a PNG by resvg: wide for link previews
-// (1200×630), tall for Instagram (1080×1350). The font has no suits, so the cards on it are backs.
+// The picture a shared deal of the day travels with (SKATGO-132). The human: 「分享的卡片，就显示三家的fabian分数，不要显示ai
+// 的，邀请看到的人来打同一副牌，要让玩家有能得瑟的地方，然后要白底」 — on white, the day, the player's score large, their place
+// among today's players to be proud of, the table's three Seeger-Fabian scores with theirs marked, and the invitation
+// to play the same cards; no card face, no contract, no AI, no name (the ticket). Drawn as SVG with the site's font
+// and turned into a PNG by resvg: wide for link previews (1200×630), tall for Instagram (1080×1350).
 
 const assets = new URL('../assets/', import.meta.url)
 const FONTS = ['RedHatDisplay-Black.ttf', 'RedHatDisplay-Bold.ttf', 'RedHatDisplay-Medium.ttf'].map((f) => new URL(`fonts/${f}`, assets).pathname)
-const png = (f: string) => `data:image/png;base64,${readFileSync(new URL(f, assets)).toString('base64')}`
 /** The clear-ground logo (app/public/logo-mark.png). */
-const LOGO = png('logo-mark.png')
+const LOGO = `data:image/png;base64,${readFileSync(new URL('logo-mark.png', assets)).toString('base64')}`
 
 /** The site's colours (app/src/theme/color.stylex.ts). */
-const C = { feltInner: '#085435', feltOuter: '#053320', gold: '#EDA010', white: '#FFFFFF', soft: 'rgba(255,255,255,0.72)', navy: '#022657' }
+const C = { white: '#FFFFFF', page: '#F2F4F7', navy: '#022657', slate: '#5D6D7D', go: '#00A336', goodSoft: '#E3F6EA' }
 
-export type CardText = { label: string; score: string; ai: string | null; challenge: string; site: string }
+export type CardRow = { name: string; score: string; me: boolean }
+export type CardText = { label: string; score: string; brag: string; rows: CardRow[]; challenge: string; site: string }
 export type CardShape = 'wide' | 'tall'
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+const text = (x: number, y: number, size: number, weight: number, fill: string, s: string, anchor = 'start') =>
+  `<text x="${x}" y="${y}" font-family="Red Hat Display" font-weight="${weight}" font-size="${size}" fill="${fill}" text-anchor="${anchor}">${esc(s)}</text>`
 
-/** A card back in the site's colours, drawn rather than pictured so the PNG stays small enough for every link preview
- *  (WhatsApp drops pictures over about 300 KB): white frame, navy field, a gold line inside it, the logo in the
- *  middle, a soft shadow; turned about its foot. */
-function back(x: number, y: number, w: number, angle: number) {
-  const h = w * 1.4
-  const f = w * 0.06
-  return `<g transform="rotate(${angle} ${x + w / 2} ${y + h})">
-    <rect x="${x + 6}" y="${y + 10}" width="${w}" height="${h}" rx="${w * 0.07}" fill="rgba(0,0,0,0.28)"/>
-    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${w * 0.07}" fill="${C.white}"/>
-    <rect x="${x + f}" y="${y + f}" width="${w - 2 * f}" height="${h - 2 * f}" rx="${w * 0.045}" fill="${C.navy}"/>
-    <rect x="${x + 2 * f}" y="${y + 2 * f}" width="${w - 4 * f}" height="${h - 4 * f}" rx="${w * 0.03}" fill="none" stroke="${C.gold}" stroke-width="2"/>
-    <circle cx="${x + w / 2}" cy="${y + h / 2}" r="${w * 0.3}" fill="${C.white}"/>
-    <image href="${LOGO}" x="${x + w * 0.26}" y="${y + h / 2 - w * 0.24}" width="${w * 0.48}" height="${w * 0.48}"/>
-  </g>`
+/** The table's three scores: a light panel, a row each, the player's row marked green. */
+function board(x: number, y: number, w: number, rowH: number, size: number, rows: CardRow[]) {
+  const pad = 20
+  const h = rows.length * rowH + pad * 2
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="24" fill="${C.page}"/>` + rows.map((r, i) => {
+    const top = y + pad + i * rowH
+    const mid = top + rowH / 2 + size * 0.35
+    return (r.me ? `<rect x="${x + 12}" y="${top + 4}" width="${w - 24}" height="${rowH - 8}" rx="16" fill="${C.goodSoft}" stroke="${C.go}" stroke-width="3"/>` : '')
+      + text(x + 40, mid, size, r.me ? 900 : 700, C.navy, r.name)
+      + text(x + w - 40, mid, size, r.me ? 900 : 700, r.me ? C.go : C.navy, r.score, 'end')
+  }).join('')
+}
+
+/** The brag: a green pill with the player's place today. */
+function pill(x: number, y: number, size: number, s: string) {
+  const w = s.length * size * 0.46 + size * 1.4
+  const h = size * 1.9
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h / 2}" fill="${C.go}"/>` + text(x + size * 0.7, y + h / 2 + size * 0.36, size, 700, C.white, s)
 }
 
 export function cardSvg(t: CardText, shape: CardShape): string {
-  const [W, H] = shape === 'wide' ? [1200, 630] : [1080, 1350]
-  const wide = shape === 'wide'
-  const left = wide ? 72 : 80
-  const fan = wide ? { x: 820, y: 130, w: 190 } : { x: 445, y: 780, w: 220 }
-  const top = wide ? 70 : 90
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-  <defs><radialGradient id="felt" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="${C.feltInner}"/><stop offset="1" stop-color="${C.feltOuter}"/></radialGradient></defs>
-  <rect width="${W}" height="${H}" fill="url(#felt)"/>
-  <image href="${LOGO}" x="${left}" y="${top}" width="64" height="64"/>
-  <text x="${left + 80}" y="${top + 46}" font-family="Red Hat Display" font-weight="700" font-size="40" fill="${C.white}">SkatGo</text>
-  <text x="${left}" y="${top + (wide ? 150 : 190)}" font-family="Red Hat Display" font-weight="700" font-size="${wide ? 40 : 46}" fill="${C.gold}">${esc(t.label)}</text>
-  <text x="${left}" y="${top + (wide ? 300 : 390)}" font-family="Red Hat Display" font-weight="900" font-size="${wide ? 156 : 190}" fill="${C.white}">${esc(t.score)}</text>
-  ${t.ai === null ? '' : `<text x="${left}" y="${top + (wide ? 362 : 470)}" font-family="Red Hat Display" font-weight="500" font-size="${wide ? 44 : 52}" fill="${C.soft}">${esc(t.ai)}</text>`}
-  <text x="${left}" y="${top + (wide ? 452 : 590)}" font-family="Red Hat Display" font-weight="700" font-size="${wide ? 46 : 58}" fill="${C.white}">${esc(t.challenge)}</text>
-  <text x="${left}" y="${H - (wide ? 44 : 60)}" font-family="Red Hat Display" font-weight="500" font-size="30" fill="${C.soft}">${esc(t.site)}</text>
-  ${back(fan.x - fan.w * 0.55, fan.y, fan.w, -14)}${back(fan.x, fan.y - 20, fan.w, 0)}${back(fan.x + fan.w * 0.55, fan.y, fan.w, 14)}
+  const head = (x: number, y: number) => `<image href="${LOGO}" x="${x}" y="${y}" width="60" height="60"/>${text(x + 74, y + 44, 38, 700, C.navy, 'SkatGo')}`
+  if (shape === 'wide') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="${C.white}"/>
+  <rect x="0" y="0" width="1200" height="12" fill="${C.go}"/>
+  ${head(64, 52)}
+  ${text(64, 190, 34, 700, C.slate, t.label)}
+  ${text(56, 330, 150, 900, C.navy, t.score)}
+  ${pill(64, 360, 32, t.brag)}
+  ${text(64, 545, 40, 700, C.navy, t.challenge)}
+  ${text(64, 592, 28, 500, C.slate, t.site)}
+  ${board(700, 120, 436, 96, 42, t.rows)}
+</svg>`
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <rect width="1080" height="1350" fill="${C.white}"/>
+  <rect x="0" y="0" width="1080" height="16" fill="${C.go}"/>
+  ${head(80, 80)}
+  ${text(80, 250, 44, 700, C.slate, t.label)}
+  ${text(70, 440, 200, 900, C.navy, t.score)}
+  ${pill(80, 490, 42, t.brag)}
+  ${board(80, 640, 920, 130, 56, t.rows)}
+  ${t.challenge.split(' – ').map((line, i, all) => text(80, 1140 + i * 66, 54, 700, C.navy, i < all.length - 1 ? `${line} –` : line)).join('')}
+  ${text(80, 1280, 36, 500, C.slate, t.site)}
 </svg>`
 }
 

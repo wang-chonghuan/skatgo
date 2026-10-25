@@ -11,13 +11,13 @@ import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { space } from '../../theme/scale.stylex'
-import { dims } from '../../theme/shape.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ClientPart } from './client-part'
 import { Who, signed } from './daily-comparison'
 import { BOT_DELAY, GameTable } from './game-table'
 import { TableLoading } from './table-loading'
-import { Panel, linkLook } from './ui'
+import { Panel, Pill, linkLook } from './ui'
 
 // A shared deal of the day (SKATGO-132, the human: 「别人看到，点击就能也打这一副牌」): the result shared — no name — and
 // the challenge; on its day the way to that day's deal, ranked; after it the same deal as practice, on no board
@@ -40,17 +40,18 @@ export function SharedPage() {
           <>
             <p {...stylex.props(typography.landingBody, styles.lead)}>{m.shared_lead({ date: dateOf(shared.day) })}</p>
             <Panel>
-              <div data-testid="shared-result" data-day={shared.day} data-score={shared.score} {...stylex.props(styles.scores)}>
-                <div {...stylex.props(styles.score)}>
-                  <span {...stylex.props(typography.landingHeading, styles.title)}>{signed(shared.score)}</span>
-                  <span {...stylex.props(typography.appText, styles.muted)}>{m.shared_who()}</span>
-                </div>
-                {shared.ai === null ? null : (
-                  <div {...stylex.props(styles.score)}>
-                    <span {...stylex.props(typography.landingHeading, styles.title)}>{signed(shared.ai)}</span>
-                    <span {...stylex.props(typography.appText, styles.muted)}><Who side="ai" /></span>
-                  </div>
-                )}
+              {/* As the card has it (the human: 「显示三家的fabian分数，不要显示ai的……要让玩家有能得瑟的地方」): the place, then the
+                  table's three scores, the shared one marked. */}
+              <div data-testid="shared-result" data-day={shared.day} data-score={shared.scores[PLAYER]} {...stylex.props(styles.stack)}>
+                <span><Pill tone="go">{shared.players > 1 ? m.shared_place({ rank: shared.rank, n: shared.players }) : m.shared_first()}</Pill></span>
+                <ol {...stylex.props(styles.rows)}>
+                  {[m.shared_who(), m.name_lina(), m.name_max()].map((name, seat) => (
+                    <li key={seat} data-testid="shared-row" {...stylex.props(typography.appText, styles.row, seat === PLAYER && styles.mine)}>
+                      <span>{name}</span>
+                      <span>{signed(shared.scores[seat])}</span>
+                    </li>
+                  ))}
+                </ol>
               </div>
             </Panel>
             {shared.today ? (
@@ -157,7 +158,6 @@ function PracticeTable() {
   }
   if (over && reply?.result && shared) {
     const mine = reply.result.mine.scores[PLAYER]
-    const ai = reply.result.ai?.scores[PLAYER] ?? null
     return (
       <div {...stylex.props(styles.summary)}>
         <Panel>
@@ -169,15 +169,9 @@ function PracticeTable() {
                 <span {...stylex.props(typography.appText, styles.muted)}><Who side="you" /></span>
               </div>
               <div {...stylex.props(styles.score)}>
-                <span {...stylex.props(typography.landingHeading, styles.title)}>{signed(shared.score)}</span>
+                <span {...stylex.props(typography.landingHeading, styles.title)}>{signed(shared.scores[PLAYER])}</span>
                 <span {...stylex.props(typography.appText, styles.muted)}>{m.shared_who()}</span>
               </div>
-              {ai === null ? null : (
-                <div {...stylex.props(styles.score)}>
-                  <span {...stylex.props(typography.landingHeading, styles.title)}>{signed(ai)}</span>
-                  <span {...stylex.props(typography.appText, styles.muted)}><Who side="ai" /></span>
-                </div>
-              )}
             </div>
             <div {...stylex.props(styles.actions)}>
               <Link to="/daily" {...linkLook('go', 'md')}>{m.dod_hero()}</Link>
@@ -238,5 +232,8 @@ const styles = stylex.create({
   muted: { margin: 0, color: color.slate },
   link: { alignSelf: 'flex-start', color: color.info },
   scores: { display: 'flex', flexWrap: 'wrap', gap: space.x32, alignItems: 'flex-end' },
+  rows: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
+  row: { display: 'flex', justifyContent: 'space-between', paddingBlock: space.x8, paddingInline: space.x12, color: color.navy },
+  mine: { backgroundColor: color.goodSoft, borderRadius: radii.column },
   score: { display: 'flex', flexDirection: 'column', gap: space.x4 },
 })

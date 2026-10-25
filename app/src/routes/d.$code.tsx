@@ -16,8 +16,8 @@ export const Route = createFileRoute('/d/$code')({
   head: ({ params, loaderData }) => {
     const date = loaderData ? new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${loaderData.day}T00:00:00Z`)) : ''
     return pageHead({
-      title: loaderData ? m.shared_meta_title({ score: signed(loaderData.score) }) : m.shared_title(),
-      description: loaderData ? m.shared_meta_description({ date, score: signed(loaderData.score), ai: loaderData.ai === null ? '–' : signed(loaderData.ai) }) : m.shared_missing(),
+      title: loaderData ? m.shared_meta_title({ score: signed(loaderData.scores[0]) }) : m.shared_title(),
+      description: loaderData ? m.shared_meta_description({ date, score: signed(loaderData.scores[0]), place: loaderData.players > 1 ? m.shared_place({ rank: loaderData.rank, n: loaderData.players }) : m.shared_first() }) : m.shared_missing(),
       paths: samePath(`/d/${params.code}`),
       image: 'daily',
       imageUrl: loaderData ? `${SITE_URL}/api/card/${params.code}-${getLocale()}-wide.png` : undefined,

@@ -8,7 +8,7 @@ import type { DealSummary, SeatView } from './skat/tournament'
 // straight to the service, so the card and the result are in the HTML a link preview reads; in the browser through
 // /api/daily. The player's code, and practice, are the browser's only.
 
-export type Shared = { day: string; score: number; ai: number | null; today: boolean }
+export type Shared = { day: string; scores: [number, number, number]; rank: number; players: number; today: boolean }
 export type PracticeReply = { token: string; steps: SeatView[]; revision: number; result: { mine: DealSummary; ai: DealSummary | null } | null }
 export type ShareError = { error: string }
 

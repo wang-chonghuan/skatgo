@@ -327,9 +327,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   Otherwise a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt
   −22 pro Spiel gegen die KI, davor −31: ↑ besser als zuvor", → or ↓, in navy, never `good` / `bad`); then a white
   card, "Dein Niveau gegen die KI, Tag für Tag": the curve in SVG at the card's width (`profileChart` in
-  `constants.ts`), one `info` point per day on an `info` line — the day's average per deal against the AI, judged
-  against the whole table (`lib/skat/profile.ts`) — the zero line in `slate`, the highest and lowest value beside it
-  and the first and last date under it in `meta`, and a `meta` note on how to read it; then a white card, "Pro Tag", a
+  `constants.ts`), one `info` dot per day, the same size on every screen, on an `info` line — the day's average per
+  deal against the AI, judged against the whole table (`lib/skat/profile.ts`) — the zero line in `slate`, the highest
+  and lowest value beside it and each day's date under its dot in `meta`, every second, third … when more days than
+  fit, fewer on a phone (the human: 「一天一个点，为啥你的图上没显示几个点呢」), and a `meta` note on how to read it; then a white card, "Pro Tag", a
   row per day, newest first: the date, the deals, and the day's average per deal against the AI, signed. The same
   line of the last day against before stands under a finished tournament's heading, with the link to the profile.
 - **The forum** (`forum-page.tsx`, SKATGO-118) is two sub-pages on the grey page in the reading column. The

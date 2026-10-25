@@ -110,15 +110,24 @@ function Record({ deals }: { deals: ProfileDeal[] }) {
   )
 }
 
+/** Which of a date's two screens it shows on: a computer's, a phone's, both or neither. */
+const shownOn = (pc: boolean, phone: boolean) =>
+  pc && phone ? null : pc ? styles.hiddenPhone : phone ? styles.hiddenPc : styles.hidden
+
 /** One point per day, oldest on the left: the day's average per deal against the AI, on a line; a zero line, and
- *  the first and the last day's date under it. A day with no deal the AI played has no point. */
+ *  each day's date under its point — every second, third … when there are more days than fit, fewer on a phone. A
+ *  day with no deal the AI played has no point. */
 function Curve({ days, dayName }: { days: ProfileDay[]; dayName: (day: string) => string }) {
-  const { width, height, pad, dot, line } = profileChart
+  const { width, height, pad, dot, line, dates, datesPhone } = profileChart
+  const short = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'numeric', timeZone: 'UTC' })
+  const every = Math.ceil(days.length / dates)
+  const everyPhone = Math.ceil(days.length / datesPhone)
   const known = days.flatMap((d) => (d.perDeal === null ? [] : [d.perDeal]))
   const top = Math.max(0, ...known)
   const bottom = Math.min(0, ...known)
   const span = top - bottom || 1
-  const x = (i: number) => pad + (days.length > 1 ? (i * (width - 2 * pad)) / (days.length - 1) : (width - 2 * pad) / 2)
+  // The first and the last day at the curve's edges, so the dates under it stand under their points.
+  const x = (i: number) => (days.length > 1 ? (i * width) / (days.length - 1) : width / 2)
   const y = (v: number) => pad + ((top - v) * (height - 2 * pad)) / span
   const points = days.flatMap((d, i) => (d.perDeal === null ? [] : [{ i, d }]))
   return (
@@ -132,15 +141,29 @@ function Curve({ days, dayName }: { days: ProfileDay[]; dayName: (day: string) =
           <line x1={pad} x2={width - pad} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
           <polyline points={points.map((p) => `${x(p.i)},${y(p.d.perDeal!)}`).join(' ')} strokeWidth={line} vectorEffect="non-scaling-stroke" {...stylex.props(styles.curve)} />
           {points.map((p) => (
-            <circle key={p.d.day} data-testid="profile-point" data-day={p.d.day} data-per-deal={p.d.perDeal} cx={x(p.i)} cy={y(p.d.perDeal!)} r={dot} {...stylex.props(styles.point)}>
+            // A dot of the same size on every screen, however far the curve is scaled: a round end of a line of no
+            // length, whose stroke does not scale.
+            <line key={p.d.day} data-testid="profile-point" data-day={p.d.day} data-per-deal={p.d.perDeal} x1={x(p.i)} x2={x(p.i)} y1={y(p.d.perDeal!)} y2={y(p.d.perDeal!)} strokeWidth={dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)}>
               <title>{m.profile_point({ date: dayName(p.d.day), diff: signed(p.d.perDeal!), count: p.d.deals })}</title>
-            </circle>
+            </line>
           ))}
         </svg>
       </div>
-      <div aria-hidden {...stylex.props(typography.meta, styles.axis)}>
-        <span>{dayName(days[0].day)}</span>
-        {days.length > 1 ? <span>{dayName(days[days.length - 1].day)}</span> : null}
+      <div {...stylex.props(styles.chart)}>
+        {/* As wide as the scale beside the curve, so the dates start where the curve does. */}
+        <div aria-hidden {...stylex.props(typography.meta, styles.scale, styles.scaleGhost)}>
+          <span>{signed(top)}</span>
+          <span>{signed(bottom)}</span>
+        </div>
+        <div aria-hidden data-testid="profile-dates" {...stylex.props(typography.meta, styles.dates, days.length === 1 && styles.datesOne)}>
+          {days.map((d, i) => (
+            <span key={d.day} {...stylex.props(styles.date0)}>
+              <span data-testid="profile-date" {...stylex.props(styles.dateText, shownOn(i % every === 0, i % everyPhone === 0))}>
+                {short.format(new Date(`${d.day}T00:00:00Z`))}
+              </span>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -167,14 +190,23 @@ const styles = stylex.create({
   figure: { margin: 0, color: color.navy, textAlign: 'end' },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   stackTight: { display: 'flex', flexDirection: 'column', gap: space.x4 },
-  axis: { display: 'flex', justifyContent: 'space-between', color: color.slate },
+  // The scale's twin under the curve: its width, nothing to see.
+  scaleGhost: { height: 0, overflow: 'hidden', visibility: 'hidden' },
+  dates: { display: 'flex', flexGrow: 1, minWidth: 0, justifyContent: 'space-between', color: color.slate },
+  datesOne: { justifyContent: 'center' },
+  // Each date in a slot of no width at its point, the text centred on it.
+  date0: { display: 'flex', justifyContent: 'center', width: 0 },
+  dateText: { whiteSpace: 'nowrap' },
+  hidden: { visibility: 'hidden' },
+  hiddenPc: { visibility: { default: 'hidden', [bp.phone]: 'visible' } },
+  hiddenPhone: { visibility: { default: 'visible', [bp.phone]: 'hidden' } },
   actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
   chart: { display: 'flex', alignItems: 'stretch', gap: space.x8 },
   scale: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: color.slate, textAlign: 'end' },
   svg: { display: 'block', flexGrow: 1, minWidth: 0, width: '100%', height: 'auto', overflow: 'visible' },
   zero: { stroke: color.slate },
   curve: { fill: 'none', stroke: color.info, strokeLinejoin: 'round' },
-  point: { fill: color.info },
+  point: { stroke: color.info },
   days: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
   day: {
     display: 'flex',

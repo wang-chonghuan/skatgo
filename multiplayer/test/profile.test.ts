@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'
 import pg from 'pg'
-import { againstAi, daysOf, trendOf } from '../../app/src/lib/skat/profile'
+import { againstAi, daysOf, trendOf, weeksOf } from '../../app/src/lib/skat/profile'
 import { DAILY_DEALS } from '../../app/src/lib/skat/tournament'
 import { playProfile, recordFreeDeal } from '../src/profile'
 import { Store } from '../src/store'
@@ -11,7 +11,13 @@ import { Store } from '../src/store'
 // the same cards, the twelve-deal tournament's kept rows too, free deals recorded once per game, the ids one person
 // plays under counted as one, and each deal judged against the whole table.
 
-const summary = (scores: [number, number, number]) => ({ declarer: 0, declaration: null, bid: 18, won: scores[0] > 0, scores, detail: null })
+// A deal's summary: the declarer the seat that scored apart from the defenders' 0 or +40, as in Seeger-Fabian.
+const summary = (scores: [number, number, number], who?: 0 | 1 | 2) => {
+  const declarer = who ?? scores.findIndex((s) => s !== 0 && s !== 40)
+  const seat = (declarer < 0 ? null : declarer) as 0 | 1 | 2 | null
+  return { declarer: seat, declaration: null, bid: 18, won: seat === null ? null : scores[seat] > 0, scores, detail: null }
+}
+const played = (scores: [number, number, number], who?: 0 | 1 | 2) => { const s = summary(scores, who); return { scores, declarer: s.declarer, won: s.won } }
 
 test('profile: tournament and free deals, once each, the aliases as one person, against the table', { timeout: 60_000 }, async (t) => {
   const base = new URL(process.env.DATABASE_URL || '')
@@ -40,12 +46,12 @@ test('profile: tournament and free deals, once each, the aliases as one person, 
   await store.pool.query('INSERT INTO daily_deals (day, size, deals, computer) VALUES ($1, $2, $3, $4)', ['2026-10-20', 12, JSON.stringify([{ benchmark: { summary: summary([-20, 0, 0]), log: [] } }]), 'x'])
   await store.pool.query(
     'INSERT INTO daily_entries (day, size, player, actions, deals, total, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['2026-10-20', 12, 'user:anna', '[]', JSON.stringify([summary([40, 0, 0])]), 40, 2000])
+    ['2026-10-20', 12, 'user:anna', '[]', JSON.stringify([summary([40, 0, 0], 0)]), 40, 2000])
   // The guest day is the account's, as the human names it.
   await store.pool.query('INSERT INTO player_aliases (player, same_as) VALUES ($1, $2)', ['anon:guestday', 'user:anna'])
 
   // A free deal, its review asked twice: one deal. +132 against the AI's lost game, −280: +412.
-  const free = { player: 'user:anna', game: 'free:p:7:123', day: '2026-10-21', at: 5000, mine: [66, 0, 0] as [number, number, number], ai: [-100, 40, 40] as [number, number, number] }
+  const free = { player: 'user:anna', game: 'free:p:7:123', day: '2026-10-21', at: 5000, mine: played([66, 0, 0]), ai: played([-100, 40, 40]) }
   await recordFreeDeal(store, free)
   await recordFreeDeal(store, { ...free, at: 6000 })
   // Someone else's deal is not hers.
@@ -53,10 +59,10 @@ test('profile: tournament and free deals, once each, the aliases as one person, 
 
   const { deals } = await playProfile(store, 'user:anna')
   assert.deepEqual(deals, [
-    { day: '2026-10-20', source: 'daily', mine: [120, 0, 0], ai: [70, 0, 0] },
-    { day: '2026-10-20', source: 'daily', mine: [0, 0, 90], ai: [0, 0, 110] },
-    { day: '2026-10-20', source: 'daily', mine: [40, 0, 0], ai: [-20, 0, 0] },
-    { day: '2026-10-21', source: 'free', mine: [66, 0, 0], ai: [-100, 40, 40] },
+    { day: '2026-10-20', source: 'daily', mine: played([120, 0, 0]), ai: played([70, 0, 0]) },
+    { day: '2026-10-20', source: 'daily', mine: played([0, 0, 90]), ai: played([0, 0, 110]) },
+    { day: '2026-10-20', source: 'daily', mine: played([40, 0, 0], 0), ai: played([-20, 0, 0]) },
+    { day: '2026-10-21', source: 'free', mine: played([66, 0, 0]), ai: played([-100, 40, 40]) },
   ])
   assert.deepEqual(deals.map(againstAi), [100, 20, 120, 412])
   // Asked under the alias, the same person.
@@ -67,5 +73,17 @@ test('profile: tournament and free deals, once each, the aliases as one person, 
   ])
   // One deal of +412 after three averaging +80 is still within the noise of single deals.
   assert.deepEqual(trendOf(deals), { last: 412, before: 80, verdict: 'same' })
+  // The week of Monday 19 October: two deals both declared (+100, +120; both won by the player, the AI won one), one
+  // both defended (+20), one both declared and the AI lost (+412). Nothing lost, so no worst kind.
+  const [week] = weeksOf(deals)
+  assert.equal(week.week, '2026-10-19')
+  assert.equal(week.deals, 4)
+  assert.deepEqual(week.kinds.bothPlayed, { deals: 3, sum: 632, won: 3, aiWon: 1 })
+  assert.deepEqual(week.kinds.defended, { deals: 1, sum: 20, won: 0, aiWon: 0 })
+  assert.equal(week.worst, null)
+  // A game the player bid and lost where the AI passed is where such a week loses, however well the rest went.
+  const overbid = weeksOf([...deals, { day: '2026-10-22', source: 'free', mine: played([-110, 40, 40]), ai: played([0, 0, 0]) }])[0]
+  assert.deepEqual(overbid.kinds.bidAlone, { deals: 1, sum: -300, won: 0, aiWon: 0 })
+  assert.equal(overbid.worst, 'bidAlone')
   assert.deepEqual((await playProfile(store, 'user:nobody')).deals, [])
 })

@@ -4,13 +4,13 @@ import { gunzipSync } from 'node:zlib'
 import express from 'express'
 import { z } from 'zod'
 import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
-import { PLAYER, auctionOf, seatView, seegerFabian, summarize } from '../../app/src/lib/skat/tournament'
+import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
 import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals } from './model'
 import { BIDS, type HandMode } from './skatzero/bidding'
 import type { Policy } from './skatzero/policy'
 import { dayOf } from './daily'
-import { recordFreeDeal } from './profile'
+import { played, recordFreeDeal } from './profile'
 import type { Store } from './store'
 
 // Free play and lesson 11 on the server (SKATGO-40). A game is a deal drawn from a pool prepared
@@ -199,7 +199,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
       const now = Date.now()
       await recordFreeDeal(store, {
         player: i.player, game: `free:${t.pool}:${t.id}:${t.t}`, day: dayOf(now), at: now,
-        mine: seegerFabian(end), ai: seegerFabian(ai),
+        mine: played(summarize(end)), ai: played(summarize(ai)),
       })
     }
     return reviewOf(end, await judgePlays(policy()!, playsOf(d.dealer, deck, t.log)), { ai: summarize(ai), aiAuction: auctionOf(ai) })

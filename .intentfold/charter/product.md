@@ -93,7 +93,11 @@ when the deal's comparison is worked out — counted per day. A deal is judged a
 same for the AI's game of the same cards from the same seat, so defence counts too. The curve is one point a day, the
 day's average per deal, so whether the player gets better shows from the first days, not after a fixed number of
 deals (「30副不行」); the last day stands against the days before, better or worse only beyond the noise of single
-deals, also under a finished tournament, as the reason to come back (「我主要想让这个做为一个留存点」). It is the player's own: no one else sees it, and a guest is asked to sign in.
+deals, also under a finished tournament, as the reason to come back (「我主要想让这个做为一个留存点」). Each week has its
+analysis on the same page (「本周ai分析加上到档案页，每周一个……你给的四条加上结论」): the week's deals by who declared them
+from the player's seat — the player where the AI passed, both, the AI where the player passed, neither — each with how
+many, how many were won and the average per deal against the AI, and a conclusion naming where the week lost the most
+and what to do about it. It is worked out from the record by rules, not written by a language model. It is the player's own: no one else sees it, and a guest is asked to sign in.
 The ids one person plays under count as one, as on the Elo board. Free play stays free and needs no account; only
 an account's deals are recorded. A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
 

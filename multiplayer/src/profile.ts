@@ -1,14 +1,18 @@
 import type { DealSummary } from '../../app/src/lib/skat/tournament'
-import type { ProfileDeal, Scores } from '../../app/src/lib/skat/profile'
+import type { Played, ProfileDeal } from '../../app/src/lib/skat/profile'
 import type { Store } from './store'
 
 // A player's record of play (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，而且每个deal都要算和ai的
 // 差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's, from its
 // entries and its days' benchmarks, and free play's, recorded here when a signed-in player's finished deal is
-// reviewed (`/free/review`); all three seats' Seeger-Fabian scores, in the player's game and in the AI's.
+// reviewed (`/free/review`); in the player's game and in the AI's, all three seats' Seeger-Fabian scores, who
+// declared and whether they won.
+
+/** How one game of a deal went, from a deal's summary. */
+export const played = (s: Pick<DealSummary, 'scores' | 'declarer' | 'won'>): Played => ({ scores: s.scores, declarer: s.declarer, won: s.won })
 
 /** A finished free deal of a signed-in player, once per game however often its review is asked. */
-export async function recordFreeDeal(store: Store, d: { player: string; game: string; day: string; at: number; mine: Scores; ai: Scores }) {
+export async function recordFreeDeal(store: Store, d: { player: string; game: string; day: string; at: number; mine: Played; ai: Played }) {
   await store.pool.query(
     'INSERT INTO play_deals (player, game, day, at, mine, ai) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING',
     [d.player, d.game, d.day, d.at, JSON.stringify(d.mine), JSON.stringify(d.ai)])
@@ -34,7 +38,7 @@ export async function playProfile(store: Store, who: string): Promise<{ deals: P
     const specs = e.specs as { benchmark?: { summary: DealSummary } }[]
     ;(e.deals as DealSummary[]).forEach((mine, i) => deals.push({
       day: e.day, source: 'daily', at: Number(e.created_at) + i,
-      mine: mine.scores, ai: specs[i]?.benchmark?.summary.scores ?? null,
+      mine: played(mine), ai: specs[i]?.benchmark ? played(specs[i].benchmark!.summary) : null,
     }))
   }
   const { rows: free } = await store.pool.query('SELECT day, at, mine, ai FROM play_deals WHERE player = ANY($1)', [players])

@@ -8,21 +8,24 @@
 
 export type Scores = [number, number, number]
 
-/** One deal: the tournament's day it was played on, where, and the Seeger-Fabian scores of all three seats ([0] the
- *  player's) in the player's game and in the AI's game of the same deal. */
+/** How one game of a deal went: the three seats' Seeger-Fabian scores ([0] the player's, or the AI's in the player's
+ *  seat), who declared (null when all passed) and whether the declarer won. */
+export type Played = { scores: Scores; declarer: 0 | 1 | 2 | null; won: boolean | null }
+
+/** One deal: the tournament's day it was played on, where, the player's game and the AI's game of the same deal. */
 export type ProfileDeal = {
   day: string
   source: 'daily' | 'free'
-  mine: Scores
+  mine: Played
   /** The AI's game from the same seat; null for a tournament day dealt before it played them. */
-  ai: Scores | null
+  ai: Played | null
 }
 
 /** A game against the table: the player's score minus each opponent's. */
 export const againstTable = (s: Scores) => 2 * s[0] - s[1] - s[2]
 
 /** A deal against the AI: the player's game against the table minus the AI's. */
-export const againstAi = (d: ProfileDeal): number | null => (d.ai === null ? null : againstTable(d.mine) - againstTable(d.ai))
+export const againstAi = (d: ProfileDeal): number | null => (d.ai === null ? null : againstTable(d.mine.scores) - againstTable(d.ai.scores))
 
 export type ProfileDay = {
   day: string
@@ -72,4 +75,74 @@ export function trendOf(deals: ProfileDeal[]): { last: number; before: number; v
     before: Math.round(mean(before)),
     verdict: change > noise ? 'up' : change < -noise ? 'down' : 'same',
   }
+}
+
+/**
+ * Where a deal's difference against the AI comes from, by who declared it from the player's seat (the human, on the
+ * week's analysis: 「你给的四条加上结论，就很好」): the player declared a game the AI did not (`bidAlone`), both declared
+ * (`bothPlayed`), the AI declared and the player did not (`aiAlone`), or neither did (`defended`).
+ */
+export type Kind = 'bidAlone' | 'bothPlayed' | 'aiAlone' | 'defended'
+export const KINDS: Kind[] = ['bidAlone', 'bothPlayed', 'aiAlone', 'defended']
+
+export function kindOf(d: ProfileDeal & { ai: Played }): Kind {
+  const mine = d.mine.declarer === 0
+  const ai = d.ai.declarer === 0
+  return mine && ai ? 'bothPlayed' : mine ? 'bidAlone' : ai ? 'aiAlone' : 'defended'
+}
+
+export type KindSum = {
+  deals: number
+  /** The sum of the deals' differences against the AI. */
+  sum: number
+  /** Of these deals, the games the player won as declarer, and the games the AI won as declarer. */
+  won: number
+  aiWon: number
+}
+
+export type ProfileWeek = {
+  /** The week's Monday. */
+  week: string
+  deals: number
+  /** The average per deal against the AI over the week's deals the AI played; null when none. */
+  perDeal: number | null
+  kinds: Record<Kind, KindSum>
+  /** Where the week lost the most against the AI; null when it lost nowhere. */
+  worst: Kind | null
+}
+
+/** The Monday of a day's week, as a day. */
+export function weekOf(day: string): string {
+  const d = new Date(`${day}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7))
+  return d.toISOString().slice(0, 10)
+}
+
+/** The weeks played, newest first, each with its deals split by who declared and where it lost the most. */
+export function weeksOf(deals: ProfileDeal[]): ProfileWeek[] {
+  const weeks = new Map<string, ProfileWeek>()
+  for (const d of deals) {
+    const key = weekOf(d.day)
+    const week = weeks.get(key) ?? {
+      week: key, deals: 0, perDeal: null,
+      kinds: Object.fromEntries(KINDS.map((k) => [k, { deals: 0, sum: 0, won: 0, aiWon: 0 }])) as Record<Kind, KindSum>,
+      worst: null,
+    }
+    week.deals += 1
+    if (d.ai !== null) {
+      const k = week.kinds[kindOf(d as ProfileDeal & { ai: Played })]
+      k.deals += 1
+      k.sum += againstAi(d)!
+      if (d.mine.declarer === 0 && d.mine.won) k.won += 1
+      if (d.ai.declarer === 0 && d.ai.won) k.aiWon += 1
+    }
+    weeks.set(key, week)
+  }
+  for (const week of weeks.values()) {
+    const judged = KINDS.reduce((n, k) => n + week.kinds[k].deals, 0)
+    week.perDeal = judged ? Math.round(KINDS.reduce((n, k) => n + week.kinds[k].sum, 0) / judged) : null
+    const worst = [...KINDS].sort((a, b) => week.kinds[a].sum - week.kinds[b].sum)[0]
+    week.worst = week.kinds[worst].sum < 0 ? worst : null
+  }
+  return [...weeks.values()].sort((a, b) => b.week.localeCompare(a.week))
 }

@@ -142,6 +142,8 @@ export function postIdOf(param: string): number | null {
 //   **bold**                       bold (and every suit symbol in its colour, as everywhere on the site)
 //   [text](https://…), https://…   a link
 //   [♠A ♠10 ♥K]                    a row of cards, on a line of its own: A K D/Q B/J 10 9 8 7
+//   ![what it shows](name.svg)     a picture, on a line of its own — shown in SkatGo's posts only (SKATGO-129); the file
+//                                  is the site's own, `/forum-images/<language>/name.svg`, one per language
 // Anything else is a paragraph; a single line break stays a line break.
 
 type ListBlock = { kind: 'ul'; items: string[] } | { kind: 'ol'; items: string[] }
@@ -151,6 +153,7 @@ export type ForumBlock =
   | { kind: 'h3'; text: string }
   | ListBlock
   | { kind: 'cards'; cards: Card[] }
+  | { kind: 'image'; file: string; alt: string; line: string }
 
 const SUIT_OF: Record<string, Suit> = { '♣': 'C', '♠': 'S', '♥': 'H', '♦': 'D' }
 const RANK_OF: Record<string, Rank> = { A: 'A', K: 'K', D: 'Q', Q: 'Q', B: 'J', J: 'J', '10': '10', '9': '9', '8': '8', '7': '7' }
@@ -174,6 +177,10 @@ export function cardRow(line: string): Card[] | null {
 }
 
 const LIST_ITEM = /^\s*(?:[-*]|(\d{1,3})\.)\s+(.+)$/
+/** A picture's line: what it shows, then the file's name. */
+const IMAGE = /^!\[([^\]]{1,300})\]\(([a-z0-9-]{1,80}\.(?:svg|png|webp))\)$/
+/** Where a picture of SkatGo's posts is, in the page's language (SKATGO-129). */
+export const forumImagePath = (file: string, lang: ForumLang) => `/forum-images/${lang}/${file}`
 
 export function parseBody(text: string): ForumBlock[] {
   const blocks: ForumBlock[] = []
@@ -195,6 +202,12 @@ export function parseBody(text: string): ForumBlock[] {
     if (heading) {
       flush()
       blocks.push({ kind: heading[1].length === 3 ? 'h3' : 'h2', text: heading[2] })
+      continue
+    }
+    const image = IMAGE.exec(line.trim())
+    if (image) {
+      flush()
+      blocks.push({ kind: 'image', alt: image[1], file: image[2], line: line.trim() })
       continue
     }
     const cards = cardRow(line)
@@ -238,7 +251,7 @@ export function inlineParts(line: string): InlinePart[] {
 /** The text without its marks, for a description or an excerpt: at most `max` characters, cut at a word. */
 export function plainText(body: string, max = 155): string {
   const text = parseBody(body)
-    .map((b) => (b.kind === 'p' ? b.lines.join(' ') : b.kind === 'cards' ? '' : 'text' in b ? b.text : b.items.join(' ')))
+    .map((b) => (b.kind === 'p' ? b.lines.join(' ') : b.kind === 'cards' || b.kind === 'image' ? '' : 'text' in b ? b.text : b.items.join(' ')))
     .join(' ')
     .replace(LINK, (_, label: string | undefined, _href: string | undefined, bare: string | undefined) => label ?? bare ?? '')
     .replace(/\*\*/g, '')

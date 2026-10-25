@@ -50,6 +50,10 @@ The same happens the other way. On October 9 Lina made Schneider with a Grand in
 
 Of my 131 deals, 21 were like these: a plain difference of exactly 0, and a SkatGo Saldo that is not. All 21 were defence.
 
+The chart shows only the deals where both I and the AI defended, averaged per day. The plain difference stays on the zero line almost every day; it cannot tell a good defence from a bad one. The SkatGo Saldo moves: on October 13 my defence cost 91 per deal against the AI's.
+
+![Defence only, average per deal per day: the plain difference stays near 0, the SkatGo Saldo shows how the defence went](skatgo-saldo-defence.svg)
+
 ## Example 2: a declarer's game
 
 October 10, 2026. I and the AI both play Clubs after a bid of 44, a game worth 60. I took 45 card points and lost: −170 for me, +40 for each opponent. The AI took 84 and won: +110.
@@ -67,6 +71,10 @@ October 9 to 24, 2026: 131 deals on 13 days in SkatGo's daily tournament.
 
 - Plain difference to the AI: 75 of 131 deals exactly 0 (57%).
 - SkatGo Saldo: 54 of 131 deals exactly 0 (41%). The rest carry information.
+
+Day by day, the SkatGo Saldo sees at least as many deals as the plain difference, and on 11 of the 13 days more. On October 9 the plain difference saw nothing at all (0 of 6 deals), the SkatGo Saldo 4 of 6.
+
+![Share of deals per day whose comparison with the AI is not 0: the SkatGo Saldo line lies on or above the plain difference every day](skatgo-saldo-information.svg)
 - Average SkatGo Saldo: −109 per deal. The AI plays these deals clearly better than I do.
 - Spread of a single deal: a standard deviation of 212.
 

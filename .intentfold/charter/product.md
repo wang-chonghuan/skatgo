@@ -159,7 +159,8 @@ and language and kept, saying so in a small line with the text as written one ta
 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版。用便宜的翻译功能实现」, 「用户可以点击查看原文，有个非常小的链接式的
 小按钮」); a text already in the reader's language, or saying it in both, stands as written. The Skat-Tricks' articles
 are SkatGo's posts in its articles section (SKATGO-120). Not in it, by the
-human's agreement (「都同意」): notifications, nested replies, pictures, search, profiles, likes, blocking (with the
+human's agreement (「都同意」): notifications, nested replies, pictures in players' posts (SkatGo's own posts may show the site's own pictures, one per
+language — SKATGO-129, the human: 「给论坛增加加图片的功能」), search, profiles, likes, blocking (with the
 apps later) and competitions (later, in the product itself).
 
 **Who it is for**

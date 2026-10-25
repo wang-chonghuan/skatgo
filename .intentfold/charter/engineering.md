@@ -356,6 +356,8 @@ node app/scripts/make-printables.mjs http://127.0.0.1:<port>
 - `app/public/cards/*.webp` — the playing cards' served pictures (SKATGO-66), cut from
   `app/brand/cards/masters/` by `node app/scripts/make-card-images.mjs` (needs `cwebp`). Rerun after a
   master changes.
+- `app/public/forum-images/<lang>/*.svg` — the pictures of SkatGo's forum posts (SKATGO-129), drawn per language from
+  the owner's own record by `node .intentfold/tickets/SKATGO-129/charts.mjs` (reads that ticket's `tmp/owner.json`).
 - `app/src/components/skat/card-glyphs.ts` — the cards' corner-index outlines, extracted from Bebas Neue
   (OFL, `github.com/google/fonts` `ofl/bebasneue`) by `python3 app/scripts/extract-card-glyphs.py
   <BebasNeue-Regular.ttf> > app/src/components/skat/card-glyphs.ts` (needs fontTools, not an app

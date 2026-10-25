@@ -17,6 +17,7 @@ import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
 import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzero/bidding'
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, judgePlays, playsOf, raw, replayLog, reviewOf, skatzeroTurn } from './computers'
 import type { Store } from './store'
+import { playProfile } from './profile'
 
 // The daily tournament (SKATGO-35). Every day has one tournament of six deals, the same for every player, each
 // played by one human in seat 0 against the two computers, and its board. Rows are keyed by their day and size:
@@ -139,6 +140,8 @@ const boardInput = z.object({
 }).strict()
 const reviewInput = z.object({ player, deal: z.number().int().min(0).max(DAILY_DEALS - 1) }).strict()
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
+// A record of play is an account's (SKATGO-128).
+const profileInput = z.object({ player: z.string().regex(/^user:/).pipe(player) }).strict()
 // The Elo board is everyone's: it asks as nobody.
 const eloInput = z.object({ player: z.null() }).strict()
 
@@ -615,6 +618,8 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
     const i = boardInput.parse(body)
     return dailyBoard(store, i.player, i.day)
   }))
+  // A signed-in player's record of play (SKATGO-128): every deal against the AI, the tournament's and free play's.
+  router.post('/profile', run(async body => playProfile(store, profileInput.parse(body).player)))
   router.post('/elo', run(async body => {
     eloInput.parse(body)
     return dailyElo(store)

@@ -20,6 +20,7 @@ import { DayDeals, VsAiTable, Who } from './daily-comparison'
 import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, linkLook } from './ui'
 import { TableLoading } from './table-loading'
+import { ProfileLine } from './profile-line'
 
 // The daily tournament in the browser (SKATGO-35, SKATGO-36): the button on /daily that starts or
 // continues the day, the day's result once all its deals are played with the name it stands on the
@@ -184,6 +185,8 @@ function DailyResult({ status }: { status: DailyStatus }) {
     <Panel>
       <section data-testid="daily-result" data-total={status.totals[PLAYER]} {...stylex.props(styles.result)}>
         <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_result_title()}</h2>
+        {/* How the day went against the AI and whether it was better than before (SKATGO-128). */}
+        <ProfileLine />
         <VsAiTable deals={status.deals} benchmarks={status.benchmarks} analysis={{ day: status.day }} />
       </section>
     </Panel>

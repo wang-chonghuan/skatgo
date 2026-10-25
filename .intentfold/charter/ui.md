@@ -229,7 +229,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `bad` when the name may not be used or another player holds it (SKATGO-126) — then the
     choice of deck: the Turnierblatt by default, the Deutsches Blatt, or the Turnierblatt with English
     letters J / Q / K / A — SKATGO-66), and sign-in
-    or the account.
+    or the account. The account's menu (Clerk's, under its picture) starts with the account's record of play,
+    "Dein Skat-Profil", with lucide's `ChartLine` (SKATGO-128, the human: 「应该是点profile头像就能看到入口」); the
+    settings carry the same link in `info` under the nickname.
 
   On a phone the links and the account fold into a menu. Under the page sits the legal footer. The
   header is the same on every page; it shows no current-page highlight (its links carry
@@ -319,6 +321,19 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
   lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,
   its section of the rules, and all lessons.
+- **The record of play** (`profile-page.tsx`, SKATGO-128) is a sub-page on the grey page in the reading column,
+  noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest a `go` "Anmelden und Profil ansehen" opening
+  Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to free play.
+  Otherwise a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt
+  −22 pro Spiel gegen die KI, davor −31: ↑ besser als zuvor", → or ↓, in navy, never `good` / `bad`); then a white
+  card, "Dein Niveau gegen die KI, Tag für Tag": the curve in SVG at the card's width (`profileChart` in
+  `constants.ts`), one `info` dot per day, the same size on every screen, on an `info` line — the day's average per
+  deal against the AI, judged against the whole table (`lib/skat/profile.ts`) — the zero line in `slate`, the highest
+  and lowest value beside it and each day's date under its dot in `meta`, every second, third … when more days than
+  fit, fewer on a phone (the human: 「一天一个点，为啥你的图上没显示几个点呢」), and a `meta` note on how to read it; then "Woche für Woche": a white card per
+  week with an analysis, newest first — "Woche vom 19. Okt.", its deals and average per deal, then the analysis as a
+  forum text (`ForumBody`: its points as a list, each led in bold, and the bold "Fazit"), in the page's language; then a white card, "Pro Tag", a row per day, newest first: the date, the deals, and the day's average per deal against the AI, signed. The same
+  line of the last day against before stands under a finished tournament's heading, with the link to the profile.
 - **The forum** (`forum-page.tsx`, SKATGO-118) is two sub-pages on the grey page in the reading column. The
   list: its H1, with no lead under it, and beside it the one `go` button — "Anmelden" for a guest, "Neuer Beitrag"
   for a player, which opens the composer in a white card (the human: 「sign in放在 Forum 的旁边，放个按钮就行」) — the sections the author may use as

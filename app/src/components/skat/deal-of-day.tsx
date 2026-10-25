@@ -13,7 +13,8 @@ import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { icon } from '../../theme/constants'
 import { color } from '../../theme/color.stylex'
-import { space } from '../../theme/scale.stylex'
+import { border, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { BrandIcon } from './brand-icon'
 import { VsAiTable, Who, signed } from './daily-comparison'
@@ -66,7 +67,7 @@ export function DealOfDay({ waiting }: { waiting?: ReactNode }) {
   if ('error' in status) return <p data-testid="daily-unavailable" {...stylex.props(typography.appText, styles.text)}>{m.daily_unavailable()}</p>
   return (
     <div data-testid="dod" data-finished={status.finished ? 'true' : 'false'} {...stylex.props(styles.stack)}>
-      {status.finished ? <Result status={status} board={board} /> : <DealOfDayWayIn started={status.started} />}
+      {status.finished ? <Result status={status} /> : <DealOfDayWayIn started={status.started} />}
       <Leaderboard back={back} board={shown} onShow={show} />
       {/* Under the board, as agreed: how the AI played this deal, folded, only for whoever has played it; then free play. */}
       {status.finished ? (
@@ -93,10 +94,9 @@ export function DealOfDayWayIn({ started = false }: { started?: boolean }) {
   )
 }
 
-function Result({ status, board }: { status: DailyStatus; board: DailyBoard | DailyError | null }) {
+function Result({ status }: { status: DailyStatus }) {
   const score = status.totals[PLAYER]
   const ai = status.benchmarks?.[0]?.scores[PLAYER] ?? null
-  const ranked = board && !isError(board) ? board : null
   const [said, setSaid] = useState<'copied' | 'failed' | null>(null)
   // The result's code (SKATGO-132): the link carries it, never the score.
   const [code, setCode] = useState<string | null>(null)
@@ -107,7 +107,7 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
   const text = shareText(locale, { day: status.day, score })
   async function onShare(via: Platform) {
     if (!code) return
-    const r = await shareSheet(text, shareUrl(locale, code, via), cardUrl(locale, code, 'tall'))
+    const r = await shareSheet(text, shareUrl(locale, code, via))
     track('dod_shared', { how: r === 'shared' ? 'sheet' : r === 'copied' ? 'copy' : 'failed' })
     setSaid(r === 'shared' ? null : r)
   }
@@ -134,11 +134,6 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
             </div>
           )}
         </div>
-        {ranked?.me?.rank ? (
-          <p data-testid="dod-rank" data-rank={ranked.me.rank} data-players={ranked.total} {...stylex.props(typography.appText, styles.text)}>
-            {m.dod_rank({ n: ranked.total, rank: ranked.me.rank })}
-          </p>
-        ) : null}
         <div {...stylex.props(styles.action)}>
           <Btn testId="dod-share" size="lg" disabled={!code} onClick={() => void onShare('sheet')}>
             <Share2 aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
@@ -162,6 +157,9 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
           </div>
         ) : null}
         {said ? <p role="status" {...stylex.props(typography.small, styles.muted)}>{said === 'copied' ? m.dod_copied() : m.dod_share_failed()}</p> : null}
+        {/* The card the link goes out with, under the buttons, so it is seen before it is sent (the human: 「最好让用户看到待
+            显示的卡片，再可以点发送，分享按钮可以在页面上面显示，下面是待分享的卡片」). */}
+        {code ? <img data-testid="dod-card" src={cardUrl(locale, code)} alt={m.share_card_alt()} {...stylex.props(styles.card)} /> : null}
         <Countdown />
       </section>
     </Panel>
@@ -199,5 +197,17 @@ const styles = stylex.create({
   scores: { display: 'flex', gap: space.x32, alignItems: 'flex-end' },
   score: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   details: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  card: {
+    display: 'block',
+    width: '100%',
+    maxWidth: dims.shareCard,
+    aspectRatio: dims.shareCardRatio,
+    boxSizing: 'border-box',
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.hairline,
+    borderRadius: radii.panel,
+    backgroundColor: color.surface,
+  },
   summary: { color: color.info, cursor: 'pointer' },
 })

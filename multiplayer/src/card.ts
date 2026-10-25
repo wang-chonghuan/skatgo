@@ -5,7 +5,7 @@ import { Resvg } from '@resvg/resvg-js'
 // 的，邀请看到的人来打同一副牌，要让玩家有能得瑟的地方，然后要白底」, then 「logo大一点，不要显示排名，declarer的名字后跟一个
 // declarer的标志，黄色badge形式」, and 「slogan……还要放到卡片上」 — on white, the brand with the slogan, what is played — "1 deal today · 2 min" in the site's green, as its button — the day, the player's score large, the table's three Seeger-Fabian scores
 // with theirs marked and a yellow badge after the declarer's name, and the invitation to play the same cards; no place, no card face, no contract, no AI, no name (the ticket). Drawn as SVG with the site's font
-// and turned into a PNG by resvg: wide for link previews (1200×630), tall for Instagram (1080×1350).
+// and turned into a PNG by resvg, 1200×630: the link's preview, and shown on the result before it is sent.
 
 const assets = new URL('../assets/', import.meta.url)
 const FONTS = ['RedHatDisplay-Black.ttf', 'RedHatDisplay-Bold.ttf', 'RedHatDisplay-Medium.ttf'].map((f) => new URL(`fonts/${f}`, assets).pathname)
@@ -20,7 +20,6 @@ const C = { white: '#FFFFFF', page: '#F2F4F7', navy: '#022657', slate: '#5D6D7D'
 
 export type CardRow = { name: string; score: string; me: boolean; declarer: boolean }
 export type CardText = { slogan: string; deal: string; date: string; score: string; rows: CardRow[]; declarer: string; challenge: string; site: string }
-export type CardShape = 'wide' | 'tall'
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const text = (x: number, y: number, size: number, weight: number, fill: string, s: string, anchor = 'start') =>
@@ -59,13 +58,12 @@ function board(x: number, y: number, w: number, rowH: number, size: number, rows
   }).join('')
 }
 
-export function cardSvg(t: CardText, shape: CardShape): string {
+export function cardSvg(t: CardText): string {
   const head = (x: number, y: number, h: number) => `<image href="${LOGO}" x="${x}" y="${y}" width="${h}" height="${h}"/>${text(x + h * 1.22, y + h * 0.74, h * 0.62, 700, C.navy, BRAND)}`
   /** The slogan beside the brand, on the brand's line. */
   const slogan = (x: number, y: number, h: number, size: number) =>
     text(x + h * 1.22 + width(h * 0.62, 700, BRAND) + size, y + h * 0.74, size, 700, C.slate, t.slogan)
-  if (shape === 'wide') {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="${C.white}"/>
   <rect x="0" y="0" width="1200" height="12" fill="${C.go}"/>
   ${head(64, 44, 88)}
@@ -77,28 +75,15 @@ export function cardSvg(t: CardText, shape: CardShape): string {
   ${text(64, 592, 28, 500, C.slate, t.site)}
   ${board(620, 150, 516, 96, 42, t.rows, t.declarer)}
 </svg>`
-  }
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
-  <rect width="1080" height="1350" fill="${C.white}"/>
-  <rect x="0" y="0" width="1080" height="16" fill="${C.go}"/>
-  ${head(80, 72, 120)}
-  ${text(80, 238, 38, 700, C.slate, t.slogan)}
-  ${pill(80, 300, 46, t.deal)}
-  ${text(80 + width(46, 700, t.deal) + 46 * 1.3 + 26, 358, 40, 700, C.slate, t.date)}
-  ${text(70, 580, 200, 900, C.navy, t.score)}
-  ${board(80, 630, 920, 130, 56, t.rows, t.declarer)}
-  ${text(80, 1180, Math.min(54, Math.floor((54 * 920) / width(54, 700, t.challenge))), 700, C.navy, t.challenge)}
-  ${text(80, 1280, 36, 500, C.slate, t.site)}
-</svg>`
 }
 
 const cache = new Map<string, Buffer>()
 
 /** The card as a PNG, made once per key. */
-export function cardPng(key: string, t: CardText, shape: CardShape): Buffer {
+export function cardPng(key: string, t: CardText): Buffer {
   const hit = cache.get(key)
   if (hit) return hit
-  const png = new Resvg(cardSvg(t, shape), { font: FONT }).render().asPng()
+  const png = new Resvg(cardSvg(t), { font: FONT }).render().asPng()
   if (cache.size > 500) cache.delete(cache.keys().next().value!)
   cache.set(key, png)
   return png

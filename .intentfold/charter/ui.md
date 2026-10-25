@@ -275,10 +275,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
   its one `go` button to its table (`/daily/play?size=1`, where after the last card the result stands a moment and the
   page comes back here); once played, a white card with the player's score and the AI's (`landingHeading`, each
-  tagged), "Heute n Spieler · du bist auf Platz k", "Ergebnis teilen" as the one `go` with lucide's `Share2` (the phone's share sheet with the card, the clipboard elsewhere;
-  no card or contract in it), under it `quiet` small buttons, each with its icon (「全部都要图标」) — the platforms' own marks in their brand
+  tagged) — no "Heute n Spieler · du bist auf Platz k" (SKATGO-132, 「这个不要显示」) — "Ergebnis teilen" as the one `go`
+  with lucide's `Share2` (the phone's share sheet with the line and the link, the clipboard elsewhere; no card or
+  contract in it), under it `quiet` small buttons, each with its icon (「全部都要图标」) — the platforms' own marks in their brand
   colours (`brand-icon.tsx`, Simple Icons, CC0) and names, WhatsApp, Facebook, Telegram, X, then lucide's `Link` and
-  "Link kopieren" (SKATGO-132; no Instagram, no picture download), the time until the next deal; then its board as the tournament's, the
+  "Link kopieren" (SKATGO-132; no Instagram, no picture download), then the card itself as it goes out (the link's
+  preview, at most 600px, a `hairline` border: 「最好让用户看到待显示的卡片，再可以点发送……下面是待分享的卡片」), the time
+  until the next deal; then its board as the tournament's, the
   AI's row on it (a guest who has not played sees it too, under the `go` "Jetzt spielen · 2 Min."); then, folded, how
   the AI played the deal (`VsAiTable`); then a link to free play.
   The tournament's side (six deals; SKATGO-77's twelve gone, SKATGO-119): its one

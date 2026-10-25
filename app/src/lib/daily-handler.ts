@@ -27,13 +27,13 @@ const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'elo', '
  *  for today's finished deal; what a code shares; a past day's deal played as practice. */
 const SHARE_PATHS: Record<string, string> = { share: 'code', shared: 'read', 'practice-new': 'practice/new', 'practice-act': 'practice/act' }
 
-/** A shared deal's card (SKATGO-132): `/api/card/<code>-<de|en>-<wide|tall>.png`, drawn by the service, kept a day by
+/** A shared deal's card (SKATGO-132): `/api/card/<code>-<de|en>.png`, drawn by the service, kept a day by
  *  whoever fetches it. Anything else under /api/card is not found. */
 export async function handleCard(request: Request): Promise<Response> {
-  const m = /^\/api\/card\/([a-z0-9]{8})-(de|en)-(wide|tall)\.png$/.exec(new URL(request.url).pathname)
+  const m = /^\/api\/card\/([a-z0-9]{8})-(de|en)\.png$/.exec(new URL(request.url).pathname)
   if (!m) return json(404, { error: 'not found' })
   try {
-    const upstream = await callShare('card', { code: m[1], lang: m[2], shape: m[3] })
+    const upstream = await callShare('card', { code: m[1], lang: m[2] })
     if (!upstream) return json(503, { error: 'unavailable' })
     if (!upstream.ok) return json(upstream.status, { error: 'not found' })
     return new Response(await upstream.arrayBuffer(), { headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' } })

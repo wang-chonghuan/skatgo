@@ -20,7 +20,7 @@ export const Route = createFileRoute('/d/$code')({
       description: loaderData ? m.shared_meta_description({ date, score: signed(loaderData.scores[0]) }) : m.shared_missing(),
       paths: samePath(`/d/${params.code}`),
       image: 'daily',
-      imageUrl: loaderData ? `${SITE_URL}/api/card/${params.code}-${getLocale()}-wide.png` : undefined,
+      imageUrl: loaderData ? `${SITE_URL}/api/card/${params.code}-${getLocale()}.png` : undefined,
       jsonLd: [],
     })
   },

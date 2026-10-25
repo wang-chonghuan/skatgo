@@ -71,12 +71,12 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 - **A shared deal of the day** (SKATGO-132) runs in `multiplayer/src/shares.ts` under `/share` behind the admission
   key: `dod_shares` (code, day, player, the table's scores, the declarer's seat) gives a finished deal its eight-letter code; a code reads back the
   day and scores, never the player; `card.ts` draws its card in SVG with the site's font (`multiplayer/assets/fonts`,
-  OFL) and logo and turns it into a PNG with `@resvg/resvg-js` (exact version, approved in the ticket) — wide 1200×630
-  for link previews (kept under 300 KB for WhatsApp; text is measured with resvg's own bounding box), tall 1080×1350 for
-  the phone's share sheet — kept in memory per code. A past day's deal is played as practice from a sealed token (`free.ts` `seal`
+  OFL) and logo and turns it into a PNG with `@resvg/resvg-js` (exact version, approved in the ticket) — 1200×630,
+  the link's preview and the picture on the result before it is sent (kept under 300 KB for WhatsApp; text is measured
+  with resvg's own bounding box) — kept in memory per code. A past day's deal is played as practice from a sealed token (`free.ts` `seal`
   with its own key label), nothing stored. The web passes the share ops through `/api/daily/*` (`share`, `shared`,
   `practice-new`, `practice-act`; the player named only for `share`), serves the card at
-  `/api/card/<code>-<lang>-<wide|tall>.png`, and renders `/d/$code` (noindex; its `og:image` the card, read on the
+  `/api/card/<code>-<lang>.png`, and renders `/d/$code` (noindex; its `og:image` the card, read on the
   server by `lib/share-api.ts`) and `/d/$code/play`, the practice table.
 - **The forum runs in `multiplayer/`** (SKATGO-118), as plain HTTP routes under `/forum` behind the admission
   key, its posts, comments and reports in multiplayer's PostgreSQL (`forum_posts`, `forum_comments`,

@@ -49,7 +49,8 @@ six deals need an account. It is chosen, not just dealt (「每日一副要挑�
 fresh random deals, only one where the AI in the player's seat declared and won with 61–89 card points, won a Null, won
 Schneider or better, or defended and brought the declarer down — never the same kind two days running, the contract
 rotating (「不要每天选一样的」). It is the front page's main way in; once played, the page shows the player's score and
-the AI's, how many played and their place, and a way to share it that tells nothing of the cards: to WhatsApp,
+the AI's (not how many played or their place: 「1 played today · you're #1 这个不要显示」), the card it would be shared
+with, and a way to share it that tells nothing of the cards: to WhatsApp,
 Facebook, Telegram and X by their own share addresses, through the phone's share sheet, or the link copied — no
 Instagram and no picture to download (SKATGO-132, the human: 「至少这五个平台」, then 「picture不要了，不分享instagram」). What goes out is a card on white — the day, the score,
 the table's three Seeger-Fabian scores with the declarer badged, the challenge to play the same cards; no AI, no place,

@@ -58,12 +58,12 @@ const WORDS = {
   en: { slogan: 'Free Skat play and progress', deal: '1 deal today · 2 min', me: 'Me', seats: ['Lina', 'Noah'], declarer: 'Declarer', challenge: 'Same cards – what will you score?' },
 } as const
 
-/** The card of a code, in a language and a shape: the three seats' scores, the declarer's marked. */
-export async function shareCard(store: Store, code: string, lang: 'de' | 'en', shape: 'wide' | 'tall'): Promise<Buffer> {
+/** The card of a code, in a language: the three seats' scores, the declarer's marked. */
+export async function shareCard(store: Store, code: string, lang: 'de' | 'en'): Promise<Buffer> {
   const s = await sharedOf(store, code)
   const w = WORDS[lang]
   const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${s.day}T00:00:00Z`))
-  return cardPng(`${code}|${lang}|${shape}`, {
+  return cardPng(`${code}|${lang}`, {
     slogan: w.slogan,
     deal: w.deal,
     date,
@@ -72,7 +72,7 @@ export async function shareCard(store: Store, code: string, lang: 'de' | 'en', s
     declarer: w.declarer,
     challenge: w.challenge,
     site: 'skatgo.com',
-  }, shape)
+  })
 }
 
 /** A practice game: which day's deal, when it began, every move so far. */
@@ -105,10 +105,10 @@ export function shareRoutes(store: Store, admissionKey: string, ready: () => boo
   router.post('/code', run(async (body) => shareCode(store, z.object({ player }).strict().parse(body).player)))
   router.post('/read', run(async (body) => sharedOf(store, z.object({ code }).strict().parse(body).code)))
   router.post('/card', async (req, res) => {
-    const i = z.object({ code, lang: z.enum(['de', 'en']), shape: z.enum(['wide', 'tall']) }).strict().safeParse(req.body)
+    const i = z.object({ code, lang: z.enum(['de', 'en']) }).strict().safeParse(req.body)
     if (!i.success) return void res.status(400).json({ error: 'invalid_request' })
     try {
-      res.set('content-type', 'image/png').set('cache-control', 'public, max-age=86400').send(await shareCard(store, i.data.code, i.data.lang, i.data.shape))
+      res.set('content-type', 'image/png').set('cache-control', 'public, max-age=86400').send(await shareCard(store, i.data.code, i.data.lang))
     } catch (e) {
       res.status(e instanceof Rejected ? 404 : 503).json({ error: e instanceof Rejected ? e.message : 'unavailable' })
     }

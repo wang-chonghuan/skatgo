@@ -6,9 +6,7 @@ import { createPortal } from 'react-dom'
 
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
-import { useTableSnapshot } from '~/lib/skat/table-snapshot'
 import { playSound } from '~/lib/skat/sounds'
-import { visibleTable } from '~/lib/skat/table-view'
 import { useBoardTricks, useSettings, useTapToCollect } from '~/lib/skat/settings'
 import { cardLabel, contractName, ledName, roleName, settleReason, settlementFormula } from '~/lib/skat/i18n'
 import {
@@ -72,7 +70,7 @@ import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 //                  a drawer parked off the right edge. A white tab folds it either way;
 //   the dialogs  — the settlement and a passed-in deal, white on a scrim.
 // Inside a lesson the same table is embedded: the panel stacks under the felt and there is no leave.
-// Free play and lesson 11 (SKATGO-40) play a server game the same way, with hints and the assistant.
+// Free play and lesson 11 (SKATGO-40) play a server game the same way; only lesson 11 keeps the hints (SKATGO-130).
 // In the daily tournament (SKATGO-35) the server owns the deal: the table draws what it is sent and
 // sends the learner's moves, and offers no hints.
 //
@@ -122,8 +120,11 @@ export type Tournament = {
 type DailyAfter = { compare: ReactNode; analysis: ReactNode; day: ReactNode }
 
 /** A game the server owns, as free play and lesson 11 play it (SKATGO-40): the learner's moves go to
- *  `send`, `game` is what came back; hints and the assistant are as at the local table. */
+ *  `send`, `game` is what came back. */
 export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'> & {
+  /** Lesson 11 keeps the hints; free play has none, its table the tournament's (SKATGO-130, the human: 「砍掉自由牌局时的
+   *  提示，和锦标赛应该一模一样」, 「11课的保留」). */
+  hints?: boolean
   /** Free play's round of six deals (SKATGO-88): which deal this is (from 0), of how many, and the
    *  player's Seeger-Fabian total so far. */
   round?: { deal: number; of: number; total: number }
@@ -136,8 +137,8 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
 }
 
 /** A private table (SKATGO-61): the room's deal turned so the viewer is seat 0, the people's
- *  nicknames, and the running Seeger-Fabian totals. `next` deals the next one. No hints and no
- *  assistant: the others at the table get none either. */
+ *  nicknames, and the running Seeger-Fabian totals. `next` deals the next one. No hints: the others at the table get
+ *  none either. */
 export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next' | 'totals'> & {
   names: [string, string, string]
   /** Under the result: this deal's scores and the running totals. */
@@ -148,7 +149,7 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
 
 /** An open-card endgame of the Skat-Tricks (SKATGO-110): a deal stopped a few tricks before its end, every hand
  *  open as at an Ouvert, the learner's cards judged and the others' answers played by the exercise. No hints, no
- *  assistant, no settlement — and since SKATGO-111 nothing round the felt but the exercise's own: its goal in the
+ *  settlement — and since SKATGO-111 nothing round the felt but the exercise's own: its goal in the
  *  info board's place and its result over the table; no words line, no side panel. */
 export type ExerciseTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'> & {
   top?: ReactNode
@@ -163,7 +164,7 @@ type Props = {
   fullScreen?: boolean
   /** Play the server's deal instead of dealing one here. */
   tournament?: Tournament
-  /** Play a server game with hints and the assistant (free play, lesson 11). */
+  /** Play a server game (free play, lesson 11). */
   server?: ServerGame
   /** Play at a private table (SKATGO-61). */
   room?: RoomTable
@@ -200,7 +201,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // A card tapped while a finished trick waits: the trick goes, and the card follows at once if the
   // learner is on lead (SKATGO-73).
   const [intent, setIntent] = useState<Card | null>(null)
-  const hints = !tournament && !room && !exercise
+  // Hints at the course's own table and in lesson 11 only (SKATGO-130): never in the tournament, at a private table,
+  // in an exercise or in free play.
+  const hints = remote ? !!server?.hints : true
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   const [picked, setPicked] = useState<Card[]>([])
   // The trick's cards that have landed (SKATGO-41). A card flies in on a layer of its own under a
@@ -289,14 +292,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     setRefusal(null)
   }, [game])
 
-  // The assistant (SKATGO-9) reads the table through this: the learner's own view, refreshed on every
-  // change and withdrawn when the table leaves the page. Not in the tournament: its answer would be the
-  // hint the tournament does not give.
-  const publish = useTableSnapshot((s) => s.publish)
-  useEffect(() => {
-    publish(tournament || room || exercise ? null : visibleTable(game, scores))
-  }, [game, scores, publish, tournament, room, exercise])
-  useEffect(() => () => publish(null), [publish])
 
   /** The learner's move: to the server for a server game, through the engine here otherwise. */
   function dispatch(move: Move) {
@@ -1427,7 +1422,7 @@ function useCardSounds(game: Game) {
 
 /**
  * The table's way out (SKATGO-96, the human: 「退出按钮……放到打牌界面上？」): a round button in the felt's top right
- * corner, across from the assistant's at the top left, on every full-screen table. It opens a small menu — keep
+ * corner, across from where the assistant's launcher stood at the top left until SKATGO-130, on every full-screen table. It opens a small menu — keep
  * playing, give up free play's round for a new one (asked once more first), or leave the table. Leaving loses
  * nothing: free play's game waits in this browser, the tournament's on the server, a private table's in its room.
  */
@@ -1501,7 +1496,7 @@ const tintOf = (c: Contract): Tint => (c.kind === 'suit' ? c.trump : c.kind)
 
 
 const styles = stylex.create({
-  // The way out (SKATGO-96): mirrors the assistant's launcher at the felt's top left (ask.tsx). Placed in the
+  // The way out (SKATGO-96): mirrors the room the assistant's launcher had at the felt's top left (gone since SKATGO-130). Placed in the
   // felt's grid area of the table, so it keeps to the felt beside a pinned panel, and over the table's dialogs.
   menuCorner: {
     position: 'absolute',
@@ -1930,7 +1925,8 @@ const styles = stylex.create({
   panelBody: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, padding: space.x16, overflowY: 'auto', boxSizing: 'border-box' },
   // The body keeps its width while a pinned panel folds, so nothing inside reflows on the way.
   panelBodyFull: { width: { default: '100%', [bp.pinned]: dims.sidePanelPinned }, height: '100%' },
-  // Pinned, the panel's top right corner is under the assistant's launcher: the tabs leave it room.
+  // Pinned, the panel's top right corner keeps the room the assistant's launcher had (gone since SKATGO-130): the tabs
+  // leave it.
   // Three equal columns, each tab centred in its own (SKATGO-75).
   tabs: { display: 'grid', gridTemplateColumns: dims.panelTabs, paddingBottom: space.x16, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
   tab: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifySelf: 'center', gap: space.x4, color: color.slateDeep, textDecoration: 'none' },

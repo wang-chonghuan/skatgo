@@ -20,8 +20,8 @@ printables' PDFs under `/downloads/`, each with a canonical Link header naming i
 Random exercises, cards and personal progress run in the browser. The German root is a 200 page for
 a German browser or a request that names no language, and a 307 to `/en` (query kept) for any other
 language or a saved English choice (SKATGO-113); the old German homepage address redirects permanently
-to it (SKATGO-44). `POST /api/ask` (the assistant) is part of `web`, and so are `/api/daily/*`,
-`/api/free/*` and `/api/forum/*` (SKATGO-118). They pass the daily tournament's, free play's and the forum's
+to it (SKATGO-44). `/api/daily/*`,
+`/api/free/*` and `/api/forum/*` (SKATGO-118) are part of `web` (the assistant's `/api/ask` is gone, SKATGO-130). They pass the daily tournament's, free play's and the forum's
 requests on to `multiplayer`; `/sitemap-forum.xml` is built from the forum and answers 503 while it does not
 answer. Free
 play includes lesson 11's game (SKATGO-40). `/api/free/*` is limited per address to 300 new games an
@@ -81,8 +81,8 @@ diagnostic origin for DNS and TLS checks. No staging.
 - **Accounts**: Clerk application `app_3JhPKJFpPIJR7rHWf9A8neRvdFU`. Production instance
   `ins_3JhhbSlXDnOOpj1GJJg4eh6972K` on skatgo.com — email and password, and Google (on, observed
   2026-10-18: accounts signed up with it). A development instance serves local work.
-- **The assistant's model**: Azure OpenAI deployment `gpt-5.6-luna`, reasoning effort medium, on the
-  same Azure OpenAI resource as Trovestep.
+- **The forum's translation model**: Azure OpenAI deployment `gpt-5.6-luna`, on the same Azure OpenAI resource as
+  Trovestep, called by `multiplayer` only (SKATGO-124); the assistant that used it from `web` is gone (SKATGO-130).
 - **Multiplayer data**: a separate paid Render PostgreSQL database; no Redis, persistent
   disk, worker or cron. New resources are API-managed in the existing project/production
   environment, Frankfurt. The backend has its own service hostname and does not change DNS.
@@ -182,7 +182,8 @@ npm --prefix app run build
 **Environment**
 
 Locally, `app/.env` — git-ignored, never printed, never committed — carries `LLM_BASE_URL` and
-`LLM_API_KEY` (the assistant's model) and `CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` (the Clerk
+`LLM_API_KEY` (the forum translation model's, for starting the local multiplayer service with them) and
+`CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` (the Clerk
 development instance; `clerk env pull --app app_3JhPKJFpPIJR7rHWf9A8neRvdFU --instance dev --file app/.env`
 writes them). The built server reads them from its environment, so load the file when starting it:
 `(cd app && set -a && . ./.env && set +a && PORT=<port> node .output/server/index.mjs)`.
@@ -197,13 +198,12 @@ separated, the Clerk account ids that write as SkatGo in the forum and moderate 
 free play and lesson 11's game run locally with both services and the local database started as Build
 and tests says.
 
-In production the Render Web Service carries exactly the application configuration
-`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `CLERK_SECRET_KEY`,
+In production the Render Web Service carries exactly the application configuration `CLERK_SECRET_KEY`,
 `CLERK_PUBLISHABLE_KEY`, `MULTIPLAYER_URL` (the `skatgo-multiplayer` service's own Render hostname)
 and `MULTIPLAYER_ADMISSION_KEY` (the multiplayer service's value; SKATGO-35), plus
 `POSTHOG_PROJECT_KEY` (SKATGO-25) and `FORUM_OFFICIALS` (the owner's Clerk account id; SKATGO-118); Render supplies `PORT` and its own `RENDER_*` runtime variables.
 The `skatgo-multiplayer` service carries `DATABASE_URL` and `MULTIPLAYER_ADMISSION_KEY`, and `LLM_BASE_URL` and
-`LLM_API_KEY` — the web's values — for the forum's translations (SKATGO-124). Locally the multiplayer service is
+`LLM_API_KEY` for the forum's translations (SKATGO-124); the web service no longer carries them (SKATGO-130). Locally the multiplayer service is
 started for review with those two from `app/.env`; `multiplayer/.env` does not carry them, so its tests call no model. List
 application keys without printing values:
 

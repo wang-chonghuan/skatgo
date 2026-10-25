@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-130",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-130",
+  "branch": "SKATGO-130-cut-assistant",
+  "base": "8ce712580b12cdb1e07cc51aadb992a40de30d9e",
+  "ports": {
+    "web": 55130,
+    "multiplayer": 56130,
+    "database": 57130
+  }
+}

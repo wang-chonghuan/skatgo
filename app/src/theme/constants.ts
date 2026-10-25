@@ -14,10 +14,10 @@ export const themeColor = '#FFFFFF'
 
 /** lucide icon sizes in px. */
 export const icon = {
+  /** The table's round buttons' icons (the way out), the size the assistant's launcher had. */
   launcher: 20,
   launcherStroke: 2.2,
   header: 18,
-  sendStroke: 2.5,
   // SKATGO-26: outline icons at the design's sizes (reference.md) — the header's menu and close
   // buttons, its settings gear, and the table's floating controls.
   menu: 24,

@@ -1,6 +1,5 @@
 import handler from '@tanstack/react-start/server-entry'
 
-import { handleAsk } from './lib/ask/handler'
 import { handleDaily } from './lib/daily-handler'
 import { UNAVAILABLE } from './lib/forum-api'
 import { forumSitemap, handleForum } from './lib/forum-handler'
@@ -36,16 +35,15 @@ defineCustomServerStrategy('custom-skatgo', {
 //                 browser's document request and would otherwise serve English at the German address.
 //                 Both answers vary with the language and the saved choice.
 //
-// The assistant's endpoint (SKATGO-9) is answered here, before the middleware and outside the page
-// router: it is a server route, not a page — no language prefix, no redirect, and nothing that reads
-// the page route tree has to know about it. The daily tournament's endpoints (SKATGO-35,
+// The API endpoints are answered here, before the middleware and outside the page router: they are server
+// routes, not pages — no language prefix, no redirect, and nothing that reads the page route tree has to know
+// about them. The daily tournament's endpoints (SKATGO-35,
 // lib/daily-handler.ts), free play's (SKATGO-40, lib/free-handler.ts) and a private table's admission
 // and its referral (SKATGO-61, SKATGO-117, lib/room-handler.ts), the ladder's record (SKATGO-109, lib/tricks-handler.ts)
-// and the forum (SKATGO-118, lib/forum-handler.ts) are answered here for the same reason.
+// and the forum (SKATGO-118, lib/forum-handler.ts). The assistant's /api/ask is gone (SKATGO-130).
 export default {
   fetch(req: Request): Promise<Response> {
     const url = new URL(req.url)
-    if (url.pathname === '/api/ask') return handleAsk(req)
     if (url.pathname.startsWith('/api/daily/')) return handleDaily(req)
     if (url.pathname.startsWith('/api/free/')) return handleFree(req)
     if (url.pathname.startsWith('/api/room/')) return handleRoom(req)

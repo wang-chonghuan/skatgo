@@ -20,8 +20,8 @@ import { TableLoading } from './table-loading'
 // against SkatZero's computers. The server keeps nothing per game: the page holds the game's token, and free
 // play keeps it in this browser with its round, so a reload goes on with the same deal (SKATGO-96); lesson 11
 // keeps nothing. The server answers each move with every state
-// the table passed through, and the table shows them one by one on its own beats. Hints and the
-// assistant work as at the local table: they read only what this seat may see. A game's start and
+// the table passed through, and the table shows them one by one on its own beats. Lesson 11's hints work as at the
+// local table, reading only what this seat may see; free play has none (SKATGO-130). A game's start and
 // finish are its only events (SKATGO-74): never a bid or a card.
 
 type Failure = { text: string; retry?: () => void }
@@ -205,6 +205,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         round: mode === 'free' ? { deal: round.deals.length, of: ROUND_DEALS, total: totals(round.deals)[0] } : undefined,
         // Free play's round can be given up for a new one (SKATGO-96); the table asks first.
         newRound: mode === 'free' ? newRound : undefined,
+        // Lesson 11 keeps its hints; free play's table is the tournament's, without (SKATGO-130).
+        hints: mode === 'lesson',
       }}
     />
   )

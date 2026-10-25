@@ -3,8 +3,8 @@ import { clerkClient } from '@clerk/tanstack-react-start/server'
 import { SITE_URL } from '~/lib/site'
 import { testAccount } from '~/lib/test-account'
 
-// Who is signed in behind a server request (SKATGO-12): read by the server routes — the assistant
-// (SKATGO-9) to count questions by account, the daily tournament (SKATGO-35) to record a day's deals
+// Who is signed in behind a server request (SKATGO-12): read by the server routes — the daily tournament
+// (SKATGO-35) to record a day's deals
 // under the account, a private table (SKATGO-117) to let an account open one. Server only. A local test
 // account (lib/test-account.ts) answers first, on a developer's machine only.
 

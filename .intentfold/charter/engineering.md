@@ -12,10 +12,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 
 - **TanStack Start** (Vite, TypeScript, React 19): server-rendered shell, file-based routes. Every
   piece of course state lives in the browser, without database access from the course. The web app's
-  server endpoint, `POST /api/ask` — the assistant (SKATGO-9) — is answered in `app/src/server.ts` before
-  the page router: it streams a contextual answer from Azure OpenAI to any visitor. A Clerk session,
-  when present, identifies the learner for rate limiting but never gates the answer (SKATGO-13/14).
-  Its other server endpoints are answered there too and pass requests on to `multiplayer/`:
+  server endpoints are answered in `app/src/server.ts` before the page router and pass requests on to
+  `multiplayer/` (the assistant and its `/api/ask` are gone, SKATGO-130, the human: 「彻底删」):
   `/api/daily/*` (SKATGO-35), naming the player — the Clerk account, or else a device id from an
   httpOnly cookie, sent on only as its hash — `/api/free/*`, free play (SKATGO-40), and `/api/forum/*`, the
   forum (SKATGO-118), which also answers `/sitemap-forum.xml`.
@@ -24,7 +22,7 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 - **PostHog** (`posthog-js`, SKATGO-25) counts page views and product events from the browser
   (`app/src/lib/analytics.ts`), only when `POSTHOG_PROJECT_KEY` is set.
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
-  here. Accounts are optional: neither the course nor the assistant requires one; opening a private
+  here. Accounts are optional: the course and free play require none; opening a private
   table does (SKATGO-117), writing in the forum (SKATGO-118), and playing the daily tournament
   (SKATGO-123: `/api/daily/*` refuses a guest's opening of the deals and moves with 401; looking stays open).
 - **StyleX, compiled through Astryx's build integration** (`astryxStylex()`), with Astryx's reset and
@@ -89,7 +87,7 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   never features, in bidding or card play. Since SKATGO-40 free play (`/play`) and lesson 11's game
   play the same SkatZero computers on the server, their bidding taken from a committed pool of deals
   (`multiplayer/skatzero/free-pool.json.gz`, label `skatzero@1fe5cab`). Rooms and hints keep the
-  heuristics. Since SKATGO-79 SkatZero also reviews a finished deal for its play record: at each of the
+  heuristics; the hints are the course's own table's and lesson 11's only — free play has none (SKATGO-130). Since SKATGO-79 SkatZero also reviews a finished deal for its play record: at each of the
   player's plays it values every legal card as it weighs its own choice (`Policy.ranked`), and
   `judgePlays` in `src/computers.ts` keeps the plays whose card fell below its best, furthest first
   (`DealReview.differs`). `/daily/review` and `/free/review` work it out on request and store no review;
@@ -98,8 +96,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   signed-in player with it (`/api/free/review` passes `user:<id>`, never a guest and never a browser-sent player),
   the deal's Seeger-Fabian score and the AI's go into `play_deals`, once per game (SKATGO-128).
   No language model judges or explains play.
-- Course libraries: `motion` (animation), `canvas-confetti`, `zustand` (progress, persisted to `localStorage`), `deep-chat-react` (the
-  assistant's chat window).
+- Course libraries: `motion` (animation), `canvas-confetti`, `zustand` (progress, persisted to `localStorage`);
+  `deep-chat-react` went with the assistant (SKATGO-130, approved in the ticket).
 
 **Structure**
 
@@ -116,9 +114,8 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/skat/lessons/` | the course: `content.ts` (lessons), `drills.ts` (randomised exercises whose answers the engine computes), `types.ts` |
 | `app/src/lib/skat/progress.ts` | learner progress in `localStorage` |
 | `app/src/components/skat/` | every page and widget, and the product's own small UI kit (`ui.tsx`). One file per page: `entry-page.tsx` (the front page), `course-home.tsx`, `lesson-page.tsx` (around `lesson-player.tsx`), `rules-page.tsx`, `bidding-table-page.tsx`, `score-sheet-page.tsx`, `rules-summary-page.tsx`, `daily-page.tsx`, `free-play.tsx`, `legal-page.tsx` (privacy and terms; the footer is `legal-footer.tsx`, so every page does not carry their text), `forum-page.tsx` (the forum's list and a post, SKATGO-118), `not-found.tsx`; routes reach them only through `client-page.tsx`, which loads each page as its own chunk (SKATGO-107) |
-| `app/src/lib/ask/` | the assistant's server side: the page context it is given, the limits, the model call, and the `/api/ask` handler (with an optional session lookup for rate-limit identity) |
 | `app/src/start.ts` | Clerk's request middleware, which hands each page its session state |
-| `app/src/skat-layout.tsx` | the frame around every page: the front page's header over every page but the tables (lessons included since SKATGO-47; the rail, tab bar and coloured band are gone), or the full-screen table; the legal footer and the floating assistant. The header's pieces — links, language menu, card-colour settings, sign-in — are `components/skat/frame.tsx` |
+| `app/src/skat-layout.tsx` | the frame around every page: the front page's header over every page but the tables (lessons included since SKATGO-47; the rail, tab bar and coloured band are gone), or the full-screen table; the legal footer. The header's pieces — links, language menu, card-colour settings, sign-in — are `components/skat/frame.tsx` |
 | `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/quick-start` ("Skat in 5 Minuten", SKATGO-89; its Paraglide pattern stands ahead of the lessons' so its address is never read as a slug), `/course/$slug` (a lesson), `/rules`, `/rules/bidding-table` (SKATGO-50), `/rules/score-sheet` and `/rules/printable` (the printables, SKATGO-53), `/daily` and `/daily/play`, `/play`, `/with-friends` and `/table/$id` (private tables, SKATGO-61), `/skat-tricks` (the exercises, SKATGO-103) and `/skat-tricks/$exercise` (one exercise, noindex; an open-card endgame's wears the table frame, `frame.tsx` `frameOf`, SKATGO-111), `/forum` and `/forum/$post` (SKATGO-118; a post's address is its number and its title, in each language of the site), `/profile` (a player's record of play, noindex, SKATGO-128), `/privacy`, `/terms`; each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`, and `logo-mark.png`, the clear-ground logo that turns while a table loads) is cut from it by `.intentfold/tickets/SKATGO-93/icons.mjs`, about the centre of the three outer suits — regenerate them, never edit them |
@@ -137,7 +134,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/public/sounds/`, `app/src/lib/skat/sounds.ts` | the table's card sounds (SKATGO-101): a riffle when a deal is dealt, a card set down for each card played, a soft slide when a trick is gathered in — the lightest of six sets the human tried — played through Web Audio and on by default, with a switch in the settings ("Töne"). The files are Kenney's Casino Audio (CC0, its licence beside them), trimmed and levelled to MP3 by `.intentfold/tickets/SKATGO-101/make-sounds.sh` — regenerate them, never edit them |
 | `app/src/components/skat/score-sheet-page.tsx`, `print-links.tsx`, `app/src/lib/printables.ts`, `app/public/downloads/` | the printables (SKATGO-53): the score sheet (its Seeger-Fabian bonuses are `SEEGER_FABIAN` in `tournament.ts`); the download button and the links to the printables; which PDF belongs to which page; the committed PDFs, made by `app/scripts/make-printables.mjs` (Tools). Each PDF is served with a canonical Link header naming its page, set in `app/vite.config.ts` from `lib/printables.ts` and `lib/origin.ts` |
 | `app/src/components/skat/daily-page.tsx`, `daily-table.tsx`, `daily-comparison.tsx` | `/daily` with the tournament's button, result, board and table; `/daily/play` is its full-screen page. `daily-comparison.tsx` holds `ScoreSheet`, `VsAiTable` (one collapsible row per finished deal with the player's and the computer's score, opening to the deal's score sheet and play record, and the tournament's score sheet — SKATGO-42, SKATGO-48, SKATGO-79, SKATGO-81) and the play record (`DealAnalysis`, `TrickReplay`), which free play's result uses too |
-| `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy (`new`, `act`, `resume`, `review`) and its per-address limits, the browser's calls and the game carried across a change of language (SKATGO-79), and the table free play and lesson 11 use (`GameTable` with a `server` source, hints and assistant kept); free play's round of six deals — its progress, its finished deals with the AI's, the next deal's dealer asked of `/free/new`, and its result (SKATGO-88) |
+| `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy (`new`, `act`, `resume`, `review`) and its per-address limits, the browser's calls and the game carried across a change of language (SKATGO-79), and the table free play and lesson 11 use (`GameTable` with a `server` source; hints for lesson 11 only, SKATGO-130); free play's round of six deals — its progress, its finished deals with the AI's, the next deal's dealer asked of `/free/new`, and its result (SKATGO-88) |
 | `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament; `src/free.ts` free play; `src/computers.ts` the SkatZero computer turns both share; `scripts/make-free-pool.ts` the one-off generator of free play's pool |
 
 **Key decisions**

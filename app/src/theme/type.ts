@@ -25,14 +25,12 @@ export const typography = stylex.create({
   emphasis: { fontWeight: weight.bold },
 
   // Names and labels
-  windowName: { fontSize: fontSize.f15, fontWeight: weight.bold, lineHeight: leading.tight },
   link: { fontSize: fontSize.f14, fontWeight: weight.ui },
   small: { fontSize: fontSize.f13, fontWeight: weight.ui },
   meta: { fontSize: fontSize.f13, fontWeight: weight.ui },
   smallBold: { fontSize: fontSize.f13, fontWeight: weight.bold },
   label: { fontSize: fontSize.f12, fontWeight: weight.bold },
   micro: { fontSize: fontSize.f12, fontWeight: weight.ui },
-  windowSub: { fontSize: fontSize.f12, fontWeight: weight.ui, lineHeight: leading.tight },
   /** A ✓ / ✗ under a card: the caption's weight at reading size. */
   verdictMark: { fontSize: fontSize.f16 },
 

@@ -16,7 +16,7 @@ import { signedInUser } from '~/lib/session'
 // needs no consent banner for it (the human, 2026-10-01). When someone signs in with a device entry
 // for today, that entry moves to the account (the service decides whether it may).
 //
-// Wired in src/server.ts before the page router, like /api/ask: it is not a page.
+// Wired in src/server.ts before the page router: it is not a page.
 
 const COOKIE = 'skatgo_daily'
 const COOKIE_PATH = '/api/daily'

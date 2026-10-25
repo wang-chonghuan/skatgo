@@ -1,7 +1,5 @@
 // The course's own advice at the table, as text: what the hint buttons say, in the learner's language.
-// One place for it, because two readers need the same words — the table's hint panel, and the
-// assistant's view of the table (table-view.ts), which quotes it as the authoritative answer to
-// "what should I do?". Seat 0 is always the learner.
+// Seat 0 is always the learner.
 
 import { bidAdvice, chooseDeclaration, declarationAdvice, skatAdvice } from './ai'
 import type { Card } from './cards'

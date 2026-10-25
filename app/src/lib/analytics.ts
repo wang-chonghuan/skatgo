@@ -67,8 +67,6 @@ export type ProductEvents = {
   room_joined: Empty
   /** The private table's first deal was started, with this many people seated. */
   room_started: { humans: number }
-  /** A question went to the assistant, from this kind of page. */
-  assistant_asked: { context: 'entry' | 'home' | 'lesson' | 'play' }
 }
 export type GameMode = 'free' | 'lesson'
 type Empty = Record<string, never>

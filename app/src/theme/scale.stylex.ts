@@ -31,7 +31,7 @@ export const space = stylex.defineVars({
 })
 
 export const border = stylex.defineVars({
-  /** Panels, the assistant window, toggles, chat input. */
+  /** Panels, toggles, inputs. */
   hair: '1px',
   /** Interactive tiles: lesson card, option, contract button, seat. */
   tile: '2px',

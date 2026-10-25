@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-130",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-130",
   "branch": "SKATGO-130-cut-assistant",

@@ -145,14 +145,18 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
             "share" stays the one green action. */}
         {links ? (
           <div data-testid="dod-platforms" {...stylex.props(styles.platforms)}>
-            {(['whatsapp', 'facebook', 'telegram', 'x'] as const).map((p) => (
+            {/* In the human's order: WhatsApp, Instagram, Facebook, Telegram, X. */}
+            <a href={links.whatsapp} target="_blank" rel="noopener noreferrer" data-testid="share-whatsapp" onClick={() => track('dod_shared', { how: 'whatsapp' })} {...linkLook('quiet', 'sm')}>
+              {PLATFORM_NAME.whatsapp}
+            </a>
+            <button type="button" data-testid="share-instagram" onClick={() => (coarse ? void onShare('instagram') : (download(cardUrl(locale, code!, 'tall')), track('dod_shared', { how: 'instagram' })))} {...linkLook('quiet', 'sm')}>
+              {PLATFORM_NAME.instagram}
+            </button>
+            {(['facebook', 'telegram', 'x'] as const).map((p) => (
               <a key={p} href={links[p]} target="_blank" rel="noopener noreferrer" data-testid={`share-${p}`} onClick={() => track('dod_shared', { how: p })} {...linkLook('quiet', 'sm')}>
                 {PLATFORM_NAME[p]}
               </a>
             ))}
-            <button type="button" data-testid="share-instagram" onClick={() => (coarse ? void onShare('instagram') : (download(cardUrl(locale, code!, 'tall')), track('dod_shared', { how: 'instagram' })))} {...linkLook('quiet', 'sm')}>
-              {PLATFORM_NAME.instagram}
-            </button>
             <button type="button" data-testid="share-download" onClick={() => { download(cardUrl(locale, code!, 'tall')); track('dod_shared', { how: 'download' }) }} {...linkLook('quiet', 'sm')}>
               {m.share_download()}
             </button>

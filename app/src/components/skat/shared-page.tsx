@@ -55,7 +55,7 @@ export function SharedPage() {
             </Panel>
             {shared.today ? (
               <div {...stylex.props(styles.action)}>
-                <Link to="/daily/play" search={{ size: DEAL_OF_DAY }} data-testid="shared-play" data-mode="today" {...linkLook('go', 'lg', 'landing')}>{m.dod_hero()}</Link>
+                <Link to="/daily/play" search={{ size: DEAL_OF_DAY }} data-testid="shared-play" data-mode="today" {...linkLook('go', 'lg', 'landing')}>{m.shared_practice()}</Link>
               </div>
             ) : (
               <>

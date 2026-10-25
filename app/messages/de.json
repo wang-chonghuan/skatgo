@@ -457,7 +457,7 @@
   "shared_title": "Kannst du das schlagen?",
   "shared_meta_title": "Kannst du {score} schlagen? · 1 Spiel heute | SkatGo",
   "shared_meta_description": "Ein Skat-Spiel, geteilt am {date}: {score}, die KI {ai}. Spiel dieselben Karten in etwa 2 Minuten.",
-  "shared_lead": "1 Spiel heute, {date}: das geteilte Ergebnis und was die KI mit denselben Karten geholt hat.",
+  "shared_lead": "{date}: das geteilte Ergebnis und was die KI mit denselben Karten geholt hat.",
   "shared_who": "Geteilt",
   "shared_practice": "Dieses Spiel spielen · 2 Min.",
   "shared_practice_note": "Das war das Spiel vom {date}: du spielst es zur Übung, ohne Rangliste.",

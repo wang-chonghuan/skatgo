@@ -223,41 +223,49 @@ async function workOut(policy: Policy, spec: DealSpec, day: string, i: number, n
   if (now() - started > PREPARE_MS) throw new Error('daily_prepare_timeout')
 }
 
+/** How many candidates fell into each kind, for the log. */
+const tally = (offered: { pick: DealPick }[]) => offered.reduce<Record<string, number>>((t, c) => ({ ...t, [c.pick.kind]: (t[c.pick.kind] ?? 0) + 1 }), {})
+
 /** How many candidates the deal of the day is chosen from, dealt a round at a time until one may be taken. */
 const CANDIDATE_ROUND = 8
-const CANDIDATES_MAX = 32
+const CANDIDATES_MAX = 64
 /** The deal of the day's candidates try their skats in an order of their own, apart from the tournament's deals. */
 const CANDIDATE_ORDER = 100
 
 /**
  * The deal of the day (SKATGO-131): candidates dealt fresh and at random — never one of the day's six — each worked
  * out like a tournament deal, sorted into the four kinds by the AI's game (`pick.ts`), and one taken: never the kind
- * of the day before, the contract rotating. Rounds of candidates until one may be taken; past the last round, the
- * best of any kind, so a day is never left without its deal.
+ * of the day before, the contract rotating. Rounds of candidates until one may be taken; only past the last round —
+ * logged — one of yesterday's kind, so a day is never left without its deal.
  */
 async function chooseDealOfDay(store: Store, policy: Policy, day: string, now: () => number, started: number): Promise<DealSpec> {
   const { rows: earlier } = await store.pool.query(
     'SELECT deals FROM daily_deals WHERE size = $1 AND day < $2 ORDER BY day DESC LIMIT 6', [DEAL_OF_DAY, day])
   const before = earlier.flatMap((r) => ((r.deals as DealSpec[])[0]?.pick ? [(r.deals as DealSpec[])[0].pick!] : []))
   const { rows: six } = await store.pool.query('SELECT deals FROM daily_deals WHERE day = $1 AND size = $2', [day, DAILY_DEALS])
-  const taken = new Set(((six[0]?.deals ?? []) as DealSpec[]).map((s) => s.deck.join(' ')))
+  const taken = new Set(((six[0]?.deals ?? []) as DealSpec[]).map((s) => JSON.stringify(s.deck)))
   const offered: { item: DealSpec; pick: DealPick }[] = []
   const any: DealSpec[] = []
   for (let n = 0; n < CANDIDATES_MAX; n++) {
     const spec: DealSpec = { dealer: randomInt(3) as Seat, deck: secureDeck() }
-    if (taken.has(spec.deck.join(' '))) continue
+    if (taken.has(JSON.stringify(spec.deck))) continue
     await workOut(policy, spec, day, CANDIDATE_ORDER + n, now, started)
     any.push(spec)
     const pick = kindOf(spec.benchmark!.summary)
     if (pick) offered.push({ item: spec, pick })
     if ((n + 1) % CANDIDATE_ROUND === 0) {
       const chosen = pickOfDay(offered, before, Math.random)
-      if (chosen) return { ...chosen.item, pick: chosen.pick }
+      if (chosen) {
+        console.log(JSON.stringify({ event: 'daily_deal_chosen', day, kind: chosen.pick.kind, contract: chosen.pick.contract, candidates: any.length, kinds: tally(offered) }))
+        return { ...chosen.item, pick: chosen.pick }
+      }
     }
   }
-  const chosen = pickOfDay(offered, before, Math.random) ?? offered[0]
+  console.error(JSON.stringify({ event: 'daily_deal_kind_repeated', day, candidates: any.length, kinds: tally(offered) }))
+  const chosen = offered[0]
   if (chosen) return { ...chosen.item, pick: chosen.pick }
   console.error(JSON.stringify({ event: 'daily_no_good_deal', day, candidates: any.length }))
+  if (!any[0]) throw new Error('daily_no_candidate')
   return any[0]
 }
 

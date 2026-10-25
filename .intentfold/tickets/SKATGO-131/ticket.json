@@ -1,10 +1,14 @@
 {
   "ticket": "SKATGO-131",
   "mode": "autonomous",
-  "stage": "developing",
+  "stage": "handoff-ready",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-131",
   "branch": "SKATGO-131-deal-of-day",
   "base": "e61fcf9f793c4545382add36c41d2a214c661303",
-  "ports": { "web": 55131, "multiplayer": 56131, "database": 57131 }
+  "ports": {
+    "web": 55131,
+    "multiplayer": 56131,
+    "database": 57131
+  }
 }

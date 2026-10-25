@@ -40,9 +40,9 @@ export function isPublishedSite(hostname: string): boolean {
  * what differs between occasions goes in the properties, not the name.
  */
 export type ProductEvents = {
-  /** A button of the front page's hero was pressed: the tournament's, or the forum's beside it (SKATGO-120;
-   *  the ladder's from SKATGO-109 until then). */
-  home_cta_clicked: { button: 'primary' | 'forum' }
+  /** A button of the front page's hero was pressed: the deal of the day's, or free play's beside it (SKATGO-131; the
+   *  tournament's and the forum's until then). */
+  home_cta_clicked: { button: 'primary' | 'free' }
   /** A lesson was opened, by its number. */
   lesson_started: { lesson: number }
   /** A lesson's last step was done. */
@@ -59,6 +59,8 @@ export type ProductEvents = {
   daily_started: { deals: number }
   /** A tournament's last deal today was finished. */
   daily_finished: { deals: number; total: number }
+  /** The deal of the day's result was shared (SKATGO-131): through the share sheet, copied, or neither worked. */
+  dod_shared: { how: 'shared' | 'copied' | 'failed' }
   /** Today's finished entry was put on the leaderboard under a nickname, or renamed. */
   daily_nickname_set: Empty
   /** A private table was opened. */

@@ -235,12 +235,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `aria-current`).
 - **The front page** (`entry-page.tsx`), on white:
   - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
-    its one green landing action (play today's deals) and beside it a white `quiet` one to the forum (SKATGO-120, the
-    human: 「把solve puzzles 换成论坛按钮」; the puzzles' button there since SKATGO-109): the forum's newest announcement
-    while it is two weeks old or less, as the announcement line (`AnnouncementLine`, SKATGO-118) has always looked —
-    its `good` pill, here "Neu im Forum" / "New in the forum", then the title as a link (SKATGO-123, the human:
-    「换成以前你删掉的那个我的公告的链接，开头明显有new forum等类似的badge」; until then the line stood over the headline) —
-    otherwise "Zum Skat-Forum" / "Visit Skat forum"; no line of facts under them (SKATGO-123, the
+    its one green landing action, the deal of the day (SKATGO-131, the human: 「今日一副是主按钮，自由play是次按钮，都是在hero区域
+    的」) — "1 Spiel heute · 2 Min." (the human chose the words: 「1 deal today · 2 min / 1 Spiel heute · 2 Min. 用这个吧」) to `/daily`, where the deal and the six deals are chosen — never straight to a table (「这个应该是入口，进去后分为1deal和
+    6deal，不要一进去马上打牌」) — and "Heutiges Ergebnis · Platz k" once played — and beside it a white `quiet` one to free play, "Freies Spiel"; the forum is no longer in
+    the hero (it was since SKATGO-120); no line of facts under them (SKATGO-123, the
     human: 「✓Free ✓AI analysis 这行去掉」). No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
     设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it
     (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the headline at 48px
@@ -271,8 +269,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the short rules, the daily tournament, the Skat-Tricks' page and their article, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
-  tournament's page puts the forum's announcement line under its lead when there is one (SKATGO-118), then
-  the tournament (six deals; SKATGO-77's switch to twelve is gone, SKATGO-119): its one
+  tournament's page puts the forum's announcement line under its lead when there is one (SKATGO-118), then a
+  toggle of two `toggleLook` links, "1 Spiel heute" | "Turnier · 6 Spiele" (SKATGO-131; SKATGO-77's 6 | 12 once stood
+  there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
+  its one `go` button to its table (`/daily/play?size=1`, where after the last card the result stands a moment and the
+  page comes back here); once played, a white card with the player's score and the AI's (`landingHeading`, each
+  tagged), "Heute n Spieler · du bist auf Platz k", "Ergebnis teilen" as the one `go` (the system's share sheet on a
+  phone, the clipboard elsewhere; no card or contract in it), the time until the next deal, and folded under it the
+  deal against the AI (`VsAiTable`); then its board as the tournament's, the AI's row on it; then a link to free play.
+  The tournament's side (six deals; SKATGO-77's twelve gone, SKATGO-119): its one
   `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",
   "Gestern", or the weekday and date — and steps through the last seven days with two round arrow
   buttons at the right, earlier on the left, the one at the end of the range spent (SKATGO-80). The

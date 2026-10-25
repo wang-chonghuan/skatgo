@@ -13,7 +13,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { EloBoard } from './elo-board'
-import { AnnouncementLine } from './forum-announcement'
+import { ClientPart, DealOfDayButton } from './client-part'
 import { PlayingCard } from './playing-card'
 import { linkLook } from './ui'
 
@@ -28,7 +28,7 @@ import { linkLook } from './ui'
 // Every picture here is skatgo's own: the public-domain deck the course plays with, fanned on felt, and
 // the suits as outline icons. Rendered on the server; the learner's progress is applied after mount.
 export function EntryPage() {
-  const { announcement, elo } = useLoaderData({ from: '/' })
+  const { elo } = useLoaderData({ from: '/' })
   // With the board beside it the text keeps to the left of its column; without one, as before, in the middle.
   const beside = !!elo && elo.rows.length > 0
 
@@ -42,22 +42,15 @@ export function EntryPage() {
           </div>
           <div {...stylex.props(styles.cta, beside && styles.start)}>
             <div {...stylex.props(styles.actions, beside && styles.startRow)}>
-              <Link to="/daily" data-testid="entry-cta" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
-                {m.entry_cta()}
+              {/* The deal of the day (SKATGO-131, the human: 「今日一副是主按钮，自由play是次按钮，都是在hero区域的」): the way in to
+                  /daily, where the deal and the six deals are chosen; once played, its result and place. */}
+              <ClientPart fallback={<DealOfDayLink />}>
+                <DealOfDayButton fallback={<DealOfDayLink />} />
+              </ClientPart>
+              {/* Beside it free play, white, so the deal stays the one green action; the forum is no longer here. */}
+              <Link to="/play" data-testid="entry-free" onClick={() => heroClick('free')} {...linkLook('quiet', 'lg', 'landing')}>
+                {m.dod_hero_free()}
               </Link>
-              {/* Beside it, the forum: its newest announcement while there is one, as the announcement line has always
-                  looked — the pill, then the title as a link — the pill saying it is the forum's (SKATGO-123, the human:
-                  「换成以前你删掉的那个我的公告的链接，开头明显有new forum等类似的badge」); otherwise the white way to the forum
-                  (SKATGO-120: 「把solve puzzles 换成论坛按钮」), so the tournament stays the one green action. */}
-              {announcement ? (
-                <div data-testid="entry-forum" onClick={() => heroClick('forum')} {...stylex.props(styles.newest)}>
-                  <AnnouncementLine announcement={announcement} badge={m.forum_new_in()} />
-                </div>
-              ) : (
-                <Link to="/forum" data-testid="entry-forum" onClick={() => heroClick('forum')} {...linkLook('quiet', 'lg', 'landing')}>
-                  {m.entry_forum_cta()}
-                </Link>
-              )}
             </div>
             {/* The ✓ line of facts under the buttons is gone (SKATGO-123, the human: 「✓Free ✓AI analysis 这行去掉」). */}
           </div>
@@ -110,7 +103,18 @@ export function EntryPage() {
 }
 
 /** The hero's buttons (SKATGO-29; renamed by SKATGO-74's tracking plan; the forum's since SKATGO-120). */
-const heroClick = (button: 'primary' | 'forum') => track('home_cta_clicked', { button })
+const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
+
+/** The hero's main button as the server renders it: the way in to the day's two competitions on /daily, the deal of
+ *  the day first — not straight to a table (the human: 「这个应该是入口，进去后分为1deal和6deal，不要一进去马上打牌」).
+ *  Rendered each time, in the page's language. */
+function DealOfDayLink() {
+  return (
+    <Link to="/daily" data-testid="entry-cta" data-state="open" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
+      {m.dod_hero()}
+    </Link>
+  )
+}
 
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
@@ -183,8 +187,6 @@ const styles = stylex.create({
     rowGap: { default: space.x32, [bp.phone]: space.x24 },
   },
   start: { alignItems: 'flex-start', textAlign: 'start' },
-  // The announcement line in the button's place, centred on the button's height.
-  newest: { display: 'flex', alignItems: 'center', minWidth: 0, maxWidth: '100%' },
   startRow: { justifyContent: 'flex-start' },
   // On PC the board takes the type's height, no more, its list scrolling inside (the human: 「elo列表的高度，和hero
   // 区域的高度一样，可以滚动，不要那么高，破坏我布局」): it stands out of the grid's flow, so the type alone sets the

@@ -8,7 +8,7 @@ import { track } from '~/lib/analytics'
 import { type DailyError, dailyAct, dailyBoard, dailyState, isError } from '~/lib/daily-api'
 import { useAccount } from '~/lib/use-account'
 import type { Move } from '~/lib/skat/game'
-import { BOARD_DAYS, type BoardRow, DAILY_DEALS, DAILY_TIME_ZONE, type DailyBoard, type DailyReply, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
+import { BOARD_DAYS, type BoardRow, DAILY_DEALS, DAILY_TIME_ZONE, DEAL_OF_DAY, type DailyBoard, type DailyReply, type DailySize, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { color } from '../../theme/color.stylex'
@@ -107,7 +107,7 @@ function dayName(back: number, day: string | undefined): string {
  *  7天的」). The AI stands among the players by its total, after any player with the same, taking no rank
  *  (SKATGO-80); when it falls below the rows shown it follows them, with the player's own row. With nobody
  *  on the board yet it stands there alone, under the line that says so. */
-function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard | DailyError | null; onShow: (back: number) => void }) {
+export function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard | DailyError | null; onShow: (back: number) => void }) {
   const shown = board && !isError(board) ? board : null
   const rows = shown?.rows ?? []
   const ai = shown?.ai?.total ?? null
@@ -193,15 +193,17 @@ function DailyResult({ status }: { status: DailyStatus }) {
   )
 }
 
-/** The table for the current deal of one of the day's tournaments. After its last deal, or when the day
- *  is over, back to that tournament on /daily. */
-export function DailyTable() {
+/** The table for the current deal of one of the day's competitions — the six-deal tournament, or the deal of the
+ *  day (SKATGO-131). After its last deal, or when the day is over, back to that competition on /daily. */
+export function DailyTable({ size = DAILY_DEALS }: { size?: DailySize }) {
   const navigate = useNavigate()
-  const onLeave = () => void navigate({ to: '/daily' })
-  // A guest has no table to sit at (SKATGO-123): back to the tournament's page, where signing in is offered.
+  const one = size === DEAL_OF_DAY
+  const onLeave = () => void navigate({ to: '/daily', search: one ? {} : { t: DAILY_DEALS } })
+  // A guest has no seat at the tournament (SKATGO-123): back to its page, where signing in is offered. The deal of the
+  // day a guest may play (SKATGO-131, the human: 游客能打).
   const account = useAccount()
   useEffect(() => {
-    if (account === null) onLeave()
+    if (account === null && !one) onLeave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account])
   const [reply, setReply] = useState<DailyReply | null>(null)
@@ -218,7 +220,7 @@ export function DailyTable() {
   const before = useRef<[number, number, number]>([0, 0, 0])
 
   async function load() {
-    const r = await dailyState(true)
+    const r = await dailyState(true, size)
     if (isError(r)) return setFailed(true)
     if (r.status.finished || !r.view) return onLeave()
     setFailed(false)
@@ -251,19 +253,28 @@ export function DailyTable() {
     if (!reply) return
     setSending(true)
     before.current = reply.status.totals
-    const r = await dailyAct({ day: reply.status.day, deal, revision: reply.revision }, move)
+    const r = await dailyAct({ size, day: reply.status.day, deal, revision: reply.revision }, move)
     setSending(false)
     // Refused — a new day began, or this page is behind another tab: take the server's word for where
     // things stand. A deal never restarts; the same cards come back as they were left.
     if (isError(r)) return r.error === 'day_over' ? onLeave() : void load()
     if (!r.steps?.length) return void load()
-    if (r.status.finished && !reply.status.finished) track('daily_finished', { deals: DAILY_DEALS, total: r.status.totals[PLAYER] })
+    if (r.status.finished && !reply.status.finished) track('daily_finished', { deals: size, total: r.status.totals[PLAYER] })
     setReply(r)
     setShown(r.steps[0])
     setQueue(r.steps.slice(1))
   }
 
   const game = useMemo(() => (shown ? gameFromView(shown) : null), [shown])
+  // The deal of the day has no settlement to read at the table (SKATGO-131): once its last trick is shown, the result
+  // stands a moment on the felt and the page goes on to its board.
+  const settled = one && !!reply?.status.finished && queue.length === 0 && game?.phase === 'done'
+  useEffect(() => {
+    if (!settled) return
+    const t = setTimeout(onLeave, DEAL_OF_DAY_PAUSE)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settled])
   if (failed) {
     return (
       <Panel tone="bad">
@@ -294,6 +305,9 @@ export function DailyTable() {
     />
   )
 }
+
+/** How long the deal of the day's result stands on the felt before its board (the ticket: 1–2 s). */
+const DEAL_OF_DAY_PAUSE = 1800
 
 const styles = stylex.create({
   text: { margin: 0, color: color.navy },

@@ -66,9 +66,10 @@ export async function handleDaily(request: Request): Promise<Response> {
   const device = known ?? hex(crypto.getRandomValues(new Uint8Array(32)))
   const anon = `anon:${hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(device)))}`
   const userId = await signedInUser(request)
-  // Opening the deals (state with `open`) or making a move is playing; anything else only looks.
+  // Opening the deals (state with `open`) or making a move is playing; anything else only looks. The deal of the day
+  // (size 1) a guest may play too (SKATGO-131, the human: 游客能打); the tournament of six needs an account.
   const playing = op === 'act' || (op === 'state' && (body as { open?: unknown }).open === true)
-  if (playing && !userId) return json(401, { error: 'sign_in_required' })
+  if (playing && !userId && (body as { size?: unknown }).size !== 1) return json(401, { error: 'sign_in_required' })
   // Looking at the board needs no player: a visitor nobody knows yet asks as nobody. The Elo board is
   // everyone's, asked as nobody whoever looks.
   const player = op === 'elo' ? null : userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null

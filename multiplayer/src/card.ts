@@ -75,7 +75,7 @@ export function cardSvg(t: CardText, shape: CardShape): string {
   ${text(80, 356, 44, 700, C.slate, t.label)}
   ${text(70, 530, 200, 900, C.navy, t.score)}
   ${board(80, 600, 920, 130, 56, t.rows, t.declarer)}
-  ${t.challenge.split(' – ').map((line, i, all) => text(80, 1140 + i * 66, 54, 700, C.navy, i < all.length - 1 ? `${line} –` : line)).join('')}
+  ${text(80, 1170, Math.min(54, Math.floor((54 * 920) / width(54, 700, t.challenge))), 700, C.navy, t.challenge)}
   ${text(80, 1280, 36, 500, C.slate, t.site)}
 </svg>`
 }

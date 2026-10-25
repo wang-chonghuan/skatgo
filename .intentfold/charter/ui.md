@@ -274,8 +274,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   toggle of two `toggleLook` links, "1 Spiel heute" | "Turnier · 6 Spiele" (SKATGO-131; SKATGO-77's 6 | 12 once stood
   there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
   its one `go` button to its table (`/daily/play?size=1`, where after the last card the result stands a moment and the
-  page comes back here); once played, a white card with the player's score and the AI's (`landingHeading`, each
-  tagged) — no "Heute n Spieler · du bist auf Platz k" (SKATGO-132, 「这个不要显示」) — "Ergebnis teilen" as the one `go`
+  page comes back here); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
+  gespielt" (`dialogTitle`) over "Deine Freunde bekommen dieselben Karten – schau, wie viele Punkte sie holen." — and no
+  scores, no place: the card below carries them (SKATGO-132, 「我不懂你显示这些垃圾干什么……你完成了same one deal today,
+  分享给朋友，看看他们能打几分」, 「1 played today · you're #1 这个不要显示」) — "Mit Freunden teilen" as the one `go`
   with lucide's `Share2` (the phone's share sheet with the line and the link, the clipboard elsewhere; no card or
   contract in it), under it `quiet` small buttons, each with its icon (「全部都要图标」) — the platforms' own marks in their brand
   colours (`brand-icon.tsx`, Simple Icons, CC0) and names, WhatsApp, Facebook, Telegram, X, then lucide's `Link` and

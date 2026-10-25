@@ -48,9 +48,9 @@ by its Seeger-Fabian score and the AI's row on it, never in the Elo. A guest may
 six deals need an account. It is chosen, not just dealt (「每日一副要挑选那种好玩的，刺激的，最好不要让玩家一直被压着打的」): of
 fresh random deals, only one where the AI in the player's seat declared and won with 61–89 card points, won a Null, won
 Schneider or better, or defended and brought the declarer down — never the same kind two days running, the contract
-rotating (「不要每天选一样的」). It is the front page's main way in; once played, the page shows the player's score and
-the AI's (not how many played or their place: 「1 played today · you're #1 这个不要显示」), the card it would be shared
-with, and a way to share it that tells nothing of the cards: to WhatsApp,
+rotating (「不要每天选一样的」). It is the front page's main way in; once played, the page says it is done and asks the player
+to share it so friends try the same cards — no scores, no place (「我不懂你显示这些垃圾干什么」, 「1 played today · you're #1
+这个不要显示」) — with the ways to share it, and the card it goes out with under them that tells nothing of the cards: to WhatsApp,
 Facebook, Telegram and X by their own share addresses, through the phone's share sheet, or the link copied — no
 Instagram and no picture to download (SKATGO-132, the human: 「至少这五个平台」, then 「picture不要了，不分享instagram」). What goes out is a card on white — the day, the score,
 the table's three Seeger-Fabian scores with the declarer badged, the challenge to play the same cards; no AI, no place,

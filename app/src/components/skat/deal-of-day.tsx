@@ -17,7 +17,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { BrandIcon } from './brand-icon'
-import { VsAiTable, Who, signed } from './daily-comparison'
+import { VsAiTable } from './daily-comparison'
 import { Leaderboard } from './daily-table'
 import { Btn, Panel, linkLook } from './ui'
 
@@ -121,18 +121,11 @@ function Result({ status }: { status: DailyStatus }) {
   return (
     <Panel>
       <section data-testid="dod-result" data-score={score} data-ai={ai ?? undefined} {...stylex.props(styles.stack)}>
-        <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.dod_result_title()}</h2>
-        <div {...stylex.props(styles.scores)}>
-          <div {...stylex.props(styles.score)}>
-            <span {...stylex.props(typography.landingHeading, styles.text)}>{signed(score)}</span>
-            <span {...stylex.props(typography.appText, styles.muted)}><Who side="you" /></span>
-          </div>
-          {ai === null ? null : (
-            <div {...stylex.props(styles.score)}>
-              <span {...stylex.props(typography.landingHeading, styles.text)}>{signed(ai)}</span>
-              <span {...stylex.props(typography.appText, styles.muted)}><Who side="ai" /></span>
-            </div>
-          )}
+        {/* What is done and what sharing is for — no scores here, the card below has them (the human: 「我不懂你显示这些垃圾
+            干什么……你完成了same one deal today, 分享给朋友，看看他们能打几分」). */}
+        <div {...stylex.props(styles.head)}>
+          <h2 {...stylex.props(typography.dialogTitle, styles.text)}>{m.dod_result_title()}</h2>
+          <p {...stylex.props(typography.appText, styles.muted)}>{m.dod_result_lead()}</p>
         </div>
         <div {...stylex.props(styles.action)}>
           <Btn testId="dod-share" size="lg" disabled={!code} onClick={() => void onShare('sheet')}>
@@ -194,8 +187,7 @@ const styles = stylex.create({
   text: { margin: 0, color: color.navy },
   muted: { margin: 0, color: color.slate },
   link: { alignSelf: 'flex-start', color: color.info },
-  scores: { display: 'flex', gap: space.x32, alignItems: 'flex-end' },
-  score: { display: 'flex', flexDirection: 'column', gap: space.x4 },
+  head: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   details: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   card: {
     display: 'block',

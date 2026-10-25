@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { clientPage } from '~/components/skat/client-page'
 import { pageHead, samePath } from '~/lib/head'
-import { cardUrl } from '~/lib/share'
 import { readShared } from '~/lib/share-api'
 import { SITE_URL } from '~/lib/site'
 import { m } from '~/paraglide/messages'
@@ -21,7 +20,7 @@ export const Route = createFileRoute('/d/$code')({
       description: loaderData ? m.shared_meta_description({ date, score: signed(loaderData.scores[0]) }) : m.shared_missing(),
       paths: samePath(`/d/${params.code}`),
       image: 'daily',
-      imageUrl: loaderData ? cardUrl(getLocale(), params.code, 'wide', SITE_URL) : undefined,
+      imageUrl: loaderData ? `${SITE_URL}/api/card/${params.code}-${getLocale()}-wide.png` : undefined,
       jsonLd: [],
     })
   },

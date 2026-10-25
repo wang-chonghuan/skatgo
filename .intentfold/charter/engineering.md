@@ -76,7 +76,7 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   Instagram — kept in memory per code. A past day's deal is played as practice from a sealed token (`free.ts` `seal`
   with its own key label), nothing stored. The web passes the share ops through `/api/daily/*` (`share`, `shared`,
   `practice-new`, `practice-act`; the player named only for `share`), serves the card at
-  `/api/card/<code>-<lang>-<wide|tall>.png?v=<CARD_LOOK>` (kept a day by whoever fetches it, so `CARD_LOOK` in `lib/share.ts` is raised whenever `card.ts` draws differently: the human, 「缓存了，预览不了」), and renders `/d/$code` (noindex; its `og:image` the card, read on the
+  `/api/card/<code>-<lang>-<wide|tall>.png`, and renders `/d/$code` (noindex; its `og:image` the card, read on the
   server by `lib/share-api.ts`) and `/d/$code/play`, the practice table.
 - **The forum runs in `multiplayer/`** (SKATGO-118), as plain HTTP routes under `/forum` behind the admission
   key, its posts, comments and reports in multiplayer's PostgreSQL (`forum_posts`, `forum_comments`,

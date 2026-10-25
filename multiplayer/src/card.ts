@@ -7,8 +7,6 @@ import { Resvg } from '@resvg/resvg-js'
 // with theirs marked and a yellow badge after the declarer's name, and the invitation to play the same cards; no place, no card face, no contract, no AI, no name (the ticket). Drawn as SVG with the site's font
 // and turned into a PNG by resvg: wide for link previews (1200×630), tall for Instagram (1080×1350).
 
-// Its look is named in its address (`CARD_LOOK`, app/src/lib/share.ts): raise that when this draws differently.
-
 const assets = new URL('../assets/', import.meta.url)
 const FONTS = ['RedHatDisplay-Black.ttf', 'RedHatDisplay-Bold.ttf', 'RedHatDisplay-Medium.ttf'].map((f) => new URL(`fonts/${f}`, assets).pathname)
 /** The clear-ground logo (app/public/logo-mark.png). */

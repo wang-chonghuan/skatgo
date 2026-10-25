@@ -61,7 +61,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   entries with its day's `benchmark`, of either size (the size-12 rows SKATGO-77 left are deals against the same AI), and every row of `play_deals` (player, game — `free:<pool>:<deal>:<start>` —
   the day by the tournament's `dayOf`, when, the three seats' Seeger-Fabian scores in the player's game and in the AI's), the ids
   `player_aliases` names as one person counted as that person. `app/src/lib/skat/profile.ts` is the shape both
-  sides share and the page's sums.
+  sides share and the page's sums. The weeks' analyses are `profile_notes` (player, week's Monday, language, text in
+  the forum's marks), written by hand and loaded by `.intentfold/tickets/SKATGO-128/notes.mjs` from its `notes.json`.
 - **The forum runs in `multiplayer/`** (SKATGO-118), as plain HTTP routes under `/forum` behind the admission
   key, its posts, comments and reports in multiplayer's PostgreSQL (`forum_posts`, `forum_comments`,
   `forum_reports`). The web's `/api/forum/*` names the viewer — the Clerk account or nobody — and whether the

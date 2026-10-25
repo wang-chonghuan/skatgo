@@ -1,5 +1,5 @@
 import type { Move } from '~/lib/skat/game'
-import type { ProfileDeal } from '~/lib/skat/profile'
+import type { ProfileDeal, ProfileNote } from '~/lib/skat/profile'
 import type { DailyBoard, DailyReply, DealReview } from '~/lib/skat/tournament'
 
 // The browser's side of the daily tournament (SKATGO-35, SKATGO-36): its requests to /api/daily
@@ -39,6 +39,6 @@ export const dailyBoard = (back: number) => post<DailyBoard>('board', { day: bac
 export const dailyReview = (deal: number) => post<DealReview>('review', { deal })
 
 /** The signed-in account's record of play (SKATGO-128): every deal against the AI, in the order played. */
-export const dailyProfile = () => post<{ deals: ProfileDeal[] }>('profile', {})
+export const dailyProfile = () => post<{ deals: ProfileDeal[]; notes: ProfileNote[] }>('profile', {})
 
 export const isError = <T extends object>(r: T | DailyError): r is DailyError => 'error' in r

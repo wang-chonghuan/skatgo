@@ -1,5 +1,5 @@
 import type { DealSummary } from '../../app/src/lib/skat/tournament'
-import type { Played, ProfileDeal } from '../../app/src/lib/skat/profile'
+import type { Played, ProfileDeal, ProfileNote } from '../../app/src/lib/skat/profile'
 import type { Store } from './store'
 
 // A player's record of play (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，而且每个deal都要算和ai的
@@ -24,7 +24,7 @@ export async function recordFreeDeal(store: Store, d: { player: string; game: st
  * were played against the same AI on the same cards (the human: 「他的全档案必须建立好」) — and free play's. The ids `player_aliases` names as one person count as that person,
  * as on the Elo board. A tournament deal of a day dealt before the AI played it has no AI score.
  */
-export async function playProfile(store: Store, who: string): Promise<{ deals: ProfileDeal[] }> {
+export async function playProfile(store: Store, who: string): Promise<{ deals: ProfileDeal[]; notes: ProfileNote[] }> {
   const { rows: ids } = await store.pool.query(
     `WITH me AS (SELECT coalesce((SELECT same_as FROM player_aliases WHERE player = $1), $1) AS id)
      SELECT id FROM me UNION SELECT player FROM player_aliases, me WHERE same_as = me.id`, [who])
@@ -44,5 +44,7 @@ export async function playProfile(store: Store, who: string): Promise<{ deals: P
   const { rows: free } = await store.pool.query('SELECT day, at, mine, ai FROM play_deals WHERE player = ANY($1)', [players])
   for (const f of free) deals.push({ day: f.day, source: 'free', at: Number(f.at), mine: f.mine, ai: f.ai })
   deals.sort((a, b) => a.day.localeCompare(b.day) || a.at - b.at)
-  return { deals: deals.map(({ at: _, ...d }) => d) }
+  // The weeks' analyses written for this person, under any of their ids (SKATGO-128).
+  const { rows: notes } = await store.pool.query('SELECT week, lang, body FROM profile_notes WHERE player = ANY($1) ORDER BY week DESC', [players])
+  return { deals: deals.map(({ at: _, ...d }) => d), notes: notes.map((n) => ({ week: n.week, lang: n.lang, body: n.body })) }
 }

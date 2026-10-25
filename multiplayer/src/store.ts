@@ -119,6 +119,13 @@ export class Store {
           player text NOT NULL, game text NOT NULL, day text NOT NULL, at bigint NOT NULL, mine jsonb NOT NULL,
           ai jsonb NOT NULL, PRIMARY KEY (player, game)
         );
+        -- A week's analysis of a player's record of play, written by hand per language (SKATGO-128, the human: 「挑重点，目前
+        -- 用户少，可以手动做」): the points that mattered that week and a conclusion, in the forum's marks. Keyed by the
+        -- player's id as it stands, the week's Monday and the language.
+        CREATE TABLE IF NOT EXISTS profile_notes (
+          player text NOT NULL, week text NOT NULL, lang text NOT NULL, body text NOT NULL, created_at bigint NOT NULL,
+          PRIMARY KEY (player, week, lang)
+        );
         CREATE TABLE IF NOT EXISTS ladder_answers (
           player text NOT NULL, step text NOT NULL, solved_at bigint, misses integer NOT NULL DEFAULT 0,
           updated_at bigint NOT NULL, PRIMARY KEY (player, step)

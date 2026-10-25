@@ -77,28 +77,9 @@ export function trendOf(deals: ProfileDeal[]): { last: number; before: number; v
   }
 }
 
-/**
- * Where a deal's difference against the AI comes from, by who declared it from the player's seat (the human, on the
- * week's analysis: 「你给的四条加上结论，就很好」): the player declared a game the AI did not (`bidAlone`), both declared
- * (`bothPlayed`), the AI declared and the player did not (`aiAlone`), or neither did (`defended`).
- */
-export type Kind = 'bidAlone' | 'bothPlayed' | 'aiAlone' | 'defended'
-export const KINDS: Kind[] = ['bidAlone', 'bothPlayed', 'aiAlone', 'defended']
-
-export function kindOf(d: ProfileDeal & { ai: Played }): Kind {
-  const mine = d.mine.declarer === 0
-  const ai = d.ai.declarer === 0
-  return mine && ai ? 'bothPlayed' : mine ? 'bidAlone' : ai ? 'aiAlone' : 'defended'
-}
-
-export type KindSum = {
-  deals: number
-  /** The sum of the deals' differences against the AI. */
-  sum: number
-  /** Of these deals, the games the player won as declarer, and the games the AI won as declarer. */
-  won: number
-  aiWon: number
-}
+/** A week's analysis, written by hand for the player in one language (SKATGO-128): the forum's marks — paragraphs,
+ *  lists, **bold**. `week` is the week's Monday. */
+export type ProfileNote = { week: string; lang: string; body: string }
 
 export type ProfileWeek = {
   /** The week's Monday. */
@@ -106,9 +87,6 @@ export type ProfileWeek = {
   deals: number
   /** The average per deal against the AI over the week's deals the AI played; null when none. */
   perDeal: number | null
-  kinds: Record<Kind, KindSum>
-  /** Where the week lost the most against the AI; null when it lost nowhere. */
-  worst: Kind | null
 }
 
 /** The Monday of a day's week, as a day. */
@@ -118,31 +96,20 @@ export function weekOf(day: string): string {
   return d.toISOString().slice(0, 10)
 }
 
-/** The weeks played, newest first, each with its deals split by who declared and where it lost the most. */
+/** The weeks played, newest first: how many deals, and the average per deal against the AI. */
 export function weeksOf(deals: ProfileDeal[]): ProfileWeek[] {
-  const weeks = new Map<string, ProfileWeek>()
+  const weeks = new Map<string, { deals: number; sum: number; judged: number }>()
   for (const d of deals) {
-    const key = weekOf(d.day)
-    const week = weeks.get(key) ?? {
-      week: key, deals: 0, perDeal: null,
-      kinds: Object.fromEntries(KINDS.map((k) => [k, { deals: 0, sum: 0, won: 0, aiWon: 0 }])) as Record<Kind, KindSum>,
-      worst: null,
-    }
+    const week = weeks.get(weekOf(d.day)) ?? { deals: 0, sum: 0, judged: 0 }
+    const diff = againstAi(d)
     week.deals += 1
-    if (d.ai !== null) {
-      const k = week.kinds[kindOf(d as ProfileDeal & { ai: Played })]
-      k.deals += 1
-      k.sum += againstAi(d)!
-      if (d.mine.declarer === 0 && d.mine.won) k.won += 1
-      if (d.ai.declarer === 0 && d.ai.won) k.aiWon += 1
+    if (diff !== null) {
+      week.sum += diff
+      week.judged += 1
     }
-    weeks.set(key, week)
+    weeks.set(weekOf(d.day), week)
   }
-  for (const week of weeks.values()) {
-    const judged = KINDS.reduce((n, k) => n + week.kinds[k].deals, 0)
-    week.perDeal = judged ? Math.round(KINDS.reduce((n, k) => n + week.kinds[k].sum, 0) / judged) : null
-    const worst = [...KINDS].sort((a, b) => week.kinds[a].sum - week.kinds[b].sum)[0]
-    week.worst = week.kinds[worst].sum < 0 ? worst : null
-  }
-  return [...weeks.values()].sort((a, b) => b.week.localeCompare(a.week))
+  return [...weeks.entries()]
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([week, w]) => ({ week, deals: w.deals, perDeal: w.judged ? Math.round(w.sum / w.judged) : null }))
 }

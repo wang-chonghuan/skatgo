@@ -73,17 +73,10 @@ test('profile: tournament and free deals, once each, the aliases as one person, 
   ])
   // One deal of +412 after three averaging +80 is still within the noise of single deals.
   assert.deepEqual(trendOf(deals), { last: 412, before: 80, verdict: 'same' })
-  // The week of Monday 19 October: two deals both declared (+100, +120; both won by the player, the AI won one), one
-  // both defended (+20), one both declared and the AI lost (+412). Nothing lost, so no worst kind.
-  const [week] = weeksOf(deals)
-  assert.equal(week.week, '2026-10-19')
-  assert.equal(week.deals, 4)
-  assert.deepEqual(week.kinds.bothPlayed, { deals: 3, sum: 632, won: 3, aiWon: 1 })
-  assert.deepEqual(week.kinds.defended, { deals: 1, sum: 20, won: 0, aiWon: 0 })
-  assert.equal(week.worst, null)
-  // A game the player bid and lost where the AI passed is where such a week loses, however well the rest went.
-  const overbid = weeksOf([...deals, { day: '2026-10-22', source: 'free', mine: played([-110, 40, 40]), ai: played([0, 0, 0]) }])[0]
-  assert.deepEqual(overbid.kinds.bidAlone, { deals: 1, sum: -300, won: 0, aiWon: 0 })
-  assert.equal(overbid.worst, 'bidAlone')
+  // One week, Monday 19 October: four deals averaging +163 against the AI.
+  assert.deepEqual(weeksOf(deals), [{ week: '2026-10-19', deals: 4, perDeal: 163 }])
+  // The week's analyses written by hand, under any of the person's ids, in each language.
+  await store.pool.query('INSERT INTO profile_notes (player, week, lang, body, created_at) VALUES ($1, $2, $3, $4, $5)', ['anon:guestday', '2026-10-19', 'de', '- **Gut.**', 1])
+  assert.deepEqual((await playProfile(store, 'user:anna')).notes, [{ week: '2026-10-19', lang: 'de', body: '- **Gut.**' }])
   assert.deepEqual((await playProfile(store, 'user:nobody')).deals, [])
 })

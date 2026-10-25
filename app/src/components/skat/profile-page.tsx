@@ -3,9 +3,10 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
+import { ForumBody } from './forum-body'
 import { Btn, Panel, linkLook } from './ui'
 import { dailyProfile, isError } from '~/lib/daily-api'
-import { KINDS, type Kind, type KindSum, type ProfileDay, type ProfileDeal, type ProfileWeek, daysOf, trendOf, weeksOf } from '~/lib/skat/profile'
+import { type ProfileDay, type ProfileDeal, type ProfileNote, type ProfileWeek, daysOf, trendOf, weeksOf } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
@@ -25,11 +26,11 @@ import { typography } from '../../theme/type'
  */
 export function ProfilePage() {
   const account = useAccount()
-  const [deals, setDeals] = useState<ProfileDeal[] | 'error' | null>(null)
+  const [record, setRecord] = useState<{ deals: ProfileDeal[]; notes: ProfileNote[] } | 'error' | null>(null)
   useEffect(() => {
     if (!account) return
     let live = true
-    void dailyProfile().then((r) => { if (live) setDeals(isError(r) ? 'error' : r.deals) })
+    void dailyProfile().then((r) => { if (live) setRecord(isError(r) ? 'error' : r) })
     return () => { live = false }
   }, [account])
 
@@ -44,11 +45,11 @@ export function ProfilePage() {
               <Btn testId="profile-sign-in-go" size="lg">{m.profile_sign_in()}</Btn>
             </SignInButton>
           </div>
-        ) : account === undefined || deals === null ? (
+        ) : account === undefined || record === null ? (
           <p {...stylex.props(typography.appText, styles.quiet)}>{m.loading()}</p>
-        ) : deals === 'error' ? (
+        ) : record === 'error' ? (
           <Panel tone="bad"><p {...stylex.props(typography.appText, styles.text)}>{m.profile_unavailable()}</p></Panel>
-        ) : deals.length === 0 ? (
+        ) : record.deals.length === 0 ? (
           <Panel>
             <div {...stylex.props(styles.stack)}>
               <p {...stylex.props(typography.appText, styles.text)}>{m.profile_empty()}</p>
@@ -59,7 +60,7 @@ export function ProfilePage() {
             </div>
           </Panel>
         ) : (
-          <Record deals={deals} />
+          <Record deals={record.deals} notes={record.notes} />
         )}
       </section>
     </div>
@@ -68,7 +69,7 @@ export function ProfilePage() {
 
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 
-function Record({ deals }: { deals: ProfileDeal[] }) {
+function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }) {
   const days = daysOf(deals)
   const trend = trendOf(deals)
   const date = new Intl.DateTimeFormat(getLocale(), { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
@@ -92,7 +93,7 @@ function Record({ deals }: { deals: ProfileDeal[] }) {
           <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_curve_note()}</p>
         </div>
       </Panel>
-      <Weeks weeks={weeksOf(deals)} />
+      <Weeks weeks={weeksOf(deals)} notes={notes} />
       <Panel>
         <div {...stylex.props(styles.stack)}>
           <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_days_title()}</h2>
@@ -111,56 +112,30 @@ function Record({ deals }: { deals: ProfileDeal[] }) {
   )
 }
 
-const KIND_TITLE: Record<Kind, () => string> = {
-  bidAlone: m.profile_kind_bid_alone,
-  bothPlayed: m.profile_kind_both_played,
-  aiAlone: m.profile_kind_ai_alone,
-  defended: m.profile_kind_defended,
-}
-const kindDetail = (kind: Kind, k: KindSum) =>
-  kind === 'bidAlone' ? m.profile_kind_bid_alone_detail({ deals: k.deals, won: k.won })
-    : kind === 'bothPlayed' ? m.profile_kind_both_played_detail({ deals: k.deals, won: k.won, aiWon: k.aiWon })
-      : kind === 'aiAlone' ? m.profile_kind_ai_alone_detail({ deals: k.deals, aiWon: k.aiWon })
-        : m.profile_kind_defended_detail({ deals: k.deals })
-const WORST: Record<Kind, (p: { sum: string }) => string> = {
-  bidAlone: m.profile_worst_bid_alone,
-  bothPlayed: m.profile_worst_both_played,
-  aiAlone: m.profile_worst_ai_alone,
-  defended: m.profile_worst_defended,
-}
-
-/** The week's analysis, one card a week, newest first (the human: 「本周ai分析加上到档案页，每周一个……你给的四条加上结论」): the
- *  week's deals by who declared them — the player alone, both, the AI alone, neither — each with how many, how they
- *  ended and the average per deal against the AI; then where the week lost the most, and what to do about it. */
-function Weeks({ weeks }: { weeks: ProfileWeek[] }) {
-  const date = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' })
+/** The weeks' analyses, one card a week, newest first (the human: 「本周ai分析加上到档案页，每周一个」, then 「不一定是四条吧，为啥
+ *  这么死板」 and 「挑重点……可以手动做」): what mattered that week, written by hand for the player, in the page's language
+ *  (English where there is none in it). A week without one has no card; with none at all, the section is left out. */
+function Weeks({ weeks, notes }: { weeks: ProfileWeek[]; notes: ProfileNote[] }) {
+  const lang = getLocale()
+  const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short', timeZone: 'UTC' })
+  const noted = weeks.flatMap((w) => {
+    const note = notes.find((n) => n.week === w.week && n.lang === lang) ?? notes.find((n) => n.week === w.week && n.lang === 'en')
+    return note ? [{ w, body: note.body }] : []
+  })
+  if (!noted.length) return null
   return (
     <section data-testid="profile-weeks" {...stylex.props(styles.stack)}>
       <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_weeks_title()}</h2>
-      {weeks.map((w) => (
+      {noted.map(({ w, body }) => (
         <Panel key={w.week}>
-          <div data-testid="profile-week" data-week={w.week} data-worst={w.worst ?? 'none'} {...stylex.props(styles.stack)}>
+          <div data-testid="profile-week" data-week={w.week} {...stylex.props(styles.stack)}>
             <div {...stylex.props(styles.stackTight)}>
               <h3 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_week_title({ date: date.format(new Date(`${w.week}T00:00:00Z`)) })}</h3>
               <p {...stylex.props(typography.appText, styles.quiet)}>
                 {w.perDeal === null ? m.profile_day_deals({ count: w.deals }) : m.profile_week_meta({ deals: w.deals, diff: signed(w.perDeal) })}
               </p>
             </div>
-            <ol {...stylex.props(styles.days)}>
-              {KINDS.filter((kind) => w.kinds[kind].deals > 0).map((kind, i) => {
-                const k = w.kinds[kind]
-                return (
-                  <li key={kind} data-testid="profile-kind" data-kind={kind} data-sum={k.sum} {...stylex.props(styles.kind)}>
-                    <span {...stylex.props(typography.appText, styles.kindTitle)}>{i + 1}. {KIND_TITLE[kind]()}</span>
-                    <span {...stylex.props(typography.appText, styles.quiet)}>{kindDetail(kind, k)}</span>
-                    <span {...stylex.props(typography.appText, styles.figure)}>{m.profile_kind_avg({ diff: signed(Math.round(k.sum / k.deals)) })}</span>
-                  </li>
-                )
-              })}
-            </ol>
-            <p data-testid="profile-week-conclusion" {...stylex.props(typography.appText, styles.conclusion)}>
-              {w.worst ? WORST[w.worst]({ sum: signed(w.kinds[w.worst].sum) }) : m.profile_worst_none()}
-            </p>
+            <ForumBody text={body} official />
           </div>
         </Panel>
       ))}
@@ -245,19 +220,6 @@ const styles = stylex.create({
   text: { margin: 0, color: color.text },
   quiet: { margin: 0, color: color.slate },
   date: { margin: 0, color: color.text, flexGrow: 1 },
-  kind: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    columnGap: space.x12,
-    rowGap: space.x4,
-    alignItems: 'baseline',
-    paddingBlock: space.x8,
-    borderTopWidth: { default: 0, ':not(:first-child)': border.hair },
-    borderTopStyle: 'solid',
-    borderTopColor: color.hairline,
-  },
-  kindTitle: { margin: 0, color: color.navy, flexGrow: 1 },
-  conclusion: { margin: 0, color: color.navy },
   figure: { margin: 0, color: color.navy, textAlign: 'end' },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   stackTight: { display: 'flex', flexDirection: 'column', gap: space.x4 },

@@ -54,8 +54,8 @@ export async function sharedOf(store: Store, code: string, now = Date.now()): Pr
 
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 const WORDS = {
-  de: { slogan: 'Skat kostenlos spielen und besser werden', label: '1 Spiel heute', me: 'Ich', seats: ['Lina', 'Noah'], declarer: 'Alleinspieler', challenge: 'Gleiche Karten – wie viele Punkte holst du?' },
-  en: { slogan: 'Free Skat play and progress', label: '1 deal today', me: 'Me', seats: ['Lina', 'Noah'], declarer: 'Declarer', challenge: 'Same cards – what will you score?' },
+  de: { slogan: 'Skat kostenlos spielen und besser werden', deal: '1 Spiel heute · 2 Min.', me: 'Ich', seats: ['Lina', 'Noah'], declarer: 'Alleinspieler', challenge: 'Gleiche Karten – wie viele Punkte holst du?' },
+  en: { slogan: 'Free Skat play and progress', deal: '1 deal today · 2 min', me: 'Me', seats: ['Lina', 'Noah'], declarer: 'Declarer', challenge: 'Same cards – what will you score?' },
 } as const
 
 /** The card of a code, in a language and a shape: the three seats' scores, the declarer's marked. */
@@ -65,7 +65,8 @@ export async function shareCard(store: Store, code: string, lang: 'de' | 'en', s
   const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${s.day}T00:00:00Z`))
   return cardPng(`${code}|${lang}|${shape}`, {
     slogan: w.slogan,
-    label: `${w.label} · ${date}`,
+    deal: w.deal,
+    date,
     score: signed(s.scores[PLAYER]),
     rows: [w.me, ...w.seats].map((name, seat) => ({ name, score: signed(s.scores[seat]), me: seat === PLAYER, declarer: seat === s.declarer })),
     declarer: w.declarer,

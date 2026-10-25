@@ -38,6 +38,8 @@ export function sectionOf(pathname: string): Section {
   if (pathname.startsWith('/daily/play')) return 'play'
   // So does a private table, its lobby included (SKATGO-61).
   if (pathname.startsWith('/table/')) return 'play'
+  // So does the practice table of a shared deal (SKATGO-132).
+  if (/^\/d\/[^/]+\/play/.test(pathname)) return 'play'
   if (pathname.startsWith('/daily')) return 'daily'
   if (pathname.startsWith('/course')) return 'course'
   if (pathname.startsWith('/rules')) return 'rules'

@@ -49,7 +49,12 @@ six deals need an account. It is chosen, not just dealt (「每日一副要挑�
 fresh random deals, only one where the AI in the player's seat declared and won with 61–89 card points, won a Null, won
 Schneider or better, or defended and brought the declarer down — never the same kind two days running, the contract
 rotating (「不要每天选一样的」). It is the front page's main way in; once played, the page shows the player's score and
-the AI's, how many played and their place, and a way to share it that tells nothing of the cards.
+the AI's, how many played and their place, and a way to share it that tells nothing of the cards: to WhatsApp,
+Facebook, Telegram and X by their own share addresses, to Instagram through the phone's share sheet with the picture,
+or the picture and the link (SKATGO-132, the human: 「至少这五个平台」). What goes out is a card — the day, the score and
+the AI's, the challenge, no card, contract or name (「分享出去要有精美的卡片」) — and a link to the shared result, read from
+a code so no one can make it say what was not played; whoever opens it plays the same deal: on its day as the day's
+deal, after it as practice on no board (「点击就能也打这一副牌」, 「过期的牌开放练习」).
 
 Beside the daily boards stands the tournament's Elo, one number per player (SKATGO-123, the human: 「既专业，
 又简单，别人容易理解，还能从给我的系统里产生出来的elo排名……别人看了，觉得不离谱，觉得能理解，还想通过我的系统来参与」),

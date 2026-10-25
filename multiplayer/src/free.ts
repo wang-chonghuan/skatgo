@@ -61,23 +61,25 @@ export function plan(p: { maxBid: number; decisions: string }): SeatPlan {
 
 type Token = { v: 1; pool: string; id: number; t: number; log: Logged[] }
 
-export function tokenKey(admissionKey: string): Buffer {
-  return Buffer.from(hkdfSync('sha256', admissionKey, Buffer.alloc(0), TOKEN_LABEL, 32))
+/** The key a token is sealed with, derived from the admission key; another `label` for another kind of token. */
+export function tokenKey(admissionKey: string, label = TOKEN_LABEL): Buffer {
+  return Buffer.from(hkdfSync('sha256', admissionKey, Buffer.alloc(0), label, 32))
 }
 
-export function seal(key: Buffer, t: Token): string {
+/** A value sealed with AES-256-GCM: free play's game token, and a practice game of a past deal (SKATGO-132). */
+export function seal<T = Token>(key: Buffer, t: T): string {
   const iv = randomBytes(12)
   const c = createCipheriv('aes-256-gcm', key, iv)
   const body = Buffer.concat([c.update(JSON.stringify(t), 'utf8'), c.final()])
   return Buffer.concat([iv, body, c.getAuthTag()]).toString('base64url')
 }
 
-export function open(key: Buffer, token: string): Token {
+export function open<T = Token>(key: Buffer, token: string): T {
   try {
     const b = Buffer.from(token, 'base64url')
     const d = createDecipheriv('aes-256-gcm', key, b.subarray(0, 12))
     d.setAuthTag(b.subarray(b.length - 16))
-    return JSON.parse(Buffer.concat([d.update(b.subarray(12, b.length - 16)), d.final()]).toString('utf8')) as Token
+    return JSON.parse(Buffer.concat([d.update(b.subarray(12, b.length - 16)), d.final()]).toString('utf8')) as T
   } catch {
     throw new Rejected('invalid_game')
   }

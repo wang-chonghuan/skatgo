@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-132",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-132",
+  "branch": "SKATGO-132-share-card",
+  "base": "57b151269cd8fbfc37c3986c2256083ada03cbd9",
+  "ports": {
+    "web": 55132,
+    "multiplayer": 56132,
+    "database": 57132
+  }
+}

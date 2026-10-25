@@ -4,7 +4,8 @@ import { type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { type DailyError, dailyBoard, dailyState, isError } from '~/lib/daily-api'
-import { share, shareText } from '~/lib/share'
+import { type Platform, cardUrl, download, platformLinks, shareSheet, shareText, shareUrl } from '~/lib/share'
+import { shareCode } from '~/lib/share-api'
 import { DAILY_TIME_ZONE, DEAL_OF_DAY, type DailyBoard, type DailyStatus, PLAYER } from '~/lib/skat/tournament'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
@@ -94,11 +95,28 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
   const ai = status.benchmarks?.[0]?.scores[PLAYER] ?? null
   const ranked = board && !isError(board) ? board : null
   const [said, setSaid] = useState<'copied' | 'failed' | null>(null)
-  async function onShare() {
-    const r = await share(shareText(getLocale(), { day: status.day, score, ai }))
-    track('dod_shared', { how: r })
+  // The result's code (SKATGO-132): the link carries it, never the score.
+  const [code, setCode] = useState<string | null>(null)
+  useEffect(() => {
+    void shareCode().then((r) => setCode('error' in r ? null : r.code))
+  }, [])
+  const locale = getLocale()
+  const text = shareText(locale, { day: status.day, score, ai })
+  async function onShare(via: Platform) {
+    if (!code) return
+    const r = await shareSheet(text, shareUrl(locale, code, via), cardUrl(locale, code, 'tall'))
+    track('dod_shared', { how: via === 'instagram' ? 'instagram' : r === 'shared' ? 'sheet' : r === 'copied' ? 'copy' : 'failed' })
     setSaid(r === 'shared' ? null : r)
   }
+  async function onCopy() {
+    if (!code) return
+    const done = await navigator.clipboard.writeText(`${text} ${shareUrl(locale, code, 'copy')}`).then(() => true, () => false)
+    track('dod_shared', { how: done ? 'copy' : 'failed' })
+    setSaid(done ? 'copied' : 'failed')
+  }
+  // On a phone Instagram is chosen in the share sheet, the card as the picture; on a computer the card is saved.
+  const coarse = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+  const links = code ? platformLinks(locale, code, text) : null
   return (
     <Panel>
       <section data-testid="dod-result" data-score={score} data-ai={ai ?? undefined} {...stylex.props(styles.stack)}>
@@ -121,8 +139,28 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
           </p>
         ) : null}
         <div {...stylex.props(styles.action)}>
-          <Btn testId="dod-share" size="lg" onClick={() => void onShare()}>{m.dod_share()}</Btn>
+          <Btn testId="dod-share" size="lg" disabled={!code} onClick={() => void onShare('sheet')}>{m.dod_share()}</Btn>
         </div>
+        {/* Each platform its own way out (the human: 「whatsapp, instagram, facebook, telegram, x. 至少这五个平台」), white, so
+            "share" stays the one green action. */}
+        {links ? (
+          <div data-testid="dod-platforms" {...stylex.props(styles.platforms)}>
+            {(['whatsapp', 'facebook', 'telegram', 'x'] as const).map((p) => (
+              <a key={p} href={links[p]} target="_blank" rel="noopener noreferrer" data-testid={`share-${p}`} onClick={() => track('dod_shared', { how: p })} {...linkLook('quiet', 'sm')}>
+                {PLATFORM_NAME[p]}
+              </a>
+            ))}
+            <button type="button" data-testid="share-instagram" onClick={() => (coarse ? void onShare('instagram') : (download(cardUrl(locale, code!, 'tall')), track('dod_shared', { how: 'instagram' })))} {...linkLook('quiet', 'sm')}>
+              {PLATFORM_NAME.instagram}
+            </button>
+            <button type="button" data-testid="share-download" onClick={() => { download(cardUrl(locale, code!, 'tall')); track('dod_shared', { how: 'download' }) }} {...linkLook('quiet', 'sm')}>
+              {m.share_download()}
+            </button>
+            <button type="button" data-testid="share-copy" onClick={() => void onCopy()} {...linkLook('quiet', 'sm')}>
+              {m.share_copy()}
+            </button>
+          </div>
+        ) : null}
         {said ? <p role="status" {...stylex.props(typography.small, styles.muted)}>{said === 'copied' ? m.dod_copied() : m.dod_share_failed()}</p> : null}
         <Countdown />
       </section>
@@ -148,7 +186,11 @@ function Countdown() {
   return <p data-testid="dod-next" {...stylex.props(typography.appText, styles.muted)}>{m.dod_next({ h, min })}</p>
 }
 
+/** The platforms by their own names, the same in every language. */
+const PLATFORM_NAME = { whatsapp: 'WhatsApp', facebook: 'Facebook', telegram: 'Telegram', x: 'X', instagram: 'Instagram' }
+
 const styles = stylex.create({
+  platforms: { display: 'flex', flexWrap: 'wrap', gap: space.x8 },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   action: { display: 'flex' },
   text: { margin: 0, color: color.navy },

@@ -16,6 +16,7 @@
     "@colyseus/core": "0.18.17",
     "@colyseus/schema": "5.0.34",
     "@colyseus/ws-transport": "0.18.4",
+    "@resvg/resvg-js": "2.6.2",
     "express": "^5.1.0",
     "onnxruntime-node": "1.30.0",
     "pg": "^8.16.3",

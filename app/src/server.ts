@@ -1,6 +1,6 @@
 import handler from '@tanstack/react-start/server-entry'
 
-import { handleDaily } from './lib/daily-handler'
+import { handleCard, handleDaily } from './lib/daily-handler'
 import { UNAVAILABLE } from './lib/forum-api'
 import { forumSitemap, handleForum } from './lib/forum-handler'
 import { handleFree } from './lib/free-handler'
@@ -49,6 +49,7 @@ export default {
     if (url.pathname.startsWith('/api/room/')) return handleRoom(req)
     if (url.pathname.startsWith('/api/tricks/')) return handleTricks(req)
     if (url.pathname.startsWith('/api/forum/')) return handleForum(req)
+    if (url.pathname.startsWith('/api/card/')) return handleCard(req)
     const moved = movedTo(url.pathname, url.search)
     // Keep the public scheme when TLS terminates at the reverse proxy.
     if (moved) return Promise.resolve(new Response(null, { status: 301, headers: { location: moved } }))

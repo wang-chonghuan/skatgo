@@ -68,6 +68,16 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   and one taken by `multiplayer/src/pick.ts` — never yesterday's kind, the contract rotating, the closest win first —
   in rounds of 8 up to 32 inside the preparation's hour; the pick's kind is stored with the deal. `/api/daily/*` lets a
   guest play size 1.
+- **A shared deal of the day** (SKATGO-132) runs in `multiplayer/src/shares.ts` under `/share` behind the admission
+  key: `dod_shares` (code, day, player, score, AI's) gives a finished deal its eight-letter code; a code reads back the
+  day and scores, never the player; `card.ts` draws its card in SVG with the site's font (`multiplayer/assets/fonts`,
+  OFL) and logo and turns it into a PNG with `@resvg/resvg-js` (exact version, approved in the ticket) — wide 1200×630
+  for link previews (kept under 300 KB for WhatsApp: the card backs are drawn, not pictured), tall 1080×1350 for
+  Instagram — kept in memory per code. A past day's deal is played as practice from a sealed token (`free.ts` `seal`
+  with its own key label), nothing stored. The web passes the share ops through `/api/daily/*` (`share`, `shared`,
+  `practice-new`, `practice-act`; the player named only for `share`), serves the card at
+  `/api/card/<code>-<lang>-<wide|tall>.png`, and renders `/d/$code` (noindex; its `og:image` the card, read on the
+  server by `lib/share-api.ts`) and `/d/$code/play`, the practice table.
 - **The forum runs in `multiplayer/`** (SKATGO-118), as plain HTTP routes under `/forum` behind the admission
   key, its posts, comments and reports in multiplayer's PostgreSQL (`forum_posts`, `forum_comments`,
   `forum_reports`). The web's `/api/forum/*` names the viewer — the Clerk account or nobody — and whether the

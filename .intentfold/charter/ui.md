@@ -274,8 +274,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
   its one `go` button to its table (`/daily/play?size=1`, where after the last card the result stands a moment and the
   page comes back here); once played, a white card with the player's score and the AI's (`landingHeading`, each
-  tagged), "Heute n Spieler · du bist auf Platz k", "Ergebnis teilen" as the one `go` (the system's share sheet on a
-  phone, the clipboard elsewhere; no card or contract in it), the time until the next deal; then its board as the tournament's, the
+  tagged), "Heute n Spieler · du bist auf Platz k", "Ergebnis teilen" as the one `go` (the phone's share sheet with the card, the clipboard elsewhere;
+  no card or contract in it), under it `quiet` small buttons by the platforms' own names — WhatsApp, Facebook,
+  Telegram, X, Instagram — and "Bild herunterladen", "Link kopieren" (SKATGO-132), the time until the next deal; then its board as the tournament's, the
   AI's row on it (a guest who has not played sees it too, under the `go` "Jetzt spielen · 2 Min."); then, folded, how
   the AI played the deal (`VsAiTable`); then a link to free play.
   The tournament's side (six deals; SKATGO-77's twelve gone, SKATGO-119): its one
@@ -337,6 +338,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   week with an analysis, newest first — "Woche vom 19. Okt.", its deals and average per deal, then the analysis as a
   forum text (`ForumBody`: its points as a list, each led in bold, and the bold "Fazit"), in the page's language; then a white card, "Pro Tag", a row per day, newest first: the date, the deals, and the day's average per deal against the AI, signed. The same
   line of the last day against before stands under a finished tournament's heading, with the link to the profile.
+- **A shared result** (`shared-page.tsx`, SKATGO-132), `/d/<code>`: the H1 "Kannst du das schlagen?", a line of its
+  day, a white card with the score shared ("Geteilt") and the AI's, and the one `go`: "1 Spiel heute · 2 Min." on its
+  day, "Dieses Spiel spielen · 2 Min." after it, with a line that it is practice and a link to today's; its practice
+  table is a full-screen table, and at its end a white card with the player's score, the shared one and the AI's.
 - **The forum** (`forum-page.tsx`, SKATGO-118) is two sub-pages on the grey page in the reading column. The
   list: its H1, with no lead under it, and beside it the one `go` button — "Anmelden" for a guest, "Neuer Beitrag"
   for a player, which opens the composer in a white card (the human: 「sign in放在 Forum 的旁边，放个按钮就行」) — the sections the author may use as

@@ -25,14 +25,13 @@ order underneath. There is no utility-CSS framework and no hand-written componen
 elements styled with StyleX; it uses no Astryx components, whose colours follow the app theme's
 light/dark mode while this palette is fixed. A new widget reuses the kit first.
 
-Two third-party components draw their own markup and styles, both approved by the human: **deep-chat**
-(the assistant's chat body, SKATGO-9) and **Clerk**'s sign-in window and account menu (SKATGO-12).
-What the product controls is what it hands them — tokens only, in `components/skat/ask-thread.tsx`
-and `lib/clerk-appearance.ts` — and the shell around them, which is the kit. Tokens reach them as CSS
-variables, which inherit into deep-chat's shadow root. Clerk's windows stay in English; the human
+One third-party component draws its own markup and styles, approved by the human: **Clerk**'s sign-in window and
+account menu (SKATGO-12); deep-chat went with the assistant (SKATGO-130).
+What the product controls is what it hands it — tokens only, in `lib/clerk-appearance.ts` — and the
+shell around it, which is the kit. Clerk's windows stay in English; the human
 chose not to add its translation package. Icons are **lucide-react** outline icons at the sizes in
 `icon` (`constants.ts`): the header's menu and settings controls, the table's side panel and
-edge tabs, an exercise's controls, the assistant, the comparison's open/close chevrons, and the
+edge tabs, an exercise's controls, the comparison's open/close chevrons, and the
 download button. Suits are the text glyphs ♣ ♠ ♥ ♦, never icons.
 
 **Token registries — the only place a design value is written**
@@ -87,7 +86,7 @@ fixed light palette, not a light/dark pair.
 | `stop` | leaving the table |
 | `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the tricks, a private table |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
-| `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); the play record's trick most worth improving (`badSoft`, SKATGO-79, the human: 「本app常用那种粉红的背景」). `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson, the learner's message in the assistant |
+| `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); the play record's trick most worth improving (`badSoft`, SKATGO-79, the human: 「本app常用那种粉红的背景」). `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson |
 | `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
 | `scrim` | the dim behind a dialog |
 
@@ -126,7 +125,6 @@ sets one, leading. Colour is not part of a role — the surface decides it.
   - the course and its exercises: `prompt`, `body`, `bodySmall`, `note`, `context`, `loading`,
     `emphasis` (**bold** in course text), `link`, `small`, `meta`, `smallBold`, `label`, `micro`,
     `badge`, `toggle`, `option`, `control`, `stars`, `verdictMark`;
-  - the assistant's window: `windowName`, `windowSub`;
   - the card table: `tabLabel` (the side panel's tabs), `plateName`, `roleTag`, `tricksLabel`,
     `auctionHead`, `panelLabel`, `bidChip`, `contractTile`, `infoLabel`, `infoValue`, `infoNumber`,
     `infoSub`;
@@ -171,8 +169,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
   side panel's drawer rises by `drawer`; the finish emoji springs in by `finish`; a wrong answer shakes
   by `shake`.
 - **Celebration** (`confettiBurst`): on finishing a lesson and on winning a game — nowhere else.
-- Stacking: `layer.launcher` for the header and the assistant's launcher, `layer.window` for its window,
-  menus and dialogs.
+- Stacking: `layer.launcher` for the header and the table's round buttons, `layer.window` for menus and dialogs.
 
 **Components — the kit (`ui.tsx`)**
 
@@ -202,7 +199,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `DealAnalysis` / `TrickReplay` | `daily-comparison.tsx` | a finished deal's play record, "Spielverlauf" (SKATGO-79), after a daily deal, on a `/daily` row and after a free game; open, never folded, with no button. On top, in one line, the player's card that fell furthest below the AI's choice and the AI's card. Then a row per trick: its three cards in the order played, each under its player's name, the player's own bold, and who took the trick with its card points; under a row the player taps, and only that one, the player's hand before that trick, folded again by a tap anywhere else, with no icon (SKATGO-100). Wherever the AI would have played another card, that card stands under the player's, in the same column, with an `info` "AI" tag after it; the furthest trick's rows are `badSoft`. Under the tricks, a line for those left unplayed when the deal was decided early, and the skat |
 | `ForumBody` | `forum-body.tsx` | a forum post's or comment's text (SKATGO-118): paragraphs, `##` headings, lists, `**bold**` and suits through `Rich`, links in `info` (a player's `ugc nofollow`), and a line `[♠A ♠10 ♥K]` as a `CardRowView`; in SkatGo's posts a line `![what it shows](name.svg)` as the site's picture in the page's language, the column's width on white with a `hairline` border and `radii.panel` (SKATGO-129), in a player's post that line stays text; built as elements, never as HTML |
 | `AnnouncementLine` | `forum-announcement.tsx` | the forum's newest announcement of the last two weeks as one line — a `good` "Neu" `Pill` and its title as an underlined `info` link — on the front page and `/daily` (SKATGO-118); nothing when there is none |
-| `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards and the skat are as big as the hand's; the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68). An open hand at the side — an Ouvert declarer's, or the cards laid open when a deal is decided early — is spread at `stage.stackStepOpen`, wider than a closed one, so every card reads (SKATGO-79). As an exercise's table (`exercise`, SKATGO-110/111) every hand is open, the side hands at the learner's card size, and the exercise supplies the board at the top and the dialog at the end; there is no side panel, hint tab, assistant or settlement |
+| `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards and the skat are as big as the hand's; the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68). An open hand at the side — an Ouvert declarer's, or the cards laid open when a deal is decided early — is spread at `stage.stackStepOpen`, wider than a closed one, so every card reads (SKATGO-79). As an exercise's table (`exercise`, SKATGO-110/111) every hand is open, the side hands at the learner's card size, and the exercise supplies the board at the top and the dialog at the end; there is no side panel, hint tab or settlement |
 
 Recurring patterns — reuse them rather than inventing a neighbour:
 
@@ -306,7 +303,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   as big as the learner's (`stage.openStack*`); at the top, in the info board's place and make, a board with
   the puzzle's place ("Aufgabe 1 von 20"), the H1 ("Karo · du bist Alleinspieler") and the learner's side's
   points against its goal as a `ProgressBar`; the settings in the felt's top left corner and the way out at
-  the top right, both white round buttons; no side panel, hint, assistant or words line. Once the game is
+  the top right, both white round buttons; no side panel, hint or words line. Once the game is
   decided, a white dialog over the table: "Gelöst!" with the key card, or "Nicht gelöst" with the mistake and
   the card that would have won; "Nächste Aufgabe" (`go`), "Warum?" (the reason, only when asked) and "Noch
   mal" (`quiet`). For a guest from the third puzzle the table waits under the sign-in dialog, an invitation
@@ -370,8 +367,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   round's result takes the felt's place: a white panel with its `VsAiTable`, "Neue Runde" (`go`) and
   "Tisch verlassen" (`quiet`) (SKATGO-88).
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
-  felt's top right corner, the size of the assistant's launcher across from it at the top left, on every
-  full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"
+  felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),
+  on every full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"
   (`quiet`, which asks once more: "Ja, neue Runde" `stop`, "Nein, weiterspielen" `quiet`), and "Tisch
   verlassen" (`stop`). The side panel has no way out of its own. The button stays over the table's dialogs,
   which start below it, and keeps to the felt beside a pinned panel; an open drawer covers it (SKATGO-100).
@@ -393,13 +390,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 
 - **The phone step is `bp.phone`** (480), used throughout; `bp.cards` takes option cards to one column,
   `bp.hero` stacks the hero, `bp.contracts` wraps the contract picker, `bp.portrait` turns the table's stage upright, `bp.pinned` pins its side panel.
-- **Print** (`bp.print`, SKATGO-50): on paper every page leaves out the header, the footer and the
-  assistant (`skat-layout.tsx`). The bidding table and the printables print only their title and their
+- **Print** (`bp.print`, SKATGO-50): on paper every page leaves out the header and the footer
+  (`skat-layout.tsx`). The bidding table and the printables print only their title and their
   tables: the score sheet on one A4 page, the short rules
   on two, whose tables run across on paper and wide screens (a phone keeps them tall). Their PDFs are
   these printouts (`engineering.md` Tools).
-- On a phone a hand of more than six cards is held as two rows, and the assistant's window becomes a
-  full-screen sheet (`phoneQuery`).
+- On a phone a hand of more than six cards is held as two rows.
 - **Every UI change is checked at desktop 1280×820 and phone 375×812.**
 
 **Design source of truth**

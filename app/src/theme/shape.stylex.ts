@@ -91,7 +91,8 @@ export const dims = stylex.defineVars({
   panelPhone: 'min(360px, 88vw)',
   panelTab: '28px',
   panelTabHeight: '48px',
-  /** On a phone the board hangs from the top edge between the assistant's launcher and its mirror space. */
+  /** On a phone the board hangs from the top edge between the corners' round buttons' room (the assistant's launcher's
+   *  until SKATGO-130, the way out's). */
   boardWidthPhone: 'calc(100% - 120px)',
   /** Two rows of two at any width (SKATGO-29). */
   boardColumns: 'repeat(2, minmax(0, 1fr))',
@@ -105,7 +106,7 @@ export const dims = stylex.defineVars({
   sidePanelPinned: 'clamp(280px, 28vw, 400px)',
   /** The table's columns with the panel pinned: the felt takes what the panel leaves. */
   feltAndPanel: 'minmax(0, 1fr) auto',
-  /** Room the pinned panel's tab row leaves at its right for the assistant's launcher above it. */
+  /** Room the pinned panel's tab row leaves at its right, where the assistant's launcher was (until SKATGO-130). */
   launcherRoom: '60px',
   /** The side panel's three tabs, in equal columns (SKATGO-75). */
   panelTabs: 'repeat(3, minmax(0, 1fr))',
@@ -148,7 +149,8 @@ export const dims = stylex.defineVars({
   cardSlotRow: '110px',
   fanRowOverlap: '-34px',
 
-  // The assistant (SKATGO-9/11), unchanged geometry.
+  // The round buttons on the table — the way out at the top right — the size the assistant's launcher had (its
+  // window and chat are gone, SKATGO-130).
   launcher: '44px',
   /** Room above a dialog on the table for the way-out button over it (SKATGO-100): its top offset, its size and a
    *  gap. */
@@ -158,19 +160,6 @@ export const dims = stylex.defineVars({
   feltCell: '1 / 1 / 2 / 2',
   /** The table's menu under its way-out button (SKATGO-96). */
   tableMenu: '240px',
-  launcherLift: '48px',
-  /** On a phone the launcher sits higher, above a lesson's sticky bar. */
-  launcherLiftPhone: '80px',
-  closeButton: '36px',
-  windowWidth: 'min(480px, calc(100vw - 48px))',
-  windowHeight: 'min(576px, calc(100dvh - 96px))',
-  chatInputWidth: 'calc(100% - 32px)',
-  chatBubbleMax: '88%',
-  chatLoadingPadding: '10px 1.08em 10px 1.63em',
-  chatButton: '36px',
-  chatIcon: '18px',
-  chatStopIcon: '12px',
-  chatStopRadius: '2px',
 
   // Generic
   screen: '100vh',

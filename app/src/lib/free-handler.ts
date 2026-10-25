@@ -10,7 +10,7 @@ import { signedInUser } from '~/lib/session'
 // signed-in account's with `review`, so the finished deal goes into its record of play (SKATGO-128); a guest's
 // review names no one.
 //
-// Wired in src/server.ts before the page router, like /api/ask and /api/daily.
+// Wired in src/server.ts before the page router, like /api/daily.
 
 export const FREE_LIMITS = {
   newGames: { count: 300, windowMs: 60 * 60 * 1000 },

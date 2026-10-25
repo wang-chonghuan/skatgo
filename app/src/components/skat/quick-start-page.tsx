@@ -73,7 +73,7 @@ export function QuickStartPage() {
             </li>
           ))}
         </ol>
-        {/* The one main action: straight to the table, where the hint and the assistant help on. */}
+        {/* The one main action: straight to the table. */}
         <Panel tone="tip">
           <div {...stylex.props(styles.play)}>
             <p {...stylex.props(typography.appText, styles.text)}>{page.play.text}</p>

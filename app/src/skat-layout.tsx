@@ -2,7 +2,6 @@ import { Outlet } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { useEffect } from 'react'
 
-import { AskLauncher } from '~/components/skat/ask'
 import { LegalFooter } from '~/components/skat/legal-footer'
 import { LandingHeader, useFrame, useSection } from '~/components/skat/frame'
 import { primeSounds } from '~/lib/skat/sounds'
@@ -16,7 +15,6 @@ import { typography } from './theme/type'
 //   every page but the tables — the public site's white header (SKATGO-43, lessons since SKATGO-47),
 //                       over the front page's white page or a sub-page's grey one;
 //   play              — the card table fills the screen, with its own side panel and way out.
-// The floating assistant comes after, and decides itself which pages it is on.
 export function SkatLayout() {
   // The cards' sounds are fetched on any page and woken by the first touch, so the first deal is heard (SKATGO-106).
   useEffect(primeSounds, [])
@@ -33,7 +31,6 @@ export function SkatLayout() {
         </main>
         <div {...stylex.props(styles.screenOnly)}>
           <LegalFooter />
-          <AskLauncher />
         </div>
       </div>
     )
@@ -43,7 +40,6 @@ export function SkatLayout() {
       <main {...stylex.props(styles.main)}>
         <Outlet />
       </main>
-      <AskLauncher />
     </div>
   )
 }
@@ -60,7 +56,7 @@ const styles = stylex.create({
   landing: { backgroundColor: color.surface },
   // The table is exactly one screen and never scrolls (SKATGO-29).
   table: { height: dims.screenDynamic, minHeight: dims.screenDynamic, overflow: 'hidden', backgroundColor: color.feltOuter },
-  // The header, footer and assistant stay off paper (SKATGO-50); on screen the wrapper is no box at all,
+  // The header and footer stay off paper (SKATGO-50); on screen the wrapper is no box at all,
   // so the header still sticks to the page.
   screenOnly: { display: { default: 'contents', [bp.print]: 'none' } },
   main: { flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%', boxSizing: 'border-box' },

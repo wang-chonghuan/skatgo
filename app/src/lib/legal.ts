@@ -4,7 +4,7 @@ type LegalSection = { id: string; title: string; paragraphs: string[]; contact?:
 type LegalDocument = { intro: string; sections: LegalSection[] }
 type LegalCopy = { privacy: LegalDocument; terms: LegalDocument }
 
-export const LEGAL_UPDATED = '2026-10-23'
+export const LEGAL_UPDATED = '2026-10-25'
 
 export const LEGAL_OPERATOR = {
   name: 'Olena Holub',
@@ -40,16 +40,16 @@ const operator: Record<Locale, LegalSection> = {
 export const LEGAL: Record<Locale, LegalCopy> = {
   en: {
     privacy: {
-      intro: 'SkatGo uses data to run its Skat course, games, optional accounts and assistant, and to understand how the site is used.',
+      intro: 'SkatGo uses data to run its Skat course, games, optional accounts and forum, and to understand how the site is used.',
       sections: [
         operator.en,
         {
           id: 'accounts',
           title: 'Accounts and Google sign-in',
           paragraphs: [
-            'You can use the course and assistant without an account. If you choose to register, Clerk manages your account, email address and login session.',
+            'You can use the course and free play without an account. If you choose to register, Clerk manages your account, email address and login session.',
             'If you choose Google sign-in, Google supplies Clerk with your account identifier, email address and basic profile, such as your name and profile picture. SkatGo uses these details for authentication and account display. It does not request access to Gmail, Drive, Calendar or your Google password.',
-            'Your Clerk account identifier can identify your daily tournament entry and count assistant requests for rate limits. Google login details are not included in the assistant prompts or deliberately sent to product analytics.',
+            'Your Clerk account identifier can identify your daily tournament entry, your record of play and what you write in the forum. Google login details are not deliberately sent to product analytics.',
           ],
         },
         {
@@ -57,7 +57,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Data on your device',
           paragraphs: [
             'Lesson progress, stars, game totals and card-colour preferences are saved in this browser. They are not synchronized to your account. A language cookie remembers a language you select.',
-            'The assistant keeps recent messages in the current tab so you can move between pages. Starting a new conversation clears this history. Closing the tab ends its session storage; clearing site data also removes local progress and preferences.',
+            'Clearing site data removes local progress and preferences.',
             'Clerk uses cookies and similar storage for authentication and security. Starting the daily tournament as a guest sets a secure device cookie, lasting up to 400 days, to recognize your entry. The tournament service receives a hash of that identifier, not the cookie value.',
           ],
         },
@@ -66,7 +66,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Games and public results',
           paragraphs: [
             'The daily tournament stores a player identifier, moves, results, scores and timestamps on the server. When you finish a tournament, your entry appears with its score and rank on the public leaderboard under a name of two words assigned at random, which you can change. Do not choose a name that reveals information you do not want to publish.',
-            'Signing in can attach today\'s guest entry on this device to your account. Daily records do not automatically disappear at midnight. Free-play state is instead held in an encrypted game token that is valid for one day. This browser keeps it, with the round\'s finished deals, so that a reload continues the game; the server stores nothing per game.',
+            'Signing in can attach today\'s guest entry on this device to your account. Daily records do not automatically disappear at midnight. Free-play state is instead held in an encrypted game token that is valid for one day. This browser keeps it, with the round\'s finished deals, so that a reload continues the game. When you are signed in, each finished free-play deal is also stored with your account — your score and the AI\'s on the same cards, the day and who played — for your record of play, which only you see.',
             'Opening a private table takes an account; joining one does not. If you sit at someone else\'s table as a guest and sign up while you are there, we record once whose table it was, so that it is known who invited you.',
           ],
         },
@@ -76,14 +76,6 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           paragraphs: [
             'Reading the forum needs no account. If you write a post, comment or report there, we store it on the server with your account identifier and the time. Posts and comments are public and appear under your leaderboard name, never your email address. Announcements and articles by SkatGo appear under SkatGo.',
             'A report and its optional reason are seen only by the operator. If the operator hides a post or comment, the reason is stored with it and shown to you. The forum sends no notifications. You can delete your own posts and comments at any time; deleting a post also deletes its comments. Posts the operator approves can be indexed by search engines; feedback posts never are.',
-          ],
-        },
-        {
-          id: 'assistant',
-          title: 'Questions sent to the assistant',
-          paragraphs: [
-            'When you send a question, SkatGo sends recent conversation messages, the language and the current lesson or visible game context to Microsoft Azure OpenAI to generate an answer. Your Google profile is not part of that request.',
-            'The application does not write questions or answers to its server database or conversation logs. Microsoft processes the request under its service terms, including applicable safety and abuse monitoring. Do not send passwords, payment details or other sensitive information.',
           ],
         },
         {
@@ -98,7 +90,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'providers',
           title: 'Service providers and technical data',
           paragraphs: [
-            'Render hosts the site and tournament database. Clerk provides authentication, Google provides Google sign-in and externally loaded fonts, Microsoft provides the AI assistant, and PostHog provides usage measurement.',
+            'Render hosts the site and tournament database. Clerk provides authentication, Google provides Google sign-in and externally loaded fonts, Microsoft (Azure OpenAI) translates forum posts and comments into the site\'s other language, and PostHog provides usage measurement.',
             'Requests to the site and these services transmit technical information such as IP address, browser information and the requested resource. SkatGo also uses an IP address or account identifier to limit abusive requests. Providers can process data outside your country under their own applicable terms and safeguards.',
             'Data is shared for these functions, not to sell your Google profile or use Google login data for advertising or AI training. Provider security, log retention and international processing are not controlled solely by this application.',
           ],
@@ -107,7 +99,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'choices',
           title: 'Your choices and data requests',
           paragraphs: [
-            'You can remain signed out, stop using the assistant, clear browser site data, and manage your Google connection in your Google Account. Revoking Google access does not itself delete data already held by Clerk or SkatGo.',
+            'You can remain signed out, clear browser site data, and manage your Google connection in your Google Account. Revoking Google access does not itself delete data already held by Clerk or SkatGo.',
             'Applicable privacy law may give you rights to access, correct, delete or receive your personal data, restrict processing, object to processing, or withdraw consent where processing relies on consent. You may also complain to your data protection authority.',
             'Browser data remains until cleared or expired. Account and tournament records can remain after you stop using the site; account deletion does not automatically erase tournament records or provider logs. You can contact the operator above to request access or deletion, including tournament records. Include enough information to identify the relevant account or entry, but do not send your password.',
           ],
@@ -122,7 +114,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'use',
           title: 'Using SkatGo',
           paragraphs: [
-            'You may use the course and assistant without registering. An account is optional. Keep your login credentials private and use an account you are entitled to use.',
+            'You may use the course and free play without registering. An account is optional. Keep your login credentials private and use an account you are entitled to use.',
             'Account providers can impose age requirements. Children should involve a parent or guardian when creating an account or sharing personal information. Do not bypass provider restrictions.',
           ],
         },
@@ -144,9 +136,9 @@ export const LEGAL: Record<Locale, LegalCopy> = {
         },
         {
           id: 'guidance',
-          title: 'Learning, hints and AI answers',
+          title: 'Learning and hints',
           paragraphs: [
-            'Games, hints and explanations are for learning and practice. AI answers can be wrong; check important rule questions against the published Skat rules.',
+            'Games, hints and explanations are for learning and practice. Check important rule questions against the published Skat rules.',
             'Scores have no cash value. The service does not take stakes or provide cash gambling. Completing the course does not guarantee a particular result in games or competitions.',
           ],
         },
@@ -162,7 +154,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'privacy',
           title: 'Privacy and changes',
           paragraphs: [
-            'The Privacy Policy explains how accounts, device storage, game records, analytics and assistant requests are handled. These terms are not consent to optional data processing.',
+            'The Privacy Policy explains how accounts, device storage, game records, analytics and forum posts are handled. These terms are not consent to optional data processing.',
             'The date above identifies this version. Changes will be published here. You can stop using the service at any time.',
           ],
         },
@@ -171,16 +163,16 @@ export const LEGAL: Record<Locale, LegalCopy> = {
   },
   de: {
     privacy: {
-      intro: 'SkatGo verwendet Daten für den Skatkurs, Spiele, freiwillige Konten und den Assistenten sowie zur Auswertung der Websitenutzung.',
+      intro: 'SkatGo verwendet Daten für den Skatkurs, Spiele, freiwillige Konten und das Forum sowie zur Auswertung der Websitenutzung.',
       sections: [
         operator.de,
         {
           id: 'accounts',
           title: 'Konto und Google-Anmeldung',
           paragraphs: [
-            'Du kannst den Kurs und den Assistenten ohne Konto nutzen. Wenn du dich registrierst, verwaltet Clerk dein Konto, deine E-Mail-Adresse und deine Anmeldesitzung.',
+            'Du kannst den Kurs und das freie Spiel ohne Konto nutzen. Wenn du dich registrierst, verwaltet Clerk dein Konto, deine E-Mail-Adresse und deine Anmeldesitzung.',
             'Bei der Google-Anmeldung übermittelt Google an Clerk deine Kontokennung, E-Mail-Adresse und grundlegende Profildaten, etwa Name und Profilbild. SkatGo nutzt diese Angaben zur Anmeldung und Kontoanzeige. Es fordert keinen Zugriff auf Gmail, Drive, Kalender oder dein Google-Passwort an.',
-            'Deine Clerk-Kontokennung kann deinen Eintrag im Tagesturnier zuordnen und Assistentenanfragen für Nutzungslimits zählen. Google-Anmeldedaten werden nicht in Assistentenanfragen aufgenommen oder gezielt an die Nutzungsanalyse übermittelt.',
+            'Deine Clerk-Kontokennung kann deinen Eintrag im Tagesturnier, dein Spielprofil und deine Forenbeiträge zuordnen. Google-Anmeldedaten werden nicht gezielt an die Nutzungsanalyse übermittelt.',
           ],
         },
         {
@@ -188,7 +180,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Daten auf deinem Gerät',
           paragraphs: [
             'Lernfortschritt, Sterne, Spielstatistik und Kartenfarben werden in diesem Browser gespeichert. Sie werden nicht mit deinem Konto synchronisiert. Ein Sprach-Cookie merkt sich die Sprache, die du auswählst.',
-            'Der Assistent speichert die letzten Nachrichten im aktuellen Tab, damit du zwischen Seiten wechseln kannst. Eine neue Unterhaltung löscht diesen Verlauf. Mit dem Schließen des Tabs endet dessen Sitzungsspeicher; das Löschen der Websitedaten entfernt auch lokalen Fortschritt und Einstellungen.',
+            'Das Löschen der Websitedaten entfernt lokalen Fortschritt und Einstellungen.',
             'Clerk verwendet Cookies und ähnliche Speicher für Anmeldung und Sicherheit. Wenn du das Tagesturnier als Gast startest, wird ein sicheres Geräte-Cookie für bis zu 400 Tage gesetzt, um deinen Eintrag wiederzuerkennen. Der Turnierserver erhält nur einen Hash dieser Kennung, nicht den Cookie-Wert.',
           ],
         },
@@ -197,7 +189,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Spiele und öffentliche Ergebnisse',
           paragraphs: [
             'Das Tagesturnier speichert Spielerkennung, Spielzüge, Ergebnisse, Punkte und Zeitangaben auf dem Server. Wenn du ein Turnier beendest, erscheint dein Eintrag mit Punktzahl und Rang in der öffentlichen Bestenliste – unter einem zufällig vergebenen Namen aus zwei Wörtern, den du ändern kannst. Wähle keinen Namen, der unerwünschte persönliche Informationen offenlegt.',
-            'Bei der Anmeldung können der heutige Gasteintrag dieses Geräts deinem Konto zugeordnet werden. Turnierdaten werden nicht automatisch um Mitternacht gelöscht. Beim freien Spiel liegt der Spielstand dagegen in einem verschlüsselten Spiel-Token, das einen Tag gültig ist. Dieser Browser speichert es mit den fertigen Spielen der Runde, damit Neuladen das Spiel fortsetzt; der Server speichert pro Spiel nichts.',
+            'Bei der Anmeldung können der heutige Gasteintrag dieses Geräts deinem Konto zugeordnet werden. Turnierdaten werden nicht automatisch um Mitternacht gelöscht. Beim freien Spiel liegt der Spielstand dagegen in einem verschlüsselten Spiel-Token, das einen Tag gültig ist. Dieser Browser speichert es mit den fertigen Spielen der Runde, damit Neuladen das Spiel fortsetzt. Bist du angemeldet, wird jedes fertige Spiel im freien Spiel außerdem mit deinem Konto gespeichert – deine Punkte und die der KI auf denselben Karten, der Tag und wer gespielt hat – für dein Spielprofil, das nur du siehst.',
             'Einen privaten Tisch eröffnest du mit einem Konto, mitspielen kannst du ohne. Wenn du als Gast an einem fremden Tisch sitzt und dich dort registrierst, speichern wir einmalig, an wessen Tisch das war – damit bekannt ist, wer dich eingeladen hat.',
           ],
         },
@@ -207,14 +199,6 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           paragraphs: [
             'Zum Lesen des Forums brauchst du kein Konto. Wenn du dort einen Beitrag, Kommentar oder eine Meldung schreibst, speichern wir ihn mit deiner Kontokennung und der Uhrzeit auf dem Server. Beiträge und Kommentare sind öffentlich und erscheinen unter deinem Namen auf der Rangliste, nie unter deiner E-Mail-Adresse. Ankündigungen und Artikel von SkatGo erscheinen unter SkatGo.',
             'Eine Meldung und ihr optionaler Grund sind nur für die Betreiberin sichtbar. Blendet die Betreiberin einen Beitrag oder Kommentar aus, wird der Grund dazu gespeichert und dir angezeigt. Das Forum verschickt keine Benachrichtigungen. Deine eigenen Beiträge und Kommentare kannst du jederzeit löschen; mit einem Beitrag werden auch seine Kommentare gelöscht. Beiträge, die die Betreiberin freigibt, können von Suchmaschinen erfasst werden; Feedback-Beiträge nie.',
-          ],
-        },
-        {
-          id: 'assistant',
-          title: 'Fragen an den Assistenten',
-          paragraphs: [
-            'Wenn du eine Frage sendest, übermittelt SkatGo die letzten Gesprächsnachrichten, Sprache und den aktuellen Lektions- oder sichtbaren Spielkontext an Microsoft Azure OpenAI, um eine Antwort zu erzeugen. Dein Google-Profil gehört nicht zu dieser Anfrage.',
-            'Die Anwendung schreibt Fragen und Antworten nicht in ihre Serverdatenbank oder Gesprächsprotokolle. Microsoft verarbeitet die Anfrage nach seinen Dienstbedingungen, einschließlich anwendbarer Sicherheits- und Missbrauchsüberwachung. Sende keine Passwörter, Zahlungsdaten oder andere sensible Angaben.',
           ],
         },
         {
@@ -229,7 +213,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'providers',
           title: 'Dienstleister und technische Daten',
           paragraphs: [
-            'Render betreibt Website und Turnierdatenbank. Clerk übernimmt die Anmeldung, Google die Google-Anmeldung und extern geladene Schriftarten, Microsoft den KI-Assistenten und PostHog die Nutzungsanalyse.',
+            'Render betreibt Website und Turnierdatenbank. Clerk übernimmt die Anmeldung, Google die Google-Anmeldung und extern geladene Schriftarten, Microsoft (Azure OpenAI) übersetzt Forenbeiträge und Kommentare in die andere Sprache der Website, und PostHog übernimmt die Nutzungsanalyse.',
             'Anfragen an die Website und diese Dienste übermitteln technische Angaben wie IP-Adresse, Browserinformationen und angeforderte Ressource. SkatGo verwendet eine IP-Adresse oder Kontokennung auch zur Begrenzung missbräuchlicher Anfragen. Dienstleister können Daten außerhalb deines Landes nach ihren anwendbaren Bedingungen und Schutzmaßnahmen verarbeiten.',
             'Die Weitergabe dient diesen Funktionen, nicht dem Verkauf deines Google-Profils oder der Verwendung von Google-Anmeldedaten für Werbung oder KI-Training. Sicherheit, Protokollaufbewahrung und internationale Verarbeitung der Dienstleister werden nicht allein von dieser Anwendung bestimmt.',
           ],
@@ -238,7 +222,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'choices',
           title: 'Deine Möglichkeiten und Datenanfragen',
           paragraphs: [
-            'Du kannst ohne Anmeldung bleiben, den Assistenten nicht nutzen, Websitedaten im Browser löschen und die Google-Verbindung in deinem Google-Konto verwalten. Der Widerruf des Google-Zugriffs löscht nicht automatisch bereits bei Clerk oder SkatGo gespeicherte Daten.',
+            'Du kannst ohne Anmeldung bleiben, Websitedaten im Browser löschen und die Google-Verbindung in deinem Google-Konto verwalten. Der Widerruf des Google-Zugriffs löscht nicht automatisch bereits bei Clerk oder SkatGo gespeicherte Daten.',
             'Das anwendbare Datenschutzrecht kann dir Rechte auf Auskunft, Berichtigung, Löschung, Datenübertragbarkeit, Einschränkung und Widerspruch geben. Beruht eine Verarbeitung auf Einwilligung, kannst du diese widerrufen. Du kannst dich auch bei deiner Datenschutzaufsichtsbehörde beschweren.',
             'Browserdaten bleiben bis zum Löschen oder Ablauf erhalten. Konto- und Turnierdaten können auch nach Ende der Nutzung gespeichert bleiben; eine Kontolöschung entfernt nicht automatisch Turnierdaten oder Dienstleisterprotokolle. Du kannst bei der oben genannten Betreiberin Auskunft oder Löschung einschließlich der Turnierdaten anfragen. Nenne ausreichend Angaben zur Zuordnung des Kontos oder Eintrags, aber sende kein Passwort.',
           ],
@@ -253,7 +237,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'use',
           title: 'SkatGo nutzen',
           paragraphs: [
-            'Kurs und Assistent sind ohne Registrierung nutzbar. Ein Konto ist freiwillig. Halte Zugangsdaten geheim und nutze nur ein Konto, zu dessen Nutzung du berechtigt bist.',
+            'Kurs und freies Spiel sind ohne Registrierung nutzbar. Ein Konto ist freiwillig. Halte Zugangsdaten geheim und nutze nur ein Konto, zu dessen Nutzung du berechtigt bist.',
             'Anmeldeanbieter können Altersvorgaben haben. Kinder sollten Eltern oder Sorgeberechtigte einbeziehen, wenn sie ein Konto erstellen oder persönliche Daten teilen. Umgehe keine Beschränkungen der Anbieter.',
           ],
         },
@@ -275,9 +259,9 @@ export const LEGAL: Record<Locale, LegalCopy> = {
         },
         {
           id: 'guidance',
-          title: 'Lernen, Hinweise und KI-Antworten',
+          title: 'Lernen und Hinweise',
           paragraphs: [
-            'Spiele, Hinweise und Erklärungen dienen dem Lernen und Üben. KI-Antworten können falsch sein; prüfe wichtige Regelfragen anhand der veröffentlichten Skatregeln.',
+            'Spiele, Hinweise und Erklärungen dienen dem Lernen und Üben. Prüfe wichtige Regelfragen anhand der veröffentlichten Skatregeln.',
             'Punkte haben keinen Geldwert. Das Angebot nimmt keine Geldeinsätze an und bietet kein Glücksspiel um Geld. Der Kursabschluss garantiert kein bestimmtes Ergebnis in Spielen oder Wettbewerben.',
           ],
         },
@@ -293,7 +277,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'privacy',
           title: 'Datenschutz und Änderungen',
           paragraphs: [
-            'Die Datenschutzerklärung erläutert den Umgang mit Konten, Gerätespeicher, Spielaufzeichnungen, Nutzungsanalyse und Assistentenanfragen. Diese Bedingungen sind keine Einwilligung in optionale Datenverarbeitung.',
+            'Die Datenschutzerklärung erläutert den Umgang mit Konten, Gerätespeicher, Spielaufzeichnungen, Nutzungsanalyse und Forenbeiträgen. Diese Bedingungen sind keine Einwilligung in optionale Datenverarbeitung.',
             'Das Datum oben bezeichnet diese Fassung. Änderungen werden hier veröffentlicht. Du kannst die Nutzung jederzeit beenden.',
           ],
         },

@@ -61,6 +61,13 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   `player_aliases` names as one person counted as that person. `app/src/lib/skat/profile.ts` is the shape both
   sides share and the page's sums. The weeks' analyses are `profile_notes` (player, week's Monday, language, text in
   the forum's marks), written by hand and loaded by `.intentfold/tickets/SKATGO-128/notes.mjs` from its `notes.json`.
+- **The deal of the day** (SKATGO-131) is the day's tournament of size 1 (`DEAL_OF_DAY`, `DAILY_SIZES` in
+  `lib/skat/tournament.ts`): the same rows, routes and board, each request naming its `size` (6 when it names none);
+  Elo reads size 6 only, the record of play every size. `prepareDays` prepares it after the six: candidates dealt
+  fresh (never one of the day's six), each worked out like a tournament deal, sorted by the AI's game into four kinds
+  and one taken by `multiplayer/src/pick.ts` — never yesterday's kind, the contract rotating, the closest win first —
+  in rounds of 8 up to 32 inside the preparation's hour; the pick's kind is stored with the deal. `/api/daily/*` lets a
+  guest play size 1.
 - **The forum runs in `multiplayer/`** (SKATGO-118), as plain HTTP routes under `/forum` behind the admission
   key, its posts, comments and reports in multiplayer's PostgreSQL (`forum_posts`, `forum_comments`,
   `forum_reports`). The web's `/api/forum/*` names the viewer — the Clerk account or nobody — and whether the

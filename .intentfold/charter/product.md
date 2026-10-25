@@ -42,6 +42,15 @@ players', after any player with the same, taking no rank — its total only, nev
 human: 「都显示，只在leader board上显示总成绩即可」). There is no other measure on the daily board (SKATGO-81, the
 human: 「saldo都移除吧」).
 
+The deal of the day (SKATGO-131, the human: 「每日一副就是一副，每日6副就是6副。否则玩家有残缺感」): every day one deal,
+the same for everyone, played once and done — a competition of its own beside the six deals, with its own board ranked
+by its Seeger-Fabian score and the AI's row on it, never in the Elo. A guest may play it (the human: 游客能打); only the
+six deals need an account. It is chosen, not just dealt (「每日一副要挑选那种好玩的，刺激的，最好不要让玩家一直被压着打的」): of
+fresh random deals, only one where the AI in the player's seat declared and won with 61–89 card points, won a Null, won
+Schneider or better, or defended and brought the declarer down — never the same kind two days running, the contract
+rotating (「不要每天选一样的」). It is the front page's main way in; once played, the page shows the player's score and
+the AI's, how many played and their place, and a way to share it that tells nothing of the cards.
+
 Beside the daily boards stands the tournament's Elo, one number per player (SKATGO-123, the human: 「既专业，
 又简单，别人容易理解，还能从给我的系统里产生出来的elo排名……别人看了，觉得不离谱，觉得能理解，还想通过我的系统来参与」),
 made as chess makes it so anyone can follow and check it: each ended tournament day is one game against

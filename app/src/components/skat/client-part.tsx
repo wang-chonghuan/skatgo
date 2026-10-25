@@ -16,6 +16,8 @@ export const LessonPlayer = lazy(() => pages().then((mod) => ({ default: mod.Les
 export const FreeTable = lazy(() => pages().then((mod) => ({ default: mod.FreeTable })))
 export const DailyTable = lazy(() => pages().then((mod) => ({ default: mod.DailyTable })))
 export const DailyEntry = lazy(() => pages().then((mod) => ({ default: mod.DailyEntry })))
+export const DealOfDay = lazy(() => pages().then((mod) => ({ default: mod.DealOfDay })))
+export const DealOfDayButton = lazy(() => pages().then((mod) => ({ default: mod.DealOfDayButton })))
 export const OpenTable = lazy(() => pages().then((mod) => ({ default: mod.OpenTable })))
 export const PrivateTable = lazy(() => pages().then((mod) => ({ default: mod.PrivateTable })))
 

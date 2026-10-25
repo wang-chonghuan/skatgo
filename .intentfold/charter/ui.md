@@ -229,8 +229,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `bad` when the name may not be used or another player holds it (SKATGO-126) — then the
     choice of deck: the Turnierblatt by default, the Deutsches Blatt, or the Turnierblatt with English
     letters J / Q / K / A — SKATGO-66), and sign-in
-    or the account. Under the nickname, a link in `info` to the account's record of play, "Dein Skat-Profil"
-    (SKATGO-128).
+    or the account. The account's menu (Clerk's, under its picture) starts with the account's record of play,
+    "Dein Skat-Profil", with lucide's `ChartLine` (SKATGO-128, the human: 「应该是点profile头像就能看到入口」); the
+    settings carry the same link in `info` under the nickname.
 
   On a phone the links and the account fold into a menu. Under the page sits the legal footer. The
   header is the same on every page; it shows no current-page highlight (its links carry

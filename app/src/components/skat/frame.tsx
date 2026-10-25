@@ -1,7 +1,7 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { Check, Menu, Settings, X } from 'lucide-react'
+import { ChartLine, Check, Menu, Settings, X } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -13,7 +13,7 @@ import { carryGame } from '~/lib/free-api'
 import { dailyName, dailyNick, isError } from '~/lib/daily-api'
 import { track } from '~/lib/analytics'
 import { useAccount } from '~/lib/use-account'
-import { type Locale, getLocale, locales, setLocale } from '~/paraglide/runtime'
+import { type Locale, getLocale, localizeHref, locales, setLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
@@ -130,7 +130,13 @@ export function Account({ shape = 'pill' }: { shape?: 'pill' | 'landing' }) {
         </SignInButton>
       </Show>
       <Show when="signed-in">
-        <UserButton />
+        {/* The account's record of play first in its menu, where a player looks for it (SKATGO-128, the human:
+            「应该是点profile头像就能看到入口」). */}
+        <UserButton>
+          <UserButton.MenuItems>
+            <UserButton.Link label={m.profile_title()} labelIcon={<ChartLine size={icon.header} strokeWidth={icon.outline} />} href={localizeHref('/profile')} />
+          </UserButton.MenuItems>
+        </UserButton>
       </Show>
     </>
   )

@@ -94,4 +94,4 @@ export const confettiBurst = {
 // screen; large enough to read as a point, the human: 「一天一个点，为啥你的图上没显示几个点呢」) and the stroke of the line between them; and how many
 // days may carry their date under the curve on a computer and on a phone before only every second, third … does.
 // The human asked for the curve (「做成一个曲线」), which is this registry's approval.
-export const profileChart = { width: 640, height: 200, pad: 12, dot: 6, line: 2, dates: 14, datesPhone: 6 }
+export const profileChart = { width: 640, height: 200, pad: 12, dot: 4, line: 2, dates: 14, datesPhone: 6 }

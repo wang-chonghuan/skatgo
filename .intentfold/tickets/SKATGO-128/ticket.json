@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-128",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-128",
+  "branch": "SKATGO-128-play-profile",
+  "base": "6d5fee4ee4e365734af59a10a08d47ad834001e1",
+  "ports": { "web": 55128, "multiplayer": 56128, "database": 57128 }
+}

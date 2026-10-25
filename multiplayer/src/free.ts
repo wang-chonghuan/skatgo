@@ -4,17 +4,21 @@ import { gunzipSync } from 'node:zlib'
 import express from 'express'
 import { z } from 'zod'
 import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
-import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
+import { PLAYER, auctionOf, seatView, seegerFabian, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
 import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals } from './model'
 import { BIDS, type HandMode } from './skatzero/bidding'
 import type { Policy } from './skatzero/policy'
+import { dayOf } from './daily'
+import { recordFreeDeal } from './profile'
+import type { Store } from './store'
 
 // Free play and lesson 11 on the server (SKATGO-40). A game is a deal drawn from a pool prepared
 // offline (scripts/make-free-pool.ts: both computers' SkatZero bidding worked out in advance), played by
 // one human in seat 0 against two SkatZero computers. The server keeps nothing per game: the game's
 // state — which deal, every move so far, the computers' included, and when it began — travels with the
-// page as an encrypted, authenticated token. Replaying it never asks a computer again; only the next
+// page as an encrypted, authenticated token. A signed-in player's finished deal is recorded once its review is
+// asked, for their record of play (SKATGO-128). Replaying it never asks a computer again; only the next
 // computer moves are worked out. No cookie, no browser storage.
 //
 // Like /daily, these routes are not public: the web service calls them with the admission key.
@@ -98,7 +102,7 @@ function turn(policy: Policy, plans: Record<'1' | '2', SeatPlan>) {
   }
 }
 
-export function freeRoutes(admissionKey: string, ready: () => boolean, policy: () => Policy | null, pool: () => Pool | null) {
+export function freeRoutes(store: Store, admissionKey: string, ready: () => boolean, policy: () => Policy | null, pool: () => Pool | null) {
   const key = tokenKey(admissionKey)
   const router = express.Router()
   router.use(express.json({ limit: '64kb' }))
@@ -177,10 +181,12 @@ export function freeRoutes(admissionKey: string, ready: () => boolean, policy: (
   }))
   // A finished game's replay and where SkatZero would have played another card (SKATGO-79), and the same
   // deal played by SkatZero in all three seats from the pool's plans — the AI in the player's seat
-  // (SKATGO-86) — from the game's own token: worked out on request, nothing is stored. A game all three
-  // passed has no play to judge, but the AI in the player's seat may well have bid.
+  // (SKATGO-86) — from the game's own token: worked out on request. A game all three passed has no play to
+  // judge, but the AI in the player's seat may well have bid. When the web names a signed-in player, the deal
+  // goes into their record of play (SKATGO-128): their Seeger-Fabian score and the AI's, once per game.
+  const reviewInput = z.object({ token: z.string().max(20_000), player: z.string().regex(/^user:/).max(200).optional() }).strict()
   router.post('/review', run(async (body) => {
-    const i = tokenInput.parse(body)
+    const i = reviewInput.parse(body)
     const { p, t } = opened(i.token)
     const d = p.deals[t.id]
     const deck = deckOf(d.deck)
@@ -189,6 +195,13 @@ export function freeRoutes(admissionKey: string, ready: () => boolean, policy: (
     const plans = { 0: plan(d.computers['0']), 1: plan(d.computers['1']), 2: plan(d.computers['2']) }
     const ai = await advance(deal(d.dealer, deck), [], (g) => computerTurn(g, actor(g)!, plans[actor(g)!], policy()!), undefined, true)
     if (ai.phase !== 'done' && ai.phase !== 'passedIn') throw new ComputerFailed('ai_unfinished')
+    if (i.player) {
+      const now = Date.now()
+      await recordFreeDeal(store, {
+        player: i.player, game: `free:${t.pool}:${t.id}:${t.t}`, day: dayOf(now), at: now,
+        score: seegerFabian(end)[PLAYER], ai: seegerFabian(ai)[PLAYER],
+      })
+    }
     return reviewOf(end, await judgePlays(policy()!, playsOf(d.dealer, deck, t.log)), { ai: summarize(ai), aiAuction: auctionOf(ai) })
   }))
   router.use((_err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

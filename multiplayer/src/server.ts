@@ -52,7 +52,7 @@ app.get(['/healthz', '/readyz'], async (req, res) => {
   } catch { res.status(503).json({ ok: false, ready: false, version }) }
 })
 app.use('/daily', dailyRoutes(store, key, () => ready && !stopping, () => policy))
-app.use('/free', freeRoutes(key, () => ready && !stopping, () => policy, () => pool))
+app.use('/free', freeRoutes(store, key, () => ready && !stopping, () => policy, () => pool))
 app.use('/ladder', ladderRoutes(store, key, () => ready && !stopping))
 app.use('/rooms', referralRoutes(store, key, () => ready && !stopping))
 app.use('/forum', forumRoutes(store, key, () => ready && !stopping))

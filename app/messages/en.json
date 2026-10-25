@@ -343,7 +343,6 @@
   "game_learning_title": "Learn Skat and look up the rules",
   "game_learning_text": "New to Skat? The free course takes you through the cards, trump order, bidding and scoring, step by step. Practise with cards and finish with a complete game. The Skat rules cover contracts, following suit, game values and examples you can return to while learning.",
   "daily_sign_in": "Sign in to play",
-  "daily_static_lead": "Everyone plays the same cards against the same AI opponents; new deals arrive at midnight in Berlin. 1 deal today takes about 2 minutes and needs no account; the tournament of 6 deals is free with your SkatGo account. After each deal, see how many points the AI scored in your seat.",
   "daily_about_title": "The same cards for everyone",
   "daily_about_intro": "In the daily Skat tournament you play {n} deals against two AI opponents. Every participant receives the same cards and takes the same seat, so you can compare what you made of each hand. You play with your free SkatGo account, so your round and your Elo are yours on every device. Each player has one round per day.",
   "daily_scoring_title": "Scoring and leaderboard",

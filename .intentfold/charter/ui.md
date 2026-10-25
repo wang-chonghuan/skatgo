@@ -270,7 +270,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the short rules, the daily tournament, the Skat-Tricks' page and their article, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
-  tournament's page puts the forum's announcement line under its lead when there is one (SKATGO-118), then a
+  tournament's page has no lead under its title (SKATGO-132, the human: 「你显示着一坨垃圾干什么啊」), then the forum's
+  announcement line when there is one (SKATGO-118), then a
   toggle of two `toggleLook` links, "1 Spiel heute" | "Turnier · 6 Spiele" (SKATGO-131; SKATGO-77's 6 | 12 once stood
   there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
   its one `go` button to its table (`/daily/play?size=1`, where after the last card the result stands a moment and the

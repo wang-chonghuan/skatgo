@@ -22,8 +22,13 @@ export function shareText(locale: Locale, r: { day: string; score: number }): st
 /** The shared result's page, saying where the visitor came from (`via`, for counting what shares bring). */
 export const shareUrl = (locale: Locale, code: string, via?: Platform) => `${localizedUrl(`/d/${code}`, locale)}${via ? `?via=${via}` : ''}`
 
-/** The card: wide for link previews, tall for Instagram. */
-export const cardUrl = (locale: Locale, code: string, shape: 'wide' | 'tall') => `/api/card/${code}-${locale}-${shape}.png`
+/** The card's look, in its address: a card is kept a day by whoever fetches it — browsers, and the messengers'
+ *  previews for longer — so when `multiplayer/src/card.ts` draws it differently, raise this and every card gets a new
+ *  address (the human, looking at a redrawn card: 「缓存了，预览不了」). */
+export const CARD_LOOK = 2
+
+/** The card: wide for link previews, tall for Instagram; `site` makes it absolute, for the page's `og:image`. */
+export const cardUrl = (locale: Locale, code: string, shape: 'wide' | 'tall', site = '') => `${site}/api/card/${code}-${locale}-${shape}.png?v=${CARD_LOOK}`
 
 /** Each platform's public share address, with the line and the link. */
 export function platformLinks(locale: Locale, code: string, text: string): Record<'whatsapp' | 'facebook' | 'telegram' | 'x', string> {

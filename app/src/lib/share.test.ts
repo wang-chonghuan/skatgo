@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { platformLinks, shareText, shareUrl } from './share'
+import { CARD_LOOK, cardUrl, platformLinks, shareText, shareUrl } from './share'
 
 // SKATGO-131/132: the shared line says the day, the score and the challenge — nothing of the deal itself,
 // so it spoils nothing for whoever has yet to play it; each platform's link carries it and the shared page's address,
@@ -14,6 +14,9 @@ describe('the shared result', () => {
   it('carries no card and no contract', () => {
     const text = shareText('en', { day: '2026-10-25', score: 120 })
     expect(text).not.toMatch(/[♣♠♥♦]|Grand|Null|Hearts|Spades|Clubs|Diamonds|Kreuz|Pik|Herz|Karo|AI|KI|Platz|#\d/)
+  })
+  it('names the card\'s look in its address, so a redrawn card is fetched anew', () => {
+    expect(cardUrl('en', 'abc12345', 'wide', 'https://skatgo.com')).toBe(`https://skatgo.com/api/card/abc12345-en-wide.png?v=${CARD_LOOK}`)
   })
   it('links each platform to the shared page, saying which platform', () => {
     expect(shareUrl('de', 'abc12345', 'x')).toBe('https://skatgo.com/de/d/abc12345?via=x')

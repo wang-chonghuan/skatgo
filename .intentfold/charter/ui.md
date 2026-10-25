@@ -339,9 +339,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   forum text (`ForumBody`: its points as a list, each led in bold, and the bold "Fazit"), in the page's language; then a white card, "Pro Tag", a row per day, newest first: the date, the deals, and the day's average per deal against the AI, signed. The same
   line of the last day against before stands under a finished tournament's heading, with the link to the profile.
 - **A shared result** (`shared-page.tsx`, SKATGO-132), `/d/<code>`: the H1 "Kannst du das schlagen?", a line of its
-  day, a white card with the score shared ("Geteilt") and the AI's, and the one `go`: "1 Spiel heute · 2 Min." on its
-  day, "Dieses Spiel spielen · 2 Min." after it, with a line that it is practice and a link to today's; its practice
-  table is a full-screen table, and at its end a white card with the player's score, the shared one and the AI's.
+  day, a white card with the table's three scores — the shared one ("Zu schlagen") marked `goodSoft`, the declarer's
+  name followed by an `amber` pill ("Alleinspieler") — and the one `go`, "Dieses Spiel spielen · 2 Min.", with a line that it is practice and a link to today's; its practice
+  table is a full-screen table, and at its end a white card with the player's score and the shared one.
+  The card picture (`multiplayer/src/card.ts`) is the same on white: the logo, the day, the score large, the three
+  scores with the declarer's yellow badge, "Gleiche Karten – kannst du mich schlagen?".
 - **The forum** (`forum-page.tsx`, SKATGO-118) is two sub-pages on the grey page in the reading column. The
   list: its H1, with no lead under it, and beside it the one `go` button — "Anmelden" for a guest, "Neuer Beitrag"
   for a player, which opens the composer in a white card (the human: 「sign in放在 Forum 的旁边，放个按钮就行」) — the sections the author may use as

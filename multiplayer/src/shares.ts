@@ -13,7 +13,7 @@ import type { Store } from './store'
 
 // Sharing the deal of the day (SKATGO-132, the human: 「分享出去要有精美的卡片，然后别人看到，点击就能也打这一副牌」): a
 // finished entry gets a short code — the link carries the code, never the score, so no one can make a card say what
-// was not played; the code reads back the day, the score and the AI's, never who played; the card is drawn from it;
+// was not played; the code reads back the day, the table's scores and who declared, never who played; the card is drawn from it;
 // and whoever opens it plays the same deal — on its day as the day's deal, after it as practice: the day's deal
 // replayed from a sealed token, nothing stored, on no board (「过期的牌开放练习」).
 
@@ -27,42 +27,38 @@ async function dealOfDay(store: Store, day: string): Promise<{ spec: DealSpec; c
   return rows[0] ? { spec: (rows[0].deals as DealSpec[])[0], computer: rows[0].computer } : null
 }
 
-/** The code of the player's finished deal of today, made on the first ask: the table's scores, and the player's place
- *  among today's finished entries as it stands then (equal scores share a place). */
+/** The code of the player's finished deal of today, made on the first ask: the table's scores and who declared. */
 export async function shareCode(store: Store, who: string, now = Date.now()): Promise<{ code: string }> {
   const day = dayOf(now)
   const { rows: entry } = await store.pool.query(
-    'SELECT deals, total, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, DEAL_OF_DAY, who])
+    'SELECT deals, finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, DEAL_OF_DAY, who])
   if (!entry[0]?.finished_at) throw new Rejected('not_finished')
   const { rows: had } = await store.pool.query('SELECT code FROM dod_shares WHERE day = $1 AND player = $2', [day, who])
   if (had[0]) return { code: had[0].code }
-  const { rows: field } = await store.pool.query(
-    `SELECT count(*) FILTER (WHERE total > $3)::int AS above, count(*)::int AS players FROM daily_entries
-      WHERE day = $1 AND size = $2 AND finished_at IS NOT NULL`, [day, DEAL_OF_DAY, entry[0].total])
-  const code = newCode()
+  const summary = (entry[0].deals as DealSummary[])[0]
   await store.pool.query(
-    'INSERT INTO dod_shares (code, day, player, scores, rank, players, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (day, player) DO NOTHING',
-    [code, day, who, JSON.stringify((entry[0].deals as DealSummary[])[0].scores), field[0].above + 1, field[0].players, now])
+    'INSERT INTO dod_shares (code, day, player, scores, declarer, created_at) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (day, player) DO NOTHING',
+    [newCode(), day, who, JSON.stringify(summary.scores), summary.declarer, now])
   const { rows } = await store.pool.query('SELECT code FROM dod_shares WHERE day = $1 AND player = $2', [day, who])
   return { code: rows[0].code }
 }
 
-export type Shared = { day: string; scores: [number, number, number]; rank: number; players: number; today: boolean }
+export type Shared = { day: string; scores: [number, number, number]; declarer: 0 | 1 | 2 | null; today: boolean }
 
-/** What a code shares: the day, the table's scores, the place then, and whether that day is today. Never who. */
+/** What a code shares: the day, the table's scores, who declared, and whether that day is today. Never who played. */
 export async function sharedOf(store: Store, code: string, now = Date.now()): Promise<Shared> {
-  const { rows } = await store.pool.query('SELECT day, scores, rank, players FROM dod_shares WHERE code = $1', [code])
+  const { rows } = await store.pool.query('SELECT day, scores, declarer FROM dod_shares WHERE code = $1', [code])
   if (!rows[0]) throw new Rejected('no_such_share')
-  return { day: rows[0].day, scores: rows[0].scores, rank: rows[0].rank, players: rows[0].players, today: rows[0].day === dayOf(now) }
+  return { day: rows[0].day, scores: rows[0].scores, declarer: rows[0].declarer, today: rows[0].day === dayOf(now) }
 }
 
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 const WORDS = {
-  de: { label: '1 Spiel heute', me: 'Ich', seats: ['Lina', 'Noah'], place: (r: number, n: number) => `Platz ${r} von ${n} heute`, first: 'Als Erster heute gespielt', challenge: 'Gleiche Karten – kannst du mich schlagen?' },
-  en: { label: '1 deal today', me: 'Me', seats: ['Lina', 'Noah'], place: (r: number, n: number) => `#${r} of ${n} today`, first: 'First to play today', challenge: 'Same cards – can you beat me?' },
+  de: { label: '1 Spiel heute', me: 'Ich', seats: ['Lina', 'Noah'], declarer: 'Alleinspieler', challenge: 'Gleiche Karten – kannst du mich schlagen?' },
+  en: { label: '1 deal today', me: 'Me', seats: ['Lina', 'Noah'], declarer: 'Declarer', challenge: 'Same cards – can you beat me?' },
 } as const
 
-/** The card of a code, in a language and a shape: the place as the brag, the three seats' scores. */
+/** The card of a code, in a language and a shape: the three seats' scores, the declarer's marked. */
 export async function shareCard(store: Store, code: string, lang: 'de' | 'en', shape: 'wide' | 'tall'): Promise<Buffer> {
   const s = await sharedOf(store, code)
   const w = WORDS[lang]
@@ -70,12 +66,8 @@ export async function shareCard(store: Store, code: string, lang: 'de' | 'en', s
   return cardPng(`${code}|${lang}|${shape}`, {
     label: `${w.label} · ${date}`,
     score: signed(s.scores[PLAYER]),
-    brag: s.players > 1 ? w.place(s.rank, s.players) : w.first,
-    rows: [
-      { name: w.me, score: signed(s.scores[0]), me: true },
-      { name: w.seats[0], score: signed(s.scores[1]), me: false },
-      { name: w.seats[1], score: signed(s.scores[2]), me: false },
-    ],
+    rows: [w.me, ...w.seats].map((name, seat) => ({ name, score: signed(s.scores[seat]), me: seat === PLAYER, declarer: seat === s.declarer })),
+    declarer: w.declarer,
     challenge: w.challenge,
     site: 'skatgo.com',
   }, shape)

@@ -17,7 +17,7 @@ import { ClientPart } from './client-part'
 import { Who, signed } from './daily-comparison'
 import { BOT_DELAY, GameTable } from './game-table'
 import { TableLoading } from './table-loading'
-import { Panel, Pill, linkLook } from './ui'
+import { Panel, linkLook } from './ui'
 
 // A shared deal of the day (SKATGO-132, the human: 「别人看到，点击就能也打这一副牌」): the result shared — no name — and
 // the challenge; on its day the way to that day's deal, ranked; after it the same deal as practice, on no board
@@ -40,19 +40,19 @@ export function SharedPage() {
           <>
             <p {...stylex.props(typography.landingBody, styles.lead)}>{m.shared_lead({ date: dateOf(shared.day) })}</p>
             <Panel>
-              {/* As the card has it (the human: 「显示三家的fabian分数，不要显示ai的……要让玩家有能得瑟的地方」): the place, then the
-                  table's three scores, the shared one marked. */}
-              <div data-testid="shared-result" data-day={shared.day} data-score={shared.scores[PLAYER]} {...stylex.props(styles.stack)}>
-                <span><Pill tone="go">{shared.players > 1 ? m.shared_place({ rank: shared.rank, n: shared.players }) : m.shared_first()}</Pill></span>
-                <ol {...stylex.props(styles.rows)}>
-                  {[m.shared_who(), m.name_lina(), m.name_max()].map((name, seat) => (
-                    <li key={seat} data-testid="shared-row" {...stylex.props(typography.appText, styles.row, seat === PLAYER && styles.mine)}>
-                      <span>{name}</span>
-                      <span>{signed(shared.scores[seat])}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
+              {/* As the card has it (the human: 「显示三家的fabian分数，不要显示ai的」, 「不要显示排名，declarer的名字后跟一个declarer的
+                  标志，黄色badge形式」): the table's three scores, the shared one marked, the declarer's name badged. */}
+              <ol data-testid="shared-result" data-day={shared.day} data-score={shared.scores[PLAYER]} {...stylex.props(styles.rows)}>
+                {[m.shared_who(), m.name_lina(), m.name_max()].map((name, seat) => (
+                  <li key={seat} data-testid="shared-row" {...stylex.props(typography.appText, styles.row, seat === PLAYER && styles.mine)}>
+                    <span {...stylex.props(styles.name)}>
+                      {name}
+                      {seat === shared.declarer ? <span data-testid="shared-declarer" {...stylex.props(typography.badge, styles.declarer)}>{m.info_declarer()}</span> : null}
+                    </span>
+                    <span>{signed(shared.scores[seat])}</span>
+                  </li>
+                ))}
+              </ol>
             </Panel>
             {shared.today ? (
               <div {...stylex.props(styles.action)}>
@@ -233,7 +233,9 @@ const styles = stylex.create({
   link: { alignSelf: 'flex-start', color: color.info },
   scores: { display: 'flex', flexWrap: 'wrap', gap: space.x32, alignItems: 'flex-end' },
   rows: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
-  row: { display: 'flex', justifyContent: 'space-between', paddingBlock: space.x8, paddingInline: space.x12, color: color.navy },
+  row: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBlock: space.x8, paddingInline: space.x12, color: color.navy },
+  name: { display: 'flex', alignItems: 'center', gap: space.x8 },
+  declarer: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, backgroundColor: color.amber, color: color.plate },
   mine: { backgroundColor: color.goodSoft, borderRadius: radii.column },
   score: { display: 'flex', flexDirection: 'column', gap: space.x4 },
 })

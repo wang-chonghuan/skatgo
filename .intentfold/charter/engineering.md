@@ -69,10 +69,10 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   in rounds of 8 up to 32 inside the preparation's hour; the pick's kind is stored with the deal. `/api/daily/*` lets a
   guest play size 1.
 - **A shared deal of the day** (SKATGO-132) runs in `multiplayer/src/shares.ts` under `/share` behind the admission
-  key: `dod_shares` (code, day, player, score, AI's) gives a finished deal its eight-letter code; a code reads back the
+  key: `dod_shares` (code, day, player, the table's scores, the declarer's seat) gives a finished deal its eight-letter code; a code reads back the
   day and scores, never the player; `card.ts` draws its card in SVG with the site's font (`multiplayer/assets/fonts`,
   OFL) and logo and turns it into a PNG with `@resvg/resvg-js` (exact version, approved in the ticket) — wide 1200×630
-  for link previews (kept under 300 KB for WhatsApp: the card backs are drawn, not pictured), tall 1080×1350 for
+  for link previews (kept under 300 KB for WhatsApp; text is measured with resvg's own bounding box), tall 1080×1350 for
   Instagram — kept in memory per code. A past day's deal is played as practice from a sealed token (`free.ts` `seal`
   with its own key label), nothing stored. The web passes the share ops through `/api/daily/*` (`share`, `shared`,
   `practice-new`, `practice-act`; the player named only for `share`), serves the card at

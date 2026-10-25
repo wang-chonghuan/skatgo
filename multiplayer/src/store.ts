@@ -130,8 +130,8 @@ export class Store {
         -- ([0] the player's) and the player's place among that day's players when shared — the link carries the code, so
         -- no one makes a card say what was not played. One per player and day.
         CREATE TABLE IF NOT EXISTS dod_shares (
-          code text PRIMARY KEY, day text NOT NULL, player text NOT NULL, scores jsonb NOT NULL, rank integer NOT NULL,
-          players integer NOT NULL, created_at bigint NOT NULL, UNIQUE (day, player)
+          code text PRIMARY KEY, day text NOT NULL, player text NOT NULL, scores jsonb NOT NULL, declarer smallint,
+          created_at bigint NOT NULL, UNIQUE (day, player)
         );
         CREATE TABLE IF NOT EXISTS ladder_answers (
           player text NOT NULL, step text NOT NULL, solved_at bigint, misses integer NOT NULL DEFAULT 0,

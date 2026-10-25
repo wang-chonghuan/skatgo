@@ -1,4 +1,5 @@
 import type { Move } from '~/lib/skat/game'
+import type { ProfileDeal } from '~/lib/skat/profile'
 import type { DailyBoard, DailyReply, DealReview } from '~/lib/skat/tournament'
 
 // The browser's side of the daily tournament (SKATGO-35, SKATGO-36): its requests to /api/daily
@@ -7,7 +8,7 @@ import type { DailyBoard, DailyReply, DealReview } from '~/lib/skat/tournament'
 
 export type DailyError = { error: string }
 
-async function post<T extends object>(op: 'state' | 'act' | 'name' | 'nick' | 'board' | 'review', body: object): Promise<T | DailyError> {
+async function post<T extends object>(op: 'state' | 'act' | 'name' | 'nick' | 'board' | 'review' | 'profile', body: object): Promise<T | DailyError> {
   try {
     const res = await fetch(`/api/daily/${op}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
     const data = (await res.json()) as T | DailyError
@@ -36,5 +37,8 @@ export const dailyBoard = (back: number) => post<DailyBoard>('board', { day: bac
 
 /** A finished deal trick by trick, with SkatZero's card wherever the player's was not (SKATGO-79). */
 export const dailyReview = (deal: number) => post<DealReview>('review', { deal })
+
+/** The signed-in account's record of play (SKATGO-128): every deal against the AI, in the order played. */
+export const dailyProfile = () => post<{ deals: ProfileDeal[] }>('profile', {})
 
 export const isError = <T extends object>(r: T | DailyError): r is DailyError => 'error' in r

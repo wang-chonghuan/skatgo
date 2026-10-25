@@ -206,8 +206,9 @@ export function SettingsButton() {
 }
 
 /** The account's nickname, first in the settings (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行
- *  榜就用这个昵称，改一次，整体都改」): the name every board, the Elo board and the forum show. Nothing for a guest. */
-function Nickname() {
+ *  榜就用这个昵称，改一次，整体都改」): the name every board, the Elo board and the forum show. Nothing for a guest. Under it,
+ *  the way to the account's record of play (SKATGO-128). */
+function Nickname({ onClose }: { onClose: () => void }) {
   const account = useAccount()
   const [value, setValue] = useState('')
   const [saved, setSaved] = useState<string | null>(null)
@@ -247,6 +248,7 @@ function Nickname() {
           {problem === 'taken' ? m.daily_nick_taken() : m.daily_nick_refused()}
         </p>
       ) : null}
+      <Link to="/profile" data-testid="settings-profile" onClick={onClose} {...stylex.props(typography.appLink, styles.profileLink)}>{m.profile_title()}</Link>
     </section>
   )
 }
@@ -291,7 +293,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             <X size={icon.menu} strokeWidth={icon.outline} />
           </button>
         </div>
-        <Nickname />
+        <Nickname onClose={onClose} />
         <section {...stylex.props(styles.section)}>
           <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_title()}</h3>
           <div role="radiogroup" aria-label={m.settings_title()} {...stylex.props(styles.decks)}>
@@ -508,6 +510,7 @@ const styles = stylex.create({
   // The button takes the field's height.
   nickRow: { display: 'flex', alignItems: 'stretch', gap: space.x8 },
   refused: { margin: 0, color: color.bad },
+  profileLink: { alignSelf: 'flex-start', color: color.info },
   sectionTitle: { margin: 0, color: color.slate, textTransform: 'uppercase' },
   deck: {
     display: 'flex',

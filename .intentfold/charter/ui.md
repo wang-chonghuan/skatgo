@@ -229,7 +229,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `bad` when the name may not be used or another player holds it (SKATGO-126) — then the
     choice of deck: the Turnierblatt by default, the Deutsches Blatt, or the Turnierblatt with English
     letters J / Q / K / A — SKATGO-66), and sign-in
-    or the account.
+    or the account. Under the nickname, a link in `info` to the account's record of play, "Dein Skat-Profil"
+    (SKATGO-128).
 
   On a phone the links and the account fold into a menu. Under the page sits the legal footer. The
   header is the same on every page; it shows no current-page highlight (its links carry
@@ -319,6 +320,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
   lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,
   its section of the rules, and all lessons.
+- **The record of play** (`profile-page.tsx`, SKATGO-128) is a sub-page on the grey page in the reading column,
+  noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest a `go` "Anmelden und Profil ansehen" opening
+  Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to free play.
+  Otherwise one line — how many deals on how many days, and the average per deal against the AI — then a white card,
+  "Gegen die KI, Spiel für Spiel": the curve in SVG at the card's width (`profileChart` in `constants.ts`), one
+  `info` point per deal on an `info` line, the player's score minus the AI's, the zero line in `slate`, a `hairline`
+  where a new day begins, the highest and lowest value in `meta` beside it and a `meta` note under it on how to read
+  it; then a white card, "Pro Tag", a row per day, newest first: the date, the deals, and the day's sum against the
+  AI, signed like the comparison, never `good` / `bad`.
 - **The forum** (`forum-page.tsx`, SKATGO-118) is two sub-pages on the grey page in the reading column. The
   list: its H1, with no lead under it, and beside it the one `go` button — "Anmelden" for a guest, "Neuer Beitrag"
   for a player, which opens the composer in a white card (the human: 「sign in放在 Forum 的旁边，放个按钮就行」) — the sections the author may use as

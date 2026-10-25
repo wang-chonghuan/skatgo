@@ -2,7 +2,8 @@ import { signedInUser } from '~/lib/session'
 
 // POST /api/daily/state, /act, /name, /board, /review and /elo — the daily tournament's only way in from the
 // browser (SKATGO-35, SKATGO-36: a finished player's nickname, and the leaderboard; SKATGO-79: a finished
-// deal's replay with SkatZero's card wherever the player's was not; SKATGO-123: the Elo board, everyone's). The tournament itself runs in the
+// deal's replay with SkatZero's card wherever the player's was not; SKATGO-123: the Elo board, everyone's; SKATGO-128:
+// /profile, an account's record of play). The tournament itself runs in the
 // multiplayer service, which owns the cards and the scores; this handler only says who is playing and
 // passes the request on with the service's key.
 //
@@ -21,7 +22,7 @@ const COOKIE = 'skatgo_daily'
 const COOKIE_PATH = '/api/daily'
 /** 400 days, the longest a browser keeps a cookie. */
 const COOKIE_MAX_AGE = 400 * 24 * 60 * 60
-const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'elo'])
+const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'elo', 'profile'])
 
 const json = (status: number, body: object, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } })
@@ -73,7 +74,8 @@ export async function handleDaily(request: Request): Promise<Response> {
   const player = op === 'elo' ? null : userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null
   if (op === 'review' && !player) return json(409, { error: 'not_finished' })
   // The nickname is an account's, set in the settings (SKATGO-126).
-  if ((op === 'name' || op === 'nick') && !userId) return json(401, { error: 'sign_in_required' })
+  // So is the record of play (SKATGO-128).
+  if ((op === 'name' || op === 'nick' || op === 'profile') && !userId) return json(401, { error: 'sign_in_required' })
 
   const call = (path: string, payload: object) => callDaily(path, payload)!
 

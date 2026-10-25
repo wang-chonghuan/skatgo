@@ -28,6 +28,7 @@ const PAGES = {
   forumPost: lazyRouteComponent(() => import('./forum-page'), 'ForumPostPage'),
   quickStart: lazyRouteComponent(() => import('./quick-start-page'), 'QuickStartPage'),
   play: lazyRouteComponent(() => import('./free-play'), 'FreePlay'),
+  profile: lazyRouteComponent(() => import('./profile-page'), 'ProfilePage'),
   friends: lazyRouteComponent(() => import('./friends-page'), 'FriendsPage'),
   table: lazyRouteComponent(() => import('./friends-page'), 'TablePage'),
   privacy: lazyRouteComponent(() => import('./legal-page'), 'PrivacyPage'),

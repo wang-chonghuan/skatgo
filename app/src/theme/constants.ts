@@ -88,3 +88,8 @@ export const confettiBurst = {
   lesson: { particleCount: 140, spread: 80, origin: { y: 0.6 }, disableForReducedMotion: true },
   game: { particleCount: 90, spread: 70, origin: { y: 0.7 }, disableForReducedMotion: true },
 }
+
+// SKATGO-128: the record of play's curve, drawn in SVG user units — its box (the curve's own width; the page scales
+// it to the card), the room kept above and below the furthest point, and a deal's dot (radius, and the stroke
+// that lines the curve). The human asked for the curve (「做成一个曲线」), which is this registry's approval.
+export const profileChart = { width: 640, height: 200, pad: 12, dot: 3.5, line: 2 }

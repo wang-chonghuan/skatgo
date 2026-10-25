@@ -14,6 +14,7 @@ import { Route as DailyRouteImport } from './routes/daily'
 import { Route as ForumRouteImport } from './routes/forum'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as RulesRouteImport } from './routes/rules'
 import { Route as SkatTricksRouteImport } from './routes/skat-tricks'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -52,6 +53,11 @@ const PlayRoute = PlayRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RulesRoute = RulesRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/forum': typeof ForumRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/rules': typeof RulesRoute
   '/skat-tricks': typeof SkatTricksRoute
   '/terms': typeof TermsRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/forum': typeof ForumRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/rules': typeof RulesRoute
   '/skat-tricks': typeof SkatTricksRoute
   '/terms': typeof TermsRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/forum': typeof ForumRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/rules': typeof RulesRoute
   '/skat-tricks': typeof SkatTricksRoute
   '/terms': typeof TermsRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/forum'
     | '/play'
     | '/privacy'
+    | '/profile'
     | '/rules'
     | '/skat-tricks'
     | '/terms'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/forum'
     | '/play'
     | '/privacy'
+    | '/profile'
     | '/rules'
     | '/skat-tricks'
     | '/terms'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/forum'
     | '/play'
     | '/privacy'
+    | '/profile'
     | '/rules'
     | '/skat-tricks'
     | '/terms'
@@ -261,6 +273,7 @@ export interface RootRouteChildren {
   ForumRoute: typeof ForumRoute
   PlayRoute: typeof PlayRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
   RulesRoute: typeof RulesRoute
   SkatTricksRoute: typeof SkatTricksRoute
   TermsRoute: typeof TermsRoute
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rules': {
@@ -421,6 +441,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForumRoute: ForumRoute,
   PlayRoute: PlayRoute,
   PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
   RulesRoute: RulesRoute,
   SkatTricksRoute: SkatTricksRoute,
   TermsRoute: TermsRoute,

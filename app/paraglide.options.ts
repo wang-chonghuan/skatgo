@@ -129,6 +129,14 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/spielen'],
       ],
     },
+    // A player's record of play (SKATGO-128).
+    {
+      pattern: '/profile',
+      localized: [
+        ['en', '/en/profile'],
+        ['de', '/de/profil'],
+      ],
+    },
     // Skat with friends and a private table (SKATGO-61): the Skat table a German player sits at is a
     // "Tisch".
     {

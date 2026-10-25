@@ -85,6 +85,14 @@ mid-round keeps the game and the round (SKATGO-79, SKATGO-88), and so does a rel
 day (SKATGO-96: 「刷新一下页面，当deal丢了，连game也丢了」). The player may give up a round for a new one,
 never one deal alone, so a round's total stays honest; the tournament cannot be given up.
 
+A signed-in player's record of play at `/profile` (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，
+而且每个deal都要算和ai的差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's,
+from its first day, and free play's (lesson 11's game included), recorded from SKATGO-128 on for a signed-in player
+when the deal's comparison is worked out — counted per day, and as one curve of their Seeger-Fabian score minus the
+AI's from the same seat, deal by deal. It is the player's own: no one else sees it, and a guest is asked to sign in.
+The ids one person plays under count as one, as on the Elo board. Free play stays free and needs no account; only
+an account's deals are recorded. A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
+
 Private tables at `/with-friends` (SKATGO-61): a host opens a table and sends its link; up to two
 friends sit down with a name, and the AI takes an empty seat. Opening a table takes an account,
 joining one does not (SKATGO-117, the human: 「我现在想把 private table的改为必须注册用户才能玩」, then,

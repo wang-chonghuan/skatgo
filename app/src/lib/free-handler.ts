@@ -1,10 +1,14 @@
+import { signedInUser } from '~/lib/session'
+
 // POST /api/free/new, /act, /resume and /review — free play and lesson 11 on the server (SKATGO-40;
 // SKATGO-79: /resume takes a game up from its token after a change of language, /review is a finished
 // game's replay with SkatZero's card wherever the player's was not). The game
 // runs in the multiplayer service; this handler only passes requests on with the service's key and
 // keeps the door from being run through: per address, at most FREE_LIMITS new games an hour and
 // moves per ten seconds (a classroom or a family often shares one address, so the limits are wide).
-// No identity, no cookie: the game's state is the opaque token the page holds in memory.
+// No cookie: the game's state is the opaque token the page holds in memory. The one identity passed on is a
+// signed-in account's with `review`, so the finished deal goes into its record of play (SKATGO-128); a guest's
+// review names no one.
 //
 // Wired in src/server.ts before the page router, like /api/ask and /api/daily.
 
@@ -57,6 +61,12 @@ export async function handleFree(request: Request): Promise<Response> {
     } else body = await request.json()
   } catch {
     return json(400, { error: 'invalid_request' })
+  }
+  // The player is this handler's to name, never the browser's.
+  if (!body || typeof body !== 'object' || Array.isArray(body) || 'player' in body) return json(400, { error: 'invalid_request' })
+  if (op === 'review') {
+    const userId = await signedInUser(request)
+    if (userId) body = { ...body, player: `user:${userId}` }
   }
   try {
     const upstream = await fetch(new URL(`/free/${op}`, base), {

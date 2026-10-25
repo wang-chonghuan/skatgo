@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-128",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-128",
   "branch": "SKATGO-128-play-profile",

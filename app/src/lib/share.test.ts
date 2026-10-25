@@ -8,8 +8,8 @@ import { platformLinks, shareText, shareUrl } from './share'
 
 describe('the shared result', () => {
   it('names the day, the score and the challenge, in the page language', () => {
-    expect(shareText('de', { day: '2026-10-25', score: 96 })).toBe('SkatGo · 25. Okt. · 1 Spiel heute +96 · Gleiche Karten – kannst du mich schlagen?')
-    expect(shareText('en', { day: '2026-10-25', score: -50 })).toBe('SkatGo · Oct 25 · 1 deal today −50 · Same cards – can you beat me?')
+    expect(shareText('de', { day: '2026-10-25', score: 96 })).toBe('SkatGo · 25. Okt. · 1 Spiel heute +96 · Gleiche Karten – wie viele Punkte holst du?')
+    expect(shareText('en', { day: '2026-10-25', score: -50 })).toBe('SkatGo · Oct 25 · 1 deal today −50 · Same cards – what will you score?')
   })
   it('carries no card and no contract', () => {
     const text = shareText('en', { day: '2026-10-25', score: 120 })

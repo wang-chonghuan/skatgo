@@ -275,8 +275,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   its one `go` button to its table (`/daily/play?size=1`, where after the last card the result stands a moment and the
   page comes back here); once played, a white card with the player's score and the AI's (`landingHeading`, each
   tagged), "Heute n Spieler · du bist auf Platz k", "Ergebnis teilen" as the one `go` (the system's share sheet on a
-  phone, the clipboard elsewhere; no card or contract in it), the time until the next deal, and folded under it the
-  deal against the AI (`VsAiTable`); then its board as the tournament's, the AI's row on it; then a link to free play.
+  phone, the clipboard elsewhere; no card or contract in it), the time until the next deal; then its board as the tournament's, the
+  AI's row on it (a guest who has not played sees it too, under the `go` "Jetzt spielen · 2 Min."); then, folded, how
+  the AI played the deal (`VsAiTable`); then a link to free play.
   The tournament's side (six deals; SKATGO-77's twelve gone, SKATGO-119): its one
   `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",
   "Gestern", or the weekday and date — and steps through the last seven days with two round arrow

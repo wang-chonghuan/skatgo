@@ -64,8 +64,15 @@ export function DealOfDay({ waiting }: { waiting?: ReactNode }) {
     <div data-testid="dod" data-finished={status.finished ? 'true' : 'false'} {...stylex.props(styles.stack)}>
       {status.finished ? <Result status={status} board={board} /> : <DealOfDayWayIn started={status.started} />}
       <Leaderboard back={back} board={shown} onShow={show} />
+      {/* Under the board, as agreed: how the AI played this deal, folded, only for whoever has played it; then free play. */}
       {status.finished ? (
-        <Link to="/play" data-testid="dod-free" {...stylex.props(typography.appLink, styles.link)}>{m.dod_free()}</Link>
+        <>
+          <details data-testid="dod-details" {...stylex.props(styles.details)}>
+            <summary {...stylex.props(typography.appLink, styles.summary)}>{m.dod_details()}</summary>
+            <VsAiTable deals={status.deals} benchmarks={status.benchmarks} openLatest analysis={{ day: status.day, size: DEAL_OF_DAY }} />
+          </details>
+          <Link to="/play" data-testid="dod-free" {...stylex.props(typography.appLink, styles.link)}>{m.dod_free()}</Link>
+        </>
       ) : null}
     </div>
   )
@@ -118,10 +125,6 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
         </div>
         {said ? <p role="status" {...stylex.props(typography.small, styles.muted)}>{said === 'copied' ? m.dod_copied() : m.dod_share_failed()}</p> : null}
         <Countdown />
-        <details data-testid="dod-details" {...stylex.props(styles.details)}>
-          <summary {...stylex.props(typography.appLink, styles.summary)}>{m.dod_details()}</summary>
-          <VsAiTable deals={status.deals} benchmarks={status.benchmarks} openLatest analysis={{ day: status.day, size: DEAL_OF_DAY }} />
-        </details>
       </section>
     </Panel>
   )

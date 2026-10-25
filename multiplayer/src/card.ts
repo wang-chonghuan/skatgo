@@ -3,7 +3,7 @@ import { Resvg } from '@resvg/resvg-js'
 
 // The picture a shared deal of the day travels with (SKATGO-132). The human: 「分享的卡片，就显示三家的fabian分数，不要显示ai
 // 的，邀请看到的人来打同一副牌，要让玩家有能得瑟的地方，然后要白底」, then 「logo大一点，不要显示排名，declarer的名字后跟一个
-// declarer的标志，黄色badge形式」 — on white, the day, the player's score large, the table's three Seeger-Fabian scores
+// declarer的标志，黄色badge形式」, and 「slogan……还要放到卡片上」 — on white, the brand with the slogan, the day, the player's score large, the table's three Seeger-Fabian scores
 // with theirs marked and a yellow badge after the declarer's name, and the invitation to play the same cards; no place, no card face, no contract, no AI, no name (the ticket). Drawn as SVG with the site's font
 // and turned into a PNG by resvg: wide for link previews (1200×630), tall for Instagram (1080×1350).
 
@@ -16,7 +16,7 @@ const LOGO = `data:image/png;base64,${readFileSync(new URL('logo-mark.png', asse
 const C = { white: '#FFFFFF', page: '#F2F4F7', navy: '#022657', slate: '#5D6D7D', go: '#00A336', goodSoft: '#E3F6EA', amber: '#FF9E10', plate: '#252525' }
 
 export type CardRow = { name: string; score: string; me: boolean; declarer: boolean }
-export type CardText = { label: string; score: string; rows: CardRow[]; declarer: string; challenge: string; site: string }
+export type CardText = { slogan: string; label: string; score: string; rows: CardRow[]; declarer: string; challenge: string; site: string }
 export type CardShape = 'wide' | 'tall'
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -51,11 +51,15 @@ function board(x: number, y: number, w: number, rowH: number, size: number, rows
 
 export function cardSvg(t: CardText, shape: CardShape): string {
   const head = (x: number, y: number, h: number) => `<image href="${LOGO}" x="${x}" y="${y}" width="${h}" height="${h}"/>${text(x + h * 1.22, y + h * 0.74, h * 0.62, 700, C.navy, 'SkatGo')}`
+  /** The slogan beside the brand, on the brand's line. */
+  const slogan = (x: number, y: number, h: number, size: number) =>
+    text(x + h * 1.22 + width(h * 0.62, 700, 'SkatGo') + size, y + h * 0.74, size, 700, C.slate, t.slogan)
   if (shape === 'wide') {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="${C.white}"/>
   <rect x="0" y="0" width="1200" height="12" fill="${C.go}"/>
   ${head(64, 44, 88)}
+  ${slogan(64, 44, 88, 30)}
   ${text(64, 230, 34, 700, C.slate, t.label)}
   ${text(56, 380, 150, 900, C.navy, t.score)}
   ${text(64, 545, 40, 700, C.navy, t.challenge)}
@@ -67,9 +71,10 @@ export function cardSvg(t: CardText, shape: CardShape): string {
   <rect width="1080" height="1350" fill="${C.white}"/>
   <rect x="0" y="0" width="1080" height="16" fill="${C.go}"/>
   ${head(80, 72, 120)}
-  ${text(80, 310, 44, 700, C.slate, t.label)}
-  ${text(70, 500, 200, 900, C.navy, t.score)}
-  ${board(80, 580, 920, 130, 56, t.rows, t.declarer)}
+  ${text(80, 238, 38, 700, C.slate, t.slogan)}
+  ${text(80, 356, 44, 700, C.slate, t.label)}
+  ${text(70, 530, 200, 900, C.navy, t.score)}
+  ${board(80, 600, 920, 130, 56, t.rows, t.declarer)}
   ${t.challenge.split(' – ').map((line, i, all) => text(80, 1140 + i * 66, 54, 700, C.navy, i < all.length - 1 ? `${line} –` : line)).join('')}
   ${text(80, 1280, 36, 500, C.slate, t.site)}
 </svg>`

@@ -241,7 +241,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     the hero (it was since SKATGO-120); no line of facts under them (SKATGO-123, the
     human: 「✓Free ✓AI analysis 这行去掉」). No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
     设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it
-    (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the headline at 48px
+    (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the headline, the slogan (`entry_title`: "Free Skat play and progress", German "Skat kostenlos spielen und
+    besser werden", SKATGO-132, the human: 「slogan换成 free skat play and progress」; never reworded otherwise), at 48px
     (`fHero`, 「pc版上slogan字太大」) with the lead held close under it (12px), the lead within the reading column,
     balanced, the two buttons — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
     on felt (Redline 4). With the tournament's Elo board beside it (SKATGO-123, the human: 「hero区域在pc上就是左右两栏的

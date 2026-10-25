@@ -1,6 +1,10 @@
 // SKATGO-129: the SkatGo Saldo article's two charts, plain difference against SkatGo Saldo per day, from the owner's own
-// tournament record (`tmp/owner.json`, a copy of production's rows of the account "Wyong"). Writes one SVG per chart
-// and language to app/public/forum-images/<lang>/. Regenerate them with this script, never edit them.
+// tournament record. Writes one SVG per chart and language to app/public/forum-images/<lang>/. Regenerate them with
+// this script, never edit them. Its input, `tmp/owner.json` (git-ignored), is the owner's rows exported from production:
+//   render psql skatgo-multiplayer-db --confirm --output text --command "SELECT replace(json_agg(t)::text, E'\n', ' ')
+//     FROM (SELECT e.day, e.size, e.deals, e.total, e.created_at, d.deals AS specs FROM daily_entries e JOIN daily_deals d
+//     ON d.day = e.day AND d.size = e.size WHERE e.player = (SELECT player FROM daily_players WHERE nickname = 'Wyong')
+//     ORDER BY e.created_at) t" | sed -n 3p > .intentfold/tickets/SKATGO-129/tmp/owner.json
 //   node .intentfold/tickets/SKATGO-129/charts.mjs
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 

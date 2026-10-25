@@ -73,7 +73,7 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   day and scores, never the player; `card.ts` draws its card in SVG with the site's font (`multiplayer/assets/fonts`,
   OFL) and logo and turns it into a PNG with `@resvg/resvg-js` (exact version, approved in the ticket) — wide 1200×630
   for link previews (kept under 300 KB for WhatsApp; text is measured with resvg's own bounding box), tall 1080×1350 for
-  Instagram — kept in memory per code. A past day's deal is played as practice from a sealed token (`free.ts` `seal`
+  the phone's share sheet — kept in memory per code. A past day's deal is played as practice from a sealed token (`free.ts` `seal`
   with its own key label), nothing stored. The web passes the share ops through `/api/daily/*` (`share`, `shared`,
   `practice-new`, `practice-act`; the player named only for `share`), serves the card at
   `/api/card/<code>-<lang>-<wide|tall>.png`, and renders `/d/$code` (noindex; its `og:image` the card, read on the

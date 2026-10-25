@@ -5,12 +5,13 @@ import { localizedUrl } from './site'
 // Sharing the deal of the day's result (SKATGO-131, SKATGO-132): a line anyone can read, with no card and no contract
 // in it, so it tells nothing of the deal to someone who has yet to play it; a link to the shared result's own page
 // (`/d/<code>`), whose link preview is the card and from which the same deal is played; and the ways out — WhatsApp,
-// Facebook, Telegram and X by their public share addresses (no script of theirs, nothing tracked), Instagram through
-// the phone's share sheet with the card as a picture, the picture to download, the link to copy.
+// Facebook, Telegram and X by their public share addresses (no script of theirs, nothing tracked), the phone's share
+// sheet with the card as a picture, the link to copy. No Instagram and no picture to download (the human:
+// 「picture不要了，不分享instagram」).
 
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 
-export type Platform = 'whatsapp' | 'facebook' | 'telegram' | 'x' | 'instagram' | 'sheet' | 'copy' | 'download'
+export type Platform = 'whatsapp' | 'facebook' | 'telegram' | 'x' | 'sheet' | 'copy'
 
 /** The line shared: the site, the day, the player's score and the invitation — no AI and no place, as on the card
  *  (the human: 「不要显示ai的」, 「不要显示排名」). */
@@ -36,7 +37,7 @@ export function platformLinks(locale: Locale, code: string, text: string): Recor
   }
 }
 
-/** The phone's share sheet with the card as a picture (where Instagram is chosen), else with the line and the link;
+/** The phone's share sheet with the card as a picture, else with the line and the link;
  *  where there is no sheet, the line and the link copied. Says which was used, or that neither worked. */
 export async function shareSheet(text: string, url: string, picture: string): Promise<'shared' | 'copied' | 'failed'> {
   try {
@@ -52,14 +53,4 @@ export async function shareSheet(text: string, url: string, picture: string): Pr
   } catch {
     return 'failed'
   }
-}
-
-/** The card saved as a file. */
-export function download(picture: string) {
-  const a = document.createElement('a')
-  a.href = picture
-  a.download = 'skatgo.png'
-  document.body.append(a)
-  a.click()
-  a.remove()
 }

@@ -1,18 +1,21 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
+import { Link as LinkIcon, Share2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { type DailyError, dailyBoard, dailyState, isError } from '~/lib/daily-api'
-import { type Platform, cardUrl, download, platformLinks, shareSheet, shareText, shareUrl } from '~/lib/share'
+import { type Platform, cardUrl, platformLinks, shareSheet, shareText, shareUrl } from '~/lib/share'
 import { shareCode } from '~/lib/share-api'
 import { DAILY_TIME_ZONE, DEAL_OF_DAY, type DailyBoard, type DailyStatus, PLAYER } from '~/lib/skat/tournament'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
+import { icon } from '../../theme/constants'
 import { color } from '../../theme/color.stylex'
 import { space } from '../../theme/scale.stylex'
 import { typography } from '../../theme/type'
+import { BrandIcon } from './brand-icon'
 import { VsAiTable, Who, signed } from './daily-comparison'
 import { Leaderboard } from './daily-table'
 import { Btn, Panel, linkLook } from './ui'
@@ -105,7 +108,7 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
   async function onShare(via: Platform) {
     if (!code) return
     const r = await shareSheet(text, shareUrl(locale, code, via), cardUrl(locale, code, 'tall'))
-    track('dod_shared', { how: via === 'instagram' ? 'instagram' : r === 'shared' ? 'sheet' : r === 'copied' ? 'copy' : 'failed' })
+    track('dod_shared', { how: r === 'shared' ? 'sheet' : r === 'copied' ? 'copy' : 'failed' })
     setSaid(r === 'shared' ? null : r)
   }
   async function onCopy() {
@@ -114,8 +117,6 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
     track('dod_shared', { how: done ? 'copy' : 'failed' })
     setSaid(done ? 'copied' : 'failed')
   }
-  // On a phone Instagram is chosen in the share sheet, the card as the picture; on a computer the card is saved.
-  const coarse = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
   const links = code ? platformLinks(locale, code, text) : null
   return (
     <Panel>
@@ -139,28 +140,23 @@ function Result({ status, board }: { status: DailyStatus; board: DailyBoard | Da
           </p>
         ) : null}
         <div {...stylex.props(styles.action)}>
-          <Btn testId="dod-share" size="lg" disabled={!code} onClick={() => void onShare('sheet')}>{m.dod_share()}</Btn>
+          <Btn testId="dod-share" size="lg" disabled={!code} onClick={() => void onShare('sheet')}>
+            <Share2 aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+            {m.dod_share()}
+          </Btn>
         </div>
-        {/* Each platform its own way out (the human: 「whatsapp, instagram, facebook, telegram, x. 至少这五个平台」), white, so
-            "share" stays the one green action. */}
+        {/* Each platform its own way out, with its mark (the human: 「whatsapp, instagram, facebook, telegram, x」, then
+            「picture不要了，不分享instagram。全部都要图标」), white, so "share" stays the one green action. */}
         {links ? (
           <div data-testid="dod-platforms" {...stylex.props(styles.platforms)}>
-            {/* In the human's order: WhatsApp, Instagram, Facebook, Telegram, X. */}
-            <a href={links.whatsapp} target="_blank" rel="noopener noreferrer" data-testid="share-whatsapp" onClick={() => track('dod_shared', { how: 'whatsapp' })} {...linkLook('quiet', 'sm')}>
-              {PLATFORM_NAME.whatsapp}
-            </a>
-            <button type="button" data-testid="share-instagram" onClick={() => (coarse ? void onShare('instagram') : (download(cardUrl(locale, code!, 'tall')), track('dod_shared', { how: 'instagram' })))} {...linkLook('quiet', 'sm')}>
-              {PLATFORM_NAME.instagram}
-            </button>
-            {(['facebook', 'telegram', 'x'] as const).map((p) => (
+            {(['whatsapp', 'facebook', 'telegram', 'x'] as const).map((p) => (
               <a key={p} href={links[p]} target="_blank" rel="noopener noreferrer" data-testid={`share-${p}`} onClick={() => track('dod_shared', { how: p })} {...linkLook('quiet', 'sm')}>
+                <BrandIcon brand={p} />
                 {PLATFORM_NAME[p]}
               </a>
             ))}
-            <button type="button" data-testid="share-download" onClick={() => { download(cardUrl(locale, code!, 'tall')); track('dod_shared', { how: 'download' }) }} {...linkLook('quiet', 'sm')}>
-              {m.share_download()}
-            </button>
             <button type="button" data-testid="share-copy" onClick={() => void onCopy()} {...linkLook('quiet', 'sm')}>
+              <LinkIcon aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
               {m.share_copy()}
             </button>
           </div>
@@ -191,7 +187,7 @@ function Countdown() {
 }
 
 /** The platforms by their own names, the same in every language. */
-const PLATFORM_NAME = { whatsapp: 'WhatsApp', facebook: 'Facebook', telegram: 'Telegram', x: 'X', instagram: 'Instagram' }
+const PLATFORM_NAME = { whatsapp: 'WhatsApp', facebook: 'Facebook', telegram: 'Telegram', x: 'X' }
 
 const styles = stylex.create({
   platforms: { display: 'flex', flexWrap: 'wrap', gap: space.x8 },

@@ -50,8 +50,8 @@ fresh random deals, only one where the AI in the player's seat declared and won 
 Schneider or better, or defended and brought the declarer down — never the same kind two days running, the contract
 rotating (「不要每天选一样的」). It is the front page's main way in; once played, the page shows the player's score and
 the AI's, how many played and their place, and a way to share it that tells nothing of the cards: to WhatsApp,
-Facebook, Telegram and X by their own share addresses, to Instagram through the phone's share sheet with the picture,
-or the picture and the link (SKATGO-132, the human: 「至少这五个平台」). What goes out is a card on white — the day, the score,
+Facebook, Telegram and X by their own share addresses, through the phone's share sheet, or the link copied — no
+Instagram and no picture to download (SKATGO-132, the human: 「至少这五个平台」, then 「picture不要了，不分享instagram」). What goes out is a card on white — the day, the score,
 the table's three Seeger-Fabian scores with the declarer badged, the challenge to play the same cards; no AI, no place,
 no card, contract or name (「分享出去要有精美的卡片」, 「就显示三家的fabian分数，不要显示ai的」, 「不要显示排名」) — and a link to the shared result, read from
 a code so no one can make it say what was not played; whoever opens it plays the same deal: on its day as the day's

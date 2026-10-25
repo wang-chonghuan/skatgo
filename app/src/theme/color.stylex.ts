@@ -70,6 +70,12 @@ export const color = stylex.defineVars({
   tintGrand: '#CFE3FA',
   tintNull: '#E4DBF7',
 
+  // The share buttons' platform marks, each its brand's own colour (SKATGO-132, from Simple Icons).
+  whatsapp: '#25D366',
+  facebook: '#0866FF',
+  telegram: '#26A5E4',
+  xBrand: '#000000',
+
   // Overlays
   scrim: 'rgba(0, 0, 0, 0.5)',
 })

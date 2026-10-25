@@ -87,7 +87,7 @@ never one deal alone, so a round's total stays honest; the tournament cannot be 
 
 A signed-in player's record of play at `/profile` (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，
 而且每个deal都要算和ai的差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's,
-from its first day, and free play's (lesson 11's game included), recorded from SKATGO-128 on for a signed-in player
+from its first day, the twelve-deal tournament's kept rows included (「他的全档案必须建立好」), and free play's (lesson 11's game included), recorded from SKATGO-128 on for a signed-in player
 when the deal's comparison is worked out — counted per day, and as one curve of their Seeger-Fabian score minus the
 AI's from the same seat, deal by deal. It is the player's own: no one else sees it, and a guest is asked to sign in.
 The ids one person plays under count as one, as on the Elo board. Free play stays free and needs no account; only

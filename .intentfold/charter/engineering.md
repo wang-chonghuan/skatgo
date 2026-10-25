@@ -58,7 +58,7 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   answer cached), the browser through `/api/daily/elo`. The web service is its only client.
 - **A player's record of play** (SKATGO-128) is read on request by `POST /daily/profile` (`multiplayer/src/profile.ts`),
   an account's only (the web's `/api/daily/profile` answers a guest 401): every tournament deal of the player's
-  entries with its day's `benchmark`, and every row of `play_deals` (player, game — `free:<pool>:<deal>:<start>` —
+  entries with its day's `benchmark`, of either size (the size-12 rows SKATGO-77 left are deals against the same AI), and every row of `play_deals` (player, game — `free:<pool>:<deal>:<start>` —
   the day by the tournament's `dayOf`, when, the player's and the AI's Seeger-Fabian score), the ids
   `player_aliases` names as one person counted as that person. `app/src/lib/skat/profile.ts` is the shape both
   sides share and the page's sums.

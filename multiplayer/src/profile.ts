@@ -1,5 +1,5 @@
 import type { DealSummary } from '../../app/src/lib/skat/tournament'
-import { DAILY_DEALS, PLAYER } from '../../app/src/lib/skat/tournament'
+import { PLAYER } from '../../app/src/lib/skat/tournament'
 import type { ProfileDeal } from '../../app/src/lib/skat/profile'
 import type { Store } from './store'
 
@@ -17,7 +17,8 @@ export async function recordFreeDeal(store: Store, d: { player: string; game: st
 
 /**
  * Every deal of the player, in the order played: the tournament's (finished entries and the finished deals of
- * today's unfinished one) and free play's. The ids `player_aliases` names as one person count as that person,
+ * today's unfinished one) — the twelve-deal tournament's kept rows too (SKATGO-77, gone since SKATGO-119), whose deals
+ * were played against the same AI on the same cards (the human: 「他的全档案必须建立好」) — and free play's. The ids `player_aliases` names as one person count as that person,
  * as on the Elo board. A tournament deal of a day dealt before the AI played it has no AI score.
  */
 export async function playProfile(store: Store, who: string): Promise<{ deals: ProfileDeal[] }> {
@@ -28,7 +29,7 @@ export async function playProfile(store: Store, who: string): Promise<{ deals: P
   const { rows: entries } = await store.pool.query(
     `SELECT e.day, e.deals, e.created_at, d.deals AS specs FROM daily_entries e
        JOIN daily_deals d ON d.day = e.day AND d.size = e.size
-      WHERE e.size = $1 AND e.player = ANY($2) ORDER BY e.created_at`, [DAILY_DEALS, players])
+      WHERE e.player = ANY($1) ORDER BY e.created_at`, [players])
   const deals: (ProfileDeal & { at: number })[] = []
   for (const e of entries) {
     const specs = e.specs as { benchmark?: { summary: DealSummary } }[]

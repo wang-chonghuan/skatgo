@@ -8,7 +8,7 @@ import { playProfile, recordFreeDeal } from '../src/profile'
 import { Store } from '../src/store'
 
 // A player's record of play (SKATGO-128) against a database of its own: the tournament's deals with the AI's on
-// the same cards, free deals recorded once per game, and the ids one person plays under counted as one.
+// the same cards, the twelve-deal tournament's kept rows too, free deals recorded once per game, and the ids one person plays under counted as one.
 
 const summary = (score: number) => ({ declarer: 0, declaration: null, bid: 18, won: score > 0, scores: [score, 0, 0], detail: null })
 
@@ -33,6 +33,11 @@ test('profile: tournament and free deals, once each, the aliases as one person',
   await store.pool.query(
     'INSERT INTO daily_entries (day, size, player, actions, deals, total, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
     ['2026-10-20', DAILY_DEALS, 'anon:guestday', '[]', JSON.stringify([summary(120), summary(-50)]), 70, 1000])
+  // The same day's twelve-deal tournament (SKATGO-77's kept rows) counts too: one deal, the AI's −20.
+  await store.pool.query('INSERT INTO daily_deals (day, size, deals, computer) VALUES ($1, $2, $3, $4)', ['2026-10-20', 12, JSON.stringify([{ benchmark: { summary: summary(-20), log: [] } }]), 'x'])
+  await store.pool.query(
+    'INSERT INTO daily_entries (day, size, player, actions, deals, total, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+    ['2026-10-20', 12, 'user:anna', '[]', JSON.stringify([summary(40)]), 40, 2000])
   // The guest day is the account's, as the human names it.
   await store.pool.query('INSERT INTO player_aliases (player, same_as) VALUES ($1, $2)', ['anon:guestday', 'user:anna'])
 
@@ -47,13 +52,14 @@ test('profile: tournament and free deals, once each, the aliases as one person',
   assert.deepEqual(deals, [
     { day: '2026-10-20', source: 'daily', score: 120, ai: 70 },
     { day: '2026-10-20', source: 'daily', score: -50, ai: -90 },
+    { day: '2026-10-20', source: 'daily', score: 40, ai: -20 },
     { day: '2026-10-21', source: 'free', score: 66, ai: -100 },
   ])
   // Asked under the alias, the same person.
   assert.deepEqual((await playProfile(store, 'anon:guestday')).deals, deals)
   assert.deepEqual(daysOf(deals), [
     { day: '2026-10-21', deals: 1, againstAi: 166 },
-    { day: '2026-10-20', deals: 2, againstAi: 90 },
+    { day: '2026-10-20', deals: 3, againstAi: 150 },
   ])
   assert.deepEqual((await playProfile(store, 'user:nobody')).deals, [])
 })

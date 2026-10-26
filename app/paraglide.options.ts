@@ -168,6 +168,14 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/tisch/:id'],
       ],
     },
+    // About SkatGo (SKATGO-134): what the game pages no longer explain.
+    {
+      pattern: '/about',
+      localized: [
+        ['en', '/en/about'],
+        ['de', '/de/ueber-skatgo'],
+      ],
+    },
     {
       pattern: '/privacy',
       localized: [

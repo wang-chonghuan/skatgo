@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { clientPage } from '~/components/skat/client-page'
-import { faq } from '~/lib/faq'
 import { readEloBoard } from '~/lib/elo-api'
 import { DAILY_DEALS } from '~/lib/daily'
 import { organization, pageHead, samePath } from '~/lib/head'
@@ -21,10 +20,6 @@ export const Route = createFileRoute('/')({
       jsonLd: [
         { '@type': 'WebSite', name: m.site_name(), url: localizedUrl('/', getLocale()), inLanguage: getLocale(), publisher: { '@id': `${SITE_URL}/#organization` } },
         { ...organization(), '@id': `${SITE_URL}/#organization` },
-        {
-          '@type': 'FAQPage',
-          mainEntity: faq().map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
-        },
       ],
     }),
   component: clientPage('entry'),

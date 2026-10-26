@@ -54,7 +54,6 @@ export function TricksPage() {
       <div {...stylex.props(styles.column)}>
         <header {...stylex.props(styles.intro)}>
           <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.tricks_hub_h1()}</h1>
-          <p {...stylex.props(typography.landingBody, styles.lead)}>{m.tricks_hub_lead()}</p>
         </header>
         <ol {...stylex.props(styles.list)}>
           {SHOWN_TYPES.map((type, i) => {
@@ -238,7 +237,6 @@ const styles = stylex.create({
   },
   intro: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   title: { margin: 0, color: color.navy },
-  lead: { margin: 0, color: color.slate },
   list: { listStyleType: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: space.x12 },
   // A card opened from the address (#reizen, #offenes-endspiel) stops under the sticky header, not behind it.
   item: { margin: 0, scrollMarginTop: dims.landingHeader },

@@ -33,6 +33,7 @@ const PAGES = {
   profile: lazyRouteComponent(() => import('./profile-page'), 'ProfilePage'),
   friends: lazyRouteComponent(() => import('./friends-page'), 'FriendsPage'),
   table: lazyRouteComponent(() => import('./friends-page'), 'TablePage'),
+  about: lazyRouteComponent(() => import('./about-page'), 'AboutPage'),
   privacy: lazyRouteComponent(() => import('./legal-page'), 'PrivacyPage'),
   terms: lazyRouteComponent(() => import('./legal-page'), 'TermsPage'),
 }

@@ -1,6 +1,6 @@
 import { m } from '~/paraglide/messages'
 
-// The front page's questions (SKATGO-29), shared by the page and its FAQPage structured data so the two
+// SkatGo's questions (SKATGO-29; on About SkatGo since SKATGO-134), shared by the page and its FAQPage structured data so the two
 // can never say different things. Answers describe what the code does (grill Q3).
 export const faq = (): { q: string; a: string }[] => [
   { q: m.faq_free_q(), a: m.faq_free_a() },

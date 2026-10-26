@@ -1,6 +1,6 @@
 import { Link, useLoaderData } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { Bot, CalendarDays, ChartLine, GraduationCap, Puzzle, type LucideIcon } from 'lucide-react'
+import { Bot, CalendarDays, ChartLine, GraduationCap, MessagesSquare, Puzzle, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
@@ -55,6 +55,33 @@ export function EntryPage() {
             </div>
           )}
         </div>
+      </div>
+      {/* Under them the rest, as picture cards (SKATGO-135, the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」): a private
+          table with the illustration the hero once had (SKATGO-33), and the forum with three of skatgo's cards. */}
+      <div data-testid="entry-more" {...stylex.props(styles.more)}>
+        <Link to="/with-friends" data-testid="entry-card" data-section="friends" {...stylex.props(styles.white, styles.picture, styles.lift)}>
+          <img src="/hero-table.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage)} />
+          <span {...stylex.props(styles.pictureBody)}>
+            <h2 {...stylex.props(typography.optionTitle, styles.whiteTitle)}>{m.home_friends_title()}</h2>
+            <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_friends_text()}</span>
+          </span>
+        </Link>
+        <Link to="/forum" data-testid="entry-card" data-section="forum" {...stylex.props(styles.white, styles.picture, styles.lift)}>
+          <span aria-hidden="true" {...stylex.props(styles.pictureTop, styles.forumPicture)}>
+            <MessagesSquare size={icon.tile} strokeWidth={icon.outline} {...stylex.props(styles.forumIcon)} />
+            <span {...stylex.props(styles.forumFan)}>
+              {FORUM_ART.map((c, i) => (
+                <span key={i} {...stylex.props(styles.artCard, fanPose[FAN[i + 1]])}>
+                  <PlayingCard card={c} size="lg" />
+                </span>
+              ))}
+            </span>
+          </span>
+          <span {...stylex.props(styles.pictureBody)}>
+            <h2 {...stylex.props(typography.optionTitle, styles.whiteTitle)}>{m.home_forum_title()}</h2>
+            <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_forum_text()}</span>
+          </span>
+        </Link>
       </div>
     </div>
   )
@@ -118,6 +145,7 @@ const DAILY_ART = [card('H', 'A'), card('H', '10'), card('H', 'K')]
 const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
 const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
 const PRACTICE_ART = [card('D', 'A'), card('D', '10'), card('D', 'K')]
+const FORUM_ART = [card('C', 'Q'), card('H', 'Q'), card('S', 'Q')]
 const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
 const fanPose = stylex.create({
@@ -211,6 +239,21 @@ const styles = stylex.create({
   whiteIcon: { flexShrink: 0, color: color.info },
   whiteTitle: { margin: 0, color: color.navy },
   eloEmpty: { flexGrow: 1 },
+  more: {
+    display: 'grid',
+    // The ways in's columns, so each picture card stands under a colour card.
+    gridTemplateColumns: { default: dims.homeWays, [bp.cards]: dims.homeWaysNarrow },
+    gap: { default: space.x24, [bp.phone]: space.x12 },
+  },
+  // A picture card: no padding of its own, the picture to its edges at the top, rounded with the card.
+  picture: { padding: 0, gap: 0, overflow: 'hidden' },
+  pictureTop: { display: 'block', width: '100%', aspectRatio: dims.homePicture },
+  pictureImage: { objectFit: 'cover' },
+  pictureBody: { display: 'flex', flexDirection: 'column', gap: space.x8, padding: { default: space.x20, [bp.phone]: space.x16 } },
+  pictureText: { margin: 0, color: color.slate },
+  forumPicture: { position: 'relative', overflow: 'hidden', backgroundColor: color.info },
+  forumIcon: { position: 'absolute', top: space.x16, left: space.x16, color: color.onColor },
+  forumFan: { position: 'absolute', right: dims.tileArtRight, bottom: dims.tileArtBottom, display: 'flex', transform: pose.tileArt },
   // The curve takes what the card has left, never sizing the card itself: no taller than the colour cards' row on PC.
   curve: { display: 'block', width: '100%', height: 0, flexGrow: 1, minHeight: dims.homeCurve },
   zero: { stroke: color.hairline },

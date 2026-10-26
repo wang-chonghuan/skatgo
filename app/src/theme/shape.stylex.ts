@@ -188,6 +188,9 @@ export const dims = stylex.defineVars({
   homeRowFirst: '1',
   homeRowSecond: '2',
   homeRowAuto: 'auto',
+  /** The picture cards under the ways in (SKATGO-135, the human's picture of event cards): a picture on top in this
+   *  shape, its title and line under it. */
+  homePicture: '16 / 9',
   /** The progress card's curve at its least, where the card is as tall as its content (under `bp.cards`). */
   homeCurve: '96px',
   /** The daily table of you against the AI (SKATGO-42, SKATGO-48): the deal's number (wide enough for

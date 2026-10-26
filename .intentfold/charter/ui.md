@@ -251,10 +251,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     the AI's row (its blue tag, no rank) among them by its number, close rows at `appText`, one column, the list
     scrolling inside the card; on a phone folded behind one line where the players run slowly sideways
     (`marqueeSlide`, `timing.marquee`), a tap opening it (SKATGO-123). Under `bp.cards` the four stay two by two
-    (`dims.homeWaysNarrow`) and the long cards follow, the whole width. A private table, the rules and the course's
-    other ways in are the header's and the footer's; the questions people ask are on About SkatGo (SKATGO-134).
-    Its new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve` and
-    `icon.tile` — came with the human's pictures, which were the approval (Redline 1).
+    (`dims.homeWaysNarrow`) and the long cards follow, the whole width;
+  - under them, in the same columns, white picture cards (the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」, after a
+    picture of event cards): the picture to the card's edges at the top (`dims.homePicture`), then the title
+    (`optionTitle`, navy) and one line (`optionDesc`, slate) — "Privater Tisch" with the illustration the hero once had
+    (`hero-table.webp`, SKATGO-33) to `/with-friends`, and "Forum" on `info` with lucide's `MessagesSquare` and three of
+    skatgo's queens to `/forum`. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
+    The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,
+    `homePicture` and `icon.tile` — came with the human's pictures, which were the approval (Redline 1).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
   the short rules, the daily tournament, the Skat-Tricks' page and their article, a private table's page, About SkatGo,
   the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an

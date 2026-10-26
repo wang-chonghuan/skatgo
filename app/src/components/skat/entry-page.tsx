@@ -12,7 +12,7 @@ import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { icon, profileChart } from '../../theme/constants'
+import { icon, profileChart, progressCurve } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
@@ -142,21 +142,52 @@ function Progress({ account }: { account: string | undefined }) {
   }, [account])
   const known = (days ?? []).flatMap((d, i) => (d.perDeal === null ? [] : [{ i, v: d.perDeal }]))
   if (!days || known.length === 0) return null
-  const { width, height, pad, dot, line } = profileChart
+  const { width, height, pad } = profileChart
   const top = Math.max(0, ...known.map((p) => p.v))
   const bottom = Math.min(0, ...known.map((p) => p.v))
   const span = top - bottom || 1
   const x = (i: number) => (days.length > 1 ? pad + (i * (width - 2 * pad)) / (days.length - 1) : width / 2)
   const y = (v: number) => pad + ((top - v) * (height - 2 * pad)) / span
+  const points = known.map((p) => ({ x: x(p.i), y: y(p.v) }))
   return (
     <svg data-testid="entry-progress-curve" aria-hidden="true" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" {...stylex.props(styles.curve)}>
       <line x1={0} x2={width} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
-      <polyline points={known.map((p) => `${x(p.i)},${y(p.v)}`).join(' ')} strokeWidth={line} vectorEffect="non-scaling-stroke" {...stylex.props(styles.line)} />
-      {known.map((p) => (
-        <line key={p.i} x1={x(p.i)} x2={x(p.i)} y1={y(p.v)} y2={y(p.v)} strokeWidth={dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)} />
-      ))}
+      {points.length > 1 ? (
+        <path data-testid="entry-progress-line" d={smoothPath(points)} strokeWidth={progressCurve.line} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.line)} />
+      ) : (
+        // One day: its point alone, a round end of a line of no length.
+        <line data-testid="entry-progress-dot" x1={points[0].x} x2={points[0].x} y1={points[0].y} y2={points[0].y} strokeWidth={progressCurve.dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)} />
+      )}
     </svg>
   )
+}
+
+/** A smooth line through the days' points (SKATGO-136, the human: 「我希望平缓的」): a monotone cubic (Fritsch–Carlson), so
+ *  between two days it never rises above or falls below them, and every day's point is on it. */
+function smoothPath(points: { x: number; y: number }[]): string {
+  const n = points.length
+  const d = points.slice(1).map((p, i) => (p.y - points[i].y) / (p.x - points[i].x))
+  const m = points.map((_, i) => (i === 0 ? d[0] : i === n - 1 ? d[n - 2] : d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2))
+  for (let i = 0; i < n - 1; i++) {
+    if (d[i] === 0) {
+      m[i] = 0
+      m[i + 1] = 0
+      continue
+    }
+    const a = m[i] / d[i]
+    const b = m[i + 1] / d[i]
+    const r = a * a + b * b
+    if (r > 9) {
+      m[i] = (3 / Math.sqrt(r)) * a * d[i]
+      m[i + 1] = (3 / Math.sqrt(r)) * b * d[i]
+    }
+  }
+  return points.reduce((path, p, i) => {
+    if (i === 0) return `M${p.x},${p.y}`
+    const q = points[i - 1]
+    const h = (p.x - q.x) / 3
+    return `${path} C${q.x + h},${q.y + m[i - 1] * h} ${p.x - h},${p.y - m[i] * h} ${p.x},${p.y}`
+  }, '')
 }
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })

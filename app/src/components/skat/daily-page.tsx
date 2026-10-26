@@ -12,7 +12,6 @@ import { typography } from '../../theme/type'
 import { ClientPart, DailyEntry, DailyTable, DealOfDay } from './client-part'
 import { DayDeals } from './daily-comparison'
 import { AnnouncementLine } from './forum-announcement'
-import { GameReading } from './game-reading'
 import { linkLook, toggleLook } from './ui'
 import { TableLoading } from './table-loading'
 
@@ -64,7 +63,6 @@ export function DailyPage() {
           </ClientPart>
         )}
       </section>
-      <GameReading />
     </div>
   )
 }

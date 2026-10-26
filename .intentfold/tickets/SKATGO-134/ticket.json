@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-134",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-134",
+  "branch": "SKATGO-134-trim-game-copy",
+  "base": "8120fd9dafe5e2e38b4098db22aaba23ca0fc469",
+  "ports": {
+    "web": 55134,
+    "multiplayer": 56134,
+    "database": 57134
+  }
+}

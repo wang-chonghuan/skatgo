@@ -91,7 +91,6 @@ export function OpenTable() {
   if (account === null) {
     return (
       <div data-testid="table-open-sign-in" {...stylex.props(styles.form)}>
-        <p {...stylex.props(typography.appText, styles.ink)}>{m.table_open_sign_in_text()}</p>
         <div {...stylex.props(styles.row)}>
           <SignInButton mode="modal">
             <Btn testId="table-open-sign-in-go">{m.table_open_sign_in()}</Btn>

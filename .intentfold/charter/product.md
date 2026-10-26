@@ -125,6 +125,10 @@ after comparing other products, 「可以吧」 to the host signing in and the i
 guest who signs up while sitting at someone's table is recorded once as brought by its host, so it
 shows who brings players in; nothing else is recorded about it, and it needs no consent banner.
 
+About SkatGo at `/about` (SKATGO-134): the questions people ask, how the daily Skat is played, scored and ranked, and how a
+private table goes — what the game pages no longer explain (the human: 「我现在特别讨厌游戏页面里那么多垃圾的文字……所有seo的都专门
+做seo页面」). The game pages keep a title and a line; their search entry stays their own title and description.
+
 A rules reference: the whole rules at `/rules`, with anchors for what people look up by name (Grand,
 Null ouvert, Ramsch); the bidding table; and two printables, a score sheet and a short version of the
 rules, each also as a PDF (SKATGO-29, SKATGO-50, SKATGO-53). Every number in them is the rules

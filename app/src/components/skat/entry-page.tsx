@@ -2,7 +2,6 @@ import { Link, useLoaderData } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
 import { track } from '~/lib/analytics'
-import { faq } from '~/lib/faq'
 import type { Card } from '~/lib/skat/cards'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
@@ -87,17 +86,6 @@ export function EntryPage() {
         <Link to="/course" {...stylex.props(typography.link, styles.readingLink)}>{m.course_title()}</Link>
       </nav>
 
-      <section data-testid="entry-faq" aria-labelledby="faq-title" {...stylex.props(styles.faq)}>
-        <h2 id="faq-title" {...stylex.props(typography.landingHeading, styles.faqTitle)}>{m.faq_title()}</h2>
-        <dl {...stylex.props(styles.faqList)}>
-          {faq().map(({ q, a }) => (
-            <div key={q} {...stylex.props(styles.faqItem)}>
-              <dt {...stylex.props(typography.optionTitle, styles.faqQ)}>{q}</dt>
-              <dd {...stylex.props(typography.landingBody, styles.faqA)}>{a}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
     </div>
   )
 }
@@ -262,18 +250,4 @@ const styles = stylex.create({
   tileTitle: { margin: 0, color: color.onColor },
   readingLink: { color: color.info, textDecoration: 'underline' },
 
-  faq: { display: 'flex', flexDirection: 'column', gap: space.x24 },
-  faqTitle: { margin: 0, color: color.navy },
-  faqList: { display: 'flex', flexDirection: 'column', margin: 0 },
-  faqItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x8,
-    paddingBlock: space.x20,
-    borderTopWidth: border.hair,
-    borderTopStyle: 'solid',
-    borderTopColor: color.hairline,
-  },
-  faqQ: { margin: 0, color: color.navy },
-  faqA: { margin: 0, color: color.slate },
 })

@@ -8,7 +8,7 @@ export const Route = createFileRoute('/profile')({
   head: () =>
     pageHead({
       title: m.profile_meta_title(),
-      description: m.profile_lead(),
+      description: m.profile_meta_description(),
       paths: samePath('/profile'),
       image: 'daily',
       jsonLd: [breadcrumbs([[m.profile_title(), '/profile']])],

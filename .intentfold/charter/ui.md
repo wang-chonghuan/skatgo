@@ -73,7 +73,7 @@ fixed light palette, not a light/dark pair.
 | **Colour tile** | a section on the front page: ♣ the course (`tileOrange`), ♠ free play (`tileGreen`), the tricks (`tileNavy`), a private table (`tileRed`) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
 | **Felt** | where cards lie: the table, a drill's hand | `fill.felt` (`feltInner` → `feltOuter`, with a fine grain) | `color.onColor`; highlights `color.gold` / `color.amber` |
 | **Board and plates** | the table's info board, the seat plates, dark pills | `color.board` with `color.boardLine`; `color.plate` | `color.onColor`, quieter `color.onColorSoft`; the player's own numbers — their score, their side's card points — in `color.amber` (SKATGO-79) |
-| **Footer** | the legal links under every header page (SKATGO-46), and the Skat-Tricks and the forum (SKATGO-118) | `color.surface` with a `hairline` rule | links in `color.info` |
+| **Footer** | the legal links under every header page (SKATGO-46), the Skat-Tricks and the forum (SKATGO-118), then About SkatGo and the rules (SKATGO-134) | `color.surface` with a `hairline` rule | links in `color.info` |
 
 **Colour roles** (`color`)
 
@@ -265,9 +265,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     "Skat interaktiv lernen" (the course; no count of lessons, which scares people off — SKATGO-127, the human:
     「把11课字样去掉，会把人吓跑」, 「入口卡片叫交互式学习skat」), "Skat gegen die KI spielen" (free play), "Mit Skat-Aufgaben
     üben" (the exercises, `tileNavy`) and "Skat mit Freunden spielen" (a private table, `tileRed`);
-  - plain links to the rules and the course, and the questions people ask.
+  - plain links to the rules and the course. The questions people ask are on About SkatGo, not here (SKATGO-134).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
-  the short rules, the daily tournament, the Skat-Tricks' page and their article, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
+  the short rules, the daily tournament, the Skat-Tricks' page and their article, a private table's page, About SkatGo,
+  the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
   tournament's page has no lead under its title (SKATGO-132, the human: 「你显示着一坨垃圾干什么啊」), then the forum's
@@ -286,7 +287,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   preview, at most 600px, a `hairline` border: 「最好让用户看到待显示的卡片，再可以点发送……下面是待分享的卡片」), the time
   until the next deal; then its board as the tournament's, the
   AI's row on it (a guest who has not played sees it too, under the `go` "Jetzt spielen · 2 Min."); then, folded, how
-  the AI played the deal (`VsAiTable`); then a link to free play.
+  the AI played the deal (`VsAiTable`); then a link to free play — and nothing more on either side: the page's
+  explanations and its link row went to About SkatGo (SKATGO-134).
   The tournament's side (six deals; SKATGO-77's twelve gone, SKATGO-119): its one
   `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",
   "Gestern", or the weekday and date — and steps through the last seven days with two round arrow
@@ -305,7 +307,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   5-Minuten-Crashkurs" (SKATGO-120, the human: 「5分钟的按钮，放到规则页面的一个按钮中」), and on the course page under its
   one-sentence lead — no facts pills, no "no rulebook" line (SKATGO-127) — a large `quiet` landing button, "5-Minuten-Schnellstart, dann spielen" (SKATGO-127, the human:
   「学习页面里，要有明显的按钮，5分钟快速入门开始打牌」) — not the front page. The Skat-Tricks' page (`tricks-page.tsx`,
-  SKATGO-103) is its H1 and lead, then every kind of exercise as an option card, numbered, each a `<details>`
+  SKATGO-103) is its H1 — no lead under it (SKATGO-134) — then every kind of exercise as an option card, numbered, each a `<details>`
   closed at first (one named in the address, as `#offenes-endspiel` names the first, opens by
   itself and stops under the header): first the open-card endgames (SKATGO-119, the human: 「这个要可折叠，像其他题
   一样，它作为第一类练习题」), their count solved in the head, opening to levels (SKATGO-111) — a grid of numbered
@@ -333,6 +335,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
   lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,
   its section of the rules, and all lessons.
+- **A private table's page** (`friends-page.tsx`, `/with-friends`, SKATGO-61): its H1, one line (`landingBody`), and the
+  way to open a table — for a guest only the `go` sign-in button, for an account its name and the button; how a table
+  goes and its rules are on About SkatGo (SKATGO-134).
+- **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
+  the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
+  FAQPage), each question bold over its answer; "Tägliches Skat", how the deal of the day and the six deals are played,
+  scored and ranked; "Private Tische", how a table is opened and played. Each section ends in plain `info` links to
+  where it is played or learnt.
 - **The record of play** (`profile-page.tsx`, SKATGO-128) is a sub-page on the grey page in the reading column,
   noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest a `go` "Anmelden und Profil ansehen" opening
   Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to free play.
@@ -379,6 +389,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a
   standard web-app table. Free play's search entry is the front page.
+- **What a table says** (SKATGO-134): the course's tables — its own and lesson 11's, the ones with hints — explain every
+  step as before. A real table (free play, the daily ones, a private table, a shared deal's practice) says at most one
+  short line, the buttons the rest: asked to hold, "18?" with "Ja" / "Passe"; no line on the speaker's turn, before the
+  skat is picked up, while putting two away or while playing; forehand alone, "Beide haben gepasst – spielst du 18?"; the
+  contract picker only "Kein Spiel erreicht 18 – das Spiel ist verloren." or that the chosen game cannot be announced; a
+  wrong card, "Bedienen: spiel Kreuz♣."; a private table's settlement, under its title, the facts in one line
+  ("Kreuz · gereizt bis 18 · Alleinspieler 74 : Gegenspieler 46") and the calculation in one, then the skat and the
+  standings. The play record's note on where the AI's cards stand is lesson 11's only.
 - **At the table**, the speaker in the auction may jump (SKATGO-87): "Höher …" (`quiet`) opens, under it,
   one row of every higher number on the ladder in pills (`toggle`), scrolling sideways so the hand stays
   in sight on a phone; a number is picked first and named with the main button. While a move of the
@@ -481,6 +499,14 @@ Every control shows the focus ring in `color.info`.
 learners from six to ninety-nine alike (「不枯燥的」). The German words a Skat table actually uses —
 Grand, Null, Hand, Schneider, Schwarz, Ouvert, Matador — stay German, because those are what the
 learner will hear at a real table.
+
+**Few words on the game pages** (SKATGO-134, the human: 「我现在特别讨厌游戏页面里那么多垃圾的文字，受够了」):
+
+- A game page says at most one sentence per state; what a button can say is not written as a sentence.
+- A thing is said once, at the moment it is needed — "the six deals need an account" when a guest reaches for them.
+- Selling points — free, no sign-up, the same cards for everyone — go only in a page's title, its search description
+  and About SkatGo; the slogan is the exception.
+- What explains the rules belongs to the course's tables and the content pages.
 
 ## Redlines
 

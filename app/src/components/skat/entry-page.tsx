@@ -1,7 +1,8 @@
+import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link, useLoaderData } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { Bot, CalendarDays, ChartLine, GraduationCap, MessagesSquare, Puzzle, type LucideIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { CalendarDays, ChartLine, GraduationCap, MessagesSquare, Puzzle } from 'lucide-react'
+import { type ComponentType, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
@@ -19,6 +20,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { EloBoard } from './elo-board'
 import { PlayingCard } from './playing-card'
+import { Btn } from './ui'
 
 // The front page (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后显示下面的四个卡片……长卡片做两个，
 // 一个是my progress……一个是 elo ranking」): the slogan, then the ways in — four colour cards two by two, each a link
@@ -34,24 +36,17 @@ export function EntryPage() {
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
         {/* The deal of the day stays "1 deal today" once played (SKATGO-135, the human: 「这个按钮文字不变」). */}
         <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
-        <Way to="/play" section="play" tone="play" Icon={Bot} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
+        <Way to="/play" section="play" tone="play" Icon={CardsIcon} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
         <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
         {/* The tricks (SKATGO-82): straight to the exercises (SKATGO-105); the article is only for search engines. */}
         <Way to="/skat-tricks" section="tricks" tone="practice" Icon={Puzzle} art={PRACTICE_ART} title={m.home_practice()} />
-        <Link to="/profile" data-testid="entry-card" data-section="progress" {...stylex.props(styles.long, styles.white, styles.lift, styles.progress)}>
-          <span {...stylex.props(styles.whiteHead)}>
-            {/* As the Elo board's title beside it, with the record of play's icon from the account menu (SKATGO-128). */}
-            <h2 {...stylex.props(typography.dialogTitle, styles.whiteTitle)}>{m.home_progress()}</h2>
-            <ChartLine aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.whiteIcon)} />
-          </span>
-          <Progress />
-        </Link>
+        <ProgressCard />
         <div data-testid="entry-card" data-section="elo" {...stylex.props(styles.long, styles.elo)}>
           {elo ? (
             <EloBoard board={elo} fill />
           ) : (
             <div {...stylex.props(styles.white, styles.eloEmpty)}>
-              <h2 {...stylex.props(typography.dialogTitle, styles.whiteTitle)}>{m.elo_title()}</h2>
+              <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.elo_title()}</h2>
             </div>
           )}
         </div>
@@ -62,7 +57,7 @@ export function EntryPage() {
         <Link to="/with-friends" data-testid="entry-card" data-section="friends" {...stylex.props(styles.white, styles.picture, styles.lift)}>
           <img src="/hero-table.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage)} />
           <span {...stylex.props(styles.pictureBody)}>
-            <h2 {...stylex.props(typography.optionTitle, styles.whiteTitle)}>{m.home_friends_title()}</h2>
+            <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.home_friends_title()}</h2>
             <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_friends_text()}</span>
           </span>
         </Link>
@@ -78,7 +73,7 @@ export function EntryPage() {
             </span>
           </span>
           <span {...stylex.props(styles.pictureBody)}>
-            <h2 {...stylex.props(typography.optionTitle, styles.whiteTitle)}>{m.home_forum_title()}</h2>
+            <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.home_forum_title()}</h2>
             <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_forum_text()}</span>
           </span>
         </Link>
@@ -90,8 +85,11 @@ export function EntryPage() {
 /** The hero's ways in as they are counted (SKATGO-29; renamed by SKATGO-74's tracking plan): the deal of the day, free play. */
 const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
 
+/** What a card's icon is given: lucide's props, which the drawn one takes too. */
+type IconProps = { size: number; strokeWidth: number; 'aria-hidden'?: 'true' }
+
 /** A colour card: its icon at the top, its title at the bottom, three of skatgo's cards in the corner under its colour. */
-function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | '/play' | '/course' | '/skat-tricks'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon; art: Card[]; title: string; onClick?: () => void }) {
+function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | '/play' | '/course' | '/skat-tricks'; section: string; tone: keyof typeof tileTones; Icon: ComponentType<IconProps>; art: Card[]; title: string; onClick?: () => void }) {
   return (
     <Link to={to} data-testid="entry-card" data-section={section} onClick={onClick} {...stylex.props(styles.tile, styles.lift, tileTones[tone])}>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
@@ -104,16 +102,65 @@ function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | 
       <span aria-hidden="true" {...stylex.props(styles.veil)} />
       <span {...stylex.props(styles.body)}>
         <Icon aria-hidden="true" size={icon.tile} strokeWidth={icon.outline} />
-        <h2 {...stylex.props(typography.tileTitle, styles.tileTitle)}>{title}</h2>
+        <h2 {...stylex.props(typography.homeCardTitle, styles.tileTitle)}>{title}</h2>
       </span>
     </Link>
   )
 }
 
+/** The progress card: for an account a link to the record of play with its curve; for a guest what signing in
+ *  keeps, and the sign-in in the middle (the human: 「progress如果用户没登录，就要显示登录后保存你的表现记录以及ai分析，中间放个
+ *  登录按钮」). */
+function ProgressCard() {
+  const account = useAccount()
+  // As the Elo board's title beside it, with the record of play's icon from the account menu (SKATGO-128).
+  const head = (
+    <span {...stylex.props(styles.whiteHead)}>
+      <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.home_progress()}</h2>
+      <ChartLine aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.whiteIcon)} />
+    </span>
+  )
+  if (account === null) {
+    return (
+      <div data-testid="entry-card" data-section="progress" data-guest="true" {...stylex.props(styles.long, styles.white, styles.progress)}>
+        {head}
+        <div {...stylex.props(styles.guest)}>
+          <p {...stylex.props(typography.appText, styles.guestText)}>{m.home_progress_guest()}</p>
+          <SignInButton mode="modal">
+            <Btn testId="entry-progress-sign-in">{m.auth_sign_in()}</Btn>
+          </SignInButton>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <Link to="/profile" data-testid="entry-card" data-section="progress" {...stylex.props(styles.long, styles.white, styles.lift, styles.progress)}>
+      {head}
+      <Progress account={account} />
+    </Link>
+  )
+}
+
+/** Two playing cards crossed, for free play (the human: 「换成两个交错的卡牌的图标，不要用机器人」), drawn in lucide's line:
+ *  lucide has no playing card, and suits are never icons (ui.md). The back card's outline stops where the front one lies. */
+function CardsIcon({ size, strokeWidth, ...rest }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" {...rest}>
+      <defs>
+        <mask id="cards-icon-front">
+          <rect x="0" y="0" width="24" height="24" fill="white" />
+          <rect x="9" y="4.5" width="10" height="15" rx="2" transform="rotate(14 14 12)" fill="black" stroke="black" strokeWidth="3" />
+        </mask>
+      </defs>
+      <rect x="5" y="4.5" width="10" height="15" rx="2" transform="rotate(-14 10 12)" mask="url(#cards-icon-front)" />
+      <rect x="9" y="4.5" width="10" height="15" rx="2" transform="rotate(14 14 12)" />
+    </svg>
+  )
+}
+
 /** The player's curve on the progress card: the record of play's points, day by day, without dates or scale. An
  *  account's only, read in the browser; nothing for a guest or before the first deal. */
-function Progress() {
-  const account = useAccount()
+function Progress({ account }: { account: string | undefined }) {
   const [days, setDays] = useState<ProfileDay[] | null>(null)
   useEffect(() => {
     if (!account) return
@@ -239,6 +286,9 @@ const styles = stylex.create({
   whiteIcon: { flexShrink: 0, color: color.info },
   whiteTitle: { margin: 0, color: color.navy },
   eloEmpty: { flexGrow: 1 },
+  // A guest's progress card: the line and the sign-in in the middle of what the card has left.
+  guest: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: space.x12, flexGrow: 1, textAlign: 'center' },
+  guestText: { margin: 0, color: color.slate, textWrap: 'balance' },
   more: {
     display: 'grid',
     // The ways in's columns, so each picture card stands under a colour card.

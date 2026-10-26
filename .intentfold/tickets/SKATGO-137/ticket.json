@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-137",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-137",
   "branch": "SKATGO-137-progress-labels",

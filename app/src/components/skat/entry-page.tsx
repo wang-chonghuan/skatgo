@@ -1,11 +1,17 @@
 import { Link, useLoaderData } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
+import { Bot, CalendarDays, ChartLine, GraduationCap, Puzzle, type LucideIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
+import { dailyProfile, isError } from '~/lib/daily-api'
 import type { Card } from '~/lib/skat/cards'
+import { type ProfileDay, daysOf } from '~/lib/skat/profile'
+import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
+import { icon, profileChart } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
@@ -13,107 +19,54 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { EloBoard } from './elo-board'
 import { PlayingCard } from './playing-card'
-import { linkLook } from './ui'
 
-
-// The front page, in the lobby design (SKATGO-26, reference.md): the public site's hero — the daily Skat
-// tournament as the headline and its one green call to action (the way into the course is the header's
-// and the course tile's — the human, 2026-10-01) and a strip of facts, with no picture (SKATGO-120, the human:
-// 「pc上我也不想要那个图片了」) and beside it the tournament's Elo board (SKATGO-123) — then the two other ways into Skat as the app's colour tiles, one suit
-// each (♣ the course, ♠ free play, ♥ a private table with friends — SKATGO-61), and the questions people ask (SKATGO-29). The hero's copy leads the
-// tournament itself (the human, 2026-09-30: 「文案先行」).
-//
-// Every picture here is skatgo's own: the public-domain deck the course plays with, fanned on felt, and
-// the suits as outline icons. Rendered on the server; the learner's progress is applied after mount.
+// The front page (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后显示下面的四个卡片……长卡片做两个，
+// 一个是my progress……一个是 elo ranking」): the slogan, then the ways in — four colour cards two by two, each a link
+// with its icon over its title (the deal of the day, free play, the course, the exercises), and beside them two long
+// white cards: the player's progress, its curve when there is one, leading to the record of play, and the tournament's
+// Elo board (SKATGO-123). Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
+// hero buttons, no lead, no link row: the cards are the page. Rendered on the server; the curve in the browser.
 export function EntryPage() {
   const { elo } = useLoaderData({ from: '/' })
-  // With the board beside it the text keeps to the left of its column; without one, as before, in the middle.
-  const beside = !!elo && elo.rows.length > 0
-
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
-      <section data-testid="entry-hero" {...stylex.props(styles.hero, beside && styles.heroBeside)}>
-        <div {...stylex.props(styles.heroText, beside && styles.start)}>
-          <div {...stylex.props(styles.head, beside && styles.start)}>
-            <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
-          </div>
-          <div {...stylex.props(styles.cta, beside && styles.start)}>
-            <div {...stylex.props(styles.actions, beside && styles.startRow)}>
-              {/* The deal of the day (SKATGO-131, the human: 「今日一副是主按钮，自由play是次按钮，都是在hero区域的」): the way in to
-                  /daily, where the deal and the six deals are chosen — the same words once played (SKATGO-135, the human:
-                  「不要打完了就变，这个按钮文字不变」). */}
-              <DealOfDayLink />
-              {/* Beside it free play, white, so the deal stays the one green action; the forum is no longer here. */}
-              <Link to="/play" data-testid="entry-free" onClick={() => heroClick('free')} {...linkLook('quiet', 'lg', 'landing')}>
-                {m.dod_hero_free()}
-              </Link>
-            </div>
-            {/* The ✓ line of facts under the buttons is gone (SKATGO-123, the human: 「✓Free ✓AI analysis 这行去掉」). */}
-          </div>
-        </div>
-        {beside ? (
-          <div {...stylex.props(styles.side)}>
-            <div {...stylex.props(styles.sideFill)}>
-              <EloBoard board={elo} fill />
-            </div>
-          </div>
-        ) : null}
-      </section>
-
-      {/* The four ways in, each a tile that is its own link with a title that says where it goes, nothing else
-          (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」). */}
+      <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
-        <Link to="/course" data-testid="entry-card" data-section="course" {...stylex.props(styles.tile, styles.tileLink, tileTones.course)}>
-          <Face art={COURSE_ART} title={m.entry_new_title()} />
-        </Link>
-        <Link to="/play" data-testid="entry-card" data-section="play" {...stylex.props(styles.tile, styles.tileLink, tileTones.play)}>
-          <Face art={PLAY_ART} title={m.entry_game_title()} />
-        </Link>
+        {/* The deal of the day stays "1 deal today" once played (SKATGO-135, the human: 「这个按钮文字不变」). */}
+        <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
+        <Way to="/play" section="play" tone="play" Icon={Bot} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
+        <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
         {/* The tricks (SKATGO-82): straight to the exercises (SKATGO-105); the article is only for search engines. */}
-        <Link to="/skat-tricks" data-testid="entry-card" data-section="tricks" {...stylex.props(styles.tile, styles.tileLink, tileTones.practice)}>
-          <Face art={PRACTICE_ART} title={m.entry_practice_title()} />
+        <Way to="/skat-tricks" section="tricks" tone="practice" Icon={Puzzle} art={PRACTICE_ART} title={m.home_practice()} />
+        <Link to="/profile" data-testid="entry-card" data-section="progress" {...stylex.props(styles.long, styles.white, styles.lift, styles.progress)}>
+          <span {...stylex.props(styles.whiteHead)}>
+            {/* As the Elo board's title beside it, with the record of play's icon from the account menu (SKATGO-128). */}
+            <h2 {...stylex.props(typography.dialogTitle, styles.whiteTitle)}>{m.home_progress()}</h2>
+            <ChartLine aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.whiteIcon)} />
+          </span>
+          <Progress />
         </Link>
-        <Link to="/with-friends" data-testid="entry-card" data-section="friends" {...stylex.props(styles.tile, styles.tileLink, tileTones.friends)}>
-          <Face art={FRIENDS_ART} title={m.entry_friends_title()} />
-        </Link>
+        <div data-testid="entry-card" data-section="elo" {...stylex.props(styles.long, styles.elo)}>
+          {elo ? (
+            <EloBoard board={elo} fill />
+          ) : (
+            <div {...stylex.props(styles.white, styles.eloEmpty)}>
+              <h2 {...stylex.props(typography.dialogTitle, styles.whiteTitle)}>{m.elo_title()}</h2>
+            </div>
+          )}
+        </div>
       </div>
-
-      <nav aria-label={m.game_learning_title()} {...stylex.props(styles.actions)}>
-        <Link to="/rules" {...stylex.props(typography.link, styles.readingLink)}>{m.rules_title()}</Link>
-        <Link to="/course" {...stylex.props(typography.link, styles.readingLink)}>{m.course_title()}</Link>
-      </nav>
-
     </div>
   )
 }
 
-/** The hero's buttons (SKATGO-29; renamed by SKATGO-74's tracking plan; the forum's since SKATGO-120). */
+/** The hero's ways in as they are counted (SKATGO-29; renamed by SKATGO-74's tracking plan): the deal of the day, free play. */
 const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
 
-/** The hero's main button as the server renders it: the way in to the day's two competitions on /daily, the deal of
- *  the day first — not straight to a table (the human: 「这个应该是入口，进去后分为1deal和6deal，不要一进去马上打牌」).
- *  Rendered each time, in the page's language. */
-function DealOfDayLink() {
+/** A colour card: its icon at the top, its title at the bottom, three of skatgo's cards in the corner under its colour. */
+function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | '/play' | '/course' | '/skat-tricks'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon; art: Card[]; title: string; onClick?: () => void }) {
   return (
-    <Link to="/daily" data-testid="entry-cta" data-state="open" onClick={() => heroClick('primary')} {...linkLook('go', 'lg', 'landing')}>
-      {m.dod_hero()}
-    </Link>
-  )
-}
-
-
-const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
-const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
-const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
-const FRIENDS_ART = [card('H', 'A'), card('H', '10'), card('H', 'K')]
-const PRACTICE_ART = [card('D', 'A'), card('D', '10'), card('D', 'K')]
-const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
-
-/** The hero's picture: three players at a club-shaped table (the human's illustration, SKATGO-33), shown whole. */
-/** A tile's face: three of skatgo's cards in the corner under the tile's colour, and its title at the top left. */
-function Face({ art, title }: { art: Card[]; title: string }) {
-  return (
-    <>
+    <Link to={to} data-testid="entry-card" data-section={section} onClick={onClick} {...stylex.props(styles.tile, styles.lift, tileTones[tone])}>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
         {art.map((c, i) => (
           <span key={i} {...stylex.props(styles.artCard, fanPose[FAN[i + 1]])}>
@@ -122,12 +75,50 @@ function Face({ art, title }: { art: Card[]; title: string }) {
         ))}
       </span>
       <span aria-hidden="true" {...stylex.props(styles.veil)} />
-      <div {...stylex.props(styles.body)}>
+      <span {...stylex.props(styles.body)}>
+        <Icon aria-hidden="true" size={icon.tile} strokeWidth={icon.outline} />
         <h2 {...stylex.props(typography.tileTitle, styles.tileTitle)}>{title}</h2>
-      </div>
-    </>
+      </span>
+    </Link>
   )
 }
+
+/** The player's curve on the progress card: the record of play's points, day by day, without dates or scale. An
+ *  account's only, read in the browser; nothing for a guest or before the first deal. */
+function Progress() {
+  const account = useAccount()
+  const [days, setDays] = useState<ProfileDay[] | null>(null)
+  useEffect(() => {
+    if (!account) return
+    let live = true
+    void dailyProfile().then((r) => { if (live && !isError(r)) setDays(daysOf(r.deals)) })
+    return () => { live = false }
+  }, [account])
+  const known = (days ?? []).flatMap((d, i) => (d.perDeal === null ? [] : [{ i, v: d.perDeal }]))
+  if (!days || known.length === 0) return null
+  const { width, height, pad, dot, line } = profileChart
+  const top = Math.max(0, ...known.map((p) => p.v))
+  const bottom = Math.min(0, ...known.map((p) => p.v))
+  const span = top - bottom || 1
+  const x = (i: number) => (days.length > 1 ? pad + (i * (width - 2 * pad)) / (days.length - 1) : width / 2)
+  const y = (v: number) => pad + ((top - v) * (height - 2 * pad)) / span
+  return (
+    <svg data-testid="entry-progress-curve" aria-hidden="true" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" {...stylex.props(styles.curve)}>
+      <line x1={0} x2={width} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
+      <polyline points={known.map((p) => `${x(p.i)},${y(p.v)}`).join(' ')} strokeWidth={line} vectorEffect="non-scaling-stroke" {...stylex.props(styles.line)} />
+      {known.map((p) => (
+        <line key={p.i} x1={x(p.i)} x2={x(p.i)} y1={y(p.v)} y2={y(p.v)} strokeWidth={dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)} />
+      ))}
+    </svg>
+  )
+}
+
+const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
+const DAILY_ART = [card('H', 'A'), card('H', '10'), card('H', 'K')]
+const PLAY_ART = [card('S', 'A'), card('S', '10'), card('S', 'K')]
+const COURSE_ART = [card('C', 'J'), card('S', 'J'), card('H', 'J')]
+const PRACTICE_ART = [card('D', 'A'), card('D', '10'), card('D', 'K')]
+const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
 
 const fanPose = stylex.create({
   fanFarLeft: { transform: pose.fanFarLeft },
@@ -137,10 +128,12 @@ const fanPose = stylex.create({
   fanFarRight: { transform: pose.fanFarRight },
 })
 
+// The deal of the day green, the site's colour of what to do now; free play red, now that the friends' tile is gone;
+// the course orange and the exercises navy as before.
 const tileTones = stylex.create({
+  daily: { backgroundColor: color.tileGreen, boxShadow: elev.tileGreen },
+  play: { backgroundColor: color.tileRed, boxShadow: elev.tileRed },
   course: { backgroundColor: color.tileOrange, boxShadow: elev.tileOrange },
-  play: { backgroundColor: color.tileGreen, boxShadow: elev.tileGreen },
-  friends: { backgroundColor: color.tileRed, boxShadow: elev.tileRed },
   practice: { backgroundColor: color.tileNavy, boxShadow: elev.tileNavy },
 })
 
@@ -148,82 +141,36 @@ const styles = stylex.create({
   root: {
     display: 'flex',
     flexDirection: 'column',
-    gap: { default: space.x48, [bp.phone]: space.x32 },
+    gap: { default: space.x32, [bp.phone]: space.x24 },
     width: '100%',
     maxWidth: dims.landingColumn,
     marginInline: 'auto',
     boxSizing: 'border-box',
-    paddingTop: { default: space.x32, [bp.phone]: space.x32 },
+    paddingTop: space.x32,
     paddingBottom: space.x72,
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
-  // Type alone, in the middle; on a phone it keeps to the left edge as the rest of the page (SKATGO-120). Above
-  // the headline only the page's own top, and the lead held close under it as one block (the human:
-  // 「这句话上方的空白太多……缩小它」, then 「我感觉它上下空白还是太多」).
-  hero: { display: 'flex', flexDirection: 'column' },
-  // Beside the Elo board (SKATGO-123, the human: 「hero区域在pc上就是左右两栏的布局了」): two equal columns, the text
-  // on the left, the board on the right; under `bp.cards` one column, the board under the text.
-  heroBeside: {
-    display: 'grid',
-    gridTemplateColumns: { default: dims.twoColumns, [bp.cards]: dims.oneColumn },
-    // The headline stays right under the header, as without the board; the room the board needs is below the type.
-    alignItems: 'start',
-    columnGap: space.x48,
-    rowGap: { default: space.x32, [bp.phone]: space.x24 },
-  },
-  start: { alignItems: 'flex-start', textAlign: 'start' },
-  startRow: { justifyContent: 'flex-start' },
-  // On PC the board takes the type's height, no more, its list scrolling inside (the human: 「elo列表的高度，和hero
-  // 区域的高度一样，可以滚动，不要那么高，破坏我布局」): it stands out of the grid's flow, so the type alone sets the
-  // row. In one column it is in the flow again.
-  side: { position: { default: 'relative', [bp.cards]: 'static' }, alignSelf: 'stretch', minWidth: 0 },
-  sideFill: { position: { default: 'absolute', [bp.cards]: 'static' }, top: 0, right: 0, bottom: 0, left: 0 },
-  heroText: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: { default: 'center', [bp.phone]: 'flex-start' },
-    textAlign: { default: 'center', [bp.phone]: 'start' },
-    minWidth: 0,
-    gap: { default: space.x24, [bp.phone]: space.x16 },
-  },
-  head: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: { default: 'center', [bp.phone]: 'flex-start' },
-    gap: { default: space.x12, [bp.phone]: space.x16 },
-  },
-  // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
+  // Colour is stated, not inherited: the theme colours headings itself.
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
-
-  // The call to action and the forum beside it.
-  cta: { display: 'flex', flexDirection: 'column', alignItems: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12, minWidth: 0, maxWidth: '100%' },
-  actions: { display: 'flex', flexWrap: 'wrap', justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12, minWidth: 0, maxWidth: '100%' },
-  // The two ways in, side by side; stacked on a phone.
   ways: {
     display: 'grid',
-    // Two by two, each title on one line clear of its cards (four in a row crowded the titles onto the art,
-    // SKATGO-120); below the width where that holds, one above the other, as the course's cards.
-    gridTemplateColumns: { default: dims.twoColumns, [bp.cards]: dims.oneColumn },
-    columnGap: space.x15,
-    rowGap: space.x15,
+    gridTemplateColumns: { default: dims.homeWays, [bp.cards]: dims.homeWaysNarrow },
+    gap: { default: space.x24, [bp.phone]: space.x12 },
   },
-  // A lobby tile: its colour over its art, a shadow in its own colour, its title and text at the top left
-  // and its button at the bottom, so tiles side by side line up whatever their text's length (SKATGO-69).
+  // A colour card, as the lobby's tiles: its colour over its art, a shadow in its own colour.
   tile: {
     position: 'relative',
     display: 'flex',
-    flexDirection: 'column',
-    // As tall as its title, no more; the cards' art is cropped at its edge (SKATGO-120, the human: 「包裹着文字就行了，
-    // 禁止大片空白，牌的背景还保留，但是可以剪裁」).
+    aspectRatio: dims.homeCard,
     boxSizing: 'border-box',
-    padding: space.x27,
+    padding: { default: space.x24, [bp.phone]: space.x16 },
     overflow: 'hidden',
     borderRadius: radii.tile,
     color: color.onColor,
     textDecoration: 'none',
   },
-  // The whole tile is the link: it rises on hover and shows the focus ring, as a course card does.
-  tileLink: {
+  // The whole card is the link: it rises on hover and shows the focus ring, as a course card does.
+  lift: {
     transform: { default: pose.rest, ':hover': pose.lift },
     transitionProperty: 'transform',
     transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
@@ -242,8 +189,31 @@ const styles = stylex.create({
   },
   artCard: { display: 'block', marginInline: dims.fanRowOverlap, transformOrigin: 'bottom center' },
   veil: { position: 'absolute', inset: 0, backgroundColor: 'inherit', opacity: veil.tile, pointerEvents: 'none' },
-  body: { position: 'relative', display: 'flex', flexDirection: 'column', flexGrow: 1, gap: space.x8 },
+  // The icon at the top, the title at the bottom.
+  body: { position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1 },
   tileTitle: { margin: 0, color: color.onColor },
-  readingLink: { color: color.info, textDecoration: 'underline' },
-
+  // A long card: on PC in the third column, one row tall; under `bp.cards` the whole width.
+  long: { gridColumn: { default: dims.homeLongColumn, [bp.cards]: dims.homeFullWidth }, minWidth: 0, minHeight: 0 },
+  progress: { gridRow: { default: dims.homeRowFirst, [bp.cards]: dims.homeRowAuto } },
+  elo: { gridRow: { default: dims.homeRowSecond, [bp.cards]: dims.homeRowAuto }, display: 'flex', flexDirection: 'column' },
+  white: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x12,
+    boxSizing: 'border-box',
+    padding: { default: space.x24, [bp.phone]: space.x16 },
+    borderRadius: radii.option,
+    backgroundColor: color.surface,
+    boxShadow: elev.option,
+    textDecoration: 'none',
+  },
+  whiteHead: { display: 'flex', alignItems: 'center', gap: space.x8 },
+  whiteIcon: { flexShrink: 0, color: color.info },
+  whiteTitle: { margin: 0, color: color.navy },
+  eloEmpty: { flexGrow: 1 },
+  // The curve takes what the card has left, never sizing the card itself: no taller than the colour cards' row on PC.
+  curve: { display: 'block', width: '100%', height: 0, flexGrow: 1, minHeight: dims.homeCurve },
+  zero: { stroke: color.hairline },
+  line: { fill: 'none', stroke: color.info },
+  point: { stroke: color.info },
 })

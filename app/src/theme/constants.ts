@@ -26,6 +26,8 @@ export const icon = {
   outline: 1.75,
   /** An icon inside a button or beside a line of text; the finish screen's icon. */
   inline: 20,
+  /** The icon at the top of a front-page card (SKATGO-135, the human's pictures: a large outline icon over the title). */
+  tile: 36,
 }
 
 /** A lesson step slides in from the right and out to the left. */

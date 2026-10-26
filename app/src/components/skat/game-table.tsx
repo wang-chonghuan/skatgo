@@ -338,7 +338,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     }
     if (game.phase !== 'play' || !myTurn || !contract) return
     if (!legal?.some((c) => sameCard(c, card))) {
-      setRefusal(m.play_refusal({ led: ledName(effectiveSuit(game.trick[0].card, contract)) }))
+      const led = ledName(effectiveSuit(game.trick[0].card, contract))
+      setRefusal(hints ? m.play_refusal({ led }) : m.play_refusal_short({ led }))
       return
     }
     dispatch({ type: 'play', card })
@@ -1005,6 +1006,9 @@ function Actions(p: ActionsProps) {
   const nameOf = useNameOf()
   const { game } = p
   const who = actor(game)
+  // The course's tables — its own and lesson 11's, the ones with hints — explain every step; a real table says at most
+  // one short line, the buttons say the rest (SKATGO-134, the human: 「我现在特别讨厌游戏页面里那么多垃圾的文字」).
+  const course = p.hints
 
   if (game.phase === 'passedIn') {
     return (
@@ -1022,7 +1026,7 @@ function Actions(p: ActionsProps) {
   }
 
   if (game.phase === 'done' && game.result && game.declarer !== null) {
-    return <Result game={game} onNewGame={p.onNewGame} dealScore={p.dealScore} last={p.last} daily={p.daily} roomAfter={p.roomAfter} freeReview={p.freeReview} roundLast={p.roundLast} seeger={p.seeger} />
+    return <Result game={game} onNewGame={p.onNewGame} dealScore={p.dealScore} last={p.last} daily={p.daily} roomAfter={p.roomAfter} freeReview={p.freeReview} roundLast={p.roundLast} seeger={p.seeger} course={course} />
   }
 
   if (who !== ME) {
@@ -1043,7 +1047,7 @@ function Actions(p: ActionsProps) {
     if (b.awaiting === 'forehandAlone') {
       return (
         <Row>
-          <Say>{m.bid_forehand_alone()}</Say>
+          <Say>{course ? m.bid_forehand_alone() : m.bid_forehand_alone_short()}</Say>
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
           {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
@@ -1053,8 +1057,8 @@ function Actions(p: ActionsProps) {
     if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} />
     return (
       <Row>
-        <Say>{m.bid_asked({ name: nameOf(b.speaker), value: b.value })}</Say>
-        <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
+        <Say>{course ? m.bid_asked({ name: nameOf(b.speaker), value: b.value }) : m.bid_asked_short({ value: b.value })}</Say>
+        <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{course ? m.bid_hold_button({ value: b.value }) : m.bid_hold_short()}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
         {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
       </Row>
@@ -1065,7 +1069,7 @@ function Actions(p: ActionsProps) {
     if (!game.pickedUp) {
       return (
         <Row>
-          <Say>{m.skat_won_bid({ bid: game.bid })}</Say>
+          {course ? <Say>{m.skat_won_bid({ bid: game.bid })}</Say> : null}
           <Btn testId="skat-pickup" shape="block" size="lg" onClick={p.onPickUp}>{m.skat_pick_up()}</Btn>
           <Btn testId="skat-hand-game" tone="quiet" shape="block" size="lg" onClick={p.onHand}>{m.skat_play_hand()}</Btn>
           {p.hints ? <Btn testId="skat-skat-hint" tone="info" shape="block" size="lg" onClick={p.onSkatHint}>{m.skat_hint_button()}</Btn> : null}
@@ -1074,7 +1078,7 @@ function Actions(p: ActionsProps) {
     }
     return (
       <Row>
-        <Say>{m.skat_discard_prompt()}</Say>
+        {course ? <Say>{m.skat_discard_prompt()}</Say> : null}
         <Btn testId="skat-discard" shape="block" size="lg" disabled={p.picked.length !== 2} onClick={p.onDiscard}>{m.skat_discard_button({ n: p.picked.length })}</Btn>
         {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onDiscardHint}>{m.skat_discard_hint_button()}</Btn> : null}
       </Row>
@@ -1082,14 +1086,17 @@ function Actions(p: ActionsProps) {
   }
 
   if (game.phase === 'declare') {
-    return <DeclarePicker compact={p.compact} game={game} draft={p.draft} setDraft={p.setDraft} onDeclare={p.onDeclare} onHint={p.hints ? p.onDeclareHint : undefined} />
+    return <DeclarePicker compact={p.compact} course={course} game={game} draft={p.draft} setDraft={p.setDraft} onDeclare={p.onDeclare} onHint={p.hints ? p.onDeclareHint : undefined} />
   }
 
-  // The declarer on lead who sees the rest is theirs may show it and end the deal (SKATGO-59).
+  // The declarer on lead who sees the rest is theirs may show it and end the deal (SKATGO-59). A real table says
+  // nothing while it is the player's card: the playable cards are the bright ones.
+  const claim = game.declarer === ME && claimLine(game)
+  if (!course && !claim) return null
   return (
     <Row>
-      <Say>{game.trick.length === 0 ? m.play_lead_any() : m.play_tap()}</Say>
-      {game.declarer === ME && claimLine(game) ? <Btn testId="skat-claim" shape="block" onClick={p.onClaim}>{m.play_claim()}</Btn> : null}
+      {course ? <Say>{game.trick.length === 0 ? m.play_lead_any() : m.play_tap()}</Say> : null}
+      {claim ? <Btn testId="skat-claim" shape="block" onClick={p.onClaim}>{m.play_claim()}</Btn> : null}
     </Row>
   )
 }
@@ -1098,6 +1105,7 @@ const CONTRACTS: Contract[] = [...[...SUITS].reverse().map((trump): Contract => 
 
 function DeclarePicker({
   compact,
+  course,
   game,
   draft,
   setDraft,
@@ -1111,6 +1119,8 @@ function DeclarePicker({
   /** The hint button's action; no button without one. */
   onHint?: () => void
   compact?: boolean
+  /** The course's table explains each game; a real table only says when the chosen game cannot be played. */
+  course: boolean
 }) {
   const isHand = !game.pickedUp
   // Matadors are counted over hand plus skat, but in a Hand game the skat is unseen: the learner can
@@ -1125,8 +1135,14 @@ function DeclarePicker({
   // game as chosen can.
   const open = (c: Contract) => mayAnnounce(game, make(c, { ouvert: isHand || c.kind === 'null' }))
   const lawful = draft !== null && mayAnnounce(game, draft)
-  const note = (d: Declaration, v: number) => {
+  const note = (d: Declaration, v: number): string | null => {
     const name = `${contractName(d.contract)}${d.hand ? ' Hand' : ''}`
+    if (!course) {
+      // Each game's value is on its tile; a line only where the button cannot say why it is off.
+      if (v >= game.bid) return null
+      if (!lawful) return m.declare_short_of({ contract: name, bid: game.bid })
+      return highestValue(d, known) < game.bid ? m.declare_forced_short({ bid: game.bid }) : null
+    }
     if (v >= game.bid) return m.declare_covers({ contract: name, value: v, bid: game.bid })
     if (!lawful) return m.declare_short_of({ contract: name, bid: game.bid })
     if (highestValue(d, known) < game.bid) return m.declare_forced({ bid: game.bid })
@@ -1177,11 +1193,11 @@ function DeclarePicker({
           ) : null}
         </div>
       ) : null}
-      {draft && value !== null ? (
+      {draft && value !== null && note(draft, value) !== null ? (
         <Panel tone={value >= game.bid ? 'good' : 'bad'}>
           <p {...stylex.props(typography.note, styles.note)}>
             {note(draft, value)}
-            {isHand && draft.contract.kind !== 'null' && lawful ? m.declare_hand_note() : ''}
+            {course && isHand && draft.contract.kind !== 'null' && lawful ? m.declare_hand_note() : ''}
           </p>
         </Panel>
       ) : null}
@@ -1193,7 +1209,7 @@ function DeclarePicker({
   )
 }
 
-function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview, roundLast = null, seeger }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null; roomAfter?: ReactNode; freeReview?: AskReview; roundLast?: boolean | null; seeger: boolean }) {
+function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview, roundLast = null, seeger, course }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null; roomAfter?: ReactNode; freeReview?: AskReview; roundLast?: boolean | null; seeger: boolean; course: boolean }) {
   const nameOf = useNameOf()
   const named = useContext(Names) !== null
   const r = game.result!
@@ -1223,7 +1239,22 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
       {earlyLine(declarer, game.early, nameOf, named)}
     </p>
   ) : null
-  const settlement = (
+  const skat = (
+    <div {...stylex.props(styles.resultSkat)}>
+      <span {...stylex.props(typography.smallBold, styles.inkLabel)}>{m.result_skat()}</span>
+      {game.skat.map((c) => <PlayingCard key={cardId(c)} card={c} size="xs" />)}
+    </div>
+  )
+  // A real table's settlement under its title (SKATGO-134): one line of what was played and the card points, one line
+  // of the calculation, then the skat.
+  const facts = (
+    <p data-testid="skat-result-facts" {...stylex.props(typography.note, styles.note)}>
+      {isNull
+        ? m.result_facts_null({ contract: contractName(d.contract), bid: game.bid })
+        : m.result_facts({ contract: contractName(d.contract), bid: game.bid, declarer: r.declarerPoints, defenders: r.defenderPoints })}
+    </p>
+  )
+  const settlement = course ? (
     <>
       <p {...stylex.props(typography.note, styles.note)}>
         <Rich
@@ -1244,10 +1275,13 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
       <p {...stylex.props(typography.note, styles.note)}>
         <Rich text={scoreLine(declarer, r.won, declarerScore > 0 ? `+${declarerScore}` : String(declarerScore), nameOf)} />
       </p>
-      <div {...stylex.props(styles.resultSkat)}>
-        <span {...stylex.props(typography.smallBold, styles.inkLabel)}>{m.result_skat()}</span>
-        {game.skat.map((c) => <PlayingCard key={cardId(c)} card={c} size="xs" />)}
-      </div>
+      {skat}
+    </>
+  ) : (
+    <>
+      {facts}
+      {formulaLine}
+      {skat}
     </>
   )
   const next = (
@@ -1290,6 +1324,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
             deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null, hand: startHand(game) }}
             names={[nameOf(0), nameOf(1), nameOf(2)]}
             ask={askReviewed}
+            explain={course}
           />
         </>
       ) : (
@@ -1354,7 +1389,8 @@ function SpeakerBid({ value, listener, hints, onBid, onBidHint }: { value: numbe
   const named = picked ?? next
   return (
     <Row>
-      <Say>{m.bid_your_turn({ name: listener })}</Say>
+      {/* The course says whom the bid goes to; a real table's buttons say it all (SKATGO-134). */}
+      {hints ? <Say>{m.bid_your_turn({ name: listener })}</Say> : null}
       <Btn testId="skat-bid" shape="block" size="lg" onClick={() => (picked === null ? onBid('bid') : onBid('bid', picked))}>{m.bid_button({ value: named ?? '' })}</Btn>
       <Btn testId="skat-pass" shape="block" size="lg" onClick={() => onBid('pass')}>{m.bid_pass()}</Btn>
       {higher.length > 0 ? (

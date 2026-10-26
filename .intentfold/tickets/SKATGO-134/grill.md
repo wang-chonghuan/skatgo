@@ -32,3 +32,4 @@ Grill: human. Every question with my recommendation; the ones that reach the hum
 10. Self — **The play record's note stays in lesson 11 only**, by a flag lesson 11 passes.
 
 ## Answers
+The human (2026-10-26), to questions 1–3 and the self-decided 4–10 as shown: 「同意」. Everything above stands as recommended.

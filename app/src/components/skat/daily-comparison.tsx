@@ -241,9 +241,11 @@ type AnalysisProps = {
   names?: string[]
   ask: AskReview
   cacheKey?: string
+  /** Lesson 11 says where the AI's cards stand in the record; elsewhere the record shows it (SKATGO-134). */
+  explain?: boolean
 }
 
-function AnalysisBody({ deal, names, ask, cacheKey }: AnalysisProps) {
+function AnalysisBody({ deal, names, ask, cacheKey, explain = false }: AnalysisProps) {
   const [review, setReview] = useState<DealReview | null>(cacheKey ? (reviews.get(cacheKey) ?? null) : null)
   const [failed, setFailed] = useState(false)
   useEffect(() => {
@@ -273,7 +275,7 @@ function AnalysisBody({ deal, names, ask, cacheKey }: AnalysisProps) {
           <p {...stylex.props(typography.note, styles.reviewLine)}>
             <Rich text={w ? m.daily_review_card({ trick: w.trick, played: cardLabel(w.played), best: cardLabel(w.best) }) : m.daily_review_clean()} />
           </p>
-          {w ? <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_review_marks()}</p> : null}
+          {w && explain ? <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_review_marks()}</p> : null}
           {/* Where to practise it (SKATGO-82; the exercises since SKATGO-103): in a new tab, so a table or a game
               stays where it is. */}
           <Link to="/skat-tricks" target="_blank" rel="noopener" data-testid="tricks-more-link" {...stylex.props(typography.note, styles.tricksLink)}>

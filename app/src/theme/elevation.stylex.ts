@@ -43,8 +43,6 @@ export const fill = stylex.defineVars({
 /** Poses of skatgo's own card art: the tiles' corner fan and the front page's hero fan (original
  *  compositions of the public-domain deck, SKATGO-26). */
 export const pose = stylex.defineVars({
-  /** A label centred on a line it names: the AI's tag on the progress card's zero line (SKATGO-137). */
-  onLine: 'translateY(-50%)',
   fanFarLeft: 'rotate(-24deg) translate(-8px, 26px)',
   fanLeft: 'rotate(-12deg) translate(-4px, 8px)',
   fanMid: 'rotate(0deg)',

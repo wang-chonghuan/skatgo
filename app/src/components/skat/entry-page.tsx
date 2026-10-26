@@ -1,8 +1,8 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link, useLoaderData } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { CalendarDays, ChartLine, GraduationCap, MessagesSquare, Puzzle } from 'lucide-react'
-import { type ComponentType, useEffect, useState } from 'react'
+import { CalendarDays, ChartLine, GraduationCap, MessagesSquare, Puzzle, Swords, type LucideIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
@@ -36,7 +36,7 @@ export function EntryPage() {
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
         {/* The deal of the day stays "1 deal today" once played (SKATGO-135, the human: 「这个按钮文字不变」). */}
         <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
-        <Way to="/play" section="play" tone="play" Icon={CardsIcon} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
+        <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
         <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
         {/* The tricks (SKATGO-82): straight to the exercises (SKATGO-105); the article is only for search engines. */}
         <Way to="/skat-tricks" section="tricks" tone="practice" Icon={Puzzle} art={PRACTICE_ART} title={m.home_practice()} />
@@ -85,11 +85,8 @@ export function EntryPage() {
 /** The hero's ways in as they are counted (SKATGO-29; renamed by SKATGO-74's tracking plan): the deal of the day, free play. */
 const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
 
-/** What a card's icon is given: lucide's props, which the drawn one takes too. */
-type IconProps = { size: number; strokeWidth: number; 'aria-hidden'?: 'true' }
-
 /** A colour card: its icon at the top, its title at the bottom, three of skatgo's cards in the corner under its colour. */
-function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | '/play' | '/course' | '/skat-tricks'; section: string; tone: keyof typeof tileTones; Icon: ComponentType<IconProps>; art: Card[]; title: string; onClick?: () => void }) {
+function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | '/play' | '/course' | '/skat-tricks'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon; art: Card[]; title: string; onClick?: () => void }) {
   return (
     <Link to={to} data-testid="entry-card" data-section={section} onClick={onClick} {...stylex.props(styles.tile, styles.lift, tileTones[tone])}>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
@@ -138,23 +135,6 @@ function ProgressCard() {
       {head}
       <Progress account={account} />
     </Link>
-  )
-}
-
-/** Two playing cards crossed, for free play (the human: 「换成两个交错的卡牌的图标，不要用机器人」), drawn in lucide's line:
- *  lucide has no playing card, and suits are never icons (ui.md). The back card's outline stops where the front one lies. */
-function CardsIcon({ size, strokeWidth, ...rest }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" {...rest}>
-      <defs>
-        <mask id="cards-icon-front">
-          <rect x="0" y="0" width="24" height="24" fill="white" />
-          <rect x="9" y="4.5" width="10" height="15" rx="2" transform="rotate(14 14 12)" fill="black" stroke="black" strokeWidth="3" />
-        </mask>
-      </defs>
-      <rect x="5" y="4.5" width="10" height="15" rx="2" transform="rotate(-14 10 12)" mask="url(#cards-icon-front)" />
-      <rect x="9" y="4.5" width="10" height="15" rx="2" transform="rotate(14 14 12)" />
-    </svg>
   )
 }
 

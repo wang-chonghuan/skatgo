@@ -243,8 +243,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     a white icon at the top (`icon.tile`) and its title at the bottom (`homeTileTitle`, bold, 36px, 28px on a phone — the
     human: 「卡片上的字，应该用这种尺寸和粗的字」, then 「四个卡片上的字还是太小」; the other cards' titles `homeCardTitle`, bold, 28px), its card art cropped at the
     corner under its colour, rising on hover — "1 Spiel heute" (`tileGreen`, `CalendarDays`, to `/daily`; the same words
-    once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, two playing cards crossed — drawn in lucide's line, `CardsIcon`, since lucide has no
-    playing card and suits are never icons; the human: 「换成两个交错的卡牌的图标，不要用机器人」 — to `/play`), "Lernen" (`tileOrange`,
+    once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, lucide's `Swords`, crossed — the human: 「不要用机器人」, then 「用两个交错的剑吧，x形的」 — to
+    `/play`), "Lernen" (`tileOrange`,
     `GraduationCap`, the course) and "Üben" (`tileNavy`, `Puzzle`, the exercises); on the right two long white cards, each
     a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play
     showing its curve as on `/profile` without dates or scale; for a guest "Melde dich an, um deine Spielbilanz und die

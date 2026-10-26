@@ -302,8 +302,9 @@ npm --prefix app run typecheck && npm --prefix app run build && npm --prefix app
   `build`, in an owned loopback preview with JavaScript disabled. No existing listener is reused.
   `test:seo` proves representative HTTP-response regressions fail and process ownership is respected.
   Every indexable page needs 200 characters of visible SSR text and two contextual links, except the game pages
-  `/daily` and `/with-friends` (SKATGO-134, the human: 「我要求干净，去掉垃圾文字」, choosing to change the check): a line
-  beyond their H1 and no links of their own. Its negative controls keep both limits failing where they apply.
+  `/daily` and `/with-friends` (SKATGO-134, the human: 「我要求干净，去掉垃圾文字」, choosing to change the check) and the
+  front page, free play's search entry (SKATGO-135, its subtitle removed: 「这个副标题删了」): a line beyond their H1 and no
+  links of their own. Its negative controls keep both limits failing where they apply.
 
 **Search surface**
 

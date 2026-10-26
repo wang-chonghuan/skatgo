@@ -6,11 +6,12 @@ import { assertIndexable, validateRobots, crawlers } from './seo-robots.mjs'
 
 // JavaScript stays disabled so hydration cannot hide an empty SSR page.
 
-// The game pages (SKATGO-134, the human chose 「1」): a search finds them by their title, description and H1, and they
+// The game pages (SKATGO-134, the human chose 「1」; the front page since SKATGO-135, its subtitle gone: 「这个副标题删了」):
+// a search finds them by their title, description and H1, and they
 // carry a title and one line, no prose — so they need a line of visible SSR text beyond their H1 (GAME_LINE characters),
 // not 200 characters, and no contextual links of their own (the header and footer link every page; the human: 「我要求
 // 干净，去掉垃圾文字」). Every other indexable page is a content page and keeps the 200 and the two links.
-const GAME_PAGES = new Set(['/de/taeglich', '/en/daily', '/de/mit-freunden', '/en/with-friends'])
+const GAME_PAGES = new Set(['/', '/en', '/de/taeglich', '/en/daily', '/de/mit-freunden', '/en/with-friends'])
 const isGamePage = (loc) => GAME_PAGES.has(new URL(loc).pathname)
 const GAME_LINE = 20
 const minText = (data, loc) => (isGamePage(loc) ? (data.h1[0]?.trim().length ?? 0) + GAME_LINE : 200)
@@ -327,7 +328,7 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
       }
     }
     // Exercise the same validator on deliberately broken observations, not a passing happy-path only.
-    const sample = snapshots[0]
+    const sample = snapshots.find((s) => !isGamePage(s.entry.loc))
     assert.throws(() => validatePage({ ...sample.data, canonical: [`${site}/wrong`] }, sample.entry), /self canonical/)
     assert.throws(() => validatePage({ ...sample.data, text: '' }, sample.entry), /SSR content/)
     assert.ok(!isGamePage(sample.entry.loc), 'The negative controls need a content page first')

@@ -233,39 +233,37 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   On a phone the links and the account fold into a menu. Under the page sits the legal footer. The
   header is the same on every page; it shows no current-page highlight (its links carry
   `aria-current`).
-- **The front page** (`entry-page.tsx`), on white:
-  - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
-    its one green landing action, the deal of the day (SKATGO-131, the human: 「今日一副是主按钮，自由play是次按钮，都是在hero区域
-    的」) — "1 Spiel heute · 2 Min." (the human chose the words: 「1 deal today · 2 min / 1 Spiel heute · 2 Min. 用这个吧」) to `/daily`, where the deal and the six deals are chosen — never straight to a table (「这个应该是入口，进去后分为1deal和
-    6deal，不要一进去马上打牌」) — and "Heutiges Ergebnis · Platz k" once played — and beside it a white `quiet` one to free play, "Freies Spiel"; the forum is no longer in
-    the hero (it was since SKATGO-120); no line of facts under them (SKATGO-123, the
-    human: 「✓Free ✓AI analysis 这行去掉」). No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
-    设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it
-    (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the headline, the slogan (`entry_title`: "Free Skat play and progress", German "Skat kostenlos spielen und
-    besser werden", SKATGO-132, the human: 「slogan换成 free skat play and progress」; never reworded otherwise), at 48px
-    (`fHero`, 「pc版上slogan字太大」) with the lead held close under it (12px), the lead within the reading column,
-    balanced, the two buttons — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
-    on felt (Redline 4). With the tournament's Elo board beside it (SKATGO-123, the human: 「hero区域在pc上就是左右两栏的
-    布局了」) the hero is two equal columns (`dims.twoColumns`), the type on the left and kept to the left, the board
-    on the right, both from the top, the board exactly as tall as the type, its list scrolling inside (「elo列表的
-    高度，和hero区域的高度一样，可以滚动，不要那么高，破坏我布局」); under `bp.cards` one column, the board under the type.
-    The board (`elo-board.tsx`) is a white panel like the daily board: its title (`dialogTitle`) with a circled
-    question mark beside it (`info`) that opens, over the page, a white card saying how it is counted and what "?"
-    means, closed by a tap elsewhere or Escape (「how it counted用一个圆圈问号图标，放在 elo标题旁边，作为toast」); the ten
-    highest players — rank, name, number, a slate "?" when provisional — with the AI's row (its blue tag, no rank)
-    standing among them by its number, in close rows at the text's size (`appText`, 「我刚都没说让你改成14」), one
-    column (「你换成单列吧」). On a phone it is folded behind one line, its title and the players — rank, name, number — running
-    slowly sideways without end (`marqueeSlide`, `timing.marquee`; still under reduced motion) — 「你这个还不如横向
-    持续缓慢滚动」 — and a tap opens it, one column (「手机上可能要折叠一下排名榜」).
-    Without a board the hero stays as above, centred;
-  - the sections as colour tiles, each one link with only a title that says where it goes — no text, no button
-    (SKATGO-120, the human: 「里面按钮去掉，描述文字去掉，只要标题，标题具备描述性即可」) — as tall as its title, its
-    card art kept and cropped at the edge (「包裹着文字就行了，禁止大片空白，牌的背景还保留，但是可以剪裁」), rising on
-    hover, two by two and one above the other below `bp.cards` so a title never runs onto its cards:
-    "Skat interaktiv lernen" (the course; no count of lessons, which scares people off — SKATGO-127, the human:
-    「把11课字样去掉，会把人吓跑」, 「入口卡片叫交互式学习skat」), "Skat gegen die KI spielen" (free play), "Mit Skat-Aufgaben
-    üben" (the exercises, `tileNavy`) and "Skat mit Freunden spielen" (a private table, `tileRed`);
-  - plain links to the rules and the course. The questions people ask are on About SkatGo, not here (SKATGO-134).
+- **The front page** (`entry-page.tsx`), on white (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后
+  显示下面的四个卡片，按我发你的两个响应式版本……长卡片做两个，一个是my progress……一个是 elo ranking」):
+  - the slogan alone as the H1 (`landingHero`, navy, at the column's left; `entry_title`: "Free Skat play and progress",
+    German "Skat kostenlos spielen und besser werden", SKATGO-132 — never reworded otherwise; 48px, `fHero`) — no lead
+    (「这个副标题删了」), no buttons, no picture (SKATGO-120), never felt (Redline 4); the illustration stays only in the link
+    previews (`og.mjs`);
+  - then the ways in (`dims.homeWays`): on the left four colour cards two by two, each one link, `dims.homeCard` in shape,
+    a white icon at the top (`icon.tile`) and its title at the bottom (`homeTileTitle`, bold, 36px, 28px on a phone — the
+    human: 「卡片上的字，应该用这种尺寸和粗的字」, then 「四个卡片上的字还是太小」; the other cards' titles `homeCardTitle`, bold, 28px), its card art cropped at the
+    corner under its colour, rising on hover — "1 Spiel heute" (`tileGreen`, `CalendarDays`, to `/daily`; the same words
+    once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, lucide's `Swords`, crossed — the human: 「不要用机器人」, then 「用两个交错的剑吧，x形的」 — to
+    `/play`), "Lernen" (`tileOrange`,
+    `GraduationCap`, the course) and "Üben" (`tileNavy`, `Puzzle`, the exercises); on the right two long white cards, each
+    a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play
+    showing its curve as on `/profile` without dates or scale; for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
+    Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
+    保存你的表现记录以及ai分析，中间放个登录按钮」); and the tournament's Elo
+    board (`elo-board.tsx`) — its title with a circled question mark (`info`) opening how it is counted over the page,
+    closed by a tap elsewhere or Escape; the ten highest players — rank, name, number, a slate "?" when provisional — with
+    the AI's row (its blue tag, no rank) among them by its number, close rows at `appText`, one column, the list
+    scrolling inside the card; on a phone folded behind one line where the players run slowly sideways
+    (`marqueeSlide`, `timing.marquee`), a tap opening it (SKATGO-123). Under `bp.cards` the four stay two by two
+    (`dims.homeWaysNarrow`) and the long cards follow, the whole width;
+  - under them, in the same columns, white picture cards (the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」, after a
+    picture of event cards): the picture to the card's edges at the top (`dims.homePicture`), then the title
+    (`optionTitle`, navy) and one line (`optionDesc`, slate) — "Privater Tisch" with the illustration the hero once had
+    (`hero-table.webp`, SKATGO-33) to `/with-friends`, and "Forum" with the human's picture of friends at a card table
+    (`forum-card.webp`, cropped to the card's shape, no icon; 「论坛的卡片图片用这个图片，剪裁成合适的，不要加图标」) and "News,
+    articles, discussion and feedback." to `/forum`. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
+    The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,
+    `homePicture`, `icon.tile` and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
   the short rules, the daily tournament, the Skat-Tricks' page and their article, a private table's page, About SkatGo,
   the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an

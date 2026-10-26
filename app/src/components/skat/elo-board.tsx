@@ -53,7 +53,7 @@ export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean
     <Panel fill={fill}>
       <section data-testid="elo-board" aria-labelledby="elo-board-title" {...stylex.props(styles.board)}>
         <div ref={head} {...stylex.props(styles.head)}>
-          <h2 id="elo-board-title" {...stylex.props(typography.dialogTitle, styles.title, styles.wide)}>{m.elo_title()}</h2>
+          <h2 id="elo-board-title" {...stylex.props(typography.homeCardTitle, styles.title, styles.wide)}>{m.elo_title()}</h2>
           <button
             type="button"
             data-testid="elo-board-toggle"
@@ -62,7 +62,7 @@ export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean
             onClick={() => setOpen(!open)}
             {...stylex.props(styles.toggle)}
           >
-            <span {...stylex.props(typography.dialogTitle, styles.title, styles.oneLine)}>{m.elo_title()}</span>
+            <span {...stylex.props(typography.homeCardTitle, styles.title, styles.oneLine)}>{m.elo_title()}</span>
             {names.length > 0 && !open ? (
               <span aria-hidden="true" data-testid="elo-board-marquee" {...stylex.props(typography.appText, styles.marquee)}>
                 <span {...stylex.props(styles.track)}>

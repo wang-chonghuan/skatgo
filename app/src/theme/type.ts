@@ -70,6 +70,10 @@ export const typography = stylex.create({
   appLink: { fontFamily: 'inherit', fontSize: fontSize.f16, fontWeight: weight.ui, lineHeight: leading.ui },
   appBtnStrong: { fontFamily: 'inherit', fontSize: fontSize.f16, fontWeight: weight.bold, lineHeight: leading.ui },
   tileTitle: { fontSize: { default: fontSize.f25, [bp.phone]: fontSize.f22 }, fontWeight: weight.ui, lineHeight: leading.tight },
+  /** A front-page card's title (SKATGO-135, the human's picture: 「卡片上的字，应该用这种尺寸和粗的字」): large and bold. */
+  homeCardTitle: { fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f22 }, fontWeight: weight.bold, lineHeight: leading.tight },
+  /** …and the four colour cards' titles, larger still (the human: 「四个卡片上的字还是太小」). */
+  homeTileTitle: { fontSize: { default: fontSize.f36, [bp.phone]: fontSize.f28 }, fontWeight: weight.bold, lineHeight: leading.tight },
   tileSub: { fontSize: { default: fontSize.f18_18, [bp.phone]: fontSize.f15 }, fontWeight: weight.bold, lineHeight: leading.tight },
   optionTitle: { fontSize: { default: fontSize.f26_95, [bp.phone]: fontSize.f20 }, fontWeight: weight.bold, lineHeight: leading.ui },
   optionDesc: { fontSize: { default: fontSize.f19_6, [bp.phone]: fontSize.f15 }, fontWeight: weight.bold, lineHeight: leading.tight },

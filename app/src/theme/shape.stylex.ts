@@ -175,6 +175,24 @@ export const dims = stylex.defineVars({
   half: '50%',
   oneColumn: '1fr',
   twoColumns: '1fr 1fr',
+  /** The front page's ways in (SKATGO-135, after the human's two pictures): four colour cards two by two on the left,
+   *  the two long white cards on the right, each as tall as a row; under `bp.cards` the four stay two by two and the
+   *  long cards run the whole width under them. */
+  homeWays: 'repeat(2, minmax(0, 1fr)) minmax(0, 2fr)',
+  homeWaysNarrow: 'repeat(2, minmax(0, 1fr))',
+  homeCard: '5 / 4',
+  /** Where a long card stands: the third column, the progress card in the first row and the Elo board in the second;
+   *  under `bp.cards` the whole width, in the order written. */
+  homeLongColumn: '3',
+  homeFullWidth: '1 / -1',
+  homeRowFirst: '1',
+  homeRowSecond: '2',
+  homeRowAuto: 'auto',
+  /** The picture cards under the ways in (SKATGO-135, the human's picture of event cards): a picture on top in this
+   *  shape, its title and line under it. */
+  homePicture: '16 / 9',
+  /** The progress card's curve at its least, where the card is as tall as its content (under `bp.cards`). */
+  homeCurve: '96px',
   /** The daily table of you against the AI (SKATGO-42, SKATGO-48): the deal's number (wide enough for
    *  "Total" / "Gesamt"), you and the AI in two equal columns, then the difference with the row's
    *  chevron. Every row is its own grid, so the columns line up only if none sizes to its content. */

@@ -2,7 +2,7 @@ import { MotionConfig } from 'motion/react'
 import type { ComponentProps } from 'react'
 
 import { DailyEntry as Entry, DailyTable as Daily } from './daily-table'
-import { DealOfDay as OfDay, DealOfDayButton as OfDayButton } from './deal-of-day'
+import { DealOfDay as OfDay } from './deal-of-day'
 import { FreeTable as Table } from './free-table'
 import { LessonPlayer as Player } from './lesson-player'
 import { OpenTable as Open, PrivateTable as Private } from './table-room'
@@ -34,9 +34,8 @@ export const DailyTable = ({ size }: ComponentProps<typeof Daily>) => (
 
 export const DailyEntry = Entry
 
-// The deal of the day's side of /daily and the front page's button to it (SKATGO-131).
+// The deal of the day's side of /daily (SKATGO-131).
 export const DealOfDay = OfDay
-export const DealOfDayButton = OfDayButton
 
 export const OpenTable = Open
 

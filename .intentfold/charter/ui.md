@@ -234,7 +234,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   header is the same on every page; it shows no current-page highlight (its links carry
   `aria-current`).
 - **The front page** (`entry-page.tsx`), on white:
-  - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
+  - the hero: the daily tournament's headline (`landingHero`) in navy, with no lead under it (SKATGO-135, the human:
+    「Play the AI, your friends or the tournament…这个副标题删了」);
     its one green landing action, the deal of the day (SKATGO-131, the human: 「今日一副是主按钮，自由play是次按钮，都是在hero区域
     的」) — "1 Spiel heute · 2 Min." (the human chose the words: 「1 deal today · 2 min / 1 Spiel heute · 2 Min. 用这个吧」) to `/daily`, where the deal and the six deals are chosen — never straight to a table (「这个应该是入口，进去后分为1deal和
     6deal，不要一进去马上打牌」) — the same words once played (SKATGO-135, the human: 「不要打完了就变，这个按钮文字不变」) — and beside it a white `quiet` one to free play, "Freies Spiel"; the forum is no longer in
@@ -243,8 +244,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it
     (32px, 「这句话上方的空白太多」, 「我感觉它上下空白还是太多」) — the headline, the slogan (`entry_title`: "Free Skat play and progress", German "Skat kostenlos spielen und
     besser werden", SKATGO-132, the human: 「slogan换成 free skat play and progress」; never reworded otherwise), at 48px
-    (`fHero`, 「pc版上slogan字太大」) with the lead held close under it (12px), the lead within the reading column,
-    balanced, the two buttons — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
+    (`fHero`, 「pc版上slogan字太大」), the two buttons — and on a phone it keeps to the left edge. The illustration stays only in the link previews (`og.mjs`). Never
     on felt (Redline 4). With the tournament's Elo board beside it (SKATGO-123, the human: 「hero区域在pc上就是左右两栏的
     布局了」) the hero is two equal columns (`dims.twoColumns`), the type on the left and kept to the left, the board
     on the right, both from the top, the board exactly as tall as the type, its list scrolling inside (「elo列表的

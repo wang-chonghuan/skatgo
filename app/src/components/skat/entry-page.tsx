@@ -36,7 +36,6 @@ export function EntryPage() {
         <div {...stylex.props(styles.heroText, beside && styles.start)}>
           <div {...stylex.props(styles.head, beside && styles.start)}>
             <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
-            <p {...stylex.props(typography.landingHeroLead, styles.lead)}>{m.entry_lead()}</p>
           </div>
           <div {...stylex.props(styles.cta, beside && styles.start)}>
             <div {...stylex.props(styles.actions, beside && styles.startRow)}>
@@ -195,7 +194,6 @@ const styles = stylex.create({
   },
   // Colour is stated, not inherited: the theme colours headings and paragraphs itself.
   title: { margin: 0, color: color.navy, textWrap: 'balance' },
-  lead: { margin: 0, maxWidth: dims.readingColumn, color: color.slate, textWrap: 'balance' },
 
   // The call to action and the forum beside it.
   cta: { display: 'flex', flexDirection: 'column', alignItems: { default: 'center', [bp.phone]: 'flex-start' }, gap: space.x12, minWidth: 0, maxWidth: '100%' },

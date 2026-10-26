@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-134",
   "mode": "autonomous",
-  "stage": "developing",
+  "stage": "handoff-ready",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-134",
   "branch": "SKATGO-134-trim-game-copy",

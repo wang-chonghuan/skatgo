@@ -124,7 +124,7 @@ function ProgressCard() {
         <div {...stylex.props(styles.guest)}>
           <p {...stylex.props(typography.appText, styles.guestText)}>{m.home_progress_guest()}</p>
           <SignInButton mode="modal">
-            <Btn testId="entry-progress-sign-in">{m.auth_sign_in()}</Btn>
+            <Btn testId="entry-progress-sign-in" size="lg">{m.auth_sign_in()}</Btn>
           </SignInButton>
         </div>
       </div>

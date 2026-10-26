@@ -247,8 +247,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `/play`), "Lernen" (`tileOrange`,
     `GraduationCap`, the course) and "Üben" (`tileNavy`, `Puzzle`, the exercises); on the right two long white cards, each
     a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play
-    showing its curve as on `/profile` without dates or scale; for a guest "Melde dich an, um deine Spielbilanz und die
-    Analyse der KI zu speichern." and the `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
+    showing its curve as on `/profile` without dates or scale; for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
+    Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
     保存你的表现记录以及ai分析，中间放个登录按钮」); and the tournament's Elo
     board (`elo-board.tsx`) — its title with a circled question mark (`info`) opening how it is counted over the page,
     closed by a tap elsewhere or Escape; the ten highest players — rank, name, number, a slate "?" when provisional — with

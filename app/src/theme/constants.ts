@@ -97,6 +97,6 @@ export const confettiBurst = {
 // days may carry their date under the curve on a computer and on a phone before only every second, third … does.
 // The human asked for the curve (「做成一个曲线」), which is this registry's approval.
 export const profileChart = { width: 640, height: 200, pad: 12, dot: 4, line: 2, dates: 14, datesPhone: 6 }
-/** The front page's progress card's curve (SKATGO-136, the human: 「我希望平缓的，粗一点的」): twice the record of play's line,
+/** The front page's progress card's curve (SKATGO-136, the human: 「我希望平缓的，粗一点的」; SKATGO-137: 「再粗一点」): three times the record of play's line,
  *  and the one day's dot when there is only one. */
-export const progressCurve = { line: 4, dot: 5 }
+export const progressCurve = { line: 6, dot: 6 }

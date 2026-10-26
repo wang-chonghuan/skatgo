@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-137",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-137",
+  "branch": "SKATGO-137-progress-labels",
+  "base": "2e7d8e6def326e9e8a4f75988a840ef656dbba2c",
+  "ports": {
+    "web": 55137,
+    "multiplayer": 56137,
+    "database": 57137
+  }
+}

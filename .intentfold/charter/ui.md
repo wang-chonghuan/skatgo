@@ -259,8 +259,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - under them, in the same columns, white picture cards (the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」, after a
     picture of event cards): the picture to the card's edges at the top (`dims.homePicture`), then the title
     (`optionTitle`, navy) and one line (`optionDesc`, slate) — "Privater Tisch" with the illustration the hero once had
-    (`hero-table.webp`, SKATGO-33) to `/with-friends`, and "Forum" on `info` with lucide's `MessagesSquare` and three of
-    skatgo's queens to `/forum`. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
+    (`hero-table.webp`, SKATGO-33) to `/with-friends`, and "Forum" with the human's picture of friends at a card table
+    (`forum-card.webp`, cropped to the card's shape, no icon; 「论坛的卡片图片用这个图片，剪裁成合适的，不要加图标」) and "News,
+    articles, discussion and feedback." to `/forum`. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
     The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,
     `homePicture`, `icon.tile` and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,

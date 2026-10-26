@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-135",
   "mode": "autonomous",
-  "stage": "developing",
+  "stage": "handoff-ready",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-135",
   "branch": "SKATGO-135-hero-button-fixed",

@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-140",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-140",
   "branch": "SKATGO-140-elo-and-menus",

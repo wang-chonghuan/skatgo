@@ -24,7 +24,7 @@ import { type DealPick, kindOf, pickOfDay } from './pick'
 // played by one human in seat 0 against the two computers, and its board; and since SKATGO-131 the deal of the day,
 // one deal chosen for everyone, a competition of its own (size 1). Rows are keyed by their day and size: the
 // twelve-deal tournament of SKATGO-77 is gone (SKATGO-119), its stored rows kept; a request names its size, the six
-// deals when it names none, and the Elo reads the six deals only (`DAILY_DEALS`). The server owns the cards: a deal is its deck and
+// deals when it names none, and the Elo reads the six deals and SKATGO-77's twelve (`ELO_SIZES`, SKATGO-140). The server owns the cards: a deal is its deck and
 // dealer plus the human's moves, replayed through the engine, and the score is what that replay
 // settles — never a number a browser sends. Only seat 0's view of the current deal leaves here.
 //
@@ -552,29 +552,35 @@ export async function dailyBoard(store: Store, who: string | null, which: 'today
 
 /** How many players the Elo board names (SKATGO-123). */
 const ELO_ROWS = 10
+/** The tournaments the Elo counts: the six deals, and the twelve of SKATGO-77 that once stood beside them, their kept rows
+ *  (SKATGO-140, the human: 「要算，5天」) — each one game for each day it was played. */
+const ELO_SIZES = [DAILY_DEALS, 12]
 
 /**
  * The tournament's Elo (SKATGO-123): every ended day replayed from the first with the shared rule
  * (`lib/skat/elo.ts`) — each finished entry's total against that day's others and the AI's from the player's
- * seat, the same total the daily board shows. Today counts once it has ended, its field complete. Ids that
+ * seat, the same total the daily board shows; a day's six deals and its twelve (SKATGO-77's, SKATGO-140) are two games,
+ * each among those who played it. Today counts once it has ended, its field complete. Ids that
  * `player_aliases` names as one person count as that person, under the name they hold now; of their two
  * entries on one day, the earlier finish. Only names leave here, as on the daily board.
  */
 export async function dailyElo(store: Store, now = Date.now()): Promise<EloBoard> {
   const today = dayOf(now)
   const { rows: entries } = await store.pool.query(
-    `SELECT e.day, coalesce(a.same_as, e.player) AS player, e.total FROM daily_entries e
+    `SELECT e.day, e.size, coalesce(a.same_as, e.player) AS player, e.total FROM daily_entries e
        LEFT JOIN player_aliases a ON a.player = e.player
-      WHERE e.size = $1 AND e.finished_at IS NOT NULL AND e.day < $2
-      ORDER BY e.day, e.finished_at`, [DAILY_DEALS, today])
-  const { rows: dealt } = await store.pool.query('SELECT day, deals FROM daily_deals WHERE size = $1 AND day < $2', [DAILY_DEALS, today])
+      WHERE e.size = ANY($1) AND e.finished_at IS NOT NULL AND e.day < $2
+      ORDER BY e.day, e.size, e.finished_at`, [ELO_SIZES, today])
+  const { rows: dealt } = await store.pool.query('SELECT day, size, deals FROM daily_deals WHERE size = ANY($1) AND day < $2', [ELO_SIZES, today])
+  const game = (day: string, size: number) => `${day}/${size}`
   const ki = new Map<string, number | null>(dealt.map((d) => {
     const played = (d.deals as DealSpec[]).map((spec) => spec.benchmark?.summary)
-    return [d.day as string, played.length > 0 && played.every((b) => b) ? totals(played as DealSummary[])[PLAYER] : null]
+    return [game(d.day, d.size), played.length > 0 && played.every((b) => b) ? totals(played as DealSummary[])[PLAYER] : null]
   }))
   const days: (EloDay & { day: string })[] = []
   for (const e of entries) {
-    if (days.at(-1)?.day !== e.day) days.push({ day: e.day, ki: ki.get(e.day) ?? null, totals: [] })
+    const g = game(e.day, e.size)
+    if (days.at(-1)?.day !== g) days.push({ day: g, ki: ki.get(g) ?? null, totals: [] })
     const day = days.at(-1)!
     if (!day.totals.some((t) => t.player === e.player)) day.totals.push({ player: e.player, total: e.total })
   }

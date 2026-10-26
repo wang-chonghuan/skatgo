@@ -2,8 +2,7 @@ import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { ChartLine, Check, Menu, Settings, X } from 'lucide-react'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { type ReactNode, useEffect, useState } from 'react'
 
 import { LANG_TAG } from '~/lib/site'
 import { CARD_BACKS, DEFAULT_BACK, backSrc, isCardBack } from '~/lib/skat/backs'
@@ -23,7 +22,7 @@ import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { FlagDE, FlagEN } from '../../theme/flags'
 import { typography } from '../../theme/type'
-import { Btn, TextField, suitText } from './ui'
+import { Btn, Modal, TextField, suitText } from './ui'
 
 // The frame pieces of the lobby design (SKATGO-26, reference.md): the public site's white header over
 // every page but the tables (SKATGO-43, SKATGO-47), with the language menu, the deck settings and the account. Navigation
@@ -80,9 +79,27 @@ const HEADER_LINKS: { to: '/daily' | '/course' | '/play' | '/with-friends' | '/s
 ]
 
 /** The front page's header: the public site's white bar, also over the tournament, the course and the
- *  rules (SKATGO-43). Below 1100px wide the links fold into a menu (SKATGO-69). */
+ *  rules (SKATGO-43). Below 1100px wide the links fold into a menu (SKATGO-69). The open menu closes as menus do
+ *  (SKATGO-140, the human: 「那个汉堡菜单也不好关……改成行业最佳实践」): its X, a tap on the dim under it (which no longer
+ *  reaches the page), Escape, a link, or the page changing; while it is open the page behind does not scroll. */
 export function LandingHeader() {
   const [open, setOpen] = useState(false)
+  const path = useRouterState({ select: (s) => s.location.pathname })
+  useEffect(() => setOpen(false), [path])
+  useEffect(() => {
+    if (!open) return
+    const html = document.documentElement
+    const overflow = html.style.overflow
+    html.style.overflow = 'hidden'
+    const escape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', escape)
+    return () => {
+      html.style.overflow = overflow
+      document.removeEventListener('keydown', escape)
+    }
+  }, [open])
   return (
     <header data-testid="landing-header" {...stylex.props(styles.landingHeader)}>
       <Link to="/" {...stylex.props(typography.landingHeading, styles.landingBrand)}>
@@ -105,6 +122,7 @@ export function LandingHeader() {
           {open ? <X size={icon.menu} strokeWidth={icon.outline} /> : <Menu size={icon.menu} strokeWidth={icon.outline} />}
         </button>
       </div>
+      {open ? <div data-testid="landing-menu-scrim" aria-hidden="true" onClick={() => setOpen(false)} {...stylex.props(styles.menuScrim)} /> : null}
       {open ? (
         <div data-testid="landing-menu-panel" {...stylex.props(styles.menuPanel)}>
           {HEADER_LINKS.map((l) => (
@@ -263,8 +281,7 @@ function Nickname({ onClose }: { onClose: () => void }) {
 
 /** The settings (SKATGO-66, SKATGO-75): the deck, how a finished trick goes, and the language. A choice
  *  applies at once — the language reloads the page in it, as the header's menu does, so both always show
- *  the same one. While it is open the page behind it neither scrolls nor takes a touch: the dialog lies
- *  on `body`, and everything else there is inert. */
+ *  the same one. A `Modal` (the kit's, SKATGO-140): the page behind neither scrolls nor takes a touch. */
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const chosen = useSettings((s) => s.deck)
   const choose = useSettings((s) => s.setDeck)
@@ -275,32 +292,8 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const sounds = useSettings((s) => s.sounds)
   const setSounds = useSettings((s) => s.setSounds)
   const current = getLocale()
-  const box = useRef<HTMLDivElement | null>(null)
-  useEffect(() => {
-    const html = document.documentElement
-    const overflow = html.style.overflow
-    html.style.overflow = 'hidden'
-    const others = [...document.body.children].filter((el) => el !== box.current && !el.hasAttribute('inert'))
-    for (const el of others) el.setAttribute('inert', '')
-    const escape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', escape)
-    return () => {
-      html.style.overflow = overflow
-      for (const el of others) el.removeAttribute('inert')
-      document.removeEventListener('keydown', escape)
-    }
-  }, [onClose])
-  return createPortal(
-    <div ref={box} data-testid="settings-dialog" {...stylex.props(styles.scrim)} onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={m.settings_open()} onClick={(e) => e.stopPropagation()} {...stylex.props(styles.dialog)}>
-        <div {...stylex.props(styles.dialogHead)}>
-          <h2 {...stylex.props(typography.dialogTitle, styles.dialogTitle)}>{m.settings_open()}</h2>
-          <button type="button" aria-label={m.settings_close()} data-testid="settings-close" onClick={onClose} {...stylex.props(styles.close)}>
-            <X size={icon.menu} strokeWidth={icon.outline} />
-          </button>
-        </div>
+  return (
+    <Modal title={m.settings_open()} onClose={onClose} testId="settings-dialog" closeTestId="settings-close">
         <Nickname onClose={onClose} />
         <section {...stylex.props(styles.section)}>
           <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_title()}</h3>
@@ -421,9 +414,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             })}
           </div>
         </section>
-      </div>
-    </div>,
-    document.body,
+    </Modal>
   )
 }
 
@@ -465,51 +456,6 @@ const styles = stylex.create({
     backgroundColor: color.surface,
     color: color.navy,
     boxShadow: elev.option,
-    cursor: 'pointer',
-    ...focus,
-  },
-  scrim: {
-    position: 'fixed',
-    inset: 0,
-    zIndex: layer.modal,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: space.x16,
-    backgroundColor: color.scrim,
-    overscrollBehavior: 'contain',
-    touchAction: 'none',
-  },
-  dialog: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x16,
-    width: dims.settingsWidth,
-    // A phone held sideways is shorter than the settings: they scroll inside the dialog, never the page.
-    maxHeight: '100%',
-    overflowY: 'auto',
-    overscrollBehavior: 'contain',
-    touchAction: 'pan-y',
-    boxSizing: 'border-box',
-    padding: space.x24,
-    borderRadius: radii.dialog,
-    backgroundColor: color.surface,
-    boxShadow: elev.panel,
-    color: color.text,
-  },
-  dialogHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12 },
-  dialogTitle: { margin: 0, color: color.navy },
-  close: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: dims.control,
-    height: dims.control,
-    padding: 0,
-    borderWidth: 0,
-    borderRadius: radii.round,
-    backgroundColor: { default: 'transparent', ':hover': color.page },
-    color: color.navy,
     cursor: 'pointer',
     ...focus,
   },
@@ -601,6 +547,16 @@ const styles = stylex.create({
     boxShadow: elev.landingHeader,
   },
   menuLink: { paddingBlock: space.x8, color: color.navy, textDecoration: 'none', ...focus },
+  // The dim under the open menu, from the header's foot down: a tap there closes the menu and reaches nothing behind.
+  menuScrim: {
+    position: 'fixed',
+    insetInline: 0,
+    bottom: 0,
+    top: { default: dims.landingHeader, [bp.phone]: dims.landingHeaderPhone },
+    backgroundColor: color.scrim,
+    overscrollBehavior: 'contain',
+    touchAction: 'none',
+  },
   menuAccount: { paddingTop: space.x8 },
 
   // The language switch (SKATGO-104): two bare flags, each in a button as tall as the header's controls.

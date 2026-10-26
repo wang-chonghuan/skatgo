@@ -61,11 +61,12 @@ deal, after it as practice on no board (「点击就能也打这一副牌」, �
 Beside the daily boards stands the tournament's Elo, one number per player (SKATGO-123, the human: 「既专业，
 又简单，别人容易理解，还能从给我的系统里产生出来的elo排名……别人看了，觉得不离谱，觉得能理解，还想通过我的系统来参与」),
 made as chess makes it so anyone can follow and check it: each ended tournament day is one game against
-everyone else who played it and against the AI, won by the higher Seeger-Fabian total of the day, an equal one
+everyone else who played it and against the AI — the six deals' and, for the days it was played, SKATGO-77's twelve's,
+each its own game (SKATGO-140, the human: 「要算，5天」) — won by the higher Seeger-Fabian total of the day, an equal one
 drawn; the expectation is FIDE's formula against each opponent, averaged; the number moves by K × (score −
 expectation), K 40 for a player's first 30 days and 20 after; everyone starts at 1500 and the AI stands fixed at
 1700, the scale's anchor (players' day totals beat its total about a quarter of the time). A number is
-provisional under five days; staying away costs nothing. A day counts once it is over, its field complete. One
+provisional under five games; staying away costs nothing. A day counts once it is over, its field complete. One
 person under several ids — guest days on other devices, a guest who signed up later — counts as one, as the
 human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」). The front page shows the ten highest with the AI's
 number among them, and how it is counted.

@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-140",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-140",
+  "branch": "SKATGO-140-elo-and-menus",
+  "base": "09a87d215717bba1cd67144f6e26bfc6fa7d37c9",
+  "ports": {
+    "web": 55140,
+    "multiplayer": 56140,
+    "database": 57140
+  }
+}

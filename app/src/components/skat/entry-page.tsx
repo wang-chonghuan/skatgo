@@ -102,7 +102,7 @@ function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | 
       <span aria-hidden="true" {...stylex.props(styles.veil)} />
       <span {...stylex.props(styles.body)}>
         <Icon aria-hidden="true" size={icon.tile} strokeWidth={icon.outline} />
-        <h2 {...stylex.props(typography.homeCardTitle, styles.tileTitle)}>{title}</h2>
+        <h2 {...stylex.props(typography.homeTileTitle, styles.tileTitle)}>{title}</h2>
       </span>
     </Link>
   )

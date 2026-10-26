@@ -240,8 +240,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (「这个副标题删了」), no buttons, no picture (SKATGO-120), never felt (Redline 4); the illustration stays only in the link
     previews (`og.mjs`);
   - then the ways in (`dims.homeWays`): on the left four colour cards two by two, each one link, `dims.homeCard` in shape,
-    a white icon at the top (`icon.tile`) and its title at the bottom (`homeCardTitle`, bold, as every front-page card's
-    title — the human: 「卡片上的字，应该用这种尺寸和粗的字」), its card art cropped at the
+    a white icon at the top (`icon.tile`) and its title at the bottom (`homeTileTitle`, bold, 36px, 28px on a phone — the
+    human: 「卡片上的字，应该用这种尺寸和粗的字」, then 「四个卡片上的字还是太小」; the other cards' titles `homeCardTitle`, bold, 28px), its card art cropped at the
     corner under its colour, rising on hover — "1 Spiel heute" (`tileGreen`, `CalendarDays`, to `/daily`; the same words
     once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, two playing cards crossed — drawn in lucide's line, `CardsIcon`, since lucide has no
     playing card and suits are never icons; the human: 「换成两个交错的卡牌的图标，不要用机器人」 — to `/play`), "Lernen" (`tileOrange`,
@@ -262,7 +262,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (`hero-table.webp`, SKATGO-33) to `/with-friends`, and "Forum" on `info` with lucide's `MessagesSquare` and three of
     skatgo's queens to `/forum`. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
     The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,
-    `homePicture`, `icon.tile` and the `homeCardTitle` role — came with the human's pictures, which were the approval (Redline 1).
+    `homePicture`, `icon.tile` and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
   the short rules, the daily tournament, the Skat-Tricks' page and their article, a private table's page, About SkatGo,
   the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an

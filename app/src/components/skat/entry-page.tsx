@@ -10,6 +10,7 @@ import type { Card } from '~/lib/skat/cards'
 import { type ProfileDay, daysOf } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
+import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { icon, profileChart, progressCurve } from '../../theme/constants'
@@ -18,6 +19,7 @@ import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { Who } from './daily-comparison'
 import { EloBoard } from './elo-board'
 import { PlayingCard } from './playing-card'
 import { Btn } from './ui'
@@ -149,8 +151,15 @@ function Progress({ account }: { account: string | undefined }) {
   const x = (i: number) => (days.length > 1 ? pad + (i * (width - 2 * pad)) / (days.length - 1) : width / 2)
   const y = (v: number) => pad + ((top - v) * (height - 2 * pad)) / span
   const points = known.map((p) => ({ x: x(p.i), y: y(p.v) }))
+  const first = days[known[0].i].day
+  const last = days[known[known.length - 1].i].day
+  // A light frame, no more (the human: 「最好上面带一些日期，和一个纵轴标签什么的，但是不要把这个图复杂化，不要扩大，一两个即可」): the
+  // first and the last day under the curve, and the AI's tag on its zero line — above it, better than the AI.
   return (
-    <svg data-testid="entry-progress-curve" aria-hidden="true" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" {...stylex.props(styles.curve)}>
+    <div {...stylex.props(styles.chart)}>
+      <div {...stylex.props(styles.plotRow)}>
+        <span {...stylex.props(styles.plot)}>
+        <svg data-testid="entry-progress-curve" aria-hidden="true" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" {...stylex.props(styles.curve)}>
       <line x1={0} x2={width} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
       {points.length > 1 ? (
         <path data-testid="entry-progress-line" d={smoothPath(points)} strokeWidth={progressCurve.line} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.line)} />
@@ -158,9 +167,24 @@ function Progress({ account }: { account: string | undefined }) {
         // One day: its point alone, a round end of a line of no length.
         <line data-testid="entry-progress-dot" x1={points[0].x} x2={points[0].x} y1={points[0].y} y2={points[0].y} strokeWidth={progressCurve.dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)} />
       )}
-    </svg>
+        </svg>
+        </span>
+        <span data-testid="entry-progress-axis" {...stylex.props(styles.axis)}>
+          {/* The column as wide as the tag; the tag itself on the zero line. */}
+          <span aria-hidden="true" {...stylex.props(styles.axisGhost)}><Who side="ai" /></span>
+          <span data-testid="entry-progress-ai" {...stylex.props(styles.axisTag, styles.axisAt(`${(y(0) * 100) / height}%`))}><Who side="ai" /></span>
+        </span>
+      </div>
+      <div data-testid="entry-progress-dates" {...stylex.props(typography.meta, styles.dates, first === last && styles.datesOne)}>
+        <span>{shortDay(first)}</span>
+        {first === last ? null : <span>{shortDay(last)}</span>}
+      </div>
+    </div>
   )
 }
+
+/** A day as the curve's dates show it: "12 Oct" / "12. Okt.". */
+const shortDay = (day: string) => new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${day}T00:00:00Z`))
 
 /** A smooth line through the days' points (SKATGO-136, the human: 「我希望平缓的」): a monotone cubic (Fritsch–Carlson), so
  *  between two days it never rises above or falls below them, and every day's point is on it. */
@@ -304,7 +328,19 @@ const styles = stylex.create({
   pictureBody: { display: 'flex', flexDirection: 'column', gap: space.x8, padding: { default: space.x20, [bp.phone]: space.x16 } },
   pictureText: { margin: 0, color: color.slate },
   // The curve takes what the card has left, never sizing the card itself: no taller than the colour cards' row on PC.
-  curve: { display: 'block', width: '100%', height: 0, flexGrow: 1, minHeight: dims.homeCurve },
+  // The curve and its frame take what the card has left, never sizing the card: no taller than the colour cards' row on
+  // PC, `homeCurve` at the least where the card is as tall as its content.
+  chart: { display: 'flex', flexDirection: 'column', gap: space.x4, flexGrow: 1, minHeight: dims.homeCurve },
+  plotRow: { display: 'flex', gap: space.x8, flexGrow: 1, minHeight: 0 },
+  // The drawing fills its box and has no size of its own, so the box, not the drawing's proportions, sets the height.
+  plot: { position: 'relative', flexGrow: 1, minWidth: 0 },
+  curve: { position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%' },
+  axis: { position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'flex-start' },
+  axisGhost: { visibility: 'hidden', height: 0, overflow: 'hidden' },
+  axisTag: { position: 'absolute', right: 0, display: 'flex', transform: pose.onLine },
+  axisAt: (top: string) => ({ top }),
+  dates: { display: 'flex', justifyContent: 'space-between', color: color.slate },
+  datesOne: { justifyContent: 'center' },
   zero: { stroke: color.hairline },
   line: { fill: 'none', stroke: color.info },
   point: { stroke: color.info },

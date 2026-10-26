@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-136",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-136",
+  "branch": "SKATGO-136-smooth-progress",
+  "base": "91666f9e5f802998b63b368204e23d8bcd8e0e94",
+  "ports": {
+    "web": 55136,
+    "multiplayer": 56136,
+    "database": 57136
+  }
+}

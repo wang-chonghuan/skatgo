@@ -237,7 +237,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - the hero: the daily tournament's headline (`landingHero`) and lead (`landingHeroLead`) in navy;
     its one green landing action, the deal of the day (SKATGO-131, the human: 「今日一副是主按钮，自由play是次按钮，都是在hero区域
     的」) — "1 Spiel heute · 2 Min." (the human chose the words: 「1 deal today · 2 min / 1 Spiel heute · 2 Min. 用这个吧」) to `/daily`, where the deal and the six deals are chosen — never straight to a table (「这个应该是入口，进去后分为1deal和
-    6deal，不要一进去马上打牌」) — and "Heutiges Ergebnis · Platz k" once played — and beside it a white `quiet` one to free play, "Freies Spiel"; the forum is no longer in
+    6deal，不要一进去马上打牌」) — the same words once played (SKATGO-135, the human: 「不要打完了就变，这个按钮文字不变」) — and beside it a white `quiet` one to free play, "Freies Spiel"; the forum is no longer in
     the hero (it was since SKATGO-120); no line of facts under them (SKATGO-123, the
     human: 「✓Free ✓AI analysis 这行去掉」). No picture (SKATGO-120, the human: 「手机版不要显示那个图片了」, then 「pc上我也不想要那个图片了……用你最大的艺术
     设计审美来做好没有这个图片后的布局」): the hero is type alone, centred, with only the page's own top above it

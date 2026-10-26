@@ -12,7 +12,6 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { EloBoard } from './elo-board'
-import { ClientPart, DealOfDayButton } from './client-part'
 import { PlayingCard } from './playing-card'
 import { linkLook } from './ui'
 
@@ -42,10 +41,9 @@ export function EntryPage() {
           <div {...stylex.props(styles.cta, beside && styles.start)}>
             <div {...stylex.props(styles.actions, beside && styles.startRow)}>
               {/* The deal of the day (SKATGO-131, the human: 「今日一副是主按钮，自由play是次按钮，都是在hero区域的」): the way in to
-                  /daily, where the deal and the six deals are chosen; once played, its result and place. */}
-              <ClientPart fallback={<DealOfDayLink />}>
-                <DealOfDayButton fallback={<DealOfDayLink />} />
-              </ClientPart>
+                  /daily, where the deal and the six deals are chosen — the same words once played (SKATGO-135, the human:
+                  「不要打完了就变，这个按钮文字不变」). */}
+              <DealOfDayLink />
               {/* Beside it free play, white, so the deal stays the one green action; the forum is no longer here. */}
               <Link to="/play" data-testid="entry-free" onClick={() => heroClick('free')} {...linkLook('quiet', 'lg', 'landing')}>
                 {m.dod_hero_free()}

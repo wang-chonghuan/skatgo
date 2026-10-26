@@ -483,8 +483,6 @@
   "share_card_alt": "The card your link is shared with",
   "share_copy": "Copy link",
   "dod_hero": "1 deal today · 2 min",
-  "dod_hero_done": "Today's result · #{rank}",
-  "dod_hero_done_unranked": "Today's result",
   "dod_hero_free": "Free play",
   "dod_toggle_label": "Today's competitions",
   "dod_toggle_one": "1 deal today",

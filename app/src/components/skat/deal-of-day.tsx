@@ -39,19 +39,6 @@ function useDealOfDay() {
   return { status, board, setBoard }
 }
 
-/** The front page's main button (SKATGO-131): today's deal's table for whoever has not played it, its result and
- *  place once played. `fallback` is what the server renders: the way to the table. */
-export function DealOfDayButton({ fallback }: { fallback: ReactNode }) {
-  const { status, board } = useDealOfDay()
-  if (!status || isError(status) || !status.finished) return fallback
-  const rank = board && !isError(board) ? board.me?.rank ?? null : null
-  return (
-    <Link to="/daily" data-testid="entry-cta" data-state="done" onClick={() => track('home_cta_clicked', { button: 'primary' })} {...linkLook('go', 'lg', 'landing')}>
-      {rank ? m.dod_hero_done({ rank }) : m.dod_hero_done_unranked()}
-    </Link>
-  )
-}
-
 /** The deal of the day's side of /daily. `waiting` stands in while it loads: the server's rendering of the way in. */
 export function DealOfDay({ waiting }: { waiting?: ReactNode }) {
   const { status, board, setBoard } = useDealOfDay()

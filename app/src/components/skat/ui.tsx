@@ -1,12 +1,15 @@
 import * as stylex from '@stylexjs/stylex'
-import type { ReactNode } from 'react'
+import { X } from 'lucide-react'
+import { type ReactNode, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { move, timing } from '../../theme/effects.stylex'
 import { elev, fill } from '../../theme/elevation.stylex'
-import { border, opacity, space } from '../../theme/scale.stylex'
+import { icon } from '../../theme/constants'
+import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { suit } from '../../theme/suits.stylex'
 import { typography } from '../../theme/type'
@@ -141,6 +144,52 @@ export function toggleLook(pressed: boolean) {
 
 /** A white card on the grey page (the design's option card), or a judged / tip panel. `fill` makes it as tall as
  *  where it sits, its content a column that may scroll inside (the hero's Elo board, SKATGO-123). */
+/**
+ * A dialog over the page (the settings' own since SKATGO-66, the kit's since SKATGO-140, the human: 「点开后那个toast不好关……
+ * 改成行业最佳实践」): a title and a close button in its head; a tap on the dim around it or Escape closes it too; while it
+ * is open the page behind neither scrolls nor takes a touch (it lies on `body`, everything else there inert), and focus
+ * moves into it and back to where it was.
+ */
+export function Modal({ title, onClose, testId, closeTestId, children }: { title: string; onClose: () => void; testId: string; closeTestId?: string; children: ReactNode }) {
+  const box = useRef<HTMLDivElement | null>(null)
+  const closeButton = useRef<HTMLButtonElement | null>(null)
+  const close = useRef(onClose)
+  close.current = onClose
+  useEffect(() => {
+    const html = document.documentElement
+    const overflow = html.style.overflow
+    html.style.overflow = 'hidden'
+    const others = [...document.body.children].filter((el) => el !== box.current && !el.hasAttribute('inert'))
+    for (const el of others) el.setAttribute('inert', '')
+    const before = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    closeButton.current?.focus()
+    const escape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close.current()
+    }
+    document.addEventListener('keydown', escape)
+    return () => {
+      html.style.overflow = overflow
+      for (const el of others) el.removeAttribute('inert')
+      document.removeEventListener('keydown', escape)
+      before?.focus()
+    }
+  }, [])
+  return createPortal(
+    <div ref={box} data-testid={testId} {...stylex.props(styles.scrim)} onClick={() => close.current()}>
+      <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} {...stylex.props(styles.modal)}>
+        <div {...stylex.props(styles.modalHead)}>
+          <h2 {...stylex.props(typography.dialogTitle, styles.modalTitle)}>{title}</h2>
+          <button ref={closeButton} type="button" aria-label={m.settings_close()} data-testid={closeTestId ?? `${testId}-close`} onClick={() => close.current()} {...stylex.props(styles.modalClose)}>
+            <X size={icon.menu} strokeWidth={icon.outline} />
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
 export function Panel({ children, tone = 'card', pad = true, fill = false }: { children: ReactNode; tone?: 'card' | 'tip' | 'good' | 'bad'; pad?: boolean; fill?: boolean }) {
   return <div {...stylex.props(styles.panel, panelTones[tone], pad && styles.panelPad, fill && styles.panelFill)}>{children}</div>
 }
@@ -200,6 +249,56 @@ const dynamic = stylex.create({
 })
 
 const styles = stylex.create({
+  // The dialog (`Modal`): the dim over the page, the white card in its middle.
+  scrim: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: layer.modal,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: space.x16,
+    backgroundColor: color.scrim,
+    overscrollBehavior: 'contain',
+    touchAction: 'none',
+  },
+  modal: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x16,
+    width: dims.settingsWidth,
+    // A phone held sideways is shorter than the dialog: it scrolls inside, never the page.
+    maxHeight: '100%',
+    overflowY: 'auto',
+    overscrollBehavior: 'contain',
+    touchAction: 'pan-y',
+    boxSizing: 'border-box',
+    padding: space.x24,
+    borderRadius: radii.dialog,
+    backgroundColor: color.surface,
+    boxShadow: elev.panel,
+    color: color.text,
+  },
+  modalHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12 },
+  modalTitle: { margin: 0, color: color.navy },
+  modalClose: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    width: dims.control,
+    height: dims.control,
+    padding: 0,
+    borderWidth: 0,
+    borderRadius: radii.round,
+    backgroundColor: { default: 'transparent', ':hover': color.page },
+    color: color.navy,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
   input: {
     flexGrow: 1,
     minWidth: 0,

@@ -1,19 +1,19 @@
 import * as stylex from '@stylexjs/stylex'
 import { ChevronDown, ChevronUp, CircleHelp } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
-import { ELO_PROVISIONAL_DAYS, ELO_START, type EloBoard as Board, eloK } from '~/lib/skat/elo'
+import { ELO_PROVISIONAL_DAYS, ELO_START, type EloBoard as Board } from '~/lib/skat/elo'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
 import { marqueeSlide, timing } from '../../theme/effects.stylex'
 import { elev } from '../../theme/elevation.stylex'
-import { border, layer, space } from '../../theme/scale.stylex'
+import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Who } from './daily-comparison'
-import { Panel } from './ui'
+import { Modal, Panel } from './ui'
 
 type Line = { row: Board['rows'][number] } | { ki: number }
 
@@ -24,27 +24,14 @@ const slide = stylex.keyframes({ from: { transform: marqueeSlide.start }, to: { 
  * The tournament's Elo board in the front page's hero (SKATGO-123, the human: 「这个名单要显示出来，放到hero区域」):
  * the top players by their number, the KI's fixed number standing among them as on the daily board — after
  * any player with the same, taking no rank. How it is counted, and what a "?" means, open from a circled
- * question mark beside the title, over the page (the human: 「how it counted用一个圆圈问号图标，放在 elo标题旁边，
- * 作为toast」). `fill`: as tall as where it sits, the list scrolling inside (「可以滚动，不要那么高」), its rows close
+ * question mark beside the title, in a `Modal` (SKATGO-123: 「how it counted用一个圆圈问号图标，放在 elo标题旁边」; a dialog
+ * since SKATGO-140: 「文字啰嗦，而且点开后那个toast不好关」). `fill`: as tall as where it sits, the list scrolling inside (「可以滚动，不要那么高」), its rows close
  * together, one column (「你换成单列吧」), at the text's size (「我刚都没说让你改成14」). On a phone it is folded behind one line where the players run
  * slowly sideways, without end (「手机上可能要折叠一下排名榜」, 「横向持续缓慢滚动」); a tap opens it.
  */
 export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean }) {
   const [open, setOpen] = useState(false)
   const [how, setHow] = useState(false)
-  const head = useRef<HTMLDivElement>(null)
-  // The explanation closes on Escape and on a tap anywhere else.
-  useEffect(() => {
-    if (!how) return
-    const away = (e: PointerEvent) => { if (!head.current?.contains(e.target as Node)) setHow(false) }
-    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setHow(false) }
-    document.addEventListener('pointerdown', away)
-    document.addEventListener('keydown', key)
-    return () => {
-      document.removeEventListener('pointerdown', away)
-      document.removeEventListener('keydown', key)
-    }
-  }, [how])
   const lines: Line[] = board.rows.map((row) => ({ row }))
   const at = board.rows.findIndex((r) => r.elo < board.ki)
   lines.splice(at >= 0 ? at : lines.length, 0, { ki: board.ki })
@@ -52,7 +39,7 @@ export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean
   return (
     <Panel fill={fill}>
       <section data-testid="elo-board" aria-labelledby="elo-board-title" {...stylex.props(styles.board)}>
-        <div ref={head} {...stylex.props(styles.head)}>
+        <div {...stylex.props(styles.head)}>
           <h2 id="elo-board-title" {...stylex.props(typography.homeCardTitle, styles.title, styles.wide)}>{m.elo_title()}</h2>
           <button
             type="button"
@@ -84,23 +71,21 @@ export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean
             aria-label={m.elo_how()}
             title={m.elo_how()}
             aria-expanded={how}
-            aria-controls="elo-board-how-text"
-            onClick={() => setHow(!how)}
+            onClick={() => setHow(true)}
             {...stylex.props(styles.help)}
           >
             <CircleHelp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
           </button>
+          {/* How it is counted, in three lines, as a dialog in the middle of the screen with its own close button (SKATGO-140,
+              the human: 「点问号显示算法，文字啰嗦，而且点开后那个toast不好关……改成行业最佳实践」). */}
           {how ? (
-            <div id="elo-board-how-text" role="dialog" aria-label={m.elo_how()} data-testid="elo-board-how-text" {...stylex.props(typography.appText, styles.howText)}>
-              <p {...stylex.props(styles.howLine)}>{m.elo_lead()}</p>
-              <ul {...stylex.props(styles.howList)}>
-                <li>{m.elo_how_win()}</li>
-                <li>{m.elo_how_start({ start: ELO_START, ki: board.ki })}</li>
-                <li>{m.elo_how_change({ first: eloK(0), after: eloK(30) })}</li>
-                <li>{m.elo_how_day()}</li>
+            <Modal title={m.elo_how()} onClose={() => setHow(false)} testId="elo-board-how-text">
+              <ul {...stylex.props(typography.appText, styles.howList)}>
+                <li>{m.elo_how_game()}</li>
+                <li>{m.elo_how_win({ start: ELO_START, ki: board.ki })}</li>
                 <li>{m.elo_how_provisional({ n: ELO_PROVISIONAL_DAYS })}</li>
               </ul>
-            </div>
+            </Modal>
           ) : null}
         </div>
         <div id="elo-board-body" data-open={open ? 'true' : undefined} {...stylex.props(styles.body, !open && styles.folded)}>
@@ -189,29 +174,7 @@ const styles = stylex.create({
     borderRadius: radii.column,
   },
   // The explanation, over the page under the title: a white card of its own.
-  howText: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    zIndex: layer.tip,
-    width: '100%',
-    maxWidth: dims.readingColumn,
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x8,
-    marginTop: space.x8,
-    padding: space.x16,
-    backgroundColor: color.surface,
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: color.hairline,
-    borderRadius: radii.option,
-    boxShadow: elev.panel,
-    color: color.text,
-  },
-  howLine: { margin: 0, color: color.text },
-  howList: { display: 'flex', flexDirection: 'column', gap: space.x4, margin: 0, paddingInlineStart: space.x20 },
+  howList: { display: 'flex', flexDirection: 'column', gap: space.x8, margin: 0, paddingInlineStart: space.x20, color: color.text },
   body: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 },
   folded: { display: { default: 'flex', [bp.phone]: 'none' } },
   muted: { margin: 0, color: color.slate, flexShrink: 0 },

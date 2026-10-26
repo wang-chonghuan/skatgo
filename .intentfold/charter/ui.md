@@ -183,6 +183,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `Stars` | `n` of 3 | a lesson's result |
 | `Rich` | — | every piece of course text: renders `**bold**` and each suit glyph in its suit's colour |
 | `Toggle` / `toggleLook(pressed)` | pressed or not; a button, or the same pill on a router `<Link>` | a choice that is on or off: a forum post's section, the forum's section filter (SKATGO-118) |
+| `Modal` | `title`, `onClose` | every dialog over the page (SKATGO-140; the settings' since SKATGO-66): its title and an X in its head, a tap on the dim around it or Escape closing it too, the page behind locked and inert, focus moved into it and back |
 | `TextField` / `TextArea` | one line (Enter submits) / several: `size` `post` starts about six lines tall, `comment` about three (`dims.textPost`, `textComment`; SKATGO-119), both growing with the text | a name, a forum post's title and text, a comment, a reason |
 
 **Components — the course's and the table's widgets**
@@ -230,7 +231,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     "Dein Skat-Profil", with lucide's `ChartLine` (SKATGO-128, the human: 「应该是点profile头像就能看到入口」); the
     settings carry the same link in `info` under the nickname.
 
-  On a phone the links and the account fold into a menu. Under the page sits the legal footer. The
+  On a phone the links and the account fold into a menu, which closes as menus do (SKATGO-140, 「那个汉堡菜单也不好关」):
+  its X, a tap on the dim over the page under it (which reaches nothing behind), Escape, a link, or the page changing; the
+  page behind does not scroll while it is open. Under the page sits the legal footer. The
   header is the same on every page; it shows no current-page highlight (its links carry
   `aria-current`).
 - **The front page** (`entry-page.tsx`), on white (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后
@@ -254,8 +257,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     and the last day under it (`meta`, slate) (「最好上面带一些日期……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
     Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
     保存你的表现记录以及ai分析，中间放个登录按钮」); and the tournament's Elo
-    board (`elo-board.tsx`) — its title with a circled question mark (`info`) opening how it is counted over the page,
-    closed by a tap elsewhere or Escape; the ten highest players — rank, name, number, a slate "?" when provisional — with
+    board (`elo-board.tsx`) — its title with a circled question mark (`info`) opening how it is counted in a `Modal`, three
+    short lines (SKATGO-140, the human: 「点问号显示算法，文字啰嗦，而且点开后那个toast不好关」); the ten highest players — rank, name, number, a slate "?" when provisional — with
     the AI's row (its blue tag, no rank) among them by its number, close rows at `appText`, one column, the list
     scrolling inside the card; on a phone folded behind one line where the players run slowly sideways
     (`marqueeSlide`, `timing.marquee`), a tap opening it (SKATGO-123). Under `bp.cards` the four stay two by two

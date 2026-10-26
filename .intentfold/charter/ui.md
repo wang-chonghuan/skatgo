@@ -248,10 +248,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `GraduationCap`, the course) and "Üben" (`tileNavy`, `Puzzle`, the exercises); on the right two long white cards, each
     a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play
     showing its days as on `/profile`, without dates or scale, as one smooth line — a monotone cubic through the days'
-    points, never above or below two days between them — three times `/profile`'s width (`progressCurve`, SKATGO-136, the
-    human: 「我希望平缓的，粗一点的」, SKATGO-137: 「再粗一点」), a single day as its dot; framed lightly, no larger: the
-    first and the last day under it (`meta`, slate) and the AI's tag on its zero line at the right (`Who`, `pose.onLine`)
-    — above the line, better than the AI (「最好上面带一些日期，和一个纵轴标签……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
+    points, never above or below two days between them — 5px (`progressCurve`, SKATGO-136: 「我希望平缓的，粗一点的」, SKATGO-137: 「再粗一点」,
+    SKATGO-138: 「线稍微细一点」), in the player's `navy`, never the AI's `info` blue, and with no AI tag (SKATGO-138,
+    「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」), a single day as its dot; framed lightly, no larger: the first
+    and the last day under it (`meta`, slate) (「最好上面带一些日期……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
     Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
     保存你的表现记录以及ai分析，中间放个登录按钮」); and the tournament's Elo
     board (`elo-board.tsx`) — its title with a circled question mark (`info`) opening how it is counted over the page,
@@ -267,7 +267,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (`forum-card.webp`, cropped to the card's shape, no icon; 「论坛的卡片图片用这个图片，剪裁成合适的，不要加图标」) and "News,
     articles, discussion and feedback." to `/forum`. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
     The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,
-    `homePicture`, `icon.tile`, `progressCurve` (SKATGO-136), `pose.onLine` (SKATGO-137) and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
+    `homePicture`, `icon.tile`, `progressCurve` (SKATGO-136) and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
   the short rules, the daily tournament, the Skat-Tricks' page and their article, a private table's page, About SkatGo,
   the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an

@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-139",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-139",
+  "branch": "SKATGO-139-curve-blue-again",
+  "base": "90f7627bada08631c36f087fb3d0f83863339b44",
+  "ports": {
+    "web": 55139,
+    "multiplayer": 56139,
+    "database": 57139
+  }
+}

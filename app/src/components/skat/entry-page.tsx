@@ -153,8 +153,8 @@ function Progress({ account }: { account: string | undefined }) {
   const first = days[known[0].i].day
   const last = days[known[known.length - 1].i].day
   // A light frame, no more (the human: 「最好上面带一些日期……不要扩大，一两个即可」): the first and the last day under the
-  // curve. No AI tag on the zero line, and the line in the player's navy, not the AI's blue (SKATGO-138, the human:
-  // 「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」).
+  // curve. No AI tag on the zero line (SKATGO-138, the human: 「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」); the
+  // line blue again (SKATGO-139: 「不如原来的蓝色好看，你马上给我改回来」).
   return (
     <div {...stylex.props(styles.chart)}>
       <div {...stylex.props(styles.plotRow)}>
@@ -333,6 +333,6 @@ const styles = stylex.create({
   dates: { display: 'flex', justifyContent: 'space-between', color: color.slate },
   datesOne: { justifyContent: 'center' },
   zero: { stroke: color.hairline },
-  line: { fill: 'none', stroke: color.navy },
-  point: { stroke: color.navy },
+  line: { fill: 'none', stroke: color.info },
+  point: { stroke: color.info },
 })

@@ -249,8 +249,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play
     showing its days as on `/profile`, without dates or scale, as one smooth line — a monotone cubic through the days'
     points, never above or below two days between them — 5px (`progressCurve`, SKATGO-136: 「我希望平缓的，粗一点的」, SKATGO-137: 「再粗一点」,
-    SKATGO-138: 「线稍微细一点」), in the player's `navy`, never the AI's `info` blue, and with no AI tag (SKATGO-138,
-    「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」), a single day as its dot; framed lightly, no larger: the first
+    SKATGO-138: 「线稍微细一点」), in `info` blue (SKATGO-139, the human: 「不如原来的蓝色好看，你马上给我改回来」; SKATGO-138 had
+    made it navy) and with no AI tag (SKATGO-138, 「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」), a single day as its dot; framed lightly, no larger: the first
     and the last day under it (`meta`, slate) (「最好上面带一些日期……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
     Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
     保存你的表现记录以及ai分析，中间放个登录按钮」); and the tournament's Elo

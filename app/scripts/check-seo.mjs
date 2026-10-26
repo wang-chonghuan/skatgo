@@ -6,6 +6,15 @@ import { assertIndexable, validateRobots, crawlers } from './seo-robots.mjs'
 
 // JavaScript stays disabled so hydration cannot hide an empty SSR page.
 
+// The game pages (SKATGO-134, the human chose 「1」): a search finds them by their title, description and H1, and they
+// carry a title and one line, no prose — so they need a line of visible SSR text beyond their H1 (GAME_LINE characters),
+// not 200 characters, and no contextual links of their own (the header and footer link every page; the human: 「我要求
+// 干净，去掉垃圾文字」). Every other indexable page is a content page and keeps the 200 and the two links.
+const GAME_PAGES = new Set(['/de/taeglich', '/en/daily', '/de/mit-freunden', '/en/with-friends'])
+const isGamePage = (loc) => GAME_PAGES.has(new URL(loc).pathname)
+const GAME_LINE = 20
+const minText = (data, loc) => (isGamePage(loc) ? (data.h1[0]?.trim().length ?? 0) + GAME_LINE : 200)
+
 export function validatePage(data, entry) {
   assert.equal(data.status, 200, `${entry.loc}: status`)
   assert.equal(data.canonical.length, 1, `${entry.loc}: one canonical`)
@@ -17,8 +26,8 @@ export function validatePage(data, entry) {
   assert.ok(data.title.trim(), `${entry.loc}: title`)
   assert.ok(data.description.trim(), `${entry.loc}: description`)
   assert.equal(data.h1.length, 1, `${entry.loc}: one visible H1`)
-  assert.ok(data.text.trim().length >= 200, `${entry.loc}: substantive visible SSR content`)
-  assert.ok(data.links.length >= 2, `${entry.loc}: contextual internal links`)
+  assert.ok(data.text.trim().length >= minText(data, entry.loc), `${entry.loc}: substantive visible SSR content`)
+  assert.ok(isGamePage(entry.loc) || data.links.length >= 2, `${entry.loc}: contextual internal links`)
   assert.deepEqual(data.alternates, entry.alternates, `${entry.loc}: head/sitemap alternates`)
   assert.equal(data.ogUrl, entry.loc, `${entry.loc}: OG URL`)
   assert.ok(data.ogImage, `${entry.loc}: OG image`)
@@ -321,6 +330,12 @@ export async function checkSeo(origin, { signal, quiet = false } = {}) {
     const sample = snapshots[0]
     assert.throws(() => validatePage({ ...sample.data, canonical: [`${site}/wrong`] }, sample.entry), /self canonical/)
     assert.throws(() => validatePage({ ...sample.data, text: '' }, sample.entry), /SSR content/)
+    assert.ok(!isGamePage(sample.entry.loc), 'The negative controls need a content page first')
+    assert.throws(() => validatePage({ ...sample.data, text: 'x'.repeat(150) }, sample.entry), /SSR content/)
+    assert.throws(() => validatePage({ ...sample.data, links: sample.data.links.slice(0, 1) }, sample.entry), /contextual internal links/)
+    const game = snapshots.find((s) => isGamePage(s.entry.loc))
+    assert.ok(game, 'A game page among the checked pages')
+    assert.throws(() => validatePage({ ...game.data, text: game.data.h1[0] ?? '' }, game.entry), /SSR content/)
     const result = { pages: entries.length - forumEntries.length, forumPosts: forumUp ? forumEntries.length : null, privatePages: privatePages.size, assets: assets.size, files: files.size }
     log(`OK SEO: ${result.pages} indexable pages, ${forumUp ? `${result.forumPosts} forum posts` : 'forum not checked'}, ${result.privatePages} noindex pages, ${result.assets} assets, ${result.files} linked files; negative controls rejected`)
     log('This checks rendered SEO contracts, not Google/Bing indexing, selected canonical, rankings or traffic. No console/DNS changes or indexing submissions.')

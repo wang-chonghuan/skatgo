@@ -22,6 +22,8 @@ export type Verdict = 'slip' | 'strong'
  *  0.8 at the median and 6.4 at the 90th percentile, the best and the worst by 33 at the 90th. */
 export const SLIP = 15
 export const STRONG = 10
+/** A bid this high is worth a word whoever made it. */
+const BID_WORTH_A_WORD = 30
 /** Only the first seven tricks are talked about as a trick; later ones belong to the game being decided. */
 const TALKED_TRICKS = 7
 
@@ -78,13 +80,12 @@ function walk(dealer: Seat, deck: Card[], log: Logged[]) {
   return { bidEnd: bidEnd as Step | null, tricks }
 }
 
-/** The human's bid against SkatZero's limit for their hand: bidding beyond it is bold, passing below it cautious. */
+/** The human's bid against SkatZero's limit for their hand: bidding beyond it is bold, passing below it cautious; a
+ *  sound bid is nothing to talk about. */
 function bidVerdict(g: Game, limit: number): string | null {
   const log = g.bidding.log
   if (g.declarer === PLAYER) {
-    return g.bid > limit
-      ? `You bid ${g.bid}, more than SkatZero would bid with your hand (it would stop at ${limit}): a bold bid.`
-      : `You bid ${g.bid}, within what SkatZero would bid with your hand: a sound bid.`
+    return g.bid > limit ? `You bid ${g.bid}, more than SkatZero would bid with your hand (it would stop at ${limit}): a bold bid.` : null
   }
   const pass = log.findIndex((e) => e.seat === PLAYER && e.say === 'pass')
   if (pass < 0) return null
@@ -99,7 +100,7 @@ function bidFacts(g: Game, limit: number) {
   const auction = auctionOf(g)
   const said = (s: Seat) => (auction[s].value ? `${auction[s].value}${auction[s].passed ? ', then passed' : ''}` : auction[s].passed ? 'passed without bidding' : 'no bid')
   return {
-    moment: 'The bidding is over; the play is about to start.',
+    moment: 'The bidding is over. The declarer has not chosen the game yet: do not name or guess any game.',
     declarer: NAME[g.declarer!],
     bid: g.bid,
     bids: { You: said(0), Lina: said(1), Noah: said(2) },
@@ -164,7 +165,12 @@ export async function momentOf(
       if (verdict || points >= 20) return { kind: 'play', facts: trickFacts(t, verdict) }
     }
   }
-  if (!said.includes('bid') && bidEnd && bidEnd.at > since && bidEnd.g.declarer !== null) return { kind: 'bid', facts: bidFacts(bidEnd.g, limit) }
+  // The bidding is talked about only when there is something to say: the player's bid bold or their pass cautious by
+  // SkatZero's measure, or a bid of 30 or more (「根据……叫的好坏」); an 18 everyone passed is not a moment.
+  if (!said.includes('bid') && bidEnd && bidEnd.at > since && bidEnd.g.declarer !== null) {
+    const facts = bidFacts(bidEnd.g, limit)
+    if (facts.aboutYou || bidEnd.g.bid >= BID_WORTH_A_WORD) return { kind: 'bid', facts }
+  }
   return null
 }
 
@@ -184,8 +190,9 @@ export type TalkLang = keyof typeof LANGUAGE
 
 const prompt = (lang: TalkLang) => `You write one line of table talk at an online Skat table.
 Two computer players talk: Lina — quick, competitive, dry humour; Noah — warm, a little superstitious, laughs at himself.
-The third player is the human, called "You" in the facts; address them as you.
-Write a spoken remark reacting to the moment given, playful and natural, in ${LANGUAGE[lang]}, at most 14 words.
+The third player is the human, called "You" in the facts: never write "You" as a name; speak to them as "you" in English and "du" in German.
+Write what one of them mutters at the table about the moment given: short and spoken, at most 9 words, in ${LANGUAGE[lang]}, playful. No semicolons, no dashes, no long sentences.
+Name a game (contract) only if the facts give one.
 Use only the facts given. Never mention or guess a card that has not been played, nor the skat.
 Never say what to play or what to bid. Lina and Noah may tease each other; never mock the human — a slip of theirs gets a light, kind remark, a strong card or a bold bid a nod.
 Say at most one number. Keep the Skat words Grand, Null, Hand, Schneider, Ouvert as they are; name cards the way ${LANGUAGE[lang]} Skat players do.
@@ -194,6 +201,8 @@ Answer as JSON: {"speaker": "Lina" or "Noah", "line": "..."}`
 
 /** How many lines the service writes a day, against a free table being run through on purpose (about a dollar). */
 export const TALK_DAILY_MAX = 3000
+/** The most words a line may have; the model is asked for nine. */
+const MAX_WORDS = 12
 const written = { day: '', count: 0 }
 
 /** The line for a moment, or null when the model is not given, the day's lines are used up, or the answer is not one
@@ -208,7 +217,8 @@ export async function lineFor(moment: Moment, lang: TalkLang, timeoutMs = 6000, 
     const answer = await askModel(prompt(lang), JSON.stringify(moment.facts), timeoutMs)
     const speaker = answer.speaker === 'Lina' ? 1 : answer.speaker === 'Noah' ? 2 : null
     const line = typeof answer.line === 'string' ? answer.line.trim() : ''
-    return speaker && line && line.length <= 160 ? { speaker, line } : null
+    // A long line is no muttering: it is dropped rather than shown.
+    return speaker && line && line.split(/\s+/).length <= MAX_WORDS ? { speaker, line } : null
   } catch (e) {
     console.error(JSON.stringify({ event: 'talk_failed', reason: (e as Error).message }))
     return null

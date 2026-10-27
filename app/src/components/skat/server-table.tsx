@@ -65,6 +65,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
    *  revision last asked about, whether a question is out. A new deal starts it again. */
   const talkOn = useSettings((s) => s.talk)
   const [talk, setTalk] = useState<{ seat: 1 | 2; line: string; id: number } | null>(null)
+  /** A line waits until the table has shown every move of the reply it is about, so it never runs ahead of the felt. */
+  const [heard, setHeard] = useState<{ seat: 1 | 2; line: string; id: number; asked: number } | null>(null)
   const talking = useRef({ deal: 0, said: [] as TalkKind[], from: 0, out: false })
   const ask = (t: string) => {
     let asked = reviews.current.get(t)
@@ -89,6 +91,7 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     track('game_started', { mode })
     talking.current = { deal: talking.current.deal + 1, said: [], from: 0, out: false }
     setTalk(null)
+    setHeard(null)
     take(r.steps, r)
   }
 
@@ -105,8 +108,13 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     t.from = revision
     if (r.kind === null || t.said.includes(r.kind) || Date.now() - asked > TALK_LATE) return
     t.said.push(r.kind)
-    setTalk({ seat: r.speaker, line: r.line, id: asked })
+    setHeard({ seat: r.speaker, line: r.line, id: asked, asked })
   }
+  useEffect(() => {
+    if (!heard || queue.length > 0) return
+    setHeard(null)
+    if (Date.now() - heard.asked <= TALK_LATE) setTalk({ seat: heard.seat, line: heard.line, id: heard.id })
+  }, [heard, queue])
   useEffect(() => {
     if (!talk) return
     const timer = setTimeout(() => setTalk(null), TALK_SHOWN)

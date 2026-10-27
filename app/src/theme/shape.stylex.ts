@@ -165,6 +165,9 @@ export const dims = stylex.defineVars({
   feltCell: '1 / 1 / 2 / 2',
   /** The table's menu under its way-out button (SKATGO-96). */
   tableMenu: '240px',
+  /** SKATGO-142: Lina's or Noah's line beside the trick frame on a wide table — the room between the frame and their
+   *  cards. */
+  talkWidth: '220px',
 
   // Generic
   screen: '100vh',

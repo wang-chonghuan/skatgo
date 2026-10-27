@@ -453,15 +453,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               )}
             </div>
           ) : null}
-          {/* Lina's or Noah's word at free play's table (SKATGO-142, the human: 「就像真人打牌时……碎碎念的一些话」): under the
-              table's line, on the speaker's side, in the band nothing on the felt reaches into. */}
-          {server?.talk ? (
-            <div {...stylex.props(styles.talkRow, server.talk.seat === 1 ? styles.talkLeft : styles.talkRight)}>
-              <p key={server.talk.id} role="status" data-testid="skat-talk" data-seat={server.talk.seat} {...stylex.props(typography.appText, styles.talk)}>
-                <span {...stylex.props(typography.appBtnStrong)}>{nameOf(server.talk.seat)}:</span> {server.talk.line}
-              </p>
-            </div>
-          ) : null}
           {refusal || hint || server?.problem || room?.notice ? (
             <div data-testid="skat-messages" {...stylex.props(styles.messages)}>
               {room?.notice}
@@ -497,6 +488,13 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         ))}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
+          {/* Lina's or Noah's word at free play's table (SKATGO-142, the human: 「就像真人打牌时……碎碎念的一些话」): on a wide
+              table beside the frame on the speaker's side, otherwise just over the frame on that side. */}
+          {server?.talk ? (
+            <p key={server.talk.id} role="status" data-testid="skat-talk" data-seat={server.talk.seat} {...stylex.props(typography.appText, styles.talk, server.talk.seat === 1 ? styles.talkLeft : styles.talkRight)}>
+              <span {...stylex.props(typography.appBtnStrong)}>{nameOf(server.talk.seat)}:</span> {server.talk.line}
+            </p>
+          ) : null}
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
           {(game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'passedIn') && game.skat.length > 0 ? (
             <div {...stylex.props(styles.skatPile)}>
@@ -1677,18 +1675,33 @@ const styles = stylex.create({
   },
   framePlay: { width: stage.frame, aspectRatio: dims.square, borderWidth: dims.frameBorderPlay },
 
-  // Table talk (SKATGO-142): a white card as wide as its words, at the left or right of the messages' width.
-  talkRow: { display: 'flex', width: dims.tipWidth },
-  talkLeft: { justifyContent: 'flex-start' },
-  talkRight: { justifyContent: 'flex-end' },
+  // Table talk (SKATGO-142): a white card as wide as its words. On a wide table it stands beside the frame, level with
+  // its top, toward the speaker's cards; elsewhere just over the frame, at its left or right edge.
   talk: {
+    position: 'absolute',
     margin: 0,
+    width: 'max-content',
+    maxWidth: { default: '100%', [bp.pinned]: dims.talkWidth },
+    boxSizing: 'border-box',
+    top: { default: 'auto', [bp.pinned]: 0 },
+    bottom: { default: '100%', [bp.pinned]: 'auto' },
+    marginBottom: { default: space.x8, [bp.pinned]: 0 },
     paddingBlock: space.x8,
     paddingInline: space.x12,
     borderRadius: radii.panel,
     backgroundColor: color.surface,
     boxShadow: elev.option,
     color: color.navy,
+  },
+  talkLeft: {
+    left: { default: 0, [bp.pinned]: 'auto' },
+    right: { default: 'auto', [bp.pinned]: '100%' },
+    marginRight: { default: 0, [bp.pinned]: space.x16 },
+  },
+  talkRight: {
+    right: { default: 0, [bp.pinned]: 'auto' },
+    left: { default: 'auto', [bp.pinned]: '100%' },
+    marginLeft: { default: 0, [bp.pinned]: space.x16 },
   },
   plateSlot: { position: 'absolute', display: 'flex' },
   plateSlotLeft: { left: 0, top: dims.half, transform: pose.plateLeft },

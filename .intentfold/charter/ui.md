@@ -396,8 +396,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   standard web-app table. Free play's search entry is the front page.
 - **What a table says** (SKATGO-134): the course's tables — its own and lesson 11's, the ones with hints — explain every
   step as before. A real table (free play, the daily ones, a private table, a shared deal's practice) says at most one
-  short line, the buttons the rest: asked to hold, "18?" with "Ja" / "Passe"; no line on the speaker's turn, before the
-  skat is picked up, while putting two away or while playing; forehand alone, "Beide haben gepasst – spielst du 18?"; the
+  short line, the buttons the rest. In the bidding it says whom the player bids with and what an answer means, as the
+  course does (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」): on the speaker's turn "Du reizt Lina – sag den
+  nächsten Wert oder spring höher."; asked to hold, "Lina fragt dich: „18?“" with "Ja (ich halte 18)" / "Passe"; no line
+  before the skat is picked up, while putting two away or while playing; forehand alone, "Beide haben gepasst – spielst du 18?"; the
   contract picker only "Kein Spiel erreicht 18 – das Spiel ist verloren." or that the chosen game cannot be announced; a
   wrong card, "Bedienen: spiel Kreuz♣."; a private table's settlement, under its title, the facts in one line
   ("Kreuz · gereizt bis 18 · Alleinspieler 74 : Gegenspieler 46") and the calculation in one, then the skat and the

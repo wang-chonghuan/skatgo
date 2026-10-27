@@ -117,8 +117,9 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   Lina's and Noah's table talk at free play: `POST /free/talk` (token, the revision last asked about, the kinds already
   said, the page's language) finds in the deal's own record the moment among the new moves (`multiplayer/src/talk.ts`:
   the game just decided before trick 10, else a trick of the first seven with the player's card a slip — 15 below
-  SkatZero's best — or the strong one — the best by 10 — or 20 card points, else the bidding just over, the player's bid
-  against SkatZero's highest bid for the hand in the pool), tells the model only what is public — bids, the contract,
+  SkatZero's best — or the strong one — the best by 10 — or 20 card points, else the bidding just over when it is worth a
+  word — the player's bid above SkatZero's highest bid for the hand in the pool, their pass below it, or a bid of 30 or
+  more — and before the game is chosen the model is told not to name one), tells the model only what is public — bids, the contract,
   played cards, card points taken — and answers one line by Lina or Noah, or nothing: no moment, no model, a
   6-second timeout, or 3,000 lines a day used up. The model call is `src/llm.ts`, shared with the forum's translations.
 - Course libraries: `motion` (animation), `canvas-confetti`, `zustand` (progress, persisted to `localStorage`);

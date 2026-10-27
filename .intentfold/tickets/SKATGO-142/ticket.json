@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-142",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-142",
   "branch": "SKATGO-142-table-talk",

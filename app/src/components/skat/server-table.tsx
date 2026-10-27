@@ -3,10 +3,12 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { type GameMode, track } from '~/lib/analytics'
-import { type FreeError, freeAct, freeNew, freeResume, freeReview, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
+import { type FreeError, freeAct, freeNew, freeResume, freeReview, freeTalk, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
+import { useTableTalk } from '~/lib/table-talk'
 import { type Move, type Seat, next as nextSeat } from '~/lib/skat/game'
 import { type DealReview, type DealSummary, type SeatView, gameFromView, summarize, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
+import { getLocale } from '~/paraglide/runtime'
 import { color } from '../../theme/color.stylex'
 import { space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
@@ -53,6 +55,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
   const [summary, setSummary] = useState(false)
   /** Each finished game's review, asked once (SKATGO-86): the result and the round both read it. */
   const reviews = useRef(new Map<string, Promise<DealReview | FreeError>>())
+  // Lina's and Noah's table talk (SKATGO-142): free play only, never lesson 11.
+  const { talk, newDeal, listen } = useTableTalk(mode === 'free', queue.length === 0)
   const ask = (t: string) => {
     let asked = reviews.current.get(t)
     if (!asked) reviews.current.set(t, (asked = freeReview(t)))
@@ -74,8 +78,10 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     setSending(false)
     if (isFreeError(r)) return setFailure({ text: problemText(r), retry: () => void start() })
     track('game_started', { mode })
+    newDeal()
     take(r.steps, r)
   }
+
 
   async function send(move: Move) {
     if (!token) return
@@ -88,6 +94,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
       return setFailure({ text: problemText(r), retry: lost ? undefined : () => void send(move) })
     }
     take(r.steps, r)
+    // Lina's and Noah's word on what just happened (SKATGO-142).
+    void listen((said) => freeTalk(r.token, said, getLocale() === 'de' ? 'de' : 'en'))
   }
 
   /** A game carried here across a change of language (SKATGO-79) or kept in this browser (SKATGO-96): taken
@@ -104,6 +112,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         // A round that does not read is no round: the game goes on as the first deal of a new one.
       }
     }
+    // A game taken up again starts its talk afresh (SKATGO-142).
+    newDeal()
     take(r.steps, r)
   }
   // Free play's game goes along when the language changes, with its round (SKATGO-88), and stays in this
@@ -207,6 +217,7 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         newRound: mode === 'free' ? newRound : undefined,
         // Lesson 11 keeps its hints; free play's table is the tournament's, without (SKATGO-130).
         hints: mode === 'lesson',
+        talk,
       }}
     />
   )

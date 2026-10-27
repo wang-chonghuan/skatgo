@@ -57,6 +57,8 @@
   "settings_tap_collect_off": "Off: each trick is collected after a short pause.",
   "settings_sound": "Sound",
   "settings_sound_cards": "Card sounds",
+  "settings_talk": "Table talk",
+  "settings_talk_free": "Lina and Noah talk at the table",
   "panel_back": "Back",
   "settings_close": "Close",
   "deck_tournament": "Tournament deck (French suits, four colours)",

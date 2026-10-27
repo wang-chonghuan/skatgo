@@ -8,7 +8,8 @@ import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/t
 import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
 import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals } from './model'
 import { BIDS, type HandMode } from './skatzero/bidding'
-import type { Policy } from './skatzero/policy'
+import { type Policy, viewOf } from './skatzero/policy'
+import { lineFor, momentOf, TALK_KINDS, verdictOf } from './talk'
 import { dayOf } from './daily'
 import { played, recordFreeDeal } from './profile'
 import type { Store } from './store'
@@ -205,6 +206,25 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
       })
     }
     return reviewOf(end, await judgePlays(policy()!, playsOf(d.dealer, deck, t.log)), { ai: summarize(ai), aiAuction: auctionOf(ai) })
+  }))
+  // Lina's and Noah's table talk (SKATGO-142): after a reply, the browser asks whether there is a line to say now, with
+  // the kinds this deal has said; the deal's record says which moment, SkatZero judges the human's own bid or card, the
+  // site's model says it. Nothing comes back when there is no moment, no model or no line in time. Free play only:
+  // lesson 11 shares these routes but its page never asks.
+  const talkInput = z.object({
+    token: z.string().max(20_000),
+    said: z.array(z.enum(TALK_KINDS as [string, ...string[]])).max(5),
+    lang: z.enum(['en', 'de']),
+  }).strict()
+  router.post('/talk', run(async (body) => {
+    const i = talkInput.parse(body)
+    const { p, t } = opened(i.token)
+    const d = p.deals[t.id]
+    const limit = { atMost: d.computers['0'].maxBid, atLeast: d.computers['0'].maxBid }
+    const moment = await momentOf(d.dealer, deckOf(d.deck), t.log, i.said as never, limit,
+      async (before, card) => verdictOf(await policy()!.ranked(viewOf(before, PLAYER)), card))
+    const said = moment ? await lineFor(moment, i.lang) : null
+    return said ? { kind: moment!.kind, speaker: said.speaker, line: said.line } : { kind: null }
   }))
   router.use((_err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     res.status(400).json({ error: 'invalid_request' })

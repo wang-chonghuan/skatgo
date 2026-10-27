@@ -28,6 +28,10 @@ type SettingsState = {
    *  count themselves; switched by a tap on the cell, off (card points) by default. */
   boardTricks: boolean
   setBoardTricks: (on: boolean) => void
+  /** SKATGO-142: Lina and Noah talk at free play's and the daily tournament's tables. On by default; off, the table asks
+   *  nothing of the model. */
+  talk: boolean
+  setTalk: (on: boolean) => void
 }
 
 export const useSettings = create<SettingsState>()(
@@ -43,11 +47,13 @@ export const useSettings = create<SettingsState>()(
       setBack: (back) => set({ back }),
       boardTricks: false,
       setBoardTricks: (boardTricks) => set({ boardTricks }),
+      talk: true,
+      setTalk: (talk) => set({ talk }),
     }),
     {
       name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks }),
+      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks, talk: s.talk }),
     },
   ),
 )

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { FORUM_LANGS, type ForumLang } from '../../app/src/lib/forum'
+import { askModel, modelReady } from './llm'
 import type { Store } from './store'
 
 // What people write, in the reader's language (SKATGO-124, the human: 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻
@@ -7,11 +8,6 @@ import type { Store } from './store'
 // keyed by the text itself (its sha256), so the same words are never translated twice and any text, wherever it
 // stands, is looked up the same way. A text not yet translated shows as written while it is translated in the
 // background, one at a time; a page never waits for the model.
-
-/** The site's model, as the assistant uses it (app/src/lib/ask/azure.ts); low effort is enough to translate (the
- *  human: 「用luna low就行」). */
-const MODEL = 'gpt-5.6-luna'
-const EFFORT = 'low'
 
 const NAME: Record<ForumLang, string> = { de: 'German', en: 'English' }
 
@@ -62,7 +58,7 @@ const waiting = new Map<string, { text: string; lang: ForumLang }>()
 let working = false
 
 function translateLater(store: Store, text: string, lang: ForumLang) {
-  if (!process.env.LLM_BASE_URL || !process.env.LLM_API_KEY) return
+  if (!modelReady()) return
   const key = `${hashOf(text)}:${lang}`
   if (!waiting.has(key)) waiting.set(key, { text, lang })
   if (!working) void work(store)
@@ -96,22 +92,7 @@ async function work(store: Store) {
 /** One text into `lang` by the site's model: the language it was written in, and the text in `lang` — as written when
  *  it already is. */
 async function translate(text: string, lang: ForumLang): Promise<Translation> {
-  const res = await fetch(`${process.env.LLM_BASE_URL!.replace(/\/$/, '')}/chat/completions`, {
-    method: 'POST',
-    signal: AbortSignal.timeout(120_000),
-    headers: { 'content-type': 'application/json', authorization: `Bearer ${process.env.LLM_API_KEY}` },
-    body: JSON.stringify({
-      model: process.env.LLM_MODEL || MODEL,
-      reasoning_effort: EFFORT,
-      response_format: { type: 'json_object' },
-      messages: [{ role: 'system', content: prompt(lang) }, { role: 'user', content: text }],
-    }),
-  })
-  if (!res.ok) {
-    await res.body?.cancel()
-    throw new Error(`upstream ${res.status}`)
-  }
-  const answer = JSON.parse((await res.json()).choices?.[0]?.message?.content ?? '{}') as { from?: unknown; text?: unknown }
+  const answer = (await askModel(prompt(lang), text, 120_000)) as { from?: unknown; text?: unknown }
   const from = typeof answer.from === 'string' ? answer.from.toLowerCase() : ''
   if (!/^[a-z]{2,3}$/.test(from)) throw new Error('no_language')
   if (from === lang) return { from, text }

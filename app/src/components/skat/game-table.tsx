@@ -113,6 +113,8 @@ export type Tournament = {
   /** The day's finished deals and, for each, the AI's result in the player's seat (SKATGO-42). */
   deals?: DealSummary[]
   benchmarks?: (DealSummary | null)[]
+  /** What Lina (1) or Noah (2) just said (SKATGO-142), shown on their side. */
+  talk?: { seat: 1 | 2; line: string; id: number } | null
 }
 
 /** What the settlement shows in the tournament (SKATGO-57, simplified in SKATGO-79): this deal's score
@@ -134,6 +136,8 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   review?: AskReview
   /** Free play: give up the round for a new one (SKATGO-96). */
   newRound?: () => void
+  /** Free play: what Lina (1) or Noah (2) just said (SKATGO-142), shown on their side. */
+  talk?: { seat: 1 | 2; line: string; id: number } | null
 }
 
 /** A private table (SKATGO-61): the room's deal turned so the viewer is seat 0, the people's
@@ -182,6 +186,9 @@ export function GameTable(props: Props) {
 
 function Table({ onSettled, fullScreen = false, tournament, server, room, exercise }: Props) {
   const nameOf = useNameOf()
+  const reducedMotion = useReducedMotion()
+  // Lina's or Noah's line at free play or the tournament (SKATGO-142).
+  const talk = server?.talk ?? tournament?.talk ?? null
   const [dealer, setDealer] = useState<Seat>(2)
   const [localGame, setGame] = useState<Game>(() => deal(2))
   const remote = tournament ?? server ?? room ?? exercise
@@ -486,6 +493,17 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         ))}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
+          {/* Lina's or Noah's word at free play's and the tournament's tables (SKATGO-142, the human: 「就像真人打牌时……碎碎念的一些话」): on a wide
+              table beside the frame on the speaker's side, otherwise just over the frame on that side. */}
+          {talk ? (
+            <p key={talk.id} role="status" data-testid="skat-talk" data-seat={talk.seat} {...stylex.props(typography.appText, styles.talk, talk.seat === 1 ? styles.talkLeft : styles.talkRight)}>
+              <span>
+                <span {...stylex.props(typography.appBtnStrong)}>{nameOf(talk.seat)}:</span> {talk.line}
+              </span>
+              {/* A tap anywhere puts it away (the human: 「最好让用户点一下屏幕再给让这个泡泡消失……显示……那个收墩的按钮」). */}
+              <TapHand testId="skat-talk-hand" place={styles.talkHand} still={reducedMotion} />
+            </p>
+          ) : null}
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
           {(game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'passedIn') && game.skat.length > 0 ? (
             <div {...stylex.props(styles.skatPile)}>
@@ -855,6 +873,19 @@ function restHands(g: Game): [Card[], Card[], Card[]] {
 
 /** The tap that takes a finished trick off the table (SKATGO-72): a tap anywhere on the screen, said
  *  by a blinking hand in the frame's corner — still for a player who asked for less motion. */
+/** The blinking hand that says "tap" (SKATGO-72): on a finished trick waiting for the tap, and on Lina's or Noah's line
+ *  (SKATGO-142), which a tap anywhere puts away. */
+function TapHand({ testId, place, still }: { testId: string; place: stylex.StyleXStyles; still: boolean | null }) {
+  return (
+    <motion.svg aria-hidden="true" data-testid={testId} viewBox={tapHint.view} animate={still ? undefined : tapHint.blink} transition={tapHint.transition} {...stylex.props(place)}>
+      <path d={tapHint.hand} strokeWidth={tapHint.stroke} strokeLinejoin="round" {...stylex.props(styles.collectSkin)} />
+      {tapHint.lines.map((d) => (
+        <path key={d} d={d} fill="none" strokeWidth={tapHint.stroke} strokeLinecap="round" {...stylex.props(styles.collectLine)} />
+      ))}
+    </motion.svg>
+  )
+}
+
 function Collect({ hand, onCollect }: { hand: Card[]; onCollect: (card: Card | null) => void }) {
   const still = useReducedMotion()
   // The tap lands on the cover; a card of the learner's under it is found by where it landed.
@@ -864,19 +895,7 @@ function Collect({ hand, onCollect }: { hand: Card[]; onCollect: (card: Card | n
   }
   return (
     <>
-      <motion.svg
-        aria-hidden="true"
-        data-testid="skat-collect-hand"
-        viewBox={tapHint.view}
-        animate={still ? undefined : tapHint.blink}
-        transition={tapHint.transition}
-        {...stylex.props(styles.collectHand)}
-      >
-        <path d={tapHint.hand} strokeWidth={tapHint.stroke} strokeLinejoin="round" {...stylex.props(styles.collectSkin)} />
-        {tapHint.lines.map((d) => (
-          <path key={d} d={d} fill="none" strokeWidth={tapHint.stroke} strokeLinecap="round" {...stylex.props(styles.collectLine)} />
-        ))}
-      </motion.svg>
+      <TapHand testId="skat-collect-hand" place={styles.collectHand} still={still} />
       {createPortal(
         <button type="button" data-testid="skat-collect" aria-label={m.table_collect()} onClick={(e) => onCollect(tapped(e.clientX, e.clientY))} {...stylex.props(styles.collect)} />,
         document.body,
@@ -1666,6 +1685,38 @@ const styles = stylex.create({
   },
   framePlay: { width: stage.frame, aspectRatio: dims.square, borderWidth: dims.frameBorderPlay },
 
+  // Table talk (SKATGO-142): a white card as wide as its words. On a wide table it stands beside the frame, level with
+  // its top, toward the speaker's cards; elsewhere just over the frame, at its left or right edge.
+  talk: {
+    position: 'absolute',
+    display: 'flex',
+    alignItems: 'flex-end',
+    gap: space.x8,
+    margin: 0,
+    width: 'max-content',
+    maxWidth: { default: '100%', [bp.pinned]: dims.talkWidth },
+    boxSizing: 'border-box',
+    top: { default: 'auto', [bp.pinned]: 0 },
+    bottom: { default: '100%', [bp.pinned]: 'auto' },
+    marginBottom: { default: space.x8, [bp.pinned]: 0 },
+    paddingBlock: space.x8,
+    paddingInline: space.x12,
+    borderRadius: radii.panel,
+    backgroundColor: color.surface,
+    boxShadow: elev.option,
+    color: color.navy,
+  },
+  talkHand: { flexShrink: 0, width: dims.talkHand, height: dims.talkHand, overflow: 'visible', alignSelf: 'flex-end' },
+  talkLeft: {
+    left: { default: 0, [bp.pinned]: 'auto' },
+    right: { default: 'auto', [bp.pinned]: '100%' },
+    marginRight: { default: 0, [bp.pinned]: space.x16 },
+  },
+  talkRight: {
+    right: { default: 0, [bp.pinned]: 'auto' },
+    left: { default: 'auto', [bp.pinned]: '100%' },
+    marginLeft: { default: 0, [bp.pinned]: space.x16 },
+  },
   plateSlot: { position: 'absolute', display: 'flex' },
   plateSlotLeft: { left: 0, top: dims.half, transform: pose.plateLeft },
   plateSlotRight: { right: 0, top: dims.half, transform: pose.plateRight },

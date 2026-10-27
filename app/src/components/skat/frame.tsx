@@ -291,6 +291,8 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const setBack = useSettings((s) => s.setBack)
   const sounds = useSettings((s) => s.sounds)
   const setSounds = useSettings((s) => s.setSounds)
+  const talk = useSettings((s) => s.talk)
+  const setTalk = useSettings((s) => s.setTalk)
   const current = getLocale()
   return (
     <Modal title={m.settings_open()} onClose={onClose} testId="settings-dialog" closeTestId="settings-close">
@@ -376,6 +378,25 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
               <span>{m.settings_sound_cards()}</span>
             </span>
             <span aria-hidden="true" {...stylex.props(styles.check, !sounds && styles.checkOff)}>
+              <Check size={icon.inline} strokeWidth={icon.outline} />
+            </span>
+          </button>
+        </section>
+        {/* Lina and Noah talking at free play's and the tournament's tables (SKATGO-142), on by default. */}
+        <section {...stylex.props(styles.section)}>
+          <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_talk()}</h3>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={talk}
+            data-testid="settings-talk"
+            onClick={() => setTalk(!talk)}
+            {...stylex.props(typography.appBtnStrong, styles.deck, talk && styles.deckOn)}
+          >
+            <span {...stylex.props(styles.deckName)}>
+              <span>{m.settings_talk_free()}</span>
+            </span>
+            <span aria-hidden="true" {...stylex.props(styles.check, !talk && styles.checkOff)}>
               <Check size={icon.inline} strokeWidth={icon.outline} />
             </span>
           </button>

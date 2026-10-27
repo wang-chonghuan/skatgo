@@ -22,7 +22,7 @@ const COOKIE = 'skatgo_daily'
 const COOKIE_PATH = '/api/daily'
 /** 400 days, the longest a browser keeps a cookie. */
 const COOKIE_MAX_AGE = 400 * 24 * 60 * 60
-const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'elo', 'profile', 'share', 'shared', 'practice-new', 'practice-act'])
+const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'elo', 'profile', 'share', 'shared', 'practice-new', 'practice-act', 'talk'])
 /** The shared deal of the day's operations (SKATGO-132), answered by the service's /share routes: the player's code
  *  for today's finished deal; what a code shares; a past day's deal played as practice. */
 const SHARE_PATHS: Record<string, string> = { share: 'code', shared: 'read', 'practice-new': 'practice/new', 'practice-act': 'practice/act' }
@@ -115,6 +115,8 @@ export async function handleDaily(request: Request): Promise<Response> {
     }
   }
   if (op === 'review' && !player) return json(409, { error: 'not_finished' })
+  // Lina's and Noah's talk is about the asker's own deal (SKATGO-142): nobody's, nothing to say.
+  if (op === 'talk' && !player) return json(200, { kind: null })
   // The nickname is an account's, set in the settings (SKATGO-126).
   // So is the record of play (SKATGO-128).
   if ((op === 'name' || op === 'nick' || op === 'profile') && !userId) return json(401, { error: 'sign_in_required' })

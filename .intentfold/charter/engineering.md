@@ -113,7 +113,14 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   that game as the AI's (`DealReview.ai`, SKATGO-86), for free play and lesson 11 alike. When the web names a
   signed-in player with it (`/api/free/review` passes `user:<id>`, never a guest and never a browser-sent player),
   the deal's Seeger-Fabian score and the AI's go into `play_deals`, once per game (SKATGO-128).
-  No language model judges or explains play.
+  No language model judges or explains play: the judgement is SkatZero's. Since SKATGO-142 the site's model voices it as
+  Lina's and Noah's table talk at free play: `POST /free/talk` (token, the revision last asked about, the kinds already
+  said, the page's language) finds in the deal's own record the moment among the new moves (`multiplayer/src/talk.ts`:
+  the game just decided before trick 10, else a trick of the first seven with the player's card a slip — 15 below
+  SkatZero's best — or the strong one — the best by 10 — or 20 card points, else the bidding just over, the player's bid
+  against SkatZero's highest bid for the hand in the pool), tells the model only what is public — bids, the contract,
+  played cards, card points taken — and answers one line by Lina or Noah, or nothing: no moment, no model, a
+  6-second timeout, or 3,000 lines a day used up. The model call is `src/llm.ts`, shared with the forum's translations.
 - Course libraries: `motion` (animation), `canvas-confetti`, `zustand` (progress, persisted to `localStorage`);
   `deep-chat-react` went with the assistant (SKATGO-130, approved in the ticket).
 

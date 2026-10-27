@@ -134,6 +134,8 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   review?: AskReview
   /** Free play: give up the round for a new one (SKATGO-96). */
   newRound?: () => void
+  /** Free play: what Lina (1) or Noah (2) just said (SKATGO-142), shown over the trick on their side. */
+  talk?: { seat: 1 | 2; line: string; id: number } | null
 }
 
 /** A private table (SKATGO-61): the room's deal turned so the viewer is seat 0, the people's
@@ -449,6 +451,15 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                   <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
                 </div>
               )}
+            </div>
+          ) : null}
+          {/* Lina's or Noah's word at free play's table (SKATGO-142, the human: 「就像真人打牌时……碎碎念的一些话」): under the
+              table's line, on the speaker's side, in the band nothing on the felt reaches into. */}
+          {server?.talk ? (
+            <div {...stylex.props(styles.talkRow, server.talk.seat === 1 ? styles.talkLeft : styles.talkRight)}>
+              <p key={server.talk.id} role="status" data-testid="skat-talk" data-seat={server.talk.seat} {...stylex.props(typography.appText, styles.talk)}>
+                <span {...stylex.props(typography.appBtnStrong)}>{nameOf(server.talk.seat)}:</span> {server.talk.line}
+              </p>
             </div>
           ) : null}
           {refusal || hint || server?.problem || room?.notice ? (
@@ -1666,6 +1677,19 @@ const styles = stylex.create({
   },
   framePlay: { width: stage.frame, aspectRatio: dims.square, borderWidth: dims.frameBorderPlay },
 
+  // Table talk (SKATGO-142): a white card as wide as its words, at the left or right of the messages' width.
+  talkRow: { display: 'flex', width: dims.tipWidth },
+  talkLeft: { justifyContent: 'flex-start' },
+  talkRight: { justifyContent: 'flex-end' },
+  talk: {
+    margin: 0,
+    paddingBlock: space.x8,
+    paddingInline: space.x12,
+    borderRadius: radii.panel,
+    backgroundColor: color.surface,
+    boxShadow: elev.option,
+    color: color.navy,
+  },
   plateSlot: { position: 'absolute', display: 'flex' },
   plateSlotLeft: { left: 0, top: dims.half, transform: pose.plateLeft },
   plateSlotRight: { right: 0, top: dims.half, transform: pose.plateRight },

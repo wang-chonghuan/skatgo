@@ -27,6 +27,21 @@ export const freeAct = (token: string, revision: number, action: Move) => post('
 /** The game a token holds, as it stands: taken up after a change of language (SKATGO-79). */
 export const freeResume = (token: string) => post('resume', { token })
 
+/** A moment of the deal worth a word, said by Lina (1) or Noah (2) — or nothing (SKATGO-142). */
+export type TalkKind = 'bid' | 'play' | 'decided'
+export type FreeTalk = { kind: TalkKind; speaker: 1 | 2; line: string } | { kind: null }
+
+/** Whether the moves since `since` hold a moment Lina or Noah talks about; the kinds already said in this deal are
+ *  not said again. Any failure is silence: the table never waits for it. */
+export async function freeTalk(token: string, since: number, said: TalkKind[], lang: 'en' | 'de'): Promise<FreeTalk> {
+  try {
+    const res = await fetch('/api/free/talk', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, since, said, lang }) })
+    return res.ok ? ((await res.json()) as FreeTalk) : { kind: null }
+  } catch {
+    return { kind: null }
+  }
+}
+
 /*
  * A free game carried across a change of language (SKATGO-79, the human: 「打牌过程中切换语言，咋导致牌都
  * 重新发了？」). Changing the language loads the page anew, and the game lives only in the page, so the

@@ -103,6 +103,13 @@ tournament, and a new round. Lesson 11's game is one game with the same result. 
 mid-round keeps the game and the round (SKATGO-79, SKATGO-88), and so does a reload or coming back within a
 day (SKATGO-96: 「刷新一下页面，当deal丢了，连game也丢了」). The player may give up a round for a new one,
 never one deal alone, so a round's total stays honest; the tournament cannot be given up.
+At free play's table Lina and Noah talk while a deal is played (SKATGO-142, the human: 「就像真人打牌时，根据打的好坏或叫的好坏，
+碎碎念的一些话，一局里3次，尽量放到牌局里，不要牌局打完了说」): at most three lines a deal — the bidding just over, a trick worth a
+word, the game just decided with tricks still to play — never after the deal. Each is written there and then by the site's
+model in the page's language, Lina quick, competitive and dry, Noah warm, a little superstitious and laughing at himself
+(「人设同意」). How good the player's own bid or card was is SkatZero's judgement; the line only says it. A line names nothing
+not yet played and never says what to play or bid; the two may tease each other, never the player. Free play only
+(「只开自由对局」): not the tournament, the deal of the day, a private table or the course. The settings switch it off.
 
 A signed-in player's record of play at `/profile` (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，
 而且每个deal都要算和ai的差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's,

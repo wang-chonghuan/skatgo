@@ -21,39 +21,43 @@ test('a card is a slip well below the best, strong when clearly the best', () =>
   assert.equal(verdictOf([{ card: c('A'), value: 30 }], c('A')), null)
 })
 
-test('a deal talks at most once per kind, while it is played, and names only cards already played', { timeout: 300_000 }, async () => {
+test('a deal talks three times while it is played — once on an early end — once per kind, naming only cards already played', { timeout: 300_000 }, async () => {
   const [policy, pool] = await Promise.all([loadPolicy(DIR), loadPool(DIR)])
   try {
-    let kinds = 0
-    for (const n of [3, 11, 42, 77, 150, 401]) {
+    let full = 0
+    for (const n of [3, 11, 42, 77, 150, 401, 512, 733]) {
       const d = pool.deals[n]
       const plans = { 0: plan(d.computers['0']), 1: plan(d.computers['1']), 2: plan(d.computers['2']) }
       const log: Logged[] = []
-      await advance(deal(d.dealer, deckOf(d.deck)), log, (g) => computerTurn(g, actor(g)!, plans[actor(g)!], policy), undefined, true)
-      // The browser asks after each move of the human's seat, as free play's replies come.
+      const end = await advance(deal(d.dealer, deckOf(d.deck)), log, (g) => computerTurn(g, actor(g)!, plans[actor(g)!], policy), undefined, true)
+      // The browser asks after each move of the human's seat, as free play's replies come. SkatZero is asked nothing
+      // here: with no card judged, the windows' last tricks still give three lines.
       const said: TalkKind[] = []
-      let since = 0
       for (let k = 1; k <= log.length; k++) {
         if (log[k - 1].seat !== (0 as Seat) && k < log.length) continue
         const upTo = log.slice(0, k)
-        // Every second card of the human's is judged a slip, so the trick moments are exercised.
-        let judged = 0
-        const moment = await momentOf(d.dealer, deckOf(d.deck), upTo, since, said, d.computers['0'].maxBid, async () => (judged++ % 2 ? 'slip' : null))
-        since = k
+        const moment = await momentOf(d.dealer, deckOf(d.deck), upTo, said, d.computers['0'].maxBid, async () => null)
         if (!moment) continue
         assert.ok(!said.includes(moment.kind), `${moment.kind} said twice in deal ${n}`)
         said.push(moment.kind)
-        kinds += 1
+        assert.ok([1, 2].includes(moment.speaker))
         const told = JSON.stringify(moment.facts)
+        const trick = /Trick (\d+) of 10/.exec(told)
+        if (trick) assert.ok(Number(trick[1]) <= 9, `deal ${n} talks about trick ${trick[1]}`)
         const played = new Set(upTo.flatMap((e) => (e.move.type === 'play' ? [`${SUIT[e.move.card.suit]} ${RANK[e.move.card.rank]}`] : [])))
         for (const s of Object.values(SUIT)) for (const r of Object.values(RANK)) {
           if (told.includes(`${s} ${r}`)) assert.ok(played.has(`${s} ${r}`), `deal ${n} names ${s} ${r} before it was played`)
         }
-        if (moment.kind === 'decided') assert.match(String(moment.facts.moment), /tricks are still to be played/)
       }
       assert.ok(said.length <= 3)
+      // A deal played to its end talks three times; one decided early talks once on its end, after what came before.
+      if (end.phase === 'done' && !end.early && end.tricks.length === 10) {
+        assert.equal(said.length, 3, `deal ${n}: ${said.join(',')}`)
+        full += 1
+      }
+      if (end.early) assert.ok(said.at(-1) === 'end' || said.length === 3, `deal ${n}: ${said.join(',')}`)
     }
-    assert.ok(kinds > 0, 'some deal talked')
+    assert.ok(full > 0, 'some deal was played to its end')
   } finally {
     await policy.release()
   }

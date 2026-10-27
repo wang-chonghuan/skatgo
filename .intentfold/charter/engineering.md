@@ -115,11 +115,14 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   the deal's Seeger-Fabian score and the AI's go into `play_deals`, once per game (SKATGO-128).
   No language model judges or explains play: the judgement is SkatZero's. Since SKATGO-142 the site's model voices it as
   Lina's and Noah's table talk at free play: `POST /free/talk` (token, the revision last asked about, the kinds already
-  said, the page's language) finds in the deal's own record the moment among the new moves (`multiplayer/src/talk.ts`:
-  the game just decided before trick 10, else a trick of the first seven with the player's card a slip — 15 below
-  SkatZero's best — or the strong one — the best by 10 — or 20 card points, else the bidding just over when it is worth a
-  word — the player's bid above SkatZero's highest bid for the hand in the pool, their pass below it, or a bid of 30 or
-  more — and before the game is chosen the model is told not to name one), tells the model only what is public — bids, the contract,
+  said, the page's language) finds in the deal's own record the line to say now (`multiplayer/src/talk.ts`): the bidding
+  just won, when it is worth a word — the player won it, bid above SkatZero's highest bid for the hand in the pool,
+  passed below it, or the bid reached 30 — and then windows of the play (after a bidding line tricks 2–4 and 5–9, else
+  1–2, 3–5 and 6–9): in each, the latest trick finished no more than a trick ago that is worth a word — 15 card points,
+  the game decided by it, the player's card a slip (15 below SkatZero's best) or the strong one (the best by 10) — or the
+  window's last; a deal claimed early gets one line on it. The speaker is fixed: the computer that won the bidding (or bid
+  highest against the player), the one who took the trick (or lost most to the player). Before the game is chosen the
+  model is told not to name one; tells the model only what is public — bids, the contract,
   played cards, card points taken — and answers one line by Lina or Noah, or nothing: no moment, no model, a
   6-second timeout, or 3,000 lines a day used up. The model call is `src/llm.ts`, shared with the forum's translations.
 - Course libraries: `motion` (animation), `canvas-confetti`, `zustand` (progress, persisted to `localStorage`);

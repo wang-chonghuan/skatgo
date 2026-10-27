@@ -207,21 +207,20 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     }
     return reviewOf(end, await judgePlays(policy()!, playsOf(d.dealer, deck, t.log)), { ai: summarize(ai), aiAuction: auctionOf(ai) })
   }))
-  // Lina's and Noah's table talk (SKATGO-142): after a reply, the browser asks whether the moves since its last
-  // question hold a moment worth a word; the deal's record says which, SkatZero judges the human's own bid or card, the
+  // Lina's and Noah's table talk (SKATGO-142): after a reply, the browser asks whether there is a line to say now, with
+  // the kinds this deal has said; the deal's record says which moment, SkatZero judges the human's own bid or card, the
   // site's model says it. Nothing comes back when there is no moment, no model or no line in time. Free play only:
   // lesson 11 shares these routes but its page never asks.
   const talkInput = z.object({
     token: z.string().max(20_000),
-    since: z.number().int().nonnegative(),
-    said: z.array(z.enum(TALK_KINDS as [string, ...string[]])).max(3),
+    said: z.array(z.enum(TALK_KINDS as [string, ...string[]])).max(5),
     lang: z.enum(['en', 'de']),
   }).strict()
   router.post('/talk', run(async (body) => {
     const i = talkInput.parse(body)
     const { p, t } = opened(i.token)
     const d = p.deals[t.id]
-    const moment = await momentOf(d.dealer, deckOf(d.deck), t.log, i.since, i.said as never, d.computers['0'].maxBid,
+    const moment = await momentOf(d.dealer, deckOf(d.deck), t.log, i.said as never, d.computers['0'].maxBid,
       async (before, card) => verdictOf(await policy()!.ranked(viewOf(before, PLAYER)), card))
     const said = moment ? await lineFor(moment, i.lang) : null
     return said ? { kind: moment!.kind, speaker: said.speaker, line: said.line } : { kind: null }

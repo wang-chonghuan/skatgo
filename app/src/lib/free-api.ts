@@ -28,14 +28,14 @@ export const freeAct = (token: string, revision: number, action: Move) => post('
 export const freeResume = (token: string) => post('resume', { token })
 
 /** A moment of the deal worth a word, said by Lina (1) or Noah (2) — or nothing (SKATGO-142). */
-export type TalkKind = 'bid' | 'play' | 'decided'
+export type TalkKind = 'bid' | 'w1' | 'w2' | 'w3' | 'end'
 export type FreeTalk = { kind: TalkKind; speaker: 1 | 2; line: string } | { kind: null }
 
-/** Whether the moves since `since` hold a moment Lina or Noah talks about; the kinds already said in this deal are
- *  not said again. Any failure is silence: the table never waits for it. */
-export async function freeTalk(token: string, since: number, said: TalkKind[], lang: 'en' | 'de'): Promise<FreeTalk> {
+/** Whether Lina or Noah has a line to say now; the kinds already said in this deal are not said again. Any failure is
+ *  silence: the table never waits for it. */
+export async function freeTalk(token: string, said: TalkKind[], lang: 'en' | 'de'): Promise<FreeTalk> {
   try {
-    const res = await fetch('/api/free/talk', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, since, said, lang }) })
+    const res = await fetch('/api/free/talk', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, said, lang }) })
     return res.ok ? ((await res.json()) as FreeTalk) : { kind: null }
   } catch {
     return { kind: null }

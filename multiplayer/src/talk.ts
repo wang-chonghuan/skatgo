@@ -6,14 +6,20 @@ import { askModel, modelReady } from './llm'
 import { applySeatMove } from './model'
 
 // Lina and Noah talk at free play's table (SKATGO-142, the human: 「就像真人打牌时，根据打的好坏或叫的好坏，碎碎念的一些话，
-// 一局里3次，尽量放到牌局里，不要牌局打完了说」). Up to three moments of a deal, all while it is played: the bidding just
-// over, a trick worth a word, the game just decided. Which moment it is comes from the deal's own record, never from the
-// browser. How good the human's own bid or card was is SkatZero's judgement; the model only says it as table talk. What
-// the model is told is public — bids, the contract, the cards already played, the card points taken — never a card
+// 一局里3次，尽量放到牌局里，不要牌局打完了说」, then 「对手赢牌，或者输牌时，说一句即可，叫赢了也可以说，总共不超过3次」). Three lines a
+// deal, all while it is played: the bidding just won, when it is worth a word, and tricks Lina or Noah took or lost, spread
+// over the play in windows — in each, the first trick worth a word, or its last trick if none was. Which moment it is comes
+// from the deal's own record, never from the browser, and a moment missed while a question was out is still found later
+// in its window. How good the human's own bid or card was is SkatZero's judgement; the model only says it as table talk.
+// What the model is told is public — bids, the contract, the cards already played, the card points taken — never a card
 // still in a hand or in the skat: about the computers' bids and cards it hears only what everyone saw.
 
-export type TalkKind = 'bid' | 'play' | 'decided'
-export const TALK_KINDS: TalkKind[] = ['bid', 'play', 'decided']
+/** The bidding just won, the first, second or third window of the play, or the play ended early. */
+export type TalkKind = 'bid' | 'w1' | 'w2' | 'w3' | 'end'
+export const TALK_KINDS: TalkKind[] = ['bid', 'w1', 'w2', 'w3', 'end']
+/** The tricks of each window, first and last: after a bidding line two windows, without one three. */
+const WINDOWS_AFTER_BID: [number, number][] = [[2, 4], [5, 9]]
+const WINDOWS: [number, number][] = [[1, 2], [3, 5], [6, 9]]
 
 /** How the human's card in a trick stood in SkatZero's values: a slip (well below the best), or the strong one. */
 export type Verdict = 'slip' | 'strong'
@@ -24,8 +30,8 @@ export const SLIP = 15
 export const STRONG = 10
 /** A bid this high is worth a word whoever made it. */
 const BID_WORTH_A_WORD = 30
-/** Only the first seven tricks are talked about as a trick; later ones belong to the game being decided. */
-const TALKED_TRICKS = 7
+/** A trick with this many card points is worth a word. */
+const BIG_TRICK = 15
 
 const NAME: Record<Seat, string> = { 0: 'You', 1: 'Lina', 2: 'Noah' }
 const SUIT: Record<Card['suit'], string> = { C: 'Clubs', S: 'Spades', H: 'Hearts', D: 'Diamonds' }
@@ -63,6 +69,7 @@ type TrickStep = Step & { number: number; mine: { before: Game; card: Card } | n
 function walk(dealer: Seat, deck: Card[], log: Logged[]) {
   let g = deal(dealer, deck)
   let bidEnd: Step | null = null
+  let ended: (Step & { kind: 'claim' | 'concede' }) | null = null
   const tricks: TrickStep[] = []
   let mine: TrickStep['mine'] = null
   log.forEach(({ seat, move }, i) => {
@@ -71,13 +78,14 @@ function walk(dealer: Seat, deck: Card[], log: Logged[]) {
     const was = g.phase
     g = applySeatMove(g, seat, move)
     if (was === 'bidding' && g.phase !== 'bidding' && g.phase !== 'passedIn') bidEnd = { at: i + 1, g }
+    if (g.early && !ended) ended = { at: i + 1, g, kind: g.early.kind }
     if (g.phase === 'trickEnd' && !g.early) {
       const done = collectTrick(g)
       tricks.push({ at: i + 1, g: done, number: done.tricks.length, mine })
       mine = null
     }
   })
-  return { bidEnd: bidEnd as Step | null, tricks }
+  return { bidEnd: bidEnd as Step | null, tricks, ended: ended as (Step & { kind: 'claim' | 'concede' }) | null }
 }
 
 /** The human's bid against SkatZero's limit for their hand: bidding beyond it is bold, passing below it cautious; a
@@ -95,12 +103,20 @@ function bidVerdict(g: Game, limit: number): string | null {
     : null
 }
 
-/** What the model is told about the bidding just over: public bids, and the human's own bid judged by SkatZero. */
+/** Who speaks about the bidding: the computer that won it, or, when the human did, the one who bid highest against them. */
+function bidSpeaker(g: Game): 1 | 2 {
+  if (g.declarer === 1 || g.declarer === 2) return g.declarer
+  const a = auctionOf(g)
+  return a[2].value > a[1].value ? 2 : 1
+}
+
+/** What the model is told about the bidding just won: public bids, and the human's own bid judged by SkatZero. */
 function bidFacts(g: Game, limit: number) {
   const auction = auctionOf(g)
   const said = (s: Seat) => (auction[s].value ? `${auction[s].value}${auction[s].passed ? ', then passed' : ''}` : auction[s].passed ? 'passed without bidding' : 'no bid')
   return {
     moment: 'The bidding is over. The declarer has not chosen the game yet: do not name or guess any game.',
+    speaker: NAME[bidSpeaker(g)],
     declarer: NAME[g.declarer!],
     bid: g.bid,
     bids: { You: said(0), Lina: said(1), Noah: said(2) },
@@ -108,68 +124,97 @@ function bidFacts(g: Game, limit: number) {
   }
 }
 
-/** What the model is told about a finished trick: its cards in order, who took it and how much, the card points so
- *  far, and the human's own card judged by SkatZero. */
-function trickFacts(t: TrickStep, verdict: Verdict | null) {
+/** Who speaks about a trick: Lina or Noah when one of them took it; when the human did, the one who lost more to it. */
+function trickSpeaker(t: TrickStep): 1 | 2 {
   const last = t.g.tricks[t.g.tricks.length - 1]
+  if (last.winner === 1 || last.winner === 2) return last.winner
+  const lost = (s: Seat) => pointsOf(last.cards.filter((p) => p.seat === s).map((p) => p.card))
+  return lost(2) > lost(1) ? 2 : 1
+}
+
+/** What the model is told about a finished trick: its cards in order, who took it and how much, the card points so far,
+ *  whether it decided the game, and the human's own card judged by SkatZero. */
+function trickFacts(t: TrickStep, verdict: Verdict | null, decided: 'declarer' | 'defenders' | null) {
+  const last = t.g.tricks[t.g.tricks.length - 1]
+  const speaker = trickSpeaker(t)
   return {
     moment: `Trick ${t.number} of 10 has just been taken.`,
+    speaker: NAME[speaker],
+    speakerTookIt: last.winner === speaker,
     contract: contractName(t.g),
     declarer: NAME[t.g.declarer!],
     trick: last.cards.map((p) => ({ by: NAME[p.seat], card: cardName(p.card) })),
     takenBy: NAME[last.winner],
     trickPoints: pointsOf(last.cards.map((p) => p.card)),
     cardPointsSoFar: taken(t.g),
+    decided: decided ? `This trick decided the game: ${decided === 'declarer' ? `the declarer, ${NAME[t.g.declarer!]}, has won` : 'the defenders have won'}; ${10 - t.number} tricks are still to be played.` : null,
     aboutYou: verdict === 'slip'
       ? 'Your card in this trick was a slip by SkatZero’s measure: a clearly better card was in your hand.'
       : verdict === 'strong' ? 'Your card in this trick was the strong one by SkatZero’s measure, well above any other choice.' : null,
   }
 }
 
-/** What the model is told when the game has just been decided with tricks still to play. */
-function decidedFacts(t: TrickStep, who: 'declarer' | 'defenders') {
+/** What the model is told when the deal is decided before its last card: the declarer laid the rest open, or the
+ *  defenders gave up a Null. The table still shows it; the result comes after. */
+function endFacts(e: Step & { kind: 'claim' | 'concede' }, speaker: 1 | 2) {
   return {
-    moment: `After trick ${t.number} of 10 the game is decided; ${10 - t.number} tricks are still to be played.`,
-    contract: contractName(t.g),
-    declarer: NAME[t.g.declarer!],
-    defenders: ([0, 1, 2] as Seat[]).filter((s) => s !== t.g.declarer).map((s) => NAME[s]),
-    winner: who === 'declarer' ? `the declarer, ${NAME[t.g.declarer!]}` : 'the defenders',
-    cardPointsSoFar: taken(t.g),
+    moment: e.kind === 'claim'
+      ? `The declarer, ${NAME[e.g.declarer!]}, has laid the rest of the cards open: all remaining tricks are theirs and the deal ends here.`
+      : `The defenders have given up the Null of ${NAME[e.g.declarer!]}: the deal ends here.`,
+    speaker: NAME[speaker],
+    contract: contractName(e.g),
+    declarer: NAME[e.g.declarer!],
   }
 }
 
-export type Moment = { kind: TalkKind; facts: Record<string, unknown> }
+export type Moment = { kind: TalkKind; speaker: 1 | 2; facts: Record<string, unknown> }
+
+/** Whether the bidding is worth a word: the human won it, bid bold or passed cautious by SkatZero's measure, or the bid
+ *  reached 30 (「根据……叫的好坏」); an 18 a computer took after everyone passed is not. */
+const bidWorthAWord = (g: Game, limit: number) => g.declarer === PLAYER || bidVerdict(g, limit) !== null || g.bid >= BID_WORTH_A_WORD
 
 /**
- * The moment to talk about among the moves after `since`, or null: the game just decided before its last trick, else a
- * trick of the first seven worth a word (the human's card a slip or the strong one, or 20 card points or more), else
- * the bidding just over. Kinds already said in this deal are not said again. `limit` is SkatZero's highest bid for the
- * human's hand; `judge` is SkatZero's values for the human's legal cards just before their card.
+ * The line to say now, or null. The bidding's, while no trick of the play has been finished but the first, if it is
+ * worth a word; then each window of the play in turn: the latest of its tricks, finished no more than a trick ago, that
+ * is worth a word — 15 card points, the game decided by it, the human's card a slip or the strong one — or is the
+ * window's last. A moment missed is found again while its window lasts; the tenth trick and the end are never talked
+ * about. Kinds already said in this deal are not said again. `limit` is SkatZero's highest bid for the human's hand;
+ * `judge` is SkatZero's values for the human's legal cards just before their card.
  */
 export async function momentOf(
-  dealer: Seat, deck: Card[], log: Logged[], since: number, said: TalkKind[], limit: number,
+  dealer: Seat, deck: Card[], log: Logged[], said: TalkKind[], limit: number,
   judge: (before: Game, card: Card) => Promise<Verdict | null>,
 ): Promise<Moment | null> {
-  const { bidEnd, tricks } = walk(dealer, deck, log)
-  const fresh = tricks.filter((t) => t.at > since)
-  if (!said.includes('decided')) {
-    // The trick that decided it, if it is among the new moves and tricks are left to play.
-    const first = tricks.find((t) => decidedBy(t.g))
-    const who = first && decidedBy(first.g)
-    if (first && who && first.at > since && first.number < 10) return { kind: 'decided', facts: decidedFacts(first, who) }
+  if (said.length >= 3) return null
+  const { bidEnd, tricks, ended } = walk(dealer, deck, log)
+  if (!bidEnd || bidEnd.g.declarer === null) return null
+  const withBid = bidWorthAWord(bidEnd.g, limit)
+  if (withBid && !said.includes('bid') && tricks.length <= 1) {
+    return { kind: 'bid', speaker: bidSpeaker(bidEnd.g), facts: bidFacts(bidEnd.g, limit) }
   }
-  if (!said.includes('play')) {
-    for (const t of [...fresh].reverse().filter((t) => t.number <= TALKED_TRICKS)) {
+  const latest = tricks.length
+  const windows = withBid ? WINDOWS_AFTER_BID : WINDOWS
+  // A deal decided before its last card ends the play there: one line on it, in place of the windows it cut short — the
+  // declarer's if Lina or Noah laid it open, else theirs who loses it.
+  if (ended) {
+    if (said.includes('end') || windows.every((_, n) => said.includes(`w${n + 1}` as TalkKind))) return null
+    const declarer = ended.g.declarer!
+    const speaker: 1 | 2 = declarer === 1 || declarer === 2 ? (ended.kind === 'claim' ? declarer : (declarer === 1 ? 2 : 1)) : bidSpeaker(ended.g)
+    return { kind: 'end', speaker, facts: endFacts(ended, speaker) }
+  }
+  for (const [n, [from, to]] of windows.entries()) {
+    const kind = `w${n + 1}` as TalkKind
+    if (said.includes(kind)) continue
+    const recent = tricks.filter((t) => t.number >= from && t.number <= to && t.number >= latest - 1).reverse()
+    for (const t of recent) {
       const verdict = t.mine ? await judge(t.mine.before, t.mine.card) : null
       const points = pointsOf(t.g.tricks[t.g.tricks.length - 1].cards.map((p) => p.card))
-      if (verdict || points >= 20) return { kind: 'play', facts: trickFacts(t, verdict) }
+      const before = tricks[t.number - 2]?.g
+      const decided = decidedBy(t.g) && !(before && decidedBy(before)) ? decidedBy(t.g) : null
+      if (verdict || points >= BIG_TRICK || decided || t.number === to) {
+        return { kind, speaker: trickSpeaker(t), facts: trickFacts(t, verdict, decided) }
+      }
     }
-  }
-  // The bidding is talked about only when there is something to say: the player's bid bold or their pass cautious by
-  // SkatZero's measure, or a bid of 30 or more (「根据……叫的好坏」); an 18 everyone passed is not a moment.
-  if (!said.includes('bid') && bidEnd && bidEnd.at > since && bidEnd.g.declarer !== null) {
-    const facts = bidFacts(bidEnd.g, limit)
-    if (facts.aboutYou || bidEnd.g.bid >= BID_WORTH_A_WORD) return { kind: 'bid', facts }
   }
   return null
 }
@@ -196,7 +241,7 @@ Name a game (contract) only if the facts give one.
 Use only the facts given. Never mention or guess a card that has not been played, nor the skat.
 Never say what to play or what to bid. Lina and Noah may tease each other; never mock the human — a slip of theirs gets a light, kind remark, a strong card or a bold bid a nod.
 Say at most one number. Keep the Skat words Grand, Null, Hand, Schneider, Ouvert as they are; name cards the way ${LANGUAGE[lang]} Skat players do.
-The speaker is whoever the moment concerns most: the one who took the trick, the declarer, a defender, or the one who passed.
+The speaker is the one named in the facts: as the one who took the trick or lost it, won the bidding or bid against it.
 Answer as JSON: {"speaker": "Lina" or "Noah", "line": "..."}`
 
 /** How many lines the service writes a day, against a free table being run through on purpose (about a dollar). */
@@ -215,10 +260,9 @@ export async function lineFor(moment: Moment, lang: TalkLang, timeoutMs = 6000, 
   written.count += 1
   try {
     const answer = await askModel(prompt(lang), JSON.stringify(moment.facts), timeoutMs)
-    const speaker = answer.speaker === 'Lina' ? 1 : answer.speaker === 'Noah' ? 2 : null
     const line = typeof answer.line === 'string' ? answer.line.trim() : ''
-    // A long line is no muttering: it is dropped rather than shown.
-    return speaker && line && line.split(/\s+/).length <= MAX_WORDS ? { speaker, line } : null
+    // A long line is no muttering: it is dropped rather than shown. The speaker is the moment's, whatever the answer says.
+    return line && line.split(/\s+/).length <= MAX_WORDS ? { speaker: moment.speaker, line } : null
   } catch (e) {
     console.error(JSON.stringify({ event: 'talk_failed', reason: (e as Error).message }))
     return null

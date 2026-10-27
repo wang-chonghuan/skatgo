@@ -61,13 +61,13 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
   const [summary, setSummary] = useState(false)
   /** Each finished game's review, asked once (SKATGO-86): the result and the round both read it. */
   const reviews = useRef(new Map<string, Promise<DealReview | FreeError>>())
-  /** Free play's table talk (SKATGO-142): the line on the table, and this deal's talk so far — the kinds said, the
-   *  revision last asked about, whether a question is out. A new deal starts it again. */
+  /** Free play's table talk (SKATGO-142): the line on the table, and this deal's talk so far — the kinds said, whether a
+   *  question is out. A new deal starts it again. */
   const talkOn = useSettings((s) => s.talk)
   const [talk, setTalk] = useState<{ seat: 1 | 2; line: string; id: number } | null>(null)
   /** A line waits until the table has shown every move of the reply it is about, so it never runs ahead of the felt. */
   const [heard, setHeard] = useState<{ seat: 1 | 2; line: string; id: number; asked: number } | null>(null)
-  const talking = useRef({ deal: 0, said: [] as TalkKind[], from: 0, out: false })
+  const talking = useRef({ deal: 0, said: [] as TalkKind[], out: false })
   const ask = (t: string) => {
     let asked = reviews.current.get(t)
     if (!asked) reviews.current.set(t, (asked = freeReview(t)))
@@ -89,23 +89,22 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     setSending(false)
     if (isFreeError(r)) return setFailure({ text: problemText(r), retry: () => void start() })
     track('game_started', { mode })
-    talking.current = { deal: talking.current.deal + 1, said: [], from: 0, out: false }
+    talking.current = { deal: talking.current.deal + 1, said: [], out: false }
     setTalk(null)
     setHeard(null)
     take(r.steps, r)
   }
 
-  /** After a reply: whether the moves since the last question hold a moment Lina or Noah talks about. One question at a
-   *  time; moves while one is out are asked about with the next. Free play only, and only while the switch is on. */
-  async function listen(at: string, revision: number) {
+  /** After a reply: whether Lina or Noah has a line to say now. One question at a time; a moment passed while one was
+   *  out is found by the next, while its part of the deal lasts. Free play only, and only while the switch is on. */
+  async function listen(at: string) {
     const t = talking.current
     if (mode !== 'free' || !talkOn || t.out || t.said.length >= TALK_MAX) return
     t.out = true
     const asked = Date.now()
-    const r = await freeTalk(at, t.from, t.said, getLocale() === 'de' ? 'de' : 'en')
+    const r = await freeTalk(at, t.said, getLocale() === 'de' ? 'de' : 'en')
     if (talking.current !== t) return
     t.out = false
-    t.from = revision
     if (r.kind === null || t.said.includes(r.kind) || Date.now() - asked > TALK_LATE) return
     t.said.push(r.kind)
     setHeard({ seat: r.speaker, line: r.line, id: asked, asked })
@@ -132,7 +131,7 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
       return setFailure({ text: problemText(r), retry: lost ? undefined : () => void send(move) })
     }
     take(r.steps, r)
-    void listen(r.token, r.revision)
+    void listen(r.token)
   }
 
   /** A game carried here across a change of language (SKATGO-79) or kept in this browser (SKATGO-96): taken
@@ -149,8 +148,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         // A round that does not read is no round: the game goes on as the first deal of a new one.
       }
     }
-    // A game taken up again talks only about what happens from here (SKATGO-142).
-    talking.current = { deal: talking.current.deal + 1, said: [], from: r.revision, out: false }
+    // A game taken up again starts its talk afresh (SKATGO-142).
+    talking.current = { deal: talking.current.deal + 1, said: [], out: false }
     take(r.steps, r)
   }
   // Free play's game goes along when the language changes, with its round (SKATGO-88), and stays in this

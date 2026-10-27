@@ -412,8 +412,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   "Tisch verlassen" (`quiet`) (SKATGO-88). Lina's and Noah's table talk (SKATGO-142) is a white card (`radii.panel`,
   `elev.option`, `appText` in `navy`, the speaker's name in `appBtnStrong`) on the speaker's side: on a wide table
   (`bp.pinned`) beside the trick frame, level with its top, toward Lina's or Noah's cards (`dims.talkWidth`); narrower,
-  just over the frame at its left or right edge. It comes once the table has shown the moves it is about, stays six
-  seconds, and a line later than seven seconds after its question is dropped. The settings carry the switch, "Tischgespräche" — "Lina und Noah
+  just over the frame at its left or right edge. It comes once the table has shown the moves it is about and stays
+  until the next tap anywhere, which still does what it does (the human: 「最好让用户点一下屏幕再给让这个泡泡消失」); in its
+  corner the blinking hand of a trick's tap (`dims.talkHand`, half of `tapHand`). A line later than seven seconds after
+  its question is dropped. The settings carry the switch, "Tischgespräche" — "Lina und Noah
   reden im freien Spiel", on by default, as the sounds' switch.
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),

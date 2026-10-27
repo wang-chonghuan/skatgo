@@ -168,6 +168,8 @@ export const dims = stylex.defineVars({
   /** SKATGO-142: Lina's or Noah's line beside the trick frame on a wide table — the room between the frame and their
    *  cards. */
   talkWidth: '220px',
+  /** SKATGO-142: the tap hand on that line, half the trick's (`tapHand`). */
+  talkHand: '24px',
 
   // Generic
   screen: '100vh',

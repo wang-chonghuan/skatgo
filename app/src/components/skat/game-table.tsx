@@ -184,6 +184,7 @@ export function GameTable(props: Props) {
 
 function Table({ onSettled, fullScreen = false, tournament, server, room, exercise }: Props) {
   const nameOf = useNameOf()
+  const reducedMotion = useReducedMotion()
   const [dealer, setDealer] = useState<Seat>(2)
   const [localGame, setGame] = useState<Game>(() => deal(2))
   const remote = tournament ?? server ?? room ?? exercise
@@ -492,7 +493,11 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               table beside the frame on the speaker's side, otherwise just over the frame on that side. */}
           {server?.talk ? (
             <p key={server.talk.id} role="status" data-testid="skat-talk" data-seat={server.talk.seat} {...stylex.props(typography.appText, styles.talk, server.talk.seat === 1 ? styles.talkLeft : styles.talkRight)}>
-              <span {...stylex.props(typography.appBtnStrong)}>{nameOf(server.talk.seat)}:</span> {server.talk.line}
+              <span>
+                <span {...stylex.props(typography.appBtnStrong)}>{nameOf(server.talk.seat)}:</span> {server.talk.line}
+              </span>
+              {/* A tap anywhere puts it away (the human: 「最好让用户点一下屏幕再给让这个泡泡消失……显示……那个收墩的按钮」). */}
+              <TapHand testId="skat-talk-hand" place={styles.talkHand} still={reducedMotion} />
             </p>
           ) : null}
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
@@ -864,6 +869,19 @@ function restHands(g: Game): [Card[], Card[], Card[]] {
 
 /** The tap that takes a finished trick off the table (SKATGO-72): a tap anywhere on the screen, said
  *  by a blinking hand in the frame's corner — still for a player who asked for less motion. */
+/** The blinking hand that says "tap" (SKATGO-72): on a finished trick waiting for the tap, and on Lina's or Noah's line
+ *  (SKATGO-142), which a tap anywhere puts away. */
+function TapHand({ testId, place, still }: { testId: string; place: stylex.StyleXStyles; still: boolean | null }) {
+  return (
+    <motion.svg aria-hidden="true" data-testid={testId} viewBox={tapHint.view} animate={still ? undefined : tapHint.blink} transition={tapHint.transition} {...stylex.props(place)}>
+      <path d={tapHint.hand} strokeWidth={tapHint.stroke} strokeLinejoin="round" {...stylex.props(styles.collectSkin)} />
+      {tapHint.lines.map((d) => (
+        <path key={d} d={d} fill="none" strokeWidth={tapHint.stroke} strokeLinecap="round" {...stylex.props(styles.collectLine)} />
+      ))}
+    </motion.svg>
+  )
+}
+
 function Collect({ hand, onCollect }: { hand: Card[]; onCollect: (card: Card | null) => void }) {
   const still = useReducedMotion()
   // The tap lands on the cover; a card of the learner's under it is found by where it landed.
@@ -873,19 +891,7 @@ function Collect({ hand, onCollect }: { hand: Card[]; onCollect: (card: Card | n
   }
   return (
     <>
-      <motion.svg
-        aria-hidden="true"
-        data-testid="skat-collect-hand"
-        viewBox={tapHint.view}
-        animate={still ? undefined : tapHint.blink}
-        transition={tapHint.transition}
-        {...stylex.props(styles.collectHand)}
-      >
-        <path d={tapHint.hand} strokeWidth={tapHint.stroke} strokeLinejoin="round" {...stylex.props(styles.collectSkin)} />
-        {tapHint.lines.map((d) => (
-          <path key={d} d={d} fill="none" strokeWidth={tapHint.stroke} strokeLinecap="round" {...stylex.props(styles.collectLine)} />
-        ))}
-      </motion.svg>
+      <TapHand testId="skat-collect-hand" place={styles.collectHand} still={still} />
       {createPortal(
         <button type="button" data-testid="skat-collect" aria-label={m.table_collect()} onClick={(e) => onCollect(tapped(e.clientX, e.clientY))} {...stylex.props(styles.collect)} />,
         document.body,
@@ -1679,6 +1685,9 @@ const styles = stylex.create({
   // its top, toward the speaker's cards; elsewhere just over the frame, at its left or right edge.
   talk: {
     position: 'absolute',
+    display: 'flex',
+    alignItems: 'flex-end',
+    gap: space.x8,
     margin: 0,
     width: 'max-content',
     maxWidth: { default: '100%', [bp.pinned]: dims.talkWidth },
@@ -1693,6 +1702,7 @@ const styles = stylex.create({
     boxShadow: elev.option,
     color: color.navy,
   },
+  talkHand: { flexShrink: 0, width: dims.talkHand, height: dims.talkHand, overflow: 'visible', alignSelf: 'flex-end' },
   talkLeft: {
     left: { default: 0, [bp.pinned]: 'auto' },
     right: { default: 'auto', [bp.pinned]: '100%' },

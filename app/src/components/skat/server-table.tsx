@@ -34,9 +34,8 @@ const problemText = (e: FreeError) =>
 type Settled = { humanWon: boolean; humanScore: number }
 
 /** Lina's and Noah's table talk (SKATGO-142): a line that comes later than this after its question is about a moment
- *  long gone and is dropped; a line stays on the table this long. */
+ *  long gone and is dropped. A line on the table stays until the next tap. */
 const TALK_LATE = 7000
-const TALK_SHOWN = 6000
 const TALK_MAX = 3
 
 /** Free play's round (SKATGO-88): six deals, the deal going round as at a real table, so the player sits
@@ -114,10 +113,13 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     setHeard(null)
     if (Date.now() - heard.asked <= TALK_LATE) setTalk({ seat: heard.seat, line: heard.line, id: heard.id })
   }, [heard, queue])
+  // A tap anywhere puts the line away (the human: 「最好让用户点一下屏幕再给让这个泡泡消失」) and still does what it does —
+  // plays a card, collects a trick. The table never waits for it.
   useEffect(() => {
     if (!talk) return
-    const timer = setTimeout(() => setTalk(null), TALK_SHOWN)
-    return () => clearTimeout(timer)
+    const away = () => setTalk(null)
+    document.addEventListener('pointerdown', away, true)
+    return () => document.removeEventListener('pointerdown', away, true)
   }, [talk])
 
   async function send(move: Move) {

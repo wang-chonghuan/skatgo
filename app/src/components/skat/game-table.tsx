@@ -113,6 +113,8 @@ export type Tournament = {
   /** The day's finished deals and, for each, the AI's result in the player's seat (SKATGO-42). */
   deals?: DealSummary[]
   benchmarks?: (DealSummary | null)[]
+  /** What Lina (1) or Noah (2) just said (SKATGO-142), shown on their side. */
+  talk?: { seat: 1 | 2; line: string; id: number } | null
 }
 
 /** What the settlement shows in the tournament (SKATGO-57, simplified in SKATGO-79): this deal's score
@@ -134,7 +136,7 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   review?: AskReview
   /** Free play: give up the round for a new one (SKATGO-96). */
   newRound?: () => void
-  /** Free play: what Lina (1) or Noah (2) just said (SKATGO-142), shown over the trick on their side. */
+  /** Free play: what Lina (1) or Noah (2) just said (SKATGO-142), shown on their side. */
   talk?: { seat: 1 | 2; line: string; id: number } | null
 }
 
@@ -185,6 +187,8 @@ export function GameTable(props: Props) {
 function Table({ onSettled, fullScreen = false, tournament, server, room, exercise }: Props) {
   const nameOf = useNameOf()
   const reducedMotion = useReducedMotion()
+  // Lina's or Noah's line at free play or the tournament (SKATGO-142).
+  const talk = server?.talk ?? tournament?.talk ?? null
   const [dealer, setDealer] = useState<Seat>(2)
   const [localGame, setGame] = useState<Game>(() => deal(2))
   const remote = tournament ?? server ?? room ?? exercise
@@ -489,12 +493,12 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         ))}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
-          {/* Lina's or Noah's word at free play's table (SKATGO-142, the human: 「就像真人打牌时……碎碎念的一些话」): on a wide
+          {/* Lina's or Noah's word at free play's and the tournament's tables (SKATGO-142, the human: 「就像真人打牌时……碎碎念的一些话」): on a wide
               table beside the frame on the speaker's side, otherwise just over the frame on that side. */}
-          {server?.talk ? (
-            <p key={server.talk.id} role="status" data-testid="skat-talk" data-seat={server.talk.seat} {...stylex.props(typography.appText, styles.talk, server.talk.seat === 1 ? styles.talkLeft : styles.talkRight)}>
+          {talk ? (
+            <p key={talk.id} role="status" data-testid="skat-talk" data-seat={talk.seat} {...stylex.props(typography.appText, styles.talk, talk.seat === 1 ? styles.talkLeft : styles.talkRight)}>
               <span>
-                <span {...stylex.props(typography.appBtnStrong)}>{nameOf(server.talk.seat)}:</span> {server.talk.line}
+                <span {...stylex.props(typography.appBtnStrong)}>{nameOf(talk.seat)}:</span> {talk.line}
               </span>
               {/* A tap anywhere puts it away (the human: 「最好让用户点一下屏幕再给让这个泡泡消失……显示……那个收墩的按钮」). */}
               <TapHand testId="skat-talk-hand" place={styles.talkHand} still={reducedMotion} />

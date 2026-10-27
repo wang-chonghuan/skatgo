@@ -5,7 +5,8 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { track } from '~/lib/analytics'
-import { type DailyError, dailyAct, dailyBoard, dailyState, isError } from '~/lib/daily-api'
+import { type DailyError, dailyAct, dailyBoard, dailyState, dailyTalk, isError } from '~/lib/daily-api'
+import { useTableTalk } from '~/lib/table-talk'
 import { useAccount } from '~/lib/use-account'
 import type { Move } from '~/lib/skat/game'
 import { BOARD_DAYS, type BoardRow, DAILY_DEALS, DAILY_TIME_ZONE, DEAL_OF_DAY, type DailyBoard, type DailyReply, type DailySize, type DailyStatus, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
@@ -218,6 +219,13 @@ export function DailyTable({ size = DAILY_DEALS }: { size?: DailySize }) {
   const [deal, setDeal] = useState(0)
   /** Totals as they stood before the move whose steps are still being shown. */
   const before = useRef<[number, number, number]>([0, 0, 0])
+  // Lina's and Noah's table talk (SKATGO-142, the human: 「锦标赛也加进去，1deal和6deal都加」), as at free play; each deal
+  // starts it afresh.
+  const { talk, newDeal, listen } = useTableTalk(true, queue.length === 0)
+  useEffect(() => {
+    newDeal()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deal])
 
   async function load() {
     const r = await dailyState(true, size)
@@ -263,6 +271,7 @@ export function DailyTable({ size = DAILY_DEALS }: { size?: DailySize }) {
     setReply(r)
     setShown(r.steps[0])
     setQueue(r.steps.slice(1))
+    void listen((said) => dailyTalk(size, deal, said, getLocale() === 'de' ? 'de' : 'en'))
   }
 
   const game = useMemo(() => (shown ? gameFromView(shown) : null), [shown])
@@ -301,6 +310,7 @@ export function DailyTable({ size = DAILY_DEALS }: { size?: DailySize }) {
         totals: busy ? before.current : reply.status.totals,
         deals: reply.status.deals,
         benchmarks: reply.status.benchmarks,
+        talk,
       }}
     />
   )

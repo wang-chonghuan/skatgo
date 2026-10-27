@@ -382,7 +382,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             </span>
           </button>
         </section>
-        {/* Lina and Noah talking at free play's table (SKATGO-142), on by default. */}
+        {/* Lina and Noah talking at free play's and the tournament's tables (SKATGO-142), on by default. */}
         <section {...stylex.props(styles.section)}>
           <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_talk()}</h3>
           <button

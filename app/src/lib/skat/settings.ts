@@ -28,7 +28,8 @@ type SettingsState = {
    *  count themselves; switched by a tap on the cell, off (card points) by default. */
   boardTricks: boolean
   setBoardTricks: (on: boolean) => void
-  /** SKATGO-142: Lina and Noah talk at free play's table. On by default; off, the table asks nothing of the model. */
+  /** SKATGO-142: Lina and Noah talk at free play's and the daily tournament's tables. On by default; off, the table asks
+   *  nothing of the model. */
   talk: boolean
   setTalk: (on: boolean) => void
 }

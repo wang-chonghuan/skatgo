@@ -18,6 +18,7 @@ import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzer
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, judgePlays, playsOf, raw, replayLog, reviewOf, skatzeroTurn } from './computers'
 import type { Store } from './store'
 import { playProfile } from './profile'
+import { type BidLimit, lineFor, momentOf, TALK_KINDS, type TalkKind, verdictOf } from './talk'
 import { type DealPick, kindOf, pickOfDay } from './pick'
 
 // The daily tournament (SKATGO-35). Every day has one tournament of six deals, the same for every player, each
@@ -145,6 +146,11 @@ const boardInput = z.object({
   player: player.nullable(), size, day: z.union([z.enum(['today', 'yesterday']), z.number().int().min(0).max(BOARD_DAYS - 1)]),
 }).strict()
 const reviewInput = z.object({ player, size, deal: z.number().int().min(0).max(DAILY_DEALS - 1) }).strict()
+// Lina's and Noah's table talk at the deal in progress (SKATGO-142).
+const talkInput = z.object({
+  player, size, deal: z.number().int().min(0).max(DAILY_DEALS - 1),
+  said: z.array(z.enum(TALK_KINDS as [string, ...string[]])).max(5), lang: z.enum(['en', 'de']),
+}).strict()
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
 // A record of play is an account's (SKATGO-128).
 const profileInput = z.object({ player: z.string().regex(/^user:/).pipe(player) }).strict()
@@ -639,6 +645,37 @@ export async function dailyReview(store: Store, policy: Policy, who: string, ind
   })
 }
 
+/** How high SkatZero would bid the player's hand, from the AI's own game of the deal from their seat (SKATGO-142): it
+ *  passed at its last number, or won the bidding at least at its bid. A day without the AI's game knows nothing. */
+function aiBidLimit(spec: DealSpec): BidLimit {
+  const b = spec.benchmark
+  if (!b) return { atMost: null, atLeast: 0 }
+  const mine = auctionOf(replayLog(spec.dealer, spec.deck, b.log))[PLAYER]
+  return b.summary.declarer === PLAYER ? { atMost: null, atLeast: b.summary.bid } : { atMost: mine.value, atLeast: mine.value }
+}
+
+/**
+ * Lina's and Noah's table talk at today's tournament deal the player is at (SKATGO-142, the human: 「锦标赛也加进去，1deal和
+ * 6deal都加」): as at free play, from the deal's own record — the one in progress, or the one just finished by an early
+ * claim — with the kinds this deal has said. Nothing on a day of the heuristic computers, or before the deal is the
+ * player's.
+ */
+export async function dailyTalk(store: Store, policy: Policy, who: string, size: DailySize, index: number, said: TalkKind[], lang: 'en' | 'de', now = Date.now()) {
+  const day = dayOf(now)
+  const { rows: dealt } = await store.pool.query('SELECT deals, computer FROM daily_deals WHERE day = $1 AND size = $2', [day, size])
+  if (!dealt[0] || dealt[0].computer === HEURISTIC) return { kind: null }
+  const { rows: entered } = await store.pool.query(
+    'SELECT actions, deals FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, size, who])
+  const e = entered[0] as Pick<Entry, 'actions' | 'deals'> | undefined
+  if (!e || index > e.deals.length) return { kind: null }
+  const spec = (dealt[0].deals as DealSpec[])[index]
+  if (!spec) return { kind: null }
+  const moment = await momentOf(spec.dealer, spec.deck, (e.actions[index] ?? []) as Logged[], said, aiBidLimit(spec),
+    async (before, card) => verdictOf(await policy.ranked(viewOf(before, PLAYER)), card))
+  const line = moment ? await lineFor(moment, lang) : null
+  return line ? { kind: moment!.kind, speaker: line.speaker, line: line.line } : { kind: null }
+}
+
 /** The routes, behind the admission key. */
 export function dailyRoutes(store: Store, key: string, ready: () => boolean, policy: () => Policy | null) {
   const router = express.Router()
@@ -686,6 +723,10 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
   router.post('/elo', run(async body => {
     eloInput.parse(body)
     return dailyElo(store)
+  }))
+  router.post('/talk', run(async body => {
+    const i = talkInput.parse(body)
+    return dailyTalk(store, policy()!, i.player, i.size, i.deal, i.said as TalkKind[], i.lang)
   }))
   router.post('/review', run(async body => {
     const i = reviewInput.parse(body)

@@ -114,10 +114,12 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   signed-in player with it (`/api/free/review` passes `user:<id>`, never a guest and never a browser-sent player),
   the deal's Seeger-Fabian score and the AI's go into `play_deals`, once per game (SKATGO-128).
   No language model judges or explains play: the judgement is SkatZero's. Since SKATGO-142 the site's model voices it as
-  Lina's and Noah's table talk at free play: `POST /free/talk` (token, the revision last asked about, the kinds already
-  said, the page's language) finds in the deal's own record the line to say now (`multiplayer/src/talk.ts`): the bidding
+  Lina's and Noah's table talk at free play and the daily tournament: `POST /free/talk` (the game's token) and
+  `POST /daily/talk` (the player, the tournament's size, the deal in progress), each with the kinds already said and the
+  page's language, finds in the deal's own record the line to say now (`multiplayer/src/talk.ts`): the bidding
   just won, when it is worth a word — the player won it, bid above SkatZero's highest bid for the hand in the pool,
-  passed below it, or the bid reached 30 — and then windows of the play (after a bidding line tricks 2–4 and 5–9, else
+  passed below it, or the bid reached 30 (the tournament reads SkatZero's bid off the AI's own game of
+  the deal from the player's seat: where it passed, or at least what it won at) — and then windows of the play (after a bidding line tricks 2–4 and 5–9, else
   1–2, 3–5 and 6–9): in each, the latest trick finished no more than a trick ago that is worth a word — 15 card points,
   the game decided by it, the player's card a slip (15 below SkatZero's best) or the strong one (the best by 10) — or the
   window's last; a deal claimed early gets one line on it. The speaker is fixed: the computer that won the bidding (or bid

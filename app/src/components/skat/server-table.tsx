@@ -3,8 +3,8 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { type GameMode, track } from '~/lib/analytics'
-import { type FreeError, type TalkKind, freeAct, freeNew, freeResume, freeReview, freeTalk, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
-import { useSettings } from '~/lib/skat/settings'
+import { type FreeError, freeAct, freeNew, freeResume, freeReview, freeTalk, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
+import { useTableTalk } from '~/lib/table-talk'
 import { type Move, type Seat, next as nextSeat } from '~/lib/skat/game'
 import { type DealReview, type DealSummary, type SeatView, gameFromView, summarize, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -33,11 +33,6 @@ const problemText = (e: FreeError) =>
 
 type Settled = { humanWon: boolean; humanScore: number }
 
-/** Lina's and Noah's table talk (SKATGO-142): a line that comes later than this after its question is about a moment
- *  long gone and is dropped. A line on the table stays until the next tap. */
-const TALK_LATE = 7000
-const TALK_MAX = 3
-
 /** Free play's round (SKATGO-88): six deals, the deal going round as at a real table, so the player sits
  *  in each position twice; its finished deals, the player's and the AI's from the same seat. Lesson 11 is
  *  one game, not a round. */
@@ -60,13 +55,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
   const [summary, setSummary] = useState(false)
   /** Each finished game's review, asked once (SKATGO-86): the result and the round both read it. */
   const reviews = useRef(new Map<string, Promise<DealReview | FreeError>>())
-  /** Free play's table talk (SKATGO-142): the line on the table, and this deal's talk so far — the kinds said, whether a
-   *  question is out. A new deal starts it again. */
-  const talkOn = useSettings((s) => s.talk)
-  const [talk, setTalk] = useState<{ seat: 1 | 2; line: string; id: number } | null>(null)
-  /** A line waits until the table has shown every move of the reply it is about, so it never runs ahead of the felt. */
-  const [heard, setHeard] = useState<{ seat: 1 | 2; line: string; id: number; asked: number } | null>(null)
-  const talking = useRef({ deal: 0, said: [] as TalkKind[], out: false })
+  // Lina's and Noah's table talk (SKATGO-142): free play only, never lesson 11.
+  const { talk, newDeal, listen } = useTableTalk(mode === 'free', queue.length === 0)
   const ask = (t: string) => {
     let asked = reviews.current.get(t)
     if (!asked) reviews.current.set(t, (asked = freeReview(t)))
@@ -88,39 +78,10 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     setSending(false)
     if (isFreeError(r)) return setFailure({ text: problemText(r), retry: () => void start() })
     track('game_started', { mode })
-    talking.current = { deal: talking.current.deal + 1, said: [], out: false }
-    setTalk(null)
-    setHeard(null)
+    newDeal()
     take(r.steps, r)
   }
 
-  /** After a reply: whether Lina or Noah has a line to say now. One question at a time; a moment passed while one was
-   *  out is found by the next, while its part of the deal lasts. Free play only, and only while the switch is on. */
-  async function listen(at: string) {
-    const t = talking.current
-    if (mode !== 'free' || !talkOn || t.out || t.said.length >= TALK_MAX) return
-    t.out = true
-    const asked = Date.now()
-    const r = await freeTalk(at, t.said, getLocale() === 'de' ? 'de' : 'en')
-    if (talking.current !== t) return
-    t.out = false
-    if (r.kind === null || t.said.includes(r.kind) || Date.now() - asked > TALK_LATE) return
-    t.said.push(r.kind)
-    setHeard({ seat: r.speaker, line: r.line, id: asked, asked })
-  }
-  useEffect(() => {
-    if (!heard || queue.length > 0) return
-    setHeard(null)
-    if (Date.now() - heard.asked <= TALK_LATE) setTalk({ seat: heard.seat, line: heard.line, id: heard.id })
-  }, [heard, queue])
-  // A tap anywhere puts the line away (the human: 「最好让用户点一下屏幕再给让这个泡泡消失」) and still does what it does —
-  // plays a card, collects a trick. The table never waits for it.
-  useEffect(() => {
-    if (!talk) return
-    const away = () => setTalk(null)
-    document.addEventListener('pointerdown', away, true)
-    return () => document.removeEventListener('pointerdown', away, true)
-  }, [talk])
 
   async function send(move: Move) {
     if (!token) return
@@ -133,7 +94,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
       return setFailure({ text: problemText(r), retry: lost ? undefined : () => void send(move) })
     }
     take(r.steps, r)
-    void listen(r.token)
+    // Lina's and Noah's word on what just happened (SKATGO-142).
+    void listen((said) => freeTalk(r.token, said, getLocale() === 'de' ? 'de' : 'en'))
   }
 
   /** A game carried here across a change of language (SKATGO-79) or kept in this browser (SKATGO-96): taken
@@ -151,7 +113,7 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
       }
     }
     // A game taken up again starts its talk afresh (SKATGO-142).
-    talking.current = { deal: talking.current.deal + 1, said: [], out: false }
+    newDeal()
     take(r.steps, r)
   }
   // Free play's game goes along when the language changes, with its round (SKATGO-88), and stays in this

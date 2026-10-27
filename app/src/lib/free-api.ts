@@ -1,4 +1,5 @@
 import type { Move, Seat } from '~/lib/skat/game'
+import type { TalkKind, TalkReply } from '~/lib/table-talk'
 import type { DealReview, SeatView } from '~/lib/skat/tournament'
 
 // The browser's side of free play on the server (SKATGO-40): two requests to /api/free
@@ -27,16 +28,12 @@ export const freeAct = (token: string, revision: number, action: Move) => post('
 /** The game a token holds, as it stands: taken up after a change of language (SKATGO-79). */
 export const freeResume = (token: string) => post('resume', { token })
 
-/** A moment of the deal worth a word, said by Lina (1) or Noah (2) — or nothing (SKATGO-142). */
-export type TalkKind = 'bid' | 'w1' | 'w2' | 'w3' | 'end'
-export type FreeTalk = { kind: TalkKind; speaker: 1 | 2; line: string } | { kind: null }
-
-/** Whether Lina or Noah has a line to say now; the kinds already said in this deal are not said again. Any failure is
+/** Free play: whether Lina or Noah has a line to say now (SKATGO-142); the kinds already said in this deal are not said again. Any failure is
  *  silence: the table never waits for it. */
-export async function freeTalk(token: string, said: TalkKind[], lang: 'en' | 'de'): Promise<FreeTalk> {
+export async function freeTalk(token: string, said: TalkKind[], lang: 'en' | 'de'): Promise<TalkReply> {
   try {
     const res = await fetch('/api/free/talk', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, said, lang }) })
-    return res.ok ? ((await res.json()) as FreeTalk) : { kind: null }
+    return res.ok ? ((await res.json()) as TalkReply) : { kind: null }
   } catch {
     return { kind: null }
   }

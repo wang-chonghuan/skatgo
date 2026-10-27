@@ -415,8 +415,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   just over the frame at its left or right edge. It comes once the table has shown the moves it is about and stays
   until the next tap anywhere, which still does what it does (the human: 「最好让用户点一下屏幕再给让这个泡泡消失」); in its
   corner the blinking hand of a trick's tap (`dims.talkHand`, half of `tapHand`). A line later than seven seconds after
-  its question is dropped. The settings carry the switch, "Tischgespräche" — "Lina und Noah
-  reden im freien Spiel", on by default, as the sounds' switch.
+  its question is dropped. The daily tournament's tables, its six deals and the deal of the day, show it the
+  same way (「锦标赛也加进去，1deal和6deal都加」). The settings carry the switch, "Tischgespräche" — "Lina und Noah reden am
+  Tisch", on by default, as the sounds' switch.
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),
   on every full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"

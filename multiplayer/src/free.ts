@@ -220,7 +220,8 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     const i = talkInput.parse(body)
     const { p, t } = opened(i.token)
     const d = p.deals[t.id]
-    const moment = await momentOf(d.dealer, deckOf(d.deck), t.log, i.said as never, d.computers['0'].maxBid,
+    const limit = { atMost: d.computers['0'].maxBid, atLeast: d.computers['0'].maxBid }
+    const moment = await momentOf(d.dealer, deckOf(d.deck), t.log, i.said as never, limit,
       async (before, card) => verdictOf(await policy()!.ranked(viewOf(before, PLAYER)), card))
     const said = moment ? await lineFor(moment, i.lang) : null
     return said ? { kind: moment!.kind, speaker: said.speaker, line: said.line } : { kind: null }

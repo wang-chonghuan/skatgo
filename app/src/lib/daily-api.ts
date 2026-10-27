@@ -1,5 +1,6 @@
 import type { Move } from '~/lib/skat/game'
 import type { ProfileDeal, ProfileNote } from '~/lib/skat/profile'
+import type { TalkKind, TalkReply } from '~/lib/table-talk'
 import { DAILY_DEALS, type DailyBoard, type DailyReply, type DailySize, type DealReview } from '~/lib/skat/tournament'
 
 // The browser's side of the daily tournament (SKATGO-35, SKATGO-36): its requests to /api/daily
@@ -8,7 +9,7 @@ import { DAILY_DEALS, type DailyBoard, type DailyReply, type DailySize, type Dea
 
 export type DailyError = { error: string }
 
-async function post<T extends object>(op: 'state' | 'act' | 'name' | 'nick' | 'board' | 'review' | 'profile', body: object): Promise<T | DailyError> {
+async function post<T extends object>(op: 'state' | 'act' | 'name' | 'nick' | 'board' | 'review' | 'profile' | 'talk', body: object): Promise<T | DailyError> {
   try {
     const res = await fetch(`/api/daily/${op}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
     const data = (await res.json()) as T | DailyError
@@ -42,5 +43,12 @@ export const dailyReview = (deal: number, size: DailySize = DAILY_DEALS) => post
 
 /** The signed-in account's record of play (SKATGO-128): every deal against the AI, in the order played. */
 export const dailyProfile = () => post<{ deals: ProfileDeal[]; notes: ProfileNote[] }>('profile', {})
+
+/** The tournament: whether Lina or Noah has a line to say now at the deal in progress (SKATGO-142). Any failure is
+ *  silence. */
+export async function dailyTalk(size: DailySize, deal: number, said: TalkKind[], lang: 'en' | 'de'): Promise<TalkReply> {
+  const r = await post<TalkReply>('talk', { size, deal, said, lang })
+  return 'error' in r ? { kind: null } : r
+}
 
 export const isError = <T extends object>(r: T | DailyError): r is DailyError => 'error' in r

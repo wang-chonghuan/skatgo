@@ -36,7 +36,7 @@ test('a deal talks three times while it is played — once on an early end — o
       for (let k = 1; k <= log.length; k++) {
         if (log[k - 1].seat !== (0 as Seat) && k < log.length) continue
         const upTo = log.slice(0, k)
-        const moment = await momentOf(d.dealer, deckOf(d.deck), upTo, said, d.computers['0'].maxBid, async () => null)
+        const moment = await momentOf(d.dealer, deckOf(d.deck), upTo, said, { atMost: d.computers['0'].maxBid, atLeast: d.computers['0'].maxBid }, async () => null)
         if (!moment) continue
         assert.ok(!said.includes(moment.kind), `${moment.kind} said twice in deal ${n}`)
         said.push(moment.kind)

@@ -88,18 +88,24 @@ function walk(dealer: Seat, deck: Card[], log: Logged[]) {
   return { bidEnd: bidEnd as Step | null, tricks, ended: ended as (Step & { kind: 'claim' | 'concede' }) | null }
 }
 
-/** The human's bid against SkatZero's limit for their hand: bidding beyond it is bold, passing below it cautious; a
- *  sound bid is nothing to talk about. */
-function bidVerdict(g: Game, limit: number): string | null {
+/** How high SkatZero would bid the human's hand: at most `atMost` (null when not known), at least `atLeast`. Free play
+ *  knows it exactly from the pool; the tournament from the AI's own game of the deal from the human's seat. */
+export type BidLimit = { atMost: number | null; atLeast: number }
+
+/** The human's bid against SkatZero's for their hand: bidding beyond it is bold, passing below it cautious; a sound
+ *  bid is nothing to talk about. */
+function bidVerdict(g: Game, limit: BidLimit): string | null {
   const log = g.bidding.log
   if (g.declarer === PLAYER) {
-    return g.bid > limit ? `You bid ${g.bid}, more than SkatZero would bid with your hand (it would stop at ${limit}): a bold bid.` : null
+    return limit.atMost !== null && g.bid > limit.atMost
+      ? `You bid ${g.bid}, more than SkatZero would bid with your hand (it would stop at ${limit.atMost}): a bold bid.`
+      : null
   }
   const pass = log.findIndex((e) => e.seat === PLAYER && e.say === 'pass')
   if (pass < 0) return null
   const onTable = Math.max(0, ...log.slice(0, pass).map((e) => e.value))
-  return limit > onTable
-    ? `You passed at ${onTable || 'the start'}, though SkatZero would have bid up to ${limit} with your hand: a cautious pass.`
+  return limit.atLeast > onTable
+    ? `You passed at ${onTable || 'the start'}, though SkatZero would have bid at least ${limit.atLeast} with your hand: a cautious pass.`
     : null
 }
 
@@ -111,7 +117,7 @@ function bidSpeaker(g: Game): 1 | 2 {
 }
 
 /** What the model is told about the bidding just won: public bids, and the human's own bid judged by SkatZero. */
-function bidFacts(g: Game, limit: number) {
+function bidFacts(g: Game, limit: BidLimit) {
   const auction = auctionOf(g)
   const said = (s: Seat) => (auction[s].value ? `${auction[s].value}${auction[s].passed ? ', then passed' : ''}` : auction[s].passed ? 'passed without bidding' : 'no bid')
   return {
@@ -171,18 +177,18 @@ export type Moment = { kind: TalkKind; speaker: 1 | 2; facts: Record<string, unk
 
 /** Whether the bidding is worth a word: the human won it, bid bold or passed cautious by SkatZero's measure, or the bid
  *  reached 30 (「根据……叫的好坏」); an 18 a computer took after everyone passed is not. */
-const bidWorthAWord = (g: Game, limit: number) => g.declarer === PLAYER || bidVerdict(g, limit) !== null || g.bid >= BID_WORTH_A_WORD
+const bidWorthAWord = (g: Game, limit: BidLimit) => g.declarer === PLAYER || bidVerdict(g, limit) !== null || g.bid >= BID_WORTH_A_WORD
 
 /**
  * The line to say now, or null. The bidding's, while no trick of the play has been finished but the first, if it is
  * worth a word; then each window of the play in turn: the latest of its tricks, finished no more than a trick ago, that
  * is worth a word — 15 card points, the game decided by it, the human's card a slip or the strong one — or is the
  * window's last. A moment missed is found again while its window lasts; the tenth trick and the end are never talked
- * about. Kinds already said in this deal are not said again. `limit` is SkatZero's highest bid for the human's hand;
+ * about. Kinds already said in this deal are not said again. `limit` is how high SkatZero would bid the human's hand;
  * `judge` is SkatZero's values for the human's legal cards just before their card.
  */
 export async function momentOf(
-  dealer: Seat, deck: Card[], log: Logged[], said: TalkKind[], limit: number,
+  dealer: Seat, deck: Card[], log: Logged[], said: TalkKind[], limit: BidLimit,
   judge: (before: Game, card: Card) => Promise<Verdict | null>,
 ): Promise<Moment | null> {
   if (said.length >= 3) return null

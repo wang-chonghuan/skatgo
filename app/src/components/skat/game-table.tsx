@@ -1731,7 +1731,7 @@ const styles = stylex.create({
   talkLeft: { right: '100%', marginRight: space.x16 },
   talkRight: { left: '100%', marginLeft: space.x16 },
   talkHand: { flexShrink: 0, width: dims.talkHand, height: dims.talkHand, overflow: 'visible', alignSelf: 'flex-end' },
-  talkRow: { display: 'flex', width: dims.tipWidth },
+  talkRow: { display: 'flex', width: dims.tipWidth, maxWidth: stage.talkBetweenFaces },
   talkRowLeft: { justifyContent: 'flex-start' },
   talkRowRight: { justifyContent: 'flex-end' },
   plateSlot: { position: 'absolute', display: 'flex' },

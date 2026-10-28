@@ -425,8 +425,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   dark red, Noah a man in blue (「暗红和蓝……不是海军蓝」, so neither melts into the felt), in the flat sticker style
   the human chose from five. Three faces each — neutral, laughing, sulking: the bidding's winner laughs until the
   first card; a finished trick makes the side that took it laugh and the other side sulk until it is collected, by
-  side as Skat scores (`faceOf`). The stage keeps their room at its top (1000u × 648u, 400u × 538u in portrait), so
-  on a screen short of height the table is a little smaller rather than a face over the cards.
+  side as Skat scores (`faceOf`). The stage keeps their room above it (88u, 82u in portrait): where the free height
+  already holds it nothing moves; on a screen short of height the table is a little smaller rather than a face over
+  the cards. Where the talk runs in the band, it keeps between the two faces (`stage.talkBetweenFaces`).
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),
   on every full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"

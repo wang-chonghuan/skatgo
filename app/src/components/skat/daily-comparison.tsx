@@ -230,12 +230,12 @@ export function GameTag({ deal, names }: { deal: DealSummary; names: string[] })
 }
 
 /** The deal's Seeger-Fabian score of each of the three at the table (SKATGO-146, the human: 「contract下面要显示本轮每个人
- *  得几分，这个是重点」): name over score, the player's own cell on white. */
+ *  得几分，这个是重点」): name over score, the player's cell named "You" and nothing more (「You这个不用加白色的框」). */
 export function SeatScores({ scores, names }: { scores: readonly [number, number, number]; names: string[] }) {
   return (
     <div data-testid="result-seats" data-scores={scores.join(',')} {...stylex.props(styles.seats)}>
       {scores.map((v, seat) => (
-        <div key={seat} data-seat={seat} data-own={seat === PLAYER ? 'true' : undefined} {...stylex.props(styles.seat, seat === PLAYER && styles.seatOwn)}>
+        <div key={seat} data-seat={seat} data-own={seat === PLAYER ? 'true' : undefined} {...stylex.props(styles.seat)}>
           <span {...stylex.props(typography.appText, styles.muted)}>{names[seat]}</span>
           <span {...stylex.props(typography.appBtnStrong, styles.ink)}>{signed(v)}</span>
         </div>
@@ -450,10 +450,9 @@ const styles = stylex.create({
   // one phone screen with the rest (SKATGO-145).
   trickGrid: { display: 'grid', gridTemplateColumns: 'max-content auto', alignItems: 'start', columnGap: space.x8, rowGap: space.x6 },
   trickLabel: { paddingTop: space.x4 },
-  // Three equal cells, the player's on white so it stands out on the green or pink card.
+  // Three equal cells.
   seats: { display: 'flex', gap: space.x6 },
-  seat: { display: 'flex', flexDirection: 'column', alignItems: 'center', flexGrow: 1, flexBasis: 0, paddingBlock: space.x4, borderRadius: radii.column },
-  seatOwn: { backgroundColor: color.surface },
+  seat: { display: 'flex', flexDirection: 'column', alignItems: 'center', flexGrow: 1, flexBasis: 0, paddingBlock: space.x4 },
   trickGame: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
   contractChip: { paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.navy },
   // Cards in a row, wide enough apart that two ringed cards never touch; a hand too long for a phone's line goes

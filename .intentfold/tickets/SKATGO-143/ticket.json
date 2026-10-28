@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-143",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-143",
+  "branch": "SKATGO-143-table-messages",
+  "base": "cfc0dadb876641a3c13e75fa535a747a685e689b",
+  "ports": {
+    "web": 55143,
+    "multiplayer": 56143,
+    "database": 57143
+  }
+}

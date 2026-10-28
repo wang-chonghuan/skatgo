@@ -405,6 +405,26 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // With the panel pinned open, the learner's move is made in the panel, as Funbridge's bidding box is
   // (SKATGO-34): nothing then lies over the table. Otherwise it is the drawer over the felt.
   const movesInPanel = fullScreen && pinned && panelOpen
+  // Lina's or Noah's line (SKATGO-142) waits while the table itself asks for a tap — a claim laid open, a trick to
+  // collect — or shows a message: one thing at a time, one hand (SKATGO-143, the human: 「按顺序来显示这些信息」). Shown,
+  // the next tap puts it away. On a wide table it stands beside the frame, otherwise in the top band under the table's line.
+  const [talkSeen, setTalkSeen] = useState<number | null>(null)
+  const tapAsked = revealing || (game.phase === 'trickEnd' && tapToCollect) || hint !== null || refusal !== null
+  const shownTalk = talk && talk.id !== talkSeen && !tapAsked ? talk : null
+  useEffect(() => {
+    if (!shownTalk) return
+    const seen = () => setTalkSeen(shownTalk.id)
+    document.addEventListener('pointerdown', seen, true)
+    return () => document.removeEventListener('pointerdown', seen, true)
+  }, [shownTalk])
+  const talkCard = shownTalk ? (
+    <p key={shownTalk.id} role="status" data-testid="skat-talk" data-seat={shownTalk.seat} {...stylex.props(typography.appText, styles.talk, pinned && styles.talkBeside, pinned && (shownTalk.seat === 1 ? styles.talkLeft : styles.talkRight))}>
+      <span>
+        <span {...stylex.props(typography.appBtnStrong)}>{nameOf(shownTalk.seat)}:</span> {shownTalk.line}
+      </span>
+      <TapHand testId="skat-talk-hand" place={styles.talkHand} still={reducedMotion} />
+    </p>
+  ) : null
   // In the tournament, after each deal (SKATGO-57, simplified in SKATGO-79): the deal just played against
   // the AI as a score sheet, its analysis folded, and the tournament so far in one line — the whole day is
   // /daily's. The deal on the table is the one the server just recorded.
@@ -458,6 +478,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               )}
             </div>
           ) : null}
+          {talkCard && !pinned ? <div {...stylex.props(styles.talkRow, shownTalk!.seat === 1 ? styles.talkRowLeft : styles.talkRowRight)}>{talkCard}</div> : null}
           {refusal || hint || server?.problem || room?.notice ? (
             <div data-testid="skat-messages" {...stylex.props(styles.messages)}>
               {room?.notice}
@@ -493,17 +514,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         ))}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
-          {/* Lina's or Noah's word at free play's and the tournament's tables (SKATGO-142, the human: 「就像真人打牌时……碎碎念的一些话」): on a wide
-              table beside the frame on the speaker's side, otherwise just over the frame on that side. */}
-          {talk ? (
-            <p key={talk.id} role="status" data-testid="skat-talk" data-seat={talk.seat} {...stylex.props(typography.appText, styles.talk, talk.seat === 1 ? styles.talkLeft : styles.talkRight)}>
-              <span>
-                <span {...stylex.props(typography.appBtnStrong)}>{nameOf(talk.seat)}:</span> {talk.line}
-              </span>
-              {/* A tap anywhere puts it away (the human: 「最好让用户点一下屏幕再给让这个泡泡消失……显示……那个收墩的按钮」). */}
-              <TapHand testId="skat-talk-hand" place={styles.talkHand} still={reducedMotion} />
-            </p>
-          ) : null}
+          {pinned ? talkCard : null}
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
           {(game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'passedIn') && game.skat.length > 0 ? (
             <div {...stylex.props(styles.skatPile)}>
@@ -1686,20 +1697,16 @@ const styles = stylex.create({
   },
   framePlay: { width: stage.frame, aspectRatio: dims.square, borderWidth: dims.frameBorderPlay },
 
-  // Table talk (SKATGO-142): a white card as wide as its words. On a wide table it stands beside the frame, level with
-  // its top, toward the speaker's cards; elsewhere just over the frame, at its left or right edge.
+  // Table talk (SKATGO-142, SKATGO-143): a white card as wide as its words; beside the frame on a wide table, level with
+  // its top, toward the speaker's cards; otherwise in the top band's flow at the speaker's side, so nothing overlaps.
   talk: {
-    position: 'absolute',
     display: 'flex',
     alignItems: 'flex-end',
     gap: space.x8,
     margin: 0,
     width: 'max-content',
-    maxWidth: { default: '100%', [bp.pinned]: dims.talkWidth },
+    maxWidth: '100%',
     boxSizing: 'border-box',
-    top: { default: 'auto', [bp.pinned]: 0 },
-    bottom: { default: '100%', [bp.pinned]: 'auto' },
-    marginBottom: { default: space.x8, [bp.pinned]: 0 },
     paddingBlock: space.x8,
     paddingInline: space.x12,
     borderRadius: radii.panel,
@@ -1707,17 +1714,13 @@ const styles = stylex.create({
     boxShadow: elev.option,
     color: color.navy,
   },
+  talkBeside: { position: 'absolute', top: 0, maxWidth: dims.talkWidth },
+  talkLeft: { right: '100%', marginRight: space.x16 },
+  talkRight: { left: '100%', marginLeft: space.x16 },
   talkHand: { flexShrink: 0, width: dims.talkHand, height: dims.talkHand, overflow: 'visible', alignSelf: 'flex-end' },
-  talkLeft: {
-    left: { default: 0, [bp.pinned]: 'auto' },
-    right: { default: 'auto', [bp.pinned]: '100%' },
-    marginRight: { default: 0, [bp.pinned]: space.x16 },
-  },
-  talkRight: {
-    right: { default: 0, [bp.pinned]: 'auto' },
-    left: { default: 'auto', [bp.pinned]: '100%' },
-    marginLeft: { default: 0, [bp.pinned]: space.x16 },
-  },
+  talkRow: { display: 'flex', width: dims.tipWidth },
+  talkRowLeft: { justifyContent: 'flex-start' },
+  talkRowRight: { justifyContent: 'flex-end' },
   plateSlot: { position: 'absolute', display: 'flex' },
   plateSlotLeft: { left: 0, top: dims.half, transform: pose.plateLeft },
   plateSlotRight: { right: 0, top: dims.half, transform: pose.plateRight },
@@ -1897,6 +1900,8 @@ const styles = stylex.create({
   trickFace: { display: 'block', width: '100%' },
   trickFaceLanded: { transform: move.ownLayer },
   words: {
+    // A real table says nothing while the player plays (SKATGO-134): no empty pill then (SKATGO-143).
+    display: { default: null, ':empty': 'none' },
     paddingBlock: space.x6,
     paddingInline: space.x16,
     borderRadius: radii.pill,

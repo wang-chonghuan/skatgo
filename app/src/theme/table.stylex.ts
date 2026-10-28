@@ -65,8 +65,10 @@ export const stage = stylex.defineVars({
   /** Lina's and Noah's faces (SKATGO-147, the human: 「头像太小了，需要增大」): 108u (84u), their top 128u (102.5u) above
    *  the stage's, 4u clear of a twelve-card stack; in portrait at least 10u under the band, whose line may run past it. */
   face: { default: `calc(${u} * 108)`, [bp.portrait]: `calc(${u} * 84)` },
+  // On a wide table the face sits higher, in the felt's corner beside the info board and under the way out (72px), so a
+  // hand laid open under it stays clear of it (SKATGO-148, the human: 「头像位置往上面移动一点，这样就不当着亮的牌了」).
   faceTop: {
-    default: `calc(140px + ${above.default} - ${u} * 128)`,
+    default: '72px',
     [bp.portrait]: `calc(212px + ${above.portrait} - ${u} * 102.5)`,
   },
   /** How far a face sits in from the felt's edge, over the part of the stack that shows. */

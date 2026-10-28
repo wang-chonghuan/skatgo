@@ -394,7 +394,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a
   standard web-app table. Free play's search entry is the front page.
-- **What a table says** (SKATGO-134): the course's tables — its own and lesson 11's, the ones with hints — explain every
+- **What a table says** (SKATGO-134; the line is hidden while it has nothing to say, SKATGO-143): the course's tables — its own and lesson 11's, the ones with hints — explain every
   step as before. A real table (free play, the daily ones, a private table, a shared deal's practice) says at most one
   short line, the buttons the rest. In the bidding it says whom the player bids with and what an answer means, as the
   course does (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」): on the speaker's turn "Du reizt Lina – sag den
@@ -414,7 +414,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   "Tisch verlassen" (`quiet`) (SKATGO-88). Lina's and Noah's table talk (SKATGO-142) is a white card (`radii.panel`,
   `elev.option`, `appText` in `navy`, the speaker's name in `appBtnStrong`) on the speaker's side: on a wide table
   (`bp.pinned`) beside the trick frame, level with its top, toward Lina's or Noah's cards (`dims.talkWidth`); narrower,
-  just over the frame at its left or right edge. It comes once the table has shown the moves it is about and stays
+  in the felt's top band under the table's line, at the speaker's side, so nothing overlaps (SKATGO-143). One thing at a
+  time (「按顺序来显示这些信息」): it waits while the table asks for a tap — a claim laid open, a trick to collect — or shows
+  a hint or a refusal. It comes once the table has shown the moves it is about and stays
   until the next tap anywhere, which still does what it does (the human: 「最好让用户点一下屏幕再给让这个泡泡消失」); in its
   corner the blinking hand of a trick's tap (`dims.talkHand`, half of `tapHand`). A line later than seven seconds after
   its question is dropped. The daily tournament's tables, its six deals and the deal of the day, show it the

@@ -32,6 +32,13 @@ describe('the faces', () => {
     const you = at({ phase: 'trickEnd', declarer: 0, declaration: grand, trick })
     expect([faceOf(you, 1), faceOf(you, 2)]).toEqual(['laugh', 'laugh'])
   })
+  it('a Null the other way round: the declarer taking a trick sulks, the defenders laugh', () => {
+    const nul = { ...grand, contract: { kind: 'null' as const } }
+    const g = at({ phase: 'trickEnd', declarer: 1, declaration: nul, trick })
+    expect([faceOf(g, 1), faceOf(g, 2)]).toEqual(['sad', 'laugh'])
+    const dodged = at({ phase: 'trickEnd', declarer: 2, declaration: nul, trick })
+    expect([faceOf(dodged, 1), faceOf(dodged, 2)]).toEqual(['sad', 'laugh'])
+  })
   it('neutral again once the trick is collected', () => {
     const g = at({ phase: 'play', declarer: 1, declaration: grand, tricks: [{ winner: 1, cards: trick }] })
     expect([faceOf(g, 1), faceOf(g, 2)]).toEqual(['neutral', 'neutral'])

@@ -10,9 +10,11 @@ import { bp } from './breakpoints.stylex'
 //
 // The felt is the size container (`containerType: 'size'`). Its unit `u` is the largest that fits a
 // design stage under that band:
-//   landscape  1000u wide × 576u tall: the frame (300u) near the top, the stacks on both edges, the
-//              whole hand along the bottom (the human: no card runs off the felt);
-//   portrait    400u wide × 464u tall: a narrower frame (250u), the stacks deeper in the edges.
+//   landscape  1000u wide × 648u tall: Lina's and Noah's faces at the top (72u), under them the frame (300u),
+//              the stacks on both edges, the whole hand along the bottom (the human: no card runs off the felt);
+//   portrait    400u wide × 538u tall: the faces' 74u, a narrower frame (250u), the stacks deeper in the edges.
+// The faces' room (SKATGO-147, the human chose it: the table a little smaller on a short screen rather than a face
+// over the cards) holds a face above a stack of twelve cards, the most a hand ever has.
 // Where the felt has more room than the stage, the frame and the stacks keep to the middle of the free
 // height and the hand to the bottom: things only ever move apart.
 //
@@ -20,8 +22,8 @@ import { bp } from './breakpoints.stylex'
 
 export const stageUnit = stylex.defineVars({
   u: {
-    default: 'min(0.1cqw, calc((100cqh - 140px) / 576))',
-    [bp.portrait]: 'min(0.25cqw, calc((100cqh - 212px) / 464))',
+    default: 'min(0.1cqw, calc((100cqh - 140px) / 648))',
+    [bp.portrait]: 'min(0.25cqw, calc((100cqh - 212px) / 538))',
   },
 })
 
@@ -43,16 +45,24 @@ export const stage = stylex.defineVars({
   drawerMaxHeight: { default: `calc(100cqh - ${u} * 182 - 18px - 140px)`, [bp.portrait]: `calc(100cqh - ${u} * 135 - 18px - 212px)` },
   /** The frame: 300u square (250u), its top 10u under the band. */
   frame: { default: `calc(${u} * 300)`, [bp.portrait]: `calc(${u} * 250)` },
-  /** The frame's centre down the felt: the band, half the free height, then 160u (135u). */
+  /** The frame's centre down the felt: the band, half the free height, then 232u (209u). */
   frameCentre: {
-    default: `calc(140px + (100cqh - 140px - ${u} * 576) / 2 + ${u} * 160)`,
-    [bp.portrait]: `calc(212px + (100cqh - 212px - ${u} * 464) / 2 + ${u} * 135)`,
+    default: `calc(140px + (100cqh - 140px - ${u} * 648) / 2 + ${u} * 232)`,
+    [bp.portrait]: `calc(212px + (100cqh - 212px - ${u} * 538) / 2 + ${u} * 209)`,
   },
   /** The stacks' centre: 45u above the frame's (30u in portrait), so their foot stays clear of the edge tabs. */
   stackCentre: {
-    default: `calc(140px + (100cqh - 140px - ${u} * 576) / 2 + ${u} * 115)`,
-    [bp.portrait]: `calc(212px + (100cqh - 212px - ${u} * 464) / 2 + ${u} * 105)`,
+    default: `calc(140px + (100cqh - 140px - ${u} * 648) / 2 + ${u} * 187)`,
+    [bp.portrait]: `calc(212px + (100cqh - 212px - ${u} * 538) / 2 + ${u} * 179)`,
   },
+  /** Lina's and Noah's faces (SKATGO-147): 64u (56u) at the top of the stage, 3u (2.5u) down, above their stacks. */
+  face: { default: `calc(${u} * 64)`, [bp.portrait]: `calc(${u} * 56)` },
+  faceTop: {
+    default: `calc(140px + (100cqh - 140px - ${u} * 648) / 2 + ${u} * 3)`,
+    [bp.portrait]: `calc(212px + (100cqh - 212px - ${u} * 538) / 2 + ${u} * 2.5)`,
+  },
+  /** How far a face sits in from the felt's edge, over the part of the stack that shows. */
+  faceInset: { default: `calc(${u} * 9)`, [bp.portrait]: `calc(${u} * 6)` },
   /** An opponent's card: 100u wide (90u), lying sideways in a slot as wide as the card is tall. */
   stackCard: { default: `calc(${u} * 100)`, [bp.portrait]: `calc(${u} * 90)` },
   stackSlotWidth: { default: `calc(${u} * 140)`, [bp.portrait]: `calc(${u} * 126)` },

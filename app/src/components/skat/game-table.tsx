@@ -5,6 +5,7 @@ import { type ReactNode, createContext, useContext, useEffect, useMemo, useRef, 
 import { createPortal } from 'react-dom'
 
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
+import { type Face, faceOf } from '~/lib/skat/face'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { playSound } from '~/lib/skat/sounds'
 import { useBoardTricks, useSettings, useTapToCollect } from '~/lib/skat/settings'
@@ -490,6 +491,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           // An exercise shows every hand, as the table shows an Ouvert declarer's (SKATGO-110).
           <Stack key={seat} seat={seat} game={game} shown={exercise ? game.hands[seat] : rest?.[seat]} big={!!exercise} />
         ))}
+        {/* Lina's and Noah's faces above their stacks (SKATGO-147); not at a private table, where people sit, nor on an
+            exercise's open board. */}
+        {!exercise && !room ? ([1, 2] as const).map((seat) => <SeatFace key={seat} seat={seat} game={game} />) : null}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
           {pinned ? talkCard : null}
@@ -843,6 +847,23 @@ function Stack({ seat, game, shown, big }: { seat: Seat; game: Game; shown?: Car
             <PlayingCard card={c} faceDown={!open} size="fill" />
           </span>
         </div>
+      ))}
+    </div>
+  )
+}
+
+const FACES: readonly Face[] = ['neutral', 'laugh', 'sad']
+
+/** Lina's or Noah's face above their stack (SKATGO-147): neutral, laughing or sulking as the deal goes (`faceOf`). All
+ *  three pictures are in the page, so a change of face never waits for a download. */
+function SeatFace({ seat, game }: { seat: 1 | 2; game: Game }) {
+  const nameOf = useNameOf()
+  const face = faceOf(game, seat)
+  const who = seat === 1 ? 'lina' : 'noah'
+  return (
+    <div data-testid={`skat-face-${seat}`} data-face={face} {...stylex.props(styles.face, seat === 1 ? styles.faceLeft : styles.faceRight)}>
+      {FACES.map((f) => (
+        <img key={f} src={`/faces/${who}-${f}.webp`} alt={f === face ? nameOf(seat) : ''} aria-hidden={f === face ? undefined : 'true'} {...stylex.props(styles.faceImage, f !== face && styles.faceHidden)} />
       ))}
     </div>
   )
@@ -1642,6 +1663,11 @@ const styles = stylex.create({
     transform: pose.centreY,
   },
   stackLeft: { left: stage.stackInset },
+  face: { position: 'absolute', top: stage.faceTop, width: stage.face, height: stage.face, pointerEvents: 'none' },
+  faceLeft: { left: stage.faceInset },
+  faceRight: { right: stage.faceInset },
+  faceImage: { position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%' },
+  faceHidden: { visibility: 'hidden' },
   stackRight: { right: stage.stackInset },
   sideSlot: {
     position: 'relative',

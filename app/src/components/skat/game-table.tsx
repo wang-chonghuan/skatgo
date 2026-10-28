@@ -425,6 +425,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         <span {...stylex.props(typography.appBtnStrong)}>{nameOf(shownTalk.seat)}:</span> {shownTalk.line}
       </span>
       <TapHand testId="skat-talk-hand" place={styles.talkHand} still={reducedMotion} />
+      {/* The bubble's tail, as in a comic, toward the speaker's face (SKATGO-148, the human: 「table talk应该像漫画一样，用哪种有
+          箭头的泡泡，指向说话人」): from its top up and out beside the frame, where the face is above it; from its foot
+          down and out in the band, where the face is below it. */}
+      <span aria-hidden="true" data-testid="skat-talk-tail" {...stylex.props(styles.talkTail, pinned && styles.talkTailUp, shownTalk.seat === 1 ? styles.talkTailLeft : styles.talkTailRight)} />
     </p>
   ) : null
   // In the tournament, after each deal (SKATGO-145): the deal's result, then its bidding and its trick most worth
@@ -854,12 +858,24 @@ function Stack({ seat, game, shown, big }: { seat: Seat; game: Game; shown?: Car
 }
 
 const FACES: readonly Face[] = ['neutral', 'laugh', 'sad']
+/** How long a laugh or a sulk stays (SKATGO-148): a moment's reaction, under the human's two seconds. */
+const FACE_HOLD = 1500
 
 /** Lina's or Noah's face above their stack (SKATGO-147): neutral, laughing or sulking as the deal goes (`faceOf`). All
  *  three pictures are in the page, so a change of face never waits for a download. */
 function SeatFace({ seat, game }: { seat: 1 | 2; game: Game }) {
   const nameOf = useNameOf()
-  const face = faceOf(game, seat)
+  // A laugh or a sulk lasts FACE_HOLD, then the face is neutral again (SKATGO-148, the human: 「一个表情，最多持续2秒……
+  // 就要自动复原，不要一直笑」). The moment it belongs to — the won bidding, or a trick — starts it once.
+  const felt = faceOf(game, seat)
+  const moment = `${felt}|${game.phase === 'trickEnd' ? `trick${game.tricks.length}` : `bid${game.declarer}`}`
+  const [over, setOver] = useState<string | null>(null)
+  useEffect(() => {
+    if (felt === 'neutral') return
+    const t = setTimeout(() => setOver(moment), FACE_HOLD)
+    return () => clearTimeout(t)
+  }, [moment, felt])
+  const face = felt !== 'neutral' && over !== moment ? felt : 'neutral'
   const who = seat === 1 ? 'lina' : 'noah'
   return (
     <div data-testid={`skat-face-${seat}`} data-face={face} {...stylex.props(styles.face, seat === 1 ? styles.faceLeft : styles.faceRight)}>
@@ -1714,6 +1730,7 @@ const styles = stylex.create({
   // Table talk (SKATGO-142, SKATGO-143): a white card as wide as its words; beside the frame on a wide table, level with
   // its top, toward the speaker's cards; otherwise in the top band's flow at the speaker's side, so nothing overlaps.
   talk: {
+    position: 'relative',
     display: 'flex',
     alignItems: 'flex-end',
     gap: space.x8,
@@ -1728,6 +1745,21 @@ const styles = stylex.create({
     boxShadow: elev.option,
     color: color.navy,
   },
+  // A triangle under the bubble (over it, `talkTailUp`), its point out toward the speaker: Lina's on the left, Noah's on the right.
+  talkTail: {
+    position: 'absolute',
+    top: '100%',
+    width: 0,
+    height: 0,
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    borderTopColor: color.surface,
+    borderTopWidth: space.x14,
+    borderBottomWidth: 0,
+  },
+  talkTailUp: { top: 'auto', bottom: '100%', borderTopWidth: 0, borderTopColor: 'transparent', borderBottomWidth: space.x14, borderBottomColor: color.surface },
+  talkTailLeft: { left: space.x20, borderLeftWidth: 0, borderRightWidth: space.x16 },
+  talkTailRight: { right: space.x20, borderRightWidth: 0, borderLeftWidth: space.x16 },
   talkBeside: { position: 'absolute', top: 0, maxWidth: dims.talkWidth },
   talkLeft: { right: '100%', marginRight: space.x16 },
   talkRight: { left: '100%', marginLeft: space.x16 },

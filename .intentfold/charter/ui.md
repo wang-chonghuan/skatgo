@@ -260,7 +260,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     board (`elo-board.tsx`) — its title with a circled question mark (`info`) opening how it is counted in a `Modal`, three
     short lines (SKATGO-140, the human: 「点问号显示算法，文字啰嗦，而且点开后那个toast不好关」); the ten highest players — rank, name, number, a slate "?" when provisional — with
     the AI's row (its blue tag, no rank) among them by its number, close rows at `appText`, one column, the list
-    scrolling inside the card; on a phone folded behind one line where the players run slowly sideways
+    scrolling inside the card, which is never taller than the cards beside it — it takes the row's height and never
+    sets it (SKATGO-144, the human: 「高度不能超过它相邻卡片的高度，所以可以滚动，要一致」); on a phone folded behind one line where the players run slowly sideways
     (`marqueeSlide`, `timing.marquee`), a tap opening it (SKATGO-123). Under `bp.cards` the four stay two by two
     (`dims.homeWaysNarrow`) and the long cards follow, the whole width;
   - under them, in the same columns, white picture cards (the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」, after a

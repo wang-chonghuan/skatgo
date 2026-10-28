@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-144",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-144",
+  "branch": "SKATGO-144-home-elo",
+  "base": "594024d278c8e7248a6389f5aef55855ce2cf80e",
+  "ports": {
+    "web": 55144,
+    "multiplayer": 56144,
+    "database": 57144
+  }
+}

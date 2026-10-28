@@ -108,7 +108,7 @@ export function settlementRows(r: Settlement, d: Declaration, bid: number, mine:
   if (d.contract.kind === 'null') {
     rows.push({ label: m.result_row_null({ contract: `Null${d.hand ? ' Hand' : ''}${d.ouvert ? ' Ouvert' : ''}` }), value: String(r.value) })
   } else {
-    rows.push({ label: contractName(d.contract), value: String(r.base) })
+    rows.push({ label: m.result_row_base({ contract: contractName(d.contract) }), value: String(r.base) })
     rows.push({ label: r.parts.map((p, i) => (i === 0 ? partLabel(p, r.matadors) : `${partLabel(p, r.matadors)} 1`)).join(' + '), value: `× ${r.multiplier}` })
     rows.push({ label: m.result_row_value(), value: String(r.base * r.multiplier) })
   }

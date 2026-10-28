@@ -281,6 +281,7 @@
   "result_formula_lost_sf": "verloren: −2 × {value} − {bonus} = {score} (Seeger-Fabian), jeder Gegenspieler +{defender}",
   "result_formula_overbid": "überreizt: der Reizwert {bid} liegt über {worth}, gewertet wird {value}",
   "result_row_null": "{contract}, fester Wert",
+  "result_row_base": "{contract}, Grundwert",
   "result_row_value": "Spielwert",
   "result_row_overbid": "Überreizt: gereizt {bid}, gewertet",
   "result_row_won": "Gewonnen",

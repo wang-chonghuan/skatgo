@@ -48,7 +48,7 @@ describe('the settlement rows', () => {
   it('a won game of the player: base, multiplier, game value, the +50, the score', () => {
     const s = settle(decl(hearts), 18, mine, play(70))
     expect(rows(settlementRows(s, decl(hearts), 18, true, 'Lina'))).toEqual([
-      'Hearts ♥ | 10', 'with 3 + game 1 | × 4', 'Game value | 40', 'Won | + 50', 'Your score | +90',
+      'Hearts ♥, base value | 10', 'with 3 + game 1 | × 4', 'Game value | 40', 'Won | + 50', 'Your score | +90',
     ])
   })
   it('a lost game of the player doubles and takes 50 more', () => {

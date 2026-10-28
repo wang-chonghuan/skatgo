@@ -13,6 +13,10 @@ import { bp } from './breakpoints.stylex'
 //   landscape  1000u wide × 576u tall: the frame (300u) near the top, the stacks on both edges, the
 //              whole hand along the bottom (the human: no card runs off the felt);
 //   portrait    400u wide × 464u tall: a narrower frame (250u), the stacks deeper in the edges.
+// Above that stage Lina's and Noah's faces have their own room (SKATGO-147, the human chose it: the table a little
+// smaller on a short screen rather than a face over the cards): 116u (110u in portrait), a face above a stack of
+// twelve cards, the most a hand ever has. The stage sits where it always sat when the free height above it already
+// holds that room, and only moves down when it does not.
 // Where the felt has more room than the stage, the frame and the stacks keep to the middle of the free
 // height and the hand to the bottom: things only ever move apart.
 //
@@ -20,12 +24,17 @@ import { bp } from './breakpoints.stylex'
 
 export const stageUnit = stylex.defineVars({
   u: {
-    default: 'min(0.1cqw, calc((100cqh - 140px) / 576))',
-    [bp.portrait]: 'min(0.25cqw, calc((100cqh - 212px) / 464))',
+    default: 'min(0.1cqw, calc((100cqh - 140px) / 692))',
+    [bp.portrait]: 'min(0.25cqw, calc((100cqh - 212px) / 574))',
   },
 })
 
 const u = stageUnit.u
+/** The stage's top under the band: half the free height, or the faces' room when that is more (SKATGO-147). */
+const above = {
+  default: `max((100cqh - 140px - ${u} * 576) / 2, ${u} * 116)`,
+  portrait: `max((100cqh - 212px - ${u} * 464) / 2, ${u} * 110)`,
+}
 
 export const stage = stylex.defineVars({
   /** The learner's card: 130u (96u in portrait), shown whole. */
@@ -43,16 +52,28 @@ export const stage = stylex.defineVars({
   drawerMaxHeight: { default: `calc(100cqh - ${u} * 182 - 18px - 140px)`, [bp.portrait]: `calc(100cqh - ${u} * 135 - 18px - 212px)` },
   /** The frame: 300u square (250u), its top 10u under the band. */
   frame: { default: `calc(${u} * 300)`, [bp.portrait]: `calc(${u} * 250)` },
-  /** The frame's centre down the felt: the band, half the free height, then 160u (135u). */
+  /** The frame's centre down the felt: the band, the stage's top, then 160u (135u). */
   frameCentre: {
-    default: `calc(140px + (100cqh - 140px - ${u} * 576) / 2 + ${u} * 160)`,
-    [bp.portrait]: `calc(212px + (100cqh - 212px - ${u} * 464) / 2 + ${u} * 135)`,
+    default: `calc(140px + ${above.default} + ${u} * 160)`,
+    [bp.portrait]: `calc(212px + ${above.portrait} + ${u} * 135)`,
   },
   /** The stacks' centre: 45u above the frame's (30u in portrait), so their foot stays clear of the edge tabs. */
   stackCentre: {
-    default: `calc(140px + (100cqh - 140px - ${u} * 576) / 2 + ${u} * 115)`,
-    [bp.portrait]: `calc(212px + (100cqh - 212px - ${u} * 464) / 2 + ${u} * 105)`,
+    default: `calc(140px + ${above.default} + ${u} * 115)`,
+    [bp.portrait]: `calc(212px + ${above.portrait} + ${u} * 105)`,
   },
+  /** Lina's and Noah's faces (SKATGO-147, the human: 「头像太小了，需要增大」): 108u (84u), their top 113u (99.5u) above
+   *  the stage's, 4u clear of a twelve-card stack; in portrait at least 10u under the band, whose line may run past it. */
+  face: { default: `calc(${u} * 108)`, [bp.portrait]: `calc(${u} * 84)` },
+  faceTop: {
+    default: `calc(140px + ${above.default} - ${u} * 113)`,
+    [bp.portrait]: `calc(212px + ${above.portrait} - ${u} * 99.5)`,
+  },
+  /** How far a face sits in from the felt's edge, over the part of the stack that shows. */
+  faceInset: { default: `calc(${u} * 4)`, [bp.portrait]: `calc(${u} * 4)` },
+  /** Where the table talk runs in the band (not beside the frame), it keeps between the two faces: the felt's width
+   *  less a face, its inset and 4u on each side. */
+  talkBetweenFaces: { default: `calc(100cqw - ${u} * 232)`, [bp.portrait]: `calc(100cqw - ${u} * 184)` },
   /** An opponent's card: 100u wide (90u), lying sideways in a slot as wide as the card is tall. */
   stackCard: { default: `calc(${u} * 100)`, [bp.portrait]: `calc(${u} * 90)` },
   stackSlotWidth: { default: `calc(${u} * 140)`, [bp.portrait]: `calc(${u} * 126)` },

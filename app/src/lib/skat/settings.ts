@@ -32,6 +32,9 @@ type SettingsState = {
    *  nothing of the model. */
   talk: boolean
   setTalk: (on: boolean) => void
+  /** SKATGO-147: Lina's and Noah's faces above their cards. On by default (the human: 「默认是开的」). */
+  faces: boolean
+  setFaces: (on: boolean) => void
 }
 
 export const useSettings = create<SettingsState>()(
@@ -49,14 +52,25 @@ export const useSettings = create<SettingsState>()(
       setBoardTricks: (boardTricks) => set({ boardTricks }),
       talk: true,
       setTalk: (talk) => set({ talk }),
+      faces: true,
+      setFaces: (faces) => set({ faces }),
     }),
     {
       name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks, talk: s.talk }),
+      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks, talk: s.talk, faces: s.faces }),
     },
   ),
 )
+
+/** Whether Lina's and Noah's faces show (SKATGO-147): on on the server and in the first browser render, so the
+ *  markup hydrates; a stored choice applies at once after mount. */
+export function useFaces(): boolean {
+  const stored = useSettings((s) => s.faces)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  return mounted ? stored : true
+}
 
 /** The deck to draw in: the default on the server and in the first browser render, so the markup
  *  hydrates; a stored choice applies at once after mount. */

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-147",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-147",
+  "branch": "SKATGO-147-table-avatars",
+  "base": "7c46c81f0a662b355148b2c5f47e726f998f6aa8",
+  "ports": { "web": 55147, "multiplayer": 56147, "database": 57147 }
+}

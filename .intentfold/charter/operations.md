@@ -39,8 +39,8 @@ The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily`,
 (SKATGO-40) under `/free` and the forum (SKATGO-118) under `/forum`, whose posts, comments and reports are in its
 PostgreSQL. Their one client is the web service, which holds the admission key. Free
 play stores nothing: each game is an encrypted token keyed from the admission key, so changing that
-key ends the games in progress. A finished deal's review — the AI's cards in its play record, and in free
-play the AI's own game from the player's seat (SKATGO-86) — is SkatZero's work on this instance, per
+key ends the games in progress. A finished deal's review — the two auctions, the trick where the player's card was furthest from the AI's,
+and in free play the AI's own game from the player's seat (SKATGO-86) — is SkatZero's work on this instance, per
 request (`/daily/review`, `/free/review`, SKATGO-79); nothing of it is stored.
 Only one database-fenced process owns rooms; liveness and gameplay readiness are separate.
 The service is ready only once two things are in place:

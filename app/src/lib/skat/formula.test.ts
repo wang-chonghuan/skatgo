@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { type Contract, cards } from './cards'
-import { settlementFormula } from './i18n'
+import { settlementFormula, settlementRows } from './i18n'
 import { type Declaration, settle } from './value'
 
 // A deal's whole calculation in one line (SKATGO-127), on settlements the engine makes; the site's English words.
@@ -38,5 +38,36 @@ describe('the settlement formula', () => {
   it('and a lost one takes 50 more and gives each defender 40', () => {
     const s = settle(decl(hearts), 18, mine, play(50))
     expect(settlementFormula(s, decl(hearts), 18, true)).toContain('· lost: −2 × 40 − 50 = −130 (Seeger-Fabian), each defender +40')
+  })
+})
+
+// The same calculation a step a row in the result card (SKATGO-145), ending in the player's own Seeger-Fabian score.
+const rows = (r: ReturnType<typeof settlementRows>) => r.map((x) => `${x.label} | ${x.value}`)
+
+describe('the settlement rows', () => {
+  it('a won game of the player: base, multiplier, game value, the +50, the score', () => {
+    const s = settle(decl(hearts), 18, mine, play(70))
+    expect(rows(settlementRows(s, decl(hearts), 18, true, 'Lina'))).toEqual([
+      'Hearts ♥ | 10', 'with 3 + game 1 | × 4', 'Game value | 40', 'Won | + 50', 'Your score | +90',
+    ])
+  })
+  it('a lost game of the player doubles and takes 50 more', () => {
+    const s = settle(decl(hearts), 18, mine, play(50))
+    expect(rows(settlementRows(s, decl(hearts), 18, true, 'Lina')).slice(-2)).toEqual(['Lost | −2 × 40 − 50', 'Your score | −130'])
+  })
+  it('a defender scores 40 when the declarer loses, nothing when they win', () => {
+    const lost = settle(decl(hearts), 18, mine, play(50))
+    expect(rows(settlementRows(lost, decl(hearts), 18, false, 'Lina')).slice(-2)).toEqual(['Lina lost: each defender | +40', 'Your score | +40'])
+    const won = settle(decl(hearts), 18, mine, play(70))
+    expect(rows(settlementRows(won, decl(hearts), 18, false, 'Lina')).slice(-2)).toEqual(['Lina won | +90', 'Your score | 0'])
+  })
+  it('Null has its fixed value in one row', () => {
+    const nul = decl({ kind: 'null' }, { hand: true })
+    const s = settle(nul, 18, mine, { declarerPoints: 0, defenderPoints: 120, declarerTricks: 0, defenderTricks: 10 })
+    expect(rows(settlementRows(s, nul, 18, true, 'Lina'))).toEqual(['Null Hand, fixed value | 35', 'Won | + 50', 'Your score | +85'])
+  })
+  it('an overbid has its own row with what it is scored at', () => {
+    const s = settle(decl(hearts), 46, mine, play(70))
+    expect(rows(settlementRows(s, decl(hearts), 46, true, 'Lina'))).toContain(`Overbid: bid 46, scored at | ${s.value}`)
   })
 })

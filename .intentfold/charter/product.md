@@ -72,20 +72,19 @@ human names them (「ju开头那几个人，算一个人……mark也是同一�
 number among them, and how it is counted.
 
 After each deal the player sees how the computer, named "AI", played the same deal from their seat
-(SKATGO-42): a score sheet of all three seats' scores, the player's deal over the AI's, each with a
-line saying what the deal was — declarer, game and bid, won or lost with the card points,
-Schneider, Schwarz or overbid; the deal's whole calculation in one line, base value, multiplier and score
-(SKATGO-127, a player's suggestion); then the tournament so far in one line; then the deal's play record
-("Spielverlauf", SKATGO-79). The play record is open, never folded: trick by trick, who played which card
-in order and who took it with how many card points, and, for the trick the player taps, their hand before it
-(SKATGO-100).
-Wherever SkatZero would have played another card in the player's seat, that card stands under the
-player's; the trick where the player's card fell furthest below SkatZero's choice is marked and summed
-up in one line on top — ranked, with no threshold (the human: 「通过10墩排序的方式，选出最差的」). It is the
-engine's record and SkatZero's choices only: no language model explains it (the human, 2026-10-11:
-「解读太麻烦了」). A deal all players passed has no play record. The tournament's page keeps a row per
-finished deal with the player's and the AI's score, opening to that deal's score sheet and play
-record, and under the rows the score sheet of the whole tournament so far; the newest row opens after
+(SKATGO-42), and nothing else (SKATGO-145, the human: 「先显示叫牌和ai的不同，再显示打的和ai最不同（打的最不好的一个trick），
+其他不显示」): first the result — won or lost, the player's score, whose game it was and which, and the calculation a
+step a row, base value, multiplier, game value, the outcome and last the player's Seeger-Fabian score (SKATGO-127, a
+player's suggestion; 「计算过程写到浅绿色卡片里，要清晰点，别一坨普通文字」); then the bidding, the player's and the AI's: what each
+said or where it passed, how the deal went with the card points, and its score, one line when the two are the same;
+then the one trick where the player's card was furthest from the AI's, "the biggest difference from the AI": which
+card the AI would have played, the cards already on the table, the player's hand at that moment with their card
+and the AI's marked, and who took the trick with its card points — ranked over every play, with no threshold (the
+human: 「通过10墩排序的方式，选出最差的」); then the way on. A deal where every card was the AI's choice says so in one
+line; a deal all players passed has no trick. It is the engine's record and SkatZero's choices only: no language
+model explains it (the human, 2026-10-11: 「解读太麻烦了」), and SkatZero's own numbers are not shown. The tournament's page keeps a row per
+finished deal with the player's and the AI's score, opening to that deal's bidding and trick, and under the rows the
+score sheet of the whole tournament so far; the newest row opens after
 each deal and on the tournament's page mid-day (SKATGO-48). The page lists all of the
 tournament's deals from the start (SKATGO-63): the finished ones in that comparison, the rest by number
 as in progress or not yet played, never with their cards.
@@ -95,11 +94,10 @@ as at a real table, so the player sits in each position twice (SKATGO-88: 「自
 deals」); unranked, free and without an account (SKATGO-40, SKATGO-50). Its table is the tournament's: no hint of any kind
 (SKATGO-130, the human: 「砍掉自由牌局时的提示，和锦标赛应该一模一样」); lesson 11's game keeps its hints (「11课的保留」). There is no
 AI assistant on the site any more (SKATGO-130: 「先开单子砍ai助手」, 「彻底删」). The table shows which deal of
-six it is and the player's Seeger-Fabian total so far. A finished deal shows a score sheet in
-Seeger-Fabian — the player's deal over the AI's, the same deal played by the computer from the player's
-seat (SKATGO-86: 「打完了能显示AI打这幅牌叫的啥，打几分」) — then the way to the next deal and the same
-play record; after the sixth, the round in one row per deal and its score sheet, as at the end of a
-tournament, and a new round. Lesson 11's game is one game with the same result. Changing the language
+six it is and the player's Seeger-Fabian total so far. A finished deal shows the tournament's result,
+bidding against the AI — the same deal played by the computer from the player's seat (SKATGO-86: 「打完了能显示AI打这幅牌叫的啥，打几分」)
+— and trick, then the way to the next deal; after the sixth, the round in one row per deal, each opening to its
+bidding and trick, and its score sheet, as at the end of a tournament, and a new round. Lesson 11's game is one game with the same result. Changing the language
 mid-round keeps the game and the round (SKATGO-79, SKATGO-88), and so does a reload or coming back within a
 day (SKATGO-96: 「刷新一下页面，当deal丢了，连game也丢了」). The player may give up a round for a new one,
 never one deal alone, so a round's total stays honest; the tournament cannot be given up.
@@ -172,7 +170,7 @@ translation, made ahead (「公告也保留英文版，德语用翻译的，但�
 for its own search term. The articles are for search engines (the human, SKATGO-105: 「只用于seo」): the
 site's ways in — the front page's tile, the course, the header — lead to the exercises. Every article leads to the daily tournament, where each trick can be tried and
 compared with the AI. The articles' text is SkatGo's own: no book's passages, examples or order are copied,
-and the articles recommend no books. After every deal, the play record links to the exercises.
+and the articles recommend no books.
 
 A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted
 「官方发公告，官方发一些技术的文章，用户可以评论，用户也可以发文章……就做一个简单版本的。以后既能用来seo又有个公告和用户交流，放文章的地方」.

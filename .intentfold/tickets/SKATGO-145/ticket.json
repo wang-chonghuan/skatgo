@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-145",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-145",
+  "branch": "SKATGO-145-after-deal-review",
+  "base": "4701808bf9ccf462bdc1be63fbe8607cfe3c375c",
+  "ports": { "web": 55145, "multiplayer": 56145, "database": 57145 }
+}

@@ -433,7 +433,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   first card; a finished trick makes the side that took it laugh and the other side sulk, by
   side as Skat scores, the other way round in a Null (「null是反过来的」) (`faceOf`); at the deal's end the side that won laughs and the other sulks, the declarer against the two
   defenders (「最后谁赢了也要笑，和不高兴」); a laugh or a sulk lasts 1.5 seconds
-  at most, then the face is neutral again (SKATGO-148, 「最多持续2秒……就要自动复原」). The stage keeps their room above it (131u, 113u in portrait; faces 92u and 72u: 「头像太小了，需要增大」, then 「头像有点大，应该小点」): where the free height
+  at most, then the face is neutral again (SKATGO-148, 「最多持续2秒……就要自动复原」). The stage keeps their room above it (131u, 113u in portrait; faces 92u and 69u: 「头像太小了，需要增大」, then 「头像有点大，应该小点」 and 「手机上65吧」): where the free height
   already holds it nothing moves; on a screen short of height the table is a little smaller rather than a face over
   the cards. Where the talk runs in the band, it keeps between the two faces (`stage.talkBetweenFaces`). The settings carry the switch,
   "Avatare" — "Avatare von Lina und Noah am Tisch", on by default (「配置里要加上一个配置……默认是开的」), under the table

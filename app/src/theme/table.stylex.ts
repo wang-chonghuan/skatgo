@@ -62,21 +62,21 @@ export const stage = stylex.defineVars({
     default: `calc(140px + ${above.default} + ${u} * 115)`,
     [bp.portrait]: `calc(212px + ${above.portrait} + ${u} * 105)`,
   },
-  /** Lina's and Noah's faces (SKATGO-147, the human: 「头像太小了，需要增大」; SKATGO-148: 「头像有点大，应该小点」): 92u (72u);
-   *  in portrait their top 90.5u above the stage's, 4u clear of a twelve-card stack and at least 22u under the band,
+  /** Lina's and Noah's faces (SKATGO-147, the human: 「头像太小了，需要增大」; SKATGO-148: 「头像有点大，应该小点」, 「手机上65吧」): 92u (69u,
+   *  65px on a 375px phone); in portrait their top 87.5u above the stage's, 4u clear of a twelve-card stack and at least 25u under the band,
    *  whose line may run past it. */
-  face: { default: `calc(${u} * 92)`, [bp.portrait]: `calc(${u} * 72)` },
+  face: { default: `calc(${u} * 92)`, [bp.portrait]: `calc(${u} * 69)` },
   // On a wide table the face sits higher, in the felt's corner beside the info board and under the way out (72px), so a
   // hand laid open under it stays clear of it (SKATGO-148, the human: 「头像位置往上面移动一点，这样就不当着亮的牌了」).
   faceTop: {
     default: '72px',
-    [bp.portrait]: `calc(212px + ${above.portrait} - ${u} * 90.5)`,
+    [bp.portrait]: `calc(212px + ${above.portrait} - ${u} * 87.5)`,
   },
   /** How far a face sits in from the felt's edge, over the part of the stack that shows. */
   faceInset: { default: `calc(${u} * 4)`, [bp.portrait]: `calc(${u} * 4)` },
   /** Where the table talk runs in the band (not beside the frame), it keeps between the two faces: the felt's width
    *  less a face, its inset and 4u on each side. */
-  talkBetweenFaces: { default: `calc(100cqw - ${u} * 200)`, [bp.portrait]: `calc(100cqw - ${u} * 160)` },
+  talkBetweenFaces: { default: `calc(100cqw - ${u} * 200)`, [bp.portrait]: `calc(100cqw - ${u} * 154)` },
   /** An opponent's card: as big as the learner's and the trick's, 130u wide (96u), only part of it on the felt (SKATGO-148,
    *  the human: 「ai的牌的尺寸应该和玩家的牌的尺寸，桌面的牌的尺寸一样，只不过ai的牌只显示半截而已」), lying sideways in a slot
    *  as wide as the card is tall. */

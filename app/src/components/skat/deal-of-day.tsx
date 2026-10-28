@@ -17,7 +17,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { BrandIcon } from './brand-icon'
-import { VsAiTable } from './daily-comparison'
+import { VsAiTable, dailyAsk } from './daily-comparison'
 import { Leaderboard } from './daily-table'
 import { Btn, Panel, linkLook } from './ui'
 
@@ -61,7 +61,7 @@ export function DealOfDay({ waiting }: { waiting?: ReactNode }) {
         <>
           <details data-testid="dod-details" {...stylex.props(styles.details)}>
             <summary {...stylex.props(typography.appLink, styles.summary)}>{m.dod_details()}</summary>
-            <VsAiTable deals={status.deals} benchmarks={status.benchmarks} openLatest analysis={{ day: status.day, size: DEAL_OF_DAY }} />
+            <VsAiTable deals={status.deals} benchmarks={status.benchmarks} openLatest review={(i) => ({ ask: dailyAsk(i, DEAL_OF_DAY), cacheKey: `${status.day}|${DEAL_OF_DAY}|${i}` })} />
           </details>
           <Link to="/play" data-testid="dod-free" {...stylex.props(typography.appLink, styles.link)}>{m.dod_free()}</Link>
         </>

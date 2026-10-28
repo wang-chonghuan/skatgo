@@ -95,6 +95,32 @@ export function settlementFormula(r: Settlement, d: Declaration, bid: number, se
   return [calculation, lostBy, outcome].filter(Boolean).join(' · ')
 }
 
+/** One step of a deal's calculation as a row: what it is, and its number. */
+export type SettlementRow = { label: string; value: string }
+
+/**
+ * A deal's calculation step by step, as the result card lists it (SKATGO-145, the human: 「计算过程写到浅绿色卡片里，
+ * 要清晰点，别一坨普通文字」): the base value, the multiplier, the game value, an overbid, the outcome, and last the
+ * player's own Seeger-Fabian score. `declarer` names the declarer when it is not the player.
+ */
+export function settlementRows(r: Settlement, d: Declaration, bid: number, mine: boolean, declarer: string): SettlementRow[] {
+  const rows: SettlementRow[] = []
+  if (d.contract.kind === 'null') {
+    rows.push({ label: m.result_row_null({ contract: `Null${d.hand ? ' Hand' : ''}${d.ouvert ? ' Ouvert' : ''}` }), value: String(r.value) })
+  } else {
+    rows.push({ label: contractName(d.contract), value: String(r.base) })
+    rows.push({ label: r.parts.map((p, i) => (i === 0 ? partLabel(p, r.matadors) : `${partLabel(p, r.matadors)} 1`)).join(' + '), value: `× ${r.multiplier}` })
+    rows.push({ label: m.result_row_value(), value: String(r.base * r.multiplier) })
+  }
+  if (r.overbid) rows.push({ label: m.result_row_overbid({ bid }), value: String(r.value) })
+  const sf = SEEGER_FABIAN
+  if (mine) rows.push(r.won ? { label: m.result_row_won(), value: `+ ${sf.won}` } : { label: m.result_row_lost(), value: `−2 × ${r.value} − ${sf.lost}` })
+  else rows.push(r.won ? { label: m.result_row_other_won({ name: declarer }), value: `+${r.value + sf.won}` } : { label: m.result_row_other_lost({ name: declarer }), value: `+${sf.defender}` })
+  const score = mine ? (r.won ? r.value + sf.won : -2 * r.value - sf.lost) : r.won ? 0 : sf.defender
+  rows.push({ label: m.result_row_score(), value: score > 0 ? `+${score}` : score < 0 ? `−${-score}` : '0' })
+  return rows
+}
+
 export function settleReason(r: SettleReason): string {
   switch (r.kind) {
     case 'nullWon':

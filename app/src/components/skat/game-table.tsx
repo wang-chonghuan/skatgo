@@ -8,7 +8,7 @@ import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortH
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { playSound } from '~/lib/skat/sounds'
 import { useBoardTricks, useSettings, useTapToCollect } from '~/lib/skat/settings'
-import { cardLabel, contractName, ledName, roleName, settleReason, settlementFormula } from '~/lib/skat/i18n'
+import { type SettlementRow, cardLabel, contractName, ledName, roleName, settleReason, settlementFormula, settlementRows } from '~/lib/skat/i18n'
 import {
   type Game,
   type Move,
@@ -32,7 +32,7 @@ import {
   runningTricks,
   trickWinner,
 } from '~/lib/skat/game'
-import { type DealSummary, seegerFabian, summarize, totals } from '~/lib/skat/tournament'
+import { type DealSummary, seegerFabian, summarize } from '~/lib/skat/tournament'
 import { BID_LADDER, type Declaration, baseValue, expectedValue, highestValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
@@ -48,7 +48,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { type AskReview, DealAnalysis, DealVsAi, FreeVsAi, dailyAsk, signed } from './daily-comparison'
+import { type AskReview, GameTag, VsAiReview, dailyAsk, signed } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
@@ -119,7 +119,7 @@ export type Tournament = {
 
 /** What the settlement shows in the tournament (SKATGO-57, simplified in SKATGO-79): this deal's score
  *  sheet against the AI, its analysis folded away, and where the tournament stands, in one line. */
-type DailyAfter = { compare: ReactNode; analysis: ReactNode; day: ReactNode }
+type DailyAfter = { ask: AskReview; cacheKey: string }
 
 /** A game the server owns, as free play and lesson 11 play it (SKATGO-40): the learner's moves go to
  *  `send`, `game` is what came back. */
@@ -425,31 +425,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
       <TapHand testId="skat-talk-hand" place={styles.talkHand} still={reducedMotion} />
     </p>
   ) : null
-  // In the tournament, after each deal (SKATGO-57, simplified in SKATGO-79): the deal just played against
-  // the AI as a score sheet, its analysis folded, and the tournament so far in one line — the whole day is
-  // /daily's. The deal on the table is the one the server just recorded.
-  const finished = tournament?.deals?.[tournament.deal]
-  const aiSoFar = tournament?.deals?.map((_, i) => tournament.benchmarks?.[i] ?? null)
-  const dailyAfter: DailyAfter | null = tournament?.deals
-    ? {
-        compare: finished ? <DealVsAi mine={finished} ai={tournament.benchmarks?.[tournament.deal] ?? null} /> : null,
-        analysis: finished && finished.declarer !== null ? (
-          <DealAnalysis
-            deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null, hand: startHand(game) }}
-            names={[nameOf(0), nameOf(1), nameOf(2)]}
-            ask={dailyAsk(tournament.deal)}
-            cacheKey={`${tournament.day}|${tournament.deal}`}
-          />
-        ) : null,
-        day: (
-          <p data-testid="daily-after" {...stylex.props(typography.note, styles.note)}>
-            {aiSoFar?.every((b) => b)
-              ? m.daily_after({ n: tournament.deals.length, of: tournament.of, you: signed(totals(tournament.deals)[ME]), ai: signed(totals(aiSoFar as DealSummary[])[ME]) })
-              : m.daily_after_solo({ n: tournament.deals.length, of: tournament.of, you: signed(totals(tournament.deals)[ME]) })}
-          </p>
-        ),
-      }
-    : null
+  // In the tournament, after each deal (SKATGO-145): the deal's result, then its bidding and its trick most worth
+  // improving against the AI's, from the review the server works out.
+  const dailyAfter: DailyAfter | null = tournament?.deals ? { ask: dailyAsk(tournament.deal), cacheKey: `${tournament.day}|${tournament.deal}` } : null
 
   return (
     <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded, fullScreen && exercise && styles.tableAlone)}>
@@ -870,10 +848,6 @@ function Stack({ seat, game, shown, big }: { seat: Seat; game: Game; shown?: Car
   )
 }
 
-/** The player's ten cards when the play began (SKATGO-79): every card they played, the rest of a claimed
- *  deal included, sorted for the game — shown under the play record. */
-const startHand = (g: Game): Card[] => sortHand(g.tricks.flatMap((t) => t.cards).filter((p) => p.seat === ME).map((p) => p.card), g.declaration?.contract ?? null)
-
 /** Each seat's cards when the deal was decided early (SKATGO-65): the rest was played out by the rules
  *  from trick `early.from` on, so those tricks hold exactly what everyone had left. */
 function restHands(g: Game): [Card[], Card[], Card[]] {
@@ -1044,9 +1018,8 @@ function Actions(p: ActionsProps) {
     return (
       <Dialog>
         <Say>{p.dealScore === null ? m.table_passed_in() : m.daily_passed_in()}</Say>
-        {p.daily?.compare}
-        {p.freeReview ? <FreeVsAi mine={summarize(game)} ask={p.freeReview} /> : null}
-        {p.daily?.day}
+        {p.daily ? <VsAiReview ask={p.daily.ask} cacheKey={p.daily.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
+        {p.freeReview ? <VsAiReview ask={p.freeReview} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
         {p.roomAfter}
         <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={p.onNewGame}>
           {p.roomAfter ? m.daily_next_deal() : p.roundLast != null ? (p.roundLast ? m.free_round_result() : m.daily_next_deal()) : p.dealScore === null ? m.table_redeal() : p.last ? m.daily_see_result() : m.daily_next_deal()}
@@ -1248,9 +1221,9 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
   const d = game.declaration!
   const humanWon = declarer === ME ? r.won : !r.won
   const isNull = d.contract.kind === 'null'
-  // A free game's review, asked once (SKATGO-86): the score sheet against the AI and the play record share it.
+  // A free game's review, asked once (SKATGO-86).
   const [reviewed] = useState(() => freeReview?.())
-  const askReviewed: AskReview | undefined = reviewed ? () => reviewed : undefined
+  const vsAi: { ask: AskReview; cacheKey?: string } | null = daily ?? (reviewed ? { ask: () => reviewed } : null)
   // On a phone the settlement opens below the fold; bring it into view, or the game just seems to stop.
   // The dialog is what scrolls into view, not the result inside it: the result is taller than the dialog,
   // so scrolling it in also scrolled the dialog's own content past its top padding (SKATGO-93, the human:
@@ -1325,38 +1298,13 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
   return (
     <Dialog>
     <div ref={panel} data-testid="skat-result" data-human-won={String(humanWon)} {...stylex.props(styles.declare)}>
-      {daily ? (
-        // The dialog is the card: nothing inside it is boxed again (SKATGO-57). The way on comes right
-        // after the result, before the play record (SKATGO-79, the human: 「new game按钮应该放到靠上面点的位置」).
-        <div {...stylex.props(styles.resultBody)}>
-          {early}
-          {daily.compare}
-          {formulaLine}
-          {daily.day}
-          {next}
-          {daily.analysis}
-        </div>
-      ) : askReviewed ? (
-        // Free play and lesson 11 (SKATGO-79, SKATGO-86): won or lost, the score sheet — the player's deal
-        // over the AI's from the same seat, in Seeger-Fabian — the way on, then the play record with the
-        // AI's cards, the skat and the sum.
+      {vsAi ? (
+        // Against the AI (SKATGO-145, the human: 「先显示叫牌和ai的不同，再显示打的和ai最不同……其他不显示」): the result
+        // with its calculation, the bidding, the one trick most worth improving, and the way on.
         <>
-          <Panel tone={humanWon ? 'good' : 'bad'}>
-            <div {...stylex.props(styles.resultBody)}>
-              <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{humanWon ? m.result_won() : m.result_lost()}</h3>
-              {early}
-            </div>
-          </Panel>
-          <FreeVsAi mine={summarize(game)} ask={askReviewed} />
-          {formulaLine}
+          <ResultCard won={humanWon} score={seegerFabian(game)[ME]} rows={settlementRows(r, d, game.bid, declarer === ME, nameOf(declarer))} game={<GameTag deal={summarize(game)} names={[nameOf(0), nameOf(1), nameOf(2)]} />} />
+          <VsAiReview ask={vsAi.ask} cacheKey={vsAi.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} />
           {next}
-          <DealAnalysis
-            testId="free-play-record"
-            deal={{ tricks: game.tricks, skat: game.skat, early: game.early ?? null, hand: startHand(game) }}
-            names={[nameOf(0), nameOf(1), nameOf(2)]}
-            ask={askReviewed}
-            explain={course}
-          />
         </>
       ) : (
         <>
@@ -1373,6 +1321,36 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
       )}
     </div>
     </Dialog>
+  )
+}
+
+/**
+ * A deal's result against the AI (SKATGO-145, the human: 「计算过程写到浅绿色卡片里，要清晰点，别一坨普通文字，但是符合设计系统，
+ * 别太花」): won or lost with the player's score, then the calculation a step a row, its number at the end; light
+ * green when the player's side won, the app's pink when it lost. Under the title, whose game it was and which.
+ */
+function ResultCard({ won, score, rows, game }: { won: boolean; score: number; rows: SettlementRow[]; game: ReactNode }) {
+  return (
+    <Panel tone={won ? 'good' : 'bad'}>
+      <div data-testid="skat-result-card" data-won={String(won)} {...stylex.props(styles.resultBody)}>
+        <div {...stylex.props(styles.resultHead)}>
+          <h3 {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{won ? m.result_won() : m.result_lost()}</h3>
+          <span data-testid="skat-result-score" {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{signed(score)}</span>
+        </div>
+        {game}
+        <dl data-testid="skat-result-rows" data-rows={rows.length} {...stylex.props(styles.calc)}>
+          {rows.map((row, i) => {
+            const total = i === rows.length - 1
+            return (
+              <div key={i} {...stylex.props(styles.calcRow, total && styles.calcTotal)}>
+                <dt {...stylex.props(total ? typography.smallBold : typography.small, total ? styles.resultTitle : styles.inkLabel)}><Rich text={row.label} /></dt>
+                <dd {...stylex.props(total ? typography.appBtnStrong : typography.smallBold, styles.calcValue)}>{row.value}</dd>
+              </div>
+            )
+          })}
+        </dl>
+      </div>
+    </Panel>
   )
 }
 
@@ -2129,6 +2107,12 @@ const styles = stylex.create({
   jumpValue: { flexShrink: 0 },
   resultBody: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   resultTitle: { margin: 0, color: color.navy },
+  resultHead: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
+  // The calculation, a step a row: what it is at the left, its number at the right; the score under a rule.
+  calc: { display: 'flex', flexDirection: 'column', gap: space.x2, margin: 0 },
+  calcRow: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
+  calcTotal: { marginTop: space.x4, paddingTop: space.x6, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  calcValue: { margin: 0, color: color.navy, whiteSpace: 'nowrap' },
   resultSkat: { display: 'flex', alignItems: 'center', gap: space.x6 },
   inkLabel: { color: color.slate },
 

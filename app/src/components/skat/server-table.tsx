@@ -34,10 +34,11 @@ const problemText = (e: FreeError) =>
 type Settled = { humanWon: boolean; humanScore: number }
 
 /** Free play's round (SKATGO-88): six deals, the deal going round as at a real table, so the player sits
- *  in each position twice; its finished deals, the player's and the AI's from the same seat. Lesson 11 is
- *  one game, not a round. */
+ *  in each position twice; its finished deals, the player's and the AI's from the same seat, and each deal's review,
+ *  kept so the round's rows open to it (SKATGO-145; a round stored before it has none). Lesson 11 is one game, not
+ *  a round. */
 const ROUND_DEALS = 6
-type Round = { deals: DealSummary[]; ais: (DealSummary | null)[] }
+type Round = { deals: DealSummary[]; ais: (DealSummary | null)[]; reviews?: (DealReview | null)[] }
 const NO_ROUND: Round = { deals: [], ais: [] }
 
 export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: GameMode; fullScreen?: boolean; onSettled?: (info: Settled) => void }) {
@@ -132,7 +133,7 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
   async function nextDeal(finished: NonNullable<typeof game>) {
     if (mode !== 'free' || !token) return void start()
     const r = await ask(token)
-    const played: Round = { deals: [...round.deals, summarize(finished)], ais: [...round.ais, 'error' in r ? null : r.ai] }
+    const played: Round = { deals: [...round.deals, summarize(finished)], ais: [...round.ais, 'error' in r ? null : r.ai], reviews: [...(round.reviews ?? []), 'error' in r ? null : r] }
     setRound(played)
     if (played.deals.length >= ROUND_DEALS) return setSummary(true)
     void start(nextSeat(finished.dealer))
@@ -172,7 +173,14 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         <Panel>
           <div data-testid="free-round" {...stylex.props(styles.summaryBody)}>
             <h2 {...stylex.props(typography.dialogTitle, styles.text)}>{m.free_round_title()}</h2>
-            <VsAiTable deals={round.deals} benchmarks={round.ais} />
+            <VsAiTable
+              deals={round.deals}
+              benchmarks={round.ais}
+              review={(i) => {
+                const kept = round.reviews?.[i]
+                return kept ? { ask: () => Promise.resolve(kept) } : null
+              }}
+            />
             <div {...stylex.props(styles.row)}>
               <Btn testId="free-round-new" onClick={newRound}>{m.free_round_new()}</Btn>
               {/* The table's own way out, as on the felt (free play's leads to the front page). */}

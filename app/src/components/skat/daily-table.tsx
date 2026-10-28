@@ -17,7 +17,7 @@ import { icon } from '../../theme/constants'
 import { border, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { DayDeals, VsAiTable, Who } from './daily-comparison'
+import { DayDeals, VsAiTable, Who, dailyAsk } from './daily-comparison'
 import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, linkLook } from './ui'
 import { TableLoading } from './table-loading'
@@ -188,7 +188,7 @@ function DailyResult({ status }: { status: DailyStatus }) {
         <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_result_title()}</h2>
         {/* How the day went against the AI and whether it was better than before (SKATGO-128). */}
         <ProfileLine />
-        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} analysis={{ day: status.day }} />
+        <VsAiTable deals={status.deals} benchmarks={status.benchmarks} review={(i) => ({ ask: dailyAsk(i), cacheKey: `${status.day}|6|${i}` })} />
       </section>
     </Panel>
   )

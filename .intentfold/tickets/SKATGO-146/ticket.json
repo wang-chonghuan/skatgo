@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-146",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-146",
+  "branch": "SKATGO-146-result-card-type",
+  "base": "d7d924f4c6b02778c14a2191c59aa6417f828359",
+  "ports": { "web": 55146, "multiplayer": 56146, "database": 57146 }
+}

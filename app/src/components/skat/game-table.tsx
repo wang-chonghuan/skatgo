@@ -1686,7 +1686,18 @@ const styles = stylex.create({
     transform: pose.centreY,
   },
   stackLeft: { left: stage.stackInset },
-  face: { position: 'absolute', top: stage.faceTop, width: stage.face, height: stage.face, pointerEvents: 'none' },
+  // On a white square with rounded corners, just as large as the picture (SKATGO-148, the human: 「给头像加白色圆角背景。正方形，
+  // 刚好框住就行，不要留白太多」).
+  face: {
+    position: 'absolute',
+    top: stage.faceTop,
+    width: stage.face,
+    height: stage.face,
+    overflow: 'hidden',
+    borderRadius: radii.panel,
+    backgroundColor: color.surface,
+    pointerEvents: 'none',
+  },
   faceLeft: { left: stage.faceInset },
   faceRight: { right: stage.faceInset },
   faceImage: { position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%' },

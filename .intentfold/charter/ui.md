@@ -425,7 +425,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   on every table where they sit — not a private table, not an exercise's open-card board — a cartoon face above each
   one's stack at the felt's edge (`stage.face`, `faceTop`, `faceInset`) — on a wide table higher, in the felt's corner
   beside the info board and under the way out, clear of a hand laid open; on a phone a hand laid open long enough lies
-  over the face, never under it (SKATGO-148, 「头像位置往上面移动一点，这样就不当着亮的牌了」) — from `app/public/faces/`: Lina a friendly woman in
+  over the face, never under it (SKATGO-148, 「头像位置往上面移动一点，这样就不当着亮的牌了」) — from `app/public/faces/`, each on a white square with rounded corners (`radii.panel`) as large as the picture
+  (SKATGO-148, 「给头像加白色圆角背景。正方形，刚好框住就行」): Lina a friendly woman in
   red with a light-blue scarf and brown-blond hair (SKATGO-148, 「目前的攻击性太强……衣服红色，围巾浅蓝色，头发棕黄色，皮肤白一点」),
   Noah a man in blue (「暗红和蓝……不是海军蓝」, so neither melts into the felt), in the flat sticker style
   the human chose from five. Three faces each — neutral, laughing, sulking: the bidding's winner laughs until the

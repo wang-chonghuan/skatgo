@@ -7,9 +7,12 @@ export type Face = 'neutral' | 'laugh' | 'sad'
 /** The face a computer seat shows now. The bidding's winner laughs from the end of the auction until the first card;
  *  a finished trick makes the side that took it laugh and the other side sulk, as Skat scores by side, until it is
  *  collected — the other way round in a Null, where the declarer must take no trick (the human: 「null是反过来的」).
- *  Otherwise neutral. */
+ *  At the deal's end the side that won laughs and the other sulks. Otherwise neutral. */
 export function faceOf(g: Game, seat: Seat): Face {
   if (g.declarer === null) return 'neutral'
+  // The deal's end: the winning side laughs, the losing side sulks — the declarer against the two defenders (the
+  // human: 「最后谁赢了也要笑，和不高兴。分庄家和2个防家」). A Null's `won` is already the declarer's.
+  if (g.phase === 'done' && g.result) return (seat === g.declarer) === g.result.won ? 'laugh' : 'sad'
   if (g.phase === 'trickEnd') {
     const winner = trickWinner(g)
     if (winner === null) return 'neutral'

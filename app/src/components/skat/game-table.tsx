@@ -872,9 +872,9 @@ const FACE_HOLD = 1500
 function SeatFace({ seat, game }: { seat: 1 | 2; game: Game }) {
   const nameOf = useNameOf()
   // A laugh or a sulk lasts FACE_HOLD, then the face is neutral again (SKATGO-148, the human: 「一个表情，最多持续2秒……
-  // 就要自动复原，不要一直笑」). The moment it belongs to — the won bidding, or a trick — starts it once.
+  // 就要自动复原，不要一直笑」). The moment it belongs to — the won bidding, a trick, the deal's end — starts it once.
   const felt = faceOf(game, seat)
-  const moment = `${felt}|${game.phase === 'trickEnd' ? `trick${game.tricks.length}` : `bid${game.declarer}`}`
+  const moment = `${felt}|${game.phase === 'trickEnd' ? `trick${game.tricks.length}` : game.phase === 'done' ? 'end' : `bid${game.declarer}`}`
   const [over, setOver] = useState<string | null>(null)
   useEffect(() => {
     if (felt === 'neutral') return

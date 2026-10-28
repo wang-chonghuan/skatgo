@@ -39,6 +39,15 @@ describe('the faces', () => {
     const dodged = at({ phase: 'trickEnd', declarer: 2, declaration: nul, trick })
     expect([faceOf(dodged, 1), faceOf(dodged, 2)]).toEqual(['sad', 'laugh'])
   })
+  it('at the end the winning side laughs and the losing side sulks', () => {
+    const result = (won: boolean) => ({ ...({} as NonNullable<Game['result']>), won })
+    const linaWon = at({ phase: 'done', declarer: 1, declaration: grand, result: result(true) })
+    expect([faceOf(linaWon, 1), faceOf(linaWon, 2)]).toEqual(['laugh', 'sad'])
+    const linaLost = at({ phase: 'done', declarer: 1, declaration: grand, result: result(false) })
+    expect([faceOf(linaLost, 1), faceOf(linaLost, 2)]).toEqual(['sad', 'laugh'])
+    const youWon = at({ phase: 'done', declarer: 0, declaration: grand, result: result(true) })
+    expect([faceOf(youWon, 1), faceOf(youWon, 2)]).toEqual(['sad', 'sad'])
+  })
   it('neutral again once the trick is collected', () => {
     const g = at({ phase: 'play', declarer: 1, declaration: grand, tricks: [{ winner: 1, cards: trick }] })
     expect([faceOf(g, 1), faceOf(g, 2)]).toEqual(['neutral', 'neutral'])

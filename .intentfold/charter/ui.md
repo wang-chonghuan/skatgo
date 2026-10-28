@@ -428,7 +428,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   Noah a man in blue (「暗红和蓝……不是海军蓝」, so neither melts into the felt), in the flat sticker style
   the human chose from five. Three faces each — neutral, laughing, sulking: the bidding's winner laughs until the
   first card; a finished trick makes the side that took it laugh and the other side sulk, by
-  side as Skat scores, the other way round in a Null (「null是反过来的」) (`faceOf`); a laugh or a sulk lasts 1.5 seconds
+  side as Skat scores, the other way round in a Null (「null是反过来的」) (`faceOf`); at the deal's end the side that won laughs and the other sulks, the declarer against the two
+  defenders (「最后谁赢了也要笑，和不高兴」); a laugh or a sulk lasts 1.5 seconds
   at most, then the face is neutral again (SKATGO-148, 「最多持续2秒……就要自动复原」). The stage keeps their room above it (116u, 110u in portrait; faces 108u and 84u, 「头像太小了，需要增大」): where the free height
   already holds it nothing moves; on a screen short of height the table is a little smaller rather than a face over
   the cards. Where the talk runs in the band, it keeps between the two faces (`stage.talkBetweenFaces`). The settings carry the switch,

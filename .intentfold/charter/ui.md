@@ -453,7 +453,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the game value alone in the course's own game; on a private table in the settlement. Against the AI — the
   tournament, free play, lesson 11 — the same steps are a step a row in the result card (SKATGO-145): a `Panel`,
   `good` when the player's side won and `bad` when it lost; its title and the player's score at its right, both
-  `dialogTitle`; `GameTag`; the deal's score of each of the three, name over score, the player's cell named "You"
+  `dialogTitle`; `GameTag`; the deal's score of each of the three, name and score on one line (SKATGO-148), the player's cell named "You"
   and not boxed (`SeatScores`, SKATGO-146, the human: 「contract下面要显示本轮每个人得几分，这个是重点」); then the calculation in two rows
   (SKATGO-148, 「那个公式占用的行数太多」) — the game value from its contract's base value and multiplier with the
   multiplier's parts ("Grand 24 × 3 (with 1 + game 1 + Schneider 1)" 72), then the outcome to its Seeger-Fabian number

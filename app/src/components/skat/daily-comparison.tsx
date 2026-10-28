@@ -230,7 +230,8 @@ export function GameTag({ deal, names }: { deal: DealSummary; names: string[] })
 }
 
 /** The deal's Seeger-Fabian score of each of the three at the table (SKATGO-146, the human: 「contract下面要显示本轮每个人
- *  得几分，这个是重点」): name over score, the player's cell named "You" and nothing more (「You这个不用加白色的框」). */
+ *  得几分，这个是重点」): name and score on one line (SKATGO-148, 「每个人的得分，也不该占两行」), the player's cell named "You"
+ *  and nothing more (「You这个不用加白色的框」). */
 export function SeatScores({ scores, names }: { scores: readonly [number, number, number]; names: string[] }) {
   return (
     <div data-testid="result-seats" data-scores={scores.join(',')} {...stylex.props(styles.seats)}>
@@ -456,7 +457,7 @@ const styles = stylex.create({
   trickLabelText: { paddingTop: 0 },
   // Three equal cells.
   seats: { display: 'flex', gap: space.x6 },
-  seat: { display: 'flex', flexDirection: 'column', alignItems: 'center', flexGrow: 1, flexBasis: 0, paddingBlock: space.x4 },
+  seat: { display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: space.x6, flexGrow: 1, flexBasis: 0, paddingBlock: space.x4, whiteSpace: 'nowrap' },
   trickGame: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
   contractChip: { paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.navy },
   // Cards in a row, wide enough apart that two ringed cards never touch; a hand too long for a phone's line goes

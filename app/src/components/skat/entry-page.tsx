@@ -291,7 +291,15 @@ const styles = stylex.create({
   // A long card: on PC in the third column, one row tall; under `bp.cards` the whole width.
   long: { gridColumn: { default: dims.homeLongColumn, [bp.cards]: dims.homeFullWidth }, minWidth: 0, minHeight: 0 },
   progress: { gridRow: { default: dims.homeRowFirst, [bp.cards]: dims.homeRowAuto } },
-  elo: { gridRow: { default: dims.homeRowSecond, [bp.cards]: dims.homeRowAuto }, display: 'flex', flexDirection: 'column' },
+  // On PC the Elo board is as tall as the cards beside it, its list scrolling inside (SKATGO-144, the human: 「高度不能超过它相邻
+  // 卡片的高度，所以可以滚动，要一致」): no height of its own to size the row by, then the whole row's.
+  elo: {
+    gridRow: { default: dims.homeRowSecond, [bp.cards]: dims.homeRowAuto },
+    display: 'flex',
+    flexDirection: 'column',
+    height: { default: 0, [bp.cards]: 'auto' },
+    minHeight: { default: '100%', [bp.cards]: 0 },
+  },
   white: {
     display: 'flex',
     flexDirection: 'column',

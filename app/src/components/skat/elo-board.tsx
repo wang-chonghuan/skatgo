@@ -26,8 +26,9 @@ const slide = stylex.keyframes({ from: { transform: marqueeSlide.start }, to: { 
  * any player with the same, taking no rank. How it is counted, and what a "?" means, open from a circled
  * question mark beside the title, in a `Modal` (SKATGO-123: 「how it counted用一个圆圈问号图标，放在 elo标题旁边」; a dialog
  * since SKATGO-140: 「文字啰嗦，而且点开后那个toast不好关」). `fill`: as tall as where it sits, the list scrolling inside (「可以滚动，不要那么高」), its rows close
- * together, one column (「你换成单列吧」), at the text's size (「我刚都没说让你改成14」). On a phone it is folded behind one line where the players run
- * slowly sideways, without end (「手机上可能要折叠一下排名榜」, 「横向持续缓慢滚动」); a tap opens it.
+ * together, one column (「你换成单列吧」), at the text's size (「我刚都没说让你改成14」). Wherever the page is one column (`bp.cards`; SKATGO-144, the human: 「只要变成列式
+ * 布局，就用现在那种横向滚动的」) it is folded behind one line where the players run slowly sideways, without end (「手机上可能要
+ * 折叠一下排名榜」, 「横向持续缓慢滚动」); a tap opens it, the list then five rows and a half tall.
  */
 export function EloBoard({ board, fill = false }: { board: Board; fill?: boolean }) {
   const [open, setOpen] = useState(false)
@@ -120,12 +121,12 @@ function EloLine({ line: l }: { line: Line }) {
 
 const styles = stylex.create({
   board: { display: 'flex', flexDirection: 'column', gap: space.x12, flexGrow: 1, minHeight: 0 },
-  // The title and the question mark; on a phone the line that folds the board says the title.
+  // The title and the question mark; in one column the line that folds the board says the title.
   head: { position: 'relative', display: 'flex', alignItems: 'center', gap: space.x8 },
   title: { margin: 0, color: color.navy },
-  wide: { display: { default: 'block', [bp.phone]: 'none' } },
+  wide: { display: { default: 'block', [bp.cards]: 'none' } },
   toggle: {
-    display: { default: 'none', [bp.phone]: 'flex' },
+    display: { default: 'none', [bp.cards]: 'flex' },
     flexGrow: 1,
     minWidth: 0,
     alignItems: 'center',
@@ -176,9 +177,11 @@ const styles = stylex.create({
   // The explanation, over the page under the title: a white card of its own.
   howList: { display: 'flex', flexDirection: 'column', gap: space.x8, margin: 0, paddingInlineStart: space.x20, color: color.text },
   body: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 },
-  folded: { display: { default: 'flex', [bp.phone]: 'none' } },
+  folded: { display: { default: 'flex', [bp.cards]: 'none' } },
   muted: { margin: 0, color: color.slate, flexShrink: 0 },
-  rows: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0, overflowY: 'auto', margin: 0, padding: 0, listStyle: 'none' },
+  // On a narrow screen the list is never full height either (SKATGO-144, the human: 「elo也在窄屏上也不能全高，仍然要限定高度」): five rows
+  // and a half, the rest scrolling; on PC the card's row sets its height.
+  rows: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0, maxHeight: { default: null, [bp.cards]: dims.eloListNarrow }, overflowY: 'auto', margin: 0, padding: 0, listStyle: 'none' },
   row: {
     display: 'flex',
     alignItems: 'baseline',

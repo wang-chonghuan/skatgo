@@ -215,11 +215,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **The frame** (`skat-layout.tsx`, `components/skat/frame.tsx`): every page but the tables — an open-card
   endgame's page among them (SKATGO-111) — wears the
   public site's header (SKATGO-43; lessons too since SKATGO-47). The header has:
-  - the SkatGo mark (`dims.landingMark`) and name (`landingBrand`), "SkatGo" without ".com" (SKATGO-105);
-  - the six links, in this order (SKATGO-69, SKATGO-82, SKATGO-118): the daily tournament, learning (the
-    course), free play, a private table, the tricks ("Tricks", which took the place of the greyed-out
-    "Aufgaben"), and the forum ("Forum" in both languages; it fits the 1100px header in German with 41px to
-    spare on either side);
+  - the SkatGo mark (`dims.landingMark`) and name (`landingBrand`), "SkatGo" without ".com" (SKATGO-105), under
+    `bp.narrowPhone` the mark alone so sign-in fits;
+  - no section links (SKATGO-144, the human: 「topbar上的那些菜单都删了吧，不需要了」): the front page's cards are the way in;
   - on the right, the language switch — both flags side by side, bare, one tap switching; the language in
     use in full colour ringed in `color.go`, the other in its own colours faded (`opacity.flagOff`, never
     grey; SKATGO-104) — the settings gear (for an account first its nickname — a text field and beside it "Speichern" as tall and as rounded
@@ -231,11 +229,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     "Dein Skat-Profil", with lucide's `ChartLine` (SKATGO-128, the human: 「应该是点profile头像就能看到入口」); the
     settings carry the same link in `info` under the nickname.
 
-  On a phone the links and the account fold into a menu, which closes as menus do (SKATGO-140, 「那个汉堡菜单也不好关」):
-  its X, a tap on the dim over the page under it (which reaches nothing behind), Escape, a link, or the page changing; the
-  page behind does not scroll while it is open. Under the page sits the legal footer. The
-  header is the same on every page; it shows no current-page highlight (its links carry
-  `aria-current`).
+  A phone's header is the same, with no menu: the flags, the gear and sign-in or the avatar beside the mark. Under the
+  page sits the legal footer. The header is the same on every page.
 - **The front page** (`entry-page.tsx`), on white (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后
   显示下面的四个卡片，按我发你的两个响应式版本……长卡片做两个，一个是my progress……一个是 elo ranking」):
   - the slogan alone as the H1 (`landingHero`, navy, at the column's left; `entry_title`: "Free Skat play and progress",
@@ -260,8 +255,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     board (`elo-board.tsx`) — its title with a circled question mark (`info`) opening how it is counted in a `Modal`, three
     short lines (SKATGO-140, the human: 「点问号显示算法，文字啰嗦，而且点开后那个toast不好关」); the ten highest players — rank, name, number, a slate "?" when provisional — with
     the AI's row (its blue tag, no rank) among them by its number, close rows at `appText`, one column, the list
-    scrolling inside the card; on a phone folded behind one line where the players run slowly sideways
-    (`marqueeSlide`, `timing.marquee`), a tap opening it (SKATGO-123). Under `bp.cards` the four stay two by two
+    scrolling inside the card, which is never taller than the cards beside it — it takes the row's height and never
+    sets it (SKATGO-144, the human: 「高度不能超过它相邻卡片的高度，所以可以滚动，要一致」); wherever the page is one column
+    (`bp.cards`, phones and narrow screens alike; 「只要变成列式布局，就用现在那种横向滚动的」) folded behind one line where the
+    players run slowly sideways (`marqueeSlide`, `timing.marquee`), a tap opening it (SKATGO-123), the opened list five
+    rows and a half tall (`dims.eloListNarrow`), the rest scrolling (「elo也在窄屏上也不能全高」). Under `bp.cards` the four stay two by two
     (`dims.homeWaysNarrow`) and the long cards follow, the whole width;
   - under them, in the same columns, white picture cards (the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」, after a
     picture of event cards): the picture to the card's edges at the top (`dims.homePicture`), then the title

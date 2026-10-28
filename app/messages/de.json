@@ -319,10 +319,8 @@
   "elo_how_win": "Die höhere Seeger-Fabian-Summe gewinnt. Alle beginnen mit {start}, die KI bleibt bei {ki}.",
   "elo_how_provisional": "? = weniger als {n} Tage gespielt: noch vorläufig.",
 
-  "nav_label": "Hauptnavigation",
   "nav_home": "Start",
   "nav_course": "Kurs",
-  "nav_menu": "Menü",
   "nav_home_link": "Startseite",
 
   "table_menu": "Menü",
@@ -457,11 +455,7 @@
   "nav_rules": "Regeln",
 
   "nav_daily": "Täglich",
-  "nav_header_daily": "Tagesturnier",
   "nav_header_free": "Freies Spiel",
-  "nav_header_learn": "Lernen",
-  "nav_header_friends": "Privater Tisch",
-  "nav_header_tricks": "Tricks",
   "tricks_title": "Skat-Tricks",
   "tricks_more_link": "Interaktive Übungen – spiel besser Skat",
   "tricks_course_text": "20 Endspiele mit offenen Karten – Karte für Karte gegen den besten Gegner.",
@@ -674,7 +668,6 @@
   "tricks_open_side": "Ihr: {n}",
   "tricks_open_goal_side": "Ziel 60",
 
-  "nav_header_forum": "Forum",
   "forum_title": "Forum",
   "forum_meta_title": "Skat-Forum: Neuigkeiten, Artikel und Fragen | SkatGo",
   "forum_meta_description": "Das Skat-Forum von SkatGo: Ankündigungen, Artikel über Skat-Technik, Fragen und Feedback. Lesen ohne Anmeldung, mitschreiben mit deinem SkatGo-Konto.",

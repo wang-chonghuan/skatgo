@@ -1,7 +1,7 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChartLine, Check, Menu, Settings, X } from 'lucide-react'
+import { ChartLine, Check, Settings } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { LANG_TAG } from '~/lib/site'
@@ -65,74 +65,23 @@ export function useFrame() {
   return useRouterState({ select: (s) => frameOf(s.location.pathname) })
 }
 
-/** The front page's links, in this order (the human, 2026-10-01): today's deals, guided free play, the
- *  course, the rules. No separate "Play" button beside them. */
-// The header's links, in the human's order (SKATGO-69): the tournament, learning, free play, a private table,
-// then the tricks (SKATGO-82), which took the place of the greyed-out puzzles, and the forum (SKATGO-118).
-const HEADER_LINKS: { to: '/daily' | '/course' | '/play' | '/with-friends' | '/skat-tricks' | '/forum'; label: () => string }[] = [
-  { to: '/daily', label: () => m.nav_header_daily() },
-  { to: '/course', label: () => m.nav_header_learn() },
-  { to: '/play', label: () => m.nav_header_free() },
-  { to: '/with-friends', label: () => m.nav_header_friends() },
-  { to: '/skat-tricks', label: () => m.nav_header_tricks() },
-  { to: '/forum', label: () => m.nav_header_forum() },
-]
-
-/** The front page's header: the public site's white bar, also over the tournament, the course and the
- *  rules (SKATGO-43). Below 1100px wide the links fold into a menu (SKATGO-69). The open menu closes as menus do
- *  (SKATGO-140, the human: 「那个汉堡菜单也不好关……改成行业最佳实践」): its X, a tap on the dim under it (which no longer
- *  reaches the page), Escape, a link, or the page changing; while it is open the page behind does not scroll. */
+/** The public site's white bar over every page but the tables (SKATGO-43): the SkatGo mark and name, then the language
+ *  switch, the settings and the account. No section links: the front page's cards are the way in (SKATGO-144, the human:
+ *  「topbar上的那些菜单都删了吧，不需要了」); on a phone too, so there is no menu to fold them into. */
 export function LandingHeader() {
-  const [open, setOpen] = useState(false)
-  const path = useRouterState({ select: (s) => s.location.pathname })
-  useEffect(() => setOpen(false), [path])
-  useEffect(() => {
-    if (!open) return
-    const html = document.documentElement
-    const overflow = html.style.overflow
-    html.style.overflow = 'hidden'
-    const escape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('keydown', escape)
-    return () => {
-      html.style.overflow = overflow
-      document.removeEventListener('keydown', escape)
-    }
-  }, [open])
   return (
     <header data-testid="landing-header" {...stylex.props(styles.landingHeader)}>
-      <Link to="/" {...stylex.props(typography.landingHeading, styles.landingBrand)}>
+      <Link to="/" aria-label={m.site_name()} {...stylex.props(typography.landingHeading, styles.landingBrand)}>
         <img src="/logo-96.png" alt="" {...stylex.props(styles.landingMark)} />
-        {/* The site's name beside the mark, without ".com" (SKATGO-105). */}
-        <span {...stylex.props(typography.landingBrand)}>{m.site_name()}</span>
+        {/* The site's name beside the mark, without ".com" (SKATGO-105); under 360px only the mark, so sign-in fits beside the
+            flags and the gear (SKATGO-144). */}
+        <span {...stylex.props(typography.landingBrand, styles.brandName)}>{m.site_name()}</span>
       </Link>
-      <nav aria-label={m.nav_label()} {...stylex.props(styles.landingNav)}>
-        {HEADER_LINKS.map((l) => (
-          <Link key={l.to} to={l.to} data-nav={l.to} {...stylex.props(typography.landingNav, styles.landingLink)}>{l.label()}</Link>
-        ))}
-      </nav>
       <div {...stylex.props(styles.landingEnd)}>
         <LanguageSwitch />
         <SettingsButton />
-        <span {...stylex.props(styles.desktopOnly)}>
-          <Account shape="landing" />
-        </span>
-        <button type="button" aria-label={m.nav_menu()} aria-expanded={open} data-testid="landing-menu" onClick={() => setOpen((o) => !o)} {...stylex.props(styles.menuButton)}>
-          {open ? <X size={icon.menu} strokeWidth={icon.outline} /> : <Menu size={icon.menu} strokeWidth={icon.outline} />}
-        </button>
+        <Account shape="landing" />
       </div>
-      {open ? <div data-testid="landing-menu-scrim" aria-hidden="true" onClick={() => setOpen(false)} {...stylex.props(styles.menuScrim)} /> : null}
-      {open ? (
-        <div data-testid="landing-menu-panel" {...stylex.props(styles.menuPanel)}>
-          {HEADER_LINKS.map((l) => (
-            <Link key={l.to} to={l.to} onClick={() => setOpen(false)} {...stylex.props(typography.landingNav, styles.menuLink)}>{l.label()}</Link>
-          ))}
-          <div {...stylex.props(styles.menuAccount)}>
-            <Account />
-          </div>
-        </div>
-      ) : null}
     </header>
   )
 }
@@ -534,54 +483,13 @@ const styles = stylex.create({
     boxShadow: elev.landingHeader,
   },
   landingBrand: { display: 'flex', alignItems: 'center', gap: space.x10, color: color.navy, textDecoration: 'none', ...focus },
-  landingNav: { display: { default: 'flex', [bp.headerMenu]: 'none' }, alignItems: 'center', gap: space.x32 },
-  landingLink: { color: { default: color.slate, ':hover': color.navy }, textDecoration: 'none', ...focus },
-  // Not there yet (SKATGO-69): greyed, and nothing answers the pointer.
-  // The flags, the gear and sign-in or the menu, each clear of the next (SKATGO-105).
+  brandName: { display: { default: 'inline', [bp.narrowPhone]: 'none' } },
+  // The flags, the gear and sign-in or the avatar, each clear of the next (SKATGO-105).
   landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x16, [bp.phone]: space.x12, [bp.narrowPhone]: space.x10 } },
-  desktopOnly: { display: { default: 'inline-flex', [bp.headerMenu]: 'none' } },
-  menuButton: {
-    display: { default: 'none', [bp.headerMenu]: 'inline-flex' },
-    alignItems: 'center',
-    justifyContent: 'center',
-    // As small as the gear on a phone, so the flags fit (SKATGO-104).
-    width: { default: dims.iconButton, [bp.phone]: space.x32 },
-    height: { default: dims.iconButton, [bp.phone]: space.x32 },
-    padding: 0,
-    borderWidth: 0,
-    borderRadius: radii.round,
-    backgroundColor: 'transparent',
-    color: color.navy,
-    cursor: 'pointer',
-    ...focus,
-  },
-  menuPanel: {
-    position: 'absolute',
-    top: '100%',
-    insetInline: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x8,
-    paddingBlock: space.x16,
-    paddingInline: space.x20,
-    backgroundColor: color.surface,
-    boxShadow: elev.landingHeader,
-  },
-  menuLink: { paddingBlock: space.x8, color: color.navy, textDecoration: 'none', ...focus },
-  // The dim under the open menu, from the header's foot down: a tap there closes the menu and reaches nothing behind.
-  menuScrim: {
-    position: 'fixed',
-    insetInline: 0,
-    bottom: 0,
-    top: { default: dims.landingHeader, [bp.phone]: dims.landingHeaderPhone },
-    backgroundColor: color.scrim,
-    overscrollBehavior: 'contain',
-    touchAction: 'none',
-  },
-  menuAccount: { paddingTop: space.x8 },
 
   // The language switch (SKATGO-104): two bare flags, each in a button as tall as the header's controls.
-  flags: { display: 'flex', alignItems: 'center', gap: { default: space.x8, [bp.phone]: space.x6 }, flexShrink: 0 },
+  // The two flags as far apart as the header's other controls nearly are (SKATGO-144, the human: 「英国和德国国旗距离太近」).
+  flags: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x10, [bp.narrowPhone]: space.x8 }, flexShrink: 0 },
   flagButton: {
     display: 'inline-flex',
     alignItems: 'center',

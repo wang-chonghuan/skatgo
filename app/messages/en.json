@@ -319,10 +319,8 @@
   "elo_how_win": "The higher Seeger-Fabian total wins. Everyone starts at {start}; the AI stays at {ki}.",
   "elo_how_provisional": "? = fewer than {n} days played: still provisional.",
 
-  "nav_label": "Main navigation",
   "nav_home": "Home",
   "nav_course": "Course",
-  "nav_menu": "Menu",
   "nav_home_link": "Home",
 
   "table_menu": "Menu",
@@ -457,11 +455,7 @@
   "nav_rules": "Rules",
 
   "nav_daily": "Daily",
-  "nav_header_daily": "Daily Tournament",
   "nav_header_free": "Free Play",
-  "nav_header_learn": "Learn",
-  "nav_header_friends": "Private Table",
-  "nav_header_tricks": "Tricks",
   "tricks_title": "Skat tricks",
   "tricks_more_link": "Interactive drills – play better Skat",
   "tricks_course_text": "20 endgames with open cards – card by card against the best defence.",
@@ -674,7 +668,6 @@
   "tricks_open_side": "Your side: {n}",
   "tricks_open_goal_side": "Goal 60",
 
-  "nav_header_forum": "Forum",
   "forum_title": "Forum",
   "forum_meta_title": "Skat Forum: News, Articles and Questions | SkatGo",
   "forum_meta_description": "The SkatGo Skat forum: announcements, articles on Skat technique, questions and feedback. Read without an account, write with your SkatGo account.",

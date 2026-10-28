@@ -41,30 +41,29 @@ describe('the settlement formula', () => {
   })
 })
 
-// The same calculation a step a row in the result card (SKATGO-145), ending in the player's own Seeger-Fabian score.
+// The same calculation in the result card (SKATGO-145), in two rows since SKATGO-148: the game value, then the outcome
+// to its Seeger-Fabian number.
 const rows = (r: ReturnType<typeof settlementRows>) => r.map((x) => `${x.label} | ${x.value}`)
 
 describe('the settlement rows', () => {
-  it('a won game of the player: base, multiplier, game value, the +50, the score', () => {
+  it('a won game of the player: base × multiplier with its parts, then the +50', () => {
     const s = settle(decl(hearts), 18, mine, play(70))
-    expect(rows(settlementRows(s, decl(hearts), 18, true, 'Lina'))).toEqual([
-      'Hearts ♥, base value | 10', 'with 3 + game 1 | × 4', 'Game value | 40', 'Won | + 50', 'Your score | +90',
-    ])
+    expect(rows(settlementRows(s, decl(hearts), 18, true, 'Lina'))).toEqual(['Hearts ♥ 10 × 4 (with 3 + game 1) | 40', 'Won: 40 + 50 | +90'])
   })
   it('a lost game of the player doubles and takes 50 more', () => {
     const s = settle(decl(hearts), 18, mine, play(50))
-    expect(rows(settlementRows(s, decl(hearts), 18, true, 'Lina')).slice(-2)).toEqual(['Lost | −2 × 40 − 50', 'Your score | −130'])
+    expect(rows(settlementRows(s, decl(hearts), 18, true, 'Lina')).slice(-1)).toEqual(['Lost: −2 × 40 − 50 | −130'])
   })
-  it('a defender scores 40 when the declarer loses, nothing when they win', () => {
+  it('a defender scores 40 when the declarer loses; a declarer who wins scores the value and 50', () => {
     const lost = settle(decl(hearts), 18, mine, play(50))
-    expect(rows(settlementRows(lost, decl(hearts), 18, false, 'Lina')).slice(-2)).toEqual(['Lina lost: each defender | +40', 'Your score | +40'])
+    expect(rows(settlementRows(lost, decl(hearts), 18, false, 'Lina')).slice(-1)).toEqual(['Lina lost: each defender | +40'])
     const won = settle(decl(hearts), 18, mine, play(70))
-    expect(rows(settlementRows(won, decl(hearts), 18, false, 'Lina')).slice(-2)).toEqual(['Lina won | 40 + 50 = +90', 'Your score | 0'])
+    expect(rows(settlementRows(won, decl(hearts), 18, false, 'Lina')).slice(-1)).toEqual(['Lina won: 40 + 50 | +90'])
   })
   it('Null has its fixed value in one row', () => {
     const nul = decl({ kind: 'null' }, { hand: true })
     const s = settle(nul, 18, mine, { declarerPoints: 0, defenderPoints: 120, declarerTricks: 0, defenderTricks: 10 })
-    expect(rows(settlementRows(s, nul, 18, true, 'Lina'))).toEqual(['Null Hand, fixed value | 35', 'Won | + 50', 'Your score | +85'])
+    expect(rows(settlementRows(s, nul, 18, true, 'Lina'))).toEqual(['Null Hand, fixed value | 35', 'Won: 35 + 50 | +85'])
   })
   it('an overbid has its own row with what it is scored at', () => {
     const s = settle(decl(hearts), 46, mine, play(70))

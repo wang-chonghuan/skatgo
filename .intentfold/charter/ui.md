@@ -454,11 +454,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   tournament, free play, lesson 11 — the same steps are a step a row in the result card (SKATGO-145): a `Panel`,
   `good` when the player's side won and `bad` when it lost; its title and the player's score at its right, both
   `dialogTitle`; `GameTag`; the deal's score of each of the three, name over score, the player's cell named "You"
-  and not boxed (`SeatScores`, SKATGO-146, the human: 「contract下面要显示本轮每个人得几分，这个是重点」); then each step's label (`appText`,
-  `slate`) at the left and its number (`appBtnStrong`, `navy`) at the right, the player's score last under a `hairline`
-  rule. The dialog speaks in the app's roles only (SKATGO-146, the human: 「结果卡片上的字太小……我哪来那么小的字？！」): the
+  and not boxed (`SeatScores`, SKATGO-146, the human: 「contract下面要显示本轮每个人得几分，这个是重点」); then the calculation in two rows
+  (SKATGO-148, 「那个公式占用的行数太多」) — the game value from its contract's base value and multiplier with the
+  multiplier's parts ("Grand 24 × 3 (with 1 + game 1 + Schneider 1)" 72), then the outcome to its Seeger-Fabian number
+  under a `hairline` rule ("Lina won: 72 + 50" +122), an overbid's row between them — each label (`appText`, `slate`) at
+  the left and its number (`appBtnStrong`, `navy`) at the right; the player's own score is the title's. The dialog speaks in the app's roles only (SKATGO-146, the human: 「结果卡片上的字太小……我哪来那么小的字？！」): the
   title `dialogTitle` (22), headings and numbers `appBtnStrong` (16), words `appText` (16); only the You/AI tags are
-  `badge`. The first step names the contract's base value ("Grand, base value 24"). The dialog's body is the scroll
+  `badge`. The dialog's body is the scroll
   area, its scrollbar inside the dialog's box, and the way on sits in a foot under a `hairline` rule that stays at the
   dialog's bottom over the scrolled content (`Dialog`'s `foot`, SKATGO-146).
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible

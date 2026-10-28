@@ -1076,8 +1076,9 @@ function Actions(p: ActionsProps) {
     if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} />
     return (
       <Row>
-        <Say>{course ? m.bid_asked({ name: nameOf(b.speaker), value: b.value }) : m.bid_asked_short({ value: b.value })}</Say>
-        <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{course ? m.bid_hold_button({ value: b.value }) : m.bid_hold_short()}</Btn>
+        {/* Who asks and what "yes" commits to, on every table (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」). */}
+        <Say>{m.bid_asked({ name: nameOf(b.speaker), value: b.value })}</Say>
+        <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
         {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
       </Row>
@@ -1408,8 +1409,8 @@ function SpeakerBid({ value, listener, hints, onBid, onBidHint }: { value: numbe
   const named = picked ?? next
   return (
     <Row>
-      {/* The course says whom the bid goes to; a real table's buttons say it all (SKATGO-134). */}
-      {hints ? <Say>{m.bid_your_turn({ name: listener })}</Say> : null}
+      {/* Whom the bid goes to, on every table (SKATGO-141, back from SKATGO-134's buttons-only). */}
+      <Say>{m.bid_your_turn({ name: listener })}</Say>
       <Btn testId="skat-bid" shape="block" size="lg" onClick={() => (picked === null ? onBid('bid') : onBid('bid', picked))}>{m.bid_button({ value: named ?? '' })}</Btn>
       <Btn testId="skat-pass" shape="block" size="lg" onClick={() => onBid('pass')}>{m.bid_pass()}</Btn>
       {higher.length > 0 ? (

@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-141",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-141",
+  "branch": "SKATGO-141-bidding-copy",
+  "base": "4e71856c8c63b61337bd9f331447aa047a4d4372",
+  "ports": {
+    "web": 55141,
+    "multiplayer": 56141,
+    "database": 57141
+  }
+}

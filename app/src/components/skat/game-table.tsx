@@ -8,7 +8,7 @@ import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortH
 import { type Face, faceOf } from '~/lib/skat/face'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { playSound } from '~/lib/skat/sounds'
-import { useBoardTricks, useSettings, useTapToCollect } from '~/lib/skat/settings'
+import { useBoardTricks, useFaces, useSettings, useTapToCollect } from '~/lib/skat/settings'
 import { type SettlementRow, cardLabel, contractName, ledName, roleName, settleReason, settlementFormula, settlementRows } from '~/lib/skat/i18n'
 import {
   type Game,
@@ -233,6 +233,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // waits for their tap (SKATGO-72, SKATGO-75).
   const collect = remote ? remote.collect : () => setGame((g) => (g.phase === 'trickEnd' ? collectTrick(g) : g))
   const tapToCollect = useTapToCollect()
+  const faces = useFaces()
   useEffect(() => {
     if (game.phase !== 'trickEnd' || tapToCollect) return
     const t = setTimeout(collect, TRICK_PAUSE)
@@ -492,8 +493,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           <Stack key={seat} seat={seat} game={game} shown={exercise ? game.hands[seat] : rest?.[seat]} big={!!exercise} />
         ))}
         {/* Lina's and Noah's faces above their stacks (SKATGO-147); not at a private table, where people sit, nor on an
-            exercise's open board. */}
-        {!exercise && !room ? ([1, 2] as const).map((seat) => <SeatFace key={seat} seat={seat} game={game} />) : null}
+            exercise's open board; and only while the settings show them. */}
+        {faces && !exercise && !room ? ([1, 2] as const).map((seat) => <SeatFace key={seat} seat={seat} game={game} />) : null}
 
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
           {pinned ? talkCard : null}

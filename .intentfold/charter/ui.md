@@ -427,7 +427,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   first card; a finished trick makes the side that took it laugh and the other side sulk until it is collected, by
   side as Skat scores, the other way round in a Null (「null是反过来的」) (`faceOf`). The stage keeps their room above it (116u, 110u in portrait; faces 108u and 84u, 「头像太小了，需要增大」): where the free height
   already holds it nothing moves; on a screen short of height the table is a little smaller rather than a face over
-  the cards. Where the talk runs in the band, it keeps between the two faces (`stage.talkBetweenFaces`).
+  the cards. Where the talk runs in the band, it keeps between the two faces (`stage.talkBetweenFaces`). The settings carry the switch,
+  "Avatare" — "Avatare von Lina und Noah am Tisch", on by default (「配置里要加上一个配置……默认是开的」), under the table
+  talk's; off, the table keeps the faces' room.
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),
   on every full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"

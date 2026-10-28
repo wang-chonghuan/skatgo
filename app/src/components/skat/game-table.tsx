@@ -48,7 +48,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { type AskReview, GameTag, VsAiReview, dailyAsk, signed } from './daily-comparison'
+import { type AskReview, GameTag, SeatScores, VsAiReview, dailyAsk, signed } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
@@ -1296,15 +1296,14 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
     </Row>
   )
   return (
-    <Dialog>
+    <Dialog foot={vsAi ? next : undefined}>
     <div ref={panel} data-testid="skat-result" data-human-won={String(humanWon)} {...stylex.props(styles.declare)}>
       {vsAi ? (
         // Against the AI (SKATGO-145, the human: 「先显示叫牌和ai的不同，再显示打的和ai最不同……其他不显示」): the result
         // with its calculation, the bidding, the one trick most worth improving, and the way on.
         <>
-          <ResultCard won={humanWon} score={seegerFabian(game)[ME]} rows={settlementRows(r, d, game.bid, declarer === ME, nameOf(declarer))} game={<GameTag deal={summarize(game)} names={[nameOf(0), nameOf(1), nameOf(2)]} />} />
+          <ResultCard won={humanWon} score={seegerFabian(game)[ME]} rows={settlementRows(r, d, game.bid, declarer === ME, nameOf(declarer))} game={<GameTag deal={summarize(game)} names={[nameOf(0), nameOf(1), nameOf(2)]} />} seats={<SeatScores scores={seegerFabian(game)} names={[nameOf(0), nameOf(1), nameOf(2)]} />} />
           <VsAiReview ask={vsAi.ask} cacheKey={vsAi.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} />
-          {next}
         </>
       ) : (
         <>
@@ -1329,7 +1328,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
  * 别太花」): won or lost with the player's score, then the calculation a step a row, its number at the end; light
  * green when the player's side won, the app's pink when it lost. Under the title, whose game it was and which.
  */
-function ResultCard({ won, score, rows, game }: { won: boolean; score: number; rows: SettlementRow[]; game: ReactNode }) {
+function ResultCard({ won, score, rows, game, seats }: { won: boolean; score: number; rows: SettlementRow[]; game: ReactNode; seats: ReactNode }) {
   return (
     <Panel tone={won ? 'good' : 'bad'}>
       <div data-testid="skat-result-card" data-won={String(won)} {...stylex.props(styles.resultBody)}>
@@ -1338,13 +1337,14 @@ function ResultCard({ won, score, rows, game }: { won: boolean; score: number; r
           <span data-testid="skat-result-score" {...stylex.props(typography.dialogTitle, styles.resultTitle)}>{signed(score)}</span>
         </div>
         {game}
+        {seats}
         <dl data-testid="skat-result-rows" data-rows={rows.length} {...stylex.props(styles.calc)}>
           {rows.map((row, i) => {
             const total = i === rows.length - 1
             return (
               <div key={i} {...stylex.props(styles.calcRow, total && styles.calcTotal)}>
-                <dt {...stylex.props(total ? typography.smallBold : typography.small, total ? styles.resultTitle : styles.inkLabel)}><Rich text={row.label} /></dt>
-                <dd {...stylex.props(total ? typography.appBtnStrong : typography.smallBold, styles.calcValue)}>{row.value}</dd>
+                <dt {...stylex.props(total ? typography.appBtnStrong : typography.appText, total ? styles.resultTitle : styles.inkLabel)}><Rich text={row.label} /></dt>
+                <dd {...stylex.props(typography.appBtnStrong, styles.calcValue)}>{row.value}</dd>
               </div>
             )
           })}
@@ -1525,13 +1525,22 @@ function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends
 
 const Say = ({ children }: { children: ReactNode }) => <p {...stylex.props(typography.appText, styles.say)}>{children}</p>
 
-/** A dialog over the table: white, on the scrim, one full-width green action inside. */
-function Dialog({ children }: { children: ReactNode }) {
+/** A dialog over the table: white, on the scrim, one full-width green action inside. With a `foot` (SKATGO-146, the
+ *  human: 「modal应该是滚动区域，下面是next deal按钮」), the dialog's body scrolls inside its own box and the foot stays
+ *  at its bottom, over the scrolled content. */
+function Dialog({ children, foot }: { children: ReactNode; foot?: ReactNode }) {
   return (
     <div data-testid="skat-dialog" {...stylex.props(styles.scrim)}>
-      <div role="dialog" aria-modal="false" {...stylex.props(styles.dialog)}>
-        {children}
-      </div>
+      {foot ? (
+        <div role="dialog" aria-modal="false" {...stylex.props(styles.dialog, styles.dialogFramed)}>
+          <div data-testid="skat-dialog-body" {...stylex.props(styles.dialogBody)}>{children}</div>
+          <div data-testid="skat-dialog-foot" {...stylex.props(styles.dialogFoot)}>{foot}</div>
+        </div>
+      ) : (
+        <div role="dialog" aria-modal="false" {...stylex.props(styles.dialog)}>
+          {children}
+        </div>
+      )}
     </div>
   )
 }
@@ -2140,6 +2149,17 @@ const styles = stylex.create({
     borderRadius: radii.dialog,
     backgroundColor: color.surface,
     boxShadow: elev.panel,
+  },
+  dialogFramed: { gap: 0, padding: 0, overflowY: 'hidden' },
+  dialogBody: { flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', padding: space.x24 },
+  dialogFoot: {
+    flexShrink: 0,
+    paddingInline: space.x24,
+    paddingBlock: space.x16,
+    borderTopWidth: border.hair,
+    borderTopStyle: 'solid',
+    borderTopColor: color.hairline,
+    backgroundColor: color.surface,
   },
 })
 

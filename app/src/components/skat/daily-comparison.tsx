@@ -160,7 +160,7 @@ export function VsAiReview({ ask, cacheKey, names }: { ask: AskReview; cacheKey?
   }, [])
   if (!review) {
     return (
-      <p role={failed ? 'alert' : undefined} data-testid="vs-ai-review" data-state={failed ? 'failed' : 'loading'} {...stylex.props(typography.note, styles.muted, styles.sheetNote)}>
+      <p role={failed ? 'alert' : undefined} data-testid="vs-ai-review" data-state={failed ? 'failed' : 'loading'} {...stylex.props(typography.appText, styles.muted, styles.sheetNote)}>
         {failed ? m.daily_review_failed() : m.loading()}
       </p>
     )
@@ -197,7 +197,7 @@ function BidCompare({ review, names }: { review: DealReview; names: string[] }) 
   const rows = same ? [{ ...you, who: 'both' as const }] : ai ? [you, ai] : [you]
   return (
     <section data-testid="vs-ai-bid" data-rows={rows.length} {...stylex.props(styles.block)}>
-      <h3 {...stylex.props(typography.panelLabel, styles.blockTitle)}>{m.review_bid_title()}</h3>
+      <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{m.review_bid_title()}</h3>
       <div {...stylex.props(styles.bidRows)}>
       {rows.map((r) => (
         <div key={r.who} data-who={r.who} data-score={r.score} {...stylex.props(styles.bidRow)}>
@@ -206,8 +206,8 @@ function BidCompare({ review, names }: { review: DealReview; names: string[] }) 
             {r.who === 'you' ? null : <Who side="ai" />}
           </span>
           <span {...stylex.props(styles.bidText)}>
-            <span {...stylex.props(typography.smallBold, styles.ink)}><Rich text={r.said} /></span>
-            <span {...stylex.props(typography.micro, styles.muted)}><Rich text={r.outcome} /></span>
+            <span {...stylex.props(typography.appBtnStrong, styles.ink)}><Rich text={r.said} /></span>
+            <span {...stylex.props(typography.appText, styles.muted)}><Rich text={r.outcome} /></span>
           </span>
           <span {...stylex.props(typography.appBtnStrong, styles.ink)}>{signed(r.score)}</span>
         </div>
@@ -223,9 +223,24 @@ export function GameTag({ deal, names }: { deal: DealSummary; names: string[] })
   if (!deal.declaration || deal.declarer === null) return null
   return (
     <p data-testid="result-game" {...stylex.props(styles.sheetNote, styles.trickGame)}>
-      <span {...stylex.props(typography.smallBold, styles.contractChip, contractTint[tintOf(deal.declaration.contract)])}><Rich text={gameName(deal)} /></span>
-      <span {...stylex.props(typography.small, styles.ink)}>{m.review_trick_declarer({ name: names[deal.declarer] })}</span>
+      <span {...stylex.props(typography.appBtnStrong, styles.contractChip, contractTint[tintOf(deal.declaration.contract)])}><Rich text={gameName(deal)} /></span>
+      <span {...stylex.props(typography.appText, styles.ink)}>{m.review_trick_declarer({ name: names[deal.declarer] })}</span>
     </p>
+  )
+}
+
+/** The deal's Seeger-Fabian score of each of the three at the table (SKATGO-146, the human: 「contract下面要显示本轮每个人
+ *  得几分，这个是重点」): name over score, the player's cell named "You" and nothing more (「You这个不用加白色的框」). */
+export function SeatScores({ scores, names }: { scores: readonly [number, number, number]; names: string[] }) {
+  return (
+    <div data-testid="result-seats" data-scores={scores.join(',')} {...stylex.props(styles.seats)}>
+      {scores.map((v, seat) => (
+        <div key={seat} data-seat={seat} data-own={seat === PLAYER ? 'true' : undefined} {...stylex.props(styles.seat)}>
+          <span {...stylex.props(typography.appText, styles.muted)}>{names[seat]}</span>
+          <span {...stylex.props(typography.appBtnStrong, styles.ink)}>{signed(v)}</span>
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -239,7 +254,7 @@ function WorstTrick({ review, names }: { review: DealReview; names: string[] }) 
   const t = w ? review.tricks[w.trick - 1] : undefined
   if (!w || !t) {
     return (
-      <p data-testid="vs-ai-clean" {...stylex.props(typography.note, styles.ink, styles.sheetNote)}>{m.daily_review_clean()}</p>
+      <p data-testid="vs-ai-clean" {...stylex.props(typography.appText, styles.ink, styles.sheetNote)}>{m.daily_review_clean()}</p>
     )
   }
   const mine = t.cards.findIndex((p) => p.seat === PLAYER)
@@ -250,20 +265,20 @@ function WorstTrick({ review, names }: { review: DealReview; names: string[] }) 
   const mark = (c: Card): Side | null => (sameCard(c, w.played) ? 'you' : sameCard(c, w.best) ? 'ai' : null)
   return (
     <section data-testid="vs-ai-trick" data-trick={w.trick} data-played={`${w.played.suit}${w.played.rank}`} data-best={`${w.best.suit}${w.best.rank}`} {...stylex.props(styles.block, styles.ruled)}>
-      <h3 {...stylex.props(typography.panelLabel, styles.blockTitle)}>{m.review_trick_heading()}</h3>
-      <p {...stylex.props(typography.smallBold, styles.ink, styles.sheetNote)}>
+      <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{m.review_trick_heading()}</h3>
+      <p {...stylex.props(typography.appBtnStrong, styles.ink, styles.sheetNote)}>
         <Rich text={m.review_trick_title({ trick: w.trick, best: cardLabel(w.best) })} />
       </p>
       <div {...stylex.props(styles.trickGrid)}>
-        <span {...stylex.props(typography.micro, styles.muted, styles.trickLabel)}>{m.review_trick_table()}</span>
+        <span {...stylex.props(typography.appText, styles.muted, styles.trickLabel)}>{m.review_trick_table()}</span>
         {before.length ? (
           <span data-testid="vs-ai-trick-table" data-cards={before.length} {...stylex.props(styles.cards)}>
             {before.map((p) => <PlayingCard key={`${p.card.suit}${p.card.rank}`} card={p.card} size="xs" />)}
           </span>
         ) : (
-          <span data-testid="vs-ai-trick-table" data-cards={0} {...stylex.props(typography.small, styles.ink)}>{m.review_trick_lead()}</span>
+          <span data-testid="vs-ai-trick-table" data-cards={0} {...stylex.props(typography.appText, styles.ink)}>{m.review_trick_lead()}</span>
         )}
-        <span {...stylex.props(typography.micro, styles.muted, styles.trickLabel)}>{m.review_trick_hand()}</span>
+        <span {...stylex.props(typography.appText, styles.muted, styles.trickLabel)}>{m.review_trick_hand()}</span>
         <span data-testid="vs-ai-trick-hand" data-cards={held.length} {...stylex.props(styles.cards)}>
           {held.map((c) => {
             const side = mark(c)
@@ -278,7 +293,7 @@ function WorstTrick({ review, names }: { review: DealReview; names: string[] }) 
           })}
         </span>
       </div>
-      <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>
+      <p {...stylex.props(typography.appText, styles.muted, styles.sheetNote)}>
         {m.review_trick_taken({ name: names[t.winner], points: pointsOf(t.cards.map((p) => p.card)) })}
       </p>
     </section>
@@ -435,6 +450,9 @@ const styles = stylex.create({
   // one phone screen with the rest (SKATGO-145).
   trickGrid: { display: 'grid', gridTemplateColumns: 'max-content auto', alignItems: 'start', columnGap: space.x8, rowGap: space.x6 },
   trickLabel: { paddingTop: space.x4 },
+  // Three equal cells.
+  seats: { display: 'flex', gap: space.x6 },
+  seat: { display: 'flex', flexDirection: 'column', alignItems: 'center', flexGrow: 1, flexBasis: 0, paddingBlock: space.x4 },
   trickGame: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
   contractChip: { paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.navy },
   // Cards in a row, wide enough apart that two ringed cards never touch; a hand too long for a phone's line goes

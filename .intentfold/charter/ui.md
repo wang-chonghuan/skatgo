@@ -423,8 +423,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   Tisch", on by default, as the sounds' switch.
 - **Lina's and Noah's faces** (SKATGO-147, the human: 「给noah和lina的牌的上方，加两个头像，一男，一女……有点搞笑的的风格」):
   on every table where they sit — not a private table, not an exercise's open-card board — a cartoon face above each
-  one's stack at the felt's edge (`stage.face`, `faceTop`, `faceInset`), from `app/public/faces/`: Lina a woman in
-  dark red, Noah a man in blue (「暗红和蓝……不是海军蓝」, so neither melts into the felt), in the flat sticker style
+  one's stack at the felt's edge (`stage.face`, `faceTop`, `faceInset`), from `app/public/faces/`: Lina a friendly woman in
+  red with a light-blue scarf and brown-blond hair (SKATGO-148, 「目前的攻击性太强……衣服红色，围巾浅蓝色，头发棕黄色，皮肤白一点」),
+  Noah a man in blue (「暗红和蓝……不是海军蓝」, so neither melts into the felt), in the flat sticker style
   the human chose from five. Three faces each — neutral, laughing, sulking: the bidding's winner laughs until the
   first card; a finished trick makes the side that took it laugh and the other side sulk, by
   side as Skat scores, the other way round in a Null (「null是反过来的」) (`faceOf`); a laugh or a sulk lasts 1.5 seconds

@@ -16,5 +16,5 @@
 2. The label's padding only beside cards.
 3. `SeatFace`: a laugh or a sulk for at most 1.5s (`FACE_HOLD`), started once per moment (the won bid, each trick).
 4. The talk card's tail: a border triangle in the existing tokens (`space.x14`, `x16`, `x20`, `color.surface`), up and
-   out beside the frame, down and out in the band, on the speaker's side.
+   out beside the frame, sideways out of its edge in the band, on the speaker's side.
 5. Charter ui.md lines for each.

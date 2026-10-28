@@ -413,7 +413,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`bp.pinned`) beside the trick frame, level with its top, toward Lina's or Noah's cards (`dims.talkWidth`); narrower,
   in the felt's top band under the table's line, at the speaker's side, so nothing overlaps (SKATGO-143). As in a comic its
   tail points to the speaker's face (SKATGO-148, 「像漫画一样，用哪种有箭头的泡泡，指向说话人」): up and out beside the frame,
-  down and out in the band. One thing at a
+  out of its side toward the face in the band. One thing at a
   time (「按顺序来显示这些信息」): it waits while the table asks for a tap — a claim laid open, a trick to collect — or shows
   a hint or a refusal. It comes once the table has shown the moves it is about and stays
   until the next tap anywhere, which still does what it does (the human: 「最好让用户点一下屏幕再给让这个泡泡消失」); in its

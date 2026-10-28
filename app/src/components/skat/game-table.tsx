@@ -426,9 +426,15 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
       </span>
       <TapHand testId="skat-talk-hand" place={styles.talkHand} still={reducedMotion} />
       {/* The bubble's tail, as in a comic, toward the speaker's face (SKATGO-148, the human: 「table talk应该像漫画一样，用哪种有
-          箭头的泡泡，指向说话人」): from its top up and out beside the frame, where the face is above it; from its foot
-          down and out in the band, where the face is below it. */}
-      <span aria-hidden="true" data-testid="skat-talk-tail" {...stylex.props(styles.talkTail, pinned && styles.talkTailUp, shownTalk.seat === 1 ? styles.talkTailLeft : styles.talkTailRight)} />
+          箭头的泡泡，指向说话人」): from its top up and out beside the frame, where the face is above it; in the band, out of
+          its side near the foot, straight at the face beside it. */}
+      <span
+        aria-hidden="true"
+        data-testid="skat-talk-tail"
+        {...stylex.props(
+          pinned ? [styles.talkTail, styles.talkTailUp, shownTalk.seat === 1 ? styles.talkTailLeft : styles.talkTailRight] : [styles.talkTailSide, shownTalk.seat === 1 ? styles.talkTailSideLeft : styles.talkTailSideRight],
+        )}
+      />
     </p>
   ) : null
   // In the tournament, after each deal (SKATGO-145): the deal's result, then its bidding and its trick most worth
@@ -1760,6 +1766,19 @@ const styles = stylex.create({
   talkTailUp: { top: 'auto', bottom: '100%', borderTopWidth: 0, borderTopColor: 'transparent', borderBottomWidth: space.x14, borderBottomColor: color.surface },
   talkTailLeft: { left: space.x20, borderLeftWidth: 0, borderRightWidth: space.x16 },
   talkTailRight: { right: space.x20, borderRightWidth: 0, borderLeftWidth: space.x16 },
+  // In the band: a short triangle out of the bubble's side, toward the face beside it.
+  talkTailSide: {
+    position: 'absolute',
+    bottom: space.x16,
+    width: 0,
+    height: 0,
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    borderTopWidth: space.x8,
+    borderBottomWidth: space.x8,
+  },
+  talkTailSideLeft: { right: '100%', borderLeftWidth: 0, borderRightWidth: space.x8, borderRightColor: color.surface },
+  talkTailSideRight: { left: '100%', borderRightWidth: 0, borderLeftWidth: space.x8, borderLeftColor: color.surface },
   talkBeside: { position: 'absolute', top: 0, maxWidth: dims.talkWidth },
   talkLeft: { right: '100%', marginRight: space.x16 },
   talkRight: { left: '100%', marginLeft: space.x16 },

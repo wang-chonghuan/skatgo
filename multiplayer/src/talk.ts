@@ -10,7 +10,8 @@ import { applySeatMove } from './model'
 // deal, all while it is played: the bidding just won, when it is worth a word, and tricks Lina or Noah took or lost, spread
 // over the play in windows — in each, the first trick worth a word, or its last trick if none was. Which moment it is comes
 // from the deal's own record, never from the browser, and a moment missed while a question was out is still found later
-// in its window. How good the human's own bid or card was is SkatZero's judgement; the model only says it as table talk.
+// in its window. How good the human's own bid or card was is SkatZero's judgement; the model only says it as table talk,
+// told as the speaker's own, "I" (SKATGO-146, the human: 「不要提及SkatZero这个东西，如果AI要自指，用I就行了」).
 // What the model is told is public — bids, the contract, the cards already played, the card points taken — never a card
 // still in a hand or in the skat: about the computers' bids and cards it hears only what everyone saw.
 
@@ -98,14 +99,14 @@ function bidVerdict(g: Game, limit: BidLimit): string | null {
   const log = g.bidding.log
   if (g.declarer === PLAYER) {
     return limit.atMost !== null && g.bid > limit.atMost
-      ? `You bid ${g.bid}, more than SkatZero would bid with your hand (it would stop at ${limit.atMost}): a bold bid.`
+      ? `You bid ${g.bid}, more than I would bid with your hand (I would stop at ${limit.atMost}): a bold bid.`
       : null
   }
   const pass = log.findIndex((e) => e.seat === PLAYER && e.say === 'pass')
   if (pass < 0) return null
   const onTable = Math.max(0, ...log.slice(0, pass).map((e) => e.value))
   return limit.atLeast > onTable
-    ? `You passed at ${onTable || 'the start'}, though SkatZero would have bid at least ${limit.atLeast} with your hand: a cautious pass.`
+    ? `You passed at ${onTable || 'the start'}, though I would have bid at least ${limit.atLeast} with your hand: a cautious pass.`
     : null
 }
 
@@ -155,8 +156,8 @@ function trickFacts(t: TrickStep, verdict: Verdict | null, decided: 'declarer' |
     cardPointsSoFar: taken(t.g),
     decided: decided ? `This trick decided the game: ${decided === 'declarer' ? `the declarer, ${NAME[t.g.declarer!]}, has won` : 'the defenders have won'}; ${10 - t.number} tricks are still to be played.` : null,
     aboutYou: verdict === 'slip'
-      ? 'Your card in this trick was a slip by SkatZero’s measure: a clearly better card was in your hand.'
-      : verdict === 'strong' ? 'Your card in this trick was the strong one by SkatZero’s measure, well above any other choice.' : null,
+      ? 'Your card in this trick was a slip by my measure: a clearly better card was in your hand.'
+      : verdict === 'strong' ? 'Your card in this trick was the strong one by my measure, well above any other choice.' : null,
   }
 }
 
@@ -248,6 +249,7 @@ Use only the facts given. Never mention or guess a card that has not been played
 Never say what to play or what to bid. Lina and Noah may tease each other; never mock the human — a slip of theirs gets a light, kind remark, a strong card or a bold bid a nod.
 Say at most one number. Keep the Skat words Grand, Null, Hand, Schneider, Ouvert as they are; name cards the way ${LANGUAGE[lang]} Skat players do.
 The speaker is the one named in the facts: as the one who took the trick or lost it, won the bidding or bid against it.
+In the facts "I" and "my" are the speaker's own judgement; say it as theirs, and never name a program or an engine.
 Answer as JSON: {"speaker": "Lina" or "Noah", "line": "..."}`
 
 /** How many lines the service writes a day, against a free table being run through on purpose (about a dollar). */

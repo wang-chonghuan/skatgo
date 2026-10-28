@@ -107,7 +107,7 @@ lines a deal, all while it is played — the bidding just won when it is worth a
 passed too early, or it reached 30), and tricks Lina or Noah took or lost, spread over the play; a deal decided early by a
 claim gets a line on that — never on the tenth trick or after the deal. Each is written there and then by the site's
 model in the page's language, Lina quick, competitive and dry, Noah warm, a little superstitious and laughing at himself
-(「人设同意」). How good the player's own bid or card was is SkatZero's judgement; the line only says it. A line names nothing
+(「人设同意」). How good the player's own bid or card was is SkatZero's judgement; the line only says it, as the speaker's own — the model is told "I", never SkatZero's name (SKATGO-146, the human: 「不要提及SkatZero这个东西，如果AI要自指，用I就行了」). A line names nothing
 not yet played and never says what to play or bid; the two may tease each other, never the player. Free play and
 the daily tournament, its six deals and the deal of the day alike (「只开自由对局」, then 「锦标赛也加进去，1deal和6deal都加」);
 not a private table or the course. The settings switch it off.

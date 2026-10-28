@@ -115,7 +115,7 @@ export function settlementRows(r: Settlement, d: Declaration, bid: number, mine:
   if (r.overbid) rows.push({ label: m.result_row_overbid({ bid }), value: String(r.value) })
   const sf = SEEGER_FABIAN
   if (mine) rows.push(r.won ? { label: m.result_row_won(), value: `+ ${sf.won}` } : { label: m.result_row_lost(), value: `−2 × ${r.value} − ${sf.lost}` })
-  else rows.push(r.won ? { label: m.result_row_other_won({ name: declarer }), value: `+${r.value + sf.won}` } : { label: m.result_row_other_lost({ name: declarer }), value: `+${sf.defender}` })
+  else rows.push(r.won ? { label: m.result_row_other_won({ name: declarer }), value: `${r.value} + ${sf.won} = +${r.value + sf.won}` } : { label: m.result_row_other_lost({ name: declarer }), value: `+${sf.defender}` })
   const score = mine ? (r.won ? r.value + sf.won : -2 * r.value - sf.lost) : r.won ? 0 : sf.defender
   rows.push({ label: m.result_row_score(), value: score > 0 ? `+${score}` : score < 0 ? `−${-score}` : '0' })
   return rows

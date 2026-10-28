@@ -59,7 +59,7 @@ describe('the settlement rows', () => {
     const lost = settle(decl(hearts), 18, mine, play(50))
     expect(rows(settlementRows(lost, decl(hearts), 18, false, 'Lina')).slice(-2)).toEqual(['Lina lost: each defender | +40', 'Your score | +40'])
     const won = settle(decl(hearts), 18, mine, play(70))
-    expect(rows(settlementRows(won, decl(hearts), 18, false, 'Lina')).slice(-2)).toEqual(['Lina won | +90', 'Your score | 0'])
+    expect(rows(settlementRows(won, decl(hearts), 18, false, 'Lina')).slice(-2)).toEqual(['Lina won | 40 + 50 = +90', 'Your score | 0'])
   })
   it('Null has its fixed value in one row', () => {
     const nul = decl({ kind: 'null' }, { hand: true })

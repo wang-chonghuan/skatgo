@@ -107,10 +107,10 @@ sets one, leading. Colour is not part of a role — the surface decides it.
 
 - **Families**: one geometric sans, **Red Hat Display** (`family.body`), for everything; **Bebas Neue**
   (`family.numeral`) only for Reizen values, "Passe" and the table's numbers. It has a single weight.
-- **Weights** (SKATGO-47): two by purpose — `weight.text` (500) for reading text: paragraphs,
-  explanations, leads, table rows; `weight.ui` (600) for controls, navigation, links, labels and meta:
-  buttons, pills, the table's names and small lines. Titles, emphasis and the large numbers keep
-  `bold` (700) to `black` (900). `regular` (400) is only Bebas Neue's. **Every role that sets text
+- **Weights** (SKATGO-47; one step heavier since SKATGO-148, the human: 「整个的字体，都太细了，大部分都太细了……加粗」):
+  two by purpose — `weight.text` (600) for reading text: paragraphs, explanations, leads, table rows; `weight.ui`
+  (700) for controls, navigation, links, labels and meta: buttons, pills, the table's names and small lines. Titles,
+  emphasis and the large numbers keep `bold` (800) to `black` (900); `extrabold` is 900 too. `regular` (400) is only Bebas Neue's. **Every role that sets text
   states its weight** (glyph roles and `control` inherit theirs): the Astryx theme sets `<p>` and
   `<small>` to 400 itself, so a weight a role leaves out is 400, not the frame's. The frame's default is
   `weight.text`.
@@ -197,10 +197,10 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `PrintLinks` | `print-links.tsx` | the "Zum Ausdrucken" links to the score sheet and the short rules, on the rules page, the bidding table and the course; left off paper |
 | `ScoreSheet` | `daily-comparison.tsx` | a score sheet (SKATGO-79): the three seats' Seeger-Fabian scores of a tournament so far, the player's line, tagged "Du" in `navy`, over the AI's, tagged "AI" in `info`; no other number beside them (SKATGO-81). The AI's line is left out for days dealt before it played them. Under `VsAiTable`'s rows only; a single deal has none since SKATGO-145 |
 | `VsAiTable` | `daily-comparison.tsx` | the daily tournament's comparison with the computer (SKATGO-48, SKATGO-79): one row per finished deal — the deal's number, the player's and the AI's Seeger-Fabian score each with its role under the heading "Punkte", signed, never `good` / `bad` (SKATGO-81) — that opens to the deal's `VsAiReview` (a row without a review to open does not fold); under the rows, the tournament's `ScoreSheet`. Rows collapse instead of scrolling sideways; the newest opens after a deal and on `/daily` mid-day. On `/daily` while the day runs (`DayDeals`, "Die Spiele von heute", also rendered on the server; SKATGO-63) every deal of the tournament has a row: the ones not finished follow by number, "läuft" for the one being played and "offen" for the rest, with nothing of their cards; the total appears once a deal is finished. Free play's round result, "Deine Runde", is the same table over its six deals (SKATGO-88), each row opening to the review kept with the round (SKATGO-145) |
-| `VsAiReview` / `GameTag` / `SeatScores` | `daily-comparison.tsx` | a finished deal against the AI (SKATGO-145), after a daily deal, a free game and lesson 11's game, and on a `VsAiTable` row; no button, nothing folded. "Bidding": the player's line over the AI's in three shared columns — the `Who` tag(s), what was said (`appBtnStrong`) over how the deal went with the card points (`appText`, `slate`), the score (`appBtnStrong`) — one line with both tags when the two read the same. Under a fine `hairline` rule, "Biggest difference from the AI" (no judgement in the name, the human: 「为啥说ai打得更好呢」): "Trick n: the AI would play X", then, each label at the left of its cards, the cards already on the table and the player's hand before the trick as `xs` cards 8px apart, their card ringed `navy` with a "You" tag under it and the AI's ringed `info` with an "AI" tag, then who took the trick and its points. A deal where every card was the AI's choice: one line; a passed-in deal: no trick. `GameTag` is the game in its contract's tint (`tint*`, as the table's contract tiles) and "Declarer: name", under the result card's title. Words `appText`, headings and numbers `appBtnStrong` (SKATGO-146) |
+| `VsAiReview` / `GameTag` / `SeatScores` | `daily-comparison.tsx` | a finished deal against the AI (SKATGO-145), after a daily deal, a free game and lesson 11's game, and on a `VsAiTable` row; no button, nothing folded. "Bidding": the player's line over the AI's in three shared columns — the `Who` tag(s), what was said (`appBtnStrong`) over how the deal went with the card points (`appText`, `slate`), the score (`appBtnStrong`) — each row's tag(s) and score on the baseline of its first line (SKATGO-148, 「you 和AI的两个结果的行都没对齐」), one line with both tags side by side when the two read the same. Under a fine `hairline` rule, "Biggest difference from the AI" (no judgement in the name, the human: 「为啥说ai打得更好呢」): "Trick n: the AI would play X", then, each label at the left of its cards (on the line of "You led" when the player led, SKATGO-148), the cards already on the table and the player's hand before the trick as `xs` cards 8px apart, their card ringed `navy` with a "You" tag under it and the AI's ringed `info` with an "AI" tag, then who took the trick and its points. A deal where every card was the AI's choice: one line; a passed-in deal: no trick. `GameTag` is the game in its contract's tint (`tint*`, as the table's contract tiles) and "Declarer: name", under the result card's title. Words `appText`, headings and numbers `appBtnStrong` (SKATGO-146) |
 | `ForumBody` | `forum-body.tsx` | a forum post's or comment's text (SKATGO-118): paragraphs, `##` headings, lists, `**bold**` and suits through `Rich`, links in `info` (a player's `ugc nofollow`), and a line `[♠A ♠10 ♥K]` as a `CardRowView`; in SkatGo's posts a line `![what it shows](name.svg)` as the site's picture in the page's language, the column's width on white with a `hairline` border and `radii.panel` (SKATGO-129), in a player's post that line stays text; built as elements, never as HTML |
 | `AnnouncementLine` | `forum-announcement.tsx` | the forum's newest announcement of the last two weeks as one line — a `good` "Neu" `Pill` and its title as an underlined `info` link — on the front page and `/daily` (SKATGO-118); nothing when there is none |
-| `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards and the skat are as big as the hand's; the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68). An open hand at the side — an Ouvert declarer's, or the cards laid open when a deal is decided early — is spread at `stage.stackStepOpen`, wider than a closed one, so every card reads (SKATGO-79). As an exercise's table (`exercise`, SKATGO-110/111) every hand is open, the side hands at the learner's card size, and the exercise supplies the board at the top and the dialog at the end; there is no side panel, hint tab or settlement |
+| `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards, the skat and Lina's and Noah's cards are as big as the hand's — theirs sideways at the felt's edges, half of each on the felt (54u of 134u on a phone, clear of the seat plate; SKATGO-148, the human: 「ai的牌的尺寸应该和玩家的牌的尺寸，桌面的牌的尺寸一样，只不过ai的牌只显示半截而已」); the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68). An open hand at the side — an Ouvert declarer's, or the cards laid open when a deal is decided early — is spread at `stage.stackStepOpen`, wider than a closed one, so every card reads (SKATGO-79). As an exercise's table (`exercise`, SKATGO-110/111) every hand is open, the side hands at the learner's card size, and the exercise supplies the board at the top and the dialog at the end; there is no side panel, hint tab or settlement |
 
 Recurring patterns — reuse them rather than inventing a neighbour:
 
@@ -408,10 +408,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (SKATGO-100). Free play's table shows
   its round in the strip as the tournament does, "Spiel n von 6 · gesamt X"; after the sixth deal the
   round's result takes the felt's place: a white panel with its `VsAiTable`, "Neue Runde" (`go`) and
-  "Tisch verlassen" (`quiet`) (SKATGO-88). Lina's and Noah's table talk (SKATGO-142) is a white card (`radii.panel`,
+  "Tisch verlassen" (`quiet`) (SKATGO-88). Lina's and Noah's table talk (SKATGO-142) is a white speech bubble (`radii.panel`,
   `elev.option`, `appText` in `navy`, the speaker's name in `appBtnStrong`) on the speaker's side: on a wide table
   (`bp.pinned`) beside the trick frame, level with its top, toward Lina's or Noah's cards (`dims.talkWidth`); narrower,
-  in the felt's top band under the table's line, at the speaker's side, so nothing overlaps (SKATGO-143). One thing at a
+  in the felt's top band under the table's line, at the speaker's side, so nothing overlaps (SKATGO-143). As in a comic its
+  tail points to the speaker's face (SKATGO-148, 「像漫画一样，用哪种有箭头的泡泡，指向说话人」): up and out beside the frame,
+  out of its side toward the face in the band. One thing at a
   time (「按顺序来显示这些信息」): it waits while the table asks for a tap — a claim laid open, a trick to collect — or shows
   a hint or a refusal. It comes once the table has shown the moves it is about and stays
   until the next tap anywhere, which still does what it does (the human: 「最好让用户点一下屏幕再给让这个泡泡消失」); in its
@@ -421,11 +423,17 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   Tisch", on by default, as the sounds' switch.
 - **Lina's and Noah's faces** (SKATGO-147, the human: 「给noah和lina的牌的上方，加两个头像，一男，一女……有点搞笑的的风格」):
   on every table where they sit — not a private table, not an exercise's open-card board — a cartoon face above each
-  one's stack at the felt's edge (`stage.face`, `faceTop`, `faceInset`), from `app/public/faces/`: Lina a woman in
-  dark red, Noah a man in blue (「暗红和蓝……不是海军蓝」, so neither melts into the felt), in the flat sticker style
+  one's stack at the felt's edge (`stage.face`, `faceTop`, `faceInset`) — on a wide table higher, in the felt's corner
+  beside the info board and under the way out, clear of a hand laid open; on a phone a hand laid open long enough lies
+  over the face, never under it (SKATGO-148, 「头像位置往上面移动一点，这样就不当着亮的牌了」) — from `app/public/faces/`, each on a white square with rounded corners (`radii.panel`) as large as the picture
+  (SKATGO-148, 「给头像加白色圆角背景。正方形，刚好框住就行」): Lina a friendly woman in
+  red with a light-blue scarf and brown-blond hair (SKATGO-148, 「目前的攻击性太强……衣服红色，围巾浅蓝色，头发棕黄色，皮肤白一点」),
+  Noah a man in blue (「暗红和蓝……不是海军蓝」, so neither melts into the felt), in the flat sticker style
   the human chose from five. Three faces each — neutral, laughing, sulking: the bidding's winner laughs until the
-  first card; a finished trick makes the side that took it laugh and the other side sulk until it is collected, by
-  side as Skat scores, the other way round in a Null (「null是反过来的」) (`faceOf`). The stage keeps their room above it (116u, 110u in portrait; faces 108u and 84u, 「头像太小了，需要增大」): where the free height
+  first card; a finished trick makes the side that took it laugh and the other side sulk, by
+  side as Skat scores, the other way round in a Null (「null是反过来的」) (`faceOf`); at the deal's end the side that won laughs and the other sulks, the declarer against the two
+  defenders (「最后谁赢了也要笑，和不高兴」); a laugh or a sulk lasts 1.5 seconds
+  at most, then the face is neutral again (SKATGO-148, 「最多持续2秒……就要自动复原」). The stage keeps their room above it (131u, 113u in portrait; faces 92u and 69u: 「头像太小了，需要增大」, then 「头像有点大，应该小点」 and 「手机上65吧」): where the free height
   already holds it nothing moves; on a screen short of height the table is a little smaller rather than a face over
   the cards. Where the talk runs in the band, it keeps between the two faces (`stage.talkBetweenFaces`). The settings carry the switch,
   "Avatare" — "Avatare von Lina und Noah am Tisch", on by default (「配置里要加上一个配置……默认是开的」), under the table
@@ -448,12 +456,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the game value alone in the course's own game; on a private table in the settlement. Against the AI — the
   tournament, free play, lesson 11 — the same steps are a step a row in the result card (SKATGO-145): a `Panel`,
   `good` when the player's side won and `bad` when it lost; its title and the player's score at its right, both
-  `dialogTitle`; `GameTag`; the deal's score of each of the three, name over score, the player's cell named "You"
-  and not boxed (`SeatScores`, SKATGO-146, the human: 「contract下面要显示本轮每个人得几分，这个是重点」); then each step's label (`appText`,
-  `slate`) at the left and its number (`appBtnStrong`, `navy`) at the right, the player's score last under a `hairline`
-  rule. The dialog speaks in the app's roles only (SKATGO-146, the human: 「结果卡片上的字太小……我哪来那么小的字？！」): the
+  `dialogTitle`; `GameTag`; the deal's score of each of the three, name and score on one line (SKATGO-148), the player's cell named "You"
+  and not boxed (`SeatScores`, SKATGO-146, the human: 「contract下面要显示本轮每个人得几分，这个是重点」); then the calculation in two rows
+  (SKATGO-148, 「那个公式占用的行数太多」) — the game value from its contract's base value and multiplier with the
+  multiplier's parts ("Grand 24 × 3 (with 1 + game 1 + Schneider 1)" 72), then the outcome to its Seeger-Fabian number
+  under a `hairline` rule ("Lina won: 72 + 50" +122), an overbid's row between them — each label (`appText`, `slate`) at
+  the left and its number (`appBtnStrong`, `navy`) at the right; the player's own score is the title's. The dialog speaks in the app's roles only (SKATGO-146, the human: 「结果卡片上的字太小……我哪来那么小的字？！」): the
   title `dialogTitle` (22), headings and numbers `appBtnStrong` (16), words `appText` (16); only the You/AI tags are
-  `badge`. The first step names the contract's base value ("Grand, base value 24"). The dialog's body is the scroll
+  `badge`. The dialog's body is the scroll
   area, its scrollbar inside the dialog's box, and the way on sits in a foot under a `hairline` rule that stays at the
   dialog's bottom over the scrolled content (`Dialog`'s `foot`, SKATGO-146).
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible

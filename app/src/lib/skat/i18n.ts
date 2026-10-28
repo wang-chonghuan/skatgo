@@ -104,20 +104,28 @@ export type SettlementRow = { label: string; value: string }
  * player's own Seeger-Fabian score. `declarer` names the declarer when it is not the player.
  */
 export function settlementRows(r: Settlement, d: Declaration, bid: number, mine: boolean, declarer: string): SettlementRow[] {
+  // The calculation in as few rows as it reads (SKATGO-148, the human: 「那个公式占用的行数太多」): the game value from its
+  // contract's base value and multiplier in one row, then the outcome to its Seeger-Fabian number in another. The
+  // player's own score is the card's title, and everyone's is in the seats above.
   const rows: SettlementRow[] = []
   if (d.contract.kind === 'null') {
     rows.push({ label: m.result_row_null({ contract: `Null${d.hand ? ' Hand' : ''}${d.ouvert ? ' Ouvert' : ''}` }), value: String(r.value) })
   } else {
-    rows.push({ label: m.result_row_base({ contract: contractName(d.contract) }), value: String(r.base) })
-    rows.push({ label: r.parts.map((p, i) => (i === 0 ? partLabel(p, r.matadors) : `${partLabel(p, r.matadors)} 1`)).join(' + '), value: `× ${r.multiplier}` })
-    rows.push({ label: m.result_row_value(), value: String(r.base * r.multiplier) })
+    const parts = r.parts.map((p, i) => (i === 0 ? partLabel(p, r.matadors) : `${partLabel(p, r.matadors)} 1`)).join(' + ')
+    rows.push({ label: m.result_row_game({ contract: contractName(d.contract), base: r.base, multiplier: r.multiplier, parts }), value: String(r.base * r.multiplier) })
   }
   if (r.overbid) rows.push({ label: m.result_row_overbid({ bid }), value: String(r.value) })
   const sf = SEEGER_FABIAN
-  if (mine) rows.push(r.won ? { label: m.result_row_won(), value: `+ ${sf.won}` } : { label: m.result_row_lost(), value: `−2 × ${r.value} − ${sf.lost}` })
-  else rows.push(r.won ? { label: m.result_row_other_won({ name: declarer }), value: `${r.value} + ${sf.won} = +${r.value + sf.won}` } : { label: m.result_row_other_lost({ name: declarer }), value: `+${sf.defender}` })
-  const score = mine ? (r.won ? r.value + sf.won : -2 * r.value - sf.lost) : r.won ? 0 : sf.defender
-  rows.push({ label: m.result_row_score(), value: score > 0 ? `+${score}` : score < 0 ? `−${-score}` : '0' })
+  const signedScore = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0')
+  if (mine) {
+    rows.push(r.won
+      ? { label: `${m.result_row_won()}: ${r.value} + ${sf.won}`, value: signedScore(r.value + sf.won) }
+      : { label: `${m.result_row_lost()}: −2 × ${r.value} − ${sf.lost}`, value: signedScore(-2 * r.value - sf.lost) })
+  } else {
+    rows.push(r.won
+      ? { label: `${m.result_row_other_won({ name: declarer })}: ${r.value} + ${sf.won}`, value: signedScore(r.value + sf.won) }
+      : { label: m.result_row_other_lost({ name: declarer }), value: signedScore(sf.defender) })
+  }
   return rows
 }
 

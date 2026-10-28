@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-148",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-148",
+  "branch": "SKATGO-148-ui-polish",
+  "base": "ac5eaa867d76026e39ec25022fdc21d03a672f69",
+  "ports": { "web": 55148, "multiplayer": 56148, "database": 57148 }
+}

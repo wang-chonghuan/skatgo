@@ -230,7 +230,8 @@ export function GameTag({ deal, names }: { deal: DealSummary; names: string[] })
 }
 
 /** The deal's Seeger-Fabian score of each of the three at the table (SKATGO-146, the human: 「contract下面要显示本轮每个人
- *  得几分，这个是重点」): name over score, the player's cell named "You" and nothing more (「You这个不用加白色的框」). */
+ *  得几分，这个是重点」): name and score on one line (SKATGO-148, 「每个人的得分，也不该占两行」), the player's cell named "You"
+ *  and nothing more (「You这个不用加白色的框」). */
 export function SeatScores({ scores, names }: { scores: readonly [number, number, number]; names: string[] }) {
   return (
     <div data-testid="result-seats" data-scores={scores.join(',')} {...stylex.props(styles.seats)}>
@@ -270,7 +271,7 @@ function WorstTrick({ review, names }: { review: DealReview; names: string[] }) 
         <Rich text={m.review_trick_title({ trick: w.trick, best: cardLabel(w.best) })} />
       </p>
       <div {...stylex.props(styles.trickGrid)}>
-        <span {...stylex.props(typography.appText, styles.muted, styles.trickLabel)}>{m.review_trick_table()}</span>
+        <span {...stylex.props(typography.appText, styles.muted, styles.trickLabel, !before.length && styles.trickLabelText)}>{m.review_trick_table()}</span>
         {before.length ? (
           <span data-testid="vs-ai-trick-table" data-cards={before.length} {...stylex.props(styles.cards)}>
             {before.map((p) => <PlayingCard key={`${p.card.suit}${p.card.rank}`} card={p.card} size="xs" />)}
@@ -441,18 +442,22 @@ const styles = stylex.create({
   blockTitle: { margin: 0, color: color.navy },
   ink: { color: color.navy },
   // A side's bidding: its tag, what it said over how it went, and its score at the end.
-  // Tags, words and score in three columns shared by both rows, so the two lines start under each other.
-  bidRows: { display: 'grid', gridTemplateColumns: 'max-content auto max-content', alignItems: 'center', columnGap: space.x8, rowGap: space.x6 },
+  // Tags, words and score in three columns shared by both rows, so the two lines start under each other; each row's
+  // tag and score on the baseline of its first line, however its words wrap (SKATGO-148, the human: 「you 和AI的两个结果的
+  // 行都没对齐，错位了」). Where both sides bid alike, their two tags stand side by side.
+  bidRows: { display: 'grid', gridTemplateColumns: 'max-content auto max-content', alignItems: 'baseline', columnGap: space.x8, rowGap: space.x8 },
   bidRow: { display: 'contents' },
-  bidTags: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: space.x2 },
+  bidTags: { display: 'flex', alignItems: 'baseline', gap: space.x4 },
   bidText: { display: 'flex', flexDirection: 'column', minWidth: 0 },
   // Each label at the left of its cards, the cards of both lines starting under each other, so the trick stays on
   // one phone screen with the rest (SKATGO-145).
   trickGrid: { display: 'grid', gridTemplateColumns: 'max-content auto', alignItems: 'start', columnGap: space.x8, rowGap: space.x6 },
   trickLabel: { paddingTop: space.x4 },
+  // Beside words instead of cards ("You led"), a label shares their line (SKATGO-148: 「you led也没对齐左边的 on the table」).
+  trickLabelText: { paddingTop: 0 },
   // Three equal cells.
   seats: { display: 'flex', gap: space.x6 },
-  seat: { display: 'flex', flexDirection: 'column', alignItems: 'center', flexGrow: 1, flexBasis: 0, paddingBlock: space.x4 },
+  seat: { display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: space.x6, flexGrow: 1, flexBasis: 0, paddingBlock: space.x4, whiteSpace: 'nowrap' },
   trickGame: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
   contractChip: { paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.navy },
   // Cards in a row, wide enough apart that two ringed cards never touch; a hand too long for a phone's line goes

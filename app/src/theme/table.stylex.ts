@@ -14,7 +14,7 @@ import { bp } from './breakpoints.stylex'
 //              whole hand along the bottom (the human: no card runs off the felt);
 //   portrait    400u wide × 464u tall: a narrower frame (250u), the stacks deeper in the edges.
 // Above that stage Lina's and Noah's faces have their own room (SKATGO-147, the human chose it: the table a little
-// smaller on a short screen rather than a face over the cards): 116u (110u in portrait), a face above a stack of
+// smaller on a short screen rather than a face over the cards): 131u (113u in portrait), a face above a stack of
 // twelve cards, the most a hand ever has. The stage sits where it always sat when the free height above it already
 // holds that room, and only moves down when it does not.
 // Where the felt has more room than the stage, the frame and the stacks keep to the middle of the free
@@ -24,16 +24,16 @@ import { bp } from './breakpoints.stylex'
 
 export const stageUnit = stylex.defineVars({
   u: {
-    default: 'min(0.1cqw, calc((100cqh - 140px) / 692))',
-    [bp.portrait]: 'min(0.25cqw, calc((100cqh - 212px) / 574))',
+    default: 'min(0.1cqw, calc((100cqh - 140px) / 707))',
+    [bp.portrait]: 'min(0.25cqw, calc((100cqh - 212px) / 577))',
   },
 })
 
 const u = stageUnit.u
 /** The stage's top under the band: half the free height, or the faces' room when that is more (SKATGO-147). */
 const above = {
-  default: `max((100cqh - 140px - ${u} * 576) / 2, ${u} * 116)`,
-  portrait: `max((100cqh - 212px - ${u} * 464) / 2, ${u} * 110)`,
+  default: `max((100cqh - 140px - ${u} * 576) / 2, ${u} * 131)`,
+  portrait: `max((100cqh - 212px - ${u} * 464) / 2, ${u} * 113)`,
 }
 
 export const stage = stylex.defineVars({
@@ -62,27 +62,32 @@ export const stage = stylex.defineVars({
     default: `calc(140px + ${above.default} + ${u} * 115)`,
     [bp.portrait]: `calc(212px + ${above.portrait} + ${u} * 105)`,
   },
-  /** Lina's and Noah's faces (SKATGO-147, the human: 「头像太小了，需要增大」): 108u (84u), their top 113u (99.5u) above
-   *  the stage's, 4u clear of a twelve-card stack; in portrait at least 10u under the band, whose line may run past it. */
-  face: { default: `calc(${u} * 108)`, [bp.portrait]: `calc(${u} * 84)` },
+  /** Lina's and Noah's faces (SKATGO-147, the human: 「头像太小了，需要增大」; SKATGO-148: 「头像有点大，应该小点」, 「手机上65吧」): 92u (69u,
+   *  65px on a 375px phone); in portrait their top 87.5u above the stage's, 4u clear of a twelve-card stack and at least 25u under the band,
+   *  whose line may run past it. */
+  face: { default: `calc(${u} * 92)`, [bp.portrait]: `calc(${u} * 69)` },
+  // On a wide table the face sits higher, in the felt's corner beside the info board and under the way out (72px), so a
+  // hand laid open under it stays clear of it (SKATGO-148, the human: 「头像位置往上面移动一点，这样就不当着亮的牌了」).
   faceTop: {
-    default: `calc(140px + ${above.default} - ${u} * 113)`,
-    [bp.portrait]: `calc(212px + ${above.portrait} - ${u} * 99.5)`,
+    default: '72px',
+    [bp.portrait]: `calc(212px + ${above.portrait} - ${u} * 87.5)`,
   },
   /** How far a face sits in from the felt's edge, over the part of the stack that shows. */
   faceInset: { default: `calc(${u} * 4)`, [bp.portrait]: `calc(${u} * 4)` },
   /** Where the table talk runs in the band (not beside the frame), it keeps between the two faces: the felt's width
    *  less a face, its inset and 4u on each side. */
-  talkBetweenFaces: { default: `calc(100cqw - ${u} * 232)`, [bp.portrait]: `calc(100cqw - ${u} * 184)` },
-  /** An opponent's card: 100u wide (90u), lying sideways in a slot as wide as the card is tall. */
-  stackCard: { default: `calc(${u} * 100)`, [bp.portrait]: `calc(${u} * 90)` },
-  stackSlotWidth: { default: `calc(${u} * 140)`, [bp.portrait]: `calc(${u} * 126)` },
-  stackSlotHeight: { default: `calc(${u} * 100)`, [bp.portrait]: `calc(${u} * 90)` },
+  talkBetweenFaces: { default: `calc(100cqw - ${u} * 200)`, [bp.portrait]: `calc(100cqw - ${u} * 154)` },
+  /** An opponent's card: as big as the learner's and the trick's, 130u wide (96u), only part of it on the felt (SKATGO-148,
+   *  the human: 「ai的牌的尺寸应该和玩家的牌的尺寸，桌面的牌的尺寸一样，只不过ai的牌只显示半截而已」), lying sideways in a slot
+   *  as wide as the card is tall. */
+  stackCard: { default: `calc(${u} * 130)`, [bp.portrait]: `calc(${u} * 96)` },
+  stackSlotWidth: { default: `calc(${u} * 182)`, [bp.portrait]: `calc(${u} * 134)` },
+  stackSlotHeight: { default: `calc(${u} * 130)`, [bp.portrait]: `calc(${u} * 96)` },
   /** Each sideways card shows 12u (13u) of the one beneath. */
-  stackStep: { default: `calc(${u} * -88)`, [bp.portrait]: `calc(${u} * -77)` },
+  stackStep: { default: `calc(${u} * -118)`, [bp.portrait]: `calc(${u} * -83)` },
   /** The step between cards laid open when a deal is decided early (SKATGO-65): 32u of each shows (30u
    *  in portrait), so each card reads clearly. */
-  stackStepOpen: { default: `calc(${u} * -68)`, [bp.portrait]: `calc(${u} * -60)` },
+  stackStepOpen: { default: `calc(${u} * -98)`, [bp.portrait]: `calc(${u} * -66)` },
   /** The trick's steps (SKATGO-68): its cards are as big as the hand's and overlap, so each card to the
    *  right lies one step higher than the one to its left — a step is a little more than a card's corner
    *  index is tall (50u, 37u in portrait: the number and the suit under it take 25% of a 182u / 134u
@@ -94,8 +99,8 @@ export const stage = stylex.defineVars({
   trickFirst: { default: `calc(50% - ${u} * 141)`, [bp.portrait]: `calc(50% - ${u} * 104)` },
   trickSecond: { default: `calc(50% - ${u} * 91)`, [bp.portrait]: `calc(50% - ${u} * 67)` },
   trickThird: { default: `calc(50% - ${u} * 41)`, [bp.portrait]: `calc(50% - ${u} * 30)` },
-  /** How far a stack runs off the felt's edge: 82u of it shows (46u). */
-  stackInset: { default: `calc(${u} * -58)`, [bp.portrait]: `calc(${u} * -80)` },
+  /** How far a stack runs off the felt's edge: half of it shows, 91u (54u in portrait, clear of the seat plate). */
+  stackInset: { default: `calc(${u} * -91)`, [bp.portrait]: `calc(${u} * -80)` },
   /** An open endgame's stacks (SKATGO-111, the human: 「左右两家的牌，尺寸要和我的手牌一样大…不一定完整显示，但是要大」):
    *  each card as big as the learner's (`handCard`), lying sideways in a slot as wide as it is tall,
    *  182u (134u in portrait). */

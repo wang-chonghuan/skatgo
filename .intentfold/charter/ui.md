@@ -107,10 +107,10 @@ sets one, leading. Colour is not part of a role — the surface decides it.
 
 - **Families**: one geometric sans, **Red Hat Display** (`family.body`), for everything; **Bebas Neue**
   (`family.numeral`) only for Reizen values, "Passe" and the table's numbers. It has a single weight.
-- **Weights** (SKATGO-47): two by purpose — `weight.text` (500) for reading text: paragraphs,
-  explanations, leads, table rows; `weight.ui` (600) for controls, navigation, links, labels and meta:
-  buttons, pills, the table's names and small lines. Titles, emphasis and the large numbers keep
-  `bold` (700) to `black` (900). `regular` (400) is only Bebas Neue's. **Every role that sets text
+- **Weights** (SKATGO-47; one step heavier since SKATGO-148, the human: 「整个的字体，都太细了，大部分都太细了……加粗」):
+  two by purpose — `weight.text` (600) for reading text: paragraphs, explanations, leads, table rows; `weight.ui`
+  (700) for controls, navigation, links, labels and meta: buttons, pills, the table's names and small lines. Titles,
+  emphasis and the large numbers keep `bold` (800) to `black` (900); `extrabold` is 900 too. `regular` (400) is only Bebas Neue's. **Every role that sets text
   states its weight** (glyph roles and `control` inherit theirs): the Astryx theme sets `<p>` and
   `<small>` to 400 itself, so a weight a role leaves out is 400, not the frame's. The frame's default is
   `weight.text`.

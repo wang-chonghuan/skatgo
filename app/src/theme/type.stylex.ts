@@ -53,14 +53,15 @@ export const fontSize = stylex.defineVars({
 
 /** Only the weights the page loads (routes/__root.tsx): 400 to 900. */
 export const weight = stylex.defineVars({
-  /** Reading text: paragraphs, explanations, leads, table rows (SKATGO-47: 400 read too faint). */
-  text: '500',
+  /** Reading text: paragraphs, explanations, leads, table rows (SKATGO-47: 400 read too faint; SKATGO-148, the human:
+   *  「整个的字体，都太细了……加粗」: 500 too, one step up). */
+  text: '600',
   /** Controls, navigation, links, labels and meta: buttons, pills, the table's names and small lines
-   *  (SKATGO-47). One step above reading text, below the 700 of titles and emphasis. */
-  ui: '600',
+   *  (SKATGO-47). One step above reading text, below the 800 of titles and emphasis (SKATGO-148). */
+  ui: '700',
   regular: '400',
-  bold: '700',
-  extrabold: '800',
+  bold: '800',
+  extrabold: '900',
   black: '900',
 })
 

@@ -488,7 +488,8 @@ const styles = stylex.create({
   landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x16, [bp.phone]: space.x12, [bp.narrowPhone]: space.x10 } },
 
   // The language switch (SKATGO-104): two bare flags, each in a button as tall as the header's controls.
-  flags: { display: 'flex', alignItems: 'center', gap: { default: space.x8, [bp.phone]: space.x6 }, flexShrink: 0 },
+  // The two flags as far apart as the header's other controls nearly are (SKATGO-144, the human: 「英国和德国国旗距离太近」).
+  flags: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x10, [bp.narrowPhone]: space.x8 }, flexShrink: 0 },
   flagButton: {
     display: 'inline-flex',
     alignItems: 'center',

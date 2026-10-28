@@ -198,6 +198,9 @@ export const dims = stylex.defineVars({
   homePicture: '16 / 9',
   /** The progress card's curve at its least, where the card is as tall as its content (under `bp.cards`). */
   homeCurve: '96px',
+  /** SKATGO-144: the front page's Elo list on a narrow screen — five rows and a half (rows ~29.5px), the cut row saying
+   *  it scrolls. */
+  eloListNarrow: '162px',
   /** The daily table of you against the AI (SKATGO-42, SKATGO-48): the deal's number (wide enough for
    *  "Total" / "Gesamt"), you and the AI in two equal columns, then the difference with the row's
    *  chevron. Every row is its own grid, so the columns line up only if none sizes to its content. */

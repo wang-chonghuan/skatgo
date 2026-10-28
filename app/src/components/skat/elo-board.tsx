@@ -178,7 +178,9 @@ const styles = stylex.create({
   body: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 },
   folded: { display: { default: 'flex', [bp.phone]: 'none' } },
   muted: { margin: 0, color: color.slate, flexShrink: 0 },
-  rows: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0, overflowY: 'auto', margin: 0, padding: 0, listStyle: 'none' },
+  // On a narrow screen the list is never full height either (SKATGO-144, the human: 「elo也在窄屏上也不能全高，仍然要限定高度」): five rows
+  // and a half, the rest scrolling; on PC the card's row sets its height.
+  rows: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0, maxHeight: { default: null, [bp.cards]: dims.eloListNarrow }, overflowY: 'auto', margin: 0, padding: 0, listStyle: 'none' },
   row: {
     display: 'flex',
     alignItems: 'baseline',

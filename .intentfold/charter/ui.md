@@ -442,8 +442,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `slate`) at the left and its number (`appBtnStrong`, `navy`) at the right, the player's score last under a `hairline`
   rule. The dialog speaks in the app's roles only (SKATGO-146, the human: 「结果卡片上的字太小……我哪来那么小的字？！」): the
   title `dialogTitle` (22), headings and numbers `appBtnStrong` (16), words `appText` (16); only the You/AI tags are
-  `badge`. On a phone the content scrolls when it is taller than the screen and the way on stays pinned at the
-  dialog's foot.
+  `badge`. The first step names the contract's base value ("Grand, base value 24"). The dialog's body is the scroll
+  area, its scrollbar inside the dialog's box, and the way on sits in a foot under a `hairline` rule that stays at the
+  dialog's bottom over the scrolled content (`Dialog`'s `foot`, SKATGO-146).
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
   without JavaScript, in the lobby's own tokens and typography — never hidden keyword text or new
   decorative containers.

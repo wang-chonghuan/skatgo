@@ -1296,7 +1296,7 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
     </Row>
   )
   return (
-    <Dialog>
+    <Dialog foot={vsAi ? next : undefined}>
     <div ref={panel} data-testid="skat-result" data-human-won={String(humanWon)} {...stylex.props(styles.declare)}>
       {vsAi ? (
         // Against the AI (SKATGO-145, the human: 「先显示叫牌和ai的不同，再显示打的和ai最不同……其他不显示」): the result
@@ -1304,8 +1304,6 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
         <>
           <ResultCard won={humanWon} score={seegerFabian(game)[ME]} rows={settlementRows(r, d, game.bid, declarer === ME, nameOf(declarer))} game={<GameTag deal={summarize(game)} names={[nameOf(0), nameOf(1), nameOf(2)]} />} seats={<SeatScores scores={seegerFabian(game)} names={[nameOf(0), nameOf(1), nameOf(2)]} />} />
           <VsAiReview ask={vsAi.ask} cacheKey={vsAi.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} />
-          {/* The way on stays at the dialog's foot while the rest scrolls on a phone (SKATGO-146). */}
-          <div {...stylex.props(styles.nextPinned)}>{next}</div>
         </>
       ) : (
         <>
@@ -1527,13 +1525,22 @@ function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends
 
 const Say = ({ children }: { children: ReactNode }) => <p {...stylex.props(typography.appText, styles.say)}>{children}</p>
 
-/** A dialog over the table: white, on the scrim, one full-width green action inside. */
-function Dialog({ children }: { children: ReactNode }) {
+/** A dialog over the table: white, on the scrim, one full-width green action inside. With a `foot` (SKATGO-146, the
+ *  human: 「modal应该是滚动区域，下面是next deal按钮」), the dialog's body scrolls inside its own box and the foot stays
+ *  at its bottom, over the scrolled content. */
+function Dialog({ children, foot }: { children: ReactNode; foot?: ReactNode }) {
   return (
     <div data-testid="skat-dialog" {...stylex.props(styles.scrim)}>
-      <div role="dialog" aria-modal="false" {...stylex.props(styles.dialog)}>
-        {children}
-      </div>
+      {foot ? (
+        <div role="dialog" aria-modal="false" {...stylex.props(styles.dialog, styles.dialogFramed)}>
+          <div data-testid="skat-dialog-body" {...stylex.props(styles.dialogBody)}>{children}</div>
+          <div data-testid="skat-dialog-foot" {...stylex.props(styles.dialogFoot)}>{foot}</div>
+        </div>
+      ) : (
+        <div role="dialog" aria-modal="false" {...stylex.props(styles.dialog)}>
+          {children}
+        </div>
+      )}
     </div>
   )
 }
@@ -2115,7 +2122,6 @@ const styles = stylex.create({
   calcRow: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
   calcTotal: { marginTop: space.x4, paddingTop: space.x6, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   calcValue: { margin: 0, color: color.navy, whiteSpace: 'nowrap' },
-  nextPinned: { position: 'sticky', bottom: 0, paddingBlock: space.x8, backgroundColor: color.surface },
   resultSkat: { display: 'flex', alignItems: 'center', gap: space.x6 },
   inkLabel: { color: color.slate },
 
@@ -2143,6 +2149,17 @@ const styles = stylex.create({
     borderRadius: radii.dialog,
     backgroundColor: color.surface,
     boxShadow: elev.panel,
+  },
+  dialogFramed: { gap: 0, padding: 0, overflowY: 'hidden' },
+  dialogBody: { flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', padding: space.x24 },
+  dialogFoot: {
+    flexShrink: 0,
+    paddingInline: space.x24,
+    paddingBlock: space.x16,
+    borderTopWidth: border.hair,
+    borderTopStyle: 'solid',
+    borderTopColor: color.hairline,
+    backgroundColor: color.surface,
   },
 })
 

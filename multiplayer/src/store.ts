@@ -137,6 +137,12 @@ export class Store {
           player text NOT NULL, step text NOT NULL, solved_at bigint, misses integer NOT NULL DEFAULT 0,
           updated_at bigint NOT NULL, PRIMARY KEY (player, step)
         );
+        -- The bidding practice's record (SKATGO-150): per account and question the first answer given (0 a pass, else the
+        -- bid) — the analysis counts it alone — and whether a later answer got it right, which clears it from the mistakes.
+        CREATE TABLE IF NOT EXISTS bidding_answers (
+          player text NOT NULL, question text NOT NULL, first smallint NOT NULL, fixed boolean NOT NULL DEFAULT false,
+          answered_at bigint NOT NULL, updated_at bigint NOT NULL, PRIMARY KEY (player, question)
+        );
       `)
       await c.query('COMMIT')
     } catch (e) {

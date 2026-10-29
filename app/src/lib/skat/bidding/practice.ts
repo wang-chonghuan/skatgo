@@ -70,3 +70,52 @@ export const questionAt = (n: number): Practice => PRACTICE[(n - 1) % PRACTICE.l
 
 /** Questions a guest may answer; from the next one on, an account (the human: 「不登录可以练2题」). */
 export const PRACTICE_FREE = 2
+
+// The record (SKATGO-150, the human: 「用户能记录下来他哪个题出错了吗」, then 「超叫还是不敢叫还是叫错等等的分析……最好有个
+// 比率分析」): per question the first answer given — 0 a pass, else the bid — and whether a later answer got it right.
+
+/** A question's lasting name: its deal and seat in free play's pool, whatever order the questions run in. */
+export const questionId = (p: Practice) => `${p.deal}-${p.seat}`
+const BY_ID = new Map(PRACTICE.map((p, i) => [questionId(p), i + 1]))
+/** The question's number in the run, by its name; undefined for a name not among them. */
+export const numberOf = (id: string): number | undefined => BY_ID.get(id)
+/** The free questions' names: a guest's answers are kept for these only. */
+export const FREE_IDS = PRACTICE.slice(0, PRACTICE_FREE).map(questionId)
+
+export type Answered = { first: number; fixed: boolean }
+export type BiddingRecord = Record<string, Answered>
+
+/** The answer a question takes: 0 for a pass. */
+export const rightAnswer = (p: Practice) => (p.bid < 18 ? 0 : p.bid)
+
+/** Whether `chosen` is one of the question's options. */
+export const offered = (p: Practice, chosen: number) => optionsOf(practiceHand(p), p.bid).includes(chosen)
+
+/**
+ * The first answers sorted by what went wrong. A wrong number is always a game too high or too low, so "the wrong game"
+ * is not a kind of its own: overbid is any answer above the AI's — a bid where it passes, or a higher game — and
+ * underbid any below it — a pass where it bids, or a lower game. The four never overlap and make up every mistake.
+ */
+export type Analysis = { answered: number; right: number; over: { pass: number; game: number }; under: { pass: number; game: number } }
+
+export function analysisOf(record: BiddingRecord): Analysis {
+  const a: Analysis = { answered: 0, right: 0, over: { pass: 0, game: 0 }, under: { pass: 0, game: 0 } }
+  for (const [id, r] of Object.entries(record)) {
+    const n = numberOf(id)
+    if (!n) continue
+    const right = rightAnswer(PRACTICE[n - 1])
+    a.answered++
+    if (r.first === right) a.right++
+    else if (r.first > right) a.over[right === 0 ? 'pass' : 'game']++
+    else a.under[r.first === 0 ? 'pass' : 'game']++
+  }
+  return a
+}
+
+/** The questions answered wrong at first and not yet right since, by number. */
+export function mistakesOf(record: BiddingRecord): number[] {
+  return Object.entries(record)
+    .filter(([id, r]) => numberOf(id) && !r.fixed && r.first !== rightAnswer(PRACTICE[numberOf(id)! - 1]))
+    .map(([id]) => numberOf(id)!)
+    .sort((x, y) => x - y)
+}

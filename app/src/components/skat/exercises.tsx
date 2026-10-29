@@ -75,7 +75,8 @@ function Feedback({ state, good, bad }: { state: 'idle' | 'wrong' | 'right'; goo
   )
 }
 
-export function Choice({ step, onSolved, onMistake, solvedBefore, once }: { step: ChoiceStep } & StepCallbacks) {
+/** `onChoose` hears which option was taken, before the verdict (the bidding practice records it, SKATGO-150). */
+export function Choice({ step, onSolved, onMistake, solvedBefore, once, onChoose }: { step: ChoiceStep; onChoose?: (i: number) => void } & StepCallbacks) {
   const [wrong, setWrong] = useState<number[]>([])
   const [right, setRight] = useState(!!solvedBefore)
   const [nonce, setNonce] = useState(0)
@@ -83,6 +84,7 @@ export function Choice({ step, onSolved, onMistake, solvedBefore, once }: { step
 
   function choose(i: number) {
     if (over) return
+    onChoose?.(i)
     if (i === step.answer) {
       setRight(true)
       onSolved()

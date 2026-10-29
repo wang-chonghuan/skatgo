@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-150",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-150",
+  "branch": "SKATGO-150-bidding-mistakes",
+  "base": "1f95ffe5622c29a120b4336d59853e75cc5ce640",
+  "ports": { "web": 55150, "multiplayer": 56150, "database": 57150 }
+}

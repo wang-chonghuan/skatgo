@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-152",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-152",
   "branch": "SKATGO-152-posthog-identify",

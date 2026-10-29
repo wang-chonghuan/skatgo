@@ -84,7 +84,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Usage measurement',
           paragraphs: [
             'On the published site, PostHog Cloud EU receives page views and interaction events, such as course and game actions. It uses a browser identifier stored in local storage. A persistent identifier can distinguish visits even without a name or email address.',
-            'When you sign in, these events are linked to your SkatGo account identifier, including the earlier ones from the same browser; after you sign out, new events are no longer linked to it. They are sent to PostHog through skatgo.com, which passes your IP address on so the region can be determined. Session recording and surveys are disabled. This is usage measurement, not a recording of your screen. The current integration starts automatically when you visit; it does not present an analytics consent choice.',
+            'After you sign in, these events, including earlier ones from the same browser, are linked to your SkatGo account identifier until you sign out. They reach PostHog via skatgo.com. Session recording and surveys are disabled. This is usage measurement, not a recording of your screen. The current integration starts automatically when you visit; it does not present an analytics consent choice.',
           ],
         },
         {
@@ -208,7 +208,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Nutzungsanalyse',
           paragraphs: [
             'Auf der veröffentlichten Website erhält PostHog Cloud EU Seitenaufrufe und Interaktionsereignisse, etwa Kurs- und Spielaktionen. Eine Browserkennung wird im lokalen Speicher abgelegt. Auch ohne Namen oder E-Mail-Adresse kann eine dauerhafte Kennung Besuche unterscheiden.',
-            'Nach der Anmeldung werden diese Ereignisse mit deiner SkatGo-Kontokennung verknüpft, auch die früheren aus demselben Browser; nach der Abmeldung nicht mehr. Sie gehen über skatgo.com an PostHog; skatgo.com gibt dabei deine IP-Adresse weiter, damit die Region bestimmt werden kann. Sitzungsaufzeichnungen und Umfragen sind deaktiviert. Es geht um Nutzungsereignisse, nicht um Bildschirmaufnahmen. Die aktuelle Integration startet beim Besuch automatisch und bietet keine Auswahl zur Zustimmung zur Analyse.',
+            'Nach der Anmeldung werden diese Ereignisse, auch frühere aus demselben Browser, bis zur Abmeldung mit deiner SkatGo-Kontokennung verknüpft. Sie gehen über skatgo.com an PostHog. Sitzungsaufzeichnungen und Umfragen sind deaktiviert. Es geht um Nutzungsereignisse, nicht um Bildschirmaufnahmen. Die aktuelle Integration startet beim Besuch automatisch und bietet keine Auswahl zur Zustimmung zur Analyse.',
           ],
         },
         {

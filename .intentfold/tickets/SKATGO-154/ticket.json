@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-154",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-154",
   "branch": "SKATGO-154-bid-answers",

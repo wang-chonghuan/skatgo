@@ -325,7 +325,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   next ("Aufgabe n spielen"); then the other kinds of SKATGO-103, each opening to its exercises (hidden by
   SKATGO-110, shown again by SKATGO-119); under the cards, small `info` links to the article and the rules. The bidding practice
   (`bidding-practice-page.tsx`, SKATGO-149) is a Skat-Tricks exercise's page without the way back: the H1 with the place
-  in the run beside it, "1/300" in the same type in slate (SKATGO-150, 「上面那个单列进度的行不要」), then the white card —
+  in the run beside it, "1/600" in the same type in slate (SKATGO-150, 「上面那个单列进度的行不要」), then the white card —
   "You sit in middlehand" in the question's type (`prompt`, navy; SKATGO-150: 「不要小字，要和how high do you bid同一字体」) with
   the cheat sheet's link at the line's right (`appLink`, `info`, lucide's `BookOpen`, "Bidding cheat sheet" / "Reiz-Spickzettel";
   SKATGO-151), the ten cards as big as the hand at the table, in one row (`Fan`, `lg`, `row`; SKATGO-109 「最好和手牌一样大」)
@@ -340,9 +340,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `hairline` rows. A guest's third question is the ladder's gate in the card's place (SKATGO-112: no lock), its line the
   reason to sign in and nothing more, "Save your mistakes and get better." (SKATGO-150). Once anything is answered, a second
   white card under it: "Your stats" (chess.com's and Funbridge's word; 「your biding这个词不好」; `prompt`, navy) with
-  "n answered" (`appText`, slate) at the right, then Wrong (the error rate, 「用户的错误率」) and the four kinds — "Passed,
-  should have played", "Played, should have passed", "Wrong game", "Wrong bid" (SKATGO-151) — each a row over a `hairline`
-  rule, the name and its share (`appBtnStrong`) at the two ends; last "Mistakes", folded: one line with the count and a
+  "n answered" (`appText`, slate) at the right, then three rows, one per outcome of the two steps (SKATGO-154, the human: 「问题是item太多了，名字莫名其妙，百分比倒没啥」) —
+  "Right", "Wrong contract" (step 1), "Wrong bid" (step 2) — each over a `hairline` rule, the name and its share
+  (`appBtnStrong`) at the two ends, the three adding up to 100%; last "Mistakes", folded: one line with the count and a
   chevron, opening to a small `quiet` button per question number not yet put right (「mistakes 最好可以折叠，否则我怕太多」),
   opening it in the run's place until "Next question". No bar, no colour of its own (SKATGO-150: 「不要花哨，不要垃圾重复文字」).
   Under it, as under the Skat-Tricks, small `info` links to the bidding table and the rules, and under them one small slate

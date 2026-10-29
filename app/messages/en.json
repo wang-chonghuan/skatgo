@@ -750,14 +750,10 @@
   "bidpractice_lead": "Ten cards and your seat at the table: what do you play, and how high can you bid? Each answer is the AI's, with the game value worked out step by step.",
   "bidpractice_stats_title": "Your stats",
   "bidpractice_stats_answered": "{n} answered",
-  "bidpractice_stats_wrong": "Wrong",
   "bidpractice_mistakes": "Mistakes",
   "bidpractice_prompt_contract": "What do you play?",
   "bidpractice_prompt_value": "The AI plays {game}. How high can you bid?",
   "bidpractice_yours_null": "Your Null needs a low card in every suit.",
-  "bidpractice_stats_passed": "Passed, should have played",
-  "bidpractice_stats_played": "Played, should have passed",
-  "bidpractice_stats_game": "Wrong game",
   "bidpractice_stats_value": "Wrong bid",
   "bidpractice_aces_none": "no Ace",
   "bidpractice_aces_one": "1 Ace",
@@ -787,5 +783,7 @@
   "daily_replay_points": "{name} · {points}",
   "daily_replay_rest": "The other {n} tricks were not played out.",
   "daily_replay_hand": "Your hand:",
-  "review_play_record": "Every trick vs. the AI"
+  "review_play_record": "Every trick vs. the AI",
+  "bidpractice_stats_right": "Right",
+  "bidpractice_stats_contract": "Wrong contract"
 }

@@ -188,7 +188,10 @@ the bid — the matadors card by card, game, the base ("Without 1 (♣B not in y
 Null's fixed value; then a contract chosen instead, its trumps and Aces by the same rules, and a wrong number, what it
 would have needed ("27 = 3 × 9 would need with or without 2"). The answer is SkatZero's highest bid for those cards from that
 seat (「这个不用skatzero吗」); only hands one game explains are asked — a pass, a Null, or exactly one game's value counted
-from the ten cards — so SkatZero's own numbers never need showing. The questions run from plain to borderline — six
+from the ten cards — so SkatZero's own numbers never need showing. The contract named is SkatZero's own (SKATGO-154, the
+human: 「你看看叫牌练习的第五题，答案对吗」, then 「你尽量推理一下，每个题的答案对不对」): at its highest bid it picks up and plays
+that game in most skats, and the game is the suit with most trumps, or Grand, or a Null of that kind — a number that only
+happens to match a game is not a question. The questions run from plain to borderline — six
 trumps or more, or three or fewer, first; then the hands the rules of thumb decide; then the rest. A bidding cheat sheet
 opens beside the question (「这个要做成一个卡片弹窗放在叫牌页面，用户点开就能看，名字叫叫牌秘籍之类的」): the order to think in,
 the rules of thumb, the point count with its thresholds, Grand's count, how high to bid, the seat and Null — every point
@@ -197,9 +200,9 @@ in SkatGo's own words. A guest answers two, from the third an account (「不登
 short line — to keep the mistakes and the analysis (SKATGO-150: 「登录时为了保存用户的错题本，帮助用户提高，文字要精简」). Each
 question's first complete attempt is recorded — an account's on the server, a guest's two in the browser until it signs
 in — and whether it was put right since (SKATGO-150, 「用户能记录下来他哪个题出错了吗」). Under the question the player sees
-their own bidding as ratios, no AI (「最好有个比率分析」): how many answered, the error rate, and the four kinds of mistake —
-passed where the AI plays, played where it passes, the wrong game, the right game with the wrong bid (SKATGO-151; the
-human's 「超叫还是不敢叫还是叫错」 and the counting). Only first attempts count. Under that the mistakes not yet put right,
+their own bidding as shares, no AI (「最好有个比率分析」): how many answered, then right, the contract wrong and the bid wrong —
+the two steps' outcomes, three rows adding up (SKATGO-154, the human: 「问题是item太多了，名字莫名其妙，百分比倒没啥」); the wrong
+contract covers the human's 「超叫还是不敢叫还是叫错」 in one. Only first attempts count. Under that the mistakes not yet put right,
 by number, folded, each opening its question again. There is no set of ten (「不要10题，你就自然，先不用这个复杂」). It is a
 search entry.
 

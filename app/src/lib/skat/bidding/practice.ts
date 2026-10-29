@@ -10,11 +10,21 @@ import { PRACTICE } from './practice.data'
 // multiplayer/scripts/make-bidding-practice.ts; multiplayer/test/bidding-practice.test.ts holds every question to the
 // pool again. Only hands whose answer one game explains are questions: a pass, a Null, or exactly one suit game's
 // or Grand's value counted from the ten cards — so the explanation is that game's calculation, never SkatZero's own
-// numbers.
+// numbers. Since SKATGO-154 that game must also be the one SkatZero itself plays at its highest bid (`sure`): a number
+// alone may match a game SkatZero never meant (the human's 「第五题」, Spades named for a hand plainly Diamonds).
 
 /** A question as stored: the pool's deal and seat (for the proof), the ten cards, the seat's position at the
  *  bidding (0 forehand, 1 middlehand, 2 rearhand) and SkatZero's highest bid, 0 for a pass. */
-export type Practice = { deal: number; seat: number; hand: string; position: 0 | 1 | 2; bid: number }
+export type Practice = {
+  deal: number
+  seat: number
+  hand: string
+  position: 0 | 1 | 2
+  bid: number
+  /** For a bid, how often SkatZero plays the answer's game at that bid, over every skat (SKATGO-154): the generator keeps
+   *  a question only when this is high, so the contract named is SkatZero's own. */
+  sure?: number
+}
 
 /** What a suit game or Grand is worth from these ten cards: with or without n, game n + 1, times the base. */
 export type Valued = { contract: Contract; with: boolean; count: number; base: number; value: number; trumps: number }
@@ -55,6 +65,9 @@ export const practiceHand = (p: Practice): Card[] => cards(p.hand)
 /** The questions in order; after the last, the first again. */
 export const PRACTICE_QUESTIONS: Practice[] = PRACTICE
 export const questionAt = (n: number): Practice => PRACTICE[(n - 1) % PRACTICE.length]
+
+/** How often, at least, SkatZero must play the answer's game at its highest bid for a question to name it (SKATGO-154). */
+export const SURE = 0.6
 
 /** Questions a guest may answer; from the next one on, an account (the human: 「不登录可以练2题」). */
 export const PRACTICE_FREE = 2

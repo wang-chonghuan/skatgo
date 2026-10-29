@@ -39,7 +39,7 @@ const json = (status: number, body: object) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
 
 /** The visitor's address, as the platform's proxy passes it on. */
-function clientIp(request: Request): string {
+export function clientIp(request: Request): string {
   const fwd = request.headers.get('x-forwarded-for')
   return fwd?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'local'
 }

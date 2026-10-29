@@ -1,8 +1,10 @@
 import { useAuth } from '@clerk/tanstack-react-start'
 import { createContext, useContext, useEffect, useState } from 'react'
 
+import type { TestAccount as Test } from './test-account'
+
 /** A local test account (lib/test-account.ts), handed down by the root route; null everywhere else. */
-export const TestAccount = createContext<string | null>(null)
+export const TestAccount = createContext<Test | null>(null)
 
 /**
  * Who is signed in, as the browser knows it (SKATGO-12): the Clerk account's id, `null` for a guest, or
@@ -18,7 +20,7 @@ export function useAccount(): string | null | undefined {
     const timer = setTimeout(() => setGaveUp(true), 4_000)
     return () => clearTimeout(timer)
   }, [isLoaded])
-  if (test) return test
+  if (test) return test.userId
   if (isLoaded) return userId ?? null
   return gaveUp ? null : undefined
 }

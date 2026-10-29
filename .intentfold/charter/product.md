@@ -242,8 +242,9 @@ that does not happen, this positioning is to be reconsidered.
 A learner who finishes the progress can play with people who already know the game. On the way, it is
 「不枯燥的」 — they keep going rather than drop out.
 
-PostHog measures published-site visits and product events; Search Console measures Google search
-exposure. Neither alone proves that learners can play, and delayed search reports are not total traffic.
+PostHog measures published-site visits and product events, linked to the account once a visitor signs in
+and with no consent popup (SKATGO-152, the human: 「在不增加隐私弹窗的情况下，尽量最大化保存用户的使用信息（但是不要每次出牌都发事件）」);
+Search Console measures Google search exposure. Neither alone proves that learners can play, and delayed search reports are not total traffic.
 
 **What this product is not**
 

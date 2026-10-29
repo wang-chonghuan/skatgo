@@ -1,5 +1,7 @@
 import handler from '@tanstack/react-start/server-entry'
 
+import { RELAY_PATH } from './lib/analytics'
+import { relayAnalytics } from './lib/analytics-relay'
 import { handleCard, handleDaily } from './lib/daily-handler'
 import { UNAVAILABLE } from './lib/forum-api'
 import { forumSitemap, handleForum } from './lib/forum-handler'
@@ -40,7 +42,8 @@ defineCustomServerStrategy('custom-skatgo', {
 // about them. The daily tournament's endpoints (SKATGO-35,
 // lib/daily-handler.ts), free play's (SKATGO-40, lib/free-handler.ts) and a private table's admission
 // and its referral (SKATGO-61, SKATGO-117, lib/room-handler.ts), the ladder's record (SKATGO-109, lib/tricks-handler.ts)
-// and the forum (SKATGO-118, lib/forum-handler.ts). The assistant's /api/ask is gone (SKATGO-130).
+// and the forum (SKATGO-118, lib/forum-handler.ts). The assistant's /api/ask is gone (SKATGO-130). Product analytics
+// reaches PostHog through /hx (SKATGO-152, lib/analytics-relay.ts).
 export default {
   fetch(req: Request): Promise<Response> {
     const url = new URL(req.url)
@@ -50,6 +53,7 @@ export default {
     if (url.pathname.startsWith('/api/tricks/')) return handleTricks(req)
     if (url.pathname.startsWith('/api/forum/')) return handleForum(req)
     if (url.pathname.startsWith('/api/card/')) return handleCard(req)
+    if (url.pathname.startsWith(`${RELAY_PATH}/`)) return relayAnalytics(req)
     const moved = movedTo(url.pathname, url.search)
     // Keep the public scheme when TLS terminates at the reverse proxy.
     if (moved) return Promise.resolve(new Response(null, { status: 301, headers: { location: moved } }))

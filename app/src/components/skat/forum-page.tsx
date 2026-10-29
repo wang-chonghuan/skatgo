@@ -7,6 +7,7 @@ import {
   COMMENT_MAX, DAILY_LIMITS, FORUM_SECTIONS, POST_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumComment, type ForumPost,
   type ForumPostSummary, type ForumReport, type ForumSection, type ForumViewer, postParam, sectionsFor,
 } from '~/lib/forum'
+import { track } from '~/lib/analytics'
 import { addComment, createPost, deleteOwn, moderate, readReports, report } from '~/lib/forum-api'
 import { LANG_TAG } from '~/lib/site'
 import { useAccount } from '~/lib/use-account'
@@ -136,7 +137,7 @@ function WriteButton({ viewer, onWrite }: { viewer: ForumViewer; onWrite: () => 
   if (!viewer.signedIn) {
     return (
       <SignInButton mode="modal">
-        <Btn testId="forum-sign-in">{m.auth_sign_in()}</Btn>
+        <Btn testId="forum-sign-in" onClick={() => track('sign_in_clicked', { at: 'forum_post' })}>{m.auth_sign_in()}</Btn>
       </SignInButton>
     )
   }
@@ -416,7 +417,7 @@ function CommentBox({ viewer, post }: { viewer: ForumViewer; post: ForumPost }) 
       <div data-testid="forum-sign-in" {...stylex.props(styles.row)}>
         <p {...stylex.props(typography.appText, styles.note)}>{m.forum_sign_in_to_comment()}</p>
         <SignInButton mode="modal">
-          <Btn size="sm">{m.auth_sign_in()}</Btn>
+          <Btn size="sm" onClick={() => track('sign_in_clicked', { at: 'forum_comment' })}>{m.auth_sign_in()}</Btn>
         </SignInButton>
       </div>
     )

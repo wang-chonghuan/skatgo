@@ -4,6 +4,7 @@ import * as stylex from '@stylexjs/stylex'
 import { BookOpen, ChevronDown, ChevronUp, CircleCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+import { track } from '~/lib/analytics'
 import { type Card, sortHand, trumpSequence } from '~/lib/skat/cards'
 import { cardLabel, contractName, matadorLabel, roleName } from '~/lib/skat/i18n'
 import { type CheatSheet } from '~/lib/skat/bidding/cheat-sheet'
@@ -121,6 +122,7 @@ export function BiddingPracticePage() {
           onDone={(a) => {
             const right = rightAttempt(q, a)
             answer(questionId(q), a, right)
+            track('exercise_finished', { section: 'bidding', number: shown, right })
             setResult(right ? 'right' : 'wrong')
           }}
           result={result}
@@ -466,7 +468,7 @@ function Gate() {
       </div>
       <div {...stylex.props(styles.actions)}>
         <SignInButton mode="modal">
-          <Btn testId="bidding-practice-sign-in" tone="go">
+          <Btn testId="bidding-practice-sign-in" tone="go" onClick={() => track('sign_in_clicked', { at: 'bidding' })}>
             {m.tricks_ladder_gate_button()}
           </Btn>
         </SignInButton>

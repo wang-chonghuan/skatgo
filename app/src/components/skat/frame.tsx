@@ -10,7 +10,7 @@ import { type Deck, useSettings } from '~/lib/skat/settings'
 import { m } from '~/paraglide/messages'
 import { carryGame } from '~/lib/free-api'
 import { dailyName, dailyNick, isError } from '~/lib/daily-api'
-import { track } from '~/lib/analytics'
+import { setPerson, track } from '~/lib/analytics'
 import { useAccount } from '~/lib/use-account'
 import { type Locale, getLocale, localizeHref, locales, setLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
@@ -93,7 +93,7 @@ export function Account({ shape = 'pill' }: { shape?: 'pill' | 'landing' }) {
     <>
       <Show when="signed-out">
         <SignInButton mode="modal">
-          <Btn tone="quiet" size="md" shape={shape} testId="sign-in">
+          <Btn tone="quiet" size="md" shape={shape} testId="sign-in" onClick={() => track('sign_in_clicked', { at: 'header' })}>
             {m.auth_sign_in()}
           </Btn>
         </SignInButton>
@@ -204,6 +204,7 @@ function Nickname({ onClose }: { onClose: () => void }) {
     setSaving(false)
     if (isError(r)) return setProblem(r.error === 'nickname_taken' ? 'taken' : 'refused')
     track('daily_nickname_set')
+    setPerson({ nickname: r.nickname })
     setProblem(null)
     setValue(r.nickname)
     setSaved(r.nickname)

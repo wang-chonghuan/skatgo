@@ -6,6 +6,7 @@ import { type GameMode, track } from '~/lib/analytics'
 import { type FreeError, freeAct, freeNew, freeResume, freeReview, freeTalk, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
 import { useTableTalk } from '~/lib/table-talk'
 import { type Move, type Seat, next as nextSeat } from '~/lib/skat/game'
+import type { Contract } from '~/lib/skat/cards'
 import { type DealReview, type DealSummary, type SeatView, gameFromView, summarize, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
@@ -24,7 +25,7 @@ import { TableLoading } from './table-loading'
 // keeps nothing. The server answers each move with every state
 // the table passed through, and the table shows them one by one on its own beats. Lesson 11's hints work as at the
 // local table, reading only what this seat may see; free play has none (SKATGO-130). A game's start and
-// finish are its only events (SKATGO-74): never a bid or a card.
+// finish, and a round's end (SKATGO-152), are its only events (SKATGO-74): never a bid or a card.
 
 type Failure = { text: string; retry?: () => void }
 
@@ -32,6 +33,10 @@ const problemText = (e: FreeError) =>
   e.error === 'slow_down' ? m.free_slow_down() : e.error === 'game_expired' || e.error === 'invalid_game' ? m.free_expired() : m.free_unreachable()
 
 type Settled = { humanWon: boolean; humanScore: number }
+
+/** A game's contract as analytics names it (SKATGO-152): its trump suit, `grand` or `null`. */
+const SUIT_KEY = { C: 'clubs', S: 'spades', H: 'hearts', D: 'diamonds' } as const
+const contractKey = (c: Contract) => (c.kind === 'suit' ? SUIT_KEY[c.trump] : c.kind)
 
 /** Free play's round (SKATGO-88): six deals, the deal going round as at a real table, so the player sits
  *  in each position twice; its finished deals, the player's and the AI's from the same seat, and each deal's review,
@@ -135,7 +140,10 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     const r = await ask(token)
     const played: Round = { deals: [...round.deals, summarize(finished)], ais: [...round.ais, 'error' in r ? null : r.ai], reviews: [...(round.reviews ?? []), 'error' in r ? null : r] }
     setRound(played)
-    if (played.deals.length >= ROUND_DEALS) return setSummary(true)
+    if (played.deals.length >= ROUND_DEALS) {
+      track('free_round_finished', { total: totals(played.deals)[0], ai_total: played.ais.reduce((n, ai) => n + (ai?.scores[0] ?? 0), 0) })
+      return setSummary(true)
+    }
     void start(nextSeat(finished.dealer))
   }
   function newRound() {
@@ -207,7 +215,15 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     <GameTable
       fullScreen={fullScreen}
       onSettled={(info: Settled) => {
-        track('game_finished', { mode, won: info.humanWon, score: info.humanScore })
+        // The game's facts at once; the AI's score on the same cards from its review, asked once and kept (the
+        // result card asks the same).
+        const deal = summarize(game)
+        const contract = deal.declaration ? contractKey(deal.declaration.contract) : ''
+        const reviewed = token ? ask(token) : Promise.resolve(null)
+        void reviewed.then((r) => track('game_finished', {
+          mode, won: info.humanWon, score: info.humanScore, role: deal.declarer === 0 ? 'declarer' : 'defender', contract, bid: deal.bid,
+          sf: deal.scores[0], ai_sf: r && !('error' in r) && r.ai ? r.ai.scores[0] : null,
+        }))
         onSettled?.(info)
       }}
       server={{

@@ -93,7 +93,7 @@ export function OpenTable() {
       <div data-testid="table-open-sign-in" {...stylex.props(styles.form)}>
         <div {...stylex.props(styles.row)}>
           <SignInButton mode="modal">
-            <Btn testId="table-open-sign-in-go">{m.table_open_sign_in()}</Btn>
+            <Btn testId="table-open-sign-in-go" onClick={() => track('sign_in_clicked', { at: 'table_open' })}>{m.table_open_sign_in()}</Btn>
           </SignInButton>
         </div>
       </div>
@@ -322,7 +322,7 @@ function SignUpLine({ onNo }: { onNo: () => void }) {
       <p {...stylex.props(typography.note, styles.ink)}>{m.table_sign_up_text()}</p>
       <div {...stylex.props(styles.row)}>
         <SignUpButton mode="modal">
-          <Btn testId="table-sign-up-go" tone="quiet" size="sm">{m.table_sign_up()}</Btn>
+          <Btn testId="table-sign-up-go" tone="quiet" size="sm" onClick={() => track('sign_in_clicked', { at: 'table_sign_up' })}>{m.table_sign_up()}</Btn>
         </SignUpButton>
         <Btn testId="table-sign-up-no" tone="quiet" size="sm" onClick={onNo}>{m.table_sign_up_no()}</Btn>
       </div>

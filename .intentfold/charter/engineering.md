@@ -20,7 +20,13 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 - **Paraglide** (`@inlang/paraglide-js`) owns the two languages: messages in `app/messages/{en,de}.json`,
   translated addresses in `app/paraglide.options.ts`, compiled into `app/src/paraglide/` (generated).
 - **PostHog** (`posthog-js`, SKATGO-25) counts page views and product events from the browser
-  (`app/src/lib/analytics.ts`), only when `POSTHOG_PROJECT_KEY` is set.
+  (`app/src/lib/analytics.ts`), only when `POSTHOG_PROJECT_KEY` is set and only on the published site. Since
+  SKATGO-152 every visitor has a person; a signed-in account is identified by its Clerk id (`player` = `user:<id>`,
+  with when it was made), which merges the browser's earlier events into it, and signing out resets PostHog. The
+  browser sends to `/hx`, answered in `app/src/server.ts` before the language middleware by
+  `lib/analytics-relay.ts`: static scripts to `eu-assets.i.posthog.com`, the rest to `eu.i.posthog.com`, the
+  visitor's address as X-Forwarded-For and never the site's cookies. Events stay one per step — a game, a round, an
+  exercise, a sign-in — never a bid or a card; no new service, table or server-side pipeline.
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
   here. Accounts are optional: the course and free play require none; opening a private
   table does (SKATGO-117), writing in the forum (SKATGO-118), and playing the daily tournament

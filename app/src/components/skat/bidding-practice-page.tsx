@@ -1,4 +1,5 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
+import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { CircleCheck, CircleX } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -48,28 +49,41 @@ function saveNumber(n: number) {
  */
 export function BiddingPracticePage() {
   const account = useAccount()
-  const [n, setN] = useState<number | null>(null)
+  // The first question is rendered on the server too, so the page is a search entry with content; this browser's
+  // place replaces it once the page runs.
+  const [n, setN] = useState(1)
   const [result, setResult] = useState<'right' | 'wrong' | null>(null)
   useEffect(() => setN(readNumber()), [])
-  const locked = n !== null && n > PRACTICE_FREE && account === null
+  const locked = n > PRACTICE_FREE && account === null
   const go = () => {
-    const after = (n ?? 1) + 1
+    const after = n + 1
     saveNumber(after)
     setResult(null)
     setN(after)
   }
-  const q = n === null ? null : questionAt(n)
+  const q = questionAt(n)
   return (
-    <div data-testid="bidding-practice" data-question={n ?? ''} data-result={result ?? ''} {...stylex.props(styles.column)}>
+    <div data-testid="bidding-practice" data-question={n} data-result={result ?? ''} {...stylex.props(styles.column)}>
       <nav {...stylex.props(styles.top)}>
-        <Pill>{m.bidpractice_kicker({ n: n ?? 1, count: PRACTICE_QUESTIONS.length })}</Pill>
+        <Pill>{m.bidpractice_kicker({ n, count: PRACTICE_QUESTIONS.length })}</Pill>
       </nav>
       <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.bidpractice_title()}</h1>
-      {q === null || account === undefined ? null : locked ? (
+      {/* A title and a line, as the game pages keep (SKATGO-134). */}
+      <p {...stylex.props(typography.body, styles.lead)}>{m.bidpractice_lead()}</p>
+      {locked ? (
         <Gate />
       ) : (
         <Question key={n} hand={practiceHand(q)} position={POSITIONS[q.position]} bid={q.bid} onAnswer={setResult} result={result} onNext={go} />
       )}
+      {/* The bidding table to look a value up in and the rules, small links under the card, as under the Skat-Tricks. */}
+      <nav {...stylex.props(styles.links)}>
+        <Link to="/rules/bidding-table" data-testid="bidding-practice-table-link" {...stylex.props(typography.appLink, styles.link)}>
+          {m.bidding_title()}
+        </Link>
+        <Link to="/rules" data-testid="bidding-practice-rules-link" {...stylex.props(typography.appLink, styles.link)}>
+          {m.tricks_rules_link()}
+        </Link>
+      </nav>
     </div>
   )
 }
@@ -174,6 +188,7 @@ const styles = stylex.create({
   },
   top: { display: 'flex', alignItems: 'center', gap: space.x12 },
   title: { margin: 0, color: color.navy },
+  lead: { margin: 0, color: color.slate },
   // The lesson's step card (lesson-player.tsx): white, the option shadow.
   card: {
     display: 'flex',
@@ -203,4 +218,13 @@ const styles = stylex.create({
   verdictTitle: { margin: 0, color: color.navy },
   para: { margin: 0, color: color.text },
   actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
+  links: { display: 'flex', flexWrap: 'wrap', gap: space.x16 },
+  link: {
+    color: color.info,
+    textDecoration: { default: 'none', ':hover': 'underline' },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
 })

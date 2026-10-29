@@ -752,5 +752,6 @@
   "bidpractice_answer_pass": "Die KI passt: Mit diesen Karten lohnt sich kein Spiel.",
   "bidpractice_option": "**{value}** wäre {game}: {matadors}, Spiel {level} × {base}.",
   "bidpractice_next": "Nächste Aufgabe",
-  "bidpractice_gate_text": "Die ersten {n} Blätter kannst du ohne Konto üben. Ab hier meldest du dich kostenlos an und übst weiter."
+  "bidpractice_gate_text": "Die ersten {n} Blätter kannst du ohne Konto üben. Ab hier meldest du dich kostenlos an und übst weiter.",
+  "bidpractice_lead": "Zehn Karten und dein Platz am Tisch: Wie hoch würdest du reizen, oder passt du? Jede Antwort ist die der KI, mit dem Spielwert Schritt für Schritt ausgerechnet."
 }

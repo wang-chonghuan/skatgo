@@ -181,6 +181,7 @@ function Question({ q, result, onDone, onNext }: { q: Practice; result: 'right' 
           <Choice
             step={{ kind: 'choice', prompt: m.bidpractice_prompt_contract(), options: contracts.map(contractLabel), answer: contracts.indexOf(sol.contract), explain: '' }}
             once
+            pairs
             onChoose={(i) => pickContract(contracts[i])}
             onSolved={() => {}}
             onMistake={() => {}}
@@ -191,6 +192,7 @@ function Question({ q, result, onDone, onNext }: { q: Practice; result: 'right' 
             <Choice
               step={{ kind: 'choice', prompt: m.bidpractice_prompt_value({ game: answerName(sol.answer) }), options: values.map(String), answer: values.indexOf(sol.value), explain: '' }}
               once
+              pairs
               onChoose={(i) => onDone({ contract, value: values[i] })}
               onSolved={() => {}}
               onMistake={() => {}}
@@ -280,14 +282,15 @@ function CheatSheetDialog({ onClose }: { onClose: () => void }) {
  */
 function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOpen: (n: number) => void }) {
   const pct = new Intl.NumberFormat(getLocale(), { style: 'percent' })
-  const share = (k: number) => pct.format(k / a.answered)
+  const shares = sharesOf(a)
+  const share = (kind: string) => pct.format(shares[kind] / 100)
   // The error rate first (「用户的错误率」), then where the mistakes went: the human's 不敢叫, 超叫, 叫错, and the counting.
-  const rows: [string, string, number][] = [
-    ['wrong', m.bidpractice_stats_wrong(), a.answered - a.right],
-    ['passed', m.bidpractice_stats_passed(), a.passed],
-    ['played', m.bidpractice_stats_played(), a.played],
-    ['game', m.bidpractice_stats_game(), a.game],
-    ['value', m.bidpractice_stats_value(), a.value],
+  const rows: [string, string][] = [
+    ['wrong', m.bidpractice_stats_wrong()],
+    ['passed', m.bidpractice_stats_passed()],
+    ['played', m.bidpractice_stats_played()],
+    ['game', m.bidpractice_stats_game()],
+    ['value', m.bidpractice_stats_value()],
   ]
   return (
     <section data-testid="bidding-practice-record" {...stylex.props(styles.card, styles.record)}>
@@ -296,15 +299,32 @@ function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOp
         <h2 {...stylex.props(typography.prompt, styles.verdictTitle)}>{m.bidpractice_stats_title()}</h2>
         <span data-testid="bidding-practice-answered" {...stylex.props(typography.appText, styles.facts)}>{m.bidpractice_stats_answered({ n: a.answered })}</span>
       </div>
-      {rows.map(([kind, label, count]) => (
+      {rows.map(([kind, label]) => (
         <div key={kind} data-testid="bidding-practice-stat" data-kind={kind} {...stylex.props(styles.stat, styles.statLine)}>
           <span {...stylex.props(typography.appText, styles.para)}>{label}</span>
-          <span {...stylex.props(typography.appBtnStrong, styles.para)}>{share(count)}</span>
+          <span {...stylex.props(typography.appBtnStrong, styles.para)}>{share(kind)}</span>
         </div>
       ))}
       {mistakes.length ? <Mistakes list={mistakes} onOpen={onOpen} /> : null}
     </section>
   )
+}
+
+/** Whole percentages that add up: the four kinds share out the rounded error rate by largest remainder, so they never
+ *  sum to one more or less than "Wrong". */
+function sharesOf(a: Analysis): Record<string, number> {
+  const wrong = Math.round(((a.answered - a.right) / a.answered) * 100)
+  const kinds = { passed: a.passed, played: a.played, game: a.game, value: a.value }
+  const exact = Object.entries(kinds).map(([k, n]) => [k, (n / a.answered) * 100] as const)
+  const out: Record<string, number> = { wrong, ...Object.fromEntries(exact.map(([k, x]) => [k, Math.floor(x)])) }
+  let left = wrong - exact.reduce((sum, [k]) => sum + out[k], 0)
+  for (const [k] of [...exact].sort((x, y) => (y[1] % 1) - (x[1] % 1))) {
+    if (left <= 0) break
+    if (kinds[k as keyof typeof kinds] === 0) continue
+    out[k]++
+    left--
+  }
+  return out
 }
 
 /** The mistakes, folded under one line with their count, so a long list stays out of the way (the human: 「mistakes 最好
@@ -332,8 +352,11 @@ function Mistakes({ list, onOpen }: { list: number[]; onOpen: (n: number) => voi
   )
 }
 
-/** A game's calculation in words: "Hearts ♥", "with 2", game 3, base 10. */
-const calc = (g: Valued) => ({ game: contractName(g.contract), matadors: matadorLabel(g.with, g.count), level: g.count + 1, base: g.base })
+/** A game's calculation in words: "Hearts ♥", "With 2" (it opens a sentence), game 3, base 10. */
+const calc = (g: Valued) => {
+  const matadors = matadorLabel(g.with, g.count)
+  return { game: contractName(g.contract), matadors: matadors[0].toUpperCase() + matadors.slice(1), level: g.count + 1, base: g.base }
+}
 
 const NULL_NAMES = { plain: 'Null', hand: 'Null Hand', ouvert: 'Null ouvert', handOuvert: 'Null ouvert Hand' } as const
 
@@ -350,26 +373,29 @@ const answerName = (a: Answer) => (a.kind === 'null' ? NULL_NAMES[a.which] : a.k
 
 const jacksOf = (hand: Card[]) => hand.filter((c) => c.rank === 'J').length
 
+/** "no Ace", "1 Ace", "2 Aces" in words, as the cheat sheet says them. */
+const acesWords = (n: number) => (n === 0 ? m.bidpractice_aces_none() : n === 1 ? m.bidpractice_aces_one() : m.bidpractice_aces_many({ n }))
+
 /** The AI's answer from the hand's facts: its game's trumps and Aces and the value's sum, Null's fixed value, or, for a
  *  pass, the best suit's trumps and the Aces beside it. */
 function answerLine(hand: Card[], a: Answer): string {
   if (a.kind === 'pass') {
     const best = bestSuit(hand)
     const trump = best.contract.kind === 'suit' ? best.contract.trump : undefined
-    return m.bidpractice_why_pass({ game: contractName(best.contract), trumps: best.trumps, aces: sideAces(hand, trump) })
+    return m.bidpractice_why_pass({ game: contractName(best.contract), trumps: best.trumps, aces: acesWords(sideAces(hand, trump)) })
   }
   if (a.kind === 'null') return m.bidpractice_why_null({ game: NULL_NAMES[a.which], value: a.value })
   const g = a.game
-  if (g.contract.kind === 'grand') return m.bidpractice_why_grand({ jacks: jacksOf(hand), aces: sideAces(hand), value: g.value, ...calc(g) })
-  return m.bidpractice_why_game({ trumps: g.trumps, aces: sideAces(hand, g.contract.kind === 'suit' ? g.contract.trump : undefined), value: g.value, ...calc(g) })
+  if (g.contract.kind === 'grand') return m.bidpractice_why_grand({ jacks: jacksOf(hand), aces: acesWords(sideAces(hand)), value: g.value, ...calc(g) })
+  return m.bidpractice_why_game({ trumps: g.trumps, aces: acesWords(sideAces(hand, g.contract.kind === 'suit' ? g.contract.trump : undefined)), value: g.value, ...calc(g) })
 }
 
 /** The facts of the contract the player chose instead. */
 function yoursLine(hand: Card[], c: ContractKey): string {
   if (c === 'N') return m.bidpractice_yours_null()
-  if (c === 'G') return m.bidpractice_yours_grand({ jacks: jacksOf(hand), aces: sideAces(hand) })
+  if (c === 'G') return m.bidpractice_yours_grand({ jacks: jacksOf(hand), aces: acesWords(sideAces(hand)) })
   const v = tenCardValues(hand).find((g) => g.contract.kind === 'suit' && g.contract.trump === c)!
-  return m.bidpractice_yours_game({ game: contractName(v.contract), trumps: v.trumps, aces: sideAces(hand, c) })
+  return m.bidpractice_yours_game({ game: contractName(v.contract), trumps: v.trumps, aces: acesWords(sideAces(hand, c)) })
 }
 
 /** The third question for a guest (SKATGO-149, as the ladder's gate, SKATGO-112): why, and the way in, Clerk's window
@@ -466,7 +492,7 @@ const styles = stylex.create({
   record: { gap: space.x12 },
   recordHead: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
   stat: { display: 'flex', flexDirection: 'column', gap: space.x2, paddingTop: space.x12, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
-  statLine: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
+  statLine: { display: 'flex', flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
   mistakes: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x12, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   mistakeList: { display: 'flex', flexWrap: 'wrap', gap: space.x8, paddingTop: space.x8 },
   summary: {

@@ -75,8 +75,9 @@ function Feedback({ state, good, bad }: { state: 'idle' | 'wrong' | 'right'; goo
   )
 }
 
-/** `onChoose` hears which option was taken, before the verdict (the bidding practice records it, SKATGO-150). */
-export function Choice({ step, onSolved, onMistake, solvedBefore, once, onChoose }: { step: ChoiceStep; onChoose?: (i: number) => void } & StepCallbacks) {
+/** `onChoose` hears which option was taken, before the verdict (the bidding practice records it, SKATGO-150); `pairs`
+ *  keeps short options two by two on a phone too (its seven contracts, SKATGO-151). */
+export function Choice({ step, onSolved, onMistake, solvedBefore, once, onChoose, pairs }: { step: ChoiceStep; onChoose?: (i: number) => void; pairs?: boolean } & StepCallbacks) {
   const [wrong, setWrong] = useState<number[]>([])
   const [right, setRight] = useState(!!solvedBefore)
   const [nonce, setNonce] = useState(0)
@@ -100,7 +101,7 @@ export function Choice({ step, onSolved, onMistake, solvedBefore, once, onChoose
       <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
       {step.rows?.map((row, i) => <CardRowView key={i} row={row} />)}
       <Shake nonce={nonce}>
-        <div {...stylex.props(styles.options)}>
+        <div {...stylex.props(styles.options, pairs && styles.optionPairs)}>
           {step.options.map((o, i) => (
             <button
               key={i}
@@ -303,6 +304,7 @@ const styles = stylex.create({
   prompt: { margin: 0, color: color.navy },
   context: { margin: 0, color: color.slate },
   options: { display: 'grid', gridTemplateColumns: { default: dims.twoColumns, [bp.phone]: dims.oneColumn }, gap: space.x12 },
+  optionPairs: { gridTemplateColumns: dims.twoColumns },
   option: {
     textAlign: 'left',
     paddingBlock: space.x16,

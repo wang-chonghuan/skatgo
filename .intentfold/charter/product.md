@@ -178,7 +178,7 @@ thinks (the human: 「我想的是我能打什么合约」, 「答题分两步�
 Grand, Null (「你还没说null呢」) or pass, every contract offered on every hand — then, unless the AI passes, how high you can
 bid with the AI's contract, whatever was chosen first, so the counting is practised on every hand it plays. Each step
 says right or wrong at once; then why, from the hand's facts: the AI's game, its trumps and the Aces beside them and the
-value's sum ("Diamonds with 6 trumps …: without 1, game 2 × 9 = 18"), a Null's fixed value, or for a pass the best
+value's sum in plain words ("Diamonds ♦: 6 trumps and 1 Ace beside them. Without 1, game 2 × 9 = 18"), a Null's fixed value, or for a pass the best
 suit's trumps; and the facts of a contract chosen instead. The answer is SkatZero's highest bid for those cards from that
 seat (「这个不用skatzero吗」); only hands one game explains are asked — a pass, a Null, or exactly one game's value counted
 from the ten cards — so SkatZero's own numbers never need showing. The questions run from plain to borderline — six

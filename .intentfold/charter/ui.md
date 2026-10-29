@@ -330,8 +330,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the cheat sheet's link at the line's right (`appLink`, `info`, lucide's `BookOpen`, "Bidding cheat sheet" / "Reiz-Spickzettel";
   SKATGO-151), the ten cards as big as the hand at the table, in one row (`Fan`, `lg`, `row`; SKATGO-109 「最好和手牌一样大」)
   over a `hairline` rule; then the two steps of SKATGO-151, each a `Choice` that marks right and wrong at once: "What do you
-  play?" with ♣ ♠ ♥ ♦ Grand Null two by two and "Pass" last, alone on its row; and, unless the AI passes, over a `hairline`
-  rule "The AI plays Diamonds ♦. How high can you bid?" with three numbers (four for a Null). Once both are answered, the
+  play?" with ♣ ♠ ♥ ♦ Grand Null two by two, on a phone too, and "Pass" last, alone on its row; and, unless the AI passes, over a `hairline`
+  rule "The AI plays Diamonds ♦. How high can you bid?" with three numbers (four for a Null), two by two. Once both are answered, the
   verdict `Panel` as an exercise's — "Right!" / "Not quite.", the AI's answer from the hand's facts and the value's sum, a line
   with the facts of a contract chosen instead — and "Next question" as the one `go`. The cheat sheet is the site's `Modal`:
   its seven sections one under another, each heading `appBtnStrong` navy over `appText`, the point count a plain table of

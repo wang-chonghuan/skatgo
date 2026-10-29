@@ -6,7 +6,7 @@ export const CHEAT_SHEET_EN: CheatSheet = {
     {
       heading: '1 · What can you play?',
       text: [
-        'Count your trumps for each suit: the cards of that suit plus every Bube you hold. The suit with the most trumps is your game. Lots of Buben and Aces? Check Grand (4).',
+        'Count your trumps for each suit: the cards of that suit plus every Bube you hold. The suit with the most trumps is your game. Lots of Buben and Aces? Check Grand (4). Few trumps anywhere but low cards in every suit? Check Null (7).',
       ],
     },
     {
@@ -24,17 +24,20 @@ export const CHEAT_SHEET_EN: CheatSheet = {
         head: ['', 'Points'],
         rows: [
           ['Each trump', '1'],
-          ['Trump Ace, trump 10', '+1 each'],
+          ['Trump Ace, trump 10', '1 more each'],
           ['Each sure Bube trick', '1'],
-          ['Side suit: A · A-10 · A-10-K', '1 · 2 · 2½'],
-          ['Side suit: 10-K · 10 without A or K · K-D-small', '1 · ½ · ½'],
+          ['A side suit with the Ace', '1'],
+          ['… with Ace and 10', '2'],
+          ['… with Ace, 10 and King', '2½'],
+          ['… with 10 and King', '1'],
+          ['… with the 10 but no Ace or King', '½'],
+          ['… with King, Dame and a small card', '½'],
           ['Sitting in forehand', '½'],
         ],
       },
       after: ['A Bube trick is sure when no higher Bube is against you: ♣B alone is 1, ♣B ♠B are 2, but ♠B ♥B only 1.'],
       afterList: [
-        '**9 or more:** bid to your limit.',
-        '**8½:** you win about 7 times in 10. Bid to your limit.',
+        '**8½ or more:** bid to your limit — from 8½ you win about 7 times in 10.',
         '**7½–8:** say 18, go no higher.',
         '**Under 7½:** pass.',
       ],

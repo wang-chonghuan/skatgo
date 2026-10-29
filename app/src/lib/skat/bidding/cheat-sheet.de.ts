@@ -6,7 +6,7 @@ export const CHEAT_SHEET_DE: CheatSheet = {
     {
       heading: '1 · Was kannst du spielen?',
       text: [
-        'Zähl für jede Farbe deine Trümpfe: die Karten dieser Farbe plus jeden Buben, den du hast. Die Farbe mit den meisten Trümpfen ist dein Spiel. Viele Buben und Asse? Prüf den Grand (4).',
+        'Zähl für jede Farbe deine Trümpfe: die Karten dieser Farbe plus jeden Buben, den du hast. Die Farbe mit den meisten Trümpfen ist dein Spiel. Viele Buben und Asse? Prüf den Grand (4). Kaum Trümpfe, aber in jeder Farbe kleine Karten? Prüf den Null (7).',
       ],
     },
     {
@@ -24,17 +24,20 @@ export const CHEAT_SHEET_DE: CheatSheet = {
         head: ['', 'Punkte'],
         rows: [
           ['Jeder Trumpf', '1'],
-          ['Trumpf-Ass, Trumpf-10', 'je +1'],
+          ['Trumpf-Ass, Trumpf-10', 'je 1 mehr'],
           ['Jeder sichere Bubenstich', '1'],
-          ['Beifarbe: A · A-10 · A-10-K', '1 · 2 · 2½'],
-          ['Beifarbe: 10-K · 10 ohne A oder K · K-D-klein', '1 · ½ · ½'],
+          ['Eine Beifarbe mit dem Ass', '1'],
+          ['… mit Ass und 10', '2'],
+          ['… mit Ass, 10 und König', '2½'],
+          ['… mit 10 und König', '1'],
+          ['… mit der 10, aber ohne Ass und König', '½'],
+          ['… mit König, Dame und einer kleinen Karte', '½'],
           ['In Vorhand', '½'],
         ],
       },
       after: ['Ein Bubenstich ist sicher, wenn kein höherer Bube gegen dich steht: ♣B allein ist 1, ♣B ♠B sind 2, aber ♠B ♥B nur 1.'],
       afterList: [
-        '**9 oder mehr:** bis zu deiner Grenze reizen.',
-        '**8½:** du gewinnst etwa 7 von 10. Bis zu deiner Grenze reizen.',
+        '**8½ oder mehr:** bis zu deiner Grenze reizen — ab 8½ gewinnst du etwa 7 von 10.',
         '**7½–8:** 18 sagen, nicht höher.',
         '**Unter 7½:** passen.',
       ],

@@ -781,5 +781,11 @@
   "bidpractice_rule_few_short": "Zu wenig Trümpfe.",
   "bidpractice_rule_noace_short": "Ohne Ass zu wenig.",
   "bidpractice_yours_grand": "Dein Grand: {points} Grand-Punkte; spielen ab 6.",
-  "bidpractice_ex_number": "Deine **{chosen}** = {level} × {base} bräuchte mit oder ohne {n}."
+  "bidpractice_ex_number": "Deine **{chosen}** = {level} × {base} bräuchte mit oder ohne {n}.",
+  "daily_replay_trick": "Stich",
+  "daily_replay_winner": "Stich an",
+  "daily_replay_points": "{name} · {points}",
+  "daily_replay_rest": "Die übrigen {n} Stiche wurden nicht mehr ausgespielt.",
+  "daily_replay_hand": "Deine Hand:",
+  "review_play_record": "Jeder Stich im Vergleich zur KI"
 }

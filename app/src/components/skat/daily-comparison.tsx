@@ -1,11 +1,12 @@
 import * as stylex from '@stylexjs/stylex'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { dailyReview } from '~/lib/daily-api'
 import { type Card, type Contract, pointsOf, sameCard } from '~/lib/skat/cards'
 import { cardLabel, contractName } from '~/lib/skat/i18n'
-import { type DailySize, type DailyStatus, type DealReview, type DealSummary, PLAYER, type SeatBid, totals } from '~/lib/skat/tournament'
+import type { Game } from '~/lib/skat/game'
+import { type DailySize, type DailyStatus, type DealReview, type DealSummary, type Differ, PLAYER, type SeatBid, totals } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -169,6 +170,115 @@ export function VsAiReview({ ask, cacheKey, names }: { ask: AskReview; cacheKey?
     <div data-testid="vs-ai-review" data-state="ready" {...stylex.props(styles.analysis)}>
       <BidCompare review={review} names={names ?? youNames()} />
       {review.mine.declarer === null ? null : <WorstTrick review={review} names={names ?? youNames()} />}
+      {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} />}
+    </div>
+  )
+}
+
+/**
+ * Every trick against the AI, last and folded (SKATGO-153, after a player's word in the forum: "Now I am not seeing the AI
+ * difference for each Stich … These were excellent learning tools!"; the human: 「放到最下面一个明显的折叠卡片里，点了后就跟删掉的
+ * 内容一样」): opened, the play record SKATGO-145 had removed, as it was.
+ */
+function PlayRecord({ review, names }: { review: DealReview; names: string[] }) {
+  const [open, setOpen] = useState(false)
+  const Chevron = open ? ChevronUp : ChevronDown
+  return (
+    <details data-testid="vs-ai-play-record" open={open} onToggle={(e) => setOpen(e.currentTarget.open)} {...stylex.props(styles.recordCard)}>
+      <summary data-testid="vs-ai-play-record-head" {...stylex.props(typography.appBtnStrong, styles.recordHead)}>
+        <span>{m.review_play_record()}</span>
+        <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+      </summary>
+      {open ? <TrickReplay tricks={review.tricks} names={names} skat={review.skat} hand={review.hand} differs={review.differs} early={review.early} /> : null}
+    </details>
+  )
+}
+
+/**
+ * A deal replayed trick by trick (SKATGO-79, the human: 「10墩，每墩谁出了什么（有时序）然后谁赢了，一个10行的
+ * 表格」): each trick's three cards in the order they were played, each under its player's name, and who
+ * took it with how many card points; under each trick, the player's hand as it was before it (「每trick都要
+ * 显示打这个trick前我手里的牌」). The player's own cards are bold. `differs` puts the AI's card under the
+ * player's wherever it would have played another — card first, so the column stays cards (the human:
+ * 「AI和AI打的牌，换个位置，这样纵向就都是牌了」) — and marks the trick of the furthest. Tricks a claim or a
+ * concession left unplayed are not rows, only a line under them. Back since SKATGO-153, in `PlayRecord`.
+ */
+export function TrickReplay({ tricks, names, skat, hand, differs = null, early = null }: { tricks: Game['tricks']; names: string[]; skat?: Card[]; hand?: Card[]; differs?: Differ[] | null; early?: Game['early'] | null }) {
+  const played = early ? tricks.slice(0, early.from) : tricks
+  const worst = differs?.[0]?.trick ?? null
+  const ai = new Map((differs ?? []).map((d) => [d.trick, d.best]))
+  // What the player held before a trick: the hand they began with, less the cards of the tricks before.
+  const before = (i: number) => (hand ?? []).filter((c) => !tricks.slice(0, i).some((t) => t.cards.some((p) => p.seat === PLAYER && sameCard(p.card, c))))
+  // That hand is shown for one trick at a time, the one tapped; a tap anywhere else folds it away (SKATGO-100, the
+  // human: 「只有用户点击那一行时，才显示出来，而且点击别处就折叠回去，只能显示一个」). No icon says so.
+  const [shown, setShown] = useState<number | null>(null)
+  const rows = useRef<HTMLTableElement>(null)
+  useEffect(() => {
+    if (shown === null) return
+    const away = (e: PointerEvent) => {
+      if (!(e.target as Element).closest?.('[data-trick]') || !rows.current?.contains(e.target as Node)) setShown(null)
+    }
+    document.addEventListener('pointerdown', away)
+    return () => document.removeEventListener('pointerdown', away)
+  }, [shown])
+  return (
+    <div {...stylex.props(styles.replay)}>
+      <table ref={rows} data-testid="daily-replay" data-tricks={played.length} {...stylex.props(styles.replayTable)}>
+        <thead>
+          <tr>
+            <th scope="col" {...stylex.props(typography.micro, styles.replayHead)}>{m.daily_replay_trick()}</th>
+            {[1, 2, 3].map((n) => <th key={n} scope="col" {...stylex.props(typography.micro, styles.replayHead)}>{n}.</th>)}
+            <th scope="col" {...stylex.props(typography.micro, styles.replayHead, styles.end)}>{m.daily_replay_winner()}</th>
+          </tr>
+        </thead>
+        {played.map((t, i) => {
+          const n = i + 1
+          const marked = worst === n
+          const best = ai.get(n)
+          const held = before(i)
+          return (
+            <tbody
+              key={i}
+              data-trick={n}
+              data-highlight={marked ? 'true' : undefined}
+              aria-expanded={held.length ? shown === n : undefined}
+              onClick={held.length ? () => setShown((x) => (x === n ? null : n)) : undefined}
+              {...stylex.props(styles.replayRow, marked && styles.replayMarked, held.length > 0 && styles.replayTap)}
+            >
+              <tr data-winner={t.winner}>
+                <td {...stylex.props(typography.small, styles.muted, styles.replayCell)}>{n}</td>
+                {t.cards.map((p, k) => (
+                  <td key={k} data-seat={p.seat} {...stylex.props(styles.replayCell)}>
+                    <span {...stylex.props(typography.micro, styles.muted, styles.replayName)}>{names[p.seat]}</span>
+                    <span {...stylex.props(p.seat === PLAYER ? typography.smallBold : typography.small, styles.replayCard)}><Rich text={cardLabel(p.card)} /></span>
+                    {p.seat === PLAYER && best ? (
+                      <span data-testid="daily-replay-ai" data-card={`${best.suit}${best.rank}`} {...stylex.props(typography.small, styles.replayAi)}>
+                        <Rich text={cardLabel(best)} />
+                        <Who side="ai" />
+                      </span>
+                    ) : null}
+                  </td>
+                ))}
+                <td {...stylex.props(typography.small, styles.replayCell, styles.end)}>{m.daily_replay_points({ name: names[t.winner], points: pointsOf(t.cards.map((p) => p.card)) })}</td>
+              </tr>
+              {held.length && shown === n ? (
+                <tr>
+                  <td />
+                  <td colSpan={t.cards.length + 1} data-testid="daily-replay-hand" data-cards={held.length} {...stylex.props(typography.micro, styles.replayHand)}>
+                    <span {...stylex.props(styles.muted)}>{m.daily_replay_hand()}</span> <Rich text={held.map(cardLabel).join(' ')} />
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          )
+        })}
+      </table>
+      {early ? <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_replay_rest({ n: 10 - early.from })}</p> : null}
+      {skat?.length ? (
+        <p {...stylex.props(typography.small, styles.sheetNote)}>
+          <span {...stylex.props(styles.muted)}>{m.result_skat()}</span> <Rich text={skat.map(cardLabel).join(' ')} />
+        </p>
+      ) : null}
     </div>
   )
 }
@@ -432,6 +542,37 @@ const styles = stylex.create({
   // The player's seat is the one the comparison is about.
   own: { backgroundColor: color.page },
   sheetNote: { margin: 0 },
+  // The folded play record (SKATGO-153): a plain bordered card, its title and chevron the line to tap.
+  recordCard: { display: 'flex', flexDirection: 'column', gap: space.x10, padding: space.x12, borderWidth: border.hair, borderStyle: 'solid', borderColor: color.hairline, borderRadius: radii.panel },
+  recordHead: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space.x12,
+    cursor: 'pointer',
+    listStyleType: 'none',
+    color: color.navy,
+    '::-webkit-details-marker': { display: 'none' },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  replay: { display: 'flex', flexDirection: 'column', gap: space.x6 },
+  replayTable: { width: '100%', borderCollapse: 'collapse', color: color.navy },
+  replayHead: { paddingBottom: space.x4, textAlign: 'start', color: color.slate },
+  replayRow: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  // The trick of the move most worth improving, on the app's pink (the human: 「那一行标红背景，就是本app常用
+  // 那种粉红的背景」).
+  replayMarked: { backgroundColor: color.badSoft },
+  replayTap: { cursor: 'pointer' },
+  replayCell: { paddingBlock: space.x4, paddingInlineEnd: space.x6, verticalAlign: 'top' },
+  replayName: { display: 'block' },
+  replayCard: { display: 'block', color: color.navy },
+  // The AI's card under the player's, its tag after it.
+  replayAi: { display: 'flex', alignItems: 'center', gap: space.x4, marginTop: space.x2, color: color.navy, whiteSpace: 'nowrap' },
+  // The hand before the trick, quiet under its row.
+  replayHand: { paddingBottom: space.x6, color: color.navy, overflowWrap: 'anywhere' },
   // What the deal was, under its row: quiet, one line, never wider than the sheet.
   gameLine: { paddingBottom: space.x6, color: color.slate, overflowWrap: 'anywhere' },
   analysis: { display: 'flex', flexDirection: 'column', gap: space.x8 },

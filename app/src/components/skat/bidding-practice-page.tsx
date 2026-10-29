@@ -1,7 +1,7 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { BookOpen, ChevronDown, ChevronUp, CircleCheck } from 'lucide-react'
+import { CircleCheck, LayoutGrid } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
@@ -93,12 +93,18 @@ export function BiddingPracticePage() {
     setRedo(null)
     setResult(null)
   }
-  // Leaving an answered question for a mistake moves the run on, so coming back is the next question.
+  // The questions in order (SKATGO-156, the human: 「最好不要让用户能选择后面的题，要从1题开始按顺序做，但是能回到之前的题」):
+  // the run's own question and any before it can be opened, none after. Leaving an answered question moves the run on,
+  // so coming back is the next question.
+  const reached = redo === null && result ? n + 1 : n
   const open = (k: number) => {
+    setList(false)
+    if (k > reached) return
     if (redo === null && result) advance()
-    setRedo(k)
+    setRedo(k === reached ? null : k)
     setResult(null)
   }
+  const [list, setList] = useState(false)
   const shown = redo ?? n
   const q = questionAt(shown)
   const analysis = analysisOf(questions)
@@ -112,7 +118,12 @@ export function BiddingPracticePage() {
         <span data-testid="bidding-practice-progress" {...stylex.props(typography.landingHeading, styles.progress)}>
           {shown}/{PRACTICE_QUESTIONS.length}
         </span>
+        {/* Every question by number, beside the place in the run (SKATGO-156): the header's round white button. */}
+        <button type="button" aria-label={m.bidpractice_all()} title={m.bidpractice_all()} data-testid="bidding-practice-all" onClick={() => setList(true)} {...stylex.props(styles.round)}>
+          <LayoutGrid size={icon.gear} strokeWidth={icon.outline} />
+        </button>
       </div>
+      {list ? <AllQuestions shown={shown} reached={reached} wrong={mistakes} onOpen={open} onClose={() => setList(false)} /> : null}
       {locked ? (
         <Gate />
       ) : (
@@ -129,7 +140,7 @@ export function BiddingPracticePage() {
           onNext={go}
         />
       )}
-      {analysis.answered ? <Record a={analysis} mistakes={mistakes} onOpen={open} /> : null}
+      {analysis.answered ? <Record a={analysis} /> : null}
       {/* The bidding table to look a value up in and the rules, small links under the card, as under the Skat-Tricks. */}
       <nav {...stylex.props(styles.links)}>
         <Link to="/rules/bidding-table" data-testid="bidding-practice-table-link" {...stylex.props(typography.appLink, styles.link)}>
@@ -172,9 +183,12 @@ function Question({ q, result, onDone, onNext }: { q: Practice; result: 'right' 
             {/* As the question below it (the human: 「坐哪个位置的那行字，不要小字，要和how high do you bid同一字体」). */}
             <p {...stylex.props(typography.prompt, styles.seat)}>{m.tricks_sit_bidder({ position: roleName(POSITIONS[q.position]) })}</p>
             {/* The cheat sheet, at hand while deciding (the human: 「做成一个卡片弹窗放在叫牌页面，用户点开就能看」). */}
-            <button type="button" data-testid="bidding-practice-sheet" onClick={() => setSheet(true)} {...stylex.props(typography.appLink, styles.sheetLink)}>
-              <BookOpen aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
-              {cheatSheet().title}
+            {/* No icon, on the seat's line on a phone too (SKATGO-156, the human: 「bidding cheat sheet前面的图标去掉，要和you sit
+                in forehand在同一行」). */}
+            <button type="button" data-testid="bidding-practice-sheet" aria-label={cheatSheet().title} onClick={() => setSheet(true)} {...stylex.props(typography.appLink, styles.sheetLink)}>
+              {/* A phone has room for the short name beside the seat; the dialog keeps the full one. */}
+              <span {...stylex.props(styles.wide)}>{cheatSheet().title}</span>
+              <span {...stylex.props(styles.narrow)}>{m.bidpractice_sheet_short()}</span>
             </button>
           </div>
           {/* As big as the hand at the table, in one row (the ladder's, SKATGO-109: 「最好和手牌一样大」). */}
@@ -286,7 +300,7 @@ function CheatSheetDialog({ onClose }: { onClose: () => void }) {
  * 不要垃圾重复文字」): how many answered, then right, the contract wrong and the bid wrong as shares of the first attempts
  * (SKATGO-154); under them the mistakes not yet put right, by number, each opening its question.
  */
-function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOpen: (n: number) => void }) {
+function Record({ a }: { a: Analysis }) {
   // Three rows, one per outcome of the two steps (SKATGO-154, the human: 「问题是item太多了，名字莫名其妙，百分比倒没啥」):
   // right, the contract wrong (step 1: played, passed or the wrong game), the bid wrong (step 2), as shares that add up.
   const pct = new Intl.NumberFormat(getLocale(), { style: 'percent' })
@@ -309,7 +323,6 @@ function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOp
           <span {...stylex.props(typography.appBtnStrong, styles.para)}>{pct.format(share / 100)}</span>
         </div>
       ))}
-      {mistakes.length ? <Mistakes list={mistakes} onOpen={onOpen} /> : null}
     </section>
   )
 }
@@ -327,28 +340,40 @@ function sharesOf(counts: number[], total: number): number[] {
   return out
 }
 
-/** The mistakes, folded under one line with their count, so a long list stays out of the way (the human: 「mistakes 最好
- *  可以折叠，否则我怕太多」); opened, a button per question number. */
-function Mistakes({ list, onOpen }: { list: number[]; onOpen: (n: number) => void }) {
-  const [open, setOpen] = useState(false)
-  const Chevron = open ? ChevronUp : ChevronDown
+/**
+ * Every question by number, in the site's dialog as the cheat sheet (SKATGO-156, the human: 「x/600 旁边要有一个小的图标按钮，
+ * 点击后弹modal窗，显示所有的题的id，做错的显示为红色。点id了可以进入那一题」): the Skat-Tricks levels' tiles — the one
+ * shown ringed `go`, a mistake not yet put right on `badSoft` in `bad`, the ones not reached yet faded and shut; the list
+ * scrolls inside the dialog. It replaces the folded "Mistakes" (SKATGO-150).
+ */
+function AllQuestions({ shown, reached, wrong, onOpen, onClose }: { shown: number; reached: number; wrong: number[]; onOpen: (n: number) => void; onClose: () => void }) {
+  const mistakes = new Set(wrong)
   return (
-    <details data-testid="bidding-practice-mistakes" open={open} onToggle={(e) => setOpen(e.currentTarget.open)} {...stylex.props(styles.mistakes)}>
-      <summary data-testid="bidding-practice-mistakes-head" {...stylex.props(styles.summary)}>
-        <span {...stylex.props(typography.appText, styles.para)}>{m.bidpractice_mistakes()}</span>
-        <span {...stylex.props(styles.summaryEnd)}>
-          <span {...stylex.props(typography.appBtnStrong, styles.para)}>{list.length}</span>
-          <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
-        </span>
-      </summary>
-      <div {...stylex.props(styles.mistakeList)}>
-        {list.map((k) => (
-          <Btn key={k} testId="bidding-practice-mistake" tone="quiet" size="sm" onClick={() => onOpen(k)}>
-            {String(k)}
-          </Btn>
-        ))}
-      </div>
-    </details>
+    <Modal title={m.bidpractice_all()} onClose={onClose} testId="bidding-practice-all-dialog">
+      <ol data-testid="bidding-practice-all-list" {...stylex.props(styles.grid)}>
+        {PRACTICE_QUESTIONS.map((_, i) => {
+          const k = i + 1
+          const shut = k > reached
+          const missed = mistakes.has(k)
+          return (
+            <li key={k} {...stylex.props(styles.level)}>
+              <button
+                type="button"
+                data-testid="bidding-practice-number"
+                data-number={k}
+                data-mark={missed ? 'missed' : undefined}
+                aria-current={k === shown ? 'step' : undefined}
+                disabled={shut}
+                onClick={() => onOpen(k)}
+                {...stylex.props(typography.smallBold, styles.levelTile, missed && styles.levelMissed, shut && styles.levelShut, k === shown && styles.levelNext)}
+              >
+                {k}
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+    </Modal>
   )
 }
 
@@ -487,12 +512,15 @@ const styles = stylex.create({
   head: { display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: space.x12 },
   title: { margin: 0, color: color.navy },
   progress: { color: color.slate },
-  seat: { margin: 0, color: color.navy },
-  seatLine: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: space.x12 },
+  seat: { margin: 0, minWidth: 0, color: color.navy },
+  wide: { display: { default: 'inline', [bp.phone]: 'none' } },
+  narrow: { display: { default: 'none', [bp.phone]: 'inline' } },
+  seatLine: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x8 },
   sheetLink: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: space.x6,
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
     padding: 0,
     border: 'none',
     background: 'none',
@@ -545,23 +573,52 @@ const styles = stylex.create({
   recordHead: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
   stat: { display: 'flex', flexDirection: 'column', gap: space.x2, paddingTop: space.x12, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   statLine: { display: 'flex', flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
-  mistakes: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x12, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
-  mistakeList: { display: 'flex', flexWrap: 'wrap', gap: space.x8, paddingTop: space.x8 },
-  summary: {
-    display: 'flex',
+  // The header's round white button (frame.tsx's gear), beside the place in the run (SKATGO-156).
+  round: {
+    display: 'inline-flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: space.x12,
-    cursor: 'pointer',
-    listStyleType: 'none',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    flexShrink: 0,
+    width: { default: dims.control, [bp.phone]: space.x32 },
+    height: { default: dims.control, [bp.phone]: space.x32 },
+    padding: 0,
+    borderWidth: 0,
+    borderRadius: radii.round,
+    backgroundColor: color.surface,
     color: color.navy,
-    '::-webkit-details-marker': { display: 'none' },
+    boxShadow: elev.option,
+    cursor: 'pointer',
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focus,
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
-  summaryEnd: { display: 'inline-flex', alignItems: 'center', gap: space.x8 },
+  // Every question as the Skat-Tricks levels' tiles (tricks-page.tsx), in the dialog (SKATGO-156).
+  grid: { listStyleType: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: dims.backChoices, gap: space.x8 },
+  level: { margin: 0 },
+  levelTile: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: dims.iconButton,
+    boxSizing: 'border-box',
+    borderRadius: radii.panel,
+    borderWidth: border.tile,
+    borderStyle: 'solid',
+    borderColor: { default: color.hairline, ':hover': color.go },
+    backgroundColor: color.page,
+    color: color.navy,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  levelMissed: { backgroundColor: color.badSoft, borderColor: color.badSoft, color: color.bad },
+  levelShut: { color: color.slate, borderColor: color.hairline, cursor: 'default' },
+  levelNext: { borderColor: color.go },
   link: {
     color: color.info,
     textDecoration: { default: 'none', ':hover': 'underline' },

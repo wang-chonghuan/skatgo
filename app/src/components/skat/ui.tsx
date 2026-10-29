@@ -183,7 +183,9 @@ export function Modal({ title, onClose, testId, closeTestId, children }: { title
             <X size={icon.menu} strokeWidth={icon.outline} />
           </button>
         </div>
-        {children}
+        {/* The body scrolls, not the box: its scroll bar stands inside the dialog's padding, never on its edge (SKATGO-156,
+            the human: 「所有的弹窗，都要让滚动条在弹窗内部，而不是贴道外部」). */}
+        <div data-testid={`${testId}-body`} {...stylex.props(styles.modalBody)}>{children}</div>
       </div>
     </div>,
     document.body,
@@ -267,11 +269,9 @@ const styles = stylex.create({
     flexDirection: 'column',
     gap: space.x16,
     width: dims.settingsWidth,
-    // A phone held sideways is shorter than the dialog: it scrolls inside, never the page.
+    // A phone held sideways is shorter than the dialog: its body scrolls inside, never the page.
     maxHeight: '100%',
-    overflowY: 'auto',
-    overscrollBehavior: 'contain',
-    touchAction: 'pan-y',
+    overflow: 'hidden',
     boxSizing: 'border-box',
     padding: space.x24,
     borderRadius: radii.dialog,
@@ -279,7 +279,8 @@ const styles = stylex.create({
     boxShadow: elev.panel,
     color: color.text,
   },
-  modalHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12 },
+  modalHead: { display: 'flex', flexShrink: 0, alignItems: 'center', justifyContent: 'space-between', gap: space.x12 },
+  modalBody: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', touchAction: 'pan-y' },
   modalTitle: { margin: 0, color: color.navy },
   modalClose: {
     display: 'inline-flex',

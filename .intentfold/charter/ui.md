@@ -183,7 +183,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `Stars` | `n` of 3 | a lesson's result |
 | `Rich` | — | every piece of course text: renders `**bold**` and each suit glyph in its suit's colour |
 | `Toggle` / `toggleLook(pressed)` | pressed or not; a button, or the same pill on a router `<Link>` | a choice that is on or off: a forum post's section, the forum's section filter (SKATGO-118) |
-| `Modal` | `title`, `onClose` | every dialog over the page (SKATGO-140; the settings' since SKATGO-66): its title and an X in its head, a tap on the dim around it or Escape closing it too, the page behind locked and inert, focus moved into it and back |
+| `Modal` | `title`, `onClose` | every dialog over the page (SKATGO-140; the settings' since SKATGO-66): its title and an X in its head, a tap on the dim around it or Escape closing it too, the page behind locked and inert, focus moved into it and back. Its body scrolls, never the box: the scroll bar stands inside the dialog's padding, not on its edge — so too the table's own dialog in `game-table.tsx` (SKATGO-156, the human: 「所有的弹窗，都要让滚动条在弹窗内部，而不是贴道外部」) |
 | `TextField` / `TextArea` | one line (Enter submits) / several: `size` `post` starts about six lines tall, `comment` about three (`dims.textPost`, `textComment`; SKATGO-119), both growing with the text | a name, a forum post's title and text, a comment, a reason |
 
 **Components — the course's and the table's widgets**
@@ -282,8 +282,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
   tournament's page has no lead under its title (SKATGO-132, the human: 「你显示着一坨垃圾干什么啊」), then the forum's
   announcement line when there is one (SKATGO-118), then a
-  toggle of two `toggleLook` links, "1 Spiel heute" | "Turnier · 6 Spiele" (SKATGO-131; SKATGO-77's 6 | 12 once stood
-  there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
+  pair of the app's standard buttons (`linkLook`, `md`; the chosen one `go`, the other `quiet` — SKATGO-156, the human:
+  「1 deal today和 tournament 6 deals按钮的字太小，应该用app里的标准按钮风格」), "1 Spiel heute" | "Turnier · 6 Spiele"
+  (SKATGO-131; SKATGO-77's 6 | 12 once stood there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
   its one `go` button to its table (`/daily/play?size=1`, where after the last card the result stands a moment and the
   page comes back here); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
   gespielt" (`dialogTitle`) over "Deine Freunde bekommen dieselben Karten – schau, wie viele Punkte sie holen." — and no
@@ -325,10 +326,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   next ("Aufgabe n spielen"); then the other kinds of SKATGO-103, each opening to its exercises (hidden by
   SKATGO-110, shown again by SKATGO-119); under the cards, small `info` links to the article and the rules. The bidding practice
   (`bidding-practice-page.tsx`, SKATGO-149) is a Skat-Tricks exercise's page without the way back: the H1 with the place
-  in the run beside it, "1/600" in the same type in slate (SKATGO-150, 「上面那个单列进度的行不要」), then the white card —
+  in the run beside it, "1/600" in the same type in slate (SKATGO-150, 「上面那个单列进度的行不要」), and beside that the
+  header's round white button with lucide's `LayoutGrid` (SKATGO-156) opening "All questions" in the cheat sheet's `Modal`:
+  every question as the Skat-Tricks levels' tiles, the one shown ringed `go`, a mistake not yet put right on `badSoft` in
+  `bad`, the ones not reached yet slate and shut — the questions run in order from the first, any before can be opened
+  again (「最好不要让用户能选择后面的题，要从1题开始按顺序做，但是能回到之前的题」); then the white card —
   "You sit in middlehand" in the question's type (`prompt`, navy; SKATGO-150: 「不要小字，要和how high do you bid同一字体」) with
-  the cheat sheet's link at the line's right (`appLink`, `info`, lucide's `BookOpen`, "Bidding cheat sheet" / "Reiz-Spickzettel";
-  SKATGO-151), the ten cards as big as the hand at the table, in one row (`Fan`, `lg`, `row`; SKATGO-109 「最好和手牌一样大」)
+  the cheat sheet's link at the line's right, on the same line on a phone too, no icon (`appLink`, `info`, "Bidding cheat
+  sheet" / "Reiz-Spickzettel", on a phone "Cheat sheet" / "Spickzettel" so the line holds; SKATGO-151, SKATGO-156: 「bidding cheat sheet前面的图标去掉，要和you sit in forehand在同一行」), the ten cards as big as the hand at the table, in one row (`Fan`, `lg`, `row`; SKATGO-109 「最好和手牌一样大」)
   over a `hairline` rule; then the two steps of SKATGO-151, each a `Choice` that marks right and wrong at once: "What do you
   play?" with ♣ ♠ ♥ ♦ Grand Null two by two, on a phone too, and "Pass" last, alone on its row; and, unless the AI passes, over a `hairline`
   rule "The AI plays Diamonds ♦. How high can you bid?" with three numbers (four for a Null), two by two. Once both are answered, the
@@ -342,9 +347,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   white card under it: "Your stats" (chess.com's and Funbridge's word; 「your biding这个词不好」; `prompt`, navy) with
   "n answered" (`appText`, slate) at the right, then three rows, one per outcome of the two steps (SKATGO-154, the human: 「问题是item太多了，名字莫名其妙，百分比倒没啥」) —
   "Right", "Wrong contract" (step 1), "Wrong bid" (step 2) — each over a `hairline` rule, the name and its share
-  (`appBtnStrong`) at the two ends, the three adding up to 100%; last "Mistakes", folded: one line with the count and a
-  chevron, opening to a small `quiet` button per question number not yet put right (「mistakes 最好可以折叠，否则我怕太多」),
-  opening it in the run's place until "Next question". No bar, no colour of its own (SKATGO-150: 「不要花哨，不要垃圾重复文字」).
+  (`appBtnStrong`) at the two ends, the three adding up to 100% (the folded "Mistakes" of SKATGO-150 is gone: the mistakes are
+  red in "All questions", SKATGO-156). No bar, no colour of its own (SKATGO-150: 「不要花哨，不要垃圾重复文字」).
   Under it, as under the Skat-Tricks, small `info` links to the bidding table and the rules, and under them one small slate
   line saying what the page is, for its search entry — at the foot, never a lead under the title (SKATGO-135, 「这个副标题删了」). An open-card
   endgame's page (`tricks-exercise-page.tsx`, `open-endgame.tsx`) is the game's full-screen table (SKATGO-111,

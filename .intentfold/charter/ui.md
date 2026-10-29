@@ -325,7 +325,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   next ("Aufgabe n spielen"); then the other kinds of SKATGO-103, each opening to its exercises (hidden by
   SKATGO-110, shown again by SKATGO-119); under the cards, small `info` links to the article and the rules. The bidding practice
   (`bidding-practice-page.tsx`, SKATGO-149) is a Skat-Tricks exercise's page without the way back: the H1 with the place
-  in the run beside it, "1/300" in the same type in slate (SKATGO-150, 「上面那个单列进度的行不要」), then the white card —
+  in the run beside it, "1/600" in the same type in slate (SKATGO-150, 「上面那个单列进度的行不要」), then the white card —
   "You sit in middlehand" in the question's type (`prompt`, navy; SKATGO-150: 「不要小字，要和how high do you bid同一字体」) with
   the cheat sheet's link at the line's right (`appLink`, `info`, lucide's `BookOpen`, "Bidding cheat sheet" / "Reiz-Spickzettel";
   SKATGO-151), the ten cards as big as the hand at the table, in one row (`Fan`, `lg`, `row`; SKATGO-109 「最好和手牌一样大」)

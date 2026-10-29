@@ -323,13 +323,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   next ("Aufgabe n spielen"); then the other kinds of SKATGO-103, each opening to its exercises (hidden by
   SKATGO-110, shown again by SKATGO-119); under the cards, small `info` links to the article and the rules. The bidding practice
   (`bidding-practice-page.tsx`, SKATGO-149) is a Skat-Tricks exercise's page without the way back: a `Pill` "Question n of
-  300", the H1 and one line under it (`body`, slate: ten cards, your seat, the AI's answer worked out — the line a game page
-  keeps, and enough for its search entry), then the white card — "You sit in middlehand" (`panelLabel`, slate) and the ten cards as the exercises'
-  `CardRowView` over a `hairline` rule, "How high do you bid?" and four choice tiles two by two, "Pass" and the numbers
-  rising; once answered, the verdict `Panel` as an exercise's — "Right!" / "Not quite.", the AI's answer with its
-  calculation, a line per other number ("**22** would be Spades ♠: without 1, game 2 × 11.") — and "Next question" as the
+  300", the H1, then the white card — "You sit in middlehand" (`panelLabel`, slate) and the ten cards as big as the hand at the table, in one row (`Fan`, `lg`, `row`, as the ladder's;
+  SKATGO-109 「最好和手牌一样大」) over a `hairline` rule, "How high do you bid?" and four choice tiles two by two, "Pass" and the numbers
+  rising; once answered, the verdict `Panel` as an exercise's — "Right!" / "Not quite.", the AI's answer with the
+  trumps the hand holds in its game and the calculation, or for a pass the best trump suit and how few trumps it holds, a
+  line per other number ("**22** would be Spades ♠ with 4 trumps: without 1, game 2 × 11.") — and "Next question" as the
   one `go`. A guest's third question is the ladder's gate in the card's place (SKATGO-112: no lock). Under it, as under the
-  Skat-Tricks, small `info` links to the bidding table and the rules. An open-card
+  Skat-Tricks, small `info` links to the bidding table and the rules, and under them one small slate line saying what the page is, for
+  its search entry — at the foot, never a lead under the title (SKATGO-135, 「这个副标题删了」). An open-card
   endgame's page (`tricks-exercise-page.tsx`, `open-endgame.tsx`) is the game's full-screen table (SKATGO-111,
   the human: 「打牌界面那种效果，各种尺寸屏幕都刚好全屏」): no site header, every hand open, the opponents' cards
   as big as the learner's (`stage.openStack*`); at the top, in the info board's place and make, a board with

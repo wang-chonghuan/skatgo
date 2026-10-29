@@ -747,10 +747,10 @@
   "bidpractice_kicker": "Question {n} of {count}",
   "bidpractice_prompt": "How high do you bid?",
   "bidpractice_pass": "Pass",
-  "bidpractice_answer_game": "The AI bids up to **{value}**: {game}, {matadors}, game {level} × {base} = {value}.",
+  "bidpractice_answer_game": "The AI bids up to **{value}**: {game} with your {trumps} trumps, {matadors}, game {level} × {base} = {value}.",
   "bidpractice_answer_null": "The AI bids up to **{value}**: {game} is always worth {value}.",
-  "bidpractice_answer_pass": "The AI passes: with these cards no game is worth the risk.",
-  "bidpractice_option": "**{value}** would be {game}: {matadors}, game {level} × {base}.",
+  "bidpractice_answer_pass": "The AI passes: your best trump suit, {game}, holds only {trumps} trumps – no game is worth the risk.",
+  "bidpractice_option": "**{value}** would be {game} with {trumps} trumps: {matadors}, game {level} × {base}.",
   "bidpractice_next": "Next question",
   "bidpractice_gate_text": "You can practise the first {n} hands without an account. From here on, sign in for free to keep practising.",
   "bidpractice_lead": "Ten cards and your seat at the table: how high would you bid, or do you pass? Each answer is the AI's, with the game value worked out step by step."

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 
 import { type Card, sortHand } from '~/lib/skat/cards'
 import { contractName, matadorLabel, roleName } from '~/lib/skat/i18n'
-import { type Answer, PRACTICE_FREE, PRACTICE_QUESTIONS, type Valued, answerOf, gameOf, optionsOf, practiceHand, questionAt } from '~/lib/skat/bidding/practice'
+import { type Answer, PRACTICE_FREE, PRACTICE_QUESTIONS, type Valued, answerOf, gameOf, optionsOf, practiceHand, questionAt, tenCardValues } from '~/lib/skat/bidding/practice'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
@@ -16,7 +16,7 @@ import { elev } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { CardRowView } from './card-row'
+import { Fan } from './card-row'
 import { Choice } from './exercises'
 import { Btn, Panel, Pill, Rich } from './ui'
 
@@ -68,8 +68,6 @@ export function BiddingPracticePage() {
         <Pill>{m.bidpractice_kicker({ n, count: PRACTICE_QUESTIONS.length })}</Pill>
       </nav>
       <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.bidpractice_title()}</h1>
-      {/* A title and a line, as the game pages keep (SKATGO-134). */}
-      <p {...stylex.props(typography.body, styles.lead)}>{m.bidpractice_lead()}</p>
       {locked ? (
         <Gate />
       ) : (
@@ -84,6 +82,9 @@ export function BiddingPracticePage() {
           {m.tricks_rules_link()}
         </Link>
       </nav>
+      {/* What the page is, in one small line at its foot, for its search entry — not a lead under the title (SKATGO-135:
+          「这个副标题删了」). */}
+      <p {...stylex.props(typography.bodySmall, styles.lead)}>{m.bidpractice_lead()}</p>
     </div>
   )
 }
@@ -91,12 +92,14 @@ export function BiddingPracticePage() {
 function Question({ hand, position, bid, result, onAnswer, onNext }: { hand: Card[]; position: (typeof POSITIONS)[number]; bid: number; result: 'right' | 'wrong' | null; onAnswer: (r: 'right' | 'wrong') => void; onNext: () => void }) {
   const options = optionsOf(hand, bid)
   const answer = answerOf(hand, bid)!
+  const best = tenCardValues(hand).filter((v) => v.contract.kind === 'suit').sort((a, b) => b.trumps - a.trumps)[0]
   return (
     <>
       <section {...stylex.props(styles.card)}>
         <div data-testid="bidding-practice-situation" {...stylex.props(styles.situation)}>
           <p {...stylex.props(typography.panelLabel, styles.facts)}>{m.tricks_sit_bidder({ position: roleName(position) })}</p>
-          <CardRowView row={{ label: m.tricks_row_cards(), cards: sortHand(hand, null) }} />
+          {/* As big as the hand at the table, in one row (the ladder's, SKATGO-109: 「最好和手牌一样大」). */}
+          <Fan testId="bidding-practice-hand" cards={sortHand(hand, null)} size="lg" row />
         </div>
         <Choice
           step={{ kind: 'choice', prompt: m.bidpractice_prompt(), options: options.map((v) => (v === 0 ? m.bidpractice_pass() : String(v))), answer: options.indexOf(bid < 18 ? 0 : bid), explain: '' }}
@@ -115,7 +118,7 @@ function Question({ hand, position, bid, result, onAnswer, onNext }: { hand: Car
               <div {...stylex.props(styles.verdictText)}>
                 <p {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{result === 'right' ? m.tricks_ex_right() : m.tricks_ex_wrong()}</p>
                 <p data-testid="bidding-practice-answer" {...stylex.props(typography.body, styles.para)}>
-                  <Rich text={answerLine(answer)} />
+                  <Rich text={answerLine(answer, best)} />
                 </p>
                 {options
                   .filter((v) => v !== 0 && v !== bid)
@@ -141,14 +144,14 @@ function Question({ hand, position, bid, result, onAnswer, onNext }: { hand: Car
   )
 }
 
-/** A game's calculation in words: "Hearts ♥", "with 2", game 3, base 10. */
-const calc = (g: Valued) => ({ game: contractName(g.contract), matadors: matadorLabel(g.with, g.count), level: g.count + 1, base: g.base })
+/** A game's calculation in words: "Hearts ♥", how many trumps the ten cards hold in it, "with 2", game 3, base 10. */
+const calc = (g: Valued) => ({ game: contractName(g.contract), trumps: g.trumps, matadors: matadorLabel(g.with, g.count), level: g.count + 1, base: g.base })
 
 const NULL_NAMES = { plain: 'Null', hand: 'Null Hand', ouvert: 'Null ouvert', handOuvert: 'Null ouvert Hand' } as const
 
-/** The AI's answer and why it is that number. */
-function answerLine(a: Answer): string {
-  if (a.kind === 'pass') return m.bidpractice_answer_pass()
+/** The AI's answer and why it is that number; a pass names the hand's best trump suit and how short it is. */
+function answerLine(a: Answer, best: Valued): string {
+  if (a.kind === 'pass') return m.bidpractice_answer_pass({ game: contractName(best.contract), trumps: best.trumps })
   if (a.kind === 'null') return m.bidpractice_answer_null({ value: a.value, game: NULL_NAMES[a.which] })
   return m.bidpractice_answer_game({ value: a.game.value, ...calc(a.game) })
 }

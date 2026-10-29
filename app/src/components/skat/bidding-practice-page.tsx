@@ -1,7 +1,7 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { BookOpen, ChevronDown, ChevronUp, CircleCheck, CircleX } from 'lucide-react'
+import { BookOpen, ChevronDown, ChevronUp, CircleCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { type Card, sortHand, trumpSequence } from '~/lib/skat/cards'
@@ -208,9 +208,12 @@ function Question({ q, result, onDone, onNext }: { q: Practice; result: 'right' 
         <div data-testid="bidding-practice-result" data-result={result} {...stylex.props(styles.result)}>
           <Panel tone={result === 'right' ? 'good' : 'bad'}>
             <div {...stylex.props(styles.verdict)}>
-              <span aria-hidden="true" {...stylex.props(styles.verdictIcon, result === 'right' ? styles.good : styles.bad)}>
-                {result === 'right' ? <CircleCheck size={icon.inline} strokeWidth={icon.outline} /> : <CircleX size={icon.inline} strokeWidth={icon.outline} />}
-              </span>
+              {/* A wrong answer has no red cross (the human: 「不要红叉那个图标」); a right one keeps its check. */}
+              {result === 'right' ? (
+                <span aria-hidden="true" {...stylex.props(styles.verdictIcon, styles.good)}>
+                  <CircleCheck size={icon.inline} strokeWidth={icon.outline} />
+                </span>
+              ) : null}
               <div {...stylex.props(styles.verdictText)}>
                 <p {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{result === 'right' ? m.tricks_ex_right() : m.tricks_ex_wrong()}</p>
                 {explanation(q, contract, value).map(([kind, line]) => (
@@ -537,7 +540,6 @@ const styles = stylex.create({
   verdict: { display: 'flex', alignItems: 'flex-start', gap: space.x10 },
   verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },
   good: { color: color.good },
-  bad: { color: color.bad },
   verdictText: { display: 'flex', flexDirection: 'column', gap: space.x8, minWidth: 0 },
   verdictTitle: { margin: 0, color: color.navy },
   para: { margin: 0, color: color.text },

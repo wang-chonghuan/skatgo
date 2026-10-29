@@ -200,9 +200,9 @@ in SkatGo's own words. A guest answers two, from the third an account (「不登
 short line — to keep the mistakes and the analysis (SKATGO-150: 「登录时为了保存用户的错题本，帮助用户提高，文字要精简」). Each
 question's first complete attempt is recorded — an account's on the server, a guest's two in the browser until it signs
 in — and whether it was put right since (SKATGO-150, 「用户能记录下来他哪个题出错了吗」). Under the question the player sees
-their own bidding as ratios, no AI (「最好有个比率分析」): how many answered, the error rate, and the four kinds of mistake —
-passed where the AI plays, played where it passes, the wrong game, the right game with the wrong bid (SKATGO-151; the
-human's 「超叫还是不敢叫还是叫错」 and the counting). Only first attempts count. Under that the mistakes not yet put right,
+their own bidding as shares, no AI (「最好有个比率分析」): how many answered, then right, the contract wrong and the bid wrong —
+the two steps' outcomes, three rows adding up (SKATGO-154, the human: 「问题是item太多了，名字莫名其妙，百分比倒没啥」); the wrong
+contract covers the human's 「超叫还是不敢叫还是叫错」 in one. Only first attempts count. Under that the mistakes not yet put right,
 by number, folded, each opening its question again. There is no set of ten (「不要10题，你就自然，先不用这个复杂」). It is a
 search entry.
 

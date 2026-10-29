@@ -283,20 +283,18 @@ function CheatSheetDialog({ onClose }: { onClose: () => void }) {
 
 /**
  * The player's bidding so far (SKATGO-150, the human: 「超叫还是不敢叫还是叫错等等的分析……最好有个比率分析」, 「不要花哨，
- * 不要垃圾重复文字」): how many answered, then the error rate and, since SKATGO-151, the four kinds of mistake as shares of the
- * first attempts; under them the mistakes not yet put right, by number, each opening its question.
+ * 不要垃圾重复文字」): how many answered, then right, the contract wrong and the bid wrong as shares of the first attempts
+ * (SKATGO-154); under them the mistakes not yet put right, by number, each opening its question.
  */
 function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOpen: (n: number) => void }) {
+  // Three rows, one per outcome of the two steps (SKATGO-154, the human: 「问题是item太多了，名字莫名其妙，百分比倒没啥」):
+  // right, the contract wrong (step 1: played, passed or the wrong game), the bid wrong (step 2), as shares that add up.
   const pct = new Intl.NumberFormat(getLocale(), { style: 'percent' })
-  const shares = sharesOf(a)
-  const share = (kind: string) => pct.format(shares[kind] / 100)
-  // The error rate first (「用户的错误率」), then where the mistakes went: the human's 不敢叫, 超叫, 叫错, and the counting.
-  const rows: [string, string][] = [
-    ['wrong', m.bidpractice_stats_wrong()],
-    ['passed', m.bidpractice_stats_passed()],
-    ['played', m.bidpractice_stats_played()],
-    ['game', m.bidpractice_stats_game()],
-    ['value', m.bidpractice_stats_value()],
+  const shares = sharesOf([a.right, a.passed + a.played + a.game, a.value], a.answered)
+  const rows: [string, string, number][] = [
+    ['right', m.bidpractice_stats_right(), shares[0]],
+    ['contract', m.bidpractice_stats_contract(), shares[1]],
+    ['value', m.bidpractice_stats_value(), shares[2]],
   ]
   return (
     <section data-testid="bidding-practice-record" {...stylex.props(styles.card, styles.record)}>
@@ -305,10 +303,10 @@ function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOp
         <h2 {...stylex.props(typography.prompt, styles.verdictTitle)}>{m.bidpractice_stats_title()}</h2>
         <span data-testid="bidding-practice-answered" {...stylex.props(typography.appText, styles.facts)}>{m.bidpractice_stats_answered({ n: a.answered })}</span>
       </div>
-      {rows.map(([kind, label]) => (
+      {rows.map(([kind, label, share]) => (
         <div key={kind} data-testid="bidding-practice-stat" data-kind={kind} {...stylex.props(styles.stat, styles.statLine)}>
           <span {...stylex.props(typography.appText, styles.para)}>{label}</span>
-          <span {...stylex.props(typography.appBtnStrong, styles.para)}>{share(kind)}</span>
+          <span {...stylex.props(typography.appBtnStrong, styles.para)}>{pct.format(share / 100)}</span>
         </div>
       ))}
       {mistakes.length ? <Mistakes list={mistakes} onOpen={onOpen} /> : null}
@@ -316,18 +314,14 @@ function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOp
   )
 }
 
-/** Whole percentages that add up: the four kinds share out the rounded error rate by largest remainder, so they never
- *  sum to one more or less than "Wrong". */
-function sharesOf(a: Analysis): Record<string, number> {
-  const wrong = Math.round(((a.answered - a.right) / a.answered) * 100)
-  const kinds = { passed: a.passed, played: a.played, game: a.game, value: a.value }
-  const exact = Object.entries(kinds).map(([k, n]) => [k, (n / a.answered) * 100] as const)
-  const out: Record<string, number> = { wrong, ...Object.fromEntries(exact.map(([k, x]) => [k, Math.floor(x)])) }
-  let left = wrong - exact.reduce((sum, [k]) => sum + out[k], 0)
-  for (const [k] of [...exact].sort((x, y) => (y[1] % 1) - (x[1] % 1))) {
+/** Whole percentages of `total` that add up to 100, by largest remainder. */
+function sharesOf(counts: number[], total: number): number[] {
+  const exact = counts.map((n) => (n / total) * 100)
+  const out = exact.map(Math.floor)
+  let left = 100 - out.reduce((x, y) => x + y, 0)
+  for (const i of exact.map((x, i) => [x % 1, i] as const).sort((x, y) => y[0] - x[0]).map(([, i]) => i)) {
     if (left <= 0) break
-    if (kinds[k as keyof typeof kinds] === 0) continue
-    out[k]++
+    out[i]++
     left--
   }
   return out

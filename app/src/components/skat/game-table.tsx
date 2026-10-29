@@ -1686,8 +1686,8 @@ const styles = stylex.create({
     transform: pose.centreY,
   },
   stackLeft: { left: stage.stackInset },
-  // On a white square with rounded corners, just as large as the picture (SKATGO-148, the human: 「给头像加白色圆角背景。正方形，
-  // 刚好框住就行，不要留白太多」).
+  // On a square with rounded corners, just as large as the picture (SKATGO-148), dark and see-through like the info board
+  // rather than white (SKATGO-155, the human: 「那个头像上的白框不要了，太显眼了」, 「可以做一个暗色透明的阴影方块，尺寸还是那个尺寸」).
   face: {
     position: 'absolute',
     top: stage.faceTop,
@@ -1695,7 +1695,7 @@ const styles = stylex.create({
     height: stage.face,
     overflow: 'hidden',
     borderRadius: radii.panel,
-    backgroundColor: color.surface,
+    backgroundColor: color.board,
     pointerEvents: 'none',
   },
   faceLeft: { left: stage.faceInset },

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as BiddingPracticeRouteImport } from './routes/bidding-practice'
 import { Route as DailyRouteImport } from './routes/daily'
 import { Route as ForumRouteImport } from './routes/forum'
 import { Route as PlayRouteImport } from './routes/play'
@@ -41,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BiddingPracticeRoute = BiddingPracticeRouteImport.update({
+  id: '/bidding-practice',
+  path: '/bidding-practice',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DailyRoute = DailyRouteImport.update({
@@ -152,6 +158,7 @@ const DCodePlayRoute = DCodePlayRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/bidding-practice': typeof BiddingPracticeRoute
   '/daily': typeof DailyRoute
   '/forum': typeof ForumRoute
   '/play': typeof PlayRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/bidding-practice': typeof BiddingPracticeRoute
   '/daily': typeof DailyRoute
   '/forum': typeof ForumRoute
   '/play': typeof PlayRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/bidding-practice': typeof BiddingPracticeRoute
   '/daily': typeof DailyRoute
   '/forum': typeof ForumRoute
   '/play': typeof PlayRoute
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/bidding-practice'
     | '/daily'
     | '/forum'
     | '/play'
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/bidding-practice'
     | '/daily'
     | '/forum'
     | '/play'
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/bidding-practice'
     | '/daily'
     | '/forum'
     | '/play'
@@ -306,6 +318,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  BiddingPracticeRoute: typeof BiddingPracticeRoute
   DailyRoute: typeof DailyRoute
   ForumRoute: typeof ForumRoute
   PlayRoute: typeof PlayRoute
@@ -343,6 +356,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bidding-practice': {
+      id: '/bidding-practice'
+      path: '/bidding-practice'
+      fullPath: '/bidding-practice'
+      preLoaderRoute: typeof BiddingPracticeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/daily': {
@@ -498,6 +518,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  BiddingPracticeRoute: BiddingPracticeRoute,
   DailyRoute: DailyRoute,
   ForumRoute: ForumRoute,
   PlayRoute: PlayRoute,

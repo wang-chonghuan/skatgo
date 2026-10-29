@@ -168,9 +168,20 @@ the German post deleted, SKATGO-125: 「你彻底删掉」), each trick linking 
 `/skat-tricks/12-tricks`, and the German post's lead to it. SkatGo's announcement is in English too, its German the
 translation, made ahead (「公告也保留英文版，德语用翻译的，但是提前做好」). A later article is another post,
 for its own search term. The articles are for search engines (the human, SKATGO-105: 「只用于seo」): the
-site's ways in — the front page's tile, the course, the header — lead to the exercises. Every article leads to the daily tournament, where each trick can be tried and
+site's ways in — the front page's picture card (its colour tile since SKATGO-149 the bidding practice's), the course, the header — lead to the exercises. Every article leads to the daily tournament, where each trick can be tried and
 compared with the AI. The articles' text is SkatGo's own: no book's passages, examples or order are copied,
 and the articles recommend no books.
+
+A bidding practice at `/bidding-practice` (SKATGO-149, the human: 「practice卡片的位置，做成一个叫牌练习的东西，只叫牌」):
+ten cards and the seat at the bidding, and one question — how high do you bid, or do you pass; nothing is played or
+put away. The answer is SkatZero's highest bid for those cards from that seat (the human asked 「这个不用skatzero吗」),
+offered as Pass and three numbers — the answer and what the hand's other tempting games are worth — so a pick is the
+game and its value at once: it practises how a bidder thinks, the calculation one step of it (「到底要用户练习计算还是练习
+叫牌思路呢」). The first answer counts; then the AI's answer with its game's calculation ("Diamonds, without 1, game
+2 × 9 = 18") or why it passes, and what each other number would have been. Only hands one game explains are asked —
+a pass, a Null, or exactly one game's value counted from the ten cards — so SkatZero's own numbers never need showing.
+The questions run in one order; a guest answers two, from the third an account (「不登录可以练2题」); nothing is
+recorded but how far this browser has got. It is a search entry.
 
 A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted
 「官方发公告，官方发一些技术的文章，用户可以评论，用户也可以发文章……就做一个简单版本的。以后既能用来seo又有个公告和用户交流，放文章的地方」.
@@ -221,7 +232,7 @@ exposure. Neither alone proves that learners can play, and delayed search report
   that names no language, gets the German homepage; any other language goes to `/en`; a language the
   visitor picked in the header wins (SKATGO-113).
 - It is the course, free play, the daily tournament, private tables with friends, the Skat-Tricks, the
-  rules reference and the forum — nothing from
+  bidding practice, the rules reference and the forum — nothing from
   Parrottoon, from which it was split on 2026-09-21: none of Parrottoon's English content, and no link
   back to it.
 

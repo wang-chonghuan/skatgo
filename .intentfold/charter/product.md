@@ -80,7 +80,11 @@ said or where it passed, how the deal went with the card points, and its score, 
 then the one trick where the player's card was furthest from the AI's, "the biggest difference from the AI": which
 card the AI would have played, the cards already on the table, the player's hand at that moment with their card
 and the AI's marked, and who took the trick with its card points — ranked over every play, with no threshold (the
-human: 「通过10墩排序的方式，选出最差的」); then the way on. A deal where every card was the AI's choice says so in one
+human: 「通过10墩排序的方式，选出最差的」); last, folded, every trick against the AI (SKATGO-153, after a player's word in the forum —
+"Now I am not seeing the AI difference for each Stich … These were excellent learning tools!" — the human: 「放到最下面一个明显的
+折叠卡片里，点了后就跟删掉的内容一样」): opened, the play record as SKATGO-145 had removed it, trick by trick with the AI's card
+under the player's wherever it differs, the hand before a tapped trick, and the skat; then the way on. No hint comes back to
+free play: its deals feed the record of play (SKATGO-153, the human: 「同意，去掉叫牌建议，只做逐墩对比」). A deal where every card was the AI's choice says so in one
 line; a deal all players passed has no trick. It is the engine's record and SkatZero's choices only: no language
 model explains it (the human, 2026-10-11: 「解读太麻烦了」), and SkatZero's own numbers are not shown. The tournament's page keeps a row per
 finished deal with the player's and the AI's score, opening to that deal's bidding and trick, and under the rows the

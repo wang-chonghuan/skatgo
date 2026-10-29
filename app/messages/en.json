@@ -781,5 +781,11 @@
   "bidpractice_rule_few_short": "Too few trumps.",
   "bidpractice_rule_noace_short": "Not enough without an Ace.",
   "bidpractice_yours_grand": "Your Grand: {points} Grand points; play it from 6.",
-  "bidpractice_ex_number": "Your **{chosen}** = {level} × {base} would need with or without {n}."
+  "bidpractice_ex_number": "Your **{chosen}** = {level} × {base} would need with or without {n}.",
+  "daily_replay_trick": "Trick",
+  "daily_replay_winner": "Won by",
+  "daily_replay_points": "{name} · {points}",
+  "daily_replay_rest": "The other {n} tricks were not played out.",
+  "daily_replay_hand": "Your hand:",
+  "review_play_record": "Every trick vs. the AI"
 }

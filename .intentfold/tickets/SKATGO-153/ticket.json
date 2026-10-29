@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-153",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-153",
+  "branch": "SKATGO-153-replay-hints",
+  "base": "e64d09ec214c1d7e23f25af0ec643927c7798723",
+  "ports": { "web": 55153, "multiplayer": 56153, "database": 57153 }
+}

@@ -328,7 +328,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   rising; once answered, the verdict `Panel` as an exercise's — "Right!" / "Not quite.", the AI's answer with the
   trumps the hand holds in its game and the calculation, or for a pass the best trump suit and how few trumps it holds, a
   line per other number ("**22** would be Spades ♠ with 4 trumps: without 1, game 2 × 11.") — and "Next question" as the
-  one `go`. A guest's third question is the ladder's gate in the card's place (SKATGO-112: no lock). Under it, as under the
+  one `go`. A guest's third question is the ladder's gate in the card's place (SKATGO-112: no lock), its line the reason to
+  sign in and nothing more (SKATGO-150). Once anything is answered, a second white card under it: "Your bidding"
+  (`appBtnStrong`) with "n answered" (`appText`, slate) at the right, then Right, Overbid and Underbid each a row over a
+  `hairline` rule — the name and its share (`appBtnStrong`) at the two ends, a wrong kind's causes under it in slate,
+  only those that happened ("Bid instead of passing: 6 · Game too high: 3") — and last "Mistakes" with a small `quiet` button per question number
+  not yet put right, opening it in the run's place until "Next question". No bar, no colour of its own (SKATGO-150, the
+  human: 「不要花哨，不要垃圾重复文字」). Under it, as under the
   Skat-Tricks, small `info` links to the bidding table and the rules, and under them one small slate line saying what the page is, for
   its search entry — at the foot, never a lead under the title (SKATGO-135, 「这个副标题删了」). An open-card
   endgame's page (`tricks-exercise-page.tsx`, `open-endgame.tsx`) is the game's full-screen table (SKATGO-111,

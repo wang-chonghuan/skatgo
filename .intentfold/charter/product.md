@@ -180,8 +180,14 @@ game and its value at once: it practises how a bidder thinks, the calculation on
 叫牌思路呢」). The first answer counts; then the AI's answer with its game's calculation ("Diamonds, without 1, game
 2 × 9 = 18") or why it passes, and what each other number would have been. Only hands one game explains are asked —
 a pass, a Null, or exactly one game's value counted from the ten cards — so SkatZero's own numbers never need showing.
-The questions run in one order; a guest answers two, from the third an account (「不登录可以练2题」); nothing is
-recorded but how far this browser has got. It is a search entry.
+The questions run in one order; a guest answers two, from the third an account (「不登录可以练2题」), the sign-in saying
+why in one short line — to keep the mistakes and the analysis (SKATGO-150: 「登录时为了保存用户的错题本，帮助用户提高，文字要精简」).
+Each question's first answer is recorded — an account's on the server, a guest's two in the browser until it signs in —
+and whether it was put right since (SKATGO-150, 「用户能记录下来他哪个题出错了吗」). Under the question the player sees their
+own bidding as ratios, no AI (「最好有个比率分析」): how many answered, right, overbid — a bid where the AI passes, or a
+higher game — and underbid — a pass where it bids, or a lower game — each with its two causes counted; a wrong number is
+always a game too high or too low, so "the wrong game" is not a kind of its own. Only first answers count. Under that
+the mistakes not yet put right, by number, each opening its question again. It is a search entry.
 
 A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted
 「官方发公告，官方发一些技术的文章，用户可以评论，用户也可以发文章……就做一个简单版本的。以后既能用来seo又有个公告和用户交流，放文章的地方」.

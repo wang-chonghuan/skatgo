@@ -183,7 +183,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `Stars` | `n` of 3 | a lesson's result |
 | `Rich` | — | every piece of course text: renders `**bold**` and each suit glyph in its suit's colour |
 | `Toggle` / `toggleLook(pressed)` | pressed or not; a button, or the same pill on a router `<Link>` | a choice that is on or off: a forum post's section, the forum's section filter (SKATGO-118) |
-| `Modal` | `title`, `onClose` | every dialog over the page (SKATGO-140; the settings' since SKATGO-66): its title and an X in its head, a tap on the dim around it or Escape closing it too, the page behind locked and inert, focus moved into it and back |
+| `Modal` | `title`, `onClose` | every dialog over the page (SKATGO-140; the settings' since SKATGO-66): its title and an X in its head, a tap on the dim around it or Escape closing it too, the page behind locked and inert, focus moved into it and back. Its body scrolls, never the box: the scroll bar stands inside the dialog's padding, not on its edge — so too the table's own dialog in `game-table.tsx` (SKATGO-156, the human: 「所有的弹窗，都要让滚动条在弹窗内部，而不是贴道外部」) |
 | `TextField` / `TextArea` | one line (Enter submits) / several: `size` `post` starts about six lines tall, `comment` about three (`dims.textPost`, `textComment`; SKATGO-119), both growing with the text | a name, a forum post's title and text, a comment, a reason |
 
 **Components — the course's and the table's widgets**

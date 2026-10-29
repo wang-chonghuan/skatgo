@@ -1571,7 +1571,8 @@ const Say = ({ children }: { children: ReactNode }) => <p {...stylex.props(typog
 
 /** A dialog over the table: white, on the scrim, one full-width green action inside. With a `foot` (SKATGO-146, the
  *  human: 「modal应该是滚动区域，下面是next deal按钮」), the dialog's body scrolls inside its own box and the foot stays
- *  at its bottom, over the scrolled content. */
+ *  at its bottom, over the scrolled content. Either way the scrolling part is inset by the dialog's padding, so its scroll
+ *  bar stands inside the dialog, never on its edge (SKATGO-156, 「所有的弹窗，都要让滚动条在弹窗内部，而不是贴道外部」). */
 function Dialog({ children, foot }: { children: ReactNode; foot?: ReactNode }) {
   return (
     <div data-testid="skat-dialog" {...stylex.props(styles.scrim)}>
@@ -1582,7 +1583,7 @@ function Dialog({ children, foot }: { children: ReactNode; foot?: ReactNode }) {
         </div>
       ) : (
         <div role="dialog" aria-modal="false" {...stylex.props(styles.dialog)}>
-          {children}
+          <div data-testid="skat-dialog-body" {...stylex.props(styles.dialogInner)}>{children}</div>
         </div>
       )}
     </div>
@@ -2232,15 +2233,16 @@ const styles = stylex.create({
     gap: space.x16,
     width: dims.dialogWidth,
     maxHeight: '100%',
-    overflowY: 'auto',
+    overflow: 'hidden',
     boxSizing: 'border-box',
     padding: space.x24,
     borderRadius: radii.dialog,
     backgroundColor: color.surface,
     boxShadow: elev.panel,
   },
-  dialogFramed: { gap: 0, padding: 0, overflowY: 'hidden' },
-  dialogBody: { flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', padding: space.x24 },
+  dialogInner: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto' },
+  dialogFramed: { gap: 0, padding: 0 },
+  dialogBody: { flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', paddingBlock: space.x24, marginInline: space.x24 },
   dialogFoot: {
     flexShrink: 0,
     paddingInline: space.x24,

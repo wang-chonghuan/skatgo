@@ -177,9 +177,12 @@ ten cards and the seat at the bidding; nothing is played or put away. Since SKAT
 thinks (the human: 「我想的是我能打什么合约」, 「答题分两步吧，先点什么合约，再点最高叫到几点」): first what do you play — a suit,
 Grand, Null (「你还没说null呢」) or pass, every contract offered on every hand — then, unless the AI passes, how high you can
 bid with the AI's contract, whatever was chosen first, so the counting is practised on every hand it plays. Each step
-says right or wrong at once; then why, from the hand's facts: the AI's game, its trumps and the Aces beside them and the
-value's sum in plain words ("Diamonds ♦: 6 trumps and 1 Ace beside them. Without 1, game 2 × 9 = 18"), a Null's fixed value, or for a pass the best
-suit's trumps; and the facts of a contract chosen instead. The answer is SkatZero's highest bid for those cards from that
+says right or wrong at once; then why, step by step as asked (the human: 「为啥你现在这个解析反而还不如以前详细了？」): the
+contract — the trumps of every suit and the cheat sheet's rule the hand meets ("Trumps per suit: ♣ 3 · ♠ 4 · ♥ 3 · ♦ 6. 6
+trumps and an Ace: a good game."; for a pass "The most is 3: too few"; Grand's count), said only as far as the facts go;
+the bid — the matadors card by card, game, the base ("Without 1 (♣B not in your hand), plus 1 for game = 2, × 9 = 18"), or a
+Null's fixed value; then a contract chosen instead, its trumps and Aces by the same rules, and a wrong number, what it
+would have needed ("27 = 3 × 9 would need with or without 2"). The answer is SkatZero's highest bid for those cards from that
 seat (「这个不用skatzero吗」); only hands one game explains are asked — a pass, a Null, or exactly one game's value counted
 from the ten cards — so SkatZero's own numbers never need showing. The questions run from plain to borderline — six
 trumps or more, or three or fewer, first; then the hands the rules of thumb decide; then the rest. A bidding cheat sheet

@@ -332,8 +332,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   over a `hairline` rule; then the two steps of SKATGO-151, each a `Choice` that marks right and wrong at once: "What do you
   play?" with ♣ ♠ ♥ ♦ Grand Null two by two, on a phone too, and "Pass" last, alone on its row; and, unless the AI passes, over a `hairline`
   rule "The AI plays Diamonds ♦. How high can you bid?" with three numbers (four for a Null), two by two. Once both are answered, the
-  verdict `Panel` as an exercise's — "Right!" / "Not quite.", the AI's answer from the hand's facts and the value's sum, a line
-  with the facts of a contract chosen instead — and "Next question" as the one `go`. The cheat sheet is the site's `Modal`:
+  verdict `Panel` as an exercise's — "Right!" / "Not quite.", then a paragraph per step: the contract (trumps per suit and the
+  cheat sheet's rule), the bid ("**Up to 18:** Without 1 (♣B not in your hand), plus 1 for game = 2, × 9 = **18**."), and when
+  wrong, the contract chosen and the number chosen, a paragraph each — and "Next question" as the one `go`. The cheat sheet is the site's `Modal`:
   its seven sections one under another, each heading `appBtnStrong` navy over `appText`, the point count a plain table of
   `hairline` rows. A guest's third question is the ladder's gate in the card's place (SKATGO-112: no lock), its line the
   reason to sign in and nothing more, "Save your mistakes and get better." (SKATGO-150). Once anything is answered, a second

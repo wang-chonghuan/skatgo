@@ -4,8 +4,8 @@ import * as stylex from '@stylexjs/stylex'
 import { BookOpen, ChevronDown, ChevronUp, CircleCheck, CircleX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { type Card, sortHand } from '~/lib/skat/cards'
-import { contractName, matadorLabel, roleName } from '~/lib/skat/i18n'
+import { type Card, sortHand, trumpSequence } from '~/lib/skat/cards'
+import { cardLabel, contractName, matadorLabel, roleName } from '~/lib/skat/i18n'
 import { type CheatSheet } from '~/lib/skat/bidding/cheat-sheet'
 import { CHEAT_SHEET_DE } from '~/lib/skat/bidding/cheat-sheet.de'
 import { CHEAT_SHEET_EN } from '~/lib/skat/bidding/cheat-sheet.en'
@@ -154,6 +154,7 @@ function Question({ q, result, onDone, onNext }: { q: Practice; result: 'right' 
   const hand = practiceHand(q)
   const sol = solutionOf(q)
   const [contract, setContract] = useState<ContractKey | null>(null)
+  const [value, setValue] = useState<number | null>(null)
   const [sheet, setSheet] = useState(false)
   const contracts = [...CONTRACTS.slice(1), CONTRACTS[0]]
   const values = valueOptions(q)
@@ -193,7 +194,10 @@ function Question({ q, result, onDone, onNext }: { q: Practice; result: 'right' 
               step={{ kind: 'choice', prompt: m.bidpractice_prompt_value({ game: answerName(sol.answer) }), options: values.map(String), answer: values.indexOf(sol.value), explain: '' }}
               once
               pairs
-              onChoose={(i) => onDone({ contract, value: values[i] })}
+              onChoose={(i) => {
+                setValue(values[i])
+                onDone({ contract, value: values[i] })
+              }}
               onSolved={() => {}}
               onMistake={() => {}}
             />
@@ -209,14 +213,11 @@ function Question({ q, result, onDone, onNext }: { q: Practice; result: 'right' 
               </span>
               <div {...stylex.props(styles.verdictText)}>
                 <p {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{result === 'right' ? m.tricks_ex_right() : m.tricks_ex_wrong()}</p>
-                <p data-testid="bidding-practice-answer" {...stylex.props(typography.body, styles.para)}>
-                  <Rich text={answerLine(hand, sol.answer)} />
-                </p>
-                {contract !== sol.contract && contract !== 'pass' ? (
-                  <p data-testid="bidding-practice-yours" {...stylex.props(typography.body, styles.para)}>
-                    <Rich text={yoursLine(hand, contract)} />
+                {explanation(q, contract, value).map(([kind, line]) => (
+                  <p key={kind} data-testid={`bidding-practice-why-${kind}`} {...stylex.props(typography.body, styles.para)}>
+                    <Rich text={line} />
                   </p>
-                ) : null}
+                ))}
               </div>
             </div>
           </Panel>
@@ -376,26 +377,79 @@ const jacksOf = (hand: Card[]) => hand.filter((c) => c.rank === 'J').length
 /** "no Ace", "1 Ace", "2 Aces" in words, as the cheat sheet says them. */
 const acesWords = (n: number) => (n === 0 ? m.bidpractice_aces_none() : n === 1 ? m.bidpractice_aces_one() : m.bidpractice_aces_many({ n }))
 
-/** The AI's answer from the hand's facts: its game's trumps and Aces and the value's sum, Null's fixed value, or, for a
- *  pass, the best suit's trumps and the Aces beside it. */
-function answerLine(hand: Card[], a: Answer): string {
+/** The trumps of each suit in one line: "♣ 3 · ♠ 4 · ♥ 3 · ♦ 6". */
+const trumpCounts = (hand: Card[]) =>
+  tenCardValues(hand)
+    .filter((v) => v.contract.kind === 'suit')
+    .map((v) => `${v.contract.kind === 'suit' ? contractName(v.contract).split(' ').pop() : ''} ${v.trumps}`)
+    .join(' · ')
+
+/** Grand's count from the cheat sheet: a point for each Bube, each Ace, and forehand. */
+const grandPoints = (q: Practice, hand: Card[]) => jacksOf(hand) + sideAces(hand) + (q.position === 0 ? 1 : 0)
+
+/** Which rule of the cheat sheet a suit game meets, from its trumps and the Aces beside them — said only as far as the
+ *  facts go: where the rules would not have played it, the line says so and that the AI plays it anyway. */
+function suitRule(trumps: number, aces: number, jacks: number): string {
+  if (trumps >= 6 && aces > 0) return m.bidpractice_rule_good({ trumps })
+  if (trumps >= 6) return m.bidpractice_rule_six({ trumps })
+  if (trumps === 5 && aces > 0) return m.bidpractice_rule_least()
+  return m.bidpractice_rule_thin({ trumps, aces: acesWords(aces), jacks })
+}
+
+/** Why the AI passes, by the same rules. */
+function passRule(trumps: number, aces: number): string {
+  if (trumps <= 4) return m.bidpractice_rule_few({ trumps })
+  if (aces === 0) return m.bidpractice_rule_noace({ trumps })
+  return m.bidpractice_rule_border({ trumps })
+}
+
+/** "♣B missing" / "♣B ♠B held": the run a matador count is made of. */
+function runOf(g: Valued): string {
+  const run = trumpSequence(g.contract).slice(0, g.count).map(cardLabel).join(' ')
+  return g.with ? m.bidpractice_run_held({ run }) : m.bidpractice_run_missing({ run })
+}
+
+/**
+ * The explanation, as the two steps were asked (SKATGO-151, the human: 「为啥你现在这个解析反而还不如以前详细了？」): why this
+ * contract — the trumps of every suit and the cheat sheet's rule it meets; why this bid — the matadors counted card by
+ * card, game, the base; then what the player chose instead: the facts of that contract by the same rules, and what that
+ * number would have needed.
+ */
+function explanation(q: Practice, contract: ContractKey, value: number | null): [string, string][] {
+  const hand = practiceHand(q)
+  const sol = solutionOf(q)
+  const a = sol.answer
+  const counts = trumpCounts(hand)
+  const lines: [string, string][] = []
   if (a.kind === 'pass') {
     const best = bestSuit(hand)
     const trump = best.contract.kind === 'suit' ? best.contract.trump : undefined
-    return m.bidpractice_why_pass({ game: contractName(best.contract), trumps: best.trumps, aces: acesWords(sideAces(hand, trump)) })
+    lines.push(['contract', `${m.bidpractice_ex_passes({ counts })} ${passRule(best.trumps, sideAces(hand, trump))}`])
+  } else if (a.kind === 'null') {
+    lines.push(['contract', `${m.bidpractice_ex_plays({ game: NULL_NAMES[a.which], counts })} ${m.bidpractice_rule_null()}`])
+    lines.push(['value', m.bidpractice_ex_null({ game: NULL_NAMES[a.which], value: a.value })])
+  } else {
+    const g = a.game
+    const jacks = jacksOf(hand)
+    const rule = g.contract.kind === 'grand' ? m.bidpractice_rule_grand({ points: grandPoints(q, hand) }) : suitRule(g.trumps, sideAces(hand, g.contract.kind === 'suit' ? g.contract.trump : undefined), jacks)
+    lines.push(['contract', `${m.bidpractice_ex_plays({ game: contractName(g.contract), counts })} ${rule}`])
+    lines.push(['value', m.bidpractice_ex_value({ value: g.value, run: runOf(g), ...calc(g) })])
   }
-  if (a.kind === 'null') return m.bidpractice_why_null({ game: NULL_NAMES[a.which], value: a.value })
-  const g = a.game
-  if (g.contract.kind === 'grand') return m.bidpractice_why_grand({ jacks: jacksOf(hand), aces: acesWords(sideAces(hand)), value: g.value, ...calc(g) })
-  return m.bidpractice_why_game({ trumps: g.trumps, aces: acesWords(sideAces(hand, g.contract.kind === 'suit' ? g.contract.trump : undefined)), value: g.value, ...calc(g) })
-}
-
-/** The facts of the contract the player chose instead. */
-function yoursLine(hand: Card[], c: ContractKey): string {
-  if (c === 'N') return m.bidpractice_yours_null()
-  if (c === 'G') return m.bidpractice_yours_grand({ jacks: jacksOf(hand), aces: acesWords(sideAces(hand)) })
-  const v = tenCardValues(hand).find((g) => g.contract.kind === 'suit' && g.contract.trump === c)!
-  return m.bidpractice_yours_game({ game: contractName(v.contract), trumps: v.trumps, aces: acesWords(sideAces(hand, c)) })
+  if (contract !== sol.contract && contract !== 'pass') {
+    if (contract === 'N') lines.push(['yours', m.bidpractice_yours_null()])
+    else if (contract === 'G') lines.push(['yours', m.bidpractice_yours_grand({ points: grandPoints(q, hand) })])
+    else {
+      const v = tenCardValues(hand).find((g) => g.contract.kind === 'suit' && g.contract.trump === contract)!
+      const aces = sideAces(hand, contract)
+      const verdict = v.trumps <= 4 ? m.bidpractice_rule_few_short() : v.trumps === 5 && aces === 0 ? m.bidpractice_rule_noace_short() : ''
+      lines.push(['yours', `${m.bidpractice_yours_game({ game: contractName(v.contract), trumps: v.trumps, aces: acesWords(aces) })}${verdict ? ' ' + verdict : ''}`])
+    }
+  }
+  if (value !== null && value !== sol.value && a.kind === 'game') {
+    const level = value / a.game.base
+    lines.push(['number', m.bidpractice_ex_number({ chosen: value, level, base: a.game.base, n: level - 1 })])
+  }
+  return lines
 }
 
 /** The third question for a guest (SKATGO-149, as the ladder's gate, SKATGO-112): why, and the way in, Clerk's window

@@ -1,12 +1,36 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChevronDown, ChevronUp, CircleCheck, CircleX } from 'lucide-react'
+import { BookOpen, ChevronDown, ChevronUp, CircleCheck, CircleX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { type Card, sortHand } from '~/lib/skat/cards'
 import { contractName, matadorLabel, roleName } from '~/lib/skat/i18n'
-import { type Analysis, type Answer, PRACTICE_FREE, PRACTICE_QUESTIONS, type Valued, analysisOf, answerOf, gameOf, mistakesOf, optionsOf, practiceHand, questionAt, questionId, rightAnswer, tenCardValues } from '~/lib/skat/bidding/practice'
+import { type CheatSheet } from '~/lib/skat/bidding/cheat-sheet'
+import { CHEAT_SHEET_DE } from '~/lib/skat/bidding/cheat-sheet.de'
+import { CHEAT_SHEET_EN } from '~/lib/skat/bidding/cheat-sheet.en'
+import {
+  type Analysis,
+  type Answer,
+  type Attempt,
+  CONTRACTS,
+  type ContractKey,
+  PRACTICE_FREE,
+  PRACTICE_QUESTIONS,
+  type Practice,
+  type Valued,
+  analysisOf,
+  bestSuit,
+  mistakesOf,
+  practiceHand,
+  questionAt,
+  questionId,
+  rightAttempt,
+  sideAces,
+  solutionOf,
+  tenCardValues,
+  valueOptions,
+} from '~/lib/skat/bidding/practice'
 import { useBiddingRecord } from '~/lib/skat/bidding/record'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
@@ -19,7 +43,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Fan } from './card-row'
 import { Choice } from './exercises'
-import { Btn, Panel, Rich } from './ui'
+import { Btn, Modal, Panel, Rich } from './ui'
 
 const POSITIONS = ['forehand', 'middlehand', 'rearhand'] as const
 
@@ -93,11 +117,12 @@ export function BiddingPracticePage() {
       ) : (
         <Question
           key={shown}
-          hand={practiceHand(q)}
-          position={POSITIONS[q.position]}
-          bid={q.bid}
-          onChoose={(chosen) => answer(questionId(q), chosen, chosen === rightAnswer(q))}
-          onAnswer={setResult}
+          q={q}
+          onDone={(a) => {
+            const right = rightAttempt(q, a)
+            answer(questionId(q), a, right)
+            setResult(right ? 'right' : 'wrong')
+          }}
           result={result}
           onNext={go}
         />
@@ -119,28 +144,61 @@ export function BiddingPracticePage() {
   )
 }
 
-function Question({ hand, position, bid, result, onChoose, onAnswer, onNext }: { hand: Card[]; position: (typeof POSITIONS)[number]; bid: number; result: 'right' | 'wrong' | null; onChoose: (chosen: number) => void; onAnswer: (r: 'right' | 'wrong') => void; onNext: () => void }) {
-  const options = optionsOf(hand, bid)
-  const answer = answerOf(hand, bid)!
-  const best = tenCardValues(hand).filter((v) => v.contract.kind === 'suit').sort((a, b) => b.trumps - a.trumps)[0]
+/**
+ * One question in two steps, as a learner thinks (SKATGO-151, the human: 「答题分两步吧，先点什么合约，再点最高叫到几点」): what do
+ * you play — every contract offered, Null too (「你还没说null呢」), Pass last on a row of its own — then, unless the AI passes,
+ * how high you can bid with the AI's contract, whatever was chosen first, so the counting is practised on every hand it
+ * plays. Each step shows right or wrong at once; once both are answered, why, from the hand's facts.
+ */
+function Question({ q, result, onDone, onNext }: { q: Practice; result: 'right' | 'wrong' | null; onDone: (a: Attempt) => void; onNext: () => void }) {
+  const hand = practiceHand(q)
+  const sol = solutionOf(q)
+  const [contract, setContract] = useState<ContractKey | null>(null)
+  const [sheet, setSheet] = useState(false)
+  const contracts = [...CONTRACTS.slice(1), CONTRACTS[0]]
+  const values = valueOptions(q)
+  const pickContract = (c: ContractKey) => {
+    setContract(c)
+    if (sol.value === null) onDone({ contract: c, value: null })
+  }
   return (
     <>
       <section {...stylex.props(styles.card)}>
         <div data-testid="bidding-practice-situation" {...stylex.props(styles.situation)}>
-          {/* As the question below it (the human: 「坐哪个位置的那行字，不要小字，要和how high do you bid同一字体」). */}
-          <p {...stylex.props(typography.prompt, styles.seat)}>{m.tricks_sit_bidder({ position: roleName(position) })}</p>
+          <div {...stylex.props(styles.seatLine)}>
+            {/* As the question below it (the human: 「坐哪个位置的那行字，不要小字，要和how high do you bid同一字体」). */}
+            <p {...stylex.props(typography.prompt, styles.seat)}>{m.tricks_sit_bidder({ position: roleName(POSITIONS[q.position]) })}</p>
+            {/* The cheat sheet, at hand while deciding (the human: 「做成一个卡片弹窗放在叫牌页面，用户点开就能看」). */}
+            <button type="button" data-testid="bidding-practice-sheet" onClick={() => setSheet(true)} {...stylex.props(typography.appLink, styles.sheetLink)}>
+              <BookOpen aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+              {cheatSheet().title}
+            </button>
+          </div>
           {/* As big as the hand at the table, in one row (the ladder's, SKATGO-109: 「最好和手牌一样大」). */}
           <Fan testId="bidding-practice-hand" cards={sortHand(hand, null)} size="lg" row />
         </div>
-        <Choice
-          step={{ kind: 'choice', prompt: m.bidpractice_prompt(), options: options.map((v) => (v === 0 ? m.bidpractice_pass() : String(v))), answer: options.indexOf(bid < 18 ? 0 : bid), explain: '' }}
-          once
-          onChoose={(i) => onChoose(options[i])}
-          onSolved={() => onAnswer('right')}
-          onMistake={() => onAnswer('wrong')}
-        />
+        <div data-testid="bidding-practice-contract">
+          <Choice
+            step={{ kind: 'choice', prompt: m.bidpractice_prompt_contract(), options: contracts.map(contractLabel), answer: contracts.indexOf(sol.contract), explain: '' }}
+            once
+            onChoose={(i) => pickContract(contracts[i])}
+            onSolved={() => {}}
+            onMistake={() => {}}
+          />
+        </div>
+        {contract !== null && sol.value !== null ? (
+          <div data-testid="bidding-practice-value" {...stylex.props(styles.step)}>
+            <Choice
+              step={{ kind: 'choice', prompt: m.bidpractice_prompt_value({ game: answerName(sol.answer) }), options: values.map(String), answer: values.indexOf(sol.value), explain: '' }}
+              once
+              onChoose={(i) => onDone({ contract, value: values[i] })}
+              onSolved={() => {}}
+              onMistake={() => {}}
+            />
+          </div>
+        ) : null}
       </section>
-      {result ? (
+      {result && contract !== null ? (
         <div data-testid="bidding-practice-result" data-result={result} {...stylex.props(styles.result)}>
           <Panel tone={result === 'right' ? 'good' : 'bad'}>
             <div {...stylex.props(styles.verdict)}>
@@ -150,18 +208,13 @@ function Question({ hand, position, bid, result, onChoose, onAnswer, onNext }: {
               <div {...stylex.props(styles.verdictText)}>
                 <p {...stylex.props(typography.optionTitle, styles.verdictTitle)}>{result === 'right' ? m.tricks_ex_right() : m.tricks_ex_wrong()}</p>
                 <p data-testid="bidding-practice-answer" {...stylex.props(typography.body, styles.para)}>
-                  <Rich text={answerLine(answer, best)} />
+                  <Rich text={answerLine(hand, sol.answer)} />
                 </p>
-                {options
-                  .filter((v) => v !== 0 && v !== bid)
-                  .map((v) => {
-                    const g = gameOf(hand, v)
-                    return g ? (
-                      <p key={v} data-testid="bidding-practice-option" {...stylex.props(typography.body, styles.para)}>
-                        <Rich text={m.bidpractice_option({ value: v, ...calc(g) })} />
-                      </p>
-                    ) : null
-                  })}
+                {contract !== sol.contract && contract !== 'pass' ? (
+                  <p data-testid="bidding-practice-yours" {...stylex.props(typography.body, styles.para)}>
+                    <Rich text={yoursLine(hand, contract)} />
+                  </p>
+                ) : null}
               </div>
             </div>
           </Panel>
@@ -172,30 +225,69 @@ function Question({ hand, position, bid, result, onChoose, onAnswer, onNext }: {
           </div>
         </div>
       ) : null}
+      {sheet ? <CheatSheetDialog onClose={() => setSheet(false)} /> : null}
     </>
+  )
+}
+
+const cheatSheet = (): CheatSheet => (getLocale() === 'de' ? CHEAT_SHEET_DE : CHEAT_SHEET_EN)
+
+/** The cheat sheet in the site's dialog: its sections one under another, a table where it counts points. */
+function CheatSheetDialog({ onClose }: { onClose: () => void }) {
+  const sheet = cheatSheet()
+  const lines = (list: string[] | undefined) => list?.map((t, i) => <p key={i} {...stylex.props(typography.appText, styles.para)}><Rich text={t} /></p>)
+  const bullets = (list: string[] | undefined) =>
+    list ? (
+      <ul {...stylex.props(typography.appText, styles.sheetList)}>
+        {list.map((t, i) => (
+          <li key={i}><Rich text={t} /></li>
+        ))}
+      </ul>
+    ) : null
+  return (
+    <Modal title={sheet.title} onClose={onClose} testId="bidding-practice-sheet-dialog">
+      <div data-testid="bidding-practice-sheet-body" {...stylex.props(styles.sheetBody)}>
+        {sheet.sections.map((sec) => (
+          <section key={sec.heading} data-testid="bidding-practice-sheet-section" {...stylex.props(styles.sheetSection)}>
+            <h3 {...stylex.props(typography.appBtnStrong, styles.verdictTitle)}>{sec.heading}</h3>
+            {lines(sec.text)}
+            {bullets(sec.list)}
+            {sec.table ? (
+              <table {...stylex.props(typography.appText, styles.sheetTable)}>
+                <tbody>
+                  {sec.table.rows.map(([label, points]) => (
+                    <tr key={label}>
+                      <td {...stylex.props(styles.sheetCell)}><Rich text={label} /></td>
+                      <td {...stylex.props(styles.sheetCell, styles.sheetPoints)}>{points}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : null}
+            {lines(sec.after)}
+            {bullets(sec.afterList)}
+          </section>
+        ))}
+      </div>
+    </Modal>
   )
 }
 
 /**
  * The player's bidding so far (SKATGO-150, the human: 「超叫还是不敢叫还是叫错等等的分析……最好有个比率分析」, 「不要花哨，
- * 不要垃圾重复文字」): how many answered, then the error rate, overbid and underbid as shares of the first answers, each kind of
- * mistake with its two causes counted; under them the mistakes not yet put right, by number, each opening its question.
+ * 不要垃圾重复文字」): how many answered, then the error rate and, since SKATGO-151, the four kinds of mistake as shares of the
+ * first attempts; under them the mistakes not yet put right, by number, each opening its question.
  */
-/** A wrong kind's causes that happened, each with its count: "Game too high: 3". */
-const causes = (...parts: [number, (p: { n: number }) => string][]) =>
-  parts
-    .filter(([n]) => n > 0)
-    .map(([n, say]) => say({ n }))
-    .join(' · ') || null
-
 function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOpen: (n: number) => void }) {
   const pct = new Intl.NumberFormat(getLocale(), { style: 'percent' })
   const share = (k: number) => pct.format(k / a.answered)
-  const rows: [string, string, number, string | null][] = [
-    // The error rate first (「用户的错误率」), then where the mistakes went.
-    ['wrong', m.bidpractice_stats_wrong(), a.answered - a.right, null],
-    ['over', m.bidpractice_stats_over(), a.over.pass + a.over.game, causes([a.over.pass, m.bidpractice_cause_bid], [a.over.game, m.bidpractice_cause_high])],
-    ['under', m.bidpractice_stats_under(), a.under.pass + a.under.game, causes([a.under.pass, m.bidpractice_cause_pass], [a.under.game, m.bidpractice_cause_low])],
+  // The error rate first (「用户的错误率」), then where the mistakes went: the human's 不敢叫, 超叫, 叫错, and the counting.
+  const rows: [string, string, number][] = [
+    ['wrong', m.bidpractice_stats_wrong(), a.answered - a.right],
+    ['passed', m.bidpractice_stats_passed(), a.passed],
+    ['played', m.bidpractice_stats_played(), a.played],
+    ['game', m.bidpractice_stats_game(), a.game],
+    ['value', m.bidpractice_stats_value(), a.value],
   ]
   return (
     <section data-testid="bidding-practice-record" {...stylex.props(styles.card, styles.record)}>
@@ -204,13 +296,10 @@ function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOp
         <h2 {...stylex.props(typography.prompt, styles.verdictTitle)}>{m.bidpractice_stats_title()}</h2>
         <span data-testid="bidding-practice-answered" {...stylex.props(typography.appText, styles.facts)}>{m.bidpractice_stats_answered({ n: a.answered })}</span>
       </div>
-      {rows.map(([kind, label, count, detail]) => (
-        <div key={kind} data-testid="bidding-practice-stat" data-kind={kind} {...stylex.props(styles.stat)}>
-          <div {...stylex.props(styles.statLine)}>
-            <span {...stylex.props(typography.appText, styles.para)}>{label}</span>
-            <span {...stylex.props(typography.appBtnStrong, styles.para)}>{share(count)}</span>
-          </div>
-          {detail ? <span {...stylex.props(typography.appText, styles.facts)}>{detail}</span> : null}
+      {rows.map(([kind, label, count]) => (
+        <div key={kind} data-testid="bidding-practice-stat" data-kind={kind} {...stylex.props(styles.stat, styles.statLine)}>
+          <span {...stylex.props(typography.appText, styles.para)}>{label}</span>
+          <span {...stylex.props(typography.appBtnStrong, styles.para)}>{share(count)}</span>
         </div>
       ))}
       {mistakes.length ? <Mistakes list={mistakes} onOpen={onOpen} /> : null}
@@ -243,16 +332,44 @@ function Mistakes({ list, onOpen }: { list: number[]; onOpen: (n: number) => voi
   )
 }
 
-/** A game's calculation in words: "Hearts ♥", how many trumps the ten cards hold in it, "with 2", game 3, base 10. */
-const calc = (g: Valued) => ({ game: contractName(g.contract), trumps: g.trumps, matadors: matadorLabel(g.with, g.count), level: g.count + 1, base: g.base })
+/** A game's calculation in words: "Hearts ♥", "with 2", game 3, base 10. */
+const calc = (g: Valued) => ({ game: contractName(g.contract), matadors: matadorLabel(g.with, g.count), level: g.count + 1, base: g.base })
 
 const NULL_NAMES = { plain: 'Null', hand: 'Null Hand', ouvert: 'Null ouvert', handOuvert: 'Null ouvert Hand' } as const
 
-/** The AI's answer and why it is that number; a pass names the hand's best trump suit and how short it is. */
-function answerLine(a: Answer, best: Valued): string {
-  if (a.kind === 'pass') return m.bidpractice_answer_pass({ game: contractName(best.contract), trumps: best.trumps })
-  if (a.kind === 'null') return m.bidpractice_answer_null({ value: a.value, game: NULL_NAMES[a.which] })
-  return m.bidpractice_answer_game({ value: a.game.value, ...calc(a.game) })
+/** A contract as offered: the suit's name with its sign, Grand, Null, or Pass. */
+function contractLabel(c: ContractKey): string {
+  if (c === 'pass') return m.bidpractice_pass()
+  if (c === 'G') return 'Grand'
+  if (c === 'N') return 'Null'
+  return contractName({ kind: 'suit', trump: c })
+}
+
+/** The AI's contract by name, a Null by its kind. */
+const answerName = (a: Answer) => (a.kind === 'null' ? NULL_NAMES[a.which] : a.kind === 'game' ? contractName(a.game.contract) : '')
+
+const jacksOf = (hand: Card[]) => hand.filter((c) => c.rank === 'J').length
+
+/** The AI's answer from the hand's facts: its game's trumps and Aces and the value's sum, Null's fixed value, or, for a
+ *  pass, the best suit's trumps and the Aces beside it. */
+function answerLine(hand: Card[], a: Answer): string {
+  if (a.kind === 'pass') {
+    const best = bestSuit(hand)
+    const trump = best.contract.kind === 'suit' ? best.contract.trump : undefined
+    return m.bidpractice_why_pass({ game: contractName(best.contract), trumps: best.trumps, aces: sideAces(hand, trump) })
+  }
+  if (a.kind === 'null') return m.bidpractice_why_null({ game: NULL_NAMES[a.which], value: a.value })
+  const g = a.game
+  if (g.contract.kind === 'grand') return m.bidpractice_why_grand({ jacks: jacksOf(hand), aces: sideAces(hand), value: g.value, ...calc(g) })
+  return m.bidpractice_why_game({ trumps: g.trumps, aces: sideAces(hand, g.contract.kind === 'suit' ? g.contract.trump : undefined), value: g.value, ...calc(g) })
+}
+
+/** The facts of the contract the player chose instead. */
+function yoursLine(hand: Card[], c: ContractKey): string {
+  if (c === 'N') return m.bidpractice_yours_null()
+  if (c === 'G') return m.bidpractice_yours_grand({ jacks: jacksOf(hand), aces: sideAces(hand) })
+  const v = tenCardValues(hand).find((g) => g.contract.kind === 'suit' && g.contract.trump === c)!
+  return m.bidpractice_yours_game({ game: contractName(v.contract), trumps: v.trumps, aces: sideAces(hand, c) })
 }
 
 /** The third question for a guest (SKATGO-149, as the ladder's gate, SKATGO-112): why, and the way in, Clerk's window
@@ -292,6 +409,29 @@ const styles = stylex.create({
   title: { margin: 0, color: color.navy },
   progress: { color: color.slate },
   seat: { margin: 0, color: color.navy },
+  seatLine: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: space.x12 },
+  sheetLink: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: space.x6,
+    padding: 0,
+    border: 'none',
+    background: 'none',
+    cursor: 'pointer',
+    color: color.info,
+    textDecoration: { default: 'none', ':hover': 'underline' },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  step: { paddingTop: space.x16, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  sheetBody: { display: 'flex', flexDirection: 'column', gap: space.x16 },
+  sheetSection: { display: 'flex', flexDirection: 'column', gap: space.x6 },
+  sheetList: { margin: 0, paddingLeft: space.x20, color: color.text },
+  sheetTable: { borderCollapse: 'collapse', color: color.text },
+  sheetCell: { paddingBlock: space.x2, paddingRight: space.x12, verticalAlign: 'baseline', borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
+  sheetPoints: { whiteSpace: 'nowrap', textAlign: 'right' },
   lead: { margin: 0, color: color.slate },
   // The lesson's step card (lesson-player.tsx): white, the option shadow.
   card: {

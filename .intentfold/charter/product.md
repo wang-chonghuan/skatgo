@@ -184,7 +184,7 @@ The questions run in one order; a guest answers two, from the third an account (
 why in one short line — to keep the mistakes and the analysis (SKATGO-150: 「登录时为了保存用户的错题本，帮助用户提高，文字要精简」).
 Each question's first answer is recorded — an account's on the server, a guest's two in the browser until it signs in —
 and whether it was put right since (SKATGO-150, 「用户能记录下来他哪个题出错了吗」). Under the question the player sees their
-own bidding as ratios, no AI (「最好有个比率分析」): how many answered, right, overbid — a bid where the AI passes, or a
+own bidding as ratios, no AI (「最好有个比率分析」): how many answered, the error rate, overbid — a bid where the AI passes, or a
 higher game — and underbid — a pass where it bids, or a lower game — each with its two causes counted; a wrong number is
 always a game too high or too low, so "the wrong game" is not a kind of its own. Only first answers count. Under that
 the mistakes not yet put right, by number, each opening its question again. It is a search entry.

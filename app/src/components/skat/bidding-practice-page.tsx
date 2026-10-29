@@ -173,7 +173,7 @@ function Question({ hand, position, bid, result, onChoose, onAnswer, onNext }: {
 
 /**
  * The player's bidding so far (SKATGO-150, the human: 「超叫还是不敢叫还是叫错等等的分析……最好有个比率分析」, 「不要花哨，
- * 不要垃圾重复文字」): how many answered, then right, overbid and underbid as shares of the first answers, each kind of
+ * 不要垃圾重复文字」): how many answered, then the error rate, overbid and underbid as shares of the first answers, each kind of
  * mistake with its two causes counted; under them the mistakes not yet put right, by number, each opening its question.
  */
 /** A wrong kind's causes that happened, each with its count: "Game too high: 3". */
@@ -187,7 +187,8 @@ function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOp
   const pct = new Intl.NumberFormat(getLocale(), { style: 'percent' })
   const share = (k: number) => pct.format(k / a.answered)
   const rows: [string, string, number, string | null][] = [
-    ['right', m.bidpractice_stats_right(), a.right, null],
+    // The error rate first (「用户的错误率」), then where the mistakes went.
+    ['wrong', m.bidpractice_stats_wrong(), a.answered - a.right, null],
     ['over', m.bidpractice_stats_over(), a.over.pass + a.over.game, causes([a.over.pass, m.bidpractice_cause_bid], [a.over.game, m.bidpractice_cause_high])],
     ['under', m.bidpractice_stats_under(), a.under.pass + a.under.game, causes([a.under.pass, m.bidpractice_cause_pass], [a.under.game, m.bidpractice_cause_low])],
   ]

@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import { useAccount } from '~/lib/use-account'
-import { type Answered, type BiddingRecord, FREE_IDS } from './practice'
+import { type Answered, type Attempt, type BiddingRecord, FREE_IDS, practiceOf, readAnswered } from './practice'
 
 // The bidding practice's record (SKATGO-150), kept as the ladder's is (tricks/ladder-progress.ts): a guest's answers to
 // the free questions stay in this browser (localStorage — no cookie, nothing to consent to); an account's are the
@@ -13,16 +13,23 @@ import { type Answered, type BiddingRecord, FREE_IDS } from './practice'
 
 const NONE: BiddingRecord = {}
 
-/** An answer on top of what was there: the first answer stays, a right one later fixes it. */
-const mark = (r: Answered | undefined, chosen: number, right: boolean): Answered => (r ? { first: r.first, fixed: r.fixed || right } : { first: chosen, fixed: false })
+/** An attempt on top of what was there: the first attempt stays, a right one later fixes it. */
+const mark = (r: Answered | undefined, a: Attempt, right: boolean): Answered => (r ? { ...r, fixed: r.fixed || right } : { ...a, fixed: false })
 
-type Guest = { questions: BiddingRecord; answer: (id: string, chosen: number, right: boolean) => void; forget: () => void }
+/** This browser's rows in today's shape: SKATGO-150 kept one number per question (`readAnswered`). */
+const current = (questions: BiddingRecord): BiddingRecord =>
+  Object.fromEntries(Object.entries(questions).flatMap(([id, r]) => {
+    const p = practiceOf(id)
+    return p ? [[id, readAnswered(p, r)]] : []
+  }))
+
+type Guest = { questions: BiddingRecord; answer: (id: string, a: Attempt, right: boolean) => void; forget: () => void }
 
 const useGuest = create<Guest>()(
   persist(
     (set) => ({
       questions: {},
-      answer: (id, chosen, right) => set((s) => ({ questions: { ...s.questions, [id]: mark(s.questions[id], chosen, right) } })),
+      answer: (id, a, right) => set((s) => ({ questions: { ...s.questions, [id]: mark(current(s.questions)[id], a, right) } })),
       forget: () => set({ questions: {} }),
     }),
     { name: 'skatgo.bidding.v1', storage: createJSONStorage(() => localStorage), partialize: (s) => ({ questions: s.questions }) },
@@ -52,7 +59,7 @@ async function call(owner: string, op: 'state' | 'answer' | 'merge', body: objec
 function load(owner: string) {
   if (useMine.getState().owner === owner || loading === owner) return
   loading = owner
-  const guest = Object.fromEntries(Object.entries(useGuest.getState().questions).filter(([id]) => FREE_IDS.includes(id)))
+  const guest = Object.fromEntries(Object.entries(current(useGuest.getState().questions)).filter(([id]) => FREE_IDS.includes(id)))
   const merging = Object.keys(guest).length > 0
   call(owner, merging ? 'merge' : 'state', merging ? { questions: guest } : {})
     .then(() => {
@@ -66,7 +73,7 @@ function load(owner: string) {
 
 /** This visitor's record, who they are — an account's id, `null` for a guest, `undefined` until known — and how an
  *  answer is recorded. */
-export function useBiddingRecord(): { questions: BiddingRecord; account: string | null | undefined; answer: (id: string, chosen: number, right: boolean) => void } {
+export function useBiddingRecord(): { questions: BiddingRecord; account: string | null | undefined; answer: (id: string, a: Attempt, right: boolean) => void } {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   const account = useAccount()
@@ -75,14 +82,14 @@ export function useBiddingRecord(): { questions: BiddingRecord; account: string 
   useEffect(() => {
     if (account) load(account)
   }, [account])
-  const answer = (id: string, chosen: number, right: boolean) => {
+  const answer = (id: string, a: Attempt, right: boolean) => {
     if (account) {
       // Shown at once, then as the service has it.
       const now = useMine.getState().questions ?? {}
-      useMine.setState({ owner: account, questions: { ...now, [id]: mark(now[id], chosen, right) } })
-      call(account, 'answer', { question: id, chosen }).catch(() => console.error('bidding answer not recorded'))
-    } else if (FREE_IDS.includes(id)) useGuest.getState().answer(id, chosen, right)
+      useMine.setState({ owner: account, questions: { ...now, [id]: mark(now[id], a, right) } })
+      call(account, 'answer', { question: id, ...a }).catch(() => console.error('bidding answer not recorded'))
+    } else if (FREE_IDS.includes(id)) useGuest.getState().answer(id, a, right)
   }
   if (!mounted) return { questions: NONE, account: undefined, answer }
-  return { questions: account ? (mine ?? NONE) : account === null ? guest : NONE, account, answer }
+  return { questions: account ? (mine ?? NONE) : account === null ? current(guest) : NONE, account, answer }
 }

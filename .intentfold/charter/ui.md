@@ -237,13 +237,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     German "Skat kostenlos spielen und besser werden", SKATGO-132 — never reworded otherwise; 48px, `fHero`) — no lead
     (「这个副标题删了」), no buttons, no picture (SKATGO-120), never felt (Redline 4); the illustration stays only in the link
     previews (`og.mjs`);
-  - then the ways in (`dims.homeWays`): on the left four colour cards two by two, each one link, `dims.homeCard` in shape,
+  - then the ways in (`dims.homeWays`): on the left four colour cards two by two, each one link, `dims.homeCard` in shape — the shape, never the title, sets the height
+    (SKATGO-151, 「和左边的learn卡片，上下没对齐」) —
     a white icon at the top (`icon.tile`) and its title at the bottom (`homeTileTitle`, bold, 36px, 28px on a phone — the
     human: 「卡片上的字，应该用这种尺寸和粗的字」, then 「四个卡片上的字还是太小」; the other cards' titles `homeCardTitle`, bold, 28px), its card art cropped at the
     corner under its colour, rising on hover — "1 Spiel heute" (`tileGreen`, `CalendarDays`, to `/daily`; the same words
     once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, lucide's `Swords`, crossed — the human: 「不要用机器人」, then 「用两个交错的剑吧，x形的」 — to
     `/play`), "Lernen" (`tileOrange`,
-    `GraduationCap`, the course) and "Reizen üben" (`tileNavy`, lucide's `Gavel`, an auction's hammer, to `/bidding-practice`; SKATGO-149, the
+    `GraduationCap`, the course) and "Reizen" (`tileNavy`, lucide's `Gavel`, an auction's hammer, to `/bidding-practice`; one line since SKATGO-151, the page
+    keeping "Reizen üben"; SKATGO-149, the
     human: 「practice卡片的位置，做成一个叫牌练习的东西」 — the exercises' "Üben" with its `Puzzle` stood there before); on the right two long white cards, each
     a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play
     showing its days as on `/profile`, without dates or scale, as one smooth line — a monotone cubic through the days'
@@ -322,21 +324,29 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   corner, the next one ringed `go`, and for a guest a lock from the third, and under it one `go` button to the
   next ("Aufgabe n spielen"); then the other kinds of SKATGO-103, each opening to its exercises (hidden by
   SKATGO-110, shown again by SKATGO-119); under the cards, small `info` links to the article and the rules. The bidding practice
-  (`bidding-practice-page.tsx`, SKATGO-149) is a Skat-Tricks exercise's page without the way back: the H1 with the place in the run beside it, "1/300" in the
-  same type in slate (SKATGO-150, the human: 「上面那个单列进度的行不要」), then the white card — "You sit in middlehand" in the question's type (`prompt`, navy; SKATGO-150: 「不要小字，要和how high do you bid同一字体」) and the ten cards as big as the hand at the table, in one row (`Fan`, `lg`, `row`, as the ladder's;
-  SKATGO-109 「最好和手牌一样大」) over a `hairline` rule, "How high do you bid?" and four choice tiles two by two, "Pass" and the numbers
-  rising; once answered, the verdict `Panel` as an exercise's — "Right!" / "Not quite.", the AI's answer with the
-  trumps the hand holds in its game and the calculation, or for a pass the best trump suit and how few trumps it holds, a
-  line per other number ("**22** would be Spades ♠ with 4 trumps: without 1, game 2 × 11.") — and "Next question" as the
-  one `go`. A guest's third question is the ladder's gate in the card's place (SKATGO-112: no lock), its line the reason to
-  sign in and nothing more, "Save your mistakes and get better." (SKATGO-150). Once anything is answered, a second white card under it: "Your stats" (chess.com's and Funbridge's word; the human: 「your biding这个词不好」)
-  (`prompt`, navy, as "How high do you bid?") with "n answered" (`appText`, slate) at the right, then Wrong (the error rate, 「用户的错误率」), Overbid and Underbid each a row over a
-  `hairline` rule — the name and its share (`appBtnStrong`) at the two ends, a wrong kind's causes under it in slate,
-  only those that happened ("Bid instead of passing: 6 · Game too high: 3") — and last "Mistakes", folded: one line with the count and a chevron, opening to a small `quiet` button per
-  question number not yet put right (「mistakes 最好可以折叠，否则我怕太多」), opening it in the run's place until "Next question". No bar, no colour of its own (SKATGO-150, the
-  human: 「不要花哨，不要垃圾重复文字」). Under it, as under the
-  Skat-Tricks, small `info` links to the bidding table and the rules, and under them one small slate line saying what the page is, for
-  its search entry — at the foot, never a lead under the title (SKATGO-135, 「这个副标题删了」). An open-card
+  (`bidding-practice-page.tsx`, SKATGO-149) is a Skat-Tricks exercise's page without the way back: the H1 with the place
+  in the run beside it, "1/300" in the same type in slate (SKATGO-150, 「上面那个单列进度的行不要」), then the white card —
+  "You sit in middlehand" in the question's type (`prompt`, navy; SKATGO-150: 「不要小字，要和how high do you bid同一字体」) with
+  the cheat sheet's link at the line's right (`appLink`, `info`, lucide's `BookOpen`, "Bidding cheat sheet" / "Reiz-Spickzettel";
+  SKATGO-151), the ten cards as big as the hand at the table, in one row (`Fan`, `lg`, `row`; SKATGO-109 「最好和手牌一样大」)
+  over a `hairline` rule; then the two steps of SKATGO-151, each a `Choice` that marks right and wrong at once: "What do you
+  play?" with ♣ ♠ ♥ ♦ Grand Null two by two, on a phone too, and "Pass" last, alone on its row; and, unless the AI passes, over a `hairline`
+  rule "The AI plays Diamonds ♦. How high can you bid?" with three numbers (four for a Null), two by two. Once both are answered, the
+  verdict `Panel` as an exercise's — "Right!" with its check / "Not quite." with no red cross (SKATGO-151, 「不要红叉那个图标」), then a
+  paragraph per step: the contract (trumps per suit and the
+  cheat sheet's rule), the bid ("**Up to 18:** Without 1 (♣B not in your hand), plus 1 for game = 2, × 9 = **18**."), and when
+  wrong, the contract chosen and the number chosen, a paragraph each — and "Next question" as the one `go`. The cheat sheet is the site's `Modal`:
+  its seven sections one under another, each heading `appBtnStrong` navy over `appText`, the point count a plain table of
+  `hairline` rows. A guest's third question is the ladder's gate in the card's place (SKATGO-112: no lock), its line the
+  reason to sign in and nothing more, "Save your mistakes and get better." (SKATGO-150). Once anything is answered, a second
+  white card under it: "Your stats" (chess.com's and Funbridge's word; 「your biding这个词不好」; `prompt`, navy) with
+  "n answered" (`appText`, slate) at the right, then Wrong (the error rate, 「用户的错误率」) and the four kinds — "Passed,
+  should have played", "Played, should have passed", "Wrong game", "Wrong bid" (SKATGO-151) — each a row over a `hairline`
+  rule, the name and its share (`appBtnStrong`) at the two ends; last "Mistakes", folded: one line with the count and a
+  chevron, opening to a small `quiet` button per question number not yet put right (「mistakes 最好可以折叠，否则我怕太多」),
+  opening it in the run's place until "Next question". No bar, no colour of its own (SKATGO-150: 「不要花哨，不要垃圾重复文字」).
+  Under it, as under the Skat-Tricks, small `info` links to the bidding table and the rules, and under them one small slate
+  line saying what the page is, for its search entry — at the foot, never a lead under the title (SKATGO-135, 「这个副标题删了」). An open-card
   endgame's page (`tricks-exercise-page.tsx`, `open-endgame.tsx`) is the game's full-screen table (SKATGO-111,
   the human: 「打牌界面那种效果，各种尺寸屏幕都刚好全屏」): no site header, every hand open, the opponents' cards
   as big as the learner's (`stage.openStack*`); at the top, in the info board's place and make, a board with

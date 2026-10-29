@@ -39,7 +39,8 @@ export function EntryPage() {
         <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
         <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
         <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
-        {/* The bidding practice (SKATGO-149, the human: 「practice卡片的位置，做成一个叫牌练习的东西」): an auction's hammer. */}
+        {/* The bidding practice (SKATGO-149, the human: 「practice卡片的位置，做成一个叫牌练习的东西」): an auction's hammer; its
+            title one line, "Bidding" (SKATGO-151). */}
         <Way to="/bidding-practice" section="bidding" tone="practice" Icon={Gavel} art={PRACTICE_ART} title={m.home_bidding()} />
         <ProgressCard />
         <div data-testid="entry-card" data-section="elo" {...stylex.props(styles.long, styles.elo)}>
@@ -267,6 +268,9 @@ const styles = stylex.create({
     position: 'relative',
     display: 'flex',
     aspectRatio: dims.homeCard,
+    // Its shape, never its words, sets its height: a title wider type wraps once more must not make one card taller than
+    // its neighbour (SKATGO-151, the human: 「和左边的learn卡片，上下没对齐」).
+    minHeight: 0,
     boxSizing: 'border-box',
     padding: { default: space.x24, [bp.phone]: space.x16 },
     overflow: 'hidden',

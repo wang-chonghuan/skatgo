@@ -2,14 +2,15 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'
 import pg from 'pg'
-import { FREE_IDS, PRACTICE_QUESTIONS, optionsOf, practiceHand, questionId, rightAnswer } from '../../app/src/lib/skat/bidding/practice'
+import { FREE_IDS, PRACTICE_QUESTIONS, questionId, solutionOf, valueOptions } from '../../app/src/lib/skat/bidding/practice'
 import { biddingAnswer, biddingMerge } from '../src/bidding'
 import { Store } from '../src/store'
 
-// The bidding practice's record (SKATGO-150): the first answer stays, a later right one fixes the question, an answer
-// not offered is refused, and a guest's answers merge in once without overwriting the account's.
+// The bidding practice's record (SKATGO-150; two steps since SKATGO-151): the first attempt stays, a later one right in
+// both steps fixes the question, an attempt not offered is refused, SKATGO-150's one-number rows are read as their
+// contract, and a guest's attempts merge in once without overwriting the account's.
 
-test('bidding record: first answer kept, fixed by a later right one, guest answers merged', { timeout: 60_000 }, async (t) => {
+test('bidding record: first attempt kept, fixed by a later right one, old rows read, guest attempts merged', { timeout: 60_000 }, async (t) => {
   const base = new URL(process.env.DATABASE_URL || '')
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname), 'Tests refuse external databases')
   const server = new pg.Pool({ connectionString: base.href })
@@ -25,25 +26,40 @@ test('bidding record: first answer kept, fixed by a later right one, guest answe
   await store.migrate()
   assert.ok(await store.acquire(() => {}))
 
-  const q = PRACTICE_QUESTIONS[5]
+  // A question the AI plays: a wrong bid first, then right in both steps.
+  const q = PRACTICE_QUESTIONS.find((p) => solutionOf(p).value !== null)!
   const id = questionId(q)
-  const right = rightAnswer(q)
-  const wrong = optionsOf(practiceHand(q), q.bid).find((v) => v !== right)!
-  let r = await biddingAnswer(store, 'user:anna', id, wrong)
-  assert.deepEqual(r[id], { first: wrong, fixed: false })
-  r = await biddingAnswer(store, 'user:anna', id, right)
-  assert.deepEqual(r[id], { first: wrong, fixed: true }, 'the first answer stays; the right one fixes it')
-  await assert.rejects(biddingAnswer(store, 'user:anna', id, 999), /not_offered/)
+  const sol = solutionOf(q)
+  const wrongValue = valueOptions(q).find((v) => v !== sol.value)!
+  let r = await biddingAnswer(store, 'user:anna', id, { contract: sol.contract, value: wrongValue })
+  assert.deepEqual(r[id], { contract: sol.contract, value: wrongValue, fixed: false })
+  r = await biddingAnswer(store, 'user:anna', id, { contract: sol.contract, value: sol.value })
+  assert.deepEqual(r[id], { contract: sol.contract, value: wrongValue, fixed: true }, 'the first attempt stays; the right one fixes it')
+  await assert.rejects(biddingAnswer(store, 'user:anna', id, { contract: sol.contract, value: 999 }), /not_offered/)
+  await assert.rejects(biddingAnswer(store, 'user:anna', id, { contract: 'pass', value: null }), /not_offered/, 'step 2 is asked when the AI plays')
 
-  // A guest's two free questions join; one the account already answered keeps the account's first answer.
+  // A SKATGO-150 row (one number) is read as the contract it stood for.
+  const pass = PRACTICE_QUESTIONS.find((p) => solutionOf(p).value === null)!
+  await store.pool.query(
+    'INSERT INTO bidding_answers (player, question, first, fixed, answered_at, updated_at) VALUES ($1, $2, $3, false, 1, 1), ($1, $4, 0, false, 1, 1)',
+    ['user:old', id, sol.value, questionId(pass)],
+  )
+  r = await biddingAnswer(store, 'user:old', questionId(pass), { contract: 'pass', value: null })
+  assert.deepEqual(r[id], { contract: sol.contract, value: sol.value, fixed: false })
+  assert.deepEqual(r[questionId(pass)], { contract: 'pass', value: null, fixed: true })
+
+  // A guest's free attempts join; one the account already answered keeps the account's first attempt.
   const [a, b] = FREE_IDS
   const qa = PRACTICE_QUESTIONS[0]
   const qb = PRACTICE_QUESTIONS[1]
-  await biddingAnswer(store, 'user:ben', a, rightAnswer(qa))
-  const guestWrong = optionsOf(practiceHand(qb), qb.bid).find((v) => v !== rightAnswer(qb))!
-  const guestOther = optionsOf(practiceHand(qa), qa.bid).find((v) => v !== rightAnswer(qa))!
-  const merged = await biddingMerge(store, 'user:ben', { [a]: { first: guestOther, fixed: false }, [b]: { first: guestWrong, fixed: false } })
-  assert.deepEqual(merged[a], { first: rightAnswer(qa), fixed: false })
-  assert.deepEqual(merged[b], { first: guestWrong, fixed: false })
-  assert.deepEqual(await biddingMerge(store, 'user:ben', { [b]: { first: guestWrong, fixed: false } }), merged, 'merging twice changes nothing')
+  const sa = solutionOf(qa)
+  const sb = solutionOf(qb)
+  await biddingAnswer(store, 'user:ben', a, { contract: sa.contract, value: sa.value })
+  const other = sb.contract === 'C' ? 'S' : 'C'
+  // The guest played a wrong contract at `b` (with step 2's first number when it was asked).
+  const guest = { [b]: { contract: other, value: sb.value === null ? null : valueOptions(qb)[0], fixed: false } } as const
+  const merged = await biddingMerge(store, 'user:ben', { [b]: guest[b] })
+  assert.deepEqual(merged[a], { contract: sa.contract, value: sa.value, fixed: false })
+  assert.deepEqual(merged[b], guest[b])
+  assert.deepEqual(await biddingMerge(store, 'user:ben', { [b]: guest[b] }), merged, 'merging twice changes nothing')
 })

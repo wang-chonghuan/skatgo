@@ -143,6 +143,11 @@ export class Store {
           player text NOT NULL, question text NOT NULL, first smallint NOT NULL, fixed boolean NOT NULL DEFAULT false,
           answered_at bigint NOT NULL, updated_at bigint NOT NULL, PRIMARY KEY (player, question)
         );
+        -- Since SKATGO-151 an attempt is two steps: the contract chosen and, when asked, the bid. SKATGO-150's rows keep
+        -- their one number in "first" and are read as the contract it stood for.
+        ALTER TABLE bidding_answers ADD COLUMN IF NOT EXISTS contract text;
+        ALTER TABLE bidding_answers ADD COLUMN IF NOT EXISTS value smallint;
+        ALTER TABLE bidding_answers ALTER COLUMN first DROP NOT NULL;
       `)
       await c.query('COMMIT')
     } catch (e) {

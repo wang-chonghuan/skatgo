@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { type Card, cardId } from '../../app/src/lib/skat/cards'
 import { deal, next, type Seat } from '../../app/src/lib/skat/game'
-import { PRACTICE_QUESTIONS, answerOf, optionsOf, practiceHand } from '../../app/src/lib/skat/bidding/practice'
+import { PRACTICE_QUESTIONS, answerOf, difficultyOf, practiceHand, solutionOf, valueOptions } from '../../app/src/lib/skat/bidding/practice'
 import { loadPool } from '../src/free'
 
 // The bidding practice (SKATGO-149): every stored question is its pool deal's seat — the same ten cards, the same
@@ -25,6 +25,10 @@ test("every bidding-practice answer is SkatZero's highest bid for those cards fr
     const maxBid = d.computers[String(seat) as '0' | '1' | '2'].maxBid
     assert.equal(q.bid, maxBid < 18 ? 0 : maxBid, `deal ${q.deal} seat ${q.seat}: answer`)
     assert.ok(answerOf(hand, q.bid), `deal ${q.deal} seat ${q.seat}: one game explains it`)
-    assert.ok(optionsOf(hand, q.bid).includes(q.bid), `deal ${q.deal} seat ${q.seat}: the answer is offered`)
+    const sol = solutionOf(q)
+    assert.ok(sol.value === null || valueOptions(q).includes(sol.value), `deal ${q.deal} seat ${q.seat}: the bid is offered`)
   }
+  // Easy to hard (SKATGO-151).
+  const steps = PRACTICE_QUESTIONS.map(difficultyOf)
+  assert.deepEqual(steps, [...steps].sort((a, b) => a - b))
 })

@@ -1,42 +1,43 @@
 import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
-import { type Answered, FREE_IDS, numberOf, offered, PRACTICE_QUESTIONS, rightAnswer } from '../../app/src/lib/skat/bidding/practice'
+import { type Answered, type Attempt, CONTRACTS, FREE_IDS, numberOf, practiceOf, readAnswered, rightAttempt, validAttempt } from '../../app/src/lib/skat/bidding/practice'
 import { Rejected, secretEquals } from './model'
 import type { Store } from './store'
 
 // The bidding practice's record (SKATGO-150, the human: 「用户能记录下来他哪个题出错了吗」): per account and question the
-// first answer given — the analysis counts it alone — and whether a later answer got it right, which clears it from the
-// mistakes. The web service calls these routes with the admission key and names the player, a signed-in account only;
+// first complete attempt — since SKATGO-151 the contract and, when asked, the bid; the analysis counts it alone — and
+// whether a later attempt got both right, which clears it from the mistakes. The web service calls these routes with the admission key and names the player, a signed-in account only;
 // a guest's answers to the free questions stay in that browser until it signs in, when they are merged in here.
 
 const player = z.string().regex(/^user:[A-Za-z0-9_]{1,64}$/)
 const question = z.string().refine((s) => numberOf(s) !== undefined)
-const chosen = z.number().int().min(0).max(999)
+const attempt = { contract: z.enum(CONTRACTS), value: z.number().int().min(0).max(999).nullable() }
 const stateInput = z.object({ player }).strict()
-const answerInput = z.object({ player, question, chosen }).strict()
+const answerInput = z.object({ player, question, ...attempt }).strict()
 const mergeInput = z.object({
   player,
-  questions: z.record(z.string().refine((s) => FREE_IDS.includes(s)), z.object({ first: chosen, fixed: z.boolean() }).strict()),
+  questions: z.record(z.string().refine((s) => FREE_IDS.includes(s)), z.object({ ...attempt, fixed: z.boolean() }).strict()),
 }).strict()
 
-const practiceOf = (id: string) => PRACTICE_QUESTIONS[numberOf(id)! - 1]
-
 async function recordOf(c: pg.PoolClient | pg.Pool, who: string): Promise<Record<string, Answered>> {
-  const { rows } = await c.query('SELECT question, first, fixed FROM bidding_answers WHERE player = $1', [who])
-  return Object.fromEntries(rows.map((r) => [r.question, { first: r.first, fixed: r.fixed }]))
+  const { rows } = await c.query('SELECT question, first, contract, value, fixed FROM bidding_answers WHERE player = $1', [who])
+  return Object.fromEntries(
+    rows
+      .filter((r) => practiceOf(r.question))
+      .map((r) => [r.question, readAnswered(practiceOf(r.question)!, r.contract ? { contract: r.contract, value: r.value, fixed: r.fixed } : { first: r.first, fixed: r.fixed })]),
+  )
 }
 
-/** One answer: the first one stays as given; a later right one marks the question fixed. */
-export async function biddingAnswer(store: Store, who: string, id: string, answer: number, now = Date.now()) {
-  const p = practiceOf(id)
-  if (!offered(p, answer)) throw new Rejected('not_offered')
-  const right = answer === rightAnswer(p)
+/** One complete attempt: the first one stays as given; a later one right in both steps marks the question fixed. */
+export async function biddingAnswer(store: Store, who: string, id: string, a: Attempt, now = Date.now()) {
+  const p = practiceOf(id)!
+  if (!validAttempt(p, a)) throw new Rejected('not_offered')
   return store.transaction(async (c) => {
     await c.query(
-      `INSERT INTO bidding_answers (player, question, first, fixed, answered_at, updated_at) VALUES ($1, $2, $3, false, $4, $4)
-       ON CONFLICT (player, question) DO UPDATE SET fixed = bidding_answers.fixed OR $5, updated_at = $4`,
-      [who, id, answer, now, right],
+      `INSERT INTO bidding_answers (player, question, contract, value, fixed, answered_at, updated_at) VALUES ($1, $2, $3, $4, false, $5, $5)
+       ON CONFLICT (player, question) DO UPDATE SET fixed = bidding_answers.fixed OR $6, updated_at = $5`,
+      [who, id, a.contract, a.value, now, rightAttempt(p, a)],
     )
     return recordOf(c, who)
   })
@@ -45,13 +46,13 @@ export async function biddingAnswer(store: Store, who: string, id: string, answe
 /** A guest's answers join the account's: an answer the account already has stays, fixed if either says so — so sending
  *  the same browser's record twice changes nothing. */
 export async function biddingMerge(store: Store, who: string, questions: Record<string, Answered>, now = Date.now()) {
-  for (const [id, r] of Object.entries(questions)) if (!offered(practiceOf(id), r.first)) throw new Rejected('not_offered')
+  for (const [id, r] of Object.entries(questions)) if (!validAttempt(practiceOf(id)!, r)) throw new Rejected('not_offered')
   return store.transaction(async (c) => {
     for (const [id, r] of Object.entries(questions)) {
       await c.query(
-        `INSERT INTO bidding_answers (player, question, first, fixed, answered_at, updated_at) VALUES ($1, $2, $3, $4, $5, $5)
-         ON CONFLICT (player, question) DO UPDATE SET fixed = bidding_answers.fixed OR EXCLUDED.fixed, updated_at = $5`,
-        [who, id, r.first, r.fixed, now],
+        `INSERT INTO bidding_answers (player, question, contract, value, fixed, answered_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $6)
+         ON CONFLICT (player, question) DO UPDATE SET fixed = bidding_answers.fixed OR EXCLUDED.fixed, updated_at = $6`,
+        [who, id, r.contract, r.value, r.fixed, now],
       )
     }
     return recordOf(c, who)
@@ -82,7 +83,7 @@ export function biddingRoutes(store: Store, key: string, ready: () => boolean) {
   router.post('/state', run(async (body) => recordOf(store.pool, stateInput.parse(body).player)))
   router.post('/answer', run(async (body) => {
     const i = answerInput.parse(body)
-    return biddingAnswer(store, i.player, i.question, i.chosen)
+    return biddingAnswer(store, i.player, i.question, { contract: i.contract, value: i.value })
   }))
   router.post('/merge', run(async (body) => {
     const i = mergeInput.parse(body)

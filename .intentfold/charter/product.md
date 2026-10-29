@@ -173,21 +173,31 @@ compared with the AI. The articles' text is SkatGo's own: no book's passages, ex
 and the articles recommend no books.
 
 A bidding practice at `/bidding-practice` (SKATGO-149, the human: 「practice卡片的位置，做成一个叫牌练习的东西，只叫牌」):
-ten cards and the seat at the bidding, and one question — how high do you bid, or do you pass; nothing is played or
-put away. The answer is SkatZero's highest bid for those cards from that seat (the human asked 「这个不用skatzero吗」),
-offered as Pass and three numbers — the answer and what the hand's other tempting games are worth — so a pick is the
-game and its value at once: it practises how a bidder thinks, the calculation one step of it (「到底要用户练习计算还是练习
-叫牌思路呢」). The first answer counts; then the AI's answer with its game's calculation ("Diamonds, without 1, game
-2 × 9 = 18") or why it passes, and what each other number would have been. Only hands one game explains are asked —
-a pass, a Null, or exactly one game's value counted from the ten cards — so SkatZero's own numbers never need showing.
-The questions run in one order; a guest answers two, from the third an account (「不登录可以练2题」), the sign-in saying
-why in one short line — to keep the mistakes and the analysis (SKATGO-150: 「登录时为了保存用户的错题本，帮助用户提高，文字要精简」).
-Each question's first answer is recorded — an account's on the server, a guest's two in the browser until it signs in —
-and whether it was put right since (SKATGO-150, 「用户能记录下来他哪个题出错了吗」). Under the question the player sees their
-own bidding as ratios, no AI (「最好有个比率分析」): how many answered, the error rate, overbid — a bid where the AI passes, or a
-higher game — and underbid — a pass where it bids, or a lower game — each with its two causes counted; a wrong number is
-always a game too high or too low, so "the wrong game" is not a kind of its own. Only first answers count. Under that
-the mistakes not yet put right, by number, each opening its question again. It is a search entry.
+ten cards and the seat at the bidding; nothing is played or put away. Since SKATGO-151 it asks in the order a learner
+thinks (the human: 「我想的是我能打什么合约」, 「答题分两步吧，先点什么合约，再点最高叫到几点」): first what do you play — a suit,
+Grand, Null (「你还没说null呢」) or pass, every contract offered on every hand — then, unless the AI passes, how high you can
+bid with the AI's contract, whatever was chosen first, so the counting is practised on every hand it plays. Each step
+says right or wrong at once; then why, step by step as asked (the human: 「为啥你现在这个解析反而还不如以前详细了？」): the
+contract — the trumps of every suit and the cheat sheet's rule the hand meets ("Trumps per suit: ♣ 3 · ♠ 4 · ♥ 3 · ♦ 6. 6
+trumps and an Ace: a good game."; for a pass "The most is 3: too few"; Grand's count), said only as far as the facts go;
+the bid — the matadors card by card, game, the base ("Without 1 (♣B not in your hand), plus 1 for game = 2, × 9 = 18"), or a
+Null's fixed value; then a contract chosen instead, its trumps and Aces by the same rules, and a wrong number, what it
+would have needed ("27 = 3 × 9 would need with or without 2"). The answer is SkatZero's highest bid for those cards from that
+seat (「这个不用skatzero吗」); only hands one game explains are asked — a pass, a Null, or exactly one game's value counted
+from the ten cards — so SkatZero's own numbers never need showing. The questions run from plain to borderline — six
+trumps or more, or three or fewer, first; then the hands the rules of thumb decide; then the rest. A bidding cheat sheet
+opens beside the question (「这个要做成一个卡片弹窗放在叫牌页面，用户点开就能看，名字叫叫牌秘籍之类的」): the order to think in,
+the rules of thumb, the point count with its thresholds, Grand's count, how high to bid, the seat and Null — every point
+of the Skat books' teaching, clearer and never twice (「你必须覆盖刚才书上原文所有的点，还要写的更好更易懂，但是不能啰嗦和重复」),
+in SkatGo's own words. A guest answers two, from the third an account (「不登录可以练2题」), the sign-in saying why in one
+short line — to keep the mistakes and the analysis (SKATGO-150: 「登录时为了保存用户的错题本，帮助用户提高，文字要精简」). Each
+question's first complete attempt is recorded — an account's on the server, a guest's two in the browser until it signs
+in — and whether it was put right since (SKATGO-150, 「用户能记录下来他哪个题出错了吗」). Under the question the player sees
+their own bidding as ratios, no AI (「最好有个比率分析」): how many answered, the error rate, and the four kinds of mistake —
+passed where the AI plays, played where it passes, the wrong game, the right game with the wrong bid (SKATGO-151; the
+human's 「超叫还是不敢叫还是叫错」 and the counting). Only first attempts count. Under that the mistakes not yet put right,
+by number, folded, each opening its question again. There is no set of ten (「不要10题，你就自然，先不用这个复杂」). It is a
+search entry.
 
 A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted
 「官方发公告，官方发一些技术的文章，用户可以评论，用户也可以发文章……就做一个简单版本的。以后既能用来seo又有个公告和用户交流，放文章的地方」.

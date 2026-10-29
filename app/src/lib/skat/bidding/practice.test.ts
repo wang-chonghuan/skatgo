@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { cards } from '../tricks/exercises/cards-of'
-import { type BiddingRecord, PRACTICE_FREE, PRACTICE_QUESTIONS, analysisOf, answerOf, gameOf, mistakesOf, optionsOf, practiceHand, questionAt, questionId, rightAnswer, tenCardValues } from './practice'
+import { type BiddingRecord, CONTRACTS, PRACTICE_FREE, PRACTICE_QUESTIONS, analysisOf, answerOf, difficultyOf, gameOf, mistakesOf, practiceHand, questionAt, questionId, readAnswered, solutionOf, tenCardValues, validAttempt, valueOptions } from './practice'
 
 // SKATGO-149: the bidding practice's question logic — what the ten cards are worth, the game behind the answer, the
 // options offered.
@@ -29,26 +29,32 @@ describe('bidding practice', () => {
     expect(answerOf(cards('CJ SJ HJ DJ HA S7 S8 S9 D7 D8'), 60)).toBeNull()
   })
 
-  it('offers pass, the answer and the most tempting other games, in order', () => {
-    const o = optionsOf(HAND, 18)
-    expect(o[0]).toBe(0)
-    expect(o).toContain(18)
-    expect(o).toHaveLength(4)
-    expect([...o].sort((a, b) => a - b)).toEqual(o)
-    expect(optionsOf(HAND, 0)[0]).toBe(0)
+  it('names the AI\'s contract and offers its bid among neighbours; a Null among the four Null values', () => {
+    for (const q of PRACTICE_QUESTIONS) {
+      const sol = solutionOf(q)
+      expect(CONTRACTS).toContain(sol.contract)
+      if (sol.value === null) {
+        expect(sol.contract).toBe('pass')
+        expect(valueOptions(q)).toEqual([])
+        continue
+      }
+      const v = valueOptions(q)
+      expect(v).toContain(sol.value)
+      if (sol.contract === 'N') expect(v).toEqual([23, 35, 46, 59])
+      else {
+        expect(v).toHaveLength(3)
+        const base = v[1] - v[0]
+        expect(v[0]).toBeGreaterThanOrEqual(2 * base)
+      }
+    }
+    expect(PRACTICE_QUESTIONS.some((q) => solutionOf(q).contract === 'N')).toBe(true)
     expect(gameOf(HAND, 18)?.contract).toEqual({ kind: 'suit', trump: 'D' })
   })
 
-  it('every stored question has a game behind its answer, the answer among four options', () => {
-    for (const q of PRACTICE_QUESTIONS) {
-      const hand = practiceHand(q)
-      expect(hand).toHaveLength(10)
-      expect(answerOf(hand, q.bid)).not.toBeNull()
-      const o = optionsOf(hand, q.bid)
-      expect(o).toContain(q.bid)
-      expect(o.length).toBeGreaterThanOrEqual(3)
-    }
-    expect(PRACTICE_QUESTIONS.filter((q) => q.bid === 0).length).toBeGreaterThan(PRACTICE_QUESTIONS.length / 4)
+  it('runs from easy to hard; the first twenty are never in doubt', () => {
+    const steps = PRACTICE_QUESTIONS.map(difficultyOf)
+    expect(steps).toEqual([...steps].sort((a, b) => a - b))
+    expect(steps.slice(0, 20).every((d) => d === 1)).toBe(true)
   })
 
   it('runs in one order and starts again after the last; two questions are free', () => {
@@ -57,26 +63,38 @@ describe('bidding practice', () => {
     expect(PRACTICE_FREE).toBe(2)
   })
 
-  it('sorts first answers into right, overbid and underbid, each by its cause; lists the mistakes not put right', () => {
-    const pass = PRACTICE_QUESTIONS.find((q) => q.bid === 0)!
-    const bids = PRACTICE_QUESTIONS.filter((q) => q.bid > 0)
-    // A bid question where both a higher and a lower game are offered.
-    const both = bids.find((q) => {
-      const o = optionsOf(practiceHand(q), q.bid)
-      return o.some((v) => v > q.bid) && o.some((v) => v > 0 && v < q.bid)
-    })!
-    const other = bids.find((q) => q !== both)!
-    const opts = optionsOf(practiceHand(both), both.bid)
+  it('accepts an attempt only with step 2 exactly when the AI plays', () => {
+    const plays = PRACTICE_QUESTIONS.find((q) => solutionOf(q).value !== null)!
+    const passes = PRACTICE_QUESTIONS.find((q) => solutionOf(q).value === null)!
+    expect(validAttempt(plays, { contract: 'pass', value: valueOptions(plays)[0] })).toBe(true)
+    expect(validAttempt(plays, { contract: 'pass', value: null })).toBe(false)
+    expect(validAttempt(plays, { contract: 'C', value: 1 })).toBe(false)
+    expect(validAttempt(passes, { contract: 'G', value: null })).toBe(true)
+    expect(validAttempt(passes, { contract: 'pass', value: 18 })).toBe(false)
+  })
+
+  it('sorts first attempts into right, passed, played, wrong game and wrong bid; lists the mistakes not put right', () => {
+    const plays = PRACTICE_QUESTIONS.filter((q) => solutionOf(q).value !== null && solutionOf(q).contract !== 'N')
+    const passes = PRACTICE_QUESTIONS.filter((q) => solutionOf(q).value === null)
+    const [p1, p2, p3, p4] = plays
+    const s = (q: (typeof PRACTICE_QUESTIONS)[number]) => solutionOf(q)
+    const otherSuit = (c: string) => (c === 'C' ? 'S' : 'C') as 'C' | 'S'
     const record: BiddingRecord = {
-      [questionId(pass)]: { first: optionsOf(practiceHand(pass), 0)[1], fixed: false }, // bid where it passes
-      [questionId(both)]: { first: opts.find((v) => v > both.bid)!, fixed: true }, // a higher game, put right since
-      [questionId(other)]: { first: 0, fixed: false }, // passed where it bids
-      [questionId(bids[bids.length - 1])]: { first: rightAnswer(bids[bids.length - 1]), fixed: false },
+      [questionId(p1)]: { contract: s(p1).contract, value: s(p1).value, fixed: false }, // right
+      [questionId(p2)]: { contract: 'pass', value: s(p2).value, fixed: false }, // passed where it plays
+      [questionId(passes[0])]: { contract: 'G', value: null, fixed: true }, // played where it passes, put right since
+      [questionId(p3)]: { contract: otherSuit(s(p3).contract), value: s(p3).value, fixed: false }, // wrong game
+      [questionId(p4)]: { contract: s(p4).contract, value: valueOptions(p4).find((v) => v !== s(p4).value)!, fixed: false }, // wrong bid
     }
-    expect(analysisOf(record)).toEqual({ answered: 4, right: 1, over: { pass: 1, game: 1 }, under: { pass: 1, game: 0 } })
+    expect(analysisOf(record)).toEqual({ answered: 5, right: 1, passed: 1, played: 1, game: 1, value: 1 })
     const n = (q: (typeof PRACTICE_QUESTIONS)[number]) => PRACTICE_QUESTIONS.indexOf(q) + 1
-    expect(mistakesOf(record)).toEqual([n(pass), n(other)].sort((x, y) => x - y))
-    // A lower game is underbid by game.
-    expect(analysisOf({ [questionId(both)]: { first: opts.find((v) => v > 0 && v < both.bid)!, fixed: false } }).under).toEqual({ pass: 0, game: 1 })
+    expect(mistakesOf(record)).toEqual([n(p2), n(p3), n(p4)].sort((x, y) => x - y))
+  })
+
+  it('reads a SKATGO-150 answer (one number) as the contract it stood for', () => {
+    const plays = PRACTICE_QUESTIONS.find((q) => solutionOf(q).value !== null && solutionOf(q).contract !== 'N')!
+    const sol = solutionOf(plays)
+    expect(readAnswered(plays, { first: sol.value!, fixed: false })).toEqual({ contract: sol.contract, value: sol.value, fixed: false })
+    expect(readAnswered(plays, { first: 0, fixed: true })).toEqual({ contract: 'pass', value: null, fixed: true })
   })
 })

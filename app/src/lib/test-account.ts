@@ -31,5 +31,5 @@ export function testAccount(request: Pick<Request, 'url' | 'headers'>): TestAcco
 /** The test account behind the page's own request, for the page (the root route's loader); null in the
  *  browser and whenever the two conditions above do not hold. */
 export const readTestAccount = createIsomorphicFn()
-  .server((): string | null => testAccount(getRequest())?.userId ?? null)
-  .client((): string | null => null)
+  .server((): TestAccount | null => testAccount(getRequest()))
+  .client((): TestAccount | null => null)

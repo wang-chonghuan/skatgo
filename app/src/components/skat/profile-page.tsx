@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 
 import { ForumBody } from './forum-body'
 import { Btn, Panel, linkLook } from './ui'
+import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
 import { type ProfileDay, type ProfileDeal, type ProfileNote, type ProfileWeek, daysOf, trendOf, weeksOf } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
@@ -42,7 +43,7 @@ export function ProfilePage() {
         {account === null ? (
           <div data-testid="profile-sign-in">
             <SignInButton mode="modal">
-              <Btn testId="profile-sign-in-go" size="lg">{m.profile_sign_in()}</Btn>
+              <Btn testId="profile-sign-in-go" size="lg" onClick={() => track('sign_in_clicked', { at: 'profile' })}>{m.profile_sign_in()}</Btn>
             </SignInButton>
           </div>
         ) : account === undefined || record === null ? (

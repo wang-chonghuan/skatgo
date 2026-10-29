@@ -22,6 +22,10 @@ export const readProjectKey = createIsomorphicFn()
   })
   .client((): string | null => null)
 
+/** Where the browser sends PostHog's requests: skatgo.com's own relay to PostHog Cloud EU (SKATGO-152,
+ *  lib/analytics-relay.ts), a path that names nothing. */
+export const RELAY_PATH = '/hx'
+
 /**
  * Only the published site reports. Derived from SITE_URL rather than listed again, so localhost, a
  * ticket preview and the Render service hostname (skatgo.onrender.com) send nothing — which is what
@@ -52,13 +56,26 @@ export type ProductEvents = {
   course_complete_cta_clicked: Empty
   /** A game against the computers was dealt: free play, or lesson 11's game. */
   game_started: { mode: GameMode }
-  /** That game was settled. `score` is the learner's game value as declarer, 0 as a defender. */
-  game_finished: { mode: GameMode; won: boolean; score: number }
+  /** That game was settled. `score` is the learner's game value as declarer, 0 as a defender; since SKATGO-152 also
+   *  the learner's side, the game played, the bid it was won at, the learner's Seeger-Fabian score and the AI's from
+   *  the same seat on the same cards (null when its review did not come). */
+  game_finished: { mode: GameMode; won: boolean; score: number; role: 'declarer' | 'defender'; contract: string; bid: number; sf: number; ai_sf: number | null }
+  /** Free play's round of six deals was over (SKATGO-152): the learner's Seeger-Fabian total and the AI's from the
+   *  same seats, over the deals whose AI game is known. */
+  free_round_finished: { total: number; ai_total: number }
+  /** An exercise was answered, its first answer (SKATGO-152): which section — a Skat-Tricks type, or `bidding` —
+   *  its number there, and whether it was right. */
+  exercise_finished: { section: string; number: number; right: boolean }
+  /** A sign-in or sign-up button was pressed (SKATGO-152): where on the page; the page itself comes with every event. */
+  sign_in_clicked: { at: SignInAt }
+  /** An account made within the hour was signed in for the first time in this browser (SKATGO-152). */
+  account_signed_up: Empty
   /** One of today's tournaments was entered: its start button pressed while none of its deals was open.
    *  `deals` says which (SKATGO-77). */
   daily_started: { deals: number }
-  /** A tournament's last deal today was finished. */
-  daily_finished: { deals: number; total: number }
+  /** A tournament's last deal today was finished, and the name the entry stands under on the board (SKATGO-152;
+   *  null when the board did not answer). */
+  daily_finished: { deals: number; total: number; name: string | null }
   /** The deal of the day's result was shared (SKATGO-131): through the share sheet, copied, or neither worked. */
   dod_shared: { how: 'whatsapp' | 'facebook' | 'telegram' | 'x' | 'sheet' | 'copy' | 'failed' }
   /** A shared result's page was opened (SKATGO-132): through which platform's link, and whether on its own day. */
@@ -73,6 +90,7 @@ export type ProductEvents = {
   room_started: { humans: number }
 }
 export type GameMode = 'free' | 'lesson'
+export type SignInAt = 'header' | 'home' | 'daily' | 'profile' | 'tricks' | 'bidding' | 'forum_post' | 'forum_comment' | 'table_open' | 'table_sign_up'
 type Empty = Record<string, never>
 
 /**
@@ -91,4 +109,54 @@ export function track<E extends keyof ProductEvents>(
   void import('posthog-js').then(({ default: posthog }) => {
     if (posthog.__loaded) posthog.capture(event, detail.props)
   })
+}
+
+/** What PostHog keeps about the visitor beyond their events (SKATGO-152): the name they stand under on the
+ *  leaderboard, once it is known. Only on the published site, like every event. */
+export function setPerson(props: { nickname: string }) {
+  if (typeof window === 'undefined' || !isPublishedSite(window.location.hostname)) return
+  void import('posthog-js').then(({ default: posthog }) => {
+    if (posthog.__loaded) posthog.setPersonProperties(props)
+  })
+}
+
+/** An account as PostHog is told about it: its Clerk id and when it was made (ms; null when not known). */
+export type Person = { id: string; createdAt: number | null }
+/** How new an account may be for its first sign-in in a browser to count as signing up (SKATGO-117's hour). */
+const NEW_ACCOUNT_MS = 60 * 60 * 1000
+/** The account this browser last announced, so a sign-in is announced once and a sign-out is noticed. */
+const ANNOUNCED = 'skatgo.account.v1'
+
+/**
+ * Tells PostHog who is signed in (SKATGO-152), each time that is settled on a page. An account is identified by its
+ * Clerk id, with the database's `user:<id>` as a property, so the browser's events before sign-in become the
+ * account's too. An account's first sign-in in this browser is announced on the window as `skatgo:identify`, as
+ * `track` announces events, and an account made within the hour counts as signed up. No account where one was
+ * signed in means it signed out: PostHog forgets it, and what follows is a new visitor's.
+ */
+export function identify(person: Person | null) {
+  if (typeof window === 'undefined') return
+  let announced: string | null = null
+  try {
+    announced = localStorage.getItem(ANNOUNCED)
+    if (person) localStorage.setItem(ANNOUNCED, person.id)
+    else localStorage.removeItem(ANNOUNCED)
+  } catch {
+    // Storage refused: PostHog's own state below still decides what it is told.
+  }
+  const fresh = person ? announced !== person.id : announced !== null
+  if (fresh) window.dispatchEvent(new CustomEvent('skatgo:identify', { detail: person }))
+  if (isPublishedSite(window.location.hostname)) {
+    void import('posthog-js').then(({ default: posthog }) => {
+      if (!posthog.__loaded) return
+      const held = posthog.get_property('$user_state') === 'identified' ? posthog.get_distinct_id() : null
+      if (!person) {
+        if (held) posthog.reset()
+      } else if (held !== person.id) {
+        const created = person.createdAt === null ? undefined : { account_created_at: new Date(person.createdAt).toISOString() }
+        posthog.identify(person.id, { player: `user:${person.id}` }, created)
+      }
+    })
+  }
+  if (person && fresh && person.createdAt !== null && Date.now() - person.createdAt < NEW_ACCOUNT_MS) track('account_signed_up')
 }

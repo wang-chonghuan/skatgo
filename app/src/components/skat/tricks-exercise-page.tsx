@@ -4,6 +4,7 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronLeft, CircleCheck, CircleX } from 'lucide-react'
 import { useState } from 'react'
 
+import { track } from '~/lib/analytics'
 import { type Card, sortHand } from '~/lib/skat/cards'
 import { cardLabel, contractName, roleName, suitName } from '~/lib/skat/i18n'
 import type { CardRow, ChoiceStep, PickStep, PlayStep } from '~/lib/skat/lessons/types'
@@ -67,10 +68,12 @@ function ExerciseView({ id }: { id: string }) {
   const callbacks = {
     once: true,
     onSolved: () => {
+      track('exercise_finished', { section: exercise.type, number: n, right: true })
       setResult('right')
       if (record) ladder.answer(exercise.id, true)
     },
     onMistake: () => {
+      track('exercise_finished', { section: exercise.type, number: n, right: false })
       setResult('wrong')
       if (record) ladder.answer(exercise.id, false)
     },
@@ -204,7 +207,7 @@ function LadderGate() {
       </div>
       <div {...stylex.props(styles.actions)}>
         <SignInButton mode="modal">
-          <Btn testId="tricks-ladder-sign-in" tone="go">
+          <Btn testId="tricks-ladder-sign-in" tone="go" onClick={() => track('sign_in_clicked', { at: 'tricks' })}>
             {m.tricks_ladder_gate_button()}
           </Btn>
         </SignInButton>

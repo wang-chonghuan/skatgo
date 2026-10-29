@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
-import { track } from '~/lib/analytics'
+import { setPerson, track } from '~/lib/analytics'
 import { type DailyError, dailyAct, dailyBoard, dailyState, dailyTalk, isError } from '~/lib/daily-api'
 import { useTableTalk } from '~/lib/table-talk'
 import { useAccount } from '~/lib/use-account'
@@ -66,7 +66,7 @@ export function DailyEntry({ waiting }: { waiting?: ReactNode }) {
           {account === null ? (
             <div data-testid="daily-sign-in" {...stylex.props(styles.action)}>
               <SignInButton mode="modal">
-                <Btn testId="daily-sign-in-go" size="lg">{m.daily_sign_in()}</Btn>
+                <Btn testId="daily-sign-in-go" size="lg" onClick={() => track('sign_in_clicked', { at: 'daily' })}>{m.daily_sign_in()}</Btn>
               </SignInButton>
             </div>
           ) : (
@@ -267,7 +267,14 @@ export function DailyTable({ size = DAILY_DEALS }: { size?: DailySize }) {
     // things stand. A deal never restarts; the same cards come back as they were left.
     if (isError(r)) return r.error === 'day_over' ? onLeave() : void load()
     if (!r.steps?.length) return void load()
-    if (r.status.finished && !reply.status.finished) track('daily_finished', { deals: size, total: r.status.totals[PLAYER] })
+    // The name the entry stands under is given as it finishes (SKATGO-90); the board says it (SKATGO-152).
+    if (r.status.finished && !reply.status.finished) {
+      void dailyBoard(0, size).then((b) => {
+        const name = isError(b) ? null : (b.me?.nickname ?? null)
+        track('daily_finished', { deals: size, total: r.status.totals[PLAYER], name })
+        if (name) setPerson({ nickname: name })
+      })
+    }
     setReply(r)
     setShown(r.steps[0])
     setQueue(r.steps.slice(1))

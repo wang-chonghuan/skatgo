@@ -71,15 +71,16 @@ export const Route = createRootRoute({
 function RootComponent() {
   const { posthogKey, testAccount } = Route.useLoaderData()
   return (
-    <RootDocument posthogKey={posthogKey}>
+    <RootDocument>
       <TestAccount.Provider value={testAccount}>
+        <ProductAnalytics projectKey={posthogKey} />
         <SkatLayout />
       </TestAccount.Provider>
     </RootDocument>
   )
 }
 
-function RootDocument({ children, posthogKey }: Readonly<{ children: ReactNode; posthogKey: string | null }>) {
+function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
     // The theme's generated CSS is @scope'd to [data-astryx-theme]; writing the attributes here,
     // server-side, is what keeps the first paint themed instead of flashing unstyled.
@@ -91,7 +92,6 @@ function RootDocument({ children, posthogKey }: Readonly<{ children: ReactNode; 
         {import.meta.env.DEV && <link rel="stylesheet" href="/virtual:stylex.css" />}
       </head>
       <body>
-        <ProductAnalytics projectKey={posthogKey} />
         {/* Accounts (SKATGO-12): Clerk's provider sits inside <body>, as its docs require. */}
         <ClerkProvider appearance={{
           ...clerkAppearance,

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-152",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-152",
+  "branch": "SKATGO-152-posthog-identify",
+  "base": "e64d09e",
+  "ports": { "web": 55152, "multiplayer": 56152, "database": 57152 }
+}

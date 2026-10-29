@@ -442,11 +442,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   its round in the strip as the tournament does, "Spiel n von 6 · gesamt X"; after the sixth deal the
   round's result takes the felt's place: a white panel with its `VsAiTable`, "Neue Runde" (`go`) and
   "Tisch verlassen" (`quiet`) (SKATGO-88). Lina's and Noah's table talk (SKATGO-142) is a white speech bubble (`radii.panel`,
-  `elev.option`, `appText` in `navy`, the speaker's name in `appBtnStrong`) on the speaker's side: on a wide table
-  (`bp.pinned`) beside the trick frame, level with its top, toward Lina's or Noah's cards (`dims.talkWidth`); narrower,
-  in the felt's top band under the table's line, at the speaker's side, so nothing overlaps (SKATGO-143). As in a comic its
-  tail points to the speaker's face (SKATGO-148, 「像漫画一样，用哪种有箭头的泡泡，指向说话人」): up and out beside the frame,
-  out of its side toward the face in the band. One thing at a
+  `elev.option`, `appText` in `navy`, the speaker's name in `appBtnStrong`) beside the speaker's face on every screen,
+  level with its top and 8px from it (`stage.talkBeside`, at most `stage.talkMax`; with the faces off, where the face
+  would be) (SKATGO-157, 「泡泡要始终从头像的同水平线的位置发出去，挨着头像」). As in a comic its tail points out of its side
+  at the speaker's face (SKATGO-148, 「像漫画一样，用哪种有箭头的泡泡，指向说话人」). One thing at a
   time (「按顺序来显示这些信息」): it waits while the table asks for a tap — a claim laid open, a trick to collect — or shows
   a hint or a refusal. It comes once the table has shown the moves it is about and stays
   until the next tap anywhere, which still does what it does (the human: 「最好让用户点一下屏幕再给让这个泡泡消失」); in its
@@ -469,7 +468,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   defenders (「最后谁赢了也要笑，和不高兴」); a laugh or a sulk lasts 1.5 seconds
   at most, then the face is neutral again (SKATGO-148, 「最多持续2秒……就要自动复原」). The stage keeps their room above it (131u, 113u in portrait; faces 92u and 69u: 「头像太小了，需要增大」, then 「头像有点大，应该小点」 and 「手机上65吧」): where the free height
   already holds it nothing moves; on a screen short of height the table is a little smaller rather than a face over
-  the cards. Where the talk runs in the band, it keeps between the two faces (`stage.talkBetweenFaces`). The settings carry the switch,
+  the cards. The settings carry the switch,
   "Avatare" — "Avatare von Lina und Noah am Tisch", on by default (「配置里要加上一个配置……默认是开的」), under the table
   talk's; off, the table keeps the faces' room.
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the

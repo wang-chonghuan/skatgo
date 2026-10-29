@@ -74,9 +74,11 @@ export const stage = stylex.defineVars({
   },
   /** How far a face sits in from the felt's edge, over the part of the stack that shows. */
   faceInset: { default: `calc(${u} * 4)`, [bp.portrait]: `calc(${u} * 4)` },
-  /** Where the table talk runs in the band (not beside the frame), it keeps between the two faces: the felt's width
-   *  less a face, its inset and 4u on each side. */
-  talkBetweenFaces: { default: `calc(100cqw - ${u} * 200)`, [bp.portrait]: `calc(100cqw - ${u} * 154)` },
+  /** The table talk beside the speaker's face, level with it (SKATGO-157, the human: 「泡泡要始终从头像的同水平线的位置发出去，
+   *  挨着头像」): in from the felt's edge by the face's inset, the face and 8px; no wider than the talk's 220px nor the room
+   *  between the faces (the felt's width less a face, its inset and 4u on each side). */
+  talkBeside: { default: `calc(${u} * 96 + 8px)`, [bp.portrait]: `calc(${u} * 73 + 8px)` },
+  talkMax: { default: `min(220px, calc(100cqw - ${u} * 200))`, [bp.portrait]: `min(220px, calc(100cqw - ${u} * 154))` },
   /** An opponent's card: as big as the learner's and the trick's, 130u wide (96u), only part of it on the felt (SKATGO-148,
    *  the human: 「ai的牌的尺寸应该和玩家的牌的尺寸，桌面的牌的尺寸一样，只不过ai的牌只显示半截而已」), lying sideways in a slot
    *  as wide as the card is tall. */

@@ -1,7 +1,7 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link, useLoaderData } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { CalendarDays, ChartLine, GraduationCap, Puzzle, Swords, type LucideIcon } from 'lucide-react'
+import { CalendarDays, ChartLine, Gavel, GraduationCap, Swords, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
@@ -25,7 +25,7 @@ import { Btn } from './ui'
 
 // The front page (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后显示下面的四个卡片……长卡片做两个，
 // 一个是my progress……一个是 elo ranking」): the slogan, then the ways in — four colour cards two by two, each a link
-// with its icon over its title (the deal of the day, free play, the course, the exercises), and beside them two long
+// with its icon over its title (the deal of the day, free play, the course, the bidding practice since SKATGO-149), and beside them two long
 // white cards: the player's progress, its curve when there is one, leading to the record of play, and the tournament's
 // Elo board (SKATGO-123). Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
 // hero buttons, no lead, no link row: the cards are the page. Rendered on the server; the curve in the browser.
@@ -39,8 +39,8 @@ export function EntryPage() {
         <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
         <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
         <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
-        {/* The tricks (SKATGO-82): straight to the exercises (SKATGO-105); the article is only for search engines. */}
-        <Way to="/skat-tricks" section="tricks" tone="practice" Icon={Puzzle} art={PRACTICE_ART} title={m.home_practice()} />
+        {/* The bidding practice (SKATGO-149, the human: 「practice卡片的位置，做成一个叫牌练习的东西」): an auction's hammer. */}
+        <Way to="/bidding-practice" section="bidding" tone="practice" Icon={Gavel} art={PRACTICE_ART} title={m.home_bidding()} />
         <ProgressCard />
         <div data-testid="entry-card" data-section="elo" {...stylex.props(styles.long, styles.elo)}>
           {elo ? (
@@ -54,7 +54,7 @@ export function EntryPage() {
       </div>
       {/* Under them the rest, as picture cards (SKATGO-135, the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」): a private
           table with the illustration the hero once had (SKATGO-33), and the forum with the human's picture of people at a
-          card table (`forum-card.webp`, cropped to the card). */}
+          card table (`forum-card.webp`, cropped to the card), then the exercises (SKATGO-149). */}
       <div data-testid="entry-more" {...stylex.props(styles.more)}>
         <Link to="/with-friends" data-testid="entry-card" data-section="friends" {...stylex.props(styles.white, styles.picture, styles.lift)}>
           <img src="/hero-table.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage)} />
@@ -70,6 +70,15 @@ export function EntryPage() {
             <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_forum_text()}</span>
           </span>
         </Link>
+        {/* The exercises after the forum (SKATGO-149, the human: 「把practice放到forum下面」, cover B of three drawn for it):
+            straight to them (SKATGO-105); the article is only for search engines. */}
+        <Link to="/skat-tricks" data-testid="entry-card" data-section="tricks" {...stylex.props(styles.white, styles.picture, styles.lift, styles.third)}>
+          <img src="/practice-card.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage)} />
+          <span {...stylex.props(styles.pictureBody)}>
+            <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.home_practice()}</h2>
+            <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_practice_text()}</span>
+          </span>
+        </Link>
       </div>
     </div>
   )
@@ -79,7 +88,7 @@ export function EntryPage() {
 const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
 
 /** A colour card: its icon at the top, its title at the bottom, three of skatgo's cards in the corner under its colour. */
-function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | '/play' | '/course' | '/skat-tricks'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon; art: Card[]; title: string; onClick?: () => void }) {
+function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | '/play' | '/course' | '/bidding-practice'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon; art: Card[]; title: string; onClick?: () => void }) {
   return (
     <Link to={to} data-testid="entry-card" data-section={section} onClick={onClick} {...stylex.props(styles.tile, styles.lift, tileTones[tone])}>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
@@ -330,6 +339,9 @@ const styles = stylex.create({
   pictureImage: { objectFit: 'cover' },
   pictureBody: { display: 'flex', flexDirection: 'column', gap: space.x8, padding: { default: space.x20, [bp.phone]: space.x16 } },
   pictureText: { margin: 0, color: color.slate },
+  // The third picture card on PC: in the wide third column, half of it — as wide as one colour card (both a quarter of
+  // the row less its gaps); under `bp.cards` it takes the next free place.
+  third: { gridColumn: { default: dims.homeLongColumn, [bp.cards]: 'auto' }, width: { default: dims.half, [bp.cards]: 'auto' } },
   // The curve takes what the card has left, never sizing the card itself: no taller than the colour cards' row on PC.
   // The curve and its frame take what the card has left, never sizing the card: no taller than the colour cards' row on
   // PC, `homeCurve` at the least where the card is as tall as its content.

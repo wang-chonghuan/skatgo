@@ -23,6 +23,7 @@ const PAGES = {
   scoreSheet: lazyRouteComponent(() => import('./score-sheet-page'), 'ScoreSheetPage'),
   rulesSummary: lazyRouteComponent(() => import('./rules-summary-page'), 'RulesSummaryPage'),
   tricks: lazyRouteComponent(() => import('./tricks-page'), 'TricksPage'),
+  biddingPractice: lazyRouteComponent(() => import('./bidding-practice-page'), 'BiddingPracticePage'),
   tricksExercise: lazyRouteComponent(() => import('./tricks-exercise-page'), 'TricksExercisePage'),
   forum: lazyRouteComponent(() => import('./forum-page'), 'ForumPage'),
   forumPost: lazyRouteComponent(() => import('./forum-page'), 'ForumPostPage'),

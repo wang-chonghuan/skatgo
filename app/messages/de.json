@@ -737,5 +737,20 @@
   "forum_show_translation": "Übersetzung anzeigen",
   "forum_new_badge": "Neu",
   "forum_announcement": "Ankündigung",
-  "forum_about": "Das SkatGo-Forum: Ankündigungen, Artikel über Skat und eure Fragen und Rückmeldungen."
+  "forum_about": "Das SkatGo-Forum: Ankündigungen, Artikel über Skat und eure Fragen und Rückmeldungen.",
+
+  "home_bidding": "Reizen üben",
+  "home_practice_text": "Endspiel-Rätsel und Aufgaben für alle, die die Regeln schon kennen.",
+  "bidpractice_title": "Reizen üben",
+  "bidpractice_meta_title": "Skat Reizen üben – Wie hoch darfst du reizen? | SkatGo",
+  "bidpractice_meta_description": "Reizen üben beim Skat: zehn Karten, dein Platz, eine Frage – wie hoch reizt du, oder passt du? Jede Antwort ist die der KI, mit ausgerechnetem Spielwert.",
+  "bidpractice_kicker": "Aufgabe {n} von {count}",
+  "bidpractice_prompt": "Wie hoch reizt du?",
+  "bidpractice_pass": "Passe",
+  "bidpractice_answer_game": "Die KI reizt bis **{value}**: {game}, {matadors}, Spiel {level} × {base} = {value}.",
+  "bidpractice_answer_null": "Die KI reizt bis **{value}**: {game} ist immer {value} wert.",
+  "bidpractice_answer_pass": "Die KI passt: Mit diesen Karten lohnt sich kein Spiel.",
+  "bidpractice_option": "**{value}** wäre {game}: {matadors}, Spiel {level} × {base}.",
+  "bidpractice_next": "Nächste Aufgabe",
+  "bidpractice_gate_text": "Die ersten {n} Blätter kannst du ohne Konto üben. Ab hier meldest du dich kostenlos an und übst weiter."
 }

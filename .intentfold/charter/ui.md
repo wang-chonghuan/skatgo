@@ -332,8 +332,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   sign in and nothing more, "Save your mistakes and get better." (SKATGO-150). Once anything is answered, a second white card under it: "Your stats" (chess.com's and Funbridge's word; the human: 「your biding这个词不好」)
   (`prompt`, navy, as "How high do you bid?") with "n answered" (`appText`, slate) at the right, then Wrong (the error rate, 「用户的错误率」), Overbid and Underbid each a row over a
   `hairline` rule — the name and its share (`appBtnStrong`) at the two ends, a wrong kind's causes under it in slate,
-  only those that happened ("Bid instead of passing: 6 · Game too high: 3") — and last "Mistakes" with a small `quiet` button per question number
-  not yet put right, opening it in the run's place until "Next question". No bar, no colour of its own (SKATGO-150, the
+  only those that happened ("Bid instead of passing: 6 · Game too high: 3") — and last "Mistakes", folded: one line with the count and a chevron, opening to a small `quiet` button per
+  question number not yet put right (「mistakes 最好可以折叠，否则我怕太多」), opening it in the run's place until "Next question". No bar, no colour of its own (SKATGO-150, the
   human: 「不要花哨，不要垃圾重复文字」). Under it, as under the
   Skat-Tricks, small `info` links to the bidding table and the rules, and under them one small slate line saying what the page is, for
   its search entry — at the foot, never a lead under the title (SKATGO-135, 「这个副标题删了」). An open-card

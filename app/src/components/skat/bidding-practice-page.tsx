@@ -1,7 +1,7 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { CircleCheck, CircleX } from 'lucide-react'
+import { ChevronDown, ChevronUp, CircleCheck, CircleX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { type Card, sortHand } from '~/lib/skat/cards'
@@ -213,19 +213,33 @@ function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOp
           {detail ? <span {...stylex.props(typography.appText, styles.facts)}>{detail}</span> : null}
         </div>
       ))}
-      {mistakes.length ? (
-        <div data-testid="bidding-practice-mistakes" {...stylex.props(styles.mistakes)}>
-          <span {...stylex.props(typography.appText, styles.para)}>{m.bidpractice_mistakes()}</span>
-          <div {...stylex.props(styles.mistakeList)}>
-            {mistakes.map((k) => (
-              <Btn key={k} testId="bidding-practice-mistake" tone="quiet" size="sm" onClick={() => onOpen(k)}>
-                {String(k)}
-              </Btn>
-            ))}
-          </div>
-        </div>
-      ) : null}
+      {mistakes.length ? <Mistakes list={mistakes} onOpen={onOpen} /> : null}
     </section>
+  )
+}
+
+/** The mistakes, folded under one line with their count, so a long list stays out of the way (the human: 「mistakes 最好
+ *  可以折叠，否则我怕太多」); opened, a button per question number. */
+function Mistakes({ list, onOpen }: { list: number[]; onOpen: (n: number) => void }) {
+  const [open, setOpen] = useState(false)
+  const Chevron = open ? ChevronUp : ChevronDown
+  return (
+    <details data-testid="bidding-practice-mistakes" open={open} onToggle={(e) => setOpen(e.currentTarget.open)} {...stylex.props(styles.mistakes)}>
+      <summary data-testid="bidding-practice-mistakes-head" {...stylex.props(styles.summary)}>
+        <span {...stylex.props(typography.appText, styles.para)}>{m.bidpractice_mistakes()}</span>
+        <span {...stylex.props(styles.summaryEnd)}>
+          <span {...stylex.props(typography.appBtnStrong, styles.para)}>{list.length}</span>
+          <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+        </span>
+      </summary>
+      <div {...stylex.props(styles.mistakeList)}>
+        {list.map((k) => (
+          <Btn key={k} testId="bidding-practice-mistake" tone="quiet" size="sm" onClick={() => onOpen(k)}>
+            {String(k)}
+          </Btn>
+        ))}
+      </div>
+    </details>
   )
 }
 
@@ -314,7 +328,22 @@ const styles = stylex.create({
   stat: { display: 'flex', flexDirection: 'column', gap: space.x2, paddingTop: space.x12, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   statLine: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
   mistakes: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x12, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
-  mistakeList: { display: 'flex', flexWrap: 'wrap', gap: space.x8 },
+  mistakeList: { display: 'flex', flexWrap: 'wrap', gap: space.x8, paddingTop: space.x8 },
+  summary: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space.x12,
+    cursor: 'pointer',
+    listStyleType: 'none',
+    color: color.navy,
+    '::-webkit-details-marker': { display: 'none' },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  summaryEnd: { display: 'inline-flex', alignItems: 'center', gap: space.x8 },
   link: {
     color: color.info,
     textDecoration: { default: 'none', ':hover': 'underline' },

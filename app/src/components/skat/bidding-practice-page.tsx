@@ -200,7 +200,8 @@ function Record({ a, mistakes, onOpen }: { a: Analysis; mistakes: number[]; onOp
   return (
     <section data-testid="bidding-practice-record" {...stylex.props(styles.card, styles.record)}>
       <div {...stylex.props(styles.recordHead)}>
-        <h2 {...stylex.props(typography.appBtnStrong, styles.verdictTitle)}>{m.bidpractice_stats_title()}</h2>
+        {/* The card's heading in the question's type (the human: 「Your bidding 这个怎么也是小字体呢」). */}
+        <h2 {...stylex.props(typography.prompt, styles.verdictTitle)}>{m.bidpractice_stats_title()}</h2>
         <span data-testid="bidding-practice-answered" {...stylex.props(typography.appText, styles.facts)}>{m.bidpractice_stats_answered({ n: a.answered })}</span>
       </div>
       {rows.map(([kind, label, count, detail]) => (

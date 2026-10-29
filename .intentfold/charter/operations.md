@@ -42,7 +42,10 @@ play stores nothing: each game is an encrypted token keyed from the admission ke
 key ends the games in progress. A finished deal's review — the two auctions, the trick where the player's card was furthest from the AI's,
 and in free play the AI's own game from the player's seat (SKATGO-86) — is SkatZero's work on this instance, per
 request (`/daily/review`, `/free/review`, SKATGO-79); nothing of it is stored.
-Only one database-fenced process owns rooms; liveness and gameplay readiness are separate.
+Only one database-fenced process owns rooms; liveness and gameplay readiness are separate. At a deploy the new instance,
+once SkatZero is loaded, asks the leader over Postgres (`NOTIFY skatgo_leader_handoff`) to hand over; the leader closes its
+tables, releases the lock and stays up, healthy, until Render stops it, so the new one is ready within seconds of starting —
+not after Render stops the old one a minute or more later, about three minutes before SKATGO-156 (the human: 「部署东西这么久？」).
 The service is ready only once two things are in place:
 - SkatZero's nine models are loaded, hash-verified and warmed (SKATGO-38);
 - free play's pool of deals (`multiplayer/skatzero/free-pool.json.gz`) is loaded and checked

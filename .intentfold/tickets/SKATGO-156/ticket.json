@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-156",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-156",
+  "branch": "SKATGO-156-takeover-ui",
+  "base": "8828991daa7c2aada11cb40420c1c86a2f547332",
+  "ports": { "web": 55156, "multiplayer": 56156, "database": 57156 }
+}

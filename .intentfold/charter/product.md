@@ -202,8 +202,10 @@ question's first complete attempt is recorded — an account's on the server, a 
 in — and whether it was put right since (SKATGO-150, 「用户能记录下来他哪个题出错了吗」). Under the question the player sees
 their own bidding as shares, no AI (「最好有个比率分析」): how many answered, then right, the contract wrong and the bid wrong —
 the two steps' outcomes, three rows adding up (SKATGO-154, the human: 「问题是item太多了，名字莫名其妙，百分比倒没啥」); the wrong
-contract covers the human's 「超叫还是不敢叫还是叫错」 in one. Only first attempts count. Under that the mistakes not yet put right,
-by number, folded, each opening its question again. There is no set of ten (「不要10题，你就自然，先不用这个复杂」). It is a
+contract covers the human's 「超叫还是不敢叫还是叫错」 in one. Only first attempts count. Beside the place in the run, every
+question by number in a dialog, the mistakes not yet put right in red, each opening its question again — but only those
+reached: the questions run in order from the first, any before can be done again (SKATGO-156, the human: 「最好不要让用户能
+选择后面的题，要从1题开始按顺序做，但是能回到之前的题」). There is no set of ten (「不要10题，你就自然，先不用这个复杂」). It is a
 search entry.
 
 A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted

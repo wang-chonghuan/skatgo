@@ -750,7 +750,6 @@
   "bidpractice_lead": "Zehn Karten und dein Platz am Tisch: Was spielst du, und wie hoch darfst du reizen? Jede Antwort ist die der KI, mit dem Spielwert Schritt für Schritt ausgerechnet.",
   "bidpractice_stats_title": "Deine Statistik",
   "bidpractice_stats_answered": "{n} beantwortet",
-  "bidpractice_mistakes": "Fehler",
   "bidpractice_prompt_contract": "Was spielst du?",
   "bidpractice_prompt_value": "Die KI spielt {game}. Wie hoch darfst du reizen?",
   "bidpractice_yours_null": "Dein Null braucht in jeder Farbe eine kleine Karte.",
@@ -785,5 +784,7 @@
   "daily_replay_hand": "Deine Hand:",
   "review_play_record": "Jeder Stich im Vergleich zur KI",
   "bidpractice_stats_right": "Richtig",
-  "bidpractice_stats_contract": "Falsches Spiel"
+  "bidpractice_stats_contract": "Falsches Spiel",
+  "bidpractice_all": "Alle Aufgaben",
+  "bidpractice_sheet_short": "Spickzettel"
 }

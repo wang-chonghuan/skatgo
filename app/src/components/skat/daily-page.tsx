@@ -12,7 +12,7 @@ import { typography } from '../../theme/type'
 import { ClientPart, DailyEntry, DailyTable, DealOfDay } from './client-part'
 import { DayDeals } from './daily-comparison'
 import { AnnouncementLine } from './forum-announcement'
-import { linkLook, toggleLook } from './ui'
+import { linkLook } from './ui'
 import { TableLoading } from './table-loading'
 
 /**
@@ -48,10 +48,11 @@ export function DailyPage() {
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.daily_title({ n: DAILY_DEALS })}</h1>
         <AnnouncementLine announcement={announcement} />
         {/* The day's two competitions, each its own (SKATGO-131, the human: 「每日一副就是一副，每日6副就是6副」), as the
-            six and twelve deals once stood (SKATGO-77): the deal of the day first. */}
+            six and twelve deals once stood (SKATGO-77): the deal of the day first. The app's standard buttons, the chosen one
+            green (SKATGO-156, the human: 「1 deal today和 tournament 6 deals按钮的字太小，应该用app里的标准按钮风格」). */}
         <nav aria-label={m.dod_toggle_label()} data-testid="daily-toggle" {...stylex.props(styles.toggle)}>
-          <Link to="/daily" search={{}} data-testid="daily-toggle-one" aria-current={tournament ? undefined : 'page'} {...toggleLook(!tournament)}>{m.dod_toggle_one()}</Link>
-          <Link to="/daily" search={{ t: DAILY_DEALS }} data-testid="daily-toggle-six" aria-current={tournament ? 'page' : undefined} {...toggleLook(tournament)}>{m.dod_toggle_six()}</Link>
+          <Link to="/daily" search={{}} data-testid="daily-toggle-one" aria-current={tournament ? undefined : 'page'} {...linkLook(tournament ? 'quiet' : 'go', 'md')}>{m.dod_toggle_one()}</Link>
+          <Link to="/daily" search={{ t: DAILY_DEALS }} data-testid="daily-toggle-six" aria-current={tournament ? 'page' : undefined} {...linkLook(tournament ? 'go' : 'quiet', 'md')}>{m.dod_toggle_six()}</Link>
         </nav>
         {tournament ? (
           <ClientPart fallback={start}>

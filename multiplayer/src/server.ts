@@ -24,6 +24,8 @@ if (!Number.isInteger(port) || port < 1 || port > 65535 || !Number.isFinite(aiDe
 }
 let ready = false
 let stopping = false
+/** This instance handed its leadership to a newer one (SKATGO-156) and only waits to be stopped. */
+let handedOver = false
 const store = new Store(url)
 await store.migrate()
 // SkatZero's nine models (SKATGO-38) load, verify and warm while the service starts; it is not ready
@@ -82,6 +84,8 @@ async function elect() {
       for (const s of await store.all()) await matchMaker.createRoom('skat', { restore: RESTORE, id: s.id })
       await policyLoad
       ready = true
+      // A newer instance asks to take over at its deploy (SKATGO-156).
+      await store.listenHandoff((from) => void handOver(from))
       // The leader deals today and tomorrow ahead, with the computers' bidding (SKATGO-39); readiness
       // does not wait for it.
       void prepareDays(store, policy!)
@@ -97,7 +101,26 @@ async function elect() {
     console.error('leadership_start_failed')
     process.exit(1)
   }
+  // Not the leader: once this instance can serve (SkatZero loaded), it asks the leader to hand over (SKATGO-156) — at
+  // most every two seconds — instead of waiting for Render to stop the old instance.
+  if (policy && Date.now() - asked > 2000) {
+    asked = Date.now()
+    void store.requestHandoff(version).catch(() => console.error('handoff_request_failed'))
+  }
   election = setTimeout(elect, 250)
+}
+let asked = 0
+/** The leader steps down for a newer instance (SKATGO-156): it stops serving, closes its tables — their state is in the
+ *  database, and their players reconnect to the new leader, which restores them — and releases the lock. The process
+ *  stays up, healthy, until Render stops it. */
+async function handOver(from: string) {
+  if (!ready || stopping || handedOver) return
+  handedOver = true
+  ready = false
+  console.log(JSON.stringify({ event: 'handover', to: from }))
+  await matchMaker.gracefullyShutdown().catch(() => {})
+  await store.stepDown().catch(() => console.error('step_down_failed'))
+  console.log(JSON.stringify({ event: 'stepped_down' }))
 }
 await elect()
 async function stop() {
@@ -107,7 +130,8 @@ async function stop() {
   clearTimeout(election)
   const deadline = setTimeout(() => process.exit(1), 20_000)
   deadline.unref()
-  await server.gracefullyShutdown(false)
+  // After a hand-over the tables are already closed.
+  await server.gracefullyShutdown(false).catch(() => {})
   await policy?.release()
   await store.close()
   process.exit(0)

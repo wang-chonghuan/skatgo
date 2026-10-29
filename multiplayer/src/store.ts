@@ -2,6 +2,8 @@ import pg from 'pg'
 import { assertLive, Rejected, type Snapshot } from './model'
 
 const LOCK = 7392020
+/** The channel a new instance asks the leader on to hand over (SKATGO-156). */
+const HANDOFF = 'skatgo_leader_handoff'
 export class Store {
   pool: pg.Pool
   private leader?: pg.PoolClient
@@ -165,6 +167,33 @@ export class Store {
     const result = await c.query('UPDATE multiplayer_leader SET epoch = epoch + 1 WHERE id = 1 RETURNING epoch')
     this.epoch = result.rows[0].epoch
     return true
+  }
+  // The hand-over at a deploy (SKATGO-156, the human: 「部署东西这么久？」): Render switches traffic to a new instance as soon
+  // as it is up, but keeps the old one — the leader — for a minute more and more, and the new one served nothing until the
+  // old let go of the lock, about three minutes each deploy. Now the new instance, once it can serve, asks the leader over
+  // Postgres to step down, and the leader gives up its tables and the lock at once.
+
+  /** The leader hears a newcomer's request on its own connection. */
+  async listenHandoff(onRequest: (from: string) => void) {
+    if (!this.leader) return
+    this.leader.on('notification', (n) => { if (n.channel === HANDOFF) onRequest(n.payload ?? '') })
+    await this.leader.query(`LISTEN ${HANDOFF}`)
+  }
+  /** A newcomer, ready to serve, asks whoever leads to step down. */
+  async requestHandoff(from: string) {
+    await this.pool.query('SELECT pg_notify($1, $2)', [HANDOFF, from])
+  }
+  /** The leader steps down: the lock released and its connection closed, the pool kept for the health check until the
+   *  process is stopped. A newer epoch already fences anything it still tries to write. */
+  async stepDown() {
+    const c = this.leader
+    if (!c) return
+    this.leader = undefined
+    try { await c.query('SELECT pg_advisory_unlock($1)', [LOCK]) } finally {
+      c.removeAllListeners('error')
+      c.removeAllListeners('notification')
+      c.release(true)
+    }
   }
   async transaction<T>(run: (c: pg.PoolClient) => Promise<T>): Promise<T> {
     if (!this.leader) throw new Rejected('not_ready')

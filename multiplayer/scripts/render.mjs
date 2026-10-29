@@ -148,7 +148,9 @@ if (action === 'inspect') {
       } catch { return false }
     }
     return true
-  }, 180_000)
+  // Since SKATGO-156 a new instance takes over within seconds of loading SkatZero; the margin is for a deploy whose old
+  // instance predates the hand-over and keeps the lock until Render stops it (about three minutes).
+  }, 600_000)
   console.log(JSON.stringify({ service: service.id, database: database.id, origin, commit,
     deploy: live.id, status: 'live-and-ready' }, null, 2))
 }

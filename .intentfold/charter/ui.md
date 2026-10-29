@@ -329,7 +329,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   trumps the hand holds in its game and the calculation, or for a pass the best trump suit and how few trumps it holds, a
   line per other number ("**22** would be Spades ♠ with 4 trumps: without 1, game 2 × 11.") — and "Next question" as the
   one `go`. A guest's third question is the ladder's gate in the card's place (SKATGO-112: no lock), its line the reason to
-  sign in and nothing more, "Save your mistakes and get better." (SKATGO-150). Once anything is answered, a second white card under it: "Your bidding"
+  sign in and nothing more, "Save your mistakes and get better." (SKATGO-150). Once anything is answered, a second white card under it: "Your stats" (chess.com's and Funbridge's word; the human: 「your biding这个词不好」)
   (`prompt`, navy, as "How high do you bid?") with "n answered" (`appText`, slate) at the right, then Wrong (the error rate, 「用户的错误率」), Overbid and Underbid each a row over a
   `hairline` rule — the name and its share (`appBtnStrong`) at the two ends, a wrong kind's causes under it in slate,
   only those that happened ("Bid instead of passing: 6 · Game too high: 3") — and last "Mistakes" with a small `quiet` button per question number

@@ -753,7 +753,7 @@
   "bidpractice_next": "Next question",
   "bidpractice_gate_text": "Save your mistakes and get better.",
   "bidpractice_lead": "Ten cards and your seat at the table: how high would you bid, or do you pass? Each answer is the AI's, with the game value worked out step by step.",
-  "bidpractice_stats_title": "Your bidding",
+  "bidpractice_stats_title": "Your stats",
   "bidpractice_stats_answered": "{n} answered",
   "bidpractice_stats_wrong": "Wrong",
   "bidpractice_stats_over": "Overbid",

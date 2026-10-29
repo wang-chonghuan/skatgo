@@ -2235,14 +2235,18 @@ const styles = stylex.create({
     maxHeight: '100%',
     overflow: 'hidden',
     boxSizing: 'border-box',
-    padding: space.x24,
+    // The scroll bar 8 from the edge, the content 24 (SKATGO-157, 「滚动条右侧多了一个空白条，不能接受」).
+    paddingBlock: space.x24,
+    paddingLeft: space.x24,
+    paddingRight: space.x8,
     borderRadius: radii.dialog,
     backgroundColor: color.surface,
     boxShadow: elev.panel,
   },
-  dialogInner: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto' },
-  dialogFramed: { gap: 0, padding: 0 },
-  dialogBody: { flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', paddingBlock: space.x24, marginInline: space.x24 },
+  dialogInner: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', paddingRight: space.x16 },
+  dialogFramed: { gap: 0, paddingBlock: 0, paddingLeft: 0, paddingRight: 0 },
+  // Its scroll bar clear of the rounded corner: 8 in from the top and the right, the content 24.
+  dialogBody: { flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', marginTop: space.x8, marginLeft: space.x24, marginRight: space.x8, paddingTop: space.x16, paddingBottom: space.x24, paddingRight: space.x16 },
   dialogFoot: {
     flexShrink: 0,
     paddingInline: space.x24,

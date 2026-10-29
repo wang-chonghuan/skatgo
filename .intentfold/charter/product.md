@@ -96,7 +96,11 @@ as in progress or not yet played, never with their cards.
 Free play at `/play`: a round of six deals against the same two computer players, the deal going round
 as at a real table, so the player sits in each position twice (SKATGO-88: 「自由对局也要换发牌人……默认6
 deals」); unranked, free and without an account (SKATGO-40, SKATGO-50). Its table is the tournament's: no hint of any kind
-(SKATGO-130, the human: 「砍掉自由牌局时的提示，和锦标赛应该一模一样」); lesson 11's game keeps its hints (「11课的保留」). There is no
+(SKATGO-130, the human: 「砍掉自由牌局时的提示，和锦标赛应该一模一样」); lesson 11's game keeps its hints (「11课的保留」). One exception,
+free play's alone: a bid calculator in the bidding drawer (SKATGO-157, the human: 「减少玩家技术性的负担，但是不减少思维的挑战」) —
+the player picks a contract and it counts that contract's value with the ten cards in hand (matadors, multiplier, base,
+and Hand one step more; Null's four fixed values). It never says which contract, whether to bid, or how high. On by
+default, a switch in the settings; never in the tournament, at a private table or in an exercise. There is no
 AI assistant on the site any more (SKATGO-130: 「先开单子砍ai助手」, 「彻底删」). The table shows which deal of
 six it is and the player's Seeger-Fabian total so far. A finished deal shows the tournament's result,
 bidding against the AI — the same deal played by the computer from the player's seat (SKATGO-86: 「打完了能显示AI打这幅牌叫的啥，打几分」)

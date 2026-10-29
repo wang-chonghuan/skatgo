@@ -471,6 +471,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the cards. The settings carry the switch,
   "Avatare" — "Avatare von Lina und Noah am Tisch", on by default (「配置里要加上一个配置……默认是开的」), under the table
   talk's; off, the table keeps the faces' room.
+- **Free play's bid calculator** (SKATGO-157): under the bid's buttons in the drawer, a slate "Game value" / "Spielwert"
+  and the contracts as the jump bid's toggles (♦ ♥ ♠ ♣ Grand Null), wrapping on a phone; a picked one (`toggleOn`)
+  shows one centred line, "without 4 · 5 × 24 = **120** · Hand 144", and stays picked through the deal's bidding. Its
+  switch in the settings, on by default, follows the faces'.
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),
   on every full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"

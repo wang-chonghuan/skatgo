@@ -4,12 +4,12 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
+import { type Card, type Contract, SUITS, SUIT_SYMBOL, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { type Face, faceOf } from '~/lib/skat/face'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { playSound } from '~/lib/skat/sounds'
 import { useBoardTricks, useFaces, useSettings, useTapToCollect } from '~/lib/skat/settings'
-import { type SettlementRow, cardLabel, contractName, ledName, roleName, settleReason, settlementFormula, settlementRows } from '~/lib/skat/i18n'
+import { type SettlementRow, cardLabel, contractName, ledName, matadorLabel, roleName, settleReason, settlementFormula, settlementRows } from '~/lib/skat/i18n'
 import {
   type Game,
   type Move,
@@ -34,7 +34,7 @@ import {
   trickWinner,
 } from '~/lib/skat/game'
 import { type DealSummary, seegerFabian, summarize } from '~/lib/skat/tournament'
-import { BID_LADDER, type Declaration, baseValue, expectedValue, highestValue, nextBid } from '~/lib/skat/value'
+import { BID_LADDER, type Declaration, NULL_VALUES, baseValue, expectedValue, highestValue, matadors, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
 import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
@@ -212,6 +212,13 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // Hints at the course's own table and in lesson 11 only (SKATGO-130): never in the tournament, at a private table,
   // in an exercise or in free play.
   const hints = remote ? !!server?.hints : true
+  // Free play's bid calculator (SKATGO-157): only there — a round is free play's alone — and while the settings show it.
+  // The contract picked stays picked through the deal's bidding: it is kept with the hand it was picked for.
+  const bidCalc = useSettings((s) => s.bidCalc)
+  const [calcPick, setCalcPick] = useState<{ hand: string; pick: number } | null>(null)
+  const handKey = game.hands[ME].map(cardId).join()
+  const calc: BidCalcState | null =
+    server?.round && bidCalc ? { pick: calcPick?.hand === handKey ? calcPick.pick : null, setPick: (pick) => setCalcPick(pick === null ? null : { hand: handKey, pick }) } : null
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   const [picked, setPicked] = useState<Card[]>([])
   // The trick's cards that have landed (SKATGO-41). A card flies in on a layer of its own under a
@@ -458,7 +465,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                 </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
                 </div>
               )}
             </div>
@@ -586,7 +593,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -668,7 +675,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
             </section>
           ) : null}
 
@@ -726,7 +733,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
         </div>
       ) : null}
 
@@ -765,6 +772,7 @@ function ActionsFor({
   freeReview,
   roundLast,
   seeger,
+  calc,
 }: {
   game: Game
   picked: Card[]
@@ -792,9 +800,11 @@ function ActionsFor({
   /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
   freeReview?: AskReview
   roundLast?: boolean | null
+  calc: BidCalcState | null
 }) {
   return (
     <Actions
+      calc={calc}
       roomAfter={roomAfter}
       freeReview={freeReview}
       roundLast={roundLast}
@@ -1043,6 +1053,8 @@ type ActionsProps = {
   roomAfter?: ReactNode
   /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
   freeReview?: AskReview
+  /** Free play's bid calculator (SKATGO-157), or null where there is none. */
+  calc: BidCalcState | null
 }
 
 function Actions(p: ActionsProps) {
@@ -1086,6 +1098,7 @@ function Actions(p: ActionsProps) {
 
   if (game.phase === 'bidding') {
     const b = game.bidding
+    const calc = p.calc ? <BidCalc hand={game.hands[ME]} {...p.calc} /> : null
     if (b.awaiting === 'forehandAlone') {
       return (
         <Row>
@@ -1093,10 +1106,11 @@ function Actions(p: ActionsProps) {
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
           {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
+          {calc}
         </Row>
       )
     }
-    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} />
+    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} calc={calc} />
     return (
       <Row>
         {/* Who asks and what "yes" commits to, on every table (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」). */}
@@ -1104,6 +1118,7 @@ function Actions(p: ActionsProps) {
         <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
         {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
+        {calc}
       </Row>
     )
   }
@@ -1429,7 +1444,7 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
  * so the hand stays in sight on a phone; a number is picked first and named with the main button, so a
  * slip of the finger names nothing.
  */
-function SpeakerBid({ value, listener, hints, onBid, onBidHint }: { value: number; listener: string; hints: boolean; onBid: ActionsProps['onBid']; onBidHint: () => void }) {
+function SpeakerBid({ value, listener, hints, onBid, onBidHint, calc }: { value: number; listener: string; hints: boolean; onBid: ActionsProps['onBid']; onBidHint: () => void; calc: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [picked, setPicked] = useState<number | null>(null)
   const next = nextBid(value)
@@ -1462,7 +1477,52 @@ function SpeakerBid({ value, listener, hints, onBid, onBidHint }: { value: numbe
         </div>
       ) : null}
       {hints ? <Btn tone="info" shape="block" size="lg" onClick={onBidHint}>{m.bid_hint_button()}</Btn> : null}
+      {calc}
     </Row>
+  )
+}
+
+type BidCalcState = { pick: number | null; setPick: (pick: number | null) => void }
+const CALC_CONTRACTS: Contract[] = [...[...SUITS].reverse().map((trump): Contract => ({ kind: 'suit', trump })), { kind: 'grand' }, { kind: 'null' }]
+
+/**
+ * Free play's bid calculator (SKATGO-157, the human: 「减少玩家技术性的负担，但是不减少思维的挑战」): the player picks a
+ * contract, and the drawer counts what it is worth with the ten cards in hand — matadors, multiplier, base value, and
+ * Hand one step more. Which contract, and how high to go, stay the player's.
+ */
+function BidCalc({ hand, pick, setPick }: { hand: Card[] } & BidCalcState) {
+  const contract = pick === null ? null : CALC_CONTRACTS[pick]
+  let line = ''
+  if (contract?.kind === 'null') line = m.bidcalc_null({ plain: NULL_VALUES.plain, hand: NULL_VALUES.hand, ouvert: NULL_VALUES.ouvert, handOuvert: NULL_VALUES.handOuvert })
+  else if (contract) {
+    const t = matadors(hand, contract)
+    const base = baseValue(contract)
+    line = m.bidcalc_value({ matadors: matadorLabel(t.with, t.count), level: t.count + 1, base, value: base * (t.count + 1), hand: base * (t.count + 2) })
+  }
+  return (
+    <div data-testid="skat-calc" {...stylex.props(styles.bidCalc)}>
+      <div role="group" aria-label={m.bidcalc_label()} {...stylex.props(styles.bidCalcRow)}>
+        <span {...stylex.props(typography.appText, styles.bidCalcLabel)}>{m.bidcalc_label()}</span>
+        {CALC_CONTRACTS.map((c, i) => (
+          <button
+            key={i}
+            type="button"
+            data-testid="skat-calc-contract"
+            aria-pressed={pick === i}
+            aria-label={contractName(c)}
+            onClick={() => setPick(pick === i ? null : i)}
+            {...stylex.props(typography.toggle, styles.toggle, styles.jumpValue, pick === i && styles.toggleOn)}
+          >
+            {c.kind === 'suit' ? SUIT_SYMBOL[c.trump] : contractName(c)}
+          </button>
+        ))}
+      </div>
+      {line ? (
+        <p data-testid="skat-calc-line" {...stylex.props(typography.appText, styles.say)}>
+          <Rich text={line} />
+        </p>
+      ) : null}
+    </div>
   )
 }
 
@@ -2183,6 +2243,10 @@ const styles = stylex.create({
     paddingBlock: space.x4,
   },
   jumpValue: { flexShrink: 0 },
+  // Free play's bid calculator (SKATGO-157): under the bid's buttons, its label and the contracts, wrapping on a phone.
+  bidCalc: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6, flexBasis: '100%' },
+  bidCalcRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.x8 },
+  bidCalcLabel: { flexShrink: 0, color: color.slate },
   resultBody: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   resultTitle: { margin: 0, color: color.navy },
   resultHead: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },

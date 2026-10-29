@@ -35,6 +35,9 @@ type SettingsState = {
   /** SKATGO-147: Lina's and Noah's faces above their cards. On by default (the human: 「默认是开的」). */
   faces: boolean
   setFaces: (on: boolean) => void
+  /** SKATGO-157: free play's bid calculator in the bidding drawer. On by default. */
+  bidCalc: boolean
+  setBidCalc: (on: boolean) => void
 }
 
 export const useSettings = create<SettingsState>()(
@@ -54,11 +57,13 @@ export const useSettings = create<SettingsState>()(
       setTalk: (talk) => set({ talk }),
       faces: true,
       setFaces: (faces) => set({ faces }),
+      bidCalc: true,
+      setBidCalc: (bidCalc) => set({ bidCalc }),
     }),
     {
       name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks, talk: s.talk, faces: s.faces }),
+      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks, talk: s.talk, faces: s.faces, bidCalc: s.bidCalc }),
     },
   ),
 )

@@ -744,7 +744,6 @@
   "bidpractice_title": "Reizen üben",
   "bidpractice_meta_title": "Skat Reizen üben – Wie hoch darfst du reizen? | SkatGo",
   "bidpractice_meta_description": "Reizen üben beim Skat: zehn Karten, dein Platz, eine Frage – wie hoch reizt du, oder passt du? Jede Antwort ist die der KI, mit ausgerechnetem Spielwert.",
-  "bidpractice_kicker": "Aufgabe {n} von {count}",
   "bidpractice_prompt": "Wie hoch reizt du?",
   "bidpractice_pass": "Passe",
   "bidpractice_answer_game": "Die KI reizt bis **{value}**: {game} mit deinen {trumps} Trümpfen, {matadors}, Spiel {level} × {base} = {value}.",

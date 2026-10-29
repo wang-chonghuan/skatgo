@@ -19,7 +19,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Fan } from './card-row'
 import { Choice } from './exercises'
-import { Btn, Panel, Pill, Rich } from './ui'
+import { Btn, Panel, Rich } from './ui'
 
 const POSITIONS = ['forehand', 'middlehand', 'rearhand'] as const
 
@@ -80,10 +80,14 @@ export function BiddingPracticePage() {
   const mistakes = mistakesOf(questions)
   return (
     <div data-testid="bidding-practice" data-question={shown} data-result={result ?? ''} {...stylex.props(styles.column)}>
-      <nav {...stylex.props(styles.top)}>
-        <Pill>{m.bidpractice_kicker({ n: shown, count: PRACTICE_QUESTIONS.length })}</Pill>
-      </nav>
-      <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.bidpractice_title()}</h1>
+      {/* The place in the run beside the title, no line of its own (the human: 「应该是bidding practice 1/300 进度放这里，上面那个单列
+          进度的行不要」). */}
+      <div {...stylex.props(styles.head)}>
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.bidpractice_title()}</h1>
+        <span data-testid="bidding-practice-progress" {...stylex.props(typography.landingHeading, styles.progress)}>
+          {shown}/{PRACTICE_QUESTIONS.length}
+        </span>
+      </div>
       {locked ? (
         <Gate />
       ) : (
@@ -123,7 +127,8 @@ function Question({ hand, position, bid, result, onChoose, onAnswer, onNext }: {
     <>
       <section {...stylex.props(styles.card)}>
         <div data-testid="bidding-practice-situation" {...stylex.props(styles.situation)}>
-          <p {...stylex.props(typography.panelLabel, styles.facts)}>{m.tricks_sit_bidder({ position: roleName(position) })}</p>
+          {/* As the question below it (the human: 「坐哪个位置的那行字，不要小字，要和how high do you bid同一字体」). */}
+          <p {...stylex.props(typography.prompt, styles.seat)}>{m.tricks_sit_bidder({ position: roleName(position) })}</p>
           {/* As big as the hand at the table, in one row (the ladder's, SKATGO-109: 「最好和手牌一样大」). */}
           <Fan testId="bidding-practice-hand" cards={sortHand(hand, null)} size="lg" row />
         </div>
@@ -268,8 +273,10 @@ const styles = stylex.create({
     paddingBottom: space.x72,
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
-  top: { display: 'flex', alignItems: 'center', gap: space.x12 },
+  head: { display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: space.x12 },
   title: { margin: 0, color: color.navy },
+  progress: { color: color.slate },
+  seat: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.slate },
   // The lesson's step card (lesson-player.tsx): white, the option shadow.
   card: {

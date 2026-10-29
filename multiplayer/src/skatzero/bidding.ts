@@ -223,6 +223,65 @@ export async function seatBidding(policy: Policy, hand: ZCard[], position: numbe
   return { maxBid: Math.max(maxBid(handMax), maxBid(pickupPen)), pickup, hand: handTables(null), detail: { handValues: hv, pickupPen, handMax } }
 }
 
+/**
+ * Which game SkatZero would play at a bid (SKATGO-154; not part of the port): the same simulation as `seatBidding` —
+ * every skat in `order`, the best discard per game type and its value, the Hand games over every skat — but kept per
+ * game type, so that at bid index `at` it says how often each pickup game is the best one, and whether Hand would beat
+ * picking up. The bidding practice uses it to name the AI's contract instead of guessing it from the number.
+ */
+export async function seatGames(policy: Policy, hand: ZCard[], position: number, order: [number, number][], at: number): Promise<{ pickup: Record<PickupMode, number>; hand: { mode: HandMode; value: number }; pickupValue: number }> {
+  const tables = policy.tables
+  const others = DECK.filter((c) => !hand.includes(c))
+  const pos = (3 - position) % 3
+  const b: BState = { hand, others, pos, position }
+  const hv = await handValues(policy, b)
+  const estimates = Object.fromEntries(PICKUP_MODES.map((m) => [m, [] as number[]])) as Record<PickupMode, number[]>
+  const wins = Object.fromEntries(PICKUP_MODES.map((m) => [m, 0])) as Record<PickupMode, number>
+  let pickupSum = 0
+  for (const [i, j] of order) {
+    const skat = [others[i], others[j]]
+    const rest = others.filter((_, k) => k !== i && k !== j)
+    const hand12 = [...skat, ...hand]
+    let bestMode: PickupMode | null = null
+    let bestAt = -Infinity
+    for (const mode of PICKUP_MODES) {
+      const p = prepare(mode, hand12, rest)
+      const est = estimates[mode]
+      if (est.length > 0) {
+        let sum = 0
+        for (const v of est) sum = f32(sum + v)
+        const mean = f32(sum / est.length)
+        if ((est.length > 5 && mean < -90) || (est.length > 20 && mean < -60)) {
+          const [a, c] = [p.hand[0], p.hand[1]]
+          if ('CSHD'.includes(mode) && mode.length === 1 && a[0] !== 'D' && c[0] !== 'D') continue
+          if ((mode === 'N' || mode === 'NO') && !'789'.includes(a[1]) && !'789'.includes(c[1])) continue
+          if (mode === 'G' && !'AJ'.includes(a[1]) && !'AJ'.includes(c[1])) continue
+        }
+      }
+      const { values } = await policy.score(p.gametype, state(p, { blindHand: false, discard: { pos } }))
+      let best = values[0]
+      for (let k = 1; k < values.length; k++) if (values[k] > best) best = values[k]
+      est.push(best)
+      const v = bidValueTable(tables, p.hand, mode, best, BID_PENALTIES)[at]
+      if (v > bestAt) {
+        bestAt = v
+        bestMode = mode
+      }
+    }
+    if (bestMode) wins[bestMode]++
+    pickupSum += bestAt
+    await yieldNow()
+  }
+  const handAt = HAND_MODES.map((mode, m) => {
+    let sum = 0
+    for (const [i, j] of order) sum += bidValueTable(tables, [others[i], others[j], ...hand], mode, hv[m], BID_PENALTIES)[at]
+    return sum / order.length
+  })
+  const top = Math.max(...handAt)
+  const share = Object.fromEntries(PICKUP_MODES.map((m) => [m, wins[m] / order.length])) as Record<PickupMode, number>
+  return { pickup: share, hand: { mode: HAND_MODES[handAt.indexOf(top)], value: top }, pickupValue: pickupSum / order.length }
+}
+
 /** Index of a winning bid in BIDS; an off-list bid takes the next higher list bid (grill Q4). */
 export function bidIndex(bid: number): number {
   const i = BIDS.findIndex((b) => b >= bid)

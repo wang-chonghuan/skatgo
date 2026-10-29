@@ -188,7 +188,10 @@ the bid — the matadors card by card, game, the base ("Without 1 (♣B not in y
 Null's fixed value; then a contract chosen instead, its trumps and Aces by the same rules, and a wrong number, what it
 would have needed ("27 = 3 × 9 would need with or without 2"). The answer is SkatZero's highest bid for those cards from that
 seat (「这个不用skatzero吗」); only hands one game explains are asked — a pass, a Null, or exactly one game's value counted
-from the ten cards — so SkatZero's own numbers never need showing. The questions run from plain to borderline — six
+from the ten cards — so SkatZero's own numbers never need showing. The contract named is SkatZero's own (SKATGO-154, the
+human: 「你看看叫牌练习的第五题，答案对吗」, then 「你尽量推理一下，每个题的答案对不对」): at its highest bid it picks up and plays
+that game in most skats, and the game is the suit with most trumps, or Grand, or a Null of that kind — a number that only
+happens to match a game is not a question. The questions run from plain to borderline — six
 trumps or more, or three or fewer, first; then the hands the rules of thumb decide; then the rest. A bidding cheat sheet
 opens beside the question (「这个要做成一个卡片弹窗放在叫牌页面，用户点开就能看，名字叫叫牌秘籍之类的」): the order to think in,
 the rules of thumb, the point count with its thresholds, Grand's count, how high to bid, the seat and Null — every point

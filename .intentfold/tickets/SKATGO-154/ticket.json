@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-154",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-154",
+  "branch": "SKATGO-154-bid-answers",
+  "base": "ceceb087c6eb9d63afaac9bdf2c4df5626dc42e8",
+  "ports": { "web": 55154, "multiplayer": 56154, "database": 57154 }
+}

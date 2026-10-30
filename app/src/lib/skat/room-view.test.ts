@@ -16,7 +16,7 @@ import { seegerFabian } from './tournament'
 function publish(g: ReturnType<typeof deal>): RoomPublic {
   return {
     roomId: '482917', revision: 1, played: 1, expiresAt: 0, deals: 1, scores: [0, 0, 0], history: [],
-    seats: [0, 1, 2].map((seat) => ({ seat, kind: 'human', nickname: `P${seat}`, host: seat === 0, connected: true, control: 'human', joining: false, reconnectUntil: null, cardCount: g.hands[seat].length })),
+    seats: [0, 1, 2].map((seat) => ({ seat, kind: 'human', nickname: `P${seat}`, host: seat === 0, connected: true, ready: false, control: 'human', joining: false, reconnectUntil: null, cardCount: g.hands[seat].length })),
     phase: g.phase, actor: null, turn: g.turn, dealer: g.dealer, bidding: g.bidding, declarer: g.declarer, bid: g.bid,
     pickedUp: g.pickedUp, declaration: g.declaration, trick: g.trick, tricks: g.tricks, result: g.result,
     ouvertHand: null, skat: null, early: null,

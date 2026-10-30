@@ -16,6 +16,8 @@ export type RoomSeat = {
   /** The room's host: who may take a person out. */
   host: boolean
   connected: boolean
+  /** Asked for the next deal, the one on the table being over (SKATGO-165). */
+  ready: boolean
   /** Who is playing the seat now: its person, or a computer — for good, or standing in for them. */
   control: 'human' | 'ai'
   /** A newcomer who plays from the next deal; a computer finishes this one for them. */

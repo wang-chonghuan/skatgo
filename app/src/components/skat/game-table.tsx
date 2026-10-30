@@ -84,6 +84,9 @@ const ME: Seat = 0
 const defaultName = (seat: Seat) => [m.name_you, m.name_lina, m.name_max][seat]()
 /** The names at this table: a private table's nicknames (SKATGO-61), or null for You, Lina and Noah. */
 const Names = createContext<[string, string, string] | null>(null)
+/** At a private table, once this seat asked for the next deal and others have not yet (SKATGO-165): what the way on says
+ *  instead — whom it waits for — and it takes no tap. Null everywhere else. */
+const NextWait = createContext<string | null>(null)
 function useNameOf() {
   const names = useContext(Names)
   return (seat: Seat) => (names ? names[seat] : defaultName(seat))
@@ -153,6 +156,8 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
   notice?: ReactNode
   /** Which deal is on the table, counted from the room's first (SKATGO-165). */
   deal: number
+  /** Once this seat asked for the next deal: whom it still waits for (SKATGO-165); null otherwise. */
+  waiting: string | null
   /** The room's statistics, every finished deal (SKATGO-165): what the table menu's "Statistics" opens. */
   stats: ReactNode
   /** The room's number (SKATGO-163), in the way out's menu: a tap copies the room's link. */
@@ -192,7 +197,9 @@ type Props = {
 export function GameTable(props: Props) {
   return (
     <Names.Provider value={props.room?.names ?? null}>
-      <Table {...props} />
+      <NextWait.Provider value={props.room?.waiting ?? null}>
+        <Table {...props} />
+      </NextWait.Provider>
     </Names.Provider>
   )
 }
@@ -1092,6 +1099,7 @@ type ActionsProps = {
 
 function Actions(p: ActionsProps) {
   const nameOf = useNameOf()
+  const wait = useContext(NextWait)
   const { game } = p
   const who = actor(game)
   // The course's tables — its own and lesson 11's, the ones with hints — explain every step; a real table says at most
@@ -1105,8 +1113,8 @@ function Actions(p: ActionsProps) {
         {p.daily ? <VsAiReview ask={p.daily.ask} cacheKey={p.daily.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
         {p.freeReview ? <VsAiReview ask={p.freeReview} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
         {p.roomAfter}
-        <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={p.onNewGame}>
-          {p.roomAfter ? m.daily_next_deal() : p.roundLast != null ? (p.roundLast ? m.free_round_result() : m.daily_next_deal()) : p.dealScore === null ? m.table_redeal() : p.last ? m.daily_see_result() : m.daily_next_deal()}
+        <Btn testId="skat-new-game" shape="block" size="lg" grow disabled={wait !== null} onClick={p.onNewGame}>
+          {wait ?? (p.roomAfter ? m.daily_next_deal() : null) ?? (p.roundLast != null ? (p.roundLast ? m.free_round_result() : m.daily_next_deal()) : p.dealScore === null ? m.table_redeal() : p.last ? m.daily_see_result() : m.daily_next_deal())}
         </Btn>
       </Dialog>
     )
@@ -1302,6 +1310,7 @@ function DeclarePicker({
 
 function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview, roundLast = null, seeger, course }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null; roomAfter?: ReactNode; freeReview?: AskReview; roundLast?: boolean | null; seeger: boolean; course: boolean }) {
   const nameOf = useNameOf()
+  const wait = useContext(NextWait)
   const named = useContext(Names) !== null
   const r = game.result!
   const declarer = game.declarer!
@@ -1377,8 +1386,8 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
   )
   const next = (
     <Row>
-      <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={onNewGame}>
-        {roomAfter ? m.daily_next_deal() : roundLast !== null ? (roundLast ? m.free_round_result() : m.daily_next_deal()) : dealScore === null ? m.result_new_game() : last ? m.daily_see_result() : m.daily_next_deal()}
+      <Btn testId="skat-new-game" shape="block" size="lg" grow disabled={wait !== null} onClick={onNewGame}>
+        {wait ?? (roomAfter ? m.daily_next_deal() : null) ?? (roundLast !== null ? (roundLast ? m.free_round_result() : m.daily_next_deal()) : dealScore === null ? m.result_new_game() : last ? m.daily_see_result() : m.daily_next_deal())}
       </Btn>
     </Row>
   )

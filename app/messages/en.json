@@ -585,6 +585,7 @@
   "room_link_copied": "Link copied",
   "room_stats": "Statistics",
   "room_stats_none": "No deal finished yet.",
+  "room_next_wait": "Waiting for {names}",
   "room_waiting_title": "Waiting for players",
   "room_waiting_lead": "Share the number or the link with up to two friends.",
   "room_copy_link": "Copy link",

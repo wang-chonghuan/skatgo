@@ -585,6 +585,7 @@
   "room_link_copied": "Link kopiert",
   "room_stats": "Statistik",
   "room_stats_none": "Noch kein Spiel beendet.",
+  "room_next_wait": "Warten auf {names}",
   "room_waiting_title": "Warten auf Mitspieler",
   "room_waiting_lead": "Gib die Nummer oder den Link an bis zu zwei Freunde weiter.",
   "room_copy_link": "Link kopieren",

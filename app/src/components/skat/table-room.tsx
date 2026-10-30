@@ -501,6 +501,9 @@ function Playing({ state, busy, send, collect, notice }: { state: TableState; bu
       <p {...stylex.props(typography.note, styles.ink)}>{m.table_totals({ list: list(totals) })}</p>
     </div>
   ) : null
+  // Once this seat asked for the next deal, whom it waits for: the people here who have not (SKATGO-165).
+  const others = state.pub.seats.filter((s) => s.kind === 'human' && s.connected && !s.ready && s.seat !== me)
+  const waiting = ended && state.pub.seats[me].ready && others.length > 0 ? m.room_next_wait({ names: others.map((s) => s.nickname ?? '').join(', ') }) : null
   // The host may take out any other person; the names as this viewer reads them, without the computer's mark.
   const host = state.pub.seats[me].host
   const people = host
@@ -512,7 +515,7 @@ function Playing({ state, busy, send, collect, notice }: { state: TableState; bu
         fullScreen
         room={{
           game, busy, send: (move) => send(move), collect, next: () => send({ type: 'next' }), names, totals, standings, notice, deal: state.pub.deals,
-          stats: <Stats state={state} />,
+          stats: <Stats state={state} />, waiting,
           code: state.pub.roomId, leave: () => send({ type: 'leave' }), people, kick: (seat: Seat) => send({ type: 'kick', seat }),
         }}
       />

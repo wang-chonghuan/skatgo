@@ -96,6 +96,8 @@ export type Snapshot = {
   scores: [number, number, number]
   /** Every scored deal, for the table's statistics (SKATGO-165); absent on rooms stored before. */
   history?: RoomDeal[]
+  /** The seats whose person asked for the next deal since the last was dealt (SKATGO-165). */
+  nextBy?: number[]
   expiresAt: number
   nextActionAt: number
 }
@@ -163,6 +165,8 @@ export function claimSeat(s: Snapshot, account: string, nickname: string, sessio
     s.host = [1, 2].map(k => s.seats[(seat + k) % 3]).find(p => p.account !== null)?.account ?? account
   }
   if (!playing) s.scores[seat] = 0
+  // Whoever sat here before and asked for the next deal asked for themselves, not for the newcomer.
+  s.nextBy = (s.nextBy ?? []).filter(i => i !== seat)
   s.expiresAt = now + TTL_MS
   return seat
 }
@@ -172,6 +176,7 @@ export function claimSeat(s: Snapshot, account: string, nickname: string, sessio
 function vacate(s: Snapshot, seat: number) {
   const gone = s.seats[seat].account
   s.seats[seat] = waiting(s) ? emptySeat() : computerSeat()
+  s.nextBy = (s.nextBy ?? []).filter(i => i !== seat)
   if (gone !== null && gone === s.host) {
     const heir = [1, 2].map(k => s.seats[(seat + k) % 3]).find(p => p.account !== null)
     s.host = heir?.account ?? null
@@ -181,10 +186,23 @@ function vacate(s: Snapshot, seat: number) {
 /** Whether nobody is left in the room. */
 export const emptyRoom = (s: Snapshot) => s.seats.every(p => p.account === null)
 
+/** The next deal, once every person here has asked for it (SKATGO-165, the human: 「需要所有非ai玩家点了next deal后，才能进入
+ *  next deal」): a person online who has not holds it; one away, whom a computer plays for, or gone, does not. With
+ *  nobody online nothing is dealt. Whether it was dealt. */
+export function dealIfReady(s: Snapshot, pick: (dealer: Seat) => PoolDeal): boolean {
+  if (!s.game || !ended(s.game)) return false
+  const here = s.seats.flatMap((p, i) => (p.account && p.session ? [i] : []))
+  const asked = s.nextBy ?? []
+  if (here.length === 0 || asked.length === 0 || here.some(i => !asked.includes(i))) return false
+  dealNext(s, pick(next(s.game.dealer)))
+  return true
+}
+
 /** A seat's action in a room. While it waits, the host's `computer` (an empty seat to a computer, or back) and `start`
- *  (every seat taken: the first deal). `next` (anyone in the room, once a deal is over): the next deal, dealt by the seat
- *  after the last dealer. `kick` (the host): a person's seat to a computer. `leave`: one's own. Everything else is a move
- *  through the engine. `pick` draws a deal from the pool with the given dealer. */
+ *  (every seat taken: the first deal). `next` (anyone in the room, once a deal is over): asks for the next deal, dealt by
+ *  the seat after the last dealer once everyone here has asked. `kick` (the host): a person's seat to a computer.
+ *  `leave`: one's own. Everything else is a move through the engine. `pick` draws a deal from the pool with the given
+ *  dealer. */
 export function applyAction(s: Snapshot, seat: Seat, action: Command['action'], pick: (dealer: Seat) => PoolDeal) {
   const host = !!s.host && s.seats[seat].account === s.host
   if (action.type === 'computer') {
@@ -201,16 +219,20 @@ export function applyAction(s: Snapshot, seat: Seat, action: Command['action'], 
   }
   if (action.type === 'next') {
     if (!s.game || !ended(s.game) || !s.seats[seat]?.account) throw new Rejected('cannot_deal')
-    dealNext(s, pick(next(s.game.dealer)))
+    if (!(s.nextBy ?? []).includes(seat)) s.nextBy = [...(s.nextBy ?? []), seat]
+    dealIfReady(s, pick)
     return
   }
   if (action.type === 'kick') {
     if (!host || action.seat === seat || !s.seats[action.seat].account) throw new Rejected('cannot_kick')
     vacate(s, action.seat)
+    // The one taken out no longer holds the next deal.
+    dealIfReady(s, pick)
     return
   }
   if (action.type === 'leave') {
     vacate(s, seat)
+    dealIfReady(s, pick)
     return
   }
   if (!s.game) throw new Rejected('not_your_turn')
@@ -222,6 +244,7 @@ function dealNext(s: Snapshot, d: PoolDeal) {
   s.game = deal(d.dealer, d.deck)
   s.plans = d.plans
   s.deals++
+  s.nextBy = []
   // Who waited for this deal plays it, from 0; someone away by now is stood in for by a computer.
   s.seats.forEach((p, i) => {
     if (p.joinsAt === null || p.joinsAt > s.deals) return
@@ -278,6 +301,7 @@ export function publicView(s: Snapshot): RoomPublic {
       nickname: p.nickname,
       host: p.account !== null && p.account === s.host,
       connected: !!p.session,
+      ready: (s.nextBy ?? []).includes(i),
       control: !p.account || p.autopilot ? 'ai' : 'human',
       joining: p.joinsAt !== null,
       reconnectUntil: p.disconnectedAt === null ? null : p.disconnectedAt + GRACE_MS,

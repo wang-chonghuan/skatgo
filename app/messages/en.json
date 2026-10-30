@@ -580,7 +580,7 @@
   "room_join": "Join",
   "room_back_title": "Room {code}",
   "room_back": "Back to the room",
-  "room_number": "Room {code}",
+  "room_number_copy": "Room {code} · copy link",
   "room_link_copied": "Link copied",
   "room_joining": "You play from the next game.",
   "room_leave": "Leave the room",

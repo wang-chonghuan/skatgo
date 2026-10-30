@@ -143,7 +143,8 @@ last one; with three people the number lets nobody else in. Everyone at the tabl
 whoever comes in alike (the human: 「我打算把私人桌改成必须三个玩家都登录」), and sits under the name the boards show; an
 account is in one room at a time. The page offers two cards, a new room and a room to come into, or, while the account
 is in one, the way back to it (「私人桌进入后，两张卡片，新建房间，加入房间。如果已经在了一个房间，则显示回到房间」). The room's
-number stands at the table's top left, across from the way out, and a tap copies its link (「点击后复制链接，而不只是房间号」).
+number is an item of the menu behind the table's way out, and a tap copies its link (「点击后复制链接，而不只是房间号」, then, the
+corner not working: 「我建议放到退出按钮里，加一个菜单项」).
 The seat of someone away, whom a computer plays for, may be taken by someone coming in; the host may take a person out,
 who may come back with the number (「别人可以占用，但是房主可以踢人」, 「踢了还可以自己加，基于信任」). Leaving passes the host's role
 on; the last one leaving closes the room. A newcomer who signs up to come into a room is recorded once as brought by its

@@ -38,7 +38,7 @@ import { BID_LADDER, type Declaration, NULL_VALUES, baseValue, expectedValue, hi
 import { m } from '~/paraglide/messages'
 import { getLocale, localizeHref } from '~/paraglide/runtime'
 import { Link } from '@tanstack/react-router'
-import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, Link2, LogOut, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -151,7 +151,7 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
   standings: ReactNode
   /** Over the felt, where the table's messages go: while the connection comes back (SKATGO-117), or a newcomer waits. */
   notice?: ReactNode
-  /** The room's number (SKATGO-163), at the felt's top left across from the way out: a tap copies the room's link. */
+  /** The room's number (SKATGO-163), in the way out's menu: a tap copies the room's link. */
   code: string
   /** Leaves the room: the seat goes to a computer. */
   leave: () => void
@@ -758,17 +758,11 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           </button>
         </div>
       ) : null}
-      {/* A room's number, across from the way out (SKATGO-163, the human: 「房间号显示在牌桌的左上角，和退出按钮对称的位置。点击后复制链接」). */}
-      {fullScreen && room && (pinned || !panelOpen) ? (
-        <div {...stylex.props(styles.settingsCorner)}>
-          <RoomNumber code={room.code} />
-        </div>
-      ) : null}
       {fullScreen && (exercise || pinned || !panelOpen) ? (
         <TableMenu
           leave={exercise ? '/skat-tricks' : tournament ? '/daily' : '/'}
           newRound={server?.newRound}
-          room={room ? { leave: room.leave, people: room.people, kick: room.kick } : undefined}
+          room={room ? { code: room.code, leave: room.leave, people: room.people, kick: room.kick } : undefined}
         />
       ) : null}
     </div>
@@ -1595,8 +1589,9 @@ function useCardSounds(game: Game) {
 function TableMenu({ leave, newRound, room }: {
   leave: '/' | '/daily' | '/skat-tricks'
   newRound?: () => void
-  /** A room's own ways (SKATGO-163): leaving it, and the host's taking a person out — each asked once more first. */
-  room?: Pick<RoomTable, 'leave' | 'people' | 'kick'>
+  /** A room's own ways (SKATGO-163): its number, a tap copying its link; leaving it, and the host's taking a person
+   *  out — each asked once more first. */
+  room?: Pick<RoomTable, 'code' | 'leave' | 'people' | 'kick'>
 }) {
   const [open, setOpen] = useState(false)
   const [asking, setAsking] = useState(false)
@@ -1654,6 +1649,7 @@ function TableMenu({ leave, newRound, room }: {
           ) : (
             <>
               <Btn testId="skat-menu-continue" tone="go" shape="block" onClick={close}>{m.table_continue()}</Btn>
+              {room ? <RoomLink code={room.code} /> : null}
               {newRound ? <Btn testId="skat-menu-new" tone="quiet" shape="block" onClick={() => setAsking(true)}>{m.free_round_new()}</Btn> : null}
               {room?.people.map((p) => (
                 <Btn key={p.seat} testId="skat-menu-kick" tone="quiet" shape="block" onClick={() => setRoomAsk(p.seat)}>{m.room_kick({ name: p.name })}</Btn>
@@ -1671,11 +1667,9 @@ function TableMenu({ leave, newRound, room }: {
   )
 }
 
-/** A room's number at the felt's top left (SKATGO-163), mirroring the way out: on a wide felt a pill of the way out's
- *  height with a link icon and the number; on a phone, where the info board leaves the corner only the way out's round
- *  button, the six digits in two rows of three. A tap copies the room's link — the page's own address, in its language
- *  — and "Link copied" stands under it for a moment. */
-function RoomNumber({ code }: { code: string }) {
+/** A room's number in the way out's menu (SKATGO-163, the human: 「我建议放到退出按钮里，加一个菜单项」): a tap copies the
+ *  room's link — the page's own address, in its language — and the item says so for a moment. */
+function RoomLink({ code }: { code: string }) {
   const [copied, setCopied] = useState(false)
   useEffect(() => {
     if (!copied) return
@@ -1686,22 +1680,10 @@ function RoomNumber({ code }: { code: string }) {
     const link = `${window.location.origin}${localizeHref(`/table/${code}`, { locale: getLocale() })}`
     void navigator.clipboard?.writeText(link).then(() => setCopied(true), () => {})
   }
-  const spaced = `${code.slice(0, 3)} ${code.slice(3)}`
   return (
-    <div {...stylex.props(styles.roomCorner)}>
-      <button type="button" data-testid="room-number" data-room={code} data-copied={String(copied)} aria-label={m.room_number({ code: spaced })}
-        title={m.room_number({ code: spaced })} onClick={copy} {...stylex.props(typography.appBtnStrong, styles.menuButton, styles.roomNumber)}>
-        <span aria-hidden="true" {...stylex.props(styles.roomWide)}>
-          <Link2 size={icon.inline} strokeWidth={icon.outline} />
-          {spaced}
-        </span>
-        <span aria-hidden="true" {...stylex.props(typography.smallBold, styles.roomDigits)}>
-          <span>{code.slice(0, 3)}</span>
-          <span>{code.slice(3)}</span>
-        </span>
-      </button>
-      {copied ? <span role="status" data-testid="room-copied"><Pill tone="dark">{m.room_link_copied()}</Pill></span> : null}
-    </div>
+    <Btn testId="room-number" tone="quiet" shape="block" onClick={copy}>
+      {copied ? m.room_link_copied() : m.room_number_copy({ code: `${code.slice(0, 3)} ${code.slice(3)}` })}
+    </Btn>
   )
 }
 
@@ -1785,12 +1767,6 @@ const styles = stylex.create({
     boxShadow: elev.panel,
   },
   menuAsk: { margin: 0, color: color.navy },
-  // A room's number (SKATGO-163): a pill of the way out's height on a wide felt, its round button with the digits in two
-  // rows on a phone; "Link copied" under it.
-  roomCorner: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: space.x8 },
-  roomNumber: { width: { default: 'auto', [bp.phone]: dims.launcher }, paddingInline: { default: space.x16, [bp.phone]: 0 } },
-  roomWide: { display: { default: 'flex', [bp.phone]: 'none' }, alignItems: 'center', gap: space.x8, whiteSpace: 'nowrap' },
-  roomDigits: { display: { default: 'none', [bp.phone]: 'flex' }, flexDirection: 'column', alignItems: 'center', gap: space.x2 },
   // Clipped, not hidden (SKATGO-32): a hidden overflow can still be scrolled by focus or scrollIntoView,
   // which slid the whole felt sideways; a clipped one cannot scroll at all.
   table: { position: 'relative', display: 'grid', backgroundColor: color.page, overflow: 'clip' },

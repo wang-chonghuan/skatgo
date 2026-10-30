@@ -383,10 +383,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   one card "Raum 482 917" with its `go` way back. A guest's tap opens Clerk's window, and what was tapped goes on once
   signed in. How a room goes and its rules are on About SkatGo (SKATGO-134). A room's own page (`/table/<number>`):
   the table, or one line — signing in first, or why the room cannot be entered — with its ways on.
-  At the table, the room's number at the felt's top left, mirroring the way out: a white pill of the way out's height
-  with lucide's `Copy` and "Raum 482 917" (`appBtnStrong`), "Link kopiert" with `Check` for a moment after a tap; the
-  way out's menu adds "Raum verlassen" (`stop`) and, for the host, "<Name> entfernen" (`quiet`) per person, each asked
-  once more. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
+  At the table, the way out's menu holds the room: under "Weiterspielen", "Raum 482 917 · Link kopieren" (`quiet`), which
+  copies the room's link and reads "Link kopiert" for a moment; for the host, "<Name> entfernen" (`quiet`) per person;
+  and "Raum verlassen" (`stop`) — removing and leaving each asked once more. Nothing of the room stands on the felt. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
   FAQPage), each question bold over its answer; "Tägliches Skat", how the deal of the day and the six deals are played,

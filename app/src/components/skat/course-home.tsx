@@ -144,7 +144,7 @@ const styles = stylex.create({
     marginInline: 'auto',
     boxSizing: 'border-box',
     paddingTop: { default: space.x48, [bp.phone]: space.x24 },
-    paddingBottom: space.x72,
+    paddingBottom: { default: space.x72, [bp.phone]: space.x36 },
     paddingInline: { default: space.x48, [bp.phone]: space.x12 },
   },
   title: { margin: 0, color: color.navy },

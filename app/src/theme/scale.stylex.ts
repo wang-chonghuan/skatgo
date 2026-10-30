@@ -22,6 +22,8 @@ export const space = stylex.defineVars({
   x15: '15px',
   x27: '27.28px',
   x32: '32px',
+  /** A page column's bottom on a phone (SKATGO-162, the human: 「72和36吧」). */
+  x36: '36px',
   x48: '48px',
   x72: '72px',
   /** Vertical breathing room of the finish screen. */

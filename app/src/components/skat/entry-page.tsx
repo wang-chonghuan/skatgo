@@ -253,7 +253,7 @@ const styles = stylex.create({
     marginInline: 'auto',
     boxSizing: 'border-box',
     paddingTop: space.x32,
-    paddingBottom: space.x72,
+    paddingBottom: { default: space.x72, [bp.phone]: space.x36 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
   // Colour is stated, not inherited: the theme colours headings itself.

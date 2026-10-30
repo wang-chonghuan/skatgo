@@ -233,7 +233,9 @@ also built from the repository root. Neither project imports the other's runtime
   waits with nothing dealt (`deals` 0) — an empty seat is one with no account and no computer — until the host starts
   it (`computer`, `start`). Once it plays, the computers move one move a beat, free play's 850 ms (`AI_DELAY_MS`), and the page puts each change
   to the game on the table a beat after the one before, as free play shows its steps; the seat's own move counts as on
-  its way until the state carrying it arrives, not its receipt (SKATGO-164). A newcomer's seat waits for the next deal (`joinsAt`), the computer finishing the one being played; with nobody online
+  its way until the state carrying it arrives, not its receipt (SKATGO-164). `next` asks for the next deal (`nextBy`), dealt once
+  every person online has asked; leaving, being taken out or dropping asks again (`dealIfReady`). Every scored deal goes
+  into `history` (summary and who sat where) for the statistics (SKATGO-165). A newcomer's seat waits for the next deal (`joinsAt`), the computer finishing the one being played; with nobody online
   the computers do not play. The tables of before (schema 2, seats held by browser tokens) are deleted at start.
   Tickets are issued only while the multiplayer service answers `/readyz`: Render's health check
   stays `/healthz`, because the new process becomes ready only after the old one hands over the

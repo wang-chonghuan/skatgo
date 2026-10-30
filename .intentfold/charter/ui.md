@@ -392,7 +392,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   At the table, the top right button is the table's — a spade, as the panel's Game tab, where other tables have the
   way out (SKATGO-163) — and its menu holds the room: under "Weiterspielen", "Raum 482 917 · Link kopieren" (`quiet`), which
   copies the room's link and reads "Link kopiert" for a moment; for the host, "<Name> entfernen" (`quiet`) per person;
-  and "Raum verlassen" (`stop`) — removing and leaving each asked once more. Nothing of the room stands on the felt. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
+  and "Raum verlassen" (`stop`) — removing and leaving each asked once more; under the number, "Statistik" (`quiet`,
+  SKATGO-165) opens a dialog over the table — "Statistik" (`dialogTitle`), one block a finished deal under a hairline:
+  "SPIEL 3" (`infoLabel`), the game line as the score sheets say it (`appText`), the three seats' points as the result
+  card shows them (`SeatScores`) — then "GESAMT" the same way, and "Weiterspielen" (`go`, full width) at its foot. The
+  board's deal line reads "Spiel 3", where free play reads "Spiel 3 von 6", and the panel's strip the same pill. At a deal's
+  end, the way on, once pressed, reads "Warten auf <Namen>" and takes no tap. Nothing of the room stands on the felt. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
   FAQPage), each question bold over its answer; "Tägliches Skat", how the deal of the day and the six deals are played,

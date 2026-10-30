@@ -389,8 +389,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   host's marked "Gastgeber" (`Pill`), and for the host a small `quiet` button per seat: "KI spielen lassen", "KI
   entfernen", "Entfernen"; then the host's "Spiel starten" (`go`, block, large), disabled with one slate line until
   every seat is taken, or for the others "Warte, bis <Name> das Spiel startet"; and "Raum verlassen" (`quiet`, block).
-  At the table, the top right button is the table's — a spade, as the panel's Game tab, where other tables have the
-  way out (SKATGO-163) — and its menu holds the room: under "Weiterspielen", "Raum 482 917 · Link kopieren" (`quiet`), which
+  At the table, the top right button is the table's — the people at it (lucide `Users`; lucide's tables are
+  spreadsheets, and not a card, SKATGO-165), where other tables have the way out (SKATGO-163) — and its menu holds the room: under "Weiterspielen", "Raum 482 917 · Link kopieren" (`quiet`), which
   copies the room's link and reads "Link kopiert" for a moment; for the host, "<Name> entfernen" (`quiet`) per person;
   and "Raum verlassen" (`stop`) — removing and leaving each asked once more; under the number, "Statistik" (`quiet`,
   SKATGO-165) opens a dialog over the table — "Statistik" (`dialogTitle`) over a score sheet (`small`): the names once,

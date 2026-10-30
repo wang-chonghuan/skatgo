@@ -38,7 +38,7 @@ import { BID_LADDER, type Declaration, NULL_VALUES, baseValue, expectedValue, hi
 import { m } from '~/paraglide/messages'
 import { getLocale, localizeHref } from '~/paraglide/runtime'
 import { Link } from '@tanstack/react-router'
-import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, Users, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -1611,8 +1611,9 @@ function useCardSounds(game: Game) {
  * corner, across from where the assistant's launcher stood at the top left until SKATGO-130, on every full-screen table. It opens a small menu — keep
  * playing, give up free play's round for a new one (asked once more first), or leave the table. Leaving loses
  * nothing: free play's game waits in this browser, the tournament's on the server, a private table's in its room.
- * A room's button is the table's, a spade as the panel's Game tab, not the way out (SKATGO-163, the human:
- * 「私人牌桌中，不要退出按钮，而要一个牌桌按钮。以示不同。然后菜单内容还相同」).
+ * A room's button is the table's, not the way out (SKATGO-163, the human: 「私人牌桌中，不要退出按钮，而要一个牌桌按钮。以示不同。
+ * 然后菜单内容还相同」): the people at it, lucide having no table but a spreadsheet's (SKATGO-165, 「那个图标别用扑克牌的，最好用
+ * 牌桌等图标」).
  */
 function TableMenu({ leave, newRound, room }: {
   leave: '/' | '/daily' | '/skat-tricks'
@@ -1654,7 +1655,7 @@ function TableMenu({ leave, newRound, room }: {
         {...stylex.props(styles.menuButton)}
       >
         {room
-          ? <Spade aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
+          ? <Users aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
           : <LogOut aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />}
       </button>
       {open ? (

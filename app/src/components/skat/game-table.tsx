@@ -4,12 +4,12 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
+import { type Card, type Contract, SUITS, SUIT_SYMBOL, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { type Face, faceOf } from '~/lib/skat/face'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { playSound } from '~/lib/skat/sounds'
 import { useBoardTricks, useFaces, useSettings, useTapToCollect } from '~/lib/skat/settings'
-import { type SettlementRow, cardLabel, contractName, ledName, roleName, settleReason, settlementFormula, settlementRows } from '~/lib/skat/i18n'
+import { type SettlementRow, cardLabel, contractName, ledName, matadorLabel, roleName, settleReason, settlementFormula, settlementRows } from '~/lib/skat/i18n'
 import {
   type Game,
   type Move,
@@ -34,7 +34,7 @@ import {
   trickWinner,
 } from '~/lib/skat/game'
 import { type DealSummary, seegerFabian, summarize } from '~/lib/skat/tournament'
-import { BID_LADDER, type Declaration, baseValue, expectedValue, highestValue, nextBid } from '~/lib/skat/value'
+import { BID_LADDER, type Declaration, NULL_VALUES, baseValue, expectedValue, highestValue, matadors, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
 import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
@@ -212,6 +212,13 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // Hints at the course's own table and in lesson 11 only (SKATGO-130): never in the tournament, at a private table,
   // in an exercise or in free play.
   const hints = remote ? !!server?.hints : true
+  // Free play's bid calculator (SKATGO-157): only there — a round is free play's alone — and while the settings show it.
+  // The contract picked stays picked through the deal's bidding: it is kept with the hand it was picked for.
+  const bidCalc = useSettings((s) => s.bidCalc)
+  const [calcPick, setCalcPick] = useState<{ hand: string; pick: number } | null>(null)
+  const handKey = game.hands[ME].map(cardId).join()
+  const calc: BidCalcState | null =
+    server?.round && bidCalc ? { pick: calcPick?.hand === handKey ? calcPick.pick : null, setPick: (pick) => setCalcPick(pick === null ? null : { hand: handKey, pick }) } : null
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   const [picked, setPicked] = useState<Card[]>([])
   // The trick's cards that have landed (SKATGO-41). A card flies in on a layer of its own under a
@@ -409,7 +416,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   const movesInPanel = fullScreen && pinned && panelOpen
   // Lina's or Noah's line (SKATGO-142) waits while the table itself asks for a tap — a claim laid open, a trick to
   // collect — or shows a message: one thing at a time, one hand (SKATGO-143, the human: 「按顺序来显示这些信息」). Shown,
-  // the next tap puts it away. On a wide table it stands beside the frame, otherwise in the top band under the table's line.
+  // the next tap puts it away. It stands beside the speaker's face, level with it, on every screen (SKATGO-157, the human:
+  // 「泡泡要始终从头像的同水平线的位置发出去，挨着头像」); with the faces switched off, where the face would be.
   const [talkSeen, setTalkSeen] = useState<number | null>(null)
   const tapAsked = revealing || (game.phase === 'trickEnd' && tapToCollect) || hint !== null || refusal !== null
   const shownTalk = talk && talk.id !== talkSeen && !tapAsked ? talk : null
@@ -419,22 +427,16 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     document.addEventListener('pointerdown', seen, true)
     return () => document.removeEventListener('pointerdown', seen, true)
   }, [shownTalk])
+  const facesShown = faces && !exercise && !room
   const talkCard = shownTalk ? (
-    <p key={shownTalk.id} role="status" data-testid="skat-talk" data-seat={shownTalk.seat} {...stylex.props(typography.appText, styles.talk, pinned && styles.talkBeside, pinned && (shownTalk.seat === 1 ? styles.talkLeft : styles.talkRight))}>
+    <p key={shownTalk.id} role="status" data-testid="skat-talk" data-seat={shownTalk.seat} {...stylex.props(typography.appText, styles.talk, shownTalk.seat === 1 ? styles.talkLeft : styles.talkRight, !facesShown && (shownTalk.seat === 1 ? styles.talkBare : styles.talkBareRight))}>
       <span>
         <span {...stylex.props(typography.appBtnStrong)}>{nameOf(shownTalk.seat)}:</span> {shownTalk.line}
       </span>
       <TapHand testId="skat-talk-hand" place={styles.talkHand} still={reducedMotion} />
       {/* The bubble's tail, as in a comic, toward the speaker's face (SKATGO-148, the human: 「table talk应该像漫画一样，用哪种有
-          箭头的泡泡，指向说话人」): from its top up and out beside the frame, where the face is above it; in the band, out of
-          its side near the foot, straight at the face beside it. */}
-      <span
-        aria-hidden="true"
-        data-testid="skat-talk-tail"
-        {...stylex.props(
-          pinned ? [styles.talkTail, styles.talkTailUp, shownTalk.seat === 1 ? styles.talkTailLeft : styles.talkTailRight] : [styles.talkTailSide, shownTalk.seat === 1 ? styles.talkTailSideLeft : styles.talkTailSideRight],
-        )}
-      />
+          箭头的泡泡，指向说话人」): out of its side, straight at the face beside it. */}
+      <span aria-hidden="true" data-testid="skat-talk-tail" {...stylex.props(styles.talkTailSide, shownTalk.seat === 1 ? styles.talkTailSideLeft : styles.talkTailSideRight)} />
     </p>
   ) : null
   // In the tournament, after each deal (SKATGO-145): the deal's result, then its bidding and its trick most worth
@@ -463,12 +465,11 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                 </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
                 </div>
               )}
             </div>
           ) : null}
-          {talkCard && !pinned ? <div {...stylex.props(styles.talkRow, shownTalk!.seat === 1 ? styles.talkRowLeft : styles.talkRowRight)}>{talkCard}</div> : null}
           {refusal || hint || server?.problem || room?.notice ? (
             <div data-testid="skat-messages" {...stylex.props(styles.messages)}>
               {room?.notice}
@@ -499,7 +500,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         {/* Lina's and Noah's faces above their stacks (SKATGO-147); not at a private table, where people sit, nor on an
             exercise's open board; and only while the settings show them. Drawn before the stacks, so a hand laid open
             long enough to reach a face on a phone lies over it rather than under it (SKATGO-148). */}
-        {faces && !exercise && !room ? ([1, 2] as const).map((seat) => <SeatFace key={seat} seat={seat} game={game} />) : null}
+        {facesShown ? ([1, 2] as const).map((seat) => <SeatFace key={seat} seat={seat} game={game} />) : null}
         {/* Both opponents' hands: the same cards as the learner's, turned sideways and stacked down the
             left and right edges, running off the felt so only part of each shows (SKATGO-26). */}
         {([1, 2] as Seat[]).map((seat) => (
@@ -507,7 +508,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           <Stack key={seat} seat={seat} game={game} shown={exercise ? game.hands[seat] : rest?.[seat]} big={!!exercise} />
         ))}
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
-          {pinned ? talkCard : null}
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
           {(game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'passedIn') && game.skat.length > 0 ? (
             <div {...stylex.props(styles.skatPile)}>
@@ -573,6 +573,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             ) : null
           })}
         </div>
+        {/* The talk over the stacks and the frame, beside the speaker's face. */}
+        {talkCard}
 
         {/* The learner's move — Reizen, the skat, the discard, the contract — in a drawer that rises from
             the bottom of the table and stops above the hand, which the discard still needs. */}
@@ -591,7 +593,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -673,7 +675,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
             </section>
           ) : null}
 
@@ -731,7 +733,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} roomAfter={room?.standings} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
         </div>
       ) : null}
 
@@ -770,6 +772,7 @@ function ActionsFor({
   freeReview,
   roundLast,
   seeger,
+  calc,
 }: {
   game: Game
   picked: Card[]
@@ -797,9 +800,11 @@ function ActionsFor({
   /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
   freeReview?: AskReview
   roundLast?: boolean | null
+  calc: BidCalcState | null
 }) {
   return (
     <Actions
+      calc={calc}
       roomAfter={roomAfter}
       freeReview={freeReview}
       roundLast={roundLast}
@@ -1048,6 +1053,8 @@ type ActionsProps = {
   roomAfter?: ReactNode
   /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
   freeReview?: AskReview
+  /** Free play's bid calculator (SKATGO-157), or null where there is none. */
+  calc: BidCalcState | null
 }
 
 function Actions(p: ActionsProps) {
@@ -1091,6 +1098,7 @@ function Actions(p: ActionsProps) {
 
   if (game.phase === 'bidding') {
     const b = game.bidding
+    const calc = p.calc ? <BidCalc hand={game.hands[ME]} {...p.calc} /> : null
     if (b.awaiting === 'forehandAlone') {
       return (
         <Row>
@@ -1098,10 +1106,11 @@ function Actions(p: ActionsProps) {
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
           {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
+          {calc}
         </Row>
       )
     }
-    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} />
+    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} calc={calc} />
     return (
       <Row>
         {/* Who asks and what "yes" commits to, on every table (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」). */}
@@ -1109,6 +1118,7 @@ function Actions(p: ActionsProps) {
         <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
         {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
+        {calc}
       </Row>
     )
   }
@@ -1434,7 +1444,7 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
  * so the hand stays in sight on a phone; a number is picked first and named with the main button, so a
  * slip of the finger names nothing.
  */
-function SpeakerBid({ value, listener, hints, onBid, onBidHint }: { value: number; listener: string; hints: boolean; onBid: ActionsProps['onBid']; onBidHint: () => void }) {
+function SpeakerBid({ value, listener, hints, onBid, onBidHint, calc }: { value: number; listener: string; hints: boolean; onBid: ActionsProps['onBid']; onBidHint: () => void; calc: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [picked, setPicked] = useState<number | null>(null)
   const next = nextBid(value)
@@ -1467,7 +1477,52 @@ function SpeakerBid({ value, listener, hints, onBid, onBidHint }: { value: numbe
         </div>
       ) : null}
       {hints ? <Btn tone="info" shape="block" size="lg" onClick={onBidHint}>{m.bid_hint_button()}</Btn> : null}
+      {calc}
     </Row>
+  )
+}
+
+type BidCalcState = { pick: number | null; setPick: (pick: number | null) => void }
+const CALC_CONTRACTS: Contract[] = [...[...SUITS].reverse().map((trump): Contract => ({ kind: 'suit', trump })), { kind: 'grand' }, { kind: 'null' }]
+
+/**
+ * Free play's bid calculator (SKATGO-157, the human: 「减少玩家技术性的负担，但是不减少思维的挑战」): the player picks a
+ * contract, and the drawer counts what it is worth with the ten cards in hand — matadors, multiplier, base value, and
+ * Hand one step more. Which contract, and how high to go, stay the player's.
+ */
+function BidCalc({ hand, pick, setPick }: { hand: Card[] } & BidCalcState) {
+  const contract = pick === null ? null : CALC_CONTRACTS[pick]
+  let line = ''
+  if (contract?.kind === 'null') line = m.bidcalc_null({ plain: NULL_VALUES.plain, hand: NULL_VALUES.hand, ouvert: NULL_VALUES.ouvert, handOuvert: NULL_VALUES.handOuvert })
+  else if (contract) {
+    const t = matadors(hand, contract)
+    const base = baseValue(contract)
+    line = m.bidcalc_value({ matadors: matadorLabel(t.with, t.count), level: t.count + 1, base, value: base * (t.count + 1), hand: base * (t.count + 2) })
+  }
+  return (
+    <div data-testid="skat-calc" {...stylex.props(styles.bidCalc)}>
+      <div role="group" aria-label={m.bidcalc_label()} {...stylex.props(styles.bidCalcRow)}>
+        <span {...stylex.props(typography.appText, styles.bidCalcLabel)}>{m.bidcalc_label()}</span>
+        {CALC_CONTRACTS.map((c, i) => (
+          <button
+            key={i}
+            type="button"
+            data-testid="skat-calc-contract"
+            aria-pressed={pick === i}
+            aria-label={contractName(c)}
+            onClick={() => setPick(pick === i ? null : i)}
+            {...stylex.props(typography.toggle, styles.toggle, styles.jumpValue, pick === i && styles.toggleOn)}
+          >
+            {c.kind === 'suit' ? SUIT_SYMBOL[c.trump] : contractName(c)}
+          </button>
+        ))}
+      </div>
+      {line ? (
+        <p data-testid="skat-calc-line" {...stylex.props(typography.appText, styles.say)}>
+          <Rich text={line} />
+        </p>
+      ) : null}
+    </div>
   )
 }
 
@@ -1745,16 +1800,17 @@ const styles = stylex.create({
   },
   framePlay: { width: stage.frame, aspectRatio: dims.square, borderWidth: dims.frameBorderPlay },
 
-  // Table talk (SKATGO-142, SKATGO-143): a white card as wide as its words; beside the frame on a wide table, level with
-  // its top, toward the speaker's cards; otherwise in the top band's flow at the speaker's side, so nothing overlaps.
+  // Table talk (SKATGO-142, SKATGO-143): a white card as wide as its words, beside the speaker's face and level with it
+  // (SKATGO-157).
   talk: {
-    position: 'relative',
+    position: 'absolute',
+    top: stage.faceTop,
     display: 'flex',
     alignItems: 'flex-end',
     gap: space.x8,
     margin: 0,
     width: 'max-content',
-    maxWidth: '100%',
+    maxWidth: stage.talkMax,
     boxSizing: 'border-box',
     paddingBlock: space.x8,
     paddingInline: space.x12,
@@ -1763,25 +1819,10 @@ const styles = stylex.create({
     boxShadow: elev.option,
     color: color.navy,
   },
-  // A triangle under the bubble (over it, `talkTailUp`), its point out toward the speaker: Lina's on the left, Noah's on the right.
-  talkTail: {
-    position: 'absolute',
-    top: '100%',
-    width: 0,
-    height: 0,
-    borderStyle: 'solid',
-    borderColor: 'transparent',
-    borderTopColor: color.surface,
-    borderTopWidth: space.x14,
-    borderBottomWidth: 0,
-  },
-  talkTailUp: { top: 'auto', bottom: '100%', borderTopWidth: 0, borderTopColor: 'transparent', borderBottomWidth: space.x14, borderBottomColor: color.surface },
-  talkTailLeft: { left: space.x20, borderLeftWidth: 0, borderRightWidth: space.x16 },
-  talkTailRight: { right: space.x20, borderRightWidth: 0, borderLeftWidth: space.x16 },
-  // In the band: a short triangle out of the bubble's side, toward the face beside it.
+  // A short triangle out of the bubble's side, level with the top of the face beside it, its point at the face.
   talkTailSide: {
     position: 'absolute',
-    bottom: space.x16,
+    top: space.x12,
     width: 0,
     height: 0,
     borderStyle: 'solid',
@@ -1791,13 +1832,11 @@ const styles = stylex.create({
   },
   talkTailSideLeft: { right: '100%', borderLeftWidth: 0, borderRightWidth: space.x8, borderRightColor: color.surface },
   talkTailSideRight: { left: '100%', borderRightWidth: 0, borderLeftWidth: space.x8, borderLeftColor: color.surface },
-  talkBeside: { position: 'absolute', top: 0, maxWidth: dims.talkWidth },
-  talkLeft: { right: '100%', marginRight: space.x16 },
-  talkRight: { left: '100%', marginLeft: space.x16 },
+  talkLeft: { left: stage.talkBeside },
+  talkRight: { right: stage.talkBeside },
+  talkBare: { left: stage.faceInset, right: 'auto' },
+  talkBareRight: { right: stage.faceInset, left: 'auto' },
   talkHand: { flexShrink: 0, width: dims.talkHand, height: dims.talkHand, overflow: 'visible', alignSelf: 'flex-end' },
-  talkRow: { display: 'flex', width: dims.tipWidth, maxWidth: stage.talkBetweenFaces },
-  talkRowLeft: { justifyContent: 'flex-start' },
-  talkRowRight: { justifyContent: 'flex-end' },
   plateSlot: { position: 'absolute', display: 'flex' },
   plateSlotLeft: { left: 0, top: dims.half, transform: pose.plateLeft },
   plateSlotRight: { right: 0, top: dims.half, transform: pose.plateRight },
@@ -2204,6 +2243,10 @@ const styles = stylex.create({
     paddingBlock: space.x4,
   },
   jumpValue: { flexShrink: 0 },
+  // Free play's bid calculator (SKATGO-157): under the bid's buttons, its label and the contracts, wrapping on a phone.
+  bidCalc: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6, flexBasis: '100%' },
+  bidCalcRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.x8 },
+  bidCalcLabel: { flexShrink: 0, color: color.slate },
   resultBody: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   resultTitle: { margin: 0, color: color.navy },
   resultHead: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
@@ -2235,14 +2278,18 @@ const styles = stylex.create({
     maxHeight: '100%',
     overflow: 'hidden',
     boxSizing: 'border-box',
-    padding: space.x24,
+    // The scroll bar 8 from the edge, the content 24 (SKATGO-157, 「滚动条右侧多了一个空白条，不能接受」).
+    paddingBlock: space.x24,
+    paddingLeft: space.x24,
+    paddingRight: space.x8,
     borderRadius: radii.dialog,
     backgroundColor: color.surface,
     boxShadow: elev.panel,
   },
-  dialogInner: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto' },
-  dialogFramed: { gap: 0, padding: 0 },
-  dialogBody: { flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', paddingBlock: space.x24, marginInline: space.x24 },
+  dialogInner: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', paddingRight: space.x16 },
+  dialogFramed: { gap: 0, paddingBlock: 0, paddingLeft: 0, paddingRight: 0 },
+  // Its scroll bar clear of the rounded corner: 8 in from the top and the right, the content 24.
+  dialogBody: { flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', marginTop: space.x8, marginLeft: space.x24, marginRight: space.x8, paddingTop: space.x16, paddingBottom: space.x24, paddingRight: space.x16 },
   dialogFoot: {
     flexShrink: 0,
     paddingInline: space.x24,

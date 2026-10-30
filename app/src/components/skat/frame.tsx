@@ -245,6 +245,8 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const setTalk = useSettings((s) => s.setTalk)
   const faces = useSettings((s) => s.faces)
   const setFaces = useSettings((s) => s.setFaces)
+  const bidCalc = useSettings((s) => s.bidCalc)
+  const setBidCalc = useSettings((s) => s.setBidCalc)
   const current = getLocale()
   return (
     <Modal title={m.settings_open()} onClose={onClose} testId="settings-dialog" closeTestId="settings-close">
@@ -368,6 +370,25 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
               <span>{m.settings_faces_table()}</span>
             </span>
             <span aria-hidden="true" {...stylex.props(styles.check, !faces && styles.checkOff)}>
+              <Check size={icon.inline} strokeWidth={icon.outline} />
+            </span>
+          </button>
+        </section>
+        {/* Free play's bid calculator (SKATGO-157), on by default. */}
+        <section {...stylex.props(styles.section)}>
+          <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.bidcalc_label()}</h3>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={bidCalc}
+            data-testid="settings-bid-calc"
+            onClick={() => setBidCalc(!bidCalc)}
+            {...stylex.props(typography.appBtnStrong, styles.deck, bidCalc && styles.deckOn)}
+          >
+            <span {...stylex.props(styles.deckName)}>
+              <span>{m.settings_bid_calc()}</span>
+            </span>
+            <span aria-hidden="true" {...stylex.props(styles.check, !bidCalc && styles.checkOff)}>
               <Check size={icon.inline} strokeWidth={icon.outline} />
             </span>
           </button>

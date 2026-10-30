@@ -508,6 +508,18 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           <Stack key={seat} seat={seat} game={game} shown={exercise ? game.hands[seat] : rest?.[seat]} big={!!exercise} />
         ))}
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
+          {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
+              learner's under the bottom edge, all alike (SKATGO-72). First, so the skat and the trick's cards lie
+              over them: the frame and its plates are only the table's backdrop (SKATGO-158, the human: 「方框只是背景板，
+              它可以被任何东西挡住」). */}
+          {([1, 2] as Seat[]).map((seat) => (
+            <div key={seat} data-testid={`skat-seat-${seat}`} {...stylex.props(styles.plateSlot, seat === 1 ? styles.plateSlotLeft : styles.plateSlotRight)}>
+              <Plate seat={seat} game={game} active={who === seat} />
+            </div>
+          ))}
+          <div data-testid="skat-seat-0" {...stylex.props(styles.plateSlot, styles.plateSlotBottom)}>
+            <Plate seat={ME} game={game} mine active={myTurn} />
+          </div>
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
           {(game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'passedIn') && game.skat.length > 0 ? (
             <div {...stylex.props(styles.skatPile)}>
@@ -551,17 +563,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               will do, and a hand in the frame's bottom-right corner says so. */}
           {game.phase === 'trickEnd' && tapToCollect ? <Collect hand={myHand} onCollect={onCollect} /> : null}
           {revealing ? <Collect hand={[]} onCollect={() => setRevealed(game)} /> : null}
-
-          {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
-              learner's under the bottom edge, all alike (SKATGO-72). */}
-          {([1, 2] as Seat[]).map((seat) => (
-            <div key={seat} data-testid={`skat-seat-${seat}`} {...stylex.props(styles.plateSlot, seat === 1 ? styles.plateSlotLeft : styles.plateSlotRight)}>
-              <Plate seat={seat} game={game} active={who === seat} />
-            </div>
-          ))}
-          <div data-testid="skat-seat-0" {...stylex.props(styles.plateSlot, styles.plateSlotBottom)}>
-            <Plate seat={ME} game={game} mine active={myTurn} />
-          </div>
 
           {/* What each opponent last said in Reizen, in the frame's corner on their side. */}
           {([1, 2] as Seat[]).map((seat) => {
@@ -2004,7 +2005,8 @@ const styles = stylex.create({
   total: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x2, minWidth: 0 },
 
   // The skat and its label, in the frame's middle.
-  skatPile: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6, width: '100%' },
+  // Positioned, so it lies over the seat plates drawn before it (SKATGO-158).
+  skatPile: { position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6, width: '100%' },
   skatCards: { display: 'flex', justifyContent: 'center', gap: space.x6, width: '100%' },
   // A card lying in the frame — the skat or a played card — is as big as a card in the hand (SKATGO-68).
   frameCard: { display: 'block', width: stage.handCard },

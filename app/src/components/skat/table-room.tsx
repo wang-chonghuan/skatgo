@@ -118,7 +118,6 @@ export function RoomCards() {
     return (
       <section data-testid="rooms-back" data-room={mine} {...stylex.props(styles.card)}>
         <h2 {...stylex.props(typography.optionTitle, styles.ink)}>{m.room_back_title({ code: spaced(mine) })}</h2>
-        <p {...stylex.props(typography.optionDesc, styles.slate)}>{m.room_back_text()}</p>
         <div {...stylex.props(styles.row)}>
           <Link to="/table/$id" params={{ id: mine }} data-testid="rooms-back-go" {...linkLook('go', 'md')}>{m.room_back()}</Link>
         </div>
@@ -378,14 +377,16 @@ export function PrivateTable() {
 }
 
 /** A seat's name as the viewer reads it: a person's nickname (the viewer is "you"), Lina or Noah for a computer's
- *  seat — the first computer in seat order Lina, the other Noah — marked when a computer plays it. */
+ *  seat — the first computer in seat order Lina, the other Noah — marked when a computer plays it, for good or for
+ *  someone away. */
 function seatNames(state: TableState): [string, string, string] {
   const me = state.mine.seat
   const computers = state.pub.seats.filter((s) => s.kind === 'ai').map((s) => s.seat)
   return [0, 1, 2].map((view) => {
     const s = state.pub.seats[roomSeat(view, me)]
     const name = view === 0 ? m.name_you() : s.nickname ?? (computers.indexOf(s.seat) === 0 ? m.name_lina() : m.name_max())
-    return s.control === 'ai' ? m.table_computer({ name }) : name
+    // A person waiting for their first game is named as themselves, though a computer finishes this one for them.
+    return s.control === 'ai' && !s.joining ? m.table_computer({ name }) : name
   }) as [string, string, string]
 }
 

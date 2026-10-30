@@ -509,8 +509,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         ))}
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
-              learner's under the bottom edge, all alike (SKATGO-72). First, so the skat and the trick's cards lie
-              over them: the frame and its plates are only the table's backdrop (SKATGO-158, the human: 「方框只是背景板，
+              learner's under the bottom edge, all alike (SKATGO-72). First, with the bid chips, so the skat and the
+              trick's cards lie over them: the frame and its plates are only the table's backdrop (SKATGO-158, the human: 「方框只是背景板，
               它可以被任何东西挡住」). */}
           {([1, 2] as Seat[]).map((seat) => (
             <div key={seat} data-testid={`skat-seat-${seat}`} {...stylex.props(styles.plateSlot, seat === 1 ? styles.plateSlotLeft : styles.plateSlotRight)}>
@@ -520,6 +520,16 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           <div data-testid="skat-seat-0" {...stylex.props(styles.plateSlot, styles.plateSlotBottom)}>
             <Plate seat={ME} game={game} mine active={myTurn} />
           </div>
+          {/* What each opponent last said in Reizen, in the frame's corner on their side: a label of the frame's too, so
+              under the skat (SKATGO-158). */}
+          {([1, 2] as Seat[]).map((seat) => {
+            const said = game.phase === 'bidding' || game.phase === 'passedIn' ? lastBidBy(seat) : null
+            return said ? (
+              <span key={seat} data-testid={`skat-said-${seat}`} {...stylex.props(typography.bidChip, styles.chip, styles.saidChip, seat === 1 ? styles.saidLeft : styles.saidRight, said === m.bid_pass() ? styles.chipPass : styles.chipBid)}>
+                {said}
+              </span>
+            ) : null
+          })}
           {/* The pile is on the table until somebody picks it up; after that the two cards are in a hand. */}
           {(game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'passedIn') && game.skat.length > 0 ? (
             <div {...stylex.props(styles.skatPile)}>
@@ -564,15 +574,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           {game.phase === 'trickEnd' && tapToCollect ? <Collect hand={myHand} onCollect={onCollect} /> : null}
           {revealing ? <Collect hand={[]} onCollect={() => setRevealed(game)} /> : null}
 
-          {/* What each opponent last said in Reizen, in the frame's corner on their side. */}
-          {([1, 2] as Seat[]).map((seat) => {
-            const said = game.phase === 'bidding' || game.phase === 'passedIn' ? lastBidBy(seat) : null
-            return said ? (
-              <span key={seat} data-testid={`skat-said-${seat}`} {...stylex.props(typography.bidChip, styles.chip, styles.saidChip, seat === 1 ? styles.saidLeft : styles.saidRight, said === m.bid_pass() ? styles.chipPass : styles.chipBid)}>
-                {said}
-              </span>
-            ) : null
-          })}
         </div>
         {/* The talk over the stacks and the frame, beside the speaker's face. */}
         {talkCard}

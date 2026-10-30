@@ -215,7 +215,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 
 - **The frame** (`skat-layout.tsx`, `components/skat/frame.tsx`): every page but the tables — an open-card
   endgame's page among them (SKATGO-111) — wears the
-  public site's header (SKATGO-43; lessons too since SKATGO-47). The header has:
+  public site's header (SKATGO-43; lessons too since SKATGO-47), 64px high and 56px on a phone (SKATGO-161, the human:
+  「改」 after 「topbar的高度是否太高？」). The header has:
   - the SkatGo mark (`dims.landingMark`) and name (`landingBrand`), "SkatGo" without ".com" (SKATGO-105), under
     `bp.narrowPhone` the mark alone so sign-in fits;
   - no section links (SKATGO-144, the human: 「topbar上的那些菜单都删了吧，不需要了」): the front page's cards are the way in;

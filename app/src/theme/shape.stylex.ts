@@ -34,9 +34,10 @@ export const dims = stylex.defineVars({
   control: '40px',
   iconButton: '44px',
   badge: '24px',
-  /** The front page header's mark (SKATGO-31): the new icon's square carries white margin, so it is shown larger. */
-  landingMark: '56px',
-  landingMarkPhone: '44px',
+  /** The front page header's mark (SKATGO-31): the new icon's square carries white margin, so it is shown larger.
+   *  Smaller since SKATGO-161, with the lower header. */
+  landingMark: '44px',
+  landingMarkPhone: '36px',
   /** A language flag (SKATGO-104): 3:2, a little smaller on a phone so both fit beside "SkatGo.com". */
   flagWidth: '30px',
   flagHeight: '20px',
@@ -44,9 +45,10 @@ export const dims = stylex.defineVars({
   flagHeightPhone: '19px',
 
   // The public site
-  /** The front page header (SKATGO-31: 80px, lower than the reference's 100 so the hero starts higher). */
-  landingHeader: '80px',
-  landingHeaderPhone: '64px',
+  /** The front page header (SKATGO-31: 80px, lower than the reference's 100 so the hero starts higher; 64px and 56px on a
+   *  phone since SKATGO-161, the human approving: 「改」 — with a lesson's sticky bar below, the old 80/64 took a sixth of a phone). */
+  landingHeader: '64px',
+  landingHeaderPhone: '56px',
   landingColumn: '1140px',
   heroArt: '480px',
   /** The white disc on the felt while a table loads, and the logo turning in it (SKATGO-93). */

@@ -13,27 +13,39 @@ import { bp } from './breakpoints.stylex'
 //   landscape  1000u wide × 576u tall: the frame (300u) near the top, the stacks on both edges, the
 //              whole hand along the bottom (the human: no card runs off the felt);
 //   portrait    400u wide × 464u tall: a narrower frame (250u), the stacks deeper in the edges.
-// Above that stage Lina's and Noah's faces have their own room (SKATGO-147, the human chose it: the table a little
-// smaller on a short screen rather than a face over the cards): 131u (113u in portrait), a face above a stack of
-// twelve cards, the most a hand ever has. The stage sits where it always sat when the free height above it already
-// holds that room, and only moves down when it does not.
+// Lina's and Noah's faces (SKATGO-147) never move the stage where they fit (SKATGO-158, the human: 「方框只是背景板……不到
+// 迫不得已，禁止动这个背景板」): in landscape beside the board, in portrait under the board's foot, each 4u above a
+// stack of ten cards. Only where a face does not fit does the stage move down, and only by what it lacks; the table
+// is a little smaller then, so the hand still fits.
 // Where the felt has more room than the stage, the frame and the stacks keep to the middle of the free
 // height and the hand to the bottom: things only ever move apart.
 //
 // Both are read where they are used, so `cqw`/`cqh` are the felt's.
 
+/** In portrait, the info board's foot under the felt's top: its two rows of cells, 153px on a phone (169px wider).
+ *  A face's top may come no higher (SKATGO-158): the board leaves 60px a side, too little for a face beside it. */
+export const tableBand = stylex.defineVars({
+  boardFoot: { default: '169px', [bp.phone]: '153px' },
+})
+
+const boardFoot = tableBand.boardFoot
+
 export const stageUnit = stylex.defineVars({
+  // The third term is the faces' (SKATGO-158): where a face needs the stage lower, the stage gets smaller to keep the
+  // hand on the felt. It binds only where the stage fills the height.
   u: {
-    default: 'min(0.1cqw, calc((100cqh - 140px) / 707))',
-    [bp.portrait]: 'min(0.25cqw, calc((100cqh - 212px) / 577))',
+    default: 'min(0.1cqw, calc((100cqh - 140px) / 576), calc((100cqh - 72px) / 676))',
+    [bp.portrait]: `min(0.25cqw, calc((100cqh - 212px) / 464), calc((100cqh - ${boardFoot}) / 538.5))`,
   },
 })
 
 const u = stageUnit.u
-/** The stage's top under the band: half the free height, or the faces' room when that is more (SKATGO-147). */
+/** The stage's top under the band: half the free height (SKATGO-34), or lower by what a face lacks (SKATGO-158) — in
+ *  landscape a ten-card stack's top 4u under the face's foot (72px + 92u), in portrait the face's top at the board's
+ *  foot. */
 const above = {
-  default: `max((100cqh - 140px - ${u} * 576) / 2, ${u} * 131)`,
-  portrait: `max((100cqh - 212px - ${u} * 464) / 2, ${u} * 113)`,
+  default: `max((100cqh - 140px - ${u} * 576) / 2, ${u} * 100 - 68px)`,
+  portrait: `max((100cqh - 212px - ${u} * 464) / 2, ${boardFoot} + ${u} * 74.5 - 212px)`,
 }
 
 export const stage = stylex.defineVars({
@@ -63,14 +75,14 @@ export const stage = stylex.defineVars({
     [bp.portrait]: `calc(212px + ${above.portrait} + ${u} * 105)`,
   },
   /** Lina's and Noah's faces (SKATGO-147, the human: 「头像太小了，需要增大」; SKATGO-148: 「头像有点大，应该小点」, 「手机上65吧」): 92u (69u,
-   *  65px on a 375px phone); in portrait their top 87.5u above the stage's, 4u clear of a twelve-card stack and at least 25u under the band,
-   *  whose line may run past it. */
+   *  65px on a 375px phone); in portrait their top 74.5u above the stage's, 4u clear of a ten-card stack and never above the
+   *  board's foot (SKATGO-158). */
   face: { default: `calc(${u} * 92)`, [bp.portrait]: `calc(${u} * 69)` },
   // On a wide table the face sits higher, in the felt's corner beside the info board and under the way out (72px), so a
   // hand laid open under it stays clear of it (SKATGO-148, the human: 「头像位置往上面移动一点，这样就不当着亮的牌了」).
   faceTop: {
     default: '72px',
-    [bp.portrait]: `calc(212px + ${above.portrait} - ${u} * 87.5)`,
+    [bp.portrait]: `calc(212px + ${above.portrait} - ${u} * 74.5)`,
   },
   /** How far a face sits in from the felt's edge, over the part of the stack that shows. */
   faceInset: { default: `calc(${u} * 4)`, [bp.portrait]: `calc(${u} * 4)` },

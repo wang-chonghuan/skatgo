@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-158",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-158",
+  "branch": "SKATGO-158-table-frame-restore",
+  "base": "70a24daefd4e66f9f6d8bd46816c9adadd5fbcd6",
+  "ports": { "web": 55158, "multiplayer": 56158, "database": 57158 }
+}

@@ -223,13 +223,26 @@ export async function seatBidding(policy: Policy, hand: ZCard[], position: numbe
   return { maxBid: Math.max(maxBid(handMax), maxBid(pickupPen)), pickup, hand: handTables(null), detail: { handValues: hv, pickupPen, handMax } }
 }
 
+/** The chance a suit game or Grand is made at each bid (SKATGO-159): won when the bid is within the twelve cards' game
+ *  value, won Schneider when it needs Schneider, won Schwarz when it needs Schwarz, and never above. */
+function madeTable(tables: BiddingTables, hand: ZCard[], mode: string, value: number): number[] {
+  const cards = mode[0] !== 'G' ? swapColors(hand, mode[0], 'D') : hand
+  const mb = maxBids(cards, mode)
+  const t = tables[(mode[0] === 'G' ? 'G' : 'D') as GameKind]
+  const p = Array.from({ length: 6 }, (_, o) => interp(value, t.values, t.dists[o]))
+  const won = p[3] + p[4] + p[5]
+  return BIDS.map((b) => (b <= mb.normal ? won : b <= mb.schneider ? p[4] + p[5] : b <= mb.schwarz ? p[5] : 0))
+}
+
 /**
  * Which game SkatZero would play at a bid (SKATGO-154; not part of the port): the same simulation as `seatBidding` —
  * every skat in `order`, the best discard per game type and its value, the Hand games over every skat — but kept per
  * game type, so that at bid index `at` it says how often each pickup game is the best one, and whether Hand would beat
- * picking up. The bidding practice uses it to name the AI's contract instead of guessing it from the number.
+ * picking up. The bidding practice uses it to name the AI's contract instead of guessing it from the number. Since
+ * SKATGO-159 also, per suit game and Grand, the chance it is made at each bid of BIDS over the same skats (`made`): the
+ * practice explains with it where SkatZero stops.
  */
-export async function seatGames(policy: Policy, hand: ZCard[], position: number, order: [number, number][], at: number): Promise<{ pickup: Record<PickupMode, number>; hand: { mode: HandMode; value: number }; pickupValue: number }> {
+export async function seatGames(policy: Policy, hand: ZCard[], position: number, order: [number, number][], at: number): Promise<{ pickup: Record<PickupMode, number>; hand: { mode: HandMode; value: number }; pickupValue: number; made: Record<'C' | 'S' | 'H' | 'D' | 'G', number[]> }> {
   const tables = policy.tables
   const others = DECK.filter((c) => !hand.includes(c))
   const pos = (3 - position) % 3
@@ -237,6 +250,7 @@ export async function seatGames(policy: Policy, hand: ZCard[], position: number,
   const hv = await handValues(policy, b)
   const estimates = Object.fromEntries(PICKUP_MODES.map((m) => [m, [] as number[]])) as Record<PickupMode, number[]>
   const wins = Object.fromEntries(PICKUP_MODES.map((m) => [m, 0])) as Record<PickupMode, number>
+  const made = Object.fromEntries((['C', 'S', 'H', 'D', 'G'] as const).map((m) => [m, new Array<number>(BIDS.length).fill(0)])) as Record<'C' | 'S' | 'H' | 'D' | 'G', number[]>
   let pickupSum = 0
   for (const [i, j] of order) {
     const skat = [others[i], others[j]]
@@ -262,6 +276,7 @@ export async function seatGames(policy: Policy, hand: ZCard[], position: number,
       let best = values[0]
       for (let k = 1; k < values.length; k++) if (values[k] > best) best = values[k]
       est.push(best)
+      if (mode !== 'N' && mode !== 'NO') madeTable(tables, p.hand, mode, best).forEach((x, k) => (made[mode][k] += x))
       const v = bidValueTable(tables, p.hand, mode, best, BID_PENALTIES)[at]
       if (v > bestAt) {
         bestAt = v
@@ -279,7 +294,8 @@ export async function seatGames(policy: Policy, hand: ZCard[], position: number,
   })
   const top = Math.max(...handAt)
   const share = Object.fromEntries(PICKUP_MODES.map((m) => [m, wins[m] / order.length])) as Record<PickupMode, number>
-  return { pickup: share, hand: { mode: HAND_MODES[handAt.indexOf(top)], value: top }, pickupValue: pickupSum / order.length }
+  for (const m of Object.values(made)) m.forEach((x, k) => (m[k] = x / order.length))
+  return { pickup: share, hand: { mode: HAND_MODES[handAt.indexOf(top)], value: top }, pickupValue: pickupSum / order.length, made }
 }
 
 /** Index of a winning bid in BIDS; an off-list bid takes the next higher list bid (grill Q4). */

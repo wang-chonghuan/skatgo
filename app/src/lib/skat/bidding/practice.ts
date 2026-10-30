@@ -5,26 +5,42 @@ import { PRACTICE } from './practice.data'
 
 // The bidding practice (SKATGO-149, the human: 「做成一个叫牌练习的东西，只叫牌」): a hand of ten cards and a seat,
 // and since SKATGO-151 two steps, as a learner thinks (the human: 「我想的是我能打什么合约」, 「答题分两步吧，先点什么合约，
-// 再点最高叫到几点」): what do you play — a suit, Grand, Null, or pass — and then how high you can bid with it. The answer is SkatZero's highest bid for those cards from
-// that seat, stored with free play's pool (multiplayer/skatzero/free-pool.json.gz) and copied out by
-// multiplayer/scripts/make-bidding-practice.ts; multiplayer/test/bidding-practice.test.ts holds every question to the
-// pool again. Only hands whose answer one game explains are questions: a pass, a Null, or exactly one suit game's
-// or Grand's value counted from the ten cards — so the explanation is that game's calculation, never SkatZero's own
-// numbers. Since SKATGO-154 that game must also be the one SkatZero itself plays at its highest bid (`sure`): a number
-// alone may match a game SkatZero never meant (the human's 「第五题」, Spades named for a hand plainly Diamonds).
+// 再点最高叫到几点」): what do you play — a suit, Grand, Null, or pass — and then how high you can bid with it. The answer is
+// SkatZero's highest bid for those cards from that seat and the game it plays there (SKATGO-154), stored with free play's
+// pool (multiplayer/skatzero/free-pool.json.gz) and copied out by multiplayer/scripts/make-bidding-practice.ts;
+// multiplayer/test/bidding-practice.test.ts holds every question to the pool again.
+//
+// Since SKATGO-159 (the human: 「叫牌练习感觉搞的太简单了……基本就是看有几个B，然后再看哪个花色多」, 「套路应该有，但是是基础的，
+// 低难度的」) the run is short and mostly hard: a few hands the rules of thumb answer (`routineOf`) open it, then hands
+// where they fail — a pass with Buben, a game without them, a game other than the longest suit, a bid below the ten
+// cards' value (SkatZero bids past it only in a Hand game, which is not asked). Those are explained with SkatZero's own numbers (the human agreed to 「AI 在各价位的胜率」): the chance
+// it makes its game at each bid offered.
 
-/** A question as stored: the pool's deal and seat (for the proof), the ten cards, the seat's position at the
- *  bidding (0 forehand, 1 middlehand, 2 rearhand) and SkatZero's highest bid, 0 for a pass. */
+/** A question as stored: the pool's deal and seat (for the proof), the ten cards, the seat's position at the bidding
+ *  (0 forehand, 1 middlehand, 2 rearhand), SkatZero's highest bid (0 for a pass) and the contract it plays there. */
 export type Practice = {
   deal: number
   seat: number
   hand: string
   position: 0 | 1 | 2
   bid: number
-  /** For a bid, how often SkatZero plays the answer's game at that bid, over every skat (SKATGO-154): the generator keeps
-   *  a question only when this is high, so the contract named is SkatZero's own. */
+  contract: ContractKey
+  /** For a bid, how often SkatZero plays the contract at that bid, over every skat (SKATGO-154): only a high share is
+   *  asked, so the contract named is SkatZero's own. */
   sure?: number
+  /** Step 2's numbers for a suit game or Grand, ascending (SKATGO-159): the bid and its neighbours. */
+  options?: number[]
+  /** The chance SkatZero makes the contract at each of `options`, in whole percent. */
+  odds?: number[]
+  /** For a bid below the ten cards' value, the very next bid and SkatZero's chance there: where it falls. None for a
+   *  borderline game stopped at 18. */
+  above?: [number, number]
+  /** Each suit game's and Grand's chance to be made at the bid — at 18 for a pass — in whole percent: what the
+   *  explanation says of a contract chosen instead, and of the routine's game when SkatZero passes. */
+  games?: Partial<Record<GameKey, number>>
 }
+
+export type GameKey = 'C' | 'S' | 'H' | 'D' | 'G'
 
 /** What a suit game or Grand is worth from these ten cards: with or without n, game n + 1, times the base. */
 export type Valued = { contract: Contract; with: boolean; count: number; base: number; value: number; trumps: number }
@@ -45,20 +61,9 @@ export function tenCardValues(hand: Card[]): Valued[] {
   })
 }
 
-/** The game behind a highest bid, or null when no single game explains it (then it is not a question). */
-export function answerOf(hand: Card[], bid: number): Answer | null {
-  if (bid < 18) return { kind: 'pass' }
-  if (NULL_BIDS[bid]) return { kind: 'null', value: bid, which: NULL_BIDS[bid] }
-  const games = tenCardValues(hand).filter((v) => v.value === bid)
-  return games.length === 1 ? { kind: 'game', game: games[0] } : null
-}
-
-/** The game an offered number stands for — a number may stand for two games (36: Clubs × 3, Diamonds × 4); the one
- *  with more trumps is meant. */
-export function gameOf(hand: Card[], value: number): Valued | null {
-  const games = tenCardValues(hand).filter((v) => v.value === value)
-  return games.sort((a, b) => b.trumps - a.trumps)[0] ?? null
-}
+/** A suit game's or Grand's ten-card value by its key. */
+export const valuedOf = (hand: Card[], key: GameKey): Valued =>
+  tenCardValues(hand).find((v) => (key === 'G' ? v.contract.kind === 'grand' : v.contract.kind === 'suit' && v.contract.trump === key))!
 
 export const practiceHand = (p: Practice): Card[] => cards(p.hand)
 
@@ -79,27 +84,18 @@ export const PRACTICE_FREE = 2
 export const CONTRACTS = ['pass', 'C', 'S', 'H', 'D', 'G', 'N'] as const
 export type ContractKey = (typeof CONTRACTS)[number]
 
-/** The contract an answer is. */
-export const contractOf = (a: Answer): ContractKey =>
-  a.kind === 'pass' ? 'pass' : a.kind === 'null' ? 'N' : a.game.contract.kind === 'grand' ? 'G' : a.game.contract.kind === 'suit' ? a.game.contract.trump : 'pass'
-
 /** The question's answer: the AI's contract, and its highest bid (null when it passes). */
 export function solutionOf(p: Practice): { contract: ContractKey; value: number | null; answer: Answer } {
-  const answer = answerOf(practiceHand(p), p.bid)!
-  return { contract: contractOf(answer), value: answer.kind === 'pass' ? null : p.bid, answer }
+  if (p.contract === 'pass') return { contract: 'pass', value: null, answer: { kind: 'pass' } }
+  if (p.contract === 'N') return { contract: 'N', value: p.bid, answer: { kind: 'null', value: p.bid, which: NULL_BIDS[p.bid] } }
+  return { contract: p.contract, value: p.bid, answer: { kind: 'game', game: valuedOf(practiceHand(p), p.contract) } }
 }
 
-/**
- * Step 2's numbers: for a suit game or Grand the right multiplier and its neighbours — one less, as if "game" were
- * forgotten, and one more, as if a matador were miscounted — never under 2; for a Null its four fixed values.
- */
+/** Step 2's numbers: for a suit game or Grand the stored ones, for a Null its four fixed values. */
 export function valueOptions(p: Practice): number[] {
-  const { answer } = solutionOf(p)
-  if (answer.kind === 'pass') return []
-  if (answer.kind === 'null') return Object.values(NULL_VALUES)
-  const level = answer.game.count + 1
-  const from = Math.max(2, level - 1)
-  return [from, from + 1, from + 2].map((k) => k * answer.game.base)
+  if (p.contract === 'pass') return []
+  if (p.contract === 'N') return Object.values(NULL_VALUES)
+  return p.options ?? []
 }
 
 /** The suit with most trumps, as a learner first looks: its contract and how many trumps it holds. */
@@ -113,27 +109,41 @@ export function bestSuit(hand: Card[]): Valued {
 export const sideAces = (hand: Card[], trump?: string) => hand.filter((c) => c.rank === 'A' && c.suit !== trump).length
 
 /**
- * How plain a question is, so the run goes from easy to hard: 1 — 6 trumps or more, or 3 or fewer, where the answer is
- * never in doubt; 2 — the hands the rules of thumb decide (5 trumps with a side Ace, 4 without); 3 — the rest, and every
- * hand the AI plays as Grand or Null, which a beginner meets after the suit games.
+ * The routine (SKATGO-159, the human: 「基本就是看有几个B，然后再看哪个花色多」): what a learner answers by the rules of thumb
+ * alone — the suit with most trumps, played with 6 trumps or more, 5 and a side Ace, or 2 Buben and 2 Aces, else a
+ * pass — bid to its value counted from the ten cards. A question it answers right is a basic one.
  */
-export function difficultyOf(p: Practice): 1 | 2 | 3 {
-  const { contract } = solutionOf(p)
-  if (contract === 'G' || contract === 'N') return 3
-  const hand = practiceHand(p)
+export function routineOf(hand: Card[]): { contract: ContractKey; value: number | null } {
   const best = bestSuit(hand)
-  if (best.trumps >= 6 || best.trumps <= 3) return 1
-  const ace = sideAces(hand, best.contract.kind === 'suit' ? best.contract.trump : undefined) > 0
-  if ((best.trumps === 5 && ace) || (best.trumps === 4 && !ace)) return 2
-  return 3
+  const trump = best.contract.kind === 'suit' ? best.contract.trump : undefined
+  const jacks = hand.filter((c) => c.rank === 'J').length
+  const play = best.trumps >= 6 || (best.trumps === 5 && sideAces(hand, trump) > 0) || (jacks >= 2 && sideAces(hand) >= 2)
+  return play && trump ? { contract: trump, value: best.value } : { contract: 'pass', value: null }
+}
+
+/** Which steps the routine gets wrong: the contract, and — when both play the same game — the bid. */
+export function routineMisses(p: Practice): { contract: boolean; value: boolean } {
+  const r = routineOf(practiceHand(p))
+  const sol = solutionOf(p)
+  const contract = r.contract !== sol.contract
+  return { contract, value: !contract && r.value !== sol.value }
+}
+
+/** How hard a question is, so the run goes from easy to hard (SKATGO-159): 1 — the routine answers it; 2 — it gets pass
+ *  or play wrong, or the bid; 3 — both play, but SkatZero plays another game than the longest suit. */
+export function difficultyOf(p: Practice): 1 | 2 | 3 {
+  const miss = routineMisses(p)
+  if (!miss.contract && !miss.value) return 1
+  return miss.contract && p.contract !== 'pass' && routineOf(practiceHand(p)).contract !== 'pass' ? 3 : 2
 }
 
 // The record (SKATGO-150, the human: 「用户能记录下来他哪个题出错了吗」, then 「超叫还是不敢叫还是叫错等等的分析……最好有个
 // 比率分析」): per question the first complete attempt — the contract and, when asked, the bid — and whether a later
-// attempt got both right. SKATGO-150's answers were one number, `first`: read as the contract it stood for.
+// attempt got both right. Since SKATGO-159 the questions' names carry `v2-`, and every answer to the questions before is
+// deleted (the human: 「用户已经答过的，可以删除记录，不要影响新版」).
 
 /** A question's lasting name: its deal and seat in free play's pool, whatever order the questions run in. */
-export const questionId = (p: Practice) => `${p.deal}-${p.seat}`
+export const questionId = (p: Practice) => `v2-${p.deal}-${p.seat}`
 const BY_ID = new Map(PRACTICE.map((p, i) => [questionId(p), i + 1]))
 /** The question's number in the run, by its name; undefined for a name not among them. */
 export const numberOf = (id: string): number | undefined => BY_ID.get(id)
@@ -146,20 +156,7 @@ export const FREE_IDS = PRACTICE.slice(0, PRACTICE_FREE).map(questionId)
 
 export type Attempt = { contract: ContractKey; value: number | null }
 export type Answered = Attempt & { fixed: boolean }
-/** A row as SKATGO-150 kept it. */
-type Legacy = { first: number; fixed: boolean }
 export type BiddingRecord = Record<string, Answered>
-
-/** A stored row in today's shape: SKATGO-150's number read as the contract it stood for, its value kept only when that
- *  contract was the AI's (step 2 asks the AI's contract). */
-export function readAnswered(p: Practice, r: Answered | Legacy): Answered {
-  if ('contract' in r) return r
-  const sol = solutionOf(p)
-  if (r.first === 0) return { contract: 'pass', value: null, fixed: r.fixed }
-  const g = gameOf(practiceHand(p), r.first)
-  const contract: ContractKey = NULL_BIDS[r.first] ? 'N' : g ? contractOf({ kind: 'game', game: g }) : 'pass'
-  return { contract, value: contract === sol.contract ? r.first : null, fixed: r.fixed }
-}
 
 /** Whether an attempt is complete and allowed: a contract offered, and a bid among step 2's exactly when it is asked. */
 export function validAttempt(p: Practice, a: Attempt): boolean {

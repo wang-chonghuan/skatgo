@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { cards } from '../tricks/exercises/cards-of'
-import { type BiddingRecord, CONTRACTS, PRACTICE_FREE, PRACTICE_QUESTIONS, analysisOf, answerOf, difficultyOf, gameOf, mistakesOf, practiceHand, questionAt, questionId, readAnswered, solutionOf, tenCardValues, validAttempt, valueOptions } from './practice'
+import { BID_LADDER } from '../value'
+import { type BiddingRecord, CONTRACTS, PRACTICE_FREE, PRACTICE_QUESTIONS, analysisOf, difficultyOf, mistakesOf, questionAt, questionId, routineMisses, routineOf, solutionOf, tenCardValues, validAttempt, valueOptions } from './practice'
 
 // SKATGO-149: the bidding practice's question logic — what the ten cards are worth, the game behind the answer, the
 // options offered.
@@ -17,19 +18,14 @@ describe('bidding practice', () => {
     expect(grand).toMatchObject({ with: false, count: 1, value: 48, trumps: 2 })
   })
 
-  it('names the game behind an answer, a pass below 18, a Null by its value, nothing when two games share it', () => {
-    expect(answerOf(HAND, 0)).toEqual({ kind: 'pass' })
-    expect(answerOf(HAND, 17)).toEqual({ kind: 'pass' })
-    expect(answerOf(HAND, 23)).toEqual({ kind: 'null', value: 23, which: 'plain' })
-    const a = answerOf(HAND, 18)
-    expect(a?.kind === 'game' && a.game.contract).toEqual({ kind: 'suit', trump: 'D' })
-    // ♥ without 1 is 20; nothing here is worth 21 or 27 alone.
-    expect(answerOf(HAND, 27)).toBeNull()
-    // Clubs with 4 and Hearts with 5 are both 60.
-    expect(answerOf(cards('CJ SJ HJ DJ HA S7 S8 S9 D7 D8'), 60)).toBeNull()
+  it('answers by the routine: the longest suit with 6 trumps, 5 and an Ace, or 2 Buben and 2 Aces, at its count', () => {
+    expect(routineOf(HAND)).toEqual({ contract: 'D', value: 18 })
+    expect(routineOf(cards('SJ S10 S9 S8 SK HA H7 D8 D9 C7'))).toEqual({ contract: 'S', value: 22 })
+    expect(routineOf(cards('SJ S10 S9 S8 SK H8 H7 D8 D9 C7'))).toEqual({ contract: 'pass', value: null })
+    expect(routineOf(cards('CJ HJ CA SA H8 H7 D8 D9 C7 S7'))).toEqual({ contract: 'C', value: 24 })
   })
 
-  it('names the AI\'s contract and offers its bid among neighbours; a Null among the four Null values', () => {
+  it('names the AI\'s contract and offers its bid among three numbers anyone may bid; a Null among the four Null values', () => {
     for (const q of PRACTICE_QUESTIONS) {
       const sol = solutionOf(q)
       expect(CONTRACTS).toContain(sol.contract)
@@ -43,18 +39,47 @@ describe('bidding practice', () => {
       if (sol.contract === 'N') expect(v).toEqual([23, 35, 46, 59])
       else {
         expect(v).toHaveLength(3)
-        const base = v[1] - v[0]
-        expect(v[0]).toBeGreaterThanOrEqual(2 * base)
+        expect(v).toEqual([...v].sort((x, y) => x - y))
+        expect(v.every((x) => BID_LADDER.includes(x))).toBe(true)
+        expect(q.odds).toHaveLength(3)
       }
     }
     expect(PRACTICE_QUESTIONS.some((q) => solutionOf(q).contract === 'N')).toBe(true)
-    expect(gameOf(HAND, 18)?.contract).toEqual({ kind: 'suit', trump: 'D' })
+    expect(PRACTICE_QUESTIONS.some((q) => solutionOf(q).contract === 'G')).toBe(true)
   })
 
-  it('runs from easy to hard; the first twenty are never in doubt', () => {
+  // SKATGO-159 (the human: 「不用600个，可以减少，但是要稍微难一点……套路应该有，但是是基础的，低难度的」).
+  it('is short: the routine answers at most a quarter, all first; every other question it gets wrong in a step', () => {
+    expect(PRACTICE_QUESTIONS.length).toBeLessThan(200)
+    const misses = PRACTICE_QUESTIONS.map(routineMisses).map((m) => m.contract || m.value)
+    const basic = misses.indexOf(true)
+    expect(basic).toBeGreaterThan(0)
+    expect(basic).toBeLessThanOrEqual(PRACTICE_QUESTIONS.length / 4)
+    expect(misses.slice(basic).every(Boolean)).toBe(true)
     const steps = PRACTICE_QUESTIONS.map(difficultyOf)
     expect(steps).toEqual([...steps].sort((a, b) => a - b))
-    expect(steps.slice(0, 20).every((d) => d === 1)).toBe(true)
+  })
+
+  it('asks how far: bids below the ten cards\' value, backed by SkatZero\'s chance at each number', () => {
+    const counted = (q: (typeof PRACTICE_QUESTIONS)[number]) => {
+      const a = solutionOf(q).answer
+      return a.kind === 'game' ? a.game.value : q.bid
+    }
+    const far = PRACTICE_QUESTIONS.filter((q) => counted(q) !== q.bid)
+    expect(far.length).toBeGreaterThanOrEqual(20)
+    expect(far.every((q) => q.bid < counted(q))).toBe(true)
+    // The stop is where SkatZero's chance falls at the very next bid — or a borderline game said at 18.
+    for (const q of far) {
+      const at = q.odds![valueOptions(q).indexOf(q.bid)]
+      if (!q.above) {
+        expect(q.bid).toBe(18)
+        expect(at).toBeLessThanOrEqual(68)
+        continue
+      }
+      expect(at).toBeGreaterThanOrEqual(55)
+      expect(q.above[0]).toBe(BID_LADDER.find((b) => b > q.bid))
+      expect(q.above[1]).toBeLessThanOrEqual(at - 12)
+    }
   })
 
   it('runs in one order and starts again after the last; two questions are free', () => {
@@ -91,10 +116,7 @@ describe('bidding practice', () => {
     expect(mistakesOf(record)).toEqual([n(p2), n(p3), n(p4)].sort((x, y) => x - y))
   })
 
-  it('reads a SKATGO-150 answer (one number) as the contract it stood for', () => {
-    const plays = PRACTICE_QUESTIONS.find((q) => solutionOf(q).value !== null && solutionOf(q).contract !== 'N')!
-    const sol = solutionOf(plays)
-    expect(readAnswered(plays, { first: sol.value!, fixed: false })).toEqual({ contract: sol.contract, value: sol.value, fixed: false })
-    expect(readAnswered(plays, { first: 0, fixed: true })).toEqual({ contract: 'pass', value: null, fixed: true })
+  it('names every question anew, so no answer from before SKATGO-159 counts', () => {
+    expect(PRACTICE_QUESTIONS.every((q) => questionId(q).startsWith('v2-'))).toBe(true)
   })
 })

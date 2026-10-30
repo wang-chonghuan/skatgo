@@ -53,6 +53,7 @@ export const CHEAT_SHEET_DE: CheatSheet = {
         '**Mit n:** du hast ♣B und die nächsten Karten der Reihe (♣B ♠B ♥B ♦B, dann A, 10 …).',
         '**Ohne n:** sie fehlen dir.',
         '**Grundwert:** ♦ 9 · ♥ 10 · ♠ 11 · ♣ 12 · Grand 24.',
+        '**Vor dem Skat gezählt:** Ein Bube im Skat kann ein „ohne“ nur verkürzen — darum bleibt ein wackliges „ohne“-Blatt unter seinem Wert. Ein „mit“ kann nur länger werden.',
       ],
     },
     {

@@ -150,6 +150,9 @@ export class Store {
         ALTER TABLE bidding_answers ADD COLUMN IF NOT EXISTS contract text;
         ALTER TABLE bidding_answers ADD COLUMN IF NOT EXISTS value smallint;
         ALTER TABLE bidding_answers ALTER COLUMN first DROP NOT NULL;
+        -- SKATGO-159 started the questions over, named "v2-…" (the human: 「用户已经答过的，可以删除记录，不要影响新版」):
+        -- every answer to the questions before goes.
+        DELETE FROM bidding_answers WHERE question NOT LIKE 'v2-%';
       `)
       await c.query('COMMIT')
     } catch (e) {

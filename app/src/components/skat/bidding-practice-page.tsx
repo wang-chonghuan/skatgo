@@ -18,6 +18,7 @@ import {
   type ContractKey,
   PRACTICE_FREE,
   PRACTICE_QUESTIONS,
+  type GameKey,
   type Practice,
   type Valued,
   analysisOf,
@@ -27,12 +28,14 @@ import {
   questionAt,
   questionId,
   rightAttempt,
+  routineOf,
   sideAces,
   solutionOf,
   tenCardValues,
+  valuedOf,
   valueOptions,
 } from '~/lib/skat/bidding/practice'
-import { useBiddingRecord } from '~/lib/skat/bidding/record'
+import { forgetOld, useBiddingRecord } from '~/lib/skat/bidding/record'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
@@ -48,8 +51,9 @@ import { Btn, Modal, Panel, Rich } from './ui'
 
 const POSITIONS = ['forehand', 'middlehand', 'rearhand'] as const
 
-/** Where this browser has got to (the question's number); nothing stored is the first. */
-const STORE = 'skatgo.bidding-practice'
+/** Where this browser has got to (the question's number); nothing stored is the first. Since SKATGO-159 a new name: the
+ *  questions started over. */
+const STORE = 'skatgo.bidding-practice.v2'
 function readNumber(): number {
   try {
     const n = Number(localStorage.getItem(STORE))
@@ -81,7 +85,10 @@ export function BiddingPracticePage() {
   // place replaces it once the page runs.
   const [n, setN] = useState(1)
   const [result, setResult] = useState<'right' | 'wrong' | null>(null)
-  useEffect(() => setN(readNumber()), [])
+  useEffect(() => {
+    forgetOld()
+    setN(readNumber())
+  }, [])
   const locked = redo === null && n > PRACTICE_FREE && account === null
   const advance = () => {
     const after = n + 1
@@ -413,11 +420,11 @@ const grandPoints = (q: Practice, hand: Card[]) => jacksOf(hand) + sideAces(hand
 
 /** Which rule of the cheat sheet a suit game meets, from its trumps and the Aces beside them — said only as far as the
  *  facts go: where the rules would not have played it, the line says so and that the AI plays it anyway. */
-function suitRule(trumps: number, aces: number, jacks: number): string {
+function suitRule(trumps: number, aces: number): string {
   if (trumps >= 6 && aces > 0) return m.bidpractice_rule_good({ trumps })
   if (trumps >= 6) return m.bidpractice_rule_six({ trumps })
   if (trumps === 5 && aces > 0) return m.bidpractice_rule_least()
-  return m.bidpractice_rule_thin({ trumps, aces: acesWords(aces), jacks })
+  return m.bidpractice_rule_thin({ trumps, aces: acesWords(aces) })
 }
 
 /** Why the AI passes, by the same rules. */
@@ -433,43 +440,76 @@ function runOf(g: Valued): string {
   return g.with ? m.bidpractice_run_held({ run }) : m.bidpractice_run_missing({ run })
 }
 
+/** The routine's game by name, for the explanation: "Spades ♠". */
+const keyName = (k: GameKey) => (k === 'G' ? 'Grand' : contractName({ kind: 'suit', trump: k }))
+
+/** The AI's chance at each number offered, and at the bid right above a stop below the count: "24 — 70% · 27 — 58% ·
+ *  48 — 47% · 60 — 4%". */
+const oddsLine = (q: Practice) =>
+  [...(q.options ?? []).map((o, i): [number, number] => [o, q.odds?.[i] ?? 0]), ...(q.above && !q.options?.includes(q.above[0]) ? [q.above] : [])]
+    .sort((a, b) => a[0] - b[0])
+    .map(([o, p]) => `${o} — ${p}%`)
+    .join(' · ')
+
 /**
  * The explanation, as the two steps were asked (SKATGO-151, the human: 「为啥你现在这个解析反而还不如以前详细了？」): why this
  * contract — the trumps of every suit and the cheat sheet's rule it meets; why this bid — the matadors counted card by
  * card, game, the base; then what the player chose instead: the facts of that contract by the same rules, and what that
- * number would have needed.
+ * number would have needed. Since SKATGO-159 where the rules of thumb fail the AI's own chances say why (the human
+ * agreed to 「AI 在各价位的胜率」; never by SkatZero's name, SKATGO-146): of the routine's game when it passes, of the longest suit when it plays another, of
+ * each number offered when it stops below the count.
  */
 function explanation(q: Practice, contract: ContractKey, value: number | null): [string, string][] {
   const hand = practiceHand(q)
   const sol = solutionOf(q)
   const a = sol.answer
   const counts = trumpCounts(hand)
+  const routine = routineOf(hand)
+  const at = q.bid || 18
   const lines: [string, string][] = []
   if (a.kind === 'pass') {
     const best = bestSuit(hand)
     const trump = best.contract.kind === 'suit' ? best.contract.trump : undefined
-    lines.push(['contract', `${m.bidpractice_ex_passes({ counts })} ${passRule(best.trumps, sideAces(hand, trump))}`])
+    const rk = routine.contract
+    const why =
+      rk !== 'pass' && rk !== 'N' && q.games?.[rk] !== undefined
+        ? m.bidpractice_rule_routine_pass({ game: keyName(rk), chance: q.games[rk]! })
+        : passRule(best.trumps, sideAces(hand, trump))
+    lines.push(['contract', `${m.bidpractice_ex_passes({ counts })} ${why}`])
   } else if (a.kind === 'null') {
     lines.push(['contract', `${m.bidpractice_ex_plays({ game: NULL_NAMES[a.which], counts })} ${m.bidpractice_rule_null()}`])
     lines.push(['value', m.bidpractice_ex_null({ game: NULL_NAMES[a.which], value: a.value })])
   } else {
     const g = a.game
-    const jacks = jacksOf(hand)
-    const rule = g.contract.kind === 'grand' ? m.bidpractice_rule_grand({ points: grandPoints(q, hand) }) : suitRule(g.trumps, sideAces(hand, g.contract.kind === 'suit' ? g.contract.trump : undefined), jacks)
-    lines.push(['contract', `${m.bidpractice_ex_plays({ game: contractName(g.contract), counts })} ${rule}`])
-    lines.push(['value', m.bidpractice_ex_value({ value: g.value, run: runOf(g), ...calc(g) })])
+    const key = sol.contract as GameKey
+    const rule = g.contract.kind === 'grand' ? m.bidpractice_rule_grand({ points: grandPoints(q, hand) }) : suitRule(g.trumps, sideAces(hand, g.contract.kind === 'suit' ? g.contract.trump : undefined))
+    // The AI's own chance is in the line of chances below; here only the longest suit's beside it, when it plays another.
+    const rk = routine.contract
+    const longest = rk !== 'pass' && rk !== 'N' && rk !== key && q.games?.[rk] !== undefined ? ` ${m.bidpractice_longest_at({ game: keyName(rk), bid: at, chance: q.games[rk]! })}` : ''
+    lines.push(['contract', `${m.bidpractice_ex_plays({ game: contractName(g.contract), counts })} ${rule}${longest}`])
+    if (q.bid === g.value) lines.push(['value', m.bidpractice_ex_value({ value: g.value, run: runOf(g), ...calc(g) })])
+    else {
+      // The AI stops below the count — a pickup game is never bid past it, only a Hand game, which is not asked — and
+      // only ever on a "without" hand, whose run a Bube in the skat shortens.
+      const step = q.above ? m.bidpractice_ex_under({ bid: q.bid }) : m.bidpractice_ex_border()
+      lines.push(['value', `${step} ${m.bidpractice_ex_count({ value: g.value, run: runOf(g), ...calc(g) })}`])
+    }
+    if (q.odds) lines.push(['odds', m.bidpractice_ex_odds({ game: contractName(g.contract), odds: oddsLine(q) })])
   }
   if (contract !== sol.contract && contract !== 'pass') {
+    const chance = contract !== 'N' && q.games?.[contract] !== undefined ? ` ${m.bidpractice_chance_at({ bid: at, chance: q.games[contract]! })}` : ''
     if (contract === 'N') lines.push(['yours', m.bidpractice_yours_null()])
-    else if (contract === 'G') lines.push(['yours', m.bidpractice_yours_grand({ points: grandPoints(q, hand) })])
+    else if (contract === 'G') lines.push(['yours', `${m.bidpractice_yours_grand({ points: grandPoints(q, hand) })}${chance}`])
     else {
-      const v = tenCardValues(hand).find((g) => g.contract.kind === 'suit' && g.contract.trump === contract)!
+      const v = valuedOf(hand, contract)
       const aces = sideAces(hand, contract)
       const verdict = v.trumps <= 4 ? m.bidpractice_rule_few_short() : v.trumps === 5 && aces === 0 ? m.bidpractice_rule_noace_short() : ''
-      lines.push(['yours', `${m.bidpractice_yours_game({ game: contractName(v.contract), trumps: v.trumps, aces: acesWords(aces) })}${verdict ? ' ' + verdict : ''}`])
+      lines.push(['yours', `${m.bidpractice_yours_game({ game: contractName(v.contract), trumps: v.trumps, aces: acesWords(aces) })}${verdict ? ' ' + verdict : ''}${chance}`])
     }
   }
-  if (value !== null && value !== sol.value && a.kind === 'game') {
+  // A wrong number for a game bid at its count is what that number would have needed; away from the count, the
+  // chances above already say it.
+  if (value !== null && value !== sol.value && a.kind === 'game' && q.bid === a.game.value && value % a.game.base === 0) {
     const level = value / a.game.base
     lines.push(['number', m.bidpractice_ex_number({ chosen: value, level, base: a.game.base, n: level - 1 })])
   }

@@ -191,19 +191,26 @@ trumps and an Ace: a good game."; for a pass "The most is 3: too few"; Grand's c
 the bid — the matadors card by card, game, the base ("Without 1 (♣B not in your hand), plus 1 for game = 2, × 9 = 18"), or a
 Null's fixed value; then a contract chosen instead, its trumps and Aces by the same rules, and a wrong number, what it
 would have needed ("27 = 3 × 9 would need with or without 2"). The answer is SkatZero's highest bid for those cards from that
-seat (「这个不用skatzero吗」); only hands one game explains are asked — a pass, a Null, or exactly one game's value counted
-from the ten cards — so SkatZero's own numbers never need showing. The contract named is SkatZero's own (SKATGO-154, the
-human: 「你看看叫牌练习的第五题，答案对吗」, then 「你尽量推理一下，每个题的答案对不对」): at its highest bid it picks up and plays
-that game in most skats, and the game is the suit with most trumps, or Grand, or a Null of that kind — a number that only
-happens to match a game is not a question. The questions run from plain to borderline — six
-trumps or more, or three or fewer, first; then the hands the rules of thumb decide; then the rest. A bidding cheat sheet
+seat (「这个不用skatzero吗」) and the game it plays there: at that bid it picks up and plays that game in most skats
+(SKATGO-154, the human: 「你看看叫牌练习的第五题，答案对吗」) — a number that only happens to match a game is not a question.
+Since SKATGO-159 (the human: 「叫牌练习感觉搞的太简单了……基本就是看有几个B，然后再看哪个花色多」, 「不用600个，可以减少，但是要
+稍微难一点，不要我说那种套路，套路应该有，但是是基础的，低难度的」) the run is about 150 questions: a few the rules of thumb answer
+— the suit with most trumps, played with 6 trumps, 5 and an Ace, or 2 Buben and 2 Aces, bid to its count — open it;
+every other one the rules of thumb get wrong in a step: a pass with such a hand, a game without one, another game than
+the longest suit, or a bid below the count ("how far", the human: 「加入」; SkatZero bids past the count only in a Hand
+game, which is not asked). Those are explained with SkatZero's own
+numbers, which SKATGO-149 kept off the page, said as the AI's (SKATGO-146), each once: the chance it makes a game at a bid, over every skat — of each number offered,
+of the longest suit beside the game it plays, of the routine's game where it passes — and a bid off the count is asked
+only where that chance falls right above it, or for a borderline game said at 18. The run goes from the rules of thumb's
+questions to those where they miss the bid or pass and play, then those where they miss the game. A bidding cheat sheet
 opens beside the question (「这个要做成一个卡片弹窗放在叫牌页面，用户点开就能看，名字叫叫牌秘籍之类的」): the order to think in,
 the rules of thumb, the point count with its thresholds, Grand's count, how high to bid, the seat and Null — every point
 of the Skat books' teaching, clearer and never twice (「你必须覆盖刚才书上原文所有的点，还要写的更好更易懂，但是不能啰嗦和重复」),
 in SkatGo's own words. A guest answers two, from the third an account (「不登录可以练2题」), the sign-in saying why in one
 short line — to keep the mistakes and the analysis (SKATGO-150: 「登录时为了保存用户的错题本，帮助用户提高，文字要精简」). Each
 question's first complete attempt is recorded — an account's on the server, a guest's two in the browser until it signs
-in — and whether it was put right since (SKATGO-150, 「用户能记录下来他哪个题出错了吗」). Under the question the player sees
+in — and whether it was put right since (SKATGO-150, 「用户能记录下来他哪个题出错了吗」). The answers to the questions before SKATGO-159 are
+deleted, an account's and a browser's, and the run starts again at 1 (the human: 「用户已经答过的，可以删除记录，不要影响新版」). Under the question the player sees
 their own bidding as shares, no AI (「最好有个比率分析」): how many answered, then right, the contract wrong and the bid wrong —
 the two steps' outcomes, three rows adding up (SKATGO-154, the human: 「问题是item太多了，名字莫名其妙，百分比倒没啥」); the wrong
 contract covers the human's 「超叫还是不敢叫还是叫错」 in one. Only first attempts count. Beside the place in the run, every

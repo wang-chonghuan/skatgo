@@ -59,7 +59,7 @@ export function LessonPage() {
         )}
         {section ? (
           <Link to="/rules" hash={section.anchor} data-testid="lesson-rules" {...stylex.props(typography.appBtnStrong, styles.link)}>
-            {m.lesson_rules_link({ section: section.title })}
+            {m.lesson_rules_this()}
           </Link>
         ) : null}
         <Link to="/course" data-testid="lesson-all" {...stylex.props(typography.appBtnStrong, styles.link)}>

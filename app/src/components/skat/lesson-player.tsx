@@ -152,7 +152,7 @@ function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) 
       <div {...stylex.props(styles.doneActions)}>
         {following ? (
           <Link to="/course/$slug" params={{ slug: GUIDES[getLocale()][following.id].slug }} data-testid="skat-next-lesson" {...linkLook('go', 'lg', 'block')}>
-            {m.done_next_lesson({ title: following.title })}
+            {m.done_next_lesson()}
           </Link>
         ) : (
           <Link to="/play" data-testid="skat-course-done-play" onClick={() => track('course_complete_cta_clicked')} {...linkLook('go', 'lg', 'block')}>

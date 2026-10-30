@@ -31,7 +31,7 @@ export const LESSONS_DE: Lesson[] = [
     id: '1',
     title: 'Drei Spieler, 32 Karten',
     promise: 'Wissen, worum es beim Skat geht: wer gegen wen spielt, worum und wie man gewinnt.',
-    learned: 'ein Skatblatt geben, und du weißt, wer gegen wen spielt und was man zum Gewinnen braucht.',
+    learned: 'ein Skatblatt geben und sagen, wer gegen wen spielt und wie der Alleinspieler gewinnt.',
     minutes: 1,
     steps: [
       {
@@ -97,18 +97,14 @@ export const LESSONS_DE: Lesson[] = [
   {
     id: '3',
     title: 'Trumpf und die vier Buben',
-    promise: 'In jedem Spiel die Trümpfe erkennen – und wer wen sticht.',
+    promise: 'In jedem Farbspiel die Trümpfe erkennen – und wer wen sticht.',
     learned: 'die Trümpfe eines Blatts finden und sagen, welche Karte welche sticht.',
     minutes: 1,
     steps: [
       {
         kind: 'teach',
         title: 'Trumpf sticht alles',
-        body: [
-          'Vor dem Spiel bestimmt der Alleinspieler eine Farbe als **Trumpf** – ein **Farbspiel**, zum Beispiel ein Herzspiel. Jeder Trumpf sticht jede Karte der drei anderen Farben, der **Fehlfarben**: Eine Trumpf-7 sticht ein Ass.',
-          'Innerhalb einer Farbe gilt die Reihenfolge **A, 10, K, D, 9, 8, 7** – die Zehn direkt unter dem Ass.',
-        ],
-        rows: [{ label: 'Eine Farbe von hoch nach niedrig', cards: cards('D:A 10 K Q 9 8 7') }],
+        body: ['Vor dem Spiel bestimmt der Alleinspieler eine Farbe als **Trumpf** – ein **Farbspiel**, zum Beispiel ein Herzspiel. Jeder Trumpf sticht jede Karte der drei anderen Farben, der **Fehlfarben**: Eine Trumpf-7 sticht ein Ass.'],
       },
       { kind: 'choice', prompt: 'Herz ist Trumpf. Welche Karte ist höher?', options: ['♠A', '♥7'], answer: 1, explain: 'Die ♥7 ist Trumpf, und jeder Trumpf sticht jede Karte einer Fehlfarbe – auch ein Ass.' },
       {
@@ -123,7 +119,7 @@ export const LESSONS_DE: Lesson[] = [
       {
         kind: 'teach',
         title: 'Beispiel Herz: 11 Trümpfe',
-        body: ['Im Herzspiel gibt es **11 Trümpfe**: die vier Buben, dann Herz-Ass, -10, -König, -Dame, -9, -8, -7. Jede Fehlfarbe behält ihre 7 Karten.'],
+        body: ['Im Herzspiel gibt es **11 Trümpfe**: die vier Buben, dann die Herzkarten in der Reihenfolge jeder Farbe, **A, 10, K, D, 9, 8, 7** – die Zehn direkt unter dem Ass. Jede Fehlfarbe behält ihre 7 Karten in dieser Reihenfolge.'],
         rows: [{ cards: cards('C:J | S:J | H:J | D:J | H:A 10 K Q 9 8 7') }],
         tip: 'Der ♥B steht an dritter Stelle, weil er ein Bube ist, nicht weil er Herz ist. Und im Herzspiel ist der ♣B **kein Kreuz** – er ist Trumpf.',
       },
@@ -151,21 +147,20 @@ export const LESSONS_DE: Lesson[] = [
           { label: 'Deine Karten: ✓ erlaubt, ✗ nicht erlaubt', cards: cards('H:10 7 | S:K | D:9'), follow: { contract: { kind: 'suit', trump: 'C' }, lead: cards('H:A')[0] } },
           { label: 'Ohne eine einzige Herzkarte darfst du jede Karte spielen', cards: cards('C:8 | S:K | D:9'), captions: ['stechen', 'abwerfen', 'abwerfen'] },
         ],
-        tip: 'Hast du die ausgespielte Farbe nicht, darfst du alles spielen: einen Trumpf, um den Stich zu holen (**stechen**), oder eine Karte, die du nicht brauchst (**abwerfen**). Höher spielen muss niemand.',
+        tip: 'Keine Karte der ausgespielten Farbe? Dann darfst du alles: einen Trumpf, um den Stich zu holen (**stechen**), oder eine Karte, die du nicht brauchst (**abwerfen**).',
       },
       {
         kind: 'teach',
         title: 'Ein Bube bedient Trumpf, nicht seine Farbe',
         body: [
-          'Die vier Buben sind Trumpf, deshalb gehört ein Bube **nicht zu der Farbe, die auf ihm steht**. Hier ist **Herz Trumpf**, und nur die ausgespielte Karte ändert sich:',
-          '**♣A ausgespielt** → nur ein echtes Kreuz bedient: die ♣7. Auf dem ♣B steht zwar Kreuz, aber er ist Trumpf.',
-          '**♥A ausgespielt** → Trumpf ist gefragt: der ♣B oder die ♥9.',
+          'Die Buben sind Trumpf, deshalb gehört ein Bube **nicht zu der Farbe, die auf ihm steht**. Hier ist **Herz Trumpf**:',
+          '**♣A ausgespielt** → nur die ♣7 bedient; der ♣B ist Trumpf. **♥A ausgespielt** → der ♣B oder die ♥9.',
         ],
         rows: [
           { label: 'Wenn ♣A ausgespielt wird', cards: cards('C:J 7 | H:9 | D:K'), follow: { contract: { kind: 'suit', trump: 'H' }, lead: cards('C:A')[0] } },
           { label: 'Wenn ♥A ausgespielt wird', cards: cards('C:J 7 | H:9 | D:K'), follow: { contract: { kind: 'suit', trump: 'H' }, lead: cards('H:A')[0] } },
         ],
-        tip: 'Der häufigste Fehler im ganzen Kurs. Frag dich vor jedem Zugeben: „Als welche Farbe zählt die ausgespielte Karte?“',
+        tip: 'Frag dich vor jedem Zugeben: „Als welche Farbe zählt die ausgespielte Karte?“',
       },
       {
         kind: 'play',
@@ -307,7 +302,7 @@ export const LESSONS_DE: Lesson[] = [
         title: 'Was gereizt wird',
         body: [
           'Wer Alleinspieler wird, entscheidet das **Reizen**. Gereizt werden **Zahlen**, und jede heißt: „Das Spiel, das ich spielen würde, ist mindestens so viel wert.“ Wer am höchsten reizt, wird Alleinspieler.',
-          'Deine Grenze ist also **der Wert deines Spiels** – die Rechnung aus der letzten Lektion. Der kleinste Reizwert ist **18** (Karo mit oder ohne 1: 9 × 2).',
+          'Deine Grenze ist also **der Wert deines Spiels**, gerechnet wie in der letzten Lektion. Der kleinste Reizwert ist **18** (Karo mit oder ohne 1: 9 × 2).',
         ],
       },
       {
@@ -339,17 +334,16 @@ export const LESSONS_DE: Lesson[] = [
         contract: { kind: 'suit', trump: 'H' },
         seat: 'forehand',
         limits: [24, 0],
-        explain: 'Herz mit 1, Spiel 2: 10 × 2 = **20**. Also hast du 18 und 20 gehalten und bei 22 gepasst. Lina spielt mit 22 – ihr Spiel muss mindestens so viel wert sein.',
+        explain: 'Dein Spiel: Herz mit 1, Spiel 2 → 10 × 2 = **20**. Ja zu 18 und 20, Passe bei 22 – Lina spielt.',
       },
       {
         kind: 'teach',
         title: 'Welches Blatt lohnt das Reizen?',
         body: [
-          'Grobe Faustregeln:',
-          '**Farbspiel**: fünf Trümpfe oder mehr (Buben mitgezählt), dazu ein oder zwei Asse.',
-          '**Grand**: zwei, drei Buben, dazu zwei, drei Asse.',
-          '**Null**: kleine Karten in jeder Farbe und keine einsame hohe.',
-          'Passt nichts davon? Dann passe – gewinnen die Gegenspieler, hast du auch gewonnen.',
+          '**Farbspiel**: fünf Trümpfe oder mehr, Buben mitgezählt, und ein oder zwei Asse.',
+          '**Grand**: zwei, drei Buben und zwei, drei Asse.',
+          '**Null**: nur kleine Karten in jeder Farbe.',
+          'Passt nichts davon? Dann passe.',
         ],
       },
       {
@@ -359,7 +353,7 @@ export const LESSONS_DE: Lesson[] = [
         contract: { kind: 'suit', trump: 'D' },
         seat: 'middlehand',
         limits: [30, 20],
-        explain: 'Karo mit 2, Spiel 3: 9 × 3 = **27**. Du hast Noah bis 22 gereizt, Linas 23, 24 und 27 gehalten und bei 30 gepasst. Das war ein ganzes Reizen: Lina spielt mit 30.',
+        explain: 'Dein Spiel: Karo mit 2, Spiel 3 → 9 × 3 = **27**. Bis 27 bist du mitgegangen, bei 30 hast du gepasst – Lina spielt.',
       },
     ],
   },
@@ -392,7 +386,7 @@ export const LESSONS_DE: Lesson[] = [
         prompt: 'Du willst **Herz ♥** spielen und hast diese 12 Karten. Tippe die zwei an, die du drückst.',
         cards: cards('C:J | H:J A 10 K 9 | S:A 7 | C:10 | D:K 8 7'),
         correct: cards('C:10 | D:K'),
-        explain: 'Die ♣10 steht blank: Sobald ein Gegner das ♣A spielt, verschenkt sie 10 Augen. Gedrückt sind die 10 Augen dir sicher – und du bist in Kreuz frei, kannst es also stechen. Der ♦K bringt 4 dazu: 14 Augen vor dem ersten Stich.',
+        explain: 'Die blanke ♣10 ist gesichert – 10 Augen –, und in Kreuz bist du jetzt frei: Du kannst stechen. Der ♦K bringt 4 dazu.',
         hint: 'Welche Karte ist wertvoll, aber nicht zu halten? Und welche Farbe ist leer, sobald sie gedrückt ist?',
       },
       {
@@ -400,7 +394,7 @@ export const LESSONS_DE: Lesson[] = [
         title: 'Hand: ohne den Skat anzusehen',
         body: [
           'Dein Blatt ist schon stark genug? Spiel **Hand**: Lass den Skat liegen und spiel mit den zehn Karten, die du bekommen hast – eine Stufe **mehr**. Ein Null Hand ist **35** wert.',
-          'Der Skat gehört trotzdem dir: Seine Augen zählen nach dem Spiel für dich, und seine Karten zählen mit, wenn die Spitzen gezählt werden – auch nach dem Aufnehmen, über alle zwölf Karten.',
+          'Der Skat bleibt deiner: Seine Augen zählen für dich, und seine Karten zählen bei den Spitzen mit.',
         ],
       },
       ...times(2, () => gameValueDrill({ hand: true })),
@@ -409,7 +403,7 @@ export const LESSONS_DE: Lesson[] = [
         prompt: 'Dein höchster Trumpf ist der ♥B (kein ♣B, kein ♠B), also spielst du Pik Hand „ohne 2“: 11 × (2 + 1 + 1) = 44, und du hast 44 gereizt. Nach dem Spiel wird der Skat umgedreht – darin liegt der **♣B**. Was jetzt?',
         options: ['Nichts ändert sich: weiter 44', 'Es wird „mit 1“: 11 × 3 = 33, weniger als gereizt', 'Es wird „mit 3“ – mehr wert', 'Der Skat zählt nicht, also egal'],
         answer: 1,
-        explain: 'Der Skat zählt zu deinen Karten. Mit dem ♣B spielst du „mit“, aber der ♠B gehört dir nicht, also nur „mit 1“: 1 + 1 + 1 = 3, 11 × 3 = 33 – weniger als deine gereizten 44, und dein Spiel muss den Reizwert erreichen. Das ist das Risiko von Hand: Ein Handspiel „ohne“ spielt man mit etwas Luft.',
+        explain: 'Der Skat zählt zu deinen Karten: Mit dem ♣B, aber ohne den ♠B spielst du nur „mit 1“ – 11 × 3 = 33, weniger als deine gereizten 44. Das ist das Risiko von Hand.',
         hint: 'Der ♣B gehört jetzt dir. Wie viele Trümpfe hast du vom ♣B an lückenlos?',
       },
       { kind: 'choice', prompt: 'Wem gehören im Handspiel am Ende die Augen der beiden ungesehenen Skatkarten?', options: ['Den Gegenspielern', 'Dem Alleinspieler', 'Wer den letzten Stich bekommt', 'Niemandem – sie zählen nicht'], answer: 1, explain: 'Der Skat gehört immer dem Alleinspieler, ob er ihn angesehen hat oder nicht.' },
@@ -418,7 +412,7 @@ export const LESSONS_DE: Lesson[] = [
         prompt: 'Du willst **Pik ♠** spielen und hast diese 12 Karten. Tippe die zwei an, die du drückst.',
         cards: cards('C:J | H:J | S:A 10 9 7 | C:A K 9 8 | H:10 | D:7'),
         correct: cards('H:10 | D:7'),
-        explain: 'Die blanke ♥10 ist gesichert – 10 Augen vor dem ersten Stich –, und mit der ♦7 dazu bist du in Herz und Karo frei: Beide kannst du stechen. Deine Kreuz behalten ihr Ass.',
+        explain: '10 Augen gesichert, und in Herz und Karo bist du frei: Beide kannst du stechen.',
         hint: 'Eine blanke Zehn ohne Ass und eine einzelne kleine Karte: Welche zwei machen ganze Farben leer?',
       },
     ],
@@ -447,18 +441,14 @@ export const LESSONS_DE: Lesson[] = [
           '**Der Alleinspieler gewinnt**: + Spielwert. **Er verliert**: − **2 ×** Spielwert. Ein verlorenes Spiel kostet doppelt so viel, wie ein gewonnenes bringt.',
           '**Überreizt**: Das Spiel ist weniger wert als gereizt – verloren, egal wie viele Augen. Gewertet wird das kleinste Vielfache des Grundwerts, das den Reizwert erreicht, und zwar doppelt.',
         ],
-        tip: 'Bei offiziellen Turnieren bekommt der Alleinspieler zusätzlich +50 für jedes gewonnene und −50 für jedes verlorene Spiel, und die Gegenspieler bekommen Punkte dazu (Seeger-Fabian). Zu Hause lässt man das meist weg.',
       },
       ...times(3, settleDrill),
       {
         kind: 'teach',
         title: 'Ansagen gibt es nur beim Handspiel',
         body: [
-          'Wer Hand spielt, darf vor dem Spiel mehr versprechen; jedes Versprechen bringt eine Stufe **mehr**:',
-          '**Schneider angesagt** – „Ich bekomme mindestens 90.“',
-          '**Schwarz angesagt** – „Ich bekomme alle zehn Stiche.“',
-          '**Ouvert** (offen) – „Ich lege meine Karten offen auf den Tisch und bekomme trotzdem alle zehn Stiche.“',
-          'Wer ansagt und es nicht schafft – und sei es mit 89 –, hat verloren. Der Null hat noch zwei Werte: **Null ouvert 46 · Null ouvert Hand 59**.',
+          'Wer Hand spielt, darf vor dem Spiel mehr versprechen, jedes eine Stufe **mehr**: **Schneider**, **Schwarz** oder **Ouvert** – die Karten offen auf dem Tisch.',
+          'Wer es nicht schafft, hat verloren. Der Null hat noch zwei Werte: **Null ouvert 46 · Null ouvert Hand 59**.',
         ],
       },
       { kind: 'choice', prompt: 'Was ist ein Null ouvert (Skat aufgenommen, offen gespielt) wert?', options: ['23', '35', '46', '59'], answer: 2, explain: '23 (einfach) → 35 (Hand) → **46 (ouvert)** → 59 (ouvert Hand).' },
@@ -477,8 +467,8 @@ export const LESSONS_DE: Lesson[] = [
         kind: 'teach',
         title: 'Der Plan des Alleinspielers: erst Trumpf ziehen, dann kassieren',
         body: [
-          'Wovor sich der Alleinspieler am meisten fürchtet: dass ein Gegner eines seiner Asse mit einem kleinen Trumpf sticht.',
-          'Deshalb spielt er meist zuerst **hohe Trümpfe aus** und zwingt beide Gegner, Trumpf zu bedienen, bis sie keinen mehr haben (**Trumpf ziehen**). Danach sind Asse und Zehnen in den Fehlfarben sichere Augen. Es gibt 11 Trümpfe – **Trümpfe zählen** verrät dir, wie viele noch draußen sind.',
+          'Die größte Sorge des Alleinspielers: ein Ass, das ein kleiner Trumpf sticht.',
+          'Deshalb spielt er zuerst **hohe Trümpfe aus**, bis die Gegner keine mehr haben – **Trumpf ziehen**. Danach sind Asse und Zehnen sicher. Es gibt 11 Trümpfe: **Trümpfe zählen** verrät, wie viele noch draußen sind.',
         ],
       },
       {
@@ -496,10 +486,8 @@ export const LESSONS_DE: Lesson[] = [
         kind: 'teach',
         title: 'Der Plan der Gegenspieler: dem Partner schmieren',
         body: [
-          'Die Augen der beiden Gegenspieler werden zusammengezählt. Ihr wichtigster Zug ist deshalb das **Schmieren**:',
-          '**Dein Partner bekommt den Stich** → leg deine fetteste Karte dazu (ein Ass oder eine Zehn).',
-          '**Der Alleinspieler bekommt den Stich** → wirf deine wertloseste Lusche ab und schenk ihm kein Auge.',
-          'Und Gegenspieler **spielen nicht von sich aus Trumpf aus** – damit ziehen sie dem Alleinspieler die Trümpfe. Hast du ein Ass in einer Fehlfarbe, hol dir damit früh deinen Stich.',
+          'Die Augen der Gegenspieler zählen zusammen, also **schmieren** sie: Bekommt dein Partner den Stich, leg deine fetteste Karte dazu (Ass oder Zehn); bekommt ihn der Alleinspieler, wirf deine billigste Lusche ab.',
+          'Und Gegenspieler **spielen nicht von sich aus Trumpf aus** – damit ziehen sie dem Alleinspieler die Trümpfe.',
         ],
       },
       {

@@ -490,18 +490,36 @@ export function Bid({ step, onSolved, onMistake, solvedBefore }: { step: BidStep
     call.say === 'bid' ? m.bid_said({ value: call.value }) : call.say === 'hold' ? m.bid_hold_said({ value: call.value }) : m.bid_pass()
   const current = done ? null : result.calls[shown]
 
+  /** A seat at the table with its latest call, the newest one ringed. */
+  const seat = (role: Role) => {
+    let i = shown - 1
+    while (i >= 0 && result.calls[i].role !== role) i--
+    const call = i >= 0 ? result.calls[i] : null
+    return (
+      <div data-testid="skat-bid-seat" data-role={role} {...stylex.props(styles.seat, i >= 0 && i === shown - 1 && styles.seatLast)}>
+        <span {...stylex.props(typography.label, styles.feltLabel)}>{m.lesson_bid_line({ name: nameOf(role), role: roles[role] })}</span>
+        {call ? (
+          <motion.span key={i} initial={{ opacity: 0, y: playIn.rise }} animate={{ opacity: 1, y: 0 }} {...stylex.props(typography.prompt, styles.seatSays)}>
+            {said(call)}
+          </motion.span>
+        ) : (
+          <span {...stylex.props(typography.prompt, styles.seatSays)}>…</span>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div {...stylex.props(styles.stack)}>
       <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
       <CardRowView row={{ label: m.lesson_bid_hand({ contract: contractName(step.contract) }), cards: sortHand(step.hand, step.contract) }} />
-      <ol data-testid="skat-bid-log" {...stylex.props(styles.bidLog)}>
-        {result.calls.slice(0, shown).map((call, i) => (
-          <motion.li key={i} initial={{ opacity: 0, y: playIn.rise }} animate={{ opacity: 1, y: 0 }} {...stylex.props(styles.bidLine)}>
-            <span {...stylex.props(typography.smallBold, styles.context)}>{m.lesson_bid_line({ name: nameOf(call.role), role: roles[call.role] })}</span>
-            <span {...stylex.props(typography.body, styles.prompt)}>{said(call)}</span>
-          </motion.li>
-        ))}
-      </ol>
+      <div data-testid="skat-bid-table" {...stylex.props(styles.felt, styles.dealTable)}>
+        <div {...stylex.props(styles.dealRow)}>
+          {seat(first)}
+          {seat(second)}
+        </div>
+        <div {...stylex.props(styles.dealRow, styles.dealMiddle)}>{seat(step.seat)}</div>
+      </div>
       <div ref={turn} {...stylex.props(styles.bidActions)}>
         {current ? (
           <Shake nonce={nonce}>
@@ -604,9 +622,22 @@ const styles = stylex.create({
   },
   deck: { borderStyle: 'none', cursor: 'default' },
   placeCards: { display: 'flex', minHeight: dims.cardSlotRow },
-  // The auction (SKATGO-161): one line per call, then the learner's two buttons.
-  bidLog: { display: 'flex', flexDirection: 'column', gap: space.x8, margin: 0, padding: 0, listStyle: 'none' },
-  bidLine: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12, paddingBlock: space.x4, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
+  // The auction (SKATGO-161): the three seats on the felt, each with its latest call, then the learner's two buttons.
+  seat: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: space.x4,
+    flexGrow: 1,
+    flexBasis: 0,
+    padding: space.x8,
+    borderRadius: radii.panel,
+    borderWidth: border.tile,
+    borderStyle: 'solid',
+    borderColor: color.gold,
+  },
+  seatLast: { borderColor: color.amber },
+  seatSays: { color: color.onColor, textAlign: 'center' },
   bidActions: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   bidButtons: { flexWrap: 'wrap', gap: space.x10 },
 })

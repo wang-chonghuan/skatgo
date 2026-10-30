@@ -32,7 +32,7 @@ export const LESSONS_EN: Lesson[] = [
     id: '1',
     title: 'Three players, 32 cards',
     promise: 'Know what Skat is about: who plays against whom, what for, and how you win.',
-    learned: 'deal a Skat deck, and you know who plays against whom and what it takes to win.',
+    learned: 'deal a Skat deck, and say who plays against whom and how the declarer wins.',
     minutes: 1,
     steps: [
       {
@@ -98,18 +98,14 @@ export const LESSONS_EN: Lesson[] = [
   {
     id: '3',
     title: 'Trumps and the four Buben',
-    promise: 'Recognise the trumps in any game, and which one beats which.',
+    promise: 'Recognise the trumps in a suit game, and which one beats which.',
     learned: 'pick out the trumps of a hand and say which card beats which.',
     minutes: 1,
     steps: [
       {
         kind: 'teach',
         title: 'Trumps beat everything',
-        body: [
-          'Before play the declarer chooses one suit as **trumps** — a **suit game**, such as a hearts game. Any trump beats any card of the other three suits, the **side suits**: a trump 7 takes an Ace.',
-          'Within a suit the cards rank **A, 10, K, D, 9, 8, 7** — the 10 right below the Ace.',
-        ],
-        rows: [{ label: 'A suit from high to low', cards: cards('D:A 10 K Q 9 8 7') }],
+        body: ['Before play the declarer chooses one suit as **trumps** — a **suit game**, such as a hearts game. Any trump beats any card of the other three suits, the **side suits**: a trump 7 takes an Ace.'],
       },
       { kind: 'choice', prompt: 'Hearts are trumps. Which card is higher?', options: ['♠A', '♥7'], answer: 1, explain: 'The ♥7 is a trump, and any trump beats any card of a side suit — even an Ace.' },
       {
@@ -124,7 +120,7 @@ export const LESSONS_EN: Lesson[] = [
       {
         kind: 'teach',
         title: 'Hearts as trumps: 11 trumps',
-        body: ['In a hearts game there are **11 trumps**: the four Buben, then the A, 10, K, D, 9, 8, 7 of hearts. Each side suit keeps its 7 cards.'],
+        body: ['In a hearts game there are **11 trumps**: the four Buben, then the hearts in the order of every suit, **A, 10, K, D, 9, 8, 7** — the 10 right below the Ace. Each side suit keeps its 7 cards in that order.'],
         rows: [{ cards: cards('C:J | S:J | H:J | D:J | H:A 10 K Q 9 8 7') }],
         tip: 'The ♥B ranks third because it is a Bube, not because it is a heart. And in a hearts game the ♣B is **not a club** — it is a trump.',
       },
@@ -152,21 +148,20 @@ export const LESSONS_EN: Lesson[] = [
           { label: 'Your hand: ✓ may be played, ✗ may not', cards: cards('H:10 7 | S:K | D:9'), follow: { contract: { kind: 'suit', trump: 'C' }, lead: cards('H:A')[0] } },
           { label: 'With no hearts at all, any card may be played', cards: cards('C:8 | S:K | D:9'), captions: ['trump', 'throw off', 'throw off'] },
         ],
-        tip: 'With none of the led suit you may play anything: a trump to take the trick (**trumping**), or a card you don\'t need (**throwing off**). Nobody has to play higher.',
+        tip: 'None of the led suit? Then play anything: a trump to win the trick (**trumping**), or a card you don\'t need (**throwing off**).',
       },
       {
         kind: 'teach',
         title: 'A Bube follows trumps, not its suit',
         body: [
-          'The four Buben are trumps, so a Bube does **not belong to the suit printed on it**. Here **Hearts are trumps**, and only the lead changes:',
-          '**♣A led** → only a real club may follow: the ♣7. The ♣B shows a club, but it is a trump.',
-          '**♥A led** → trumps are led: the ♣B or the ♥9.',
+          'The Buben are trumps, so a Bube does **not belong to the suit printed on it**. Here **Hearts are trumps**:',
+          '**♣A led** → only the ♣7 may follow; the ♣B is a trump. **♥A led** → the ♣B or the ♥9.',
         ],
         rows: [
           { label: 'When the ♣A is led', cards: cards('C:J 7 | H:9 | D:K'), follow: { contract: { kind: 'suit', trump: 'H' }, lead: cards('C:A')[0] } },
           { label: 'When the ♥A is led', cards: cards('C:J 7 | H:9 | D:K'), follow: { contract: { kind: 'suit', trump: 'H' }, lead: cards('H:A')[0] } },
         ],
-        tip: 'The most common mistake in the whole course. Before you follow, ask: "Which suit does the lead count as?"',
+        tip: 'Before you follow, ask: "Which suit does the lead count as?"',
       },
       {
         kind: 'play',
@@ -221,7 +216,7 @@ export const LESSONS_EN: Lesson[] = [
         kind: 'teach',
         title: 'Grand: only the Buben rule',
         body: [
-          'In Grand (said the French way, roughly "grahn") the only trumps are the four Buben **♣B ♠B ♥B ♦B**. All four suits are side suits, each ranked A, 10, K, D, 9, 8, 7.',
+          'In Grand the only trumps are the four Buben **♣B ♠B ♥B ♦B**. All four suits are side suits, each ranked A, 10, K, D, 9, 8, 7.',
           'The declarer still needs 61. Grand suits a hand with many Buben and Aces.',
         ],
         rows: [{ label: 'All the trumps in Grand', cards: cards('C:J | S:J | H:J | D:J') }],
@@ -308,7 +303,7 @@ export const LESSONS_EN: Lesson[] = [
         title: 'What you are bidding',
         body: [
           'Who becomes declarer is decided by **bidding**. Each bid is a **number**, meaning: "the game I would play is worth at least this much." Whoever bids highest is declarer.',
-          'So your limit is **your game\'s value** — the sum from the last lesson. The lowest bid is **18** (Diamonds with or without 1: 9 × 2).',
+          'So your limit is **your game\'s value**, worked out as in the last lesson. The lowest bid is **18** (Diamonds with or without 1: 9 × 2).',
         ],
       },
       {
@@ -340,17 +335,16 @@ export const LESSONS_EN: Lesson[] = [
         contract: { kind: 'suit', trump: 'H' },
         seat: 'forehand',
         limits: [24, 0],
-        explain: 'Hearts with 1, game 2: 10 × 2 = **20**. So you held 18 and 20 and passed at 22. Lina plays at 22 — her game must be worth at least that.',
+        explain: 'Your game: Hearts with 1, game 2 → 10 × 2 = **20**. Yes to 18 and 20, Pass at 22 — Lina plays.',
       },
       {
         kind: 'teach',
         title: 'What is worth bidding?',
         body: [
-          'Rough guides:',
-          '**Suit game**: five trumps or more (Buben included), plus an Ace or two.',
-          '**Grand**: two or three Buben, plus two or three Aces.',
-          '**Null**: low cards in every suit, and no lonely high one.',
-          'Nothing fits? Pass — when the defenders win, you win too.',
+          '**Suit game**: five trumps or more, Buben included, and an Ace or two.',
+          '**Grand**: two or three Buben and two or three Aces.',
+          '**Null**: only low cards in every suit.',
+          'Nothing fits? Pass.',
         ],
       },
       {
@@ -360,7 +354,7 @@ export const LESSONS_EN: Lesson[] = [
         contract: { kind: 'suit', trump: 'D' },
         seat: 'middlehand',
         limits: [30, 20],
-        explain: 'Diamonds with 2, game 3: 9 × 3 = **27**. You bid Noah up to 22, held Lina\'s 23, 24 and 27, and passed at 30. That is a whole auction: Lina plays at 30.',
+        explain: 'Your game: Diamonds with 2, game 3 → 9 × 3 = **27**. You stayed in up to 27 and passed at 30 — Lina plays.',
       },
     ],
   },
@@ -393,7 +387,7 @@ export const LESSONS_EN: Lesson[] = [
         prompt: 'You will play **Hearts ♥** and hold these 12 cards. Tap the two you put away.',
         cards: cards('C:J | H:J A 10 K 9 | S:A 7 | C:10 | D:K 8 7'),
         correct: cards('C:10 | D:K'),
-        explain: 'The ♣10 stands alone: the moment an opponent plays ♣A, it gives away 10 points. Put away, those 10 are banked — and you are void in clubs, so you can trump them. The ♦K adds 4: 14 points before the first trick.',
+        explain: 'The lone ♣10 is banked — 10 points — and clubs are now void, so you can trump them. The ♦K adds 4.',
         hint: 'Which card is valuable but cannot be kept safe? And which suit is empty once it is put away?',
       },
       {
@@ -401,7 +395,7 @@ export const LESSONS_EN: Lesson[] = [
         title: 'Hand: not looking at the skat',
         body: [
           'Hand strong enough already? Play **Hand**: leave the skat where it is and play the ten cards you were dealt, for **+1** on the multiplier. A Null played Hand is worth **35**.',
-          'The skat is still yours: its points count for you after play, and its cards count when your matadors are counted — after a pick-up too, over all twelve cards.',
+          'The skat stays yours: its points count for you, and so do its cards when matadors are counted.',
         ],
       },
       ...times(2, () => gameValueDrill({ hand: true })),
@@ -410,7 +404,7 @@ export const LESSONS_EN: Lesson[] = [
         prompt: 'Your highest trump is the ♥B (no ♣B, no ♠B), so you play Spades Hand "without 2": 11 × (2 + 1 + 1) = 44, and you bid 44. After play the skat is turned over — and it holds the **♣B**. What now?',
         options: ['Nothing changes: still 44', 'It becomes "with 1": 11 × 3 = 33, less than you bid', 'It becomes "with 3" — worth more', "The skat doesn't count, so it doesn't matter"],
         answer: 1,
-        explain: 'The skat counts as yours. With the ♣B you are "with", but the ♠B is not yours, so only "with 1": 1 + 1 + 1 = 3, 11 × 3 = 33 — less than your bid of 44, and your game must be worth the bid. That is the risk of Hand: play a Hand game "without" with some room to spare.',
+        explain: 'The skat counts as yours: with the ♣B but not the ♠B you are only "with 1" — 11 × 3 = 33, less than your bid of 44. That is the risk of Hand.',
         hint: 'The ♣B is yours now. Counting down from ♣B, how many trumps in a row do you hold?',
       },
       { kind: 'choice', prompt: 'In a Hand game, who gets the points of the two unseen skat cards in the end?', options: ['The defenders', 'The declarer', 'Whoever wins the last trick', 'Nobody — they don\'t count'], answer: 1, explain: 'The skat always belongs to the declarer, looked at or not.' },
@@ -419,7 +413,7 @@ export const LESSONS_EN: Lesson[] = [
         prompt: 'You will play **Spades ♠** and hold these 12 cards. Tap the two you put away.',
         cards: cards('C:J | H:J | S:A 10 9 7 | C:A K 9 8 | H:10 | D:7'),
         correct: cards('H:10 | D:7'),
-        explain: 'The lone ♥10 is banked — 10 points before the first trick — and with the ♦7 away too you are void in hearts and diamonds: both can be trumped. Your clubs keep their Ace.',
+        explain: '10 points banked, and hearts and diamonds are void: both can be trumped.',
         hint: 'A lone 10 with no Ace, and a lone low card: which two leave whole suits empty?',
       },
     ],
@@ -448,18 +442,14 @@ export const LESSONS_EN: Lesson[] = [
           '**Declarer wins**: + the game value. **Declarer loses**: − **2 ×** the game value. A loss costs twice what a win brings.',
           '**Overbid**: the game turns out worth less than the bid — lost, whatever the card points. It is scored at the smallest multiple of the base value that reaches the bid, and doubled.',
         ],
-        tip: 'Official tournaments also give the declarer +50 for each game won and −50 for each game lost, and the defenders a bonus. Home games usually leave that out.',
       },
       ...times(3, settleDrill),
       {
         kind: 'teach',
         title: 'Announcing: only in Hand',
         body: [
-          'A declarer playing Hand may promise more before play; each promise adds **+1**:',
-          '**Schneider announced** — "I will take at least 90."',
-          '**Schwarz announced** — "I will take all ten tricks."',
-          '**Ouvert** (open) — "I play with my hand face up on the table, and I still take all ten tricks."',
-          'Announce it and miss — even with 89 — and the game is lost. A Null has two more values: **Null Ouvert 46 · Null Ouvert Hand 59**.',
+          'Playing Hand, the declarer may promise more before play, each **+1**: **Schneider**, **Schwarz**, or **Ouvert** — cards face up on the table.',
+          'Miss a promise and the game is lost. A Null has two more values: **Null Ouvert 46 · Null Ouvert Hand 59**.',
         ],
       },
       { kind: 'choice', prompt: 'What is a Null Ouvert (skat picked up, played face up) worth?', options: ['23', '35', '46', '59'], answer: 2, explain: '23 (plain) → 35 (Hand) → **46 (Ouvert)** → 59 (Ouvert Hand).' },
@@ -478,8 +468,8 @@ export const LESSONS_EN: Lesson[] = [
         kind: 'teach',
         title: "The declarer's plan: draw trumps, then collect",
         body: [
-          "What the declarer fears most: an opponent trumping one of the declarer's Aces with a small trump.",
-          'So the declarer usually starts by **leading high trumps**, forcing both opponents to follow with theirs until they have none left (**drawing trumps**). Then the side-suit Aces and 10s are safe points. There are 11 trumps, so **counting trumps** tells you how many are still out.',
+          "The declarer's fear: an Ace trumped by a small trump.",
+          'So the declarer first **leads high trumps** until the defenders have none left — **drawing trumps**. Then the Aces and 10s are safe. There are 11 trumps: **counting trumps** tells you how many are still out.',
         ],
       },
       {
@@ -497,10 +487,8 @@ export const LESSONS_EN: Lesson[] = [
         kind: 'teach',
         title: "The defenders' plan: feed your partner",
         body: [
-          'The two defenders\' card points are added together, so their key move is to **smear**:',
-          '**Your partner is winning this trick** → put your fattest card (an A or 10) on it.',
-          '**The declarer is winning this trick** → throw your most worthless blank; give nothing away.',
-          'And defenders **don\'t lead trumps** — that draws trumps for the declarer. Hold a side-suit Ace? Take your trick with it early.',
+          'The defenders\' points count together, so they **smear**: when your partner wins the trick, add your fattest card (A or 10); when the declarer wins it, throw your cheapest blank.',
+          'And defenders **don\'t lead trumps** — that draws them for the declarer.',
         ],
       },
       {

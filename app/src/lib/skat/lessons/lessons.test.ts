@@ -1,8 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { type Locale, locales } from '~/paraglide/runtime'
-import { legalPlays, sameCard } from '../cards'
+import { type Card, cardId, legalPlays, pointsOf, sameCard } from '../cards'
+import { expectedValue } from '../value'
+import { after, auction } from './auction'
+import { CONCEPTS, conceptsIn } from './concepts'
 import { COURSES } from './content'
+import { DEAL_PACKETS } from './drills'
+import { GUIDES } from './guide'
 import type { Lesson, Step } from './types'
 
 import de from '../../../../messages/de.json'
@@ -34,6 +39,44 @@ function check(step: Concrete, where: string) {
     const legal = legalPlays(step.hand, step.trick, step.contract)
     for (const c of step.best ?? []) expect(legal.some((d) => sameCard(c, d)), `${where}: best card must be legal`).toBe(true)
   }
+  if (step.kind === 'sum') {
+    expect(waysToMake(step.cards, step.size, step.target), `${where}: the target can be made`).toBeGreaterThan(0)
+  }
+  if (step.kind === 'deal') {
+    expect(new Set(step.cards.map(cardId)).size, where).toBe(32)
+  }
+  if (step.kind === 'bid') {
+    expect(step.hand, where).toHaveLength(10)
+    const { calls } = auctionOf(step)
+    expect(calls.some((c) => c.role === step.seat), `${where}: the learner has a call`).toBe(true)
+    // Lesson 7's ladder stops at 33: a higher number belongs to games taught later (Null Hand is 35).
+    for (const c of calls) if (c.say !== 'pass') expect(c.value, `${where}: ${c.role} says ${c.value}`).toBeLessThanOrEqual(33)
+  }
+}
+
+/** How many ways `size` of `cards` make `target` card points. */
+function waysToMake(cards: Card[], size: number, target: number, from = 0): number {
+  if (size === 0) return target === 0 ? 1 : 0
+  let n = 0
+  for (let i = from; i < cards.length; i++) n += waysToMake(cards, size - 1, target - pointsOf([cards[i]]), i + 1)
+  return n
+}
+
+type BidLike = Extract<Concrete, { kind: 'bid' }>
+function auctionOf(step: BidLike) {
+  const limit = expectedValue({ contract: step.contract, hand: false, schneiderAnnounced: false, schwarzAnnounced: false, ouvert: false }, step.hand)
+  const [first, second] = after(step.seat)
+  return auction({ [step.seat]: limit, [first]: step.limits[0], [second]: step.limits[1] } as Parameters<typeof auction>[0])
+}
+
+/** Every word a learner reads in a step: its strings, without the names of cards, contracts and seats. */
+function words(value: unknown): string[] {
+  if (typeof value === 'string') return [value]
+  if (Array.isArray(value)) return value.flatMap(words)
+  if (value && typeof value === 'object') {
+    return Object.entries(value).flatMap(([k, v]) => (['kind', 'suit', 'rank', 'trump', 'seat', 'make'].includes(k) ? [] : words(v)))
+  }
+  return []
 }
 
 /** Everything about a step that is not words: what the learner sees on the table and what is right. */
@@ -49,6 +92,12 @@ function shape(step: Concrete) {
       return { kind: step.kind, cards: step.cards, correct: step.correct }
     case 'play':
       return { kind: step.kind, contract: step.contract, hand: step.hand, trick: step.trick, trickBy: step.trickBy?.length, best: step.best, whyNot: step.whyNot !== undefined }
+    case 'sum':
+      return { kind: step.kind, cards: step.cards, size: step.size, target: step.target }
+    case 'deal':
+      return { kind: step.kind, cards: step.cards }
+    case 'bid':
+      return { kind: step.kind, hand: step.hand, contract: step.contract, seat: step.seat, limits: step.limits }
     case 'game':
       return { kind: step.kind }
   }
@@ -107,17 +156,57 @@ describe('the course', () => {
       }
     })
 
-    it(`${locale}: no drill before lesson 5 names Grand or Null, which lesson 5 introduces`, () => {
-      const introduced = course.findIndex((l) => l.id === '5')
-      course.slice(0, introduced).forEach((lesson) => {
+    // SKATGO-161 (the human: 「禁止在前序课里出现后序概念」): a lesson names no concept a later lesson teaches —
+    // not in its title, promise, learned line, any step, any drill dealt many times over, or its page's title
+    // and description. This replaces SKATGO-2's narrower test (no Grand or Null in a drill before lesson 5).
+    it(`${locale}: no lesson names a concept of a later lesson, and each concept is named where it is taught`, () => {
+      const textOf = (lesson: Lesson, n: number) => {
+        const guide = GUIDES[locale][lesson.id]
+        const parts = [lesson.title, lesson.promise, lesson.learned, guide.question, guide.h1, guide.description]
         lesson.steps.forEach((step, i) => {
-          if (step.kind !== 'generated') return
-          for (let n = 0; n < 60; n++) {
-            const text = JSON.stringify(step.make())
-            expect(/\b(Grand|Null)\b/.test(text), `${locale} lesson ${lesson.id} step ${i}: ${text.slice(0, 120)}`).toBe(false)
-          }
+          if (step.kind !== 'generated') parts.push(...words(step))
+          else for (let run = 0; run < 40; run++) parts.push(...words(make(step, n * 100_000 + i * 1000 + run)))
         })
+        return parts.join('\n')
+      }
+      const named = new Map<string, number>()
+      course.forEach((lesson, n) => {
+        const text = textOf(lesson, n)
+        const lessonNo = n + 1
+        for (const c of conceptsIn(text, locale)) {
+          if (!named.has(c.id)) named.set(c.id, lessonNo)
+          if (c.lesson > lessonNo) {
+            const line = text.split('\n').find((t) => conceptsIn(t, locale).includes(c)) ?? ''
+            expect.fail(`${locale} lesson ${lesson.id} names "${c.id}" (taught in lesson ${c.lesson}): ${line.slice(0, 160)}`)
+          }
+        }
       })
+      for (const c of CONCEPTS) expect(named.get(c.id), `${locale}: "${c.id}" first named in lesson ${named.get(c.id)}, taught in ${c.lesson}`).toBe(c.lesson)
+    })
+
+    it(`${locale}: every lesson opens with a teaching card, and at most two come before the first question`, () => {
+      for (const lesson of course) {
+        expect(lesson.steps[0].kind, `lesson ${lesson.id}`).toBe('teach')
+        const firstAsk = lesson.steps.findIndex((s) => s.kind !== 'teach')
+        expect(firstAsk, `lesson ${lesson.id}`).toBeGreaterThan(0)
+        expect(firstAsk, `lesson ${lesson.id}: teaching cards before the first question`).toBeLessThanOrEqual(2)
+      }
+    })
+
+    it(`${locale}: every lesson ends with its final challenge on cards, and says what the learner can now do`, () => {
+      for (const lesson of course) {
+        expect(lesson.learned.trim(), `lesson ${lesson.id}`).not.toBe('')
+        if (lesson === course[course.length - 1]) continue
+        const last = make(lesson.steps[lesson.steps.length - 1], 1)
+        expect(last.kind, `lesson ${lesson.id}`).not.toBe('teach')
+        const shown = JSON.stringify(last)
+        expect(/"suit":"[CSHD]","rank":/.test(shown), `lesson ${lesson.id}: the final challenge shows cards`).toBe(true)
+      }
+      const last = (id: string) => make(course.find((l) => l.id === id)!.steps.at(-1)!, 1)
+      expect(last('1').kind, 'lesson 1 ends with dealing').toBe('deal')
+      expect(last('7').kind, 'lesson 7 ends with bidding').toBe('bid')
+      const discard = last('8')
+      expect(discard.kind === 'pick' && discard.cards.length === 12 && discard.correct.length === 2, 'lesson 8 ends with putting two of twelve away').toBe(true)
     })
 
     it(`${locale}: every follow picture shows cards both allowed and refused by the engine`, () => {
@@ -161,6 +250,15 @@ describe('the course', () => {
       })
     })
   }
+})
+
+describe('the deal of lesson 1', () => {
+  it('gives ten to each player and two to the skat, clockwise from the left, the dealer last', () => {
+    const count = (to: string) => DEAL_PACKETS.filter((p) => p.to === to).reduce((n, p) => n + p.n, 0)
+    expect([count('left'), count('right'), count('you'), count('skat')]).toEqual([10, 10, 10, 2])
+    expect(DEAL_PACKETS.map((p) => p.n)).toEqual([3, 3, 3, 2, 4, 4, 4, 3, 3, 3])
+    expect(DEAL_PACKETS.filter((p) => p.to !== 'skat').map((p) => p.to)).toEqual(['left', 'right', 'you', 'left', 'right', 'you', 'left', 'right', 'you'])
+  })
 })
 
 describe('the messages', () => {

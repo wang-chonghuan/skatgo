@@ -148,7 +148,7 @@ also built from the repository root. Neither project imports the other's runtime
 | Path | Owns |
 |---|---|
 | `app/src/lib/skat/` | the rules engine (ISkO): cards, trick-taking, game value, settlement, the whole-game state machine, and the computer players (`ai.ts`, which also writes every hint) |
-| `app/src/lib/skat/lessons/` | the course: `content.ts` (lessons), `drills.ts` (randomised exercises whose answers the engine computes), `types.ts` |
+| `app/src/lib/skat/lessons/` | the course: `content.ts` (lessons), `drills.ts` (randomised exercises whose answers the engine computes), `types.ts`; `concepts.ts`, each concept with the lesson that teaches it — `lessons.test.ts` holds every lesson's text to its own and earlier lessons' concepts (SKATGO-161); `auction.ts`, lesson 7's auction played out from three limits |
 | `app/src/lib/skat/progress.ts` | learner progress in `localStorage` |
 | `app/src/components/skat/` | every page and widget, and the product's own small UI kit (`ui.tsx`). One file per page: `entry-page.tsx` (the front page), `course-home.tsx`, `lesson-page.tsx` (around `lesson-player.tsx`), `rules-page.tsx`, `bidding-table-page.tsx`, `score-sheet-page.tsx`, `rules-summary-page.tsx`, `daily-page.tsx`, `free-play.tsx`, `legal-page.tsx` (privacy and terms; the footer is `legal-footer.tsx`, so every page does not carry their text), `forum-page.tsx` (the forum's list and a post, SKATGO-118), `about-page.tsx` (About SkatGo with the questions of `lib/faq.ts`, SKATGO-134), `not-found.tsx`; routes reach them only through `client-page.tsx`, which loads each page as its own chunk (SKATGO-107) |
 | `app/src/start.ts` | Clerk's request middleware, which hands each page its session state |

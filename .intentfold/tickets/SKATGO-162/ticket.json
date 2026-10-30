@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-162",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-162",
+  "branch": "SKATGO-162-footer-gap",
+  "base": "9f7530d152c58ff03cbc3d93c94448d20ecc007b",
+  "ports": { "web": 55162, "multiplayer": 56162, "database": 57162 }
+}

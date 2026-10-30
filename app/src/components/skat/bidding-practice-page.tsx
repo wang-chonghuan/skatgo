@@ -546,7 +546,7 @@ const styles = stylex.create({
     marginInline: 'auto',
     boxSizing: 'border-box',
     paddingTop: { default: space.x32, [bp.phone]: space.x16 },
-    paddingBottom: space.x72,
+    paddingBottom: { default: space.x72, [bp.phone]: space.x36 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
   head: { display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: space.x12 },

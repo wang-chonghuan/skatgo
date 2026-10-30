@@ -144,7 +144,8 @@ tabs and block buttons, `column` for an auction column, `tag` for a seat's role 
 **Spacing and dimensions** (`space`, `dims`)
 
 Spacing steps are named by their px (`space.x2` … `x80`, with the reference's `x15`, `x27`, `x32`,
-`x48`, `x72`). Component dimensions — the header, the reading column (`dims.readingColumn`) and the
+`x48`, `x72`; `x36` since SKATGO-162: a page column ends 72px above the footer, 36px on a phone, the human:
+「72和36吧」). Component dimensions — the header, the reading column (`dims.readingColumn`) and the
 wider page column (`dims.pageColumn`), controls, card sizes and slots, the table's panel and drawer,
 grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 mm) — are named in
 `dims`; the table's stage in `stage` (`table.stylex.ts`).

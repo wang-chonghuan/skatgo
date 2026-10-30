@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-159",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-159",
+  "branch": "SKATGO-159-harder-bidding-practice",
+  "base": "b930d96d17c1d7dc2703d3bff9d6954b8522264b",
+  "ports": { "web": 55159, "multiplayer": 56159, "database": 57159 }
+}

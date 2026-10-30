@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import { useAccount } from '~/lib/use-account'
-import { type Answered, type Attempt, type BiddingRecord, FREE_IDS, practiceOf, readAnswered } from './practice'
+import { type Answered, type Attempt, type BiddingRecord, FREE_IDS, practiceOf } from './practice'
 
 // The bidding practice's record (SKATGO-150), kept as the ladder's is (tricks/ladder-progress.ts): a guest's answers to
 // the free questions stay in this browser (localStorage — no cookie, nothing to consent to); an account's are the
@@ -16,12 +16,19 @@ const NONE: BiddingRecord = {}
 /** An attempt on top of what was there: the first attempt stays, a right one later fixes it. */
 const mark = (r: Answered | undefined, a: Attempt, right: boolean): Answered => (r ? { ...r, fixed: r.fixed || right } : { ...a, fixed: false })
 
-/** This browser's rows in today's shape: SKATGO-150 kept one number per question (`readAnswered`). */
-const current = (questions: BiddingRecord): BiddingRecord =>
-  Object.fromEntries(Object.entries(questions).flatMap(([id, r]) => {
-    const p = practiceOf(id)
-    return p ? [[id, readAnswered(p, r)]] : []
-  }))
+/** This browser's rows for today's questions. */
+const current = (questions: BiddingRecord): BiddingRecord => Object.fromEntries(Object.entries(questions).filter(([id]) => practiceOf(id)))
+
+/** SKATGO-159 started the questions over (the human: 「用户已经答过的，可以删除记录，不要影响新版」): what this browser kept
+ *  for the questions before is removed. */
+export function forgetOld() {
+  try {
+    localStorage.removeItem('skatgo.bidding.v1')
+    localStorage.removeItem('skatgo.bidding-practice')
+  } catch {
+    // Blocked storage holds nothing to forget.
+  }
+}
 
 type Guest = { questions: BiddingRecord; answer: (id: string, a: Attempt, right: boolean) => void; forget: () => void }
 
@@ -32,7 +39,7 @@ const useGuest = create<Guest>()(
       answer: (id, a, right) => set((s) => ({ questions: { ...s.questions, [id]: mark(current(s.questions)[id], a, right) } })),
       forget: () => set({ questions: {} }),
     }),
-    { name: 'skatgo.bidding.v1', storage: createJSONStorage(() => localStorage), partialize: (s) => ({ questions: s.questions }) },
+    { name: 'skatgo.bidding.v2', storage: createJSONStorage(() => localStorage), partialize: (s) => ({ questions: s.questions }) },
   ),
 )
 

@@ -1,7 +1,7 @@
 import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
-import { type Answered, type Attempt, CONTRACTS, FREE_IDS, numberOf, practiceOf, readAnswered, rightAttempt, validAttempt } from '../../app/src/lib/skat/bidding/practice'
+import { type Answered, type Attempt, CONTRACTS, FREE_IDS, numberOf, practiceOf, rightAttempt, validAttempt } from '../../app/src/lib/skat/bidding/practice'
 import { Rejected, secretEquals } from './model'
 import type { Store } from './store'
 
@@ -21,12 +21,8 @@ const mergeInput = z.object({
 }).strict()
 
 async function recordOf(c: pg.PoolClient | pg.Pool, who: string): Promise<Record<string, Answered>> {
-  const { rows } = await c.query('SELECT question, first, contract, value, fixed FROM bidding_answers WHERE player = $1', [who])
-  return Object.fromEntries(
-    rows
-      .filter((r) => practiceOf(r.question))
-      .map((r) => [r.question, readAnswered(practiceOf(r.question)!, r.contract ? { contract: r.contract, value: r.value, fixed: r.fixed } : { first: r.first, fixed: r.fixed })]),
-  )
+  const { rows } = await c.query('SELECT question, contract, value, fixed FROM bidding_answers WHERE player = $1', [who])
+  return Object.fromEntries(rows.filter((r) => practiceOf(r.question) && r.contract).map((r) => [r.question, { contract: r.contract, value: r.value, fixed: r.fixed }]))
 }
 
 /** One complete attempt: the first one stays as given; a later one right in both steps marks the question fixed. */

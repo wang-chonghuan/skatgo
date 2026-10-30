@@ -53,6 +53,7 @@ export const CHEAT_SHEET_EN: CheatSheet = {
         '**With n:** you hold ♣B and the next cards in order (♣B ♠B ♥B ♦B, then A, 10 …).',
         '**Without n:** you are missing them.',
         '**Base:** ♦ 9 · ♥ 10 · ♠ 11 · ♣ 12 · Grand 24.',
+        '**Counted before the skat:** a Bube in the skat can only shorten a “without” run — so a shaky “without” hand stops below its count. A “with” run can only grow.',
       ],
     },
     {

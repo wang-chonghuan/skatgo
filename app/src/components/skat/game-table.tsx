@@ -758,7 +758,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
       {/* A room's statistics (SKATGO-165), over the table like its other dialogs; the way back is the menu's first item. */}
       {room && statsOpen ? (
-        <Dialog foot={<Btn testId="room-stats-close" shape="block" size="lg" grow onClick={() => setStatsOpen(false)}>{m.table_continue()}</Btn>}>
+        <Dialog foot={<Row><Btn testId="room-stats-close" shape="block" size="lg" grow onClick={() => setStatsOpen(false)}>{m.table_continue()}</Btn></Row>}>
           {room.stats}
         </Dialog>
       ) : null}

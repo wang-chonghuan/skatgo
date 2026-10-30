@@ -135,12 +135,19 @@ the human names (「挑重点，目前用户少，可以手动做……就做我
 The ids one person plays under count as one, as on the Elo board. Free play stays free and needs no account; only
 an account's deals are recorded. A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
 
-Private tables at `/with-friends` (SKATGO-61): a host opens a table and sends its link; up to two
-friends sit down with a name, and the AI takes an empty seat. Opening a table takes an account,
-joining one does not (SKATGO-117, the human: 「我现在想把 private table的改为必须注册用户才能玩」, then,
-after comparing other products, 「可以吧」 to the host signing in and the invited playing as guests). A
-guest who signs up while sitting at someone's table is recorded once as brought by its host, so it
-shows who brings players in; nothing else is recorded about it, and it needs no consent banner.
+Private tables at `/with-friends` (SKATGO-61) are rooms since SKATGO-163 (the human: 「一个人开一个房间，可以打2个ai。另一个人
+可以加入进来，需要6位数字邀请码，是房间号。还能再加入一个人，替换掉ai。如果三人满了，输入房间号就不能再加人了」, 「用同类游戏的最常见的实践，
+但是是简洁直观版，不要复杂化」): whoever opens a room plays at once against two computer players; a friend comes in with
+the room's six-digit number, or its link, and takes a computer's seat from the next deal, starting at 0; a third takes the
+last one; with three people the number lets nobody else in. Everyone at the table has an account, the room's host and
+whoever comes in alike (the human: 「我打算把私人桌改成必须三个玩家都登录」), and sits under the name the boards show; an
+account is in one room at a time. The page offers two cards, a new room and a room to come into, or, while the account
+is in one, the way back to it (「私人桌进入后，两张卡片，新建房间，加入房间。如果已经在了一个房间，则显示回到房间」). The room's
+number stands at the table's top left, across from the way out, and a tap copies its link (「点击后复制链接，而不只是房间号」).
+The seat of someone away, whom a computer plays for, may be taken by someone coming in; the host may take a person out,
+who may come back with the number (「别人可以占用，但是房主可以踢人」, 「踢了还可以自己加，基于信任」). Leaving passes the host's role
+on; the last one leaving closes the room. A newcomer who signs up to come into a room is recorded once as brought by its
+host (SKATGO-117), so it shows who brings players in; nothing else is recorded about it, and it needs no consent banner.
 
 About SkatGo at `/about` (SKATGO-134): the questions people ask, how the daily Skat is played, scored and ranked, and how a
 private table goes — what the game pages no longer explain (the human: 「我现在特别讨厌游戏页面里那么多垃圾的文字……所有seo的都专门

@@ -9,29 +9,31 @@ import type { Declaration } from './value'
 
 export type RoomSeat = {
   seat: number
-  /** A person who sat down, a computer (after the start), or an empty chair in the lobby. */
-  kind: 'human' | 'ai' | 'empty'
+  /** A person's seat, or a computer's (SKATGO-163: there is no empty chair; a room plays from its first moment). */
+  kind: 'human' | 'ai'
   nickname: string | null
-  occupied: boolean
+  /** The room's host: who may take a person out. */
+  host: boolean
   connected: boolean
   /** Who is playing the seat now: its person, or a computer — for good, or standing in for them. */
   control: 'human' | 'ai'
+  /** A newcomer who plays from the next deal; a computer finishes this one for them. */
+  joining: boolean
   reconnectUntil: number | null
   cardCount: number
 }
 
 export type RoomPublic = {
+  /** The room's number. */
   roomId: string
   revision: number
-  humanSeats: number
   expiresAt: number
-  started: boolean
   /** Deals dealt so far. */
   deals: number
-  /** Each seat's Seeger-Fabian total over the deals that ended. */
+  /** Each seat's Seeger-Fabian total over the deals that ended — a newcomer's since they sat down. */
   scores: [number, number, number]
   seats: RoomSeat[]
-  phase: Phase | 'lobby'
+  phase: Phase
   actor: Seat | null
   turn: Seat
   dealer: Seat
@@ -60,10 +62,10 @@ export const roomSeat = (view: number, me: number): Seat => ((view + me) % 3) as
 const UNSEEN: Card = { suit: 'C', rank: '7' }
 const unseen = (n: number): Card[] => Array.from({ length: n }, () => UNSEEN)
 
-/** The deal on the table as a `Game` with the viewer (`mine.seat`) in seat 0, or null in the lobby.
+/** The deal on the table as a `Game` with the viewer (`mine.seat`) in seat 0, or null before one is dealt.
  *  Only for drawing — the service is what plays it. */
 export function roomGame(pub: RoomPublic, mine: RoomPrivate): Game | null {
-  if (pub.phase === 'lobby' || !pub.bidding) return null
+  if (!pub.bidding) return null
   const me = mine.seat
   const v = (seat: number) => viewSeat(seat, me)
   const hands: Game['hands'] = [[], [], []]

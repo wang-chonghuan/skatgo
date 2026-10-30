@@ -80,7 +80,7 @@ export function linkLook(tone: Tone = 'go', size: Size = 'md', shape: Shape = 'p
 
 /** A one-line text field — a name, as the daily leaderboard and a private table ask for it. Enter
  *  submits. */
-export function TextField({ id, testId, value, onChange, onEnter, invalid, autoComplete }: {
+export function TextField({ id, testId, value, onChange, onEnter, invalid, autoComplete, digits }: {
   id: string
   testId?: string
   value: string
@@ -88,12 +88,16 @@ export function TextField({ id, testId, value, onChange, onEnter, invalid, autoC
   onEnter?: () => void
   invalid?: boolean
   autoComplete?: string
+  /** A number of this many digits, as a room's (SKATGO-163): the phone's number pad, and no more digits than that. */
+  digits?: number
 }) {
   return (
     <input
       id={id}
       data-testid={testId}
       type="text"
+      inputMode={digits ? 'numeric' : undefined}
+      maxLength={digits}
       autoComplete={autoComplete}
       value={value}
       aria-invalid={invalid}

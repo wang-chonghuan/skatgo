@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
-import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals } from './model'
+import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals, roomOnly } from './model'
 import { BIDS, type HandMode } from './skatzero/bidding'
 import { type Policy, viewOf } from './skatzero/policy'
 import { lineFor, momentOf, TALK_KINDS, verdictOf } from './talk'
@@ -160,7 +160,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
   }
   router.post('/act', run(async (body) => {
     const i = actInput.parse(body)
-    if (i.action.type === 'start') throw new Rejected('illegal_action')
+    if (roomOnly(i.action)) throw new Rejected('illegal_action')
     const { p, t } = opened(i.token)
     if (i.revision !== t.log.length) throw new Rejected('stale_revision')
     const d = p.deals[t.id]

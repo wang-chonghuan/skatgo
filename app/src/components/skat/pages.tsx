@@ -5,7 +5,7 @@ import { DailyEntry as Entry, DailyTable as Daily } from './daily-table'
 import { DealOfDay as OfDay } from './deal-of-day'
 import { FreeTable as Table } from './free-table'
 import { LessonPlayer as Player } from './lesson-player'
-import { OpenTable as Open, PrivateTable as Private } from './table-room'
+import { PrivateTable as Private, RoomCards as Cards } from './table-room'
 
 // The browser-only parts of the course, behind one module so the pages load them as a single lazy chunk:
 // the lesson player, the free-play table, the daily tournament's table and button (SKATGO-35), and a
@@ -37,7 +37,7 @@ export const DailyEntry = Entry
 // The deal of the day's side of /daily (SKATGO-131).
 export const DealOfDay = OfDay
 
-export const OpenTable = Open
+export const RoomCards = Cards
 
 export const PrivateTable = () => (
   <MotionConfig reducedMotion="user">

@@ -6,13 +6,13 @@ import { color } from '../../theme/color.stylex'
 import { space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { ClientPart, OpenTable, PrivateTable } from './client-part'
+import { ClientPart, PrivateTable, RoomCards } from './client-part'
 import { TableLoading } from './table-loading'
 
 /**
  * Skat with friends (SKATGO-61): the public page a search for "Skat mit Freunden online spielen" lands
- * on — its title and one line, rendered on the server — and, in the browser, the name and the button that open
- * one. How a table goes is on About SkatGo (SKATGO-134).
+ * on — its title and one line, rendered on the server — and, in the browser, the cards of SKATGO-163: a new room, a
+ * room to come into by its number, or the way back to one's own. How a room goes is on About SkatGo (SKATGO-134).
  */
 export function FriendsPage() {
   return (
@@ -20,9 +20,9 @@ export function FriendsPage() {
       <section {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.friends_title()}</h1>
         <p {...stylex.props(typography.landingBody, styles.lead)}>{m.friends_lead()}</p>
-        {/* The form needs the browser; until it is there, nothing stands in its place. */}
+        {/* The cards need the browser and the account; until they are there, nothing stands in their place. */}
         <ClientPart fallback={<span />}>
-          <OpenTable />
+          <RoomCards />
         </ClientPart>
       </section>
     </div>
@@ -30,8 +30,9 @@ export function FriendsPage() {
 }
 
 /**
- * A private table's own page (SKATGO-61): personal, never indexed. Its title is a heading for screen
- * readers only; the lobby or the table renders in the browser, the logo turning on the felt until then (SKATGO-93).
+ * A private room's own page (SKATGO-61), its address the room's number (SKATGO-163): personal, never indexed. Its
+ * title is a heading for screen readers only; the table renders in the browser, the logo turning on the felt until
+ * then (SKATGO-93).
  */
 export function TablePage() {
   return (

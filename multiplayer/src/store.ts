@@ -153,6 +153,9 @@ export class Store {
         -- SKATGO-159 started the questions over, named "v2-…" (the human: 「用户已经答过的，可以删除记录，不要影响新版」):
         -- every answer to the questions before goes.
         DELETE FROM bidding_answers WHERE question NOT LIKE 'v2-%';
+        -- SKATGO-163 made tables rooms with a number, every seat an account's: the tables of before (schema 2, seats
+        -- held by browser tokens) end here; the deploy backs them up first.
+        DELETE FROM multiplayer_rooms WHERE snapshot->>'schema' = '2';
       `)
       await c.query('COMMIT')
     } catch (e) {
@@ -213,14 +216,24 @@ export class Store {
       throw e
     } finally { c.release() }
   }
-  async create(s: Snapshot) {
-    await this.transaction(async c => {
+  /** Stores a new room; false when its number is held by a live room already, so the caller draws another. */
+  async create(s: Snapshot): Promise<boolean> {
+    return this.transaction(async c => {
       await c.query('SELECT pg_advisory_xact_lock($1)', [LOCK + 2])
       await c.query('DELETE FROM multiplayer_rooms WHERE expires_at <= $1', [Date.now()])
       const count = await c.query('SELECT count(*)::int AS count FROM multiplayer_rooms')
       if (count.rows[0].count >= 128) throw new Rejected('room_capacity')
-      await c.query('INSERT INTO multiplayer_rooms VALUES ($1, $2, $3)', [s.id, s, s.expiresAt])
+      const { rowCount } = await c.query('INSERT INTO multiplayer_rooms VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING', [s.id, s, s.expiresAt])
+      return rowCount === 1
     })
+  }
+  /** The live room an account has a seat in (SKATGO-163: one at a time), but `except`; null if none. */
+  async roomOf(account: string, except: string | null = null, c: pg.Pool | pg.PoolClient = this.pool): Promise<string | null> {
+    const { rows } = await c.query(
+      `SELECT id FROM multiplayer_rooms WHERE expires_at > $1 AND snapshot->>'schema' = '3'
+         AND snapshot->'seats' @> $2::jsonb AND id IS DISTINCT FROM $3 LIMIT 1`,
+      [Date.now(), JSON.stringify([{ account }]), except])
+    return (rows[0]?.id as string | undefined) ?? null
   }
   async read(id: string): Promise<Snapshot> {
     const { rows } = await this.pool.query('SELECT snapshot FROM multiplayer_rooms WHERE id = $1', [id])
@@ -231,7 +244,7 @@ export class Store {
   async all(): Promise<Snapshot[]> {
     const { rows } = await this.pool.query(
       // A table stored by an earlier version of the snapshot is not restored; it expires like any other.
-      "SELECT snapshot FROM multiplayer_rooms WHERE expires_at > $1 AND snapshot->>'schema' = '2' ORDER BY id", [Date.now()],
+      "SELECT snapshot FROM multiplayer_rooms WHERE expires_at > $1 AND snapshot->>'schema' = '3' ORDER BY id", [Date.now()],
     )
     return rows.map(r => r.snapshot)
   }
@@ -251,6 +264,10 @@ export class Store {
   }
   async remove(id: string) {
     await this.transaction(c => c.query('DELETE FROM multiplayer_rooms WHERE id=$1 AND expires_at <= $2', [id, Date.now()]))
+  }
+  /** A room nobody is left in goes at once (SKATGO-163), its number free again. */
+  async drop(id: string) {
+    await this.transaction(c => c.query('DELETE FROM multiplayer_rooms WHERE id=$1', [id]))
   }
   async close() {
     if (this.leader) {

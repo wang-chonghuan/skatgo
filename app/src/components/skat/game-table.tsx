@@ -36,8 +36,9 @@ import {
 import { type DealSummary, seegerFabian, summarize } from '~/lib/skat/tournament'
 import { BID_LADDER, type Declaration, NULL_VALUES, baseValue, expectedValue, highestValue, matadors, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
+import { getLocale, localizeHref } from '~/paraglide/runtime'
 import { Link } from '@tanstack/react-router'
-import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, Check, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -148,8 +149,15 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
   names: [string, string, string]
   /** Under the result: this deal's scores and the running totals. */
   standings: ReactNode
-  /** Over the felt, where the table's messages go: while the connection comes back (SKATGO-117). */
+  /** Over the felt, where the table's messages go: while the connection comes back (SKATGO-117), or a newcomer waits. */
   notice?: ReactNode
+  /** The room's number (SKATGO-163), at the felt's top left across from the way out: a tap copies the room's link. */
+  code: string
+  /** Leaves the room: the seat goes to a computer. */
+  leave: () => void
+  /** The people the host may take out of the room, by their seat in the room; none for anyone else. */
+  people: { seat: number; name: string }[]
+  kick: (seat: Seat) => void
 }
 
 /** An open-card endgame of the Skat-Tricks (SKATGO-110): a deal stopped a few tricks before its end, every hand
@@ -750,7 +758,19 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           </button>
         </div>
       ) : null}
-      {fullScreen && (exercise || pinned || !panelOpen) ? <TableMenu leave={exercise ? '/skat-tricks' : tournament ? '/daily' : room ? '/with-friends' : '/'} newRound={server?.newRound} /> : null}
+      {/* A room's number, across from the way out (SKATGO-163, the human: 「房间号显示在牌桌的左上角，和退出按钮对称的位置。点击后复制链接」). */}
+      {fullScreen && room && (pinned || !panelOpen) ? (
+        <div {...stylex.props(styles.settingsCorner)}>
+          <RoomNumber code={room.code} />
+        </div>
+      ) : null}
+      {fullScreen && (exercise || pinned || !panelOpen) ? (
+        <TableMenu
+          leave={exercise ? '/skat-tricks' : tournament ? '/daily' : '/'}
+          newRound={server?.newRound}
+          room={room ? { leave: room.leave, people: room.people, kick: room.kick } : undefined}
+        />
+      ) : null}
     </div>
   )
 }
@@ -1572,13 +1592,21 @@ function useCardSounds(game: Game) {
  * playing, give up free play's round for a new one (asked once more first), or leave the table. Leaving loses
  * nothing: free play's game waits in this browser, the tournament's on the server, a private table's in its room.
  */
-function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends' | '/skat-tricks'; newRound?: () => void }) {
+function TableMenu({ leave, newRound, room }: {
+  leave: '/' | '/daily' | '/skat-tricks'
+  newRound?: () => void
+  /** A room's own ways (SKATGO-163): leaving it, and the host's taking a person out — each asked once more first. */
+  room?: Pick<RoomTable, 'leave' | 'people' | 'kick'>
+}) {
   const [open, setOpen] = useState(false)
   const [asking, setAsking] = useState(false)
+  /** The room action being asked about: leaving, or taking out the person in this seat. */
+  const [roomAsk, setRoomAsk] = useState<'leave' | number | null>(null)
   const box = useRef<HTMLDivElement>(null)
   const close = () => {
     setOpen(false)
     setAsking(false)
+    setRoomAsk(null)
   }
   useEffect(() => {
     if (!open) return
@@ -1605,7 +1633,19 @@ function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends
       </button>
       {open ? (
         <div data-testid="skat-menu-list" {...stylex.props(styles.menuList)}>
-          {asking ? (
+          {room && roomAsk !== null ? (
+            <>
+              <p {...stylex.props(typography.appText, styles.menuAsk)}>
+                {roomAsk === 'leave' ? m.room_leave_ask() : m.room_kick_ask({ name: room.people.find((p) => p.seat === roomAsk)?.name ?? '' })}
+              </p>
+              <Btn testId="skat-menu-room-yes" tone="stop" shape="block" onClick={() => {
+                close()
+                if (roomAsk === 'leave') room.leave()
+                else room.kick(roomAsk as Seat)
+              }}>{roomAsk === 'leave' ? m.room_leave() : m.room_kick_yes()}</Btn>
+              <Btn testId="skat-menu-room-no" tone="quiet" shape="block" onClick={close}>{m.table_menu_back()}</Btn>
+            </>
+          ) : asking ? (
             <>
               <p {...stylex.props(typography.appText, styles.menuAsk)}>{m.free_round_abandon()}</p>
               <Btn testId="skat-menu-new-yes" tone="stop" shape="block" onClick={() => { close(); newRound?.() }}>{m.free_round_abandon_yes()}</Btn>
@@ -1615,12 +1655,47 @@ function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends
             <>
               <Btn testId="skat-menu-continue" tone="go" shape="block" onClick={close}>{m.table_continue()}</Btn>
               {newRound ? <Btn testId="skat-menu-new" tone="quiet" shape="block" onClick={() => setAsking(true)}>{m.free_round_new()}</Btn> : null}
-              <Link to={leave} data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
+              {room?.people.map((p) => (
+                <Btn key={p.seat} testId="skat-menu-kick" tone="quiet" shape="block" onClick={() => setRoomAsk(p.seat)}>{m.room_kick({ name: p.name })}</Btn>
+              ))}
+              {room ? (
+                <Btn testId="skat-leave" tone="stop" shape="block" onClick={() => setRoomAsk('leave')}>{m.room_leave()}</Btn>
+              ) : (
+                <Link to={leave} data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
+              )}
             </>
           )}
         </div>
       ) : null}
     </div>
+  )
+}
+
+/** A room's number at the felt's top left (SKATGO-163): the way out's round button, mirrored, the six digits in two rows
+ *  of three — a wider pill would cover the info board, which leaves the corners just that much. A tap copies the room's
+ *  link — the page's own address, in its language — and a check says so for a moment. */
+function RoomNumber({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false)
+  useEffect(() => {
+    if (!copied) return
+    const t = setTimeout(() => setCopied(false), 2_000)
+    return () => clearTimeout(t)
+  }, [copied])
+  const copy = () => {
+    const link = `${window.location.origin}${localizeHref(`/table/${code}`, { locale: getLocale() })}`
+    void navigator.clipboard?.writeText(link).then(() => setCopied(true), () => {})
+  }
+  const label = m.room_number({ code: `${code.slice(0, 3)} ${code.slice(3)}` })
+  return (
+    <button type="button" data-testid="room-number" data-room={code} data-copied={String(copied)} aria-label={copied ? m.room_link_copied() : label}
+      title={label} onClick={copy} {...stylex.props(typography.smallBold, styles.menuButton)}>
+      {copied ? <Check aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : (
+        <span aria-hidden="true" {...stylex.props(styles.roomDigits)}>
+          <span>{code.slice(0, 3)}</span>
+          <span>{code.slice(3)}</span>
+        </span>
+      )}
+    </button>
   )
 }
 
@@ -1704,6 +1779,8 @@ const styles = stylex.create({
     boxShadow: elev.panel,
   },
   menuAsk: { margin: 0, color: color.navy },
+  // A room's number (SKATGO-163): the way out's round button, its digits in two rows.
+  roomDigits: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x2 },
   // Clipped, not hidden (SKATGO-32): a hidden overflow can still be scrolled by focus or scrollIntoView,
   // which slid the whole felt sideways; a clipped one cannot scroll at all.
   table: { position: 'relative', display: 'grid', backgroundColor: color.page, overflow: 'clip' },

@@ -12,7 +12,7 @@ import {
 } from '../../app/src/lib/skat/tournament'
 import { cleanNickname, pickName } from '../../app/src/lib/skat/nickname'
 import { ELO_KI, ELO_PROVISIONAL_DAYS, type EloBoard, type EloDay, eloRatings } from '../../app/src/lib/skat/elo'
-import { actionSchema, applySeatMove, computerMove, refuseUnlawful, Rejected, secretEquals, secureDeck } from './model'
+import { actionSchema, applySeatMove, computerMove, refuseUnlawful, Rejected, secretEquals, secureDeck, roomOnly } from './model'
 import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
 import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzero/bidding'
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, judgePlays, playsOf, raw, replayLog, reviewOf, skatzeroTurn } from './computers'
@@ -378,7 +378,7 @@ export async function dailyState(store: Store, policy: Policy, who: string, open
 }
 
 export async function dailyAct(store: Store, policy: Policy, input: z.infer<typeof actInput>, now = Date.now()) {
-  if (input.action.type === 'start') throw new Rejected('illegal_action')
+  if (roomOnly(input.action)) throw new Rejected('illegal_action')
   const move = input.action as Move
   const day = dayOf(now)
   if (input.day !== day) throw new Rejected('day_over')

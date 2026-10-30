@@ -377,9 +377,16 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   exercise is its final challenge, "Abschlussaufgabe" / "Final challenge" (`panelLabel`, slate) over it,
   and its done screen says what the learner can now do, "Jetzt kannst du: …" (`appText`, navy), over the
   stars' line.
-- **A private table's page** (`friends-page.tsx`, `/with-friends`, SKATGO-61): its H1, one line (`landingBody`), and the
-  way to open a table — for a guest only the `go` sign-in button, for an account its name and the button; how a table
-  goes and its rules are on About SkatGo (SKATGO-134).
+- **A private table's page** (`friends-page.tsx`, `/with-friends`, SKATGO-61): its H1, one line (`landingBody`), and
+  the cards of SKATGO-163 — option cards, `optionTitle` over `optionDesc`: "Neuer Raum" with its `go` button, and "Raum
+  beitreten" with a six-digit field (the phone's number pad) and a `quiet` button; while the account is in a room, the
+  one card "Raum 482 917" with its `go` way back. A guest's tap opens Clerk's window, and what was tapped goes on once
+  signed in. How a room goes and its rules are on About SkatGo (SKATGO-134). A room's own page (`/table/<number>`):
+  the table, or one line — signing in first, or why the room cannot be entered — with its ways on.
+  At the table, the room's number at the felt's top left, mirroring the way out: a white pill of the way out's height
+  with lucide's `Copy` and "Raum 482 917" (`appBtnStrong`), "Link kopiert" with `Check` for a moment after a tap; the
+  way out's menu adds "Raum verlassen" (`stop`) and, for the host, "<Name> entfernen" (`quiet`) per person, each asked
+  once more. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
   FAQPage), each question bold over its answer; "Tägliches Skat", how the deal of the day and the six deals are played,

@@ -153,6 +153,8 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
   notice?: ReactNode
   /** Which deal is on the table, counted from the room's first (SKATGO-165). */
   deal: number
+  /** The room's statistics, every finished deal (SKATGO-165): what the table menu's "Statistics" opens. */
+  stats: ReactNode
   /** The room's number (SKATGO-163), in the way out's menu: a tap copies the room's link. */
   code: string
   /** Leaves the room: the seat goes to a computer. */
@@ -412,6 +414,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     return () => query.removeEventListener('change', change)
   }, [panelled])
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // A room's statistics, opened from the table's menu (SKATGO-165).
+  const [statsOpen, setStatsOpen] = useState(false)
   // The side panel shows the game, or the rules with a way back (SKATGO-75).
   const [panelView, setPanelView] = useState<'game' | 'rules'>('game')
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
@@ -745,6 +749,13 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
       {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
 
+      {/* A room's statistics (SKATGO-165), over the table like its other dialogs; the way back is the menu's first item. */}
+      {room && statsOpen ? (
+        <Dialog foot={<Btn testId="room-stats-close" shape="block" size="lg" grow onClick={() => setStatsOpen(false)}>{m.table_continue()}</Btn>}>
+          {room.stats}
+        </Dialog>
+      ) : null}
+
       {/* The settlement and a passed-in deal are dialogs over the whole table, outside the panel, which
           on a phone is a drawer that slides. */}
       {dialog ? (
@@ -768,7 +779,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         <TableMenu
           leave={exercise ? '/skat-tricks' : tournament ? '/daily' : '/'}
           newRound={server?.newRound}
-          room={room ? { code: room.code, leave: room.leave, people: room.people, kick: room.kick } : undefined}
+          room={room ? { code: room.code, leave: room.leave, people: room.people, kick: room.kick, stats: () => setStatsOpen(true) } : undefined}
         />
       ) : null}
     </div>
@@ -1597,9 +1608,9 @@ function useCardSounds(game: Game) {
 function TableMenu({ leave, newRound, room }: {
   leave: '/' | '/daily' | '/skat-tricks'
   newRound?: () => void
-  /** A room's own ways (SKATGO-163): its number, a tap copying its link; leaving it, and the host's taking a person
-   *  out — each asked once more first. */
-  room?: Pick<RoomTable, 'code' | 'leave' | 'people' | 'kick'>
+  /** A room's own ways (SKATGO-163): its number, a tap copying its link; its statistics (SKATGO-165); leaving it, and
+   *  the host's taking a person out — each asked once more first. */
+  room?: Pick<RoomTable, 'code' | 'leave' | 'people' | 'kick'> & { stats: () => void }
 }) {
   const [open, setOpen] = useState(false)
   const [asking, setAsking] = useState(false)
@@ -1661,6 +1672,7 @@ function TableMenu({ leave, newRound, room }: {
             <>
               <Btn testId="skat-menu-continue" tone="go" shape="block" onClick={close}>{m.table_continue()}</Btn>
               {room ? <RoomLink code={room.code} /> : null}
+              {room ? <Btn testId="room-stats" tone="quiet" shape="block" onClick={() => { close(); room.stats() }}>{m.room_stats()}</Btn> : null}
               {newRound ? <Btn testId="skat-menu-new" tone="quiet" shape="block" onClick={() => setAsking(true)}>{m.free_round_new()}</Btn> : null}
               {room?.people.map((p) => (
                 <Btn key={p.seat} testId="skat-menu-kick" tone="quiet" shape="block" onClick={() => setRoomAsk(p.seat)}>{m.room_kick({ name: p.name })}</Btn>

@@ -6,8 +6,8 @@ import {
   playCard, type Game, type Move, type Seat,
 } from '../../app/src/lib/skat/game'
 import { declarationAdvice } from '../../app/src/lib/skat/ai'
-import { seegerFabian } from '../../app/src/lib/skat/tournament'
-import type { RoomPrivate, RoomPublic } from '../../app/src/lib/skat/room-view'
+import { seegerFabian, summarize } from '../../app/src/lib/skat/tournament'
+import type { RoomDeal, RoomPrivate, RoomPublic } from '../../app/src/lib/skat/room-view'
 
 export const GRACE_MS = 30_000
 export const TTL_MS = 24 * 60 * 60 * 1000
@@ -94,6 +94,8 @@ export type Snapshot = {
   /** Deals whose score is in `scores`. */
   scored: number
   scores: [number, number, number]
+  /** Every scored deal, for the table's statistics (SKATGO-165); absent on rooms stored before. */
+  history?: RoomDeal[]
   expiresAt: number
   nextActionAt: number
 }
@@ -228,12 +230,15 @@ function dealNext(s: Snapshot, d: PoolDeal) {
     s.scores[i] = 0
   })
 }
-/** A deal that has just ended adds its Seeger-Fabian scores to the table's running totals, once. */
+/** A deal that has just ended adds its Seeger-Fabian scores to the table's running totals, once, and goes into the
+ *  room's statistics (SKATGO-165) with who sat where: a person's name, or none where a computer played — a newcomer's
+ *  seat before their first deal too. */
 export function scoreEnded(s: Snapshot) {
   if (!s.game || !ended(s.game) || s.scored >= s.deals) return
   const add = seegerFabian(s.game)
   s.scores = s.scores.map((n, i) => n + add[i]) as Snapshot['scores']
   s.scored = s.deals
+  s.history = [...(s.history ?? []), { summary: summarize(s.game), names: s.seats.map(p => (p.account && p.joinsAt === null ? p.nickname : null)) }]
 }
 /** A person's new move: a declaration the rules do not allow is refused (ISkO 3.4.2–3.4.4, SKATGO-98). Only
  *  new moves are checked; a game recorded before replays as it was played. */
@@ -267,6 +272,7 @@ export function publicView(s: Snapshot): RoomPublic {
   const g = s.game
   return {
     roomId: s.id, revision: s.revision, played: s.played ?? s.revision, expiresAt: s.expiresAt, deals: s.deals, scores: s.scores,
+    history: s.history ?? [],
     seats: s.seats.map((p, i) => ({
       seat: i, kind: p.account ? 'human' : isEmpty(p) ? 'empty' : 'ai',
       nickname: p.nickname,

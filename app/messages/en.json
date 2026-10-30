@@ -583,6 +583,8 @@
   "room_back": "Back to the room",
   "room_number_copy": "Room {code} · copy link",
   "room_link_copied": "Link copied",
+  "room_stats": "Statistics",
+  "room_stats_none": "No deal finished yet.",
   "room_waiting_title": "Waiting for players",
   "room_waiting_lead": "Share the number or the link with up to two friends.",
   "room_copy_link": "Copy link",

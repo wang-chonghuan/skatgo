@@ -10,16 +10,17 @@ import {
 } from '~/lib/room-client'
 import { ROOM_CODE, ROOM_DIGITS } from '~/lib/room-code'
 import type { Seat } from '~/lib/skat/game'
-import { roomGame, roomSeat } from '~/lib/skat/room-view'
+import { type RoomDeal, roomGame, roomSeat, viewSeat } from '~/lib/skat/room-view'
 import { seegerFabian } from '~/lib/skat/tournament'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { elev, fill } from '../../theme/elevation.stylex'
-import { space } from '../../theme/scale.stylex'
+import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { SeatScores, gameLine } from './daily-comparison'
 import { BOT_DELAY, GameTable, useRoomLink } from './game-table'
 import { Btn, Panel, Pill, TextField, linkLook } from './ui'
 
@@ -511,9 +512,52 @@ function Playing({ state, busy, send, collect, notice }: { state: TableState; bu
         fullScreen
         room={{
           game, busy, send: (move) => send(move), collect, next: () => send({ type: 'next' }), names, totals, standings, notice, deal: state.pub.deals,
+          stats: <Stats state={state} />,
           code: state.pub.roomId, leave: () => send({ type: 'leave' }), people, kick: (seat: Seat) => send({ type: 'kick', seat }),
         }}
       />
+    </div>
+  )
+}
+
+/**
+ * The room's statistics (SKATGO-165, the human: 「弹出菜单可以看到一个简明的每个deal的统计」): every finished deal, the
+ * first first — what was played, by whom and how it went, as the score sheets say it, and each seat's points with the
+ * names of that deal — then the running totals with today's. Turned so the viewer is the first seat, as at the table.
+ */
+function Stats({ state }: { state: TableState }) {
+  const me = state.mine.seat
+  const mine = state.pub.seats[me].nickname
+  const turn = <T,>(xs: readonly T[]) => [0, 1, 2].map((v) => xs[roomSeat(v, me)]) as [T, T, T]
+  /** A deal's names by room seat: the viewer "you", Lina or Noah where a computer played — the first in seat order Lina. */
+  const namesOf = (d: RoomDeal) => {
+    const computers = d.names.flatMap((n, seat) => (n === null ? [seat] : []))
+    return d.names.map((n, seat) => (seat === me && n === mine ? m.name_you() : n ?? (computers.indexOf(seat) === 0 ? m.name_lina() : m.name_max())))
+  }
+  const history = state.pub.history
+  return (
+    <div data-testid="room-stats-list" data-deals={history.length} {...stylex.props(styles.stats)}>
+      <h2 {...stylex.props(typography.dialogTitle, styles.ink)}>{m.room_stats()}</h2>
+      {history.length === 0 ? <p {...stylex.props(typography.appText, styles.slate)}>{m.room_stats_none()}</p> : null}
+      <ol {...stylex.props(styles.statsDeals)}>
+        {history.map((d, i) => {
+          const names = turn(namesOf(d))
+          const summary = { ...d.summary, declarer: d.summary.declarer === null ? null : viewSeat(d.summary.declarer, me), scores: turn(d.summary.scores) }
+          return (
+            <li key={i} data-testid="room-stats-deal" data-scores={summary.scores.join(',')} {...stylex.props(styles.statsDeal)}>
+              <span {...stylex.props(typography.infoLabel, styles.slate)}>{m.info_deal_n({ n: i + 1 })}</span>
+              <p {...stylex.props(typography.appText, styles.ink)}>{gameLine(summary, names)}</p>
+              <SeatScores scores={summary.scores} names={names} />
+            </li>
+          )
+        })}
+      </ol>
+      {history.length === 0 ? null : (
+        <div data-testid="room-stats-total" data-scores={turn(state.pub.scores).join(',')} {...stylex.props(styles.statsDeal)}>
+          <span {...stylex.props(typography.infoLabel, styles.slate)}>{m.info_totals()}</span>
+          <SeatScores scores={turn(state.pub.scores)} names={[0, 1, 2].map((v) => seatName(state, roomSeat(v, me)))} />
+        </div>
+      )}
     </div>
   )
 }
@@ -568,6 +612,18 @@ const styles = stylex.create({
     boxShadow: elev.option,
   },
   standings: { display: 'flex', flexDirection: 'column', gap: space.x6 },
+  // The room's statistics: one block a deal, a hairline between them.
+  stats: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  statsDeals: { display: 'flex', flexDirection: 'column', gap: space.x12, margin: 0, padding: 0, listStyle: 'none' },
+  statsDeal: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.x6,
+    paddingTop: space.x12,
+    borderTopWidth: border.hair,
+    borderTopStyle: 'solid',
+    borderTopColor: color.hairline,
+  },
   // The waiting room: the number, then the seats, one row each.
   number: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   seats: { display: 'flex', flexDirection: 'column', gap: space.x8, margin: 0, padding: 0, listStyle: 'none' },

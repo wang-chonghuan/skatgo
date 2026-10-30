@@ -383,6 +383,11 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
         assert.deepEqual(p.public.skat?.length, 2)
         const want = results.map(r => seegerFabian({ phase: r.phase as 'done', declarer: r.declarer, result: r.result })).reduce((a, b) => a.map((n, i) => n + b[i]) as [number, number, number])
         await until(() => JSON.stringify(p.public.scores) === JSON.stringify(want))
+        // The room's statistics (SKATGO-165): one entry a scored deal, its scores the deal's, who sat where.
+        assert.equal(p.public.history.length, deal)
+        const last = p.public.history[deal - 1]
+        assert.deepEqual(last.summary.scores, seegerFabian({ phase: p.public.phase as 'done', declarer: p.public.declarer, result: p.public.result }))
+        assert.deepEqual(last.names, [p.public.seats[0].nickname, null, null])
         if (deal === 1) assert((await send(p, { type: 'next' })).ok)
       }
     })

@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-161",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-161",
   "branch": "SKATGO-161-course-interactive",

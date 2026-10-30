@@ -370,6 +370,7 @@
   "info_show_tricks": "Show tricks instead of card points",
   "info_show_points": "Show card points instead of tricks",
   "info_deal": "Deal {n} of {of}",
+  "info_deal_n": "Deal {n}",
   "info_totals": "Totals",
   "info_label": "Game information",
   "home_meta_title": "Skat Card Game – Play Free Online | SkatGo",

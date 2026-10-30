@@ -151,6 +151,8 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
   standings: ReactNode
   /** Over the felt, where the table's messages go: while the connection comes back (SKATGO-117), or a newcomer waits. */
   notice?: ReactNode
+  /** Which deal is on the table, counted from the room's first (SKATGO-165). */
+  deal: number
   /** The room's number (SKATGO-163), in the way out's menu: a tap copies the room's link. */
   code: string
   /** Leaves the room: the seat goes to a computer. */
@@ -202,8 +204,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   const [localGame, setGame] = useState<Game>(() => deal(2))
   const remote = tournament ?? server ?? room ?? exercise
   // Which deal of how many (SKATGO-93): the tournament's, free play's round of six, and lesson 11's single
-  // deal. A private table counts no deals.
-  const dealOf = tournament ? { n: tournament.deal + 1, of: tournament.of } : server?.round ? { n: server.round.deal + 1, of: server.round.of } : server ? { n: 1, of: 1 } : null
+  // deal; a private table's only which, its deals having no end (SKATGO-165, the human: 「但是没有总墩数」).
+  const dealOf: { n: number; of?: number } | null = tournament ? { n: tournament.deal + 1, of: tournament.of } : server?.round ? { n: server.round.deal + 1, of: server.round.of } : server ? { n: 1, of: 1 } : room ? { n: room.deal } : null
   // The learner's own card goes on the table the moment it is tapped (SKATGO-73); the server's answer,
   // with the computers' replies, replaces it when it comes. Until then the table shows `pending`.
   const [pending, setPending] = useState<{ from: Game; game: Game } | null>(null)
@@ -720,6 +722,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               <Pill tone="dark">
                 <span data-testid="free-progress" data-deal={server.round.deal + 1} data-total={server.round.total}>{m.daily_deal_of({ n: server.round.deal + 1, of: server.round.of, total: server.round.total })}</span>
               </Pill>
+            ) : room ? (
+              <Pill tone="dark">
+                <span data-testid="room-progress" data-deal={room.deal}>{m.info_deal_n({ n: room.deal })}</span>
+              </Pill>
             ) : null}
             {contract ? <Pill tone="amber">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : null}
             {game.declarer !== null ? <Pill tone="quiet">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
@@ -973,7 +979,7 @@ function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: bo
 /** The info board across the top of the felt: what is being played, by whom, how the hand stands, and
  *  the running totals — each a small label over its value, divided by fine rules. Under the points, which
  *  deal of how many this is, not which trick (SKATGO-93, the human: 「当前是第几墩，没必要，应该改为显示，当前是第几个deal」). */
-function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number }; tricks: boolean; deal: { n: number; of: number } | null }) {
+function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number }; tricks: boolean; deal: { n: number; of?: number } | null }) {
   const setTricks = useSettings((s) => s.setBoardTricks)
   const nameOf = useNameOf()
   const contract = game.declaration?.contract ?? null
@@ -1023,7 +1029,7 @@ function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores:
             '—'
           )}
         </span>
-        <span data-testid="skat-info-deal" {...stylex.props(typography.infoSub, styles.boardSub)}>{deal ? m.info_deal(deal) : ''}</span>
+        <span data-testid="skat-info-deal" {...stylex.props(typography.infoSub, styles.boardSub)}>{deal ? (deal.of ? m.info_deal({ n: deal.n, of: deal.of }) : m.info_deal_n({ n: deal.n })) : ''}</span>
       </button>
       <div data-testid="skat-info-totals" {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_totals()}</span>

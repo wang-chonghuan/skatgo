@@ -510,7 +510,7 @@ function Playing({ state, busy, send, collect, notice }: { state: TableState; bu
       <GameTable
         fullScreen
         room={{
-          game, busy, send: (move) => send(move), collect, next: () => send({ type: 'next' }), names, totals, standings, notice,
+          game, busy, send: (move) => send(move), collect, next: () => send({ type: 'next' }), names, totals, standings, notice, deal: state.pub.deals,
           code: state.pub.roomId, leave: () => send({ type: 'leave' }), people, kick: (seat: Seat) => send({ type: 'kick', seat }),
         }}
       />

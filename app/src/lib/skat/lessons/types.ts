@@ -81,19 +81,61 @@ export type PlayStep = {
   explain: string
 }
 
+/** Tap cards that are worth exactly `target` card points together — any `size` cards that add up are right. */
+export type SumStep = {
+  kind: 'sum'
+  prompt: string
+  cards: Card[]
+  size: number
+  target: number
+  explain: string
+  hint: string
+}
+
+/**
+ * The learner deals the shuffled deck as a real table does (lesson 1): packets of 3 to each player
+ * clockwise from the dealer's left, 2 to the skat, then 4 each, then 3 each. The learner is the dealer
+ * and gets their own packet last; `cards` is the deck from the top.
+ */
+export type DealStep = {
+  kind: 'deal'
+  prompt: string
+  cards: Card[]
+  explain: string
+}
+
+/**
+ * An auction at a real table (lesson 7): the learner holds `hand` and would play `contract`; the other
+ * two seats, Lina and Noah, go as far as their `limits` (0: pass at once). The learner's own limit is
+ * the engine's value of that game; every call of theirs is judged against it.
+ */
+export type BidStep = {
+  kind: 'bid'
+  prompt: string
+  hand: Card[]
+  contract: Contract
+  /** The learner's seat. */
+  seat: 'forehand' | 'middlehand' | 'rearhand'
+  /** How high the two others go, in seat order after the learner: [the next seat, the one after]. */
+  limits: [number, number]
+  explain: string
+}
+
 /** A whole game against the computers; the step is solved when a game reaches its settlement. */
 export type GameStep = { kind: 'game'; title: string; body: string[] }
 
 /** A drill built fresh each time from random cards. Must only be called in the browser. */
 export type GeneratedStep = { kind: 'generated'; make: () => Exclude<Step, GeneratedStep> }
 
-export type Step = TeachStep | ChoiceStep | PickStep | OrderStep | PlayStep | GameStep | GeneratedStep
+export type Step = TeachStep | ChoiceStep | PickStep | OrderStep | PlayStep | SumStep | DealStep | BidStep | GameStep | GeneratedStep
 
 export type Lesson = {
   id: string
   title: string
   /** One line for the course map: what you can do after this lesson. */
   promise: string
+  /** What the learner can do now, said on the lesson's done screen after "You can now:". */
+  learned: string
   minutes: number
   steps: Step[]
 }

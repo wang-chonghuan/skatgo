@@ -193,6 +193,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `PlayingCard` | `playing-card.tsx` | one card, by default of the Turnierblatt (the German Skat association's tournament deck: French suits in German colours, SKATGO-66), drawn as one SVG: the corner index top left and turned bottom right — the rank as Bebas Neue outlines (`card-glyphs.ts`, never text, which a search engine would read), in every language official Skat's B / D / K / A, or J / Q / K / A when the learner chose that deck in the settings, over the suit's pip; the pips of 7–10 in their traditional places; the ace's one large pip; a court's double-headed figure in a frame notched for the index. Pips and index take the suit's colour. The settings also offer the Deutsches Blatt: the same layout with the German suit symbols (pictures) as pips, its own courts (Unter, Ober, König) and Daus pictures, and K / O / U / A. The court figures, Daus and German symbols are skatgo's own pictures (`app/brand/cards`, served from `/cards`). Sizes `xs`, `sm`, `md`, `lg`, `table`, `trick`, `fill`; states `selected`, `dimmed` (`fill.dimmed`), `glow`, `verdict` good/bad, `faceDown`: the back chosen in the settings, "Kartenrücken" (SKATGO-102), in the card's white frame — by default the charcoal and white ornament (SKATGO-66), or one of four in its style, less dense, with the SkatGo logo small in the middle in the back's own colour |
 | `Fan` / `CardRowView` | `card-row.tsx` | a hand held as a fan (two rows of a long hand on a phone; `data-answer` / `data-order` for scripted checks), and a labelled row of cards for reading |
 | `Shake` / `Feedback` | `exercises.tsx` | the wordless "no" after a wrong answer, and the good/bad panel that explains it |
+| `Sum` / `Deal` / `Bid` | `exercises.tsx` | SKATGO-161's hands-on steps: three cards making a number of card points (a `Fan` on the felt and an `info` check); dealing the deck in packets to Lina, Noah, the skat and the learner — each place a `gold` frame on the felt, `amber` to hover, with its count and a face-down card, the learner's ten turned up at the end; an auction as a list of calls (name and seat `smallBold` slate, the call `body` navy, `hairline` rules) with the learner's two buttons under it, `info` to go on and `quiet` to pass, in the table's own bidding words |
 | `TitleWithDownload` / `PdfLink` | `print-links.tsx` | every download (SKATGO-53): the page's h1 with, beside it, the page's one `go` button — lucide's `Download` icon at `icon.inline` and "PDF herunterladen" / "Download PDF" — which moves under the title on a phone and is left off paper |
 | `PrintLinks` | `print-links.tsx` | the "Zum Ausdrucken" links to the score sheet and the short rules, on the rules page, the bidding table and the course; left off paper |
 | `ScoreSheet` | `daily-comparison.tsx` | a score sheet (SKATGO-79): the three seats' Seeger-Fabian scores of a tournament so far, the player's line, tagged "Du" in `navy`, over the AI's, tagged "AI" in `info`; no other number beside them (SKATGO-81). The AI's line is left out for days dealt before it played them. Under `VsAiTable`'s rows only; a single deal has none since SKATGO-145 |
@@ -367,9 +368,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   an option card under the lessons. The header and the footer link the Skat-Tricks' page, and the table's rules panel links it in a new tab, so a game is never left
   behind. A lesson starts playing at once: under its title only a
   one-line kicker and the lesson's promise, then the lesson, which keeps its "back / continue" bar
-  sticky at the bottom of the screen. Its short explanation for readers and search engines follows the
-  lesson, visible, under "Kurz erklärt" / "In short" (SKATGO-52); then its ways on: the next lesson,
-  its section of the rules, and all lessons.
+  sticky at the bottom of the screen; then its ways on: the next lesson, its section of the rules, and
+  all lessons. No text stands under the lesson (SKATGO-161, the human: 「让教程页面下面的大段垃圾文字去掉」 —
+  SKATGO-52's "Kurz erklärt" / "In short" is gone): the server renders the lesson's first teaching card in
+  the player's own frame (`lesson-frame.tsx`), which is what a search engine reads. A lesson's last
+  exercise is its final challenge, "Abschlussaufgabe" / "Final challenge" (`panelLabel`, slate) over it,
+  and its done screen says what the learner can now do, "Jetzt kannst du: …" (`appText`, navy), over the
+  stars' line.
 - **A private table's page** (`friends-page.tsx`, `/with-friends`, SKATGO-61): its H1, one line (`landingBody`), and the
   way to open a table — for a guest only the `go` sign-in button, for an account its name and the button; how a table
   goes and its rules are on About SkatGo (SKATGO-134).

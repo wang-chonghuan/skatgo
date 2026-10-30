@@ -24,7 +24,7 @@ import {
 import { SUIT_BASE, GRAND_BASE, matadors } from '../value'
 import { cardLabel, contractName, ledName, matadorLabel, suitName } from '../i18n'
 import { m } from '~/paraglide/messages'
-import type { ChoiceStep, OrderStep, PickStep } from './types'
+import type { ChoiceStep, DealStep, OrderStep, PickStep, SumStep } from './types'
 
 const pick = <T,>(items: T[]): T => items[Math.floor(Math.random() * items.length)]
 const randomSuit = (): Suit => pick(SUITS)
@@ -183,11 +183,11 @@ export function matadorDrill(): ChoiceStep {
   }
 }
 
-export function gameValueDrill(): ChoiceStep {
+/** `hand`: the game is played Hand. Hand is taught in lesson 8; before it, the drill never plays one. */
+export function gameValueDrill({ hand: handGame = false }: { hand?: boolean } = {}): ChoiceStep {
   const contract: Contract = Math.random() < 0.8 ? suitContract() : { kind: 'grand' }
   const hand = sortHand(dealtHand(), contract)
   const mat = matadors(hand, contract)
-  const handGame = Math.random() < 0.3
   const base = contract.kind === 'grand' ? GRAND_BASE : SUIT_BASE[(contract as { trump: Suit }).trump]
   const mult = mat.count + 1 + (handGame ? 1 : 0)
   const value = base * mult
@@ -205,8 +205,51 @@ export function gameValueDrill(): ChoiceStep {
       base,
       value,
     }),
-    hint: m.drill_value_hint(),
+    hint: handGame ? m.drill_value_hint_hand() : m.drill_value_hint(),
   }
+}
+
+/** Lesson 2's finale: three of these cards make exactly a given number of card points. */
+export function sumDrill(): SumStep {
+  for (;;) {
+    const hand = shuffle(fullDeck()).slice(0, 8)
+    const scoring = hand.filter((c) => POINTS[c.rank] > 0)
+    if (scoring.length < 4) continue
+    const three = shuffle(hand).slice(0, 3)
+    const target = pointsOf(three)
+    if (target < 10) continue
+    return {
+      kind: 'sum',
+      prompt: m.drill_sum_prompt({ target }),
+      cards: sortHand(hand, null),
+      size: 3,
+      target,
+      explain: m.drill_sum_explain({ target }),
+      hint: m.drill_sum_hint(),
+    }
+  }
+}
+
+/**
+ * The deal as a real table gives it (the rules page, "Dealing"): packets clockwise from the dealer's left — 3 each, 2 into
+ * the skat, 4 each, 3 each. The dealer sits last in each round. 10 + 10 + 10 + 2 = 32.
+ */
+export const DEAL_PACKETS: { to: 'left' | 'right' | 'you' | 'skat'; n: number }[] = [
+  { to: 'left', n: 3 },
+  { to: 'right', n: 3 },
+  { to: 'you', n: 3 },
+  { to: 'skat', n: 2 },
+  { to: 'left', n: 4 },
+  { to: 'right', n: 4 },
+  { to: 'you', n: 4 },
+  { to: 'left', n: 3 },
+  { to: 'right', n: 3 },
+  { to: 'you', n: 3 },
+]
+
+/** Lesson 1's finale: the learner deals a shuffled deck. */
+export function dealDrill(): DealStep {
+  return { kind: 'deal', prompt: m.drill_deal_prompt(), cards: shuffle(fullDeck()), explain: m.drill_deal_explain() }
 }
 
 export function settleDrill(): ChoiceStep {
@@ -250,6 +293,53 @@ export function settleDrill(): ChoiceStep {
     answer: options.indexOf(score),
     explain,
     hint: m.drill_settle_hint(),
+  }
+}
+
+/**
+ * Lesson 9's finale: a finished game as it lies on the table — the declarer's five tricks and the skat — to
+ * be counted and scored. The defenders took the other five tricks, so it is never Schwarz.
+ */
+export function settlePileDrill(): ChoiceStep {
+  for (;;) {
+    const trump = randomSuit()
+    const base = SUIT_BASE[trump]
+    const mult = pick([2, 3, 4])
+    const value = base * mult
+    const deck = shuffle(fullDeck())
+    const tricks = deck.slice(0, 15)
+    const skat = deck.slice(15, 17)
+    const points = pointsOf([...tricks, ...skat])
+    // A declarer held to 30 is a Schneider against them — possible, but too rare to deal at random here.
+    if (points <= 30) continue
+    const name = contractName({ kind: 'suit', trump })
+    let score: number
+    let explain: string
+    if (points >= 90) {
+      score = base * (mult + 1)
+      explain = m.drill_pile_explain_schneider({ points, base, mult: mult + 1, score })
+    } else if (points >= 61) {
+      score = value
+      explain = m.drill_pile_explain_win({ points, value })
+    } else {
+      score = -2 * value
+      explain = m.drill_pile_explain_lose({ points, value, score }) + (points === 60 ? m.drill_settle_lose_tie() : '')
+    }
+    const fmt = (n: number) => (n > 0 ? `+${n}` : String(n))
+    const decoys = [value, -value, -2 * value, 2 * value, base * (mult + 1), -2 * base * (mult + 1)].filter((d) => d !== score)
+    const options = shuffle([score, ...shuffle([...new Set(decoys)]).slice(0, 3)])
+    return {
+      kind: 'choice',
+      prompt: m.drill_pile_prompt({ name, mult, value }),
+      rows: [
+        { label: m.drill_pile_tricks(), cards: sortHand(tricks, { kind: 'suit', trump }) },
+        { label: m.drill_pile_skat(), cards: skat },
+      ],
+      options: options.map(fmt),
+      answer: options.indexOf(score),
+      explain,
+      hint: m.drill_pile_hint(),
+    }
   }
 }
 

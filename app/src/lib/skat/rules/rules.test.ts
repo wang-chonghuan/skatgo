@@ -9,7 +9,6 @@ import { RULES } from '.'
 // the rules page has its eight sections in order, and every link between the two lands somewhere.
 
 const SECTIONS = ['cards', 'dealing', 'bidding', 'games', 'extras', 'value', 'scoring', 'house']
-const words = (texts: string[]) => texts.join(' ').replace(/\*\*/g, '').split(/\s+/).filter(Boolean).length
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/
 const BANNED = /\b(soon|bald|demnächst|puzzles?|daily|täglich\w*|tournament|turnier\w*|leaderboard|rangliste)\b|coming soon/i
 // The rules page may name the daily tournament, which has shipped (SKATGO-35): its scoring is a rule of
@@ -18,7 +17,7 @@ const UNSHIPPED = /\b(soon|bald|demnächst|puzzles?)\b|coming soon/i
 
 describe('the lesson pages', () => {
   for (const locale of locales) {
-    it(`${locale}: one page per lesson, with a unique address and a 100–200 word introduction`, () => {
+    it(`${locale}: one page per lesson, with a unique address`, () => {
       const ids = COURSES[locale].map((l) => l.id)
       expect(Object.keys(GUIDES[locale]).sort()).toEqual([...ids].sort())
       const slugs = ids.map((id) => GUIDES[locale][id].slug)
@@ -26,10 +25,8 @@ describe('the lesson pages', () => {
       for (const id of ids) {
         const g = GUIDES[locale][id]
         expect(g.slug, `${locale} ${id}`).toMatch(SLUG)
-        expect(words(g.intro), `${locale} ${id} intro`).toBeGreaterThanOrEqual(100)
-        expect(words(g.intro), `${locale} ${id} intro`).toBeLessThanOrEqual(200)
         expect(SECTIONS, `${locale} ${id} rule`).toContain(g.rule)
-        expect(`${g.question} ${g.h1} ${g.description} ${g.intro.join(' ')}`, `${locale} ${id}`).not.toMatch(BANNED)
+        expect(`${g.question} ${g.h1} ${g.description}`, `${locale} ${id}`).not.toMatch(BANNED)
       }
     })
   }

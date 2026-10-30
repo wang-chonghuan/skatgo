@@ -47,8 +47,6 @@ export type LessonGuide = {
   h1: string
   /** Meta description, 120–160 characters. */
   description: string
-  /** 100–200 words in 2–3 paragraphs explaining the lesson's concept. */
-  intro: string[]
   /** The rules section this lesson links to at the end of the page. */
   rule: RuleSectionId
 }

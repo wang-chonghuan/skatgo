@@ -1,12 +1,15 @@
 import * as stylex from '@stylexjs/stylex'
 import { motion, useAnimate } from 'motion/react'
 import { CircleCheck, CircleX } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
-import { type Card, cardId, effectiveSuit, legalPlays, sameCard, sortHand } from '~/lib/skat/cards'
+import { type Card, cardId, effectiveSuit, legalPlays, pointsOf, sameCard, sortHand } from '~/lib/skat/cards'
+import type { Role } from '~/lib/skat/game'
 import { contractName, ledName } from '~/lib/skat/i18n'
-import { sameSet } from '~/lib/skat/lessons/drills'
-import type { ChoiceStep, OrderStep, PickStep, PlayStep, TeachStep } from '~/lib/skat/lessons/types'
+import { after, auction } from '~/lib/skat/lessons/auction'
+import { DEAL_PACKETS, sameSet } from '~/lib/skat/lessons/drills'
+import type { BidStep, ChoiceStep, DealStep, OrderStep, PickStep, PlayStep, SumStep, TeachStep } from '~/lib/skat/lessons/types'
+import { expectedValue } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -295,6 +298,236 @@ export function Play({ step, onSolved, onMistake, solvedBefore, once, table, han
   )
 }
 
+/** Any `size` of `cards` that make `target` card points together, for scripted checks (`data-answer`). */
+function oneSum(cards: Card[], size: number, target: number, from = 0): Card[] | null {
+  if (size === 0) return target === 0 ? [] : null
+  for (let i = from; i < cards.length; i++) {
+    const rest = oneSum(cards, size - 1, target - pointsOf([cards[i]]), i + 1)
+    if (rest) return [cards[i], ...rest]
+  }
+  return null
+}
+
+/** Tap cards worth exactly the target together (SKATGO-161): judged by their sum, so every way to make it is right. */
+export function Sum({ step, onSolved, onMistake, solvedBefore }: { step: SumStep } & StepCallbacks) {
+  const [chosen, setChosen] = useState<Card[]>([])
+  const [state, setState] = useState<'idle' | 'wrong' | 'right'>(solvedBefore ? 'right' : 'idle')
+  const [made, setMade] = useState(0)
+  const [nonce, setNonce] = useState(0)
+  const answer = useMemo(() => oneSum(step.cards, step.size, step.target) ?? [], [step])
+  const has = (c: Card) => chosen.some((d) => sameCard(c, d))
+  const over = state === 'right'
+
+  function tap(card: Card) {
+    if (over) return
+    setState('idle')
+    setChosen((c) => (has(card) ? c.filter((d) => !sameCard(d, card)) : c.length < step.size ? [...c, card] : c))
+  }
+
+  function check() {
+    const sum = pointsOf(chosen)
+    if (sum === step.target) {
+      setState('right')
+      onSolved()
+      return
+    }
+    setMade(sum)
+    setState('wrong')
+    setNonce((n) => n + 1)
+    onMistake()
+  }
+
+  return (
+    <div {...stylex.props(styles.stack)}>
+      <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
+      <Shake nonce={nonce}>
+        <div {...stylex.props(styles.felt)}>
+          <Fan testId="skat-sum" cards={step.cards} size="lg" onPick={tap} answer={answer} selected={chosen} glow={over ? chosen : []} />
+        </div>
+      </Shake>
+      <div {...stylex.props(styles.centerRow)}>
+        <Btn testId="skat-check" tone="info" shape="block" disabled={chosen.length !== step.size || over} onClick={check}>
+          {m.ex_sum_check()}
+        </Btn>
+      </div>
+      <Feedback state={state} good={step.explain} bad={`${m.ex_sum_wrong({ sum: made, target: step.target })} ${step.hint}`} />
+    </div>
+  )
+}
+
+type Place = (typeof DEAL_PACKETS)[number]['to']
+
+/**
+ * Lesson 1's deal (SKATGO-161): the learner is the dealer and taps where each packet goes; a wrong place is
+ * refused with the right one named. Dealt out, their own ten cards turn face up.
+ */
+export function Deal({ step, onSolved, onMistake, solvedBefore }: { step: DealStep } & StepCallbacks) {
+  const [dealt, setDealt] = useState(solvedBefore ? DEAL_PACKETS.length : 0)
+  const [why, setWhy] = useState('')
+  const [nonce, setNonce] = useState(0)
+  const done = dealt === DEAL_PACKETS.length
+  const held: Record<Place, Card[]> = { left: [], right: [], you: [], skat: [] }
+  let top = 0
+  DEAL_PACKETS.slice(0, dealt).forEach((p) => {
+    held[p.to].push(...step.cards.slice(top, top + p.n))
+    top += p.n
+  })
+  const names: Record<Place, string> = { left: m.name_lina(), right: m.name_max(), you: m.name_you(), skat: m.lesson_deal_skat() }
+
+  function tap(place: Place) {
+    if (done) return
+    const packet = DEAL_PACKETS[dealt]
+    if (place === packet.to) {
+      setWhy('')
+      setDealt(dealt + 1)
+      if (dealt + 1 === DEAL_PACKETS.length) onSolved()
+      return
+    }
+    setWhy(
+      packet.to === 'skat'
+        ? m.lesson_deal_wrong_skat({ n: packet.n })
+        : m.lesson_deal_wrong_seat({ n: packet.n, name: packet.to === 'you' ? m.lesson_deal_to_you() : names[packet.to] }),
+    )
+    setNonce((n) => n + 1)
+    onMistake()
+  }
+
+  const zone = (place: Place) => (
+    <button
+      type="button"
+      data-testid="skat-deal-place"
+      data-place={place}
+      data-next={String(!done && DEAL_PACKETS[dealt].to === place)}
+      disabled={done}
+      onClick={() => tap(place)}
+      {...stylex.props(styles.place)}
+    >
+      <span {...stylex.props(typography.label, styles.feltLabel)}>{m.lesson_deal_zone({ name: names[place], n: held[place].length })}</span>
+      <span {...stylex.props(styles.placeCards)}>
+        {held[place].length > 0 ? <PlayingCard card={held[place][0]} faceDown size="sm" /> : null}
+      </span>
+    </button>
+  )
+
+  return (
+    <div {...stylex.props(styles.stack)}>
+      <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
+      <Shake nonce={nonce}>
+        <div data-testid="skat-deal" data-dealt={dealt} {...stylex.props(styles.felt, styles.dealTable)}>
+          <div {...stylex.props(styles.dealRow)}>
+            {zone('left')}
+            {zone('right')}
+          </div>
+          <div {...stylex.props(styles.dealRow, styles.dealMiddle)}>
+            <span {...stylex.props(styles.place, styles.deck)}>
+              <span {...stylex.props(typography.label, styles.feltLabel)}>{m.lesson_deal_deck({ n: step.cards.length - top })}</span>
+              <span {...stylex.props(styles.placeCards)}>
+                {done ? null : <PlayingCard card={step.cards[top]} faceDown size="sm" />}
+              </span>
+            </span>
+            {zone('skat')}
+          </div>
+          <div {...stylex.props(styles.dealRow, styles.dealMiddle)}>{zone('you')}</div>
+        </div>
+      </Shake>
+      {done ? <CardRowView row={{ label: m.lesson_deal_your_cards(), cards: sortHand(held.you, null) }} /> : null}
+      <Feedback state={done ? 'right' : why ? 'wrong' : 'idle'} good={step.explain} bad={why} />
+    </div>
+  )
+}
+
+/**
+ * Lesson 7's auction (SKATGO-161): the calls of the whole auction appear one by one; at each of the
+ * learner's, they choose — the next number or pass, yes or pass — with the table's own words. Their limit is
+ * the engine's value of the game they would play; any other call than the right one is refused with why.
+ */
+export function Bid({ step, onSolved, onMistake, solvedBefore }: { step: BidStep } & StepCallbacks) {
+  const limit = expectedValue({ contract: step.contract, hand: false, schneiderAnnounced: false, schwarzAnnounced: false, ouvert: false }, step.hand)
+  const [first, second] = after(step.seat)
+  const result = useMemo(
+    () => auction({ [step.seat]: limit, [first]: step.limits[0], [second]: step.limits[1] } as Record<Role, number>),
+    [step, limit, first, second],
+  )
+  const mine = (i: number) => result.calls[i]?.role === step.seat
+  /** The calls shown: everything up to the learner's next call. */
+  const upTo = (from: number) => {
+    let i = from
+    while (i < result.calls.length && !mine(i)) i++
+    return i
+  }
+  const [shown, setShown] = useState(() => (solvedBefore ? result.calls.length : upTo(0)))
+  const [why, setWhy] = useState('')
+  const [nonce, setNonce] = useState(0)
+  const done = shown >= result.calls.length
+  // The log grows with every call; after each of the learner's, the page follows it down to their next turn
+  // (or to the verdict), so on a phone the buttons never slip out of sight.
+  const turn = useRef<HTMLDivElement>(null)
+  const answered = useRef(false)
+  useEffect(() => {
+    if (answered.current) turn.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [shown])
+  const nameOf = (r: Role) => (r === step.seat ? m.name_you() : r === first ? m.name_lina() : m.name_max())
+  const roles: Record<Role, string> = { forehand: m.role_forehand(), middlehand: m.role_middlehand(), rearhand: m.role_rearhand() }
+
+  function choose(go: boolean) {
+    if (done) return
+    const call = result.calls[shown]
+    const right = call.say !== 'pass'
+    if (go === right) {
+      setWhy('')
+      answered.current = true
+      const next = upTo(shown + 1)
+      setShown(next)
+      if (next >= result.calls.length) onSolved()
+      return
+    }
+    setWhy(right ? m.lesson_bid_go_on({ limit, value: call.value }) : m.lesson_bid_too_high({ limit, value: call.value }))
+    setNonce((n) => n + 1)
+    onMistake()
+  }
+
+  const said = (call: (typeof result.calls)[number]) =>
+    call.say === 'bid' ? m.bid_said({ value: call.value }) : call.say === 'hold' ? m.bid_hold_said({ value: call.value }) : m.bid_pass()
+  const current = done ? null : result.calls[shown]
+
+  return (
+    <div {...stylex.props(styles.stack)}>
+      <p {...stylex.props(typography.prompt, styles.prompt)}><Rich text={step.prompt} /></p>
+      <CardRowView row={{ label: m.lesson_bid_hand({ contract: contractName(step.contract) }), cards: sortHand(step.hand, step.contract) }} />
+      <ol data-testid="skat-bid-log" {...stylex.props(styles.bidLog)}>
+        {result.calls.slice(0, shown).map((call, i) => (
+          <motion.li key={i} initial={{ opacity: 0, y: playIn.rise }} animate={{ opacity: 1, y: 0 }} {...stylex.props(styles.bidLine)}>
+            <span {...stylex.props(typography.smallBold, styles.context)}>{m.lesson_bid_line({ name: nameOf(call.role), role: roles[call.role] })}</span>
+            <span {...stylex.props(typography.body, styles.prompt)}>{said(call)}</span>
+          </motion.li>
+        ))}
+      </ol>
+      <div ref={turn} {...stylex.props(styles.bidActions)}>
+        {current ? (
+          <Shake nonce={nonce}>
+            <div {...stylex.props(styles.bidActions)}>
+              <p {...stylex.props(typography.body, styles.para)}>
+                {current.turn === 'alone'
+                  ? m.bid_forehand_alone()
+                  : current.turn === 'answer'
+                    ? m.bid_asked({ name: nameOf(current.to as Role), value: current.value })
+                    : m.lesson_bid_your_turn({ name: nameOf(current.to as Role) })}
+              </p>
+              <div {...stylex.props(styles.centerRow, styles.bidButtons)}>
+                <Btn testId="skat-bid-go" tone="info" shape="block" onClick={() => choose(true)}>
+                  {current.turn === 'alone' ? m.bid_take_18() : current.turn === 'answer' ? m.bid_hold_button({ value: current.value }) : m.bid_button({ value: current.value })}
+                </Btn>
+                <Btn testId="skat-bid-pass" tone="quiet" shape="block" onClick={() => choose(false)}>{m.bid_pass()}</Btn>
+              </div>
+            </div>
+          </Shake>
+        ) : null}
+        <Feedback state={done ? 'right' : why ? 'wrong' : 'idle'} good={step.explain} bad={why} />
+      </div>
+    </div>
+  )
+}
+
 // SKATGO-26: the lobby design. Text is navy and slate on the white step card; an answer option is an
 // option card that rings green on hover; a drill's cards lie on the table's felt, with its gold frame.
 const styles = stylex.create({
@@ -347,4 +580,33 @@ const styles = stylex.create({
   verdictIcon: { display: 'flex', flexShrink: 0, paddingTop: space.x2 },
   verdictGood: { color: color.good },
   verdictBad: { color: color.bad },
+  // The deal (SKATGO-161): Lina and Noah across the top, the deck and the skat in the middle, the learner below,
+  // each place a tappable frame on the felt.
+  dealTable: { gap: space.x12 },
+  dealRow: { display: 'flex', justifyContent: 'space-between', gap: space.x12 },
+  dealMiddle: { justifyContent: 'center' },
+  place: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: space.x4,
+    padding: space.x8,
+    borderRadius: radii.panel,
+    borderWidth: border.tile,
+    borderStyle: 'solid',
+    borderColor: { default: color.gold, ':hover': color.amber },
+    backgroundColor: 'transparent',
+    cursor: { default: 'pointer', ':disabled': 'default' },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  deck: { borderStyle: 'none', cursor: 'default' },
+  placeCards: { display: 'flex', minHeight: dims.cardSlotRow },
+  // The auction (SKATGO-161): one line per call, then the learner's two buttons.
+  bidLog: { display: 'flex', flexDirection: 'column', gap: space.x8, margin: 0, padding: 0, listStyle: 'none' },
+  bidLine: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12, paddingBlock: space.x4, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
+  bidActions: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  bidButtons: { flexWrap: 'wrap', gap: space.x10 },
 })

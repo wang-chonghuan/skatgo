@@ -11,17 +11,17 @@ import type { Lesson, Step } from '~/lib/skat/lessons/types'
 import { type LessonRecord, useProgress } from '~/lib/skat/progress'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
-import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { confettiBurst, stepSlide } from '../../theme/constants'
 import { move } from '../../theme/effects.stylex'
 import { elev } from '../../theme/elevation.stylex'
-import { border, space } from '../../theme/scale.stylex'
+import { space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { Choice, Order, Pick, Play, Teach } from './exercises'
+import { Bid, Choice, Deal, Order, Pick, Play, Sum, Teach } from './exercises'
+import { LessonFrame, StepCard } from './lesson-frame'
 import { ServerTable } from './server-table'
-import { Btn, Panel, ProgressBar, Rich, Stars, linkLook } from './ui'
+import { Btn, Panel, Rich, Stars, linkLook } from './ui'
 
 type Concrete = Exclude<Step, { kind: 'generated' }>
 
@@ -30,8 +30,8 @@ type Concrete = Exclude<Step, { kind: 'generated' }>
  * use Math.random, and doing it during render would hand the server and the browser two different
  * questions.
  *
- * In the lobby design (SKATGO-26) the lesson sits under its title and introduction (lesson-page.tsx): the
- * progress row, then the step on a white card, then the sticky bar with the table's block buttons.
+ * In the lobby design (SKATGO-26) the lesson sits under its title and promise (lesson-page.tsx), in its frame
+ * (lesson-frame.tsx). The lesson's last exercise is its final challenge (SKATGO-161), named over it.
  */
 export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const steps = useMemo<Concrete[]>(() => lesson.steps.map((s) => (s.kind === 'generated' ? s.make() : s)), [lesson])
@@ -76,15 +76,25 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
 
   if (record) return <Finished lesson={lesson} record={record} />
 
-  return (
-    <div data-testid="skat-lesson" data-step={index} data-step-kind={step.kind} {...stylex.props(styles.root)}>
-      <div {...stylex.props(styles.head)}>
-        <div {...stylex.props(styles.bar)}>
-          <ProgressBar value={index / steps.length} label={m.lesson_progress()} />
-        </div>
-        <span data-testid="skat-step-count" {...stylex.props(typography.smallBold, styles.count)}>{index + 1} / {steps.length}</span>
-      </div>
+  const challenge = isLast && step.kind !== 'teach' && step.kind !== 'game' ? m.lesson_challenge() : undefined
 
+  return (
+    <LessonFrame
+      testId="skat-lesson"
+      index={index}
+      total={steps.length}
+      kind={step.kind}
+      foot={
+        <>
+          <Btn testId="skat-back" tone="quiet" shape="block" size="lg" disabled={index === 0} onClick={back}>
+            {m.lesson_back()}
+          </Btn>
+          <Btn testId="skat-continue" shape="block" size="lg" grow disabled={!canContinue} onClick={advance}>
+            {isLast ? (step.kind === 'game' ? m.lesson_graduate() : m.lesson_finish()) : m.lesson_continue()}
+          </Btn>
+        </>
+      }
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
@@ -94,12 +104,15 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
           transition={{ duration: stepSlide.duration }}
           {...stylex.props(styles.body)}
         >
-          <div {...stylex.props(styles.card)}>
+          <StepCard kicker={challenge}>
           {step.kind === 'teach' ? <Teach step={step} /> : null}
           {step.kind === 'choice' ? <Choice step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
           {step.kind === 'pick' ? <Pick step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
           {step.kind === 'order' ? <Order step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
           {step.kind === 'play' ? <Play step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
+          {step.kind === 'sum' ? <Sum step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
+          {step.kind === 'deal' ? <Deal step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
+          {step.kind === 'bid' ? <Bid step={step} solvedBefore={solved} onSolved={onSolved} onMistake={onMistake} /> : null}
           {step.kind === 'game' ? (
             <div {...stylex.props(styles.gameStep)}>
               <h2 {...stylex.props(typography.dialogTitle, styles.gameTitle)}>{step.title}</h2>
@@ -114,19 +127,10 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
               {solved ? <Panel tone="good"><p {...stylex.props(typography.bodySmall, styles.gamePara)}>{m.lesson_game_done()}</p></Panel> : null}
             </div>
           ) : null}
-          </div>
+          </StepCard>
         </motion.div>
       </AnimatePresence>
-
-      <div {...stylex.props(styles.foot)}>
-        <Btn testId="skat-back" tone="quiet" shape="block" size="lg" disabled={index === 0} onClick={back}>
-          {m.lesson_back()}
-        </Btn>
-        <Btn testId="skat-continue" shape="block" size="lg" grow disabled={!canContinue} onClick={advance}>
-          {isLast ? (step.kind === 'game' ? m.lesson_graduate() : m.lesson_finish()) : m.lesson_continue()}
-        </Btn>
-      </div>
-    </div>
+    </LessonFrame>
   )
 }
 
@@ -138,6 +142,7 @@ function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) 
     <div data-testid="skat-lesson-done" {...stylex.props(styles.done)}>
       <h2 {...stylex.props(typography.optionTitle, styles.doneTitle)}>{following ? m.done_title({ id: lesson.id }) : m.course_ready_title()}</h2>
       <div {...stylex.props(styles.doneStars)}><Stars n={record.stars} /></div>
+      <p data-testid="skat-lesson-learned" {...stylex.props(typography.appText, styles.doneLearned)}>{m.done_learned({ learned: lesson.learned })}</p>
       <p {...stylex.props(typography.appText, styles.doneNote)}>
         {record.mistakes === 0 ? m.done_perfect() : m.done_mistakes({ n: record.mistakes })}
       </p>
@@ -161,43 +166,7 @@ function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) 
 }
 
 const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x18,
-    // A step slides in from the side (stepSlide); on a phone that slide must not widen the page.
-    overflowX: 'clip',
-    width: '100%',
-    maxWidth: dims.readingColumn,
-    marginInline: 'auto',
-    boxSizing: 'border-box',
-    paddingTop: { default: space.x32, [bp.phone]: space.x16 },
-    paddingInline: { default: space.x24, [bp.phone]: space.x12 },
-  },
-  head: { display: 'flex', alignItems: 'center', gap: space.x12 },
-  bar: { flexGrow: 1 },
-  count: { color: color.slate, whiteSpace: 'nowrap' },
   body: { flexGrow: 1 },
-  // The step on a white option card.
-  card: {
-    padding: { default: space.x24, [bp.phone]: space.x16 },
-    borderRadius: radii.option,
-    backgroundColor: color.surface,
-    boxShadow: elev.option,
-  },
-  // The sticky bar: the table's full-width block buttons on the page's grey.
-  foot: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: space.x10,
-    position: 'sticky',
-    bottom: 0,
-    paddingBlock: space.x12,
-    backgroundColor: color.page,
-    borderTopWidth: border.hair,
-    borderTopStyle: 'solid',
-    borderTopColor: color.hairline,
-  },
   gameStep: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   gameTitle: { margin: 0, color: color.navy },
   gamePara: { margin: 0, color: color.text },
@@ -220,6 +189,7 @@ const styles = stylex.create({
   },
   doneTitle: { margin: 0, color: color.navy },
   doneStars: { transform: move.starsBig, marginBlock: space.x8 },
+  doneLearned: { margin: 0, color: color.navy },
   doneNote: { margin: 0, color: color.slate },
   doneActions: { display: 'flex', flexWrap: 'wrap', gap: space.x12, justifyContent: 'center', marginTop: space.x8 },
 })

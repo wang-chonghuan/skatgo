@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-161",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-161",
+  "branch": "SKATGO-161-course-interactive",
+  "base": "25296406afbad964f11b168886f6acce76b4ed72",
+  "ports": { "web": 55161, "multiplayer": 56161, "database": 57161 }
+}

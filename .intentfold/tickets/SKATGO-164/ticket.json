@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-164",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-164",
+  "branch": "SKATGO-164-room-ai-rhythm",
+  "base": "ba6cbb3e647ee45ea30fd942adb009ae5c71c539",
+  "ports": { "web": 55164, "multiplayer": 56164, "database": 57164 }
+}

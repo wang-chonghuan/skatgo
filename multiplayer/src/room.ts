@@ -310,7 +310,9 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             const early = decided(g, seat => s.seats[seat].autopilot)
             const turn = actor(g)
             if (early) moves = [early]
-            else if (turn !== null && s.plans) moves = await computerTurn(g, turn, plan(s.plans[String(turn) as '0' | '1' | '2']), policy()!)
+            // One move a beat (SKATGO-164): a skat step — pick up, put away, the game — shows as free play shows it, one
+            // after another; the next beat decides the rest again from the same cards.
+            else if (turn !== null && s.plans) moves = (await computerTurn(g, turn, plan(s.plans[String(turn) as '0' | '1' | '2']), policy()!)).slice(0, 1)
             for (const l of moves) s.game = applySeatMove(s.game, l.seat, l.move)
           }
           scoreEnded(s)

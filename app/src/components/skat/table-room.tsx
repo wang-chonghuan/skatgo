@@ -20,7 +20,7 @@ import { elev, fill } from '../../theme/elevation.stylex'
 import { space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { GameTable, useRoomLink } from './game-table'
+import { BOT_DELAY, GameTable, useRoomLink } from './game-table'
 import { Btn, Panel, Pill, TextField, linkLook } from './ui'
 
 // A private room in the browser (SKATGO-61; rooms since SKATGO-163): the friends page's cards — a new room, a room
@@ -194,10 +194,15 @@ export function PrivateTable() {
   const back = useRef<{ since: number; tries: number; timer?: ReturnType<typeof setTimeout> } | null>(null)
   const trying = useRef(false)
   const told = useRef(false)
+  /** The revision this seat's move made, until the state carrying it arrives (SKATGO-164). */
+  const awaiting = useRef<number | null>(null)
+  /** When the last change to the game was put on the table, for the next one's beat. */
+  const lastMove = useRef(0)
 
   function attach(r: Room) {
     room.current = r
     // Nothing sent before is still on its way: a receipt for it will never come on this connection.
+    awaiting.current = null
     setSending(false)
     setDropped(false)
     setStage({ kind: 'seated' })
@@ -206,8 +211,18 @@ export function PrivateTable() {
       if (!next) return
       latest.current = next
       setQueue((q) => [...q, next])
+      if (awaiting.current !== null && next.pub.revision >= awaiting.current) {
+        awaiting.current = null
+        setSending(false)
+      }
     })
-    r.onMessage('receipt', () => setSending(false))
+    // A move taken stays on its way until the state it made is here (SKATGO-164): the receipt comes first, and a table
+    // no longer busy on the state before would put the card just played back in the hand for that moment.
+    r.onMessage('receipt', (receipt: { ok?: boolean; revision?: number }) => {
+      if (receipt?.ok && typeof receipt.revision === 'number' && receipt.revision > (latest.current?.pub.revision ?? 0)) {
+        awaiting.current = receipt.revision
+      } else setSending(false)
+    })
     // Taken out by the host, left, opened on another device, or the room closed: this page lets the room go.
     r.onMessage('dismissed', (d: { why?: Gone }) => {
       leaving.current = true
@@ -220,10 +235,12 @@ export function PrivateTable() {
     r.onDrop(() => setDropped(true))
     r.onReconnect(() => {
       setDropped(false)
+      awaiting.current = null
       setSending(false)
     })
     r.onLeave(() => {
       room.current = null
+      awaiting.current = null
       setSending(false)
       setDropped(false)
       if (leaving.current) return
@@ -303,15 +320,29 @@ export function PrivateTable() {
     if (!shown.pub.seats[shown.mine.seat].host) sayBrought(id)
   }, [stage.kind, shown, id])
 
-  // States arrive as they happen; a finished trick stays on this screen until it is tapped away.
+  // States arrive as they happen, and go on the table as free play shows its steps (SKATGO-164, the human: 「我希望体验和free
+  // play一样，有顺序，有节奏，的出牌」): a change to the game a beat (BOT_DELAY) after the one before, and the answer to this
+  // seat's own move at once, its card being on the table already. A state that changes nothing in the game — someone's
+  // connection, a seat — goes on at once, or, with a later state behind it, which carries it too, not at all; while a
+  // move is on its way it waits. A finished trick stays on this screen until it is tapped away.
   useEffect(() => {
     if (queue.length === 0) return
     const held = shown?.pub.phase === 'trickEnd'
     if (held && !release) return
-    if (held) setRelease(false)
-    setShown(queue[0])
-    setQueue((q) => q.slice(1))
-  }, [queue, shown, release])
+    const next = queue[0]
+    const moved = !shown || next.pub.played !== shown.pub.played
+    if (!moved && queue.length > 1) return setQueue((q) => q.slice(1))
+    if (!moved && sending) return
+    const own = !!shown && shown.pub.actor === shown.mine.seat
+    const wait = held || !moved || own ? 0 : Math.max(0, lastMove.current + BOT_DELAY - Date.now())
+    const t = setTimeout(() => {
+      if (held) setRelease(false)
+      if (moved) lastMove.current = Date.now()
+      setShown(next)
+      setQueue((q) => q.slice(1))
+    }, wait)
+    return () => clearTimeout(t)
+  }, [queue, shown, release, sending])
 
   const send = (action: RoomAction) => {
     const r = room.current

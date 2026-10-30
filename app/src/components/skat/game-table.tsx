@@ -37,7 +37,7 @@ import { type DealSummary, seegerFabian, summarize } from '~/lib/skat/tournament
 import { BID_LADDER, type Declaration, NULL_VALUES, baseValue, expectedValue, highestValue, matadors, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { Link } from '@tanstack/react-router'
-import { BookOpen, Calculator, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -215,13 +215,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // Free play's bid calculator (SKATGO-157): only there — a round is free play's alone — and while the settings show it.
   // The contract picked stays picked through the deal's bidding: it is kept with the hand it was picked for.
   const bidCalc = useSettings((s) => s.bidCalc)
-  const [calcKept, setCalcKept] = useState<{ hand: string; open: boolean; pick: number | null } | null>(null)
+  const [calcPick, setCalcPick] = useState<{ hand: string; pick: number } | null>(null)
   const handKey = game.hands[ME].map(cardId).join()
-  const calcNow = calcKept?.hand === handKey ? calcKept : { hand: handKey, open: false, pick: null }
   const calc: BidCalcState | null =
-    server?.round && bidCalc
-      ? { open: calcNow.open, pick: calcNow.pick, setOpen: (open) => setCalcKept({ ...calcNow, open }), setPick: (pick) => setCalcKept({ ...calcNow, pick }) }
-      : null
+    server?.round && bidCalc ? { pick: calcPick?.hand === handKey ? calcPick.pick : null, setPick: (pick) => setCalcPick(pick === null ? null : { hand: handKey, pick }) } : null
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   const [picked, setPicked] = useState<Card[]>([])
   // The trick's cards that have landed (SKATGO-41). A card flies in on a layer of its own under a
@@ -1101,8 +1098,7 @@ function Actions(p: ActionsProps) {
 
   if (game.phase === 'bidding') {
     const b = game.bidding
-    const calcButton = p.calc ? <CalcButton {...p.calc} /> : null
-    const calc = p.calc?.open ? <BidCalc hand={game.hands[ME]} {...p.calc} /> : null
+    const calc = p.calc ? <BidCalc hand={game.hands[ME]} {...p.calc} /> : null
     if (b.awaiting === 'forehandAlone') {
       return (
         <Row>
@@ -1110,12 +1106,11 @@ function Actions(p: ActionsProps) {
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
           {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
-          {calcButton}
           {calc}
         </Row>
       )
     }
-    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} calcButton={calcButton} calc={calc} />
+    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} calc={calc} />
     return (
       <Row>
         {/* Who asks and what "yes" commits to, on every table (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」). */}
@@ -1123,7 +1118,6 @@ function Actions(p: ActionsProps) {
         <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
         {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
-        {calcButton}
         {calc}
       </Row>
     )
@@ -1450,7 +1444,7 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
  * so the hand stays in sight on a phone; a number is picked first and named with the main button, so a
  * slip of the finger names nothing.
  */
-function SpeakerBid({ value, listener, hints, onBid, onBidHint, calcButton, calc }: { value: number; listener: string; hints: boolean; onBid: ActionsProps['onBid']; onBidHint: () => void; calcButton: ReactNode; calc: ReactNode }) {
+function SpeakerBid({ value, listener, hints, onBid, onBidHint, calc }: { value: number; listener: string; hints: boolean; onBid: ActionsProps['onBid']; onBidHint: () => void; calc: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [picked, setPicked] = useState<number | null>(null)
   const next = nextBid(value)
@@ -1460,12 +1454,11 @@ function SpeakerBid({ value, listener, hints, onBid, onBidHint, calcButton, calc
     <Row>
       {/* Whom the bid goes to, on every table (SKATGO-141, back from SKATGO-134's buttons-only). */}
       <Say>{m.bid_your_turn({ name: listener })}</Say>
-      <Btn testId="skat-bid" shape="block" size="lg" tight={!!calcButton} onClick={() => (picked === null ? onBid('bid') : onBid('bid', picked))}>{m.bid_button({ value: named ?? '' })}</Btn>
-      <Btn testId="skat-pass" shape="block" size="lg" tight={!!calcButton} onClick={() => onBid('pass')}>{m.bid_pass()}</Btn>
+      <Btn testId="skat-bid" shape="block" size="lg" onClick={() => (picked === null ? onBid('bid') : onBid('bid', picked))}>{m.bid_button({ value: named ?? '' })}</Btn>
+      <Btn testId="skat-pass" shape="block" size="lg" onClick={() => onBid('pass')}>{m.bid_pass()}</Btn>
       {higher.length > 0 ? (
-        <Btn testId="skat-higher" tone="quiet" shape="block" size="lg" tight={!!calcButton} onClick={() => { setOpen((o) => !o); setPicked(null) }}>{m.bid_higher()}</Btn>
+        <Btn testId="skat-higher" tone="quiet" shape="block" size="lg" onClick={() => { setOpen((o) => !o); setPicked(null) }}>{m.bid_higher()}</Btn>
       ) : null}
-      {calcButton}
       {open ? (
         <div role="group" aria-label={m.bid_higher_values()} data-testid="skat-jump" {...stylex.props(styles.jumpRow)}>
           {higher.map((v) => (
@@ -1489,7 +1482,7 @@ function SpeakerBid({ value, listener, hints, onBid, onBidHint, calcButton, calc
   )
 }
 
-type BidCalcState = { open: boolean; pick: number | null; setOpen: (open: boolean) => void; setPick: (pick: number | null) => void }
+type BidCalcState = { pick: number | null; setPick: (pick: number | null) => void }
 const CALC_CONTRACTS: Contract[] = [...[...SUITS].reverse().map((trump): Contract => ({ kind: 'suit', trump })), { kind: 'grand' }, { kind: 'null' }]
 
 /**
@@ -1497,23 +1490,6 @@ const CALC_CONTRACTS: Contract[] = [...[...SUITS].reverse().map((trump): Contrac
  * contract, and the drawer counts what it is worth with the ten cards in hand — matadors, multiplier, base value, and
  * Hand one step more. Which contract, and how high to go, stay the player's.
  */
-/** The calculator's own small round button beside "Higher …": the calculator's row shows only once it is pressed. */
-function CalcButton({ open, setOpen }: BidCalcState) {
-  return (
-    <button
-      type="button"
-      data-testid="skat-calc-open"
-      aria-pressed={open}
-      aria-label={m.bidcalc_label()}
-      title={m.bidcalc_label()}
-      onClick={() => setOpen(!open)}
-      {...stylex.props(styles.calcButton, open && styles.toggleOn)}
-    >
-      <Calculator size={icon.inline} strokeWidth={icon.outline} />
-    </button>
-  )
-}
-
 function BidCalc({ hand, pick, setPick }: { hand: Card[] } & BidCalcState) {
   const contract = pick === null ? null : CALC_CONTRACTS[pick]
   let line = ''
@@ -1521,8 +1497,7 @@ function BidCalc({ hand, pick, setPick }: { hand: Card[] } & BidCalcState) {
   else if (contract) {
     const t = matadors(hand, contract)
     const base = baseValue(contract)
-    const said = matadorLabel(t.with, t.count)
-    line = m.bidcalc_value({ matadors: said.charAt(0).toUpperCase() + said.slice(1), level: t.count + 1, base, value: base * (t.count + 1), hand: base * (t.count + 2) })
+    line = m.bidcalc_value({ matadors: matadorLabel(t.with, t.count), level: t.count + 1, base, value: base * (t.count + 1), hand: base * (t.count + 2) })
   }
   return (
     <div data-testid="skat-calc" {...stylex.props(styles.bidCalc)}>
@@ -2272,23 +2247,6 @@ const styles = stylex.create({
   bidCalc: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6, flexBasis: '100%' },
   bidCalcRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.x8 },
   bidCalcLabel: { flexShrink: 0, color: color.slate },
-  // As round as the bidding practice's all-questions button, the height of the toggles; green-tinted while open.
-  calcButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: dims.control,
-    height: dims.control,
-    padding: 0,
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: color.hairline,
-    borderRadius: radii.round,
-    backgroundColor: color.surface,
-    color: color.navy,
-    cursor: 'pointer',
-  },
   resultBody: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   resultTitle: { margin: 0, color: color.navy },
   resultHead: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },

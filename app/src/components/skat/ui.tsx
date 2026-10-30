@@ -57,19 +57,16 @@ type BtnProps = {
   disabled?: boolean
   testId?: string
   grow?: boolean
-  /** On a phone, md's side padding instead of the size's: free play's bid row, so the calculator fits beside it
-   *  (SKATGO-157). */
-  tight?: boolean
 }
 
-export function Btn({ children, onClick, tone = 'go', shape = 'pill', size = 'md', disabled, testId, grow, tight }: BtnProps) {
+export function Btn({ children, onClick, tone = 'go', shape = 'pill', size = 'md', disabled, testId, grow }: BtnProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       data-testid={testId}
-      {...stylex.props(btnType(shape, size), styles.btn, shapes[shape], sizes[size], tones[tone], shape === 'landing' && landingTones[tone], grow && styles.grow, tight && styles.tight, disabled && styles.btnDisabled)}
+      {...stylex.props(btnType(shape, size), styles.btn, shapes[shape], sizes[size], tones[tone], shape === 'landing' && landingTones[tone], grow && styles.grow, disabled && styles.btnDisabled)}
     >
       {children}
     </button>
@@ -254,7 +251,6 @@ const dynamic = stylex.create({
 })
 
 const styles = stylex.create({
-  tight: { paddingInline: { default: null, [bp.phone]: space.x16 } },
   // The dialog (`Modal`): the dim over the page, the white card in its middle.
   scrim: {
     position: 'fixed',

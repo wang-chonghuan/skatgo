@@ -258,10 +258,10 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       assert.equal(pc.seat, 2)
       assert.equal(await status(p.room.roomId, someone()), 'full')
       await assert.rejects(enter(p.room.roomId, someone()), /room_full/)
-      // A newcomer's move is the computer's until their deal; they may deal it.
+      // A newcomer's move is the computer's until their deal; they ask for the next deal with everyone here (SKATGO-165).
       assert.equal((await send(pb, { type: 'bid', value: 'pass' })).error, 'not_your_seat')
       await complete([p])
-      assert((await send(pb, { type: 'next' })).ok)
+      for (const x of [pb, pc, p]) assert((await send(x, { type: 'next' })).ok)
       for (const x of [p, pb, pc]) await until(() => x.public.deals === 2 && x.public.seats.every(s => !s.joining))
       assert.deepEqual(p.public.seats.map(x => x.control), ['human', 'human', 'human'])
       assert.deepEqual([p.public.scores[1], p.public.scores[2]], [0, 0])
@@ -269,6 +269,47 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       for (const x of [p, pb, pc]) assert.deepEqual(x.private.hand, s.game!.hands[x.seat])
       group.push(pb, pc)
       await complete(group)
+    })
+    await t.test('the next deal waits for everyone here; someone gone, leaving or taken out does not hold it', async () => {
+      const { p, group } = await create(3)
+      const [b, c] = [group[1], group[2]]
+      const over = async () => {
+        await complete(group)
+      }
+      await over()
+      // One asks: nothing dealt; they are marked, the others not.
+      assert((await send(p, { type: 'next' })).ok)
+      await until(() => b.public.seats[0].ready)
+      assert.equal(b.public.deals, 1)
+      assert.deepEqual(b.public.seats.map(x => x.ready), [true, false, false])
+      assert((await send(b, { type: 'next' })).ok)
+      await sleep(300)
+      assert.equal(p.public.deals, 1, 'dealt before everyone here asked')
+      // The last one here leaves: dealt without them.
+      assert((await send(c, { type: 'leave' })).ok)
+      await until(() => p.public.deals === 2 && b.public.deals === 2)
+      assert.deepEqual(p.public.seats.map(x => x.ready), [false, false, false])
+      // Next time: the host asks and takes the other out.
+      group.splice(2, 1)
+      await over()
+      assert((await send(p, { type: 'next' })).ok)
+      assert((await send(p, { type: 'kick', seat: b.seat })).ok)
+      await until(() => p.public.deals === 3)
+      // And alone with the AI, asking deals at once.
+      group.splice(1, 1)
+      await complete([p])
+      assert((await send(p, { type: 'next' })).ok)
+      await until(() => p.public.deals === 4)
+    })
+    await t.test('someone who drops no longer holds the next deal', async () => {
+      const { p, group } = await create(2)
+      const b = group[1]
+      await complete(group)
+      assert((await send(p, { type: 'next' })).ok)
+      await sleep(300)
+      assert.equal(p.public.deals, 1)
+      b.room.connection.close()
+      await until(() => p.public.deals === 2)
     })
     await t.test('one room at a time: an account in a room opens and enters no other', async () => {
       const { p } = await create(1)
@@ -383,6 +424,11 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
         assert.deepEqual(p.public.skat?.length, 2)
         const want = results.map(r => seegerFabian({ phase: r.phase as 'done', declarer: r.declarer, result: r.result })).reduce((a, b) => a.map((n, i) => n + b[i]) as [number, number, number])
         await until(() => JSON.stringify(p.public.scores) === JSON.stringify(want))
+        // The room's statistics (SKATGO-165): one entry a scored deal, its scores the deal's, who sat where.
+        assert.equal(p.public.history.length, deal)
+        const last = p.public.history[deal - 1]
+        assert.deepEqual(last.summary.scores, seegerFabian({ phase: p.public.phase as 'done', declarer: p.public.declarer, result: p.public.result }))
+        assert.deepEqual(last.names, [p.public.seats[0].nickname, null, null])
         if (deal === 1) assert((await send(p, { type: 'next' })).ok)
       }
     })
@@ -492,7 +538,11 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       assert(receipt.ok)
       // A table stored before SKATGO-163 (schema 2) is ended at the next start.
       await sql.query("INSERT INTO multiplayer_rooms VALUES ('oldTable123', $1, $2)", [{ schema: 2, id: 'oldTable123' }, Date.now() + 60_000])
+      // Read once the computers have answered and the table waits for the host again: nothing moves between the read and
+      // the kill, so what the restart must keep is exactly what was read.
+      await until(() => p.public.actor === 0 || p.public.phase === 'done' || p.public.phase === 'passedIn')
       const before = await snapshot(p.room.roomId)
+      assert.equal(before.revision, p.public.revision)
       const standby = launch(port + 1)
       await until(async () => {
         try { return (await fetch(`http://127.0.0.1:${port + 1}/healthz`)).ok } catch { return false }

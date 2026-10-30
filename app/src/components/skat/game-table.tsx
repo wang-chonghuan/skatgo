@@ -38,7 +38,7 @@ import { BID_LADDER, type Declaration, NULL_VALUES, baseValue, expectedValue, hi
 import { m } from '~/paraglide/messages'
 import { getLocale, localizeHref } from '~/paraglide/runtime'
 import { Link } from '@tanstack/react-router'
-import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, Users, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -84,6 +84,9 @@ const ME: Seat = 0
 const defaultName = (seat: Seat) => [m.name_you, m.name_lina, m.name_max][seat]()
 /** The names at this table: a private table's nicknames (SKATGO-61), or null for You, Lina and Noah. */
 const Names = createContext<[string, string, string] | null>(null)
+/** At a private table, once this seat asked for the next deal and others have not yet (SKATGO-165): what the way on says
+ *  instead — whom it waits for — and it takes no tap. Null everywhere else. */
+const NextWait = createContext<string | null>(null)
 function useNameOf() {
   const names = useContext(Names)
   return (seat: Seat) => (names ? names[seat] : defaultName(seat))
@@ -151,6 +154,12 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
   standings: ReactNode
   /** Over the felt, where the table's messages go: while the connection comes back (SKATGO-117), or a newcomer waits. */
   notice?: ReactNode
+  /** Which deal is on the table, counted from the room's first (SKATGO-165). */
+  deal: number
+  /** Once this seat asked for the next deal: whom it still waits for (SKATGO-165); null otherwise. */
+  waiting: string | null
+  /** The room's statistics, every finished deal (SKATGO-165): what the table menu's "Statistics" opens. */
+  stats: ReactNode
   /** The room's number (SKATGO-163), in the way out's menu: a tap copies the room's link. */
   code: string
   /** Leaves the room: the seat goes to a computer. */
@@ -188,7 +197,9 @@ type Props = {
 export function GameTable(props: Props) {
   return (
     <Names.Provider value={props.room?.names ?? null}>
-      <Table {...props} />
+      <NextWait.Provider value={props.room?.waiting ?? null}>
+        <Table {...props} />
+      </NextWait.Provider>
     </Names.Provider>
   )
 }
@@ -202,8 +213,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   const [localGame, setGame] = useState<Game>(() => deal(2))
   const remote = tournament ?? server ?? room ?? exercise
   // Which deal of how many (SKATGO-93): the tournament's, free play's round of six, and lesson 11's single
-  // deal. A private table counts no deals.
-  const dealOf = tournament ? { n: tournament.deal + 1, of: tournament.of } : server?.round ? { n: server.round.deal + 1, of: server.round.of } : server ? { n: 1, of: 1 } : null
+  // deal; a private table's only which, its deals having no end (SKATGO-165, the human: 「但是没有总墩数」).
+  const dealOf: { n: number; of?: number } | null = tournament ? { n: tournament.deal + 1, of: tournament.of } : server?.round ? { n: server.round.deal + 1, of: server.round.of } : server ? { n: 1, of: 1 } : room ? { n: room.deal } : null
   // The learner's own card goes on the table the moment it is tapped (SKATGO-73); the server's answer,
   // with the computers' replies, replaces it when it comes. Until then the table shows `pending`.
   const [pending, setPending] = useState<{ from: Game; game: Game } | null>(null)
@@ -410,6 +421,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     return () => query.removeEventListener('change', change)
   }, [panelled])
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // A room's statistics, opened from the table's menu (SKATGO-165).
+  const [statsOpen, setStatsOpen] = useState(false)
   // The side panel shows the game, or the rules with a way back (SKATGO-75).
   const [panelView, setPanelView] = useState<'game' | 'rules'>('game')
   const inFrameActions = game.phase === 'bidding' || game.phase === 'skat' || game.phase === 'declare'
@@ -720,6 +733,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               <Pill tone="dark">
                 <span data-testid="free-progress" data-deal={server.round.deal + 1} data-total={server.round.total}>{m.daily_deal_of({ n: server.round.deal + 1, of: server.round.of, total: server.round.total })}</span>
               </Pill>
+            ) : room ? (
+              <Pill tone="dark">
+                <span data-testid="room-progress" data-deal={room.deal}>{m.info_deal_n({ n: room.deal })}</span>
+              </Pill>
             ) : null}
             {contract ? <Pill tone="amber">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : null}
             {game.declarer !== null ? <Pill tone="quiet">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
@@ -738,6 +755,13 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
       {exercise?.after ? <Dialog>{exercise.after}</Dialog> : null}
 
       {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
+
+      {/* A room's statistics (SKATGO-165), over the table like its other dialogs; the way back is the menu's first item. */}
+      {room && statsOpen ? (
+        <Dialog foot={<Row><Btn testId="room-stats-close" shape="block" size="lg" grow onClick={() => setStatsOpen(false)}>{m.table_continue()}</Btn></Row>}>
+          {room.stats}
+        </Dialog>
+      ) : null}
 
       {/* The settlement and a passed-in deal are dialogs over the whole table, outside the panel, which
           on a phone is a drawer that slides. */}
@@ -762,7 +786,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         <TableMenu
           leave={exercise ? '/skat-tricks' : tournament ? '/daily' : '/'}
           newRound={server?.newRound}
-          room={room ? { code: room.code, leave: room.leave, people: room.people, kick: room.kick } : undefined}
+          room={room ? { code: room.code, leave: room.leave, people: room.people, kick: room.kick, stats: () => setStatsOpen(true) } : undefined}
         />
       ) : null}
     </div>
@@ -973,7 +997,7 @@ function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: bo
 /** The info board across the top of the felt: what is being played, by whom, how the hand stands, and
  *  the running totals — each a small label over its value, divided by fine rules. Under the points, which
  *  deal of how many this is, not which trick (SKATGO-93, the human: 「当前是第几墩，没必要，应该改为显示，当前是第几个deal」). */
-function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number }; tricks: boolean; deal: { n: number; of: number } | null }) {
+function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number }; tricks: boolean; deal: { n: number; of?: number } | null }) {
   const setTricks = useSettings((s) => s.setBoardTricks)
   const nameOf = useNameOf()
   const contract = game.declaration?.contract ?? null
@@ -1023,7 +1047,7 @@ function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores:
             '—'
           )}
         </span>
-        <span data-testid="skat-info-deal" {...stylex.props(typography.infoSub, styles.boardSub)}>{deal ? m.info_deal(deal) : ''}</span>
+        <span data-testid="skat-info-deal" {...stylex.props(typography.infoSub, styles.boardSub)}>{deal ? (deal.of ? m.info_deal({ n: deal.n, of: deal.of }) : m.info_deal_n({ n: deal.n })) : ''}</span>
       </button>
       <div data-testid="skat-info-totals" {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_totals()}</span>
@@ -1075,6 +1099,7 @@ type ActionsProps = {
 
 function Actions(p: ActionsProps) {
   const nameOf = useNameOf()
+  const wait = useContext(NextWait)
   const { game } = p
   const who = actor(game)
   // The course's tables — its own and lesson 11's, the ones with hints — explain every step; a real table says at most
@@ -1088,8 +1113,8 @@ function Actions(p: ActionsProps) {
         {p.daily ? <VsAiReview ask={p.daily.ask} cacheKey={p.daily.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
         {p.freeReview ? <VsAiReview ask={p.freeReview} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
         {p.roomAfter}
-        <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={p.onNewGame}>
-          {p.roomAfter ? m.daily_next_deal() : p.roundLast != null ? (p.roundLast ? m.free_round_result() : m.daily_next_deal()) : p.dealScore === null ? m.table_redeal() : p.last ? m.daily_see_result() : m.daily_next_deal()}
+        <Btn testId="skat-new-game" shape="block" size="lg" grow disabled={wait !== null} onClick={p.onNewGame}>
+          {wait ?? (p.roomAfter ? m.daily_next_deal() : null) ?? (p.roundLast != null ? (p.roundLast ? m.free_round_result() : m.daily_next_deal()) : p.dealScore === null ? m.table_redeal() : p.last ? m.daily_see_result() : m.daily_next_deal())}
         </Btn>
       </Dialog>
     )
@@ -1285,6 +1310,7 @@ function DeclarePicker({
 
 function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview, roundLast = null, seeger, course }: { game: Game; onNewGame: () => void; dealScore: number | null; last: boolean; daily?: DailyAfter | null; roomAfter?: ReactNode; freeReview?: AskReview; roundLast?: boolean | null; seeger: boolean; course: boolean }) {
   const nameOf = useNameOf()
+  const wait = useContext(NextWait)
   const named = useContext(Names) !== null
   const r = game.result!
   const declarer = game.declarer!
@@ -1360,8 +1386,8 @@ function Result({ game, onNewGame, dealScore, last, daily, roomAfter, freeReview
   )
   const next = (
     <Row>
-      <Btn testId="skat-new-game" shape="block" size="lg" grow onClick={onNewGame}>
-        {roomAfter ? m.daily_next_deal() : roundLast !== null ? (roundLast ? m.free_round_result() : m.daily_next_deal()) : dealScore === null ? m.result_new_game() : last ? m.daily_see_result() : m.daily_next_deal()}
+      <Btn testId="skat-new-game" shape="block" size="lg" grow disabled={wait !== null} onClick={onNewGame}>
+        {wait ?? (roomAfter ? m.daily_next_deal() : null) ?? (roundLast !== null ? (roundLast ? m.free_round_result() : m.daily_next_deal()) : dealScore === null ? m.result_new_game() : last ? m.daily_see_result() : m.daily_next_deal())}
       </Btn>
     </Row>
   )
@@ -1585,15 +1611,16 @@ function useCardSounds(game: Game) {
  * corner, across from where the assistant's launcher stood at the top left until SKATGO-130, on every full-screen table. It opens a small menu — keep
  * playing, give up free play's round for a new one (asked once more first), or leave the table. Leaving loses
  * nothing: free play's game waits in this browser, the tournament's on the server, a private table's in its room.
- * A room's button is the table's, a spade as the panel's Game tab, not the way out (SKATGO-163, the human:
- * 「私人牌桌中，不要退出按钮，而要一个牌桌按钮。以示不同。然后菜单内容还相同」).
+ * A room's button is the table's, not the way out (SKATGO-163, the human: 「私人牌桌中，不要退出按钮，而要一个牌桌按钮。以示不同。
+ * 然后菜单内容还相同」): the people at it, lucide having no table but a spreadsheet's (SKATGO-165, 「那个图标别用扑克牌的，最好用
+ * 牌桌等图标」).
  */
 function TableMenu({ leave, newRound, room }: {
   leave: '/' | '/daily' | '/skat-tricks'
   newRound?: () => void
-  /** A room's own ways (SKATGO-163): its number, a tap copying its link; leaving it, and the host's taking a person
-   *  out — each asked once more first. */
-  room?: Pick<RoomTable, 'code' | 'leave' | 'people' | 'kick'>
+  /** A room's own ways (SKATGO-163): its number, a tap copying its link; its statistics (SKATGO-165); leaving it, and
+   *  the host's taking a person out — each asked once more first. */
+  room?: Pick<RoomTable, 'code' | 'leave' | 'people' | 'kick'> & { stats: () => void }
 }) {
   const [open, setOpen] = useState(false)
   const [asking, setAsking] = useState(false)
@@ -1628,7 +1655,7 @@ function TableMenu({ leave, newRound, room }: {
         {...stylex.props(styles.menuButton)}
       >
         {room
-          ? <Spade aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
+          ? <Users aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
           : <LogOut aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />}
       </button>
       {open ? (
@@ -1655,6 +1682,7 @@ function TableMenu({ leave, newRound, room }: {
             <>
               <Btn testId="skat-menu-continue" tone="go" shape="block" onClick={close}>{m.table_continue()}</Btn>
               {room ? <RoomLink code={room.code} /> : null}
+              {room ? <Btn testId="room-stats" tone="quiet" shape="block" onClick={() => { close(); room.stats() }}>{m.room_stats()}</Btn> : null}
               {newRound ? <Btn testId="skat-menu-new" tone="quiet" shape="block" onClick={() => setAsking(true)}>{m.free_round_new()}</Btn> : null}
               {room?.people.map((p) => (
                 <Btn key={p.seat} testId="skat-menu-kick" tone="quiet" shape="block" onClick={() => setRoomAsk(p.seat)}>{m.room_kick({ name: p.name })}</Btn>

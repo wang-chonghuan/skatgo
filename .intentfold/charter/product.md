@@ -150,7 +150,9 @@ corner not working: 「我建议放到退出按钮里，加一个菜单项」); 
 tables (「私人牌桌中，不要退出按钮，而要一个牌桌按钮。以示不同。然后菜单内容还相同」).
 The seat of someone away, whom a computer plays for, may be taken by someone coming in; the host may take a person out,
 who may come back with the number (「别人可以占用，但是房主可以踢人」, 「踢了还可以自己加，基于信任」). Leaving passes the host's role
-on; the last one leaving closes the room. A newcomer who signs up to come into a room is recorded once as brought by its
+on; the last one leaving closes the room. A deal's end waits until every person at the table has asked for the next
+(SKATGO-165, 「需要所有非ai玩家点了next deal后，才能进入next deal」); someone away, whom the AI plays for, does not hold it. The
+table counts its deals ("Spiel 3", no total) and keeps every finished one for its statistics. A newcomer who signs up to come into a room is recorded once as brought by its
 host (SKATGO-117), so it shows who brings players in; nothing else is recorded about it, and it needs no consent banner.
 
 About SkatGo at `/about` (SKATGO-134): the questions people ask, how the daily Skat is played, scored and ranked, and how a

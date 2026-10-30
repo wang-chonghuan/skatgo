@@ -8,7 +8,7 @@ import { computerTurn, decided, type Logged } from './computers'
 import { nameOf } from './daily'
 import { deckOf, plan, poolDealIndex, type Pool } from './free'
 import {
-  applyAction, applySeatMove, claimSeat, commandSchema, emptyRoom, GRACE_MS, hash, newRoom, privateView, publicView,
+  applyAction, applySeatMove, claimSeat, commandSchema, dealIfReady, emptyRoom, GRACE_MS, hash, newRoom, privateView, publicView,
   Rejected, roomOnly, scoreEnded, secretEquals, TTL_MS, type PoolDeal, type Snapshot,
 } from './model'
 import type { Policy } from './skatzero/policy'
@@ -188,6 +188,11 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           p.session = null
           p.disconnectedAt = drop.at
           p.autopilot = p.joinsAt !== null
+          // Someone gone no longer holds the next deal the others asked for (SKATGO-165).
+          if (dealIfReady(s, pick)) {
+            s.played = s.revision + 1
+            s.nextActionAt = Date.now() + aiDelay
+          }
           return { changed: true, value: null }
         })
         this.pendingDrops.delete(session)
@@ -222,9 +227,11 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         // changes the table, not the game (SKATGO-117). Running the room is no move.
         if (!room && (cmd.revision < (s.played ?? s.revision) || cmd.revision > s.revision)) throw new Rejected('stale_revision')
         const sessions = s.seats.map(x => x.session)
+        const before = s.game
         applyAction(s, seat, cmd.action, pick)
         s.seats.forEach((x, i) => { if (sessions[i] && x.session !== sessions[i]) gone.push(sessions[i]!) })
-        if (!room || type === 'start') s.played = s.revision + 1
+        // A change to the game itself: a move, a deal — not asking for the next deal while others have not (SKATGO-165).
+        if (s.game !== before) s.played = s.revision + 1
         s.nextActionAt = Date.now() + aiDelay
         s.expiresAt = Date.now() + TTL_MS
         const receipt = { id: cmd.id, ok: true, revision: s.revision + 1 }

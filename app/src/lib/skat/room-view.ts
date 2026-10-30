@@ -5,6 +5,7 @@
 
 import type { Card } from './cards'
 import type { Bidding, Game, Phase, Played, Seat } from './game'
+import type { DealSummary } from './tournament'
 import type { Declaration } from './value'
 
 export type RoomSeat = {
@@ -15,6 +16,8 @@ export type RoomSeat = {
   /** The room's host: who may take a person out. */
   host: boolean
   connected: boolean
+  /** Asked for the next deal, the one on the table being over (SKATGO-165). */
+  ready: boolean
   /** Who is playing the seat now: its person, or a computer — for good, or standing in for them. */
   control: 'human' | 'ai'
   /** A newcomer who plays from the next deal; a computer finishes this one for them. */
@@ -22,6 +25,10 @@ export type RoomSeat = {
   reconnectUntil: number | null
   cardCount: number
 }
+
+/** A finished deal in the room's statistics (SKATGO-165): its summary by room seat, and who sat where — a person's name,
+ *  or null where a computer played the deal. */
+export type RoomDeal = { summary: DealSummary; names: (string | null)[] }
 
 export type RoomPublic = {
   /** The room's number. */
@@ -35,6 +42,8 @@ export type RoomPublic = {
   deals: number
   /** Each seat's Seeger-Fabian total over the deals that ended — a newcomer's since they sat down. */
   scores: [number, number, number]
+  /** Every deal scored in the room, the first first. */
+  history: RoomDeal[]
   seats: RoomSeat[]
   phase: Phase
   actor: Seat | null

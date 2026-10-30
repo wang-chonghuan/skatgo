@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-165",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-165",
+  "branch": "SKATGO-165-room-deals",
+  "base": "395a0aa2a6145275d05a7daa7603779cc4723e9e",
+  "ports": { "web": 55165, "multiplayer": 56165, "database": 57165 }
+}

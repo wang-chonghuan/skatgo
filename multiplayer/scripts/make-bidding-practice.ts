@@ -59,19 +59,25 @@ function named(bid: number, g: Games): { contract: ContractKey; sure: number } |
   return key ? { contract: key, sure: g.pickup[key] } : null
 }
 
-/** Step 2's numbers for a suit game or Grand: at its ten-card value, that value and a level either side; below it, the
- *  game's level under the bid (else one above the value), the bid and the value; above it, the value, the bid and the
- *  game's next level — always numbers anyone may bid, so where the answer sits among them gives nothing away. */
-function optionsOf(hand: Card[], key: GameKey, bid: number): number[] | null {
+/** Step 2's numbers for a suit game or Grand — always numbers anyone may bid. Where the answer sits among them varies by
+ *  the question's own seed (a fresh look at SKATGO-159 found it nearly always lowest, a pattern to learn instead of the
+ *  hand): at the ten-card value, the value with a level either side, the two levels under it, or 18 under the levels;
+ *  below the value, the bid just under, the bid and the value, or the bid, the one just over and the value. 18 has
+ *  nothing under it. */
+function optionsOf(hand: Card[], key: GameKey, bid: number, pick: number): number[] | null {
   const v = valuedOf(hand, key)
   const level = v.count + 1
-  const under = Math.ceil(bid / v.base) - 1
   let out: number[]
   if (bid === v.value) {
-    const from = Math.max(2, level - 1)
-    out = [from, from + 1, from + 2].map((k) => k * v.base)
-  } else if (bid < v.value) out = [under >= 2 ? under * v.base : (level + 1) * v.base, bid, v.value]
-  else out = [v.value, bid, (Math.floor(bid / v.base) + 1) * v.base]
+    if (pick < 0.7 && level >= 4) out = [level - 2, level - 1, level].map((k) => k * v.base)
+    else if (pick < 0.7 && level === 3 && v.base > 9) out = [18, 2 * v.base, v.value]
+    else if (level === 2 && v.base > 9) out = [18, v.value, 3 * v.base]
+    else out = [Math.max(2, level - 1), Math.max(2, level - 1) + 1, Math.max(2, level - 1) + 2].map((k) => k * v.base)
+  } else {
+    const under = [...BIDS].reverse().find((b) => b < bid && !NULL_BIDS[b])
+    const over = BIDS.find((b) => b > bid && !NULL_BIDS[b])!
+    out = under !== undefined && under >= 18 && pick >= 0.35 ? [under, bid, v.value] : bid > 18 && over < v.value ? [bid, over, v.value] : [bid, v.value, (level + 1) * v.base]
+  }
   out = [...new Set(out)].sort((a, b) => a - b)
   return out.length === 3 && out.every((o) => BIDS.includes(o)) ? out : null
 }
@@ -123,7 +129,7 @@ pool.deals.forEach((d, i) => {
       if (!n) continue
       q = { ...base, bid: maxBid, contract: n.contract, sure: Math.round(n.sure * 100) / 100, games: Object.fromEntries(KEYS.map((k) => [k, pct(g.made[k][bidIndex(maxBid)])])) }
       if (n.contract !== 'N') {
-        const options = optionsOf(hand, n.contract as GameKey, maxBid)
+        const options = optionsOf(hand, n.contract as GameKey, maxBid, rng(`options|${i}|${seat}`)())
         if (!options) continue
         q.options = options
         q.odds = options.map((o) => pct(g.made[n.contract as GameKey][bidIndex(o)]))

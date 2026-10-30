@@ -199,7 +199,7 @@ Since SKATGO-159 (the human: 「叫牌练习感觉搞的太简单了……基本
 every other one the rules of thumb get wrong in a step: a pass with such a hand, a game without one, another game than
 the longest suit, or a bid below the count ("how far", the human: 「加入」; SkatZero bids past the count only in a Hand
 game, which is not asked). Those are explained with SkatZero's own
-numbers, which SKATGO-149 kept off the page: the chance it makes a game at a bid, over every skat — of each number offered,
+numbers, which SKATGO-149 kept off the page, said as the AI's (SKATGO-146), each once: the chance it makes a game at a bid, over every skat — of each number offered,
 of the longest suit beside the game it plays, of the routine's game where it passes — and a bid off the count is asked
 only where that chance falls right above it, or for a borderline game said at 18. The run goes from the rules of thumb's
 questions to those where they miss the bid or pass and play, then those where they miss the game. A bidding cheat sheet

@@ -420,11 +420,11 @@ const grandPoints = (q: Practice, hand: Card[]) => jacksOf(hand) + sideAces(hand
 
 /** Which rule of the cheat sheet a suit game meets, from its trumps and the Aces beside them — said only as far as the
  *  facts go: where the rules would not have played it, the line says so and that the AI plays it anyway. */
-function suitRule(trumps: number, aces: number, jacks: number): string {
+function suitRule(trumps: number, aces: number): string {
   if (trumps >= 6 && aces > 0) return m.bidpractice_rule_good({ trumps })
   if (trumps >= 6) return m.bidpractice_rule_six({ trumps })
   if (trumps === 5 && aces > 0) return m.bidpractice_rule_least()
-  return m.bidpractice_rule_thin({ trumps, aces: acesWords(aces), jacks })
+  return m.bidpractice_rule_thin({ trumps, aces: acesWords(aces) })
 }
 
 /** Why the AI passes, by the same rules. */
@@ -443,15 +443,20 @@ function runOf(g: Valued): string {
 /** The routine's game by name, for the explanation: "Spades ♠". */
 const keyName = (k: GameKey) => (k === 'G' ? 'Grand' : contractName({ kind: 'suit', trump: k }))
 
-/** SkatZero's chance at each number offered: "24 — 92% · 36 — 71% · 48 — 38%". */
-const oddsLine = (q: Practice) => (q.options ?? []).map((o, i) => `${o} — ${q.odds?.[i]}%`).join(' · ')
+/** The AI's chance at each number offered, and at the bid right above a stop below the count: "24 — 70% · 27 — 58% ·
+ *  48 — 47% · 60 — 4%". */
+const oddsLine = (q: Practice) =>
+  [...(q.options ?? []).map((o, i): [number, number] => [o, q.odds?.[i] ?? 0]), ...(q.above && !q.options?.includes(q.above[0]) ? [q.above] : [])]
+    .sort((a, b) => a[0] - b[0])
+    .map(([o, p]) => `${o} — ${p}%`)
+    .join(' · ')
 
 /**
  * The explanation, as the two steps were asked (SKATGO-151, the human: 「为啥你现在这个解析反而还不如以前详细了？」): why this
  * contract — the trumps of every suit and the cheat sheet's rule it meets; why this bid — the matadors counted card by
  * card, game, the base; then what the player chose instead: the facts of that contract by the same rules, and what that
- * number would have needed. Since SKATGO-159 where the rules of thumb fail SkatZero's own chances say why (the human
- * agreed to 「AI 在各价位的胜率」): of the routine's game when it passes, of the longest suit when it plays another, of
+ * number would have needed. Since SKATGO-159 where the rules of thumb fail the AI's own chances say why (the human
+ * agreed to 「AI 在各价位的胜率」; never by SkatZero's name, SKATGO-146): of the routine's game when it passes, of the longest suit when it plays another, of
  * each number offered when it stops below the count.
  */
 function explanation(q: Practice, contract: ContractKey, value: number | null): [string, string][] {
@@ -477,18 +482,16 @@ function explanation(q: Practice, contract: ContractKey, value: number | null): 
   } else {
     const g = a.game
     const key = sol.contract as GameKey
-    const jacks = jacksOf(hand)
-    const rule = g.contract.kind === 'grand' ? m.bidpractice_rule_grand({ points: grandPoints(q, hand) }) : suitRule(g.trumps, sideAces(hand, g.contract.kind === 'suit' ? g.contract.trump : undefined), jacks)
-    const chance = q.games?.[key] !== undefined ? ` ${m.bidpractice_chance_at({ bid: at, chance: q.games[key]! })}` : ''
+    const rule = g.contract.kind === 'grand' ? m.bidpractice_rule_grand({ points: grandPoints(q, hand) }) : suitRule(g.trumps, sideAces(hand, g.contract.kind === 'suit' ? g.contract.trump : undefined))
+    // The AI's own chance is in the line of chances below; here only the longest suit's beside it, when it plays another.
     const rk = routine.contract
     const longest = rk !== 'pass' && rk !== 'N' && rk !== key && q.games?.[rk] !== undefined ? ` ${m.bidpractice_longest_at({ game: keyName(rk), bid: at, chance: q.games[rk]! })}` : ''
-    lines.push(['contract', `${m.bidpractice_ex_plays({ game: contractName(g.contract), counts })} ${rule}${chance}${longest}`])
+    lines.push(['contract', `${m.bidpractice_ex_plays({ game: contractName(g.contract), counts })} ${rule}${longest}`])
     if (q.bid === g.value) lines.push(['value', m.bidpractice_ex_value({ value: g.value, run: runOf(g), ...calc(g) })])
     else {
-      // SkatZero stops below the count — a pickup game is never bid past it, only a Hand game, which is not asked.
-      const step = q.above
-        ? m.bidpractice_ex_under({ bid: q.bid, next: q.above[0], above: q.above[1] })
-        : m.bidpractice_ex_border({ chance: q.odds?.[q.options?.indexOf(q.bid) ?? -1] ?? 0 })
+      // The AI stops below the count — a pickup game is never bid past it, only a Hand game, which is not asked — and
+      // only ever on a "without" hand, whose run a Bube in the skat shortens.
+      const step = q.above ? m.bidpractice_ex_under({ bid: q.bid }) : m.bidpractice_ex_border()
       lines.push(['value', `${step} ${m.bidpractice_ex_count({ value: g.value, run: runOf(g), ...calc(g) })}`])
     }
     if (q.odds) lines.push(['odds', m.bidpractice_ex_odds({ game: contractName(g.contract), odds: oddsLine(q) })])

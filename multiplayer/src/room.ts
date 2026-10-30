@@ -9,7 +9,7 @@ import { nameOf } from './daily'
 import { deckOf, plan, poolDealIndex, type Pool } from './free'
 import {
   applyAction, applySeatMove, claimSeat, commandSchema, emptyRoom, GRACE_MS, hash, newRoom, privateView, publicView,
-  Rejected, scoreEnded, secretEquals, TTL_MS, type PoolDeal, type Snapshot,
+  Rejected, roomOnly, scoreEnded, secretEquals, TTL_MS, type PoolDeal, type Snapshot,
 } from './model'
 import type { Policy } from './skatzero/policy'
 import { MatchState, PlayerState } from './state'
@@ -85,7 +85,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         // A number nobody's live room holds (the table's key keeps it unique); a few tries, then the room is refused.
         let stored = false
         for (let i = 0; i < 20 && !stored; i++) {
-          this.snapshot = newRoom(drawNumber(), by.account, nickname, pick(2))
+          this.snapshot = newRoom(drawNumber(), by.account, nickname)
           stored = await store.create(this.snapshot)
         }
         if (!stored) throw new ServerError(503, 'room_capacity')
@@ -205,9 +205,9 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
       const result = await store.change(this.roomId, async (s, c) => {
         const p = s.seats[seat]
         if (!ready() || p?.session !== client.sessionId) throw new Rejected('not_your_seat')
-        // A newcomer waiting for the next deal, whose seat a computer plays, may still deal it, leave, or — the host — take
-        // someone out; a move is the computer's.
-        if (p.autopilot && type !== 'next' && type !== 'leave' && type !== 'kick') throw new Rejected('not_your_seat')
+        // A newcomer waiting for the next deal, whose seat a computer plays, may still deal it, leave, or — the host — run
+        // the room; a move is the computer's.
+        if (p.autopilot && type !== 'next' && !roomOnly(cmd.action)) throw new Rejected('not_your_seat')
         const fingerprint = hash(JSON.stringify(cmd.action))
         const prior = await c.query(
           'SELECT fingerprint, receipt FROM multiplayer_commands WHERE room_id=$1 AND seat=$2 AND id=$3',
@@ -217,14 +217,14 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           if (prior.rows[0].fingerprint !== fingerprint) throw new Rejected('command_id_reused')
           return { changed: false, value: prior.rows[0].receipt }
         }
-        const room = type === 'kick' || type === 'leave'
+        const room = roomOnly(cmd.action)
         // Stale only if the game changed since the move was made: someone else dropping or coming back
-        // changes the table, not the game (SKATGO-117). Taking someone out or leaving is no move.
+        // changes the table, not the game (SKATGO-117). Running the room is no move.
         if (!room && (cmd.revision < (s.played ?? s.revision) || cmd.revision > s.revision)) throw new Rejected('stale_revision')
         const sessions = s.seats.map(x => x.session)
         applyAction(s, seat, cmd.action, pick)
         s.seats.forEach((x, i) => { if (sessions[i] && x.session !== sessions[i]) gone.push(sessions[i]!) })
-        if (!room) s.played = s.revision + 1
+        if (!room || type === 'start') s.played = s.revision + 1
         s.nextActionAt = Date.now() + aiDelay
         s.expiresAt = Date.now() + TTL_MS
         const receipt = { id: cmd.id, ok: true, revision: s.revision + 1 }

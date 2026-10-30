@@ -9,8 +9,8 @@ import type { Declaration } from './value'
 
 export type RoomSeat = {
   seat: number
-  /** A person's seat, or a computer's (SKATGO-163: there is no empty chair; a room plays from its first moment). */
-  kind: 'human' | 'ai'
+  /** A person's seat, a computer's, or — while the room waits for its first deal (SKATGO-163) — an empty one. */
+  kind: 'human' | 'ai' | 'empty'
   nickname: string | null
   /** The room's host: who may take a person out. */
   host: boolean
@@ -28,7 +28,7 @@ export type RoomPublic = {
   roomId: string
   revision: number
   expiresAt: number
-  /** Deals dealt so far. */
+  /** Deals dealt so far; 0 while the room waits for the host to start. */
   deals: number
   /** Each seat's Seeger-Fabian total over the deals that ended — a newcomer's since they sat down. */
   scores: [number, number, number]

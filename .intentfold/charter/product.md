@@ -137,14 +137,17 @@ an account's deals are recorded. A first version, to be refined with the human (
 
 Private tables at `/with-friends` (SKATGO-61) are rooms since SKATGO-163 (the human: 「一个人开一个房间，可以打2个ai。另一个人
 可以加入进来，需要6位数字邀请码，是房间号。还能再加入一个人，替换掉ai。如果三人满了，输入房间号就不能再加人了」, 「用同类游戏的最常见的实践，
-但是是简洁直观版，不要复杂化」): whoever opens a room plays at once against two computer players; a friend comes in with
-the room's six-digit number, or its link, and takes a computer's seat from the next deal, starting at 0; a third takes the
-last one; with three people the number lets nobody else in. Everyone at the table has an account, the room's host and
+但是是简洁直观版，不要复杂化」): a room waits first, showing its six-digit number with its link to copy; friends come in
+with the number, or the link, and sit down at once; the host gives a seat nobody takes to the AI, or takes it back, and
+starts the game once every seat is taken (「房间建好后，房主点进去，应该有个等待的页面，显示口令，复制按钮，然后等待拿到口令的人加入（或者设置为
+AI），点开始游戏」). Once it plays, a friend coming in takes a computer's seat from the next deal, starting at 0; with three
+people the number lets nobody else in. Everyone at the table has an account, the room's host and
 whoever comes in alike (the human: 「我打算把私人桌改成必须三个玩家都登录」), and sits under the name the boards show; an
 account is in one room at a time. The page offers two cards, a new room and a room to come into, or, while the account
-is in one, the way back to it (「私人桌进入后，两张卡片，新建房间，加入房间。如果已经在了一个房间，则显示回到房间」). The room's
-number is an item of the menu behind the table's way out, and a tap copies its link (「点击后复制链接，而不只是房间号」, then, the
-corner not working: 「我建议放到退出按钮里，加一个菜单项」).
+is in one, the way back to it (「私人桌进入后，两张卡片，新建房间，加入房间。如果已经在了一个房间，则显示回到房间」). At the table the
+room's number is an item of the table's menu, and a tap copies its link (「点击后复制链接，而不只是房间号」, then, the
+corner not working: 「我建议放到退出按钮里，加一个菜单项」); a room's menu button is the table's, not the way out of other
+tables (「私人牌桌中，不要退出按钮，而要一个牌桌按钮。以示不同。然后菜单内容还相同」).
 The seat of someone away, whom a computer plays for, may be taken by someone coming in; the host may take a person out,
 who may come back with the number (「别人可以占用，但是房主可以踢人」, 「踢了还可以自己加，基于信任」). Leaving passes the host's role
 on; the last one leaving closes the room. A newcomer who signs up to come into a room is recorded once as brought by its

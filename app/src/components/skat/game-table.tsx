@@ -1585,6 +1585,8 @@ function useCardSounds(game: Game) {
  * corner, across from where the assistant's launcher stood at the top left until SKATGO-130, on every full-screen table. It opens a small menu — keep
  * playing, give up free play's round for a new one (asked once more first), or leave the table. Leaving loses
  * nothing: free play's game waits in this browser, the tournament's on the server, a private table's in its room.
+ * A room's button is the table's, a spade as the panel's Game tab, not the way out (SKATGO-163, the human:
+ * 「私人牌桌中，不要退出按钮，而要一个牌桌按钮。以示不同。然后菜单内容还相同」).
  */
 function TableMenu({ leave, newRound, room }: {
   leave: '/' | '/daily' | '/skat-tricks'
@@ -1618,13 +1620,16 @@ function TableMenu({ leave, newRound, room }: {
     <div ref={box} data-testid="skat-menu" {...stylex.props(styles.menuCorner)}>
       <button
         type="button"
-        aria-label={m.table_menu()}
+        aria-label={room ? m.room_menu() : m.table_menu()}
         aria-expanded={open}
         data-testid="skat-menu-button"
+        data-kind={room ? 'table' : 'out'}
         onClick={() => (open ? close() : setOpen(true))}
         {...stylex.props(styles.menuButton)}
       >
-        <LogOut aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
+        {room
+          ? <Spade aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
+          : <LogOut aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />}
       </button>
       {open ? (
         <div data-testid="skat-menu-list" {...stylex.props(styles.menuList)}>
@@ -1667,9 +1672,8 @@ function TableMenu({ leave, newRound, room }: {
   )
 }
 
-/** A room's number in the way out's menu (SKATGO-163, the human: 「我建议放到退出按钮里，加一个菜单项」): a tap copies the
- *  room's link — the page's own address, in its language — and the item says so for a moment. */
-function RoomLink({ code }: { code: string }) {
+/** A room's link to copy (SKATGO-163): the page's own address, in its language — and whether it was copied a moment ago. */
+export function useRoomLink(code: string): [boolean, () => void] {
   const [copied, setCopied] = useState(false)
   useEffect(() => {
     if (!copied) return
@@ -1680,6 +1684,13 @@ function RoomLink({ code }: { code: string }) {
     const link = `${window.location.origin}${localizeHref(`/table/${code}`, { locale: getLocale() })}`
     void navigator.clipboard?.writeText(link).then(() => setCopied(true), () => {})
   }
+  return [copied, copy]
+}
+
+/** A room's number in the table's menu (SKATGO-163, the human: 「我建议放到退出按钮里，加一个菜单项」): a tap copies the
+ *  room's link, and the item says so for a moment. */
+function RoomLink({ code }: { code: string }) {
+  const [copied, copy] = useRoomLink(code)
   return (
     <Btn testId="room-number" tone="quiet" shape="block" onClick={copy}>
       {copied ? m.room_link_copied() : m.room_number_copy({ code: `${code.slice(0, 3)} ${code.slice(3)}` })}

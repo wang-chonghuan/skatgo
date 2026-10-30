@@ -20,11 +20,12 @@ import { elev, fill } from '../../theme/elevation.stylex'
 import { space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { GameTable } from './game-table'
+import { GameTable, useRoomLink } from './game-table'
 import { Btn, Panel, Pill, TextField, linkLook } from './ui'
 
 // A private room in the browser (SKATGO-61; rooms since SKATGO-163): the friends page's cards — a new room, a room
-// to come into by its number, or the way back to one's own — and the room itself. The room lives in the multiplayer
+// to come into by its number, or the way back to one's own — and the room itself: waiting for its players, then the
+// table. The room lives in the multiplayer
 // service (lib/room-client.ts); this file only draws what it publishes and sends this seat's moves. Every seat is an
 // account's, so a signed-out visitor signs in first. A lost connection keeps trying to come back for two minutes
 // before it says so.
@@ -51,7 +52,7 @@ export const spaced = (code: string) => `${code.slice(0, 3)} ${code.slice(3)}`
 
 /**
  * The friends page's cards (SKATGO-163, the human: 「私人桌进入后，两张卡片，新建房间，加入房间。如果已经在了一个房间，则显示回到
- * 房间」): a new room, played at once beside two computers, and a room to come into by its number — or, while the
+ * 房间」): a new room, and a room to come into by its number — or, while the
  * account is in a room, only the way back to it. A signed-out visitor's tap opens Clerk's window first, and what
  * they tapped goes on once they are signed in.
  */
@@ -358,6 +359,7 @@ export function PrivateTable() {
     )
   }
   if (!shown) return <Notice text={m.loading()} quiet />
+  if (shown.pub.deals === 0) return <Waiting state={shown} busy={sending || dropped || stage.kind !== 'seated'} send={send} />
   // While the connection comes back — the SDK's own reconnection, or the tries after it — the table stays on screen
   // under one line, and takes no moves. A newcomer is told when they start.
   const away = dropped || stage.kind !== 'seated'
@@ -376,15 +378,78 @@ export function PrivateTable() {
   )
 }
 
-/** A seat's name as the viewer reads it: a person's nickname (the viewer is "you"), Lina or Noah for a computer's
- *  seat — the first computer in seat order Lina, the other Noah — marked when a computer plays it, for good or for
- *  someone away. */
+/** A room seat's own name: a person's nickname (the viewer is "you"), Lina or Noah for a computer's seat — the first
+ *  computer in seat order Lina, the other Noah. */
+function seatName(state: TableState, seat: number): string {
+  const s = state.pub.seats[seat]
+  const computers = state.pub.seats.filter((x) => x.kind === 'ai').map((x) => x.seat)
+  return seat === state.mine.seat ? m.name_you() : s.nickname ?? (computers.indexOf(seat) === 0 ? m.name_lina() : m.name_max())
+}
+
+/**
+ * A room before its first deal (SKATGO-163, the human: 「房间建好后，房主点进去，应该有个等待的页面，显示口令，复制按钮，然后等待拿到
+ * 口令的人加入（或者设置为AI），点开始游戏」): its number with its link to copy, and the three seats — a person, the AI, or
+ * waiting for someone with the number. The host gives a waiting seat to the AI or takes it back, may take a person out,
+ * and starts once every seat is taken; the others wait for them. Anyone may leave.
+ */
+function Waiting({ state, busy, send }: { state: TableState; busy: boolean; send: (a: RoomAction) => void }) {
+  const code = state.pub.roomId
+  const me = state.mine.seat
+  const seats = state.pub.seats
+  const host = seats[me].host
+  const ready = seats.every((s) => s.kind !== 'empty')
+  const [copied, copy] = useRoomLink(code)
+  /** The host's way with a seat: an empty one to the AI, the AI's back, a person out. */
+  const action = (seat: number) => {
+    const s = seats[seat]
+    if (!host || seat === me) return null
+    if (s.kind === 'empty') return <Btn testId="room-seat-ai" tone="quiet" size="sm" disabled={busy} onClick={() => send({ type: 'computer', seat, on: true })}>{m.room_seat_ai()}</Btn>
+    if (s.kind === 'ai') return <Btn testId="room-seat-free" tone="quiet" size="sm" disabled={busy} onClick={() => send({ type: 'computer', seat, on: false })}>{m.room_seat_free()}</Btn>
+    return <Btn testId="room-seat-kick" tone="quiet" size="sm" disabled={busy} onClick={() => send({ type: 'kick', seat })}>{m.room_kick_yes()}</Btn>
+  }
+  return (
+    <Shell>
+      <div data-testid="room-waiting" data-room={code} data-seat={me} data-host={String(host)} data-seats={seats.map((s) => s.kind).join(',')} {...stylex.props(styles.form)}>
+        <h1 {...stylex.props(typography.optionTitle, styles.ink)}>{m.room_waiting_title()}</h1>
+        <div {...stylex.props(styles.number)}>
+          <span {...stylex.props(typography.infoLabel, styles.slate)}>{m.room_join_text()}</span>
+          <div {...stylex.props(styles.row)}>
+            <span data-testid="room-code" {...stylex.props(typography.landingHeading, styles.ink)}>{spaced(code)}</span>
+            <Btn testId="room-copy" tone="quiet" onClick={copy}>{copied ? m.room_link_copied() : m.room_copy_link()}</Btn>
+          </div>
+          <p {...stylex.props(typography.appText, styles.slate)}>{m.room_waiting_lead()}</p>
+        </div>
+        <ul {...stylex.props(styles.seats)}>
+          {seats.map((s) => (
+            <li key={s.seat} data-testid="room-seat" data-kind={s.kind} {...stylex.props(styles.seat)}>
+              <span {...stylex.props(typography.appText, s.kind === 'empty' ? styles.slate : styles.ink)}>
+                {s.kind === 'empty' ? m.room_seat_empty() : s.kind === 'ai' ? m.table_computer({ name: seatName(state, s.seat) }) : seatName(state, s.seat)}
+              </span>
+              {s.host ? <Pill>{m.room_host()}</Pill> : null}
+              <span {...stylex.props(styles.seatAction)}>{action(s.seat)}</span>
+            </li>
+          ))}
+        </ul>
+        {host ? (
+          <>
+            <Btn testId="room-start" shape="block" size="lg" disabled={!ready || busy} onClick={() => send({ type: 'start' })}>{m.room_start()}</Btn>
+            {ready ? null : <p {...stylex.props(typography.note, styles.slate)}>{m.room_start_wait()}</p>}
+          </>
+        ) : (
+          <p data-testid="room-wait-host" {...stylex.props(typography.appText, styles.ink)}>{m.room_wait_host({ name: seats.find((s) => s.host)?.nickname ?? '' })}</p>
+        )}
+        <Btn testId="room-leave" tone="quiet" shape="block" disabled={busy} onClick={() => send({ type: 'leave' })}>{m.room_leave()}</Btn>
+      </div>
+    </Shell>
+  )
+}
+
+/** A seat's name at the table: its own name, marked when a computer plays it, for good or for someone away. */
 function seatNames(state: TableState): [string, string, string] {
   const me = state.mine.seat
-  const computers = state.pub.seats.filter((s) => s.kind === 'ai').map((s) => s.seat)
   return [0, 1, 2].map((view) => {
     const s = state.pub.seats[roomSeat(view, me)]
-    const name = view === 0 ? m.name_you() : s.nickname ?? (computers.indexOf(s.seat) === 0 ? m.name_lina() : m.name_max())
+    const name = seatName(state, s.seat)
     // A person waiting for their first game is named as themselves, though a computer finishes this one for them.
     return s.control === 'ai' && !s.joining ? m.table_computer({ name }) : name
   }) as [string, string, string]
@@ -472,5 +537,21 @@ const styles = stylex.create({
     boxShadow: elev.option,
   },
   standings: { display: 'flex', flexDirection: 'column', gap: space.x6 },
+  // The waiting room: the number, then the seats, one row each.
+  number: { display: 'flex', flexDirection: 'column', gap: space.x6 },
+  seats: { display: 'flex', flexDirection: 'column', gap: space.x8, margin: 0, padding: 0, listStyle: 'none' },
+  seat: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: space.x10,
+    // A row with the host's small button in it is as tall as one without.
+    minHeight: space.x48,
+    boxSizing: 'border-box',
+    paddingBlock: space.x8,
+    paddingInline: space.x12,
+    borderRadius: radii.panel,
+    backgroundColor: color.page,
+  },
+  seatAction: { marginInlineStart: 'auto' },
   play: { display: 'flex', flexDirection: 'column', flexGrow: 1 },
 })

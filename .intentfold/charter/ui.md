@@ -382,8 +382,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   beitreten" with a six-digit field (the phone's number pad) and a `quiet` button; while the account is in a room, the
   one card "Raum 482 917" with its `go` way back. A guest's tap opens Clerk's window, and what was tapped goes on once
   signed in. How a room goes and its rules are on About SkatGo (SKATGO-134). A room's own page (`/table/<number>`):
-  the table, or one line — signing in first, or why the room cannot be entered — with its ways on.
-  At the table, the way out's menu holds the room: under "Weiterspielen", "Raum 482 917 · Link kopieren" (`quiet`), which
+  its waiting page, the table, or one line — signing in first, or why the room cannot be entered — with its ways on.
+  The waiting page is one white panel on the felt: "Warten auf Mitspieler" (`optionTitle`), "Raumnummer" (`infoLabel`)
+  over the number (`landingHeading`) and "Link kopieren" (`quiet`, "Link kopiert" for a moment), one line to share it;
+  the three seats, one grey row each — "Du", a name, "Lina (KI)", or "Wartet auf einen Spieler …" (slate) — the
+  host's marked "Gastgeber" (`Pill`), and for the host a small `quiet` button per seat: "KI spielen lassen", "KI
+  entfernen", "Entfernen"; then the host's "Spiel starten" (`go`, block, large), disabled with one slate line until
+  every seat is taken, or for the others "Warte, bis <Name> das Spiel startet"; and "Raum verlassen" (`quiet`, block).
+  At the table, the top right button is the table's — a spade, as the panel's Game tab, where other tables have the
+  way out (SKATGO-163) — and its menu holds the room: under "Weiterspielen", "Raum 482 917 · Link kopieren" (`quiet`), which
   copies the room's link and reads "Link kopiert" for a moment; for the host, "<Name> entfernen" (`quiet`) per person;
   and "Raum verlassen" (`stop`) — removing and leaving each asked once more. Nothing of the room stands on the felt. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —

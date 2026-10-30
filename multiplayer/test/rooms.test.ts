@@ -101,8 +101,8 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
   const someone = () => `user:t${++people}`
   const open = (account: string) => new Client(endpoint).create('skat', { admissionKey, account })
   const enter = (code: string, account: string) => new Client(endpoint).joinById(code, { admissionKey, account })
-  /** A room with its host in seat 0 and `count - 1` newcomers, every one playing — the first deal played out by the
-   *  host and the computers, the next dealt — unless `fresh`, the room as it is the moment they came in. */
+  /** A room with its host in seat 0 and `count - 1` people who came in while it waited, the other seats the AI's, the
+   *  first deal dealt — unless `fresh`, the room still waiting the moment they came in. */
   async function create(count: number, fresh = false) {
     const host = someone()
     const p = await attach(await open(host), host)
@@ -112,10 +112,10 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       group.push(await attach(await enter(p.room.roomId, a), a))
     }
     await until(() => p.public.seats.filter(s => s.connected).length === count)
-    if (count > 1 && !fresh) {
-      await complete([p])
-      assert((await send(p, { type: 'next' })).ok)
-      await until(() => group.every(x => x.public.deals === 2 && !x.public.seats[x.seat].joining))
+    if (!fresh) {
+      for (let seat = count; seat < 3; seat++) assert((await send(p, { type: 'computer', seat, on: true })).ok)
+      assert((await send(p, { type: 'start' })).ok)
+      await until(() => group.every(x => x.public.deals === 1))
     }
     return { p, group }
   }
@@ -185,9 +185,10 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       const name = (await sql.query('SELECT nickname FROM daily_players WHERE player = $1', [anna])).rows[0].nickname
       assert(name && p.public.seats[0].nickname === name, 'the host sits under the account\'s name')
       assert(p.public.seats[0].host)
-      // Played from the start, beside two computers.
-      assert.equal(p.public.deals, 1)
-      assert.deepEqual(p.public.seats.map(x => x.control), ['human', 'ai', 'ai'])
+      // It waits, two seats empty, nothing dealt.
+      assert.equal(p.public.deals, 0)
+      assert.deepEqual(p.public.seats.map(x => x.kind), ['human', 'empty', 'empty'])
+      assert.deepEqual(p.private.hand, [])
       await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(token(), { purpose: 'open', user: someone() }) }))
       await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, { purpose: 'open', user: someone() }, Date.now() - TICKET_MS - 1000) }))
       await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, { purpose: 'join', user: someone(), room: room.roomId }) }), /admission_denied/)
@@ -200,6 +201,47 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       await assert.rejects(new Client(endpoint).joinById(other.p.room.roomId, { ticket }), /admission_denied/)
       const b = await attach(await new Client(endpoint).joinById(p.room.roomId, { ticket }), ben)
       assert.equal(b.seat, 1)
+    })
+    await t.test('a waiting room: people sit down at once, the host gives seats to the AI or takes them back, and starts', async () => {
+      const { p, group } = await create(2, true)
+      const b = group[1]
+      assert.equal(b.seat, 1)
+      assert.equal(b.public.seats[1].joining, false)
+      assert.deepEqual(p.public.seats.map(x => x.kind), ['human', 'human', 'empty'])
+      // Only the host runs the room, and only while it waits; nothing is played before the first deal.
+      assert.equal((await send(b, { type: 'computer', seat: 2, on: true })).error, 'cannot_seat')
+      assert.equal((await send(b, { type: 'start' })).error, 'cannot_start')
+      assert.equal((await send(p, { type: 'start' })).error, 'cannot_start', 'a seat is still empty')
+      assert.equal((await send(p, { type: 'computer', seat: 1, on: true })).error, 'cannot_seat', 'a person\'s seat')
+      assert.equal((await send(p, { type: 'bid', value: 'pass' })).error, 'not_your_turn')
+      assert((await send(p, { type: 'computer', seat: 2, on: true })).ok)
+      await until(() => b.public.seats[2].kind === 'ai')
+      assert((await send(p, { type: 'computer', seat: 2, on: false })).ok)
+      await until(() => b.public.seats[2].kind === 'empty')
+      assert((await send(p, { type: 'computer', seat: 2, on: true })).ok)
+      // Someone with the number still takes the AI's seat, and plays from the start.
+      const c = someone()
+      const pc = await attach(await enter(p.room.roomId, c), c)
+      assert.equal(pc.seat, 2)
+      assert.equal(pc.public.seats[2].joining, false)
+      // Taken out or gone while it waits, a seat is empty again.
+      assert((await send(p, { type: 'kick', seat: 2 })).ok)
+      await until(() => pc.dismissed === 'kicked')
+      await until(() => p.public.seats[2].kind === 'empty')
+      assert((await send(b, { type: 'leave' })).ok)
+      await until(() => p.public.seats[1].kind === 'empty')
+      const d = someone()
+      const pd = await attach(await enter(p.room.roomId, d), d)
+      assert.equal(pd.seat, 1)
+      assert((await send(p, { type: 'computer', seat: 2, on: true })).ok)
+      assert((await send(p, { type: 'start' })).ok)
+      await until(() => [p, pd].every(x => x.public.deals === 1 && x.public.phase === 'bidding'))
+      assert.equal(p.public.dealer, 2)
+      assert.deepEqual(p.public.seats.map(x => x.control), ['human', 'human', 'ai'])
+      const s = await snapshot(p.room.roomId)
+      for (const x of [p, pd]) assert.deepEqual(x.private.hand, s.game!.hands[x.seat])
+      assert.equal((await send(p, { type: 'computer', seat: 2, on: false })).error, 'cannot_seat', 'the game has started')
+      assert.equal((await send(p, { type: 'start' })).error, 'cannot_start')
     })
     await t.test('newcomers take the computers\' seats and play from the next deal, from 0; a full room takes nobody', async () => {
       const { p, group } = await create(1)

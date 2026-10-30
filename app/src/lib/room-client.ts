@@ -105,7 +105,13 @@ export function readState(room: Room): TableState | null {
 }
 
 /** What a seat sends: a move, the next deal, or — SKATGO-163 — the host taking a person out, or leaving. */
-export type RoomAction = Move | { type: 'next' } | { type: 'kick'; seat: number } | { type: 'leave' }
+export type RoomAction =
+  | Move
+  | { type: 'next' }
+  | { type: 'kick'; seat: number }
+  | { type: 'leave' }
+  | { type: 'computer'; seat: number; on: boolean }
+  | { type: 'start' }
 
 /** One move or table action, sent with the revision it was made at; the service answers with a receipt
  *  carrying the returned id. */

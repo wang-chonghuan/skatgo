@@ -15,15 +15,15 @@ import { seegerFabian } from './tournament'
 /** The public view the service would publish for `g` (multiplayer's publicView, for a dealt game). */
 function publish(g: ReturnType<typeof deal>): RoomPublic {
   return {
-    roomId: 'r', revision: 1, humanSeats: 3, expiresAt: 0, started: true, deals: 1, scores: [0, 0, 0],
-    seats: [0, 1, 2].map((seat) => ({ seat, kind: 'human', nickname: `P${seat}`, occupied: true, connected: true, control: 'human', reconnectUntil: null, cardCount: g.hands[seat].length })),
+    roomId: '482917', revision: 1, expiresAt: 0, deals: 1, scores: [0, 0, 0],
+    seats: [0, 1, 2].map((seat) => ({ seat, kind: 'human', nickname: `P${seat}`, host: seat === 0, connected: true, control: 'human', joining: false, reconnectUntil: null, cardCount: g.hands[seat].length })),
     phase: g.phase, actor: null, turn: g.turn, dealer: g.dealer, bidding: g.bidding, declarer: g.declarer, bid: g.bid,
     pickedUp: g.pickedUp, declaration: g.declaration, trick: g.trick, tricks: g.tricks, result: g.result,
     ouvertHand: null, skat: null, early: null,
   }
 }
 
-describe('a private table seen from each seat', () => {
+describe('a private room seen from each seat', () => {
   it('turns seats so the viewer is 0 and the order stays clockwise', () => {
     for (const me of [0, 1, 2] as Seat[]) {
       expect(viewSeat(me, me)).toBe(0)
@@ -59,12 +59,12 @@ describe('a private table seen from each seat', () => {
     }
   })
 
-  it('has nothing to draw in the lobby', () => {
-    expect(roomGame({ ...publish(deal(0, fullDeck())), phase: 'lobby', bidding: null }, { seat: 0, hand: [], buried: [] })).toBeNull()
+  it('has nothing to draw before a deal', () => {
+    expect(roomGame({ ...publish(deal(0, fullDeck())), bidding: null }, { seat: 0, hand: [], buried: [] })).toBeNull()
   })
 })
 
-describe('a private table\'s admission ticket', () => {
+describe('a private room\'s admission ticket', () => {
   const key = 'k'.repeat(64)
   const open = { purpose: 'open', user: 'user:user_2abc' } as const
   it('is good for two minutes with the key that signed it', () => {
@@ -75,23 +75,34 @@ describe('a private table\'s admission ticket', () => {
     expect(ticketClaims(key, t, now + TICKET_MS)).toBeNull()
     expect(ticketClaims('x'.repeat(64), t, now)).toBeNull()
   })
-  it('says what it is for: opening names the account, joining names none (SKATGO-117)', () => {
-    expect(ticketClaims(key, issueTicket(key, { purpose: 'join' }))).toEqual({ purpose: 'join' })
+  it('names the account, and a join the room\'s number (SKATGO-163)', () => {
+    const join = { purpose: 'join', user: 'user:user_2abc', room: '482917' } as const
+    expect(ticketClaims(key, issueTicket(key, join))).toEqual(join)
     expect(ticketClaims(key, issueTicket(key, open))).toEqual(open)
-    // A ticket from before purposes (signed as the web signed it then) only sits down.
+    // A ticket of before (SKATGO-117's, signed as the web signed it then) — a join named no account — is refused.
     const body = Buffer.from(JSON.stringify({ v: 1, exp: Date.now() + TICKET_MS - 1000 })).toString('base64url')
     const mac = createHmac('sha256', Buffer.from(hkdfSync('sha256', key, Buffer.alloc(0), 'skatgo-room-ticket/1', 32))).update(body).digest('base64url')
-    expect(ticketClaims(key, `${body}.${mac}`)).toEqual({ purpose: 'join' })
+    expect(ticketClaims(key, `${body}.${mac}`)).toBeNull()
+    // A join without a well-formed number is refused.
+    const sign = (o: object) => {
+      const b = Buffer.from(JSON.stringify(o)).toString('base64url')
+      return `${b}.${createHmac('sha256', Buffer.from(hkdfSync('sha256', key, Buffer.alloc(0), 'skatgo-room-ticket/2', 32))).update(b).digest('base64url')}`
+    }
+    const exp = Date.now() + TICKET_MS - 1000
+    expect(ticketClaims(key, sign({ v: 2, exp, p: 'join', u: 'user:user_2abc', r: '482917' }))).toEqual(join)
+    expect(ticketClaims(key, sign({ v: 2, exp, p: 'join', u: 'user:user_2abc', r: '012345' }))).toBeNull()
+    expect(ticketClaims(key, sign({ v: 2, exp, p: 'join', u: 'user:user_2abc' }))).toBeNull()
+    expect(ticketClaims(key, sign({ v: 2, exp, p: 'join', r: '482917' }))).toBeNull()
   })
   it('is refused when altered or malformed', () => {
     const t = issueTicket(key, open)
     const [body, mac] = t.split('.')
-    const longer = Buffer.from(JSON.stringify({ v: 1, exp: Date.now() + 10 * TICKET_MS, p: 'open', u: 'user:user_2abc' })).toString('base64url')
+    const longer = Buffer.from(JSON.stringify({ v: 2, exp: Date.now() + 10 * TICKET_MS, p: 'open', u: 'user:user_2abc' })).toString('base64url')
     expect(ticketClaims(key, `${longer}.${mac}`)).toBeNull()
     expect(ticketClaims(key, `${body}.${mac}x`)).toBeNull()
     expect(ticketClaims(key, `${body}`)).toBeNull()
     expect(ticketClaims(key, 42)).toBeNull()
-    const noUser = Buffer.from(JSON.stringify({ v: 1, exp: Date.now() + TICKET_MS - 1000, p: 'open' })).toString('base64url')
+    const noUser = Buffer.from(JSON.stringify({ v: 2, exp: Date.now() + TICKET_MS - 1000, p: 'open' })).toString('base64url')
     expect(ticketClaims(key, `${noUser}.${mac}`)).toBeNull()
   })
 })

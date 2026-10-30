@@ -9,7 +9,7 @@ import { freeRoutes, loadPool } from './free'
 import { ladderRoutes } from './ladder'
 import { biddingRoutes } from './bidding'
 import { loadPolicy, type Policy } from './skatzero/policy'
-import { referralRoutes } from './referral'
+import { roomRoutes } from './referral'
 import { shareRoutes } from './shares'
 import { makeRoom, RESTORE } from './room'
 import { Store } from './store'
@@ -59,7 +59,7 @@ app.use('/daily', dailyRoutes(store, key, () => ready && !stopping, () => policy
 app.use('/free', freeRoutes(store, key, () => ready && !stopping, () => policy, () => pool))
 app.use('/ladder', ladderRoutes(store, key, () => ready && !stopping))
 app.use('/bidding', biddingRoutes(store, key, () => ready && !stopping))
-app.use('/rooms', referralRoutes(store, key, () => ready && !stopping))
+app.use('/rooms', roomRoutes(store, key, () => ready && !stopping))
 app.use('/forum', forumRoutes(store, key, () => ready && !stopping))
 app.use('/share', shareRoutes(store, key, () => ready && !stopping, () => policy))
 const httpServer = createServer(app)

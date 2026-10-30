@@ -87,7 +87,6 @@ export type ProductEvents = {
   /** A seat at someone's private table was taken. */
   room_joined: Empty
   /** The private table's first deal was started, with this many people seated. */
-  room_started: { humans: number }
 }
 export type GameMode = 'free' | 'lesson'
 export type SignInAt = 'header' | 'home' | 'daily' | 'profile' | 'tricks' | 'bidding' | 'forum_post' | 'forum_comment' | 'table_open' | 'table_sign_up'

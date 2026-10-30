@@ -7,7 +7,7 @@ import { cardPng } from './card'
 import { ComputerFailed, type Logged, advance, replayLog } from './computers'
 import { type DealSpec, computerTurn, dayOf, ended } from './daily'
 import { open, seal, tokenKey } from './free'
-import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals } from './model'
+import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals, roomOnly } from './model'
 import type { Policy } from './skatzero/policy'
 import type { Store } from './store'
 
@@ -137,7 +137,7 @@ export function shareRoutes(store: Store, admissionKey: string, ready: () => boo
   }))
   router.post('/practice/act', run(async (body) => {
     const i = z.object({ token: z.string().max(20_000), revision: z.number().int().nonnegative(), action: actionSchema }).strict().parse(body)
-    if (i.action.type === 'start') throw new Rejected('illegal_action')
+    if (roomOnly(i.action)) throw new Rejected('illegal_action')
     const t = open<Practice>(key, i.token)
     if (t.v !== 1 || i.revision !== t.log.length) throw new Rejected('stale_revision')
     const found = await dealOfDay(store, t.day)

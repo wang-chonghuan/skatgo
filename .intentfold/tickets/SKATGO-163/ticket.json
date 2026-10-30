@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-163",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-163",
+  "branch": "SKATGO-163-private-rooms",
+  "base": "a0799be2e0b08793ccdaa57b12c4016786eef3da",
+  "ports": { "web": 55163, "multiplayer": 56163, "database": 57163 }
+}

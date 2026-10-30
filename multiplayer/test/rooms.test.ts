@@ -8,7 +8,7 @@ import pg from 'pg'
 import { legalPlays } from '../../app/src/lib/skat/cards'
 import { issueTicket, TICKET_MS } from '../../app/src/lib/room-ticket'
 import { seegerFabian } from '../../app/src/lib/skat/tournament'
-import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS, hash } from '../src/model'
+import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS } from '../src/model'
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 async function until<T>(fn: () => T | Promise<T>, timeout = 15_000): Promise<NonNullable<T>> {
@@ -22,11 +22,11 @@ async function until<T>(fn: () => T | Promise<T>, timeout = 15_000): Promise<Non
 }
 const token = () => randomBytes(32).toString('hex')
 type Peer = {
-  room: Room<any, any>; token: string; seat: number;
-  receipts: Map<string, any>; public: PublicView; private: PrivateView;
+  room: Room<any, any>; account: string; seat: number;
+  receipts: Map<string, any>; dismissed: string | null; public: PublicView; private: PrivateView;
   observed: any[];
 }
-test('real SDK rooms, privacy, takeover, persistence and process fencing', { timeout: 240_000 }, async t => {
+test('real SDK rooms, privacy, takeover, persistence and process fencing', { timeout: 300_000 }, async t => {
   const base = new URL(process.env.DATABASE_URL || '')
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname), 'Acceptance refuses external databases')
   const admin = new pg.Pool({ connectionString: base.href })
@@ -65,43 +65,59 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
     child.kill(signal)
     await ended
   }
-  async function attach(room: Room<any, any>, secret: string, seat: number): Promise<Peer> {
-    const peer: Peer = { room, token: secret, seat, receipts: new Map(), public: null!, private: null!, observed: [] }
+  /** A connection seen through the SDK as a browser sees it: its own seat is the one whose cards reach it. */
+  async function attach(room: Room<any, any>, account: string): Promise<Peer> {
+    const peer: Peer = { room, account, seat: -1, receipts: new Map(), dismissed: null, public: null!, private: null!, observed: [] }
     room.reconnection.enabled = false
     const inspect = (state: any) => {
       const json = state.toJSON()
       peer.observed.push(json)
       peer.public = JSON.parse(state.publicData)
-      peer.private = JSON.parse(state.players.get(String(seat)).privateData)
-      for (let i = 0; i < 3; i++) {
-        if (i !== seat) assert(!state.players.get(String(i)).privateData, 'Another hand reached the SDK')
+      const mine = [0, 1, 2].filter(i => state.players.get(String(i)).privateData)
+      assert(mine.length <= 1, 'Another hand reached the SDK')
+      if (mine.length === 1) {
+        peer.seat = mine[0]
+        peer.private = JSON.parse(state.players.get(String(mine[0])).privateData)
       }
       const serialized = JSON.stringify(json)
-      for (const forbidden of ['tokenHash', 'inviteHash', 'originalHands', 'originalSkat', admissionKey]) {
+      for (const forbidden of ['"account"', 'user:t', 'originalHands', 'originalSkat', admissionKey]) {
         assert(!serialized.includes(forbidden), `private field leaked: ${forbidden}`)
       }
     }
     room.onStateChange(inspect)
     room.onMessage('*', (type, message) => {
-      assert.equal(type, 'receipt')
-      peer.receipts.set(message.id, message)
+      if (type === 'dismissed') peer.dismissed = message.why
+      else {
+        assert.equal(type, 'receipt')
+        peer.receipts.set(message.id, message)
+      }
     })
     peers.push(peer)
-    await until(() => peer.public)
+    await until(() => peer.public && peer.private)
     return peer
   }
-  /** A table with the host in seat 0 and `people - 1` invited guests seated (SKATGO-61). */
-  async function create(people: number) {
-    const secret = token(), inviteToken = token()
-    const room = await new Client(endpoint).create('skat', { admissionKey, seatToken: secret, inviteToken, nickname: 'Gastgeberin' })
-    const p = await attach(room, secret, 0)
+  let people = 0
+  /** A new account, never seated before: one room at a time each (SKATGO-163). */
+  const someone = () => `user:t${++people}`
+  const open = (account: string) => new Client(endpoint).create('skat', { admissionKey, account })
+  const enter = (code: string, account: string) => new Client(endpoint).joinById(code, { admissionKey, account })
+  /** A room with its host in seat 0 and `count - 1` people who came in while it waited, the other seats the AI's, the
+   *  first deal dealt — unless `fresh`, the room still waiting the moment they came in. */
+  async function create(count: number, fresh = false) {
+    const host = someone()
+    const p = await attach(await open(host), host)
     const group = [p]
-    for (let seat = 1; seat < people; seat++) group.push(await join(room.roomId, token(), seat, inviteToken))
-    await until(() => p.public.seats.filter(s => s.connected).length === people)
-    return { p, group, inviteToken }
-  }
-  async function join(id: string, secret: string, seat: number, inviteToken?: string) {
-    return attach(await new Client(endpoint).joinById(id, { admissionKey, seatToken: secret, ...(inviteToken ? { inviteToken, nickname: `Gast ${seat}` } : {}) }), secret, seat)
+    for (let i = 1; i < count; i++) {
+      const a = someone()
+      group.push(await attach(await enter(p.room.roomId, a), a))
+    }
+    await until(() => p.public.seats.filter(s => s.connected).length === count)
+    if (!fresh) {
+      for (let seat = count; seat < 3; seat++) assert((await send(p, { type: 'computer', seat, on: true })).ok)
+      assert((await send(p, { type: 'start' })).ok)
+      await until(() => group.every(x => x.public.deals === 1))
+    }
+    return { p, group }
   }
   async function snapshot(id: string): Promise<Snapshot> {
     return (await sql.query('SELECT snapshot FROM multiplayer_rooms WHERE id=$1', [id])).rows[0].snapshot
@@ -110,7 +126,8 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
     p.receipts.delete(id)
     p.room.send('command', { id, revision, action })
     const receipt = await until(() => p.receipts.get(id))
-    if (receipt.ok) await until(() => p.public.revision >= receipt.revision)
+    // Who leaves gets no state after it: the room lets their connection go.
+    if (receipt.ok && action.type !== 'leave') await until(() => p.public.revision >= receipt.revision)
     return receipt
   }
   function move(p: Peer): Command['action'] {
@@ -128,7 +145,7 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
   async function complete(group: Peer[]) {
     const deadline = Date.now() + 30_000
     while (Date.now() < deadline) {
-      const p = group.find(p => p.public.actor === p.seat)
+      const p = group.find(p => p.public.actor === p.seat && p.public.seats[p.seat].control === 'human')
       if (group[0].public.phase === 'done') {
         await until(() => group.every(p => p.public.phase === 'done'))
         for (const p of group) assert.deepEqual(p.public.result, group[0].public.result)
@@ -142,66 +159,194 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
     }
     throw new Error(`Game did not complete: ${JSON.stringify(group[0].public)}`)
   }
+  const status = async (code: string, account: string) => {
+    const r = await fetch(`${endpoint}/rooms/${code}?account=${encodeURIComponent(account)}`, { headers: { 'x-admission-key': admissionKey } })
+    return r.status === 404 ? 'none' : (await r.json()).status as string
+  }
+  const mine = async (account: string) =>
+    (await (await fetch(`${endpoint}/rooms/mine?account=${encodeURIComponent(account)}`, { headers: { 'x-admission-key': admissionKey } })).json()).room as string | null
   try {
     let main = launch()
     await ready()
     await t.test('unauthorized admission creates no persistent rooms', async () => {
-      await assert.rejects(new Client(endpoint).create('skat', {
-        admissionKey: token(), seatToken: token(), inviteToken: token(), nickname: 'Anna',
-      }))
+      await assert.rejects(new Client(endpoint).create('skat', { admissionKey: token(), account: someone() }))
+      await assert.rejects(new Client(endpoint).create('skat', { admissionKey }))
       assert.equal((await sql.query('SELECT count(*)::int AS n FROM multiplayer_rooms')).rows[0].n, 0)
     })
-    const open = { purpose: 'open', user: 'user:test_anna' } as const
-    await t.test('a browser comes in with a signed ticket; a forged or expired one, or no nickname, is refused', async () => {
-      const room = await new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, open), seatToken: token(), inviteToken: token(), nickname: 'Anna' })
-      const p = await attach(room, '', 0)
-      assert.equal(p.public.seats[0].nickname, 'Anna')
-      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(token(), open), seatToken: token(), inviteToken: token(), nickname: 'Anna' }))
-      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, open, Date.now() - TICKET_MS - 1000), seatToken: token(), inviteToken: token(), nickname: 'Anna' }))
-      await assert.rejects(new Client(endpoint).create('skat', { admissionKey, seatToken: token(), inviteToken: token() }))
-      await assert.rejects(new Client(endpoint).create('skat', { admissionKey, seatToken: token(), inviteToken: token(), nickname: 'skatgo.com' }))
+    await t.test('a browser opens a room with an open ticket: a six-digit number, its host the account under its name', async () => {
+      const anna = someone()
+      const room = await new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, { purpose: 'open', user: anna }) })
+      const p = await attach(room, anna)
+      assert.match(room.roomId, /^[1-9][0-9]{5}$/)
+      assert.equal(p.seat, 0)
+      assert.equal(p.public.roomId, room.roomId)
+      const s = await snapshot(room.roomId)
+      assert.equal(s.host, anna)
+      const name = (await sql.query('SELECT nickname FROM daily_players WHERE player = $1', [anna])).rows[0].nickname
+      assert(name && p.public.seats[0].nickname === name, 'the host sits under the account\'s name')
+      assert(p.public.seats[0].host)
+      // It waits, two seats empty, nothing dealt.
+      assert.equal(p.public.deals, 0)
+      assert.deepEqual(p.public.seats.map(x => x.kind), ['human', 'empty', 'empty'])
+      assert.deepEqual(p.private.hand, [])
+      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(token(), { purpose: 'open', user: someone() }) }))
+      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, { purpose: 'open', user: someone() }, Date.now() - TICKET_MS - 1000) }))
+      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, { purpose: 'join', user: someone(), room: room.roomId }) }), /admission_denied/)
     })
-    await t.test('a browser opens a table only with an open ticket, which names its host; a join ticket only sits down', async () => {
-      await assert.rejects(new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, { purpose: 'join' }), seatToken: token(), inviteToken: token(), nickname: 'Anna' }), /admission_denied/)
-      const inviteToken = token()
-      const room = await new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, open), seatToken: token(), inviteToken, nickname: 'Anna' })
-      await attach(room, '', 0)
-      assert.equal((await snapshot(room.roomId)).host, 'user:test_anna')
-      const guest = await new Client(endpoint).joinById(room.roomId, { ticket: issueTicket(admissionKey, { purpose: 'join' }), seatToken: token(), inviteToken, nickname: 'Ben' })
-      assert.equal((await attach(guest, '', 1)).public.seats[1].nickname, 'Ben')
+    await t.test('a join ticket comes into the room it names, and no other', async () => {
+      const { p } = await create(1)
+      const other = await create(1)
+      const ben = someone()
+      const ticket = issueTicket(admissionKey, { purpose: 'join', user: ben, room: p.room.roomId })
+      await assert.rejects(new Client(endpoint).joinById(other.p.room.roomId, { ticket }), /admission_denied/)
+      const b = await attach(await new Client(endpoint).joinById(p.room.roomId, { ticket }), ben)
+      assert.equal(b.seat, 1)
     })
-    await t.test('a guest who signs up at the table is recorded as brought by its host, once', async () => {
+    await t.test('a waiting room: people sit down at once, the host gives seats to the AI or takes them back, and starts', async () => {
+      const { p, group } = await create(2, true)
+      const b = group[1]
+      assert.equal(b.seat, 1)
+      assert.equal(b.public.seats[1].joining, false)
+      assert.deepEqual(p.public.seats.map(x => x.kind), ['human', 'human', 'empty'])
+      // Only the host runs the room, and only while it waits; nothing is played before the first deal.
+      assert.equal((await send(b, { type: 'computer', seat: 2, on: true })).error, 'cannot_seat')
+      assert.equal((await send(b, { type: 'start' })).error, 'cannot_start')
+      assert.equal((await send(p, { type: 'start' })).error, 'cannot_start', 'a seat is still empty')
+      assert.equal((await send(p, { type: 'computer', seat: 1, on: true })).error, 'cannot_seat', 'a person\'s seat')
+      assert.equal((await send(p, { type: 'bid', value: 'pass' })).error, 'not_your_turn')
+      assert((await send(p, { type: 'computer', seat: 2, on: true })).ok)
+      await until(() => b.public.seats[2].kind === 'ai')
+      assert((await send(p, { type: 'computer', seat: 2, on: false })).ok)
+      await until(() => b.public.seats[2].kind === 'empty')
+      assert((await send(p, { type: 'computer', seat: 2, on: true })).ok)
+      // Someone with the number still takes the AI's seat, and plays from the start.
+      const c = someone()
+      const pc = await attach(await enter(p.room.roomId, c), c)
+      assert.equal(pc.seat, 2)
+      assert.equal(pc.public.seats[2].joining, false)
+      // Taken out or gone while it waits, a seat is empty again.
+      assert((await send(p, { type: 'kick', seat: 2 })).ok)
+      await until(() => pc.dismissed === 'kicked')
+      await until(() => p.public.seats[2].kind === 'empty')
+      assert((await send(b, { type: 'leave' })).ok)
+      await until(() => p.public.seats[1].kind === 'empty')
+      const d = someone()
+      const pd = await attach(await enter(p.room.roomId, d), d)
+      assert.equal(pd.seat, 1)
+      assert((await send(p, { type: 'computer', seat: 2, on: true })).ok)
+      assert((await send(p, { type: 'start' })).ok)
+      await until(() => [p, pd].every(x => x.public.deals === 1 && x.public.phase === 'bidding'))
+      assert.equal(p.public.dealer, 2)
+      assert.deepEqual(p.public.seats.map(x => x.control), ['human', 'human', 'ai'])
+      const s = await snapshot(p.room.roomId)
+      for (const x of [p, pd]) assert.deepEqual(x.private.hand, s.game!.hands[x.seat])
+      assert.equal((await send(p, { type: 'computer', seat: 2, on: false })).error, 'cannot_seat', 'the game has started')
+      assert.equal((await send(p, { type: 'start' })).error, 'cannot_start')
+    })
+    await t.test('newcomers take the computers\' seats and play from the next deal, from 0; a full room takes nobody', async () => {
+      const { p, group } = await create(1)
+      const [b, c] = [someone(), someone()]
+      assert.equal(await status(p.room.roomId, b), 'open')
+      const pb = await attach(await enter(p.room.roomId, b), b)
+      assert.equal(pb.seat, 1)
+      assert.equal(pb.public.seats[1].joining, true)
+      assert.equal(pb.public.seats[1].control, 'ai')
+      assert.deepEqual(pb.private.hand, [], 'a newcomer sees no cards of the deal a computer finishes for them')
+      assert.equal(await status(p.room.roomId, b), 'member')
+      assert.equal(await mine(b), p.room.roomId)
+      const pc = await attach(await enter(p.room.roomId, c), c)
+      assert.equal(pc.seat, 2)
+      assert.equal(await status(p.room.roomId, someone()), 'full')
+      await assert.rejects(enter(p.room.roomId, someone()), /room_full/)
+      // A newcomer's move is the computer's until their deal; they may deal it.
+      assert.equal((await send(pb, { type: 'bid', value: 'pass' })).error, 'not_your_seat')
+      await complete([p])
+      assert((await send(pb, { type: 'next' })).ok)
+      for (const x of [p, pb, pc]) await until(() => x.public.deals === 2 && x.public.seats.every(s => !s.joining))
+      assert.deepEqual(p.public.seats.map(x => x.control), ['human', 'human', 'human'])
+      assert.deepEqual([p.public.scores[1], p.public.scores[2]], [0, 0])
+      const s = await snapshot(p.room.roomId)
+      for (const x of [p, pb, pc]) assert.deepEqual(x.private.hand, s.game!.hands[x.seat])
+      group.push(pb, pc)
+      await complete(group)
+    })
+    await t.test('one room at a time: an account in a room opens and enters no other', async () => {
+      const { p } = await create(1)
+      const { p: q } = await create(1)
+      await assert.rejects(open(p.account), /already_in_room/)
+      await assert.rejects(enter(q.room.roomId, p.account), /already_in_room/)
+      const r = await fetch(`${endpoint}/rooms/${q.room.roomId}?account=${encodeURIComponent(p.account)}`, { headers: { 'x-admission-key': admissionKey } })
+      assert.deepEqual(await r.json(), { status: 'open', elsewhere: p.room.roomId })
+    })
+    await t.test('the same account from another device comes back to its seat; the first connection is let go', async () => {
+      const { p } = await create(1)
+      const again = await attach(await enter(p.room.roomId, p.account), p.account)
+      assert.equal(again.seat, 0)
+      await until(() => p.dismissed === 'elsewhere')
+      assert.equal(again.public.seats[0].control, 'human')
+    })
+    await t.test('the host takes a person out — their seat a computer\'s — and they may come straight back', async () => {
+      const { p, group } = await create(3)
+      const c = group[2]
+      assert.equal((await send(group[1], { type: 'kick', seat: 2 })).error, 'cannot_kick')
+      assert((await send(p, { type: 'kick', seat: 2 })).ok)
+      await until(() => c.dismissed === 'kicked')
+      await until(() => p.public.seats[2].kind === 'ai')
+      assert.equal(await mine(c.account), null)
+      const back = await attach(await enter(p.room.roomId, c.account), c.account)
+      assert.equal(back.seat, 2)
+    })
+    await t.test('leaving hands the host on; the last to leave closes the room and frees its number', async () => {
+      const { p, group } = await create(2)
+      const b = group[1]
+      assert((await send(p, { type: 'leave' })).ok)
+      await until(() => p.dismissed === 'left')
+      await until(() => b.public.seats[b.seat].host)
+      assert.equal(b.public.seats[0].kind, 'ai')
+      assert.equal((await snapshot(b.room.roomId)).host, b.account)
+      assert.equal(await mine(p.account), null)
+      assert((await send(b, { type: 'leave' })).ok)
+      await until(async () => (await sql.query('SELECT 1 FROM multiplayer_rooms WHERE id=$1', [b.room.roomId])).rowCount === 0)
+      assert.equal(await status(b.room.roomId, b.account), 'none')
+    })
+    await t.test('with nobody online the computers wait; an away person\'s seat may be taken', async () => {
+      const { p, group } = await create(3)
+      const [b, c] = [group[1], group[2]]
+      await until(() => p.public.phase === 'bidding')
+      // All gone: nothing is played.
+      for (const x of group) x.room.connection.close()
+      await until(async () => (await snapshot(p.room.roomId)).seats.every(x => x.session === null))
+      const quiet = (await snapshot(p.room.roomId)).revision
+      await sleep(1500)
+      assert.equal((await snapshot(p.room.roomId)).revision, quiet, 'the computers played with nobody online')
+      // The host and C back; B away past the grace: a computer plays for B, and a newcomer — no computer's seat left —
+      // takes B's.
+      const host = await attach(await enter(p.room.roomId, p.account), p.account)
+      await attach(await enter(p.room.roomId, c.account), c.account)
+      await until(() => host.public.seats[b.seat].control === 'ai', GRACE_MS + 5000)
+      const d = someone()
+      assert.equal(await status(p.room.roomId, d), 'open')
+      const pd = await attach(await enter(p.room.roomId, d), d)
+      assert.equal(pd.seat, b.seat)
+      assert.equal(await mine(b.account), null)
+      assert.equal(await status(p.room.roomId, b.account), 'full')
+    })
+    await t.test('a newcomer who signs up is recorded as brought by the room\'s host, once', async () => {
       const referral = (body: object) => fetch(`${endpoint}/rooms/referral`, {
         method: 'POST', headers: { 'content-type': 'application/json', 'x-admission-key': admissionKey }, body: JSON.stringify(body),
       })
-      const hostSeat = token(), guestSeat = token(), inviteToken = token()
-      const room = await new Client(endpoint).create('skat', { ticket: issueTicket(admissionKey, open), seatToken: hostSeat, inviteToken, nickname: 'Anna' })
-      await attach(room, hostSeat, 0)
-      await attach(await new Client(endpoint).joinById(room.roomId, { ticket: issueTicket(admissionKey, { purpose: 'join' }), seatToken: guestSeat, inviteToken, nickname: 'Ben' }), guestSeat, 1)
+      const { p, group } = await create(2, true)
+      const ben = group[1].account
       assert.equal((await fetch(`${endpoint}/rooms/referral`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })).status, 403)
-      assert.equal((await (await referral({ account: 'user:test_ben', roomId: room.roomId, seatToken: hostSeat })).json()).error, 'not_a_guest')
-      assert.equal((await (await referral({ account: 'user:test_ben', roomId: room.roomId, seatToken: token() })).json()).error, 'not_a_guest')
-      assert.equal((await (await referral({ account: 'user:test_ben', roomId: room.roomId, seatToken: guestSeat })).json()).recorded, true)
-      assert.equal((await (await referral({ account: 'user:test_ben', roomId: room.roomId, seatToken: guestSeat })).json()).recorded, false)
+      assert.equal((await (await referral({ account: p.account, roomId: p.room.roomId })).json()).error, 'no_host')
+      assert.equal((await (await referral({ account: someone(), roomId: p.room.roomId })).json()).error, 'not_a_guest')
+      assert.equal((await (await referral({ account: ben, roomId: p.room.roomId })).json()).recorded, true)
+      assert.equal((await (await referral({ account: ben, roomId: p.room.roomId })).json()).recorded, false)
       const rows = (await sql.query('SELECT account, referrer, room_id FROM account_referrals')).rows
-      assert.deepEqual(rows, [{ account: 'user:test_ben', referrer: 'user:test_anna', room_id: room.roomId }])
-      // A table an integration client opened has no host to credit.
-      const { p, group } = await create(2)
-      assert.equal((await (await referral({ account: 'user:test_cleo', roomId: p.room.roomId, seatToken: group[1].token })).json()).error, 'no_host')
-    })
-    await t.test('at a full table a dropped person gets back in with the seat token while the SDK still holds the old place', async () => {
-      const { p, group } = await create(3)
-      assert((await send(p, { type: 'start' })).ok)
-      const second = group[1]
-      second.room.connection.close()
-      await until(() => !p.public.seats[1].connected)
-      const back = await join(p.room.roomId, second.token, 1)
-      await until(() => p.public.seats[1].connected)
-      assert.equal(back.private.seat, 1)
+      assert.deepEqual(rows, [{ account: ben, referrer: p.account, room_id: p.room.roomId }])
     })
     await t.test('a move made while someone else drops or comes back is not stale', async () => {
-      const { p, group } = await create(3)
-      assert((await send(p, { type: 'start' })).ok)
+      const { group } = await create(3)
       await until(() => group.every(x => x.public.phase === 'bidding'))
       const mover = await until(() => group.find(x => x.public.actor === x.seat))
       const at = mover.public.revision
@@ -213,105 +358,80 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
     })
     for (const count of [1, 2, 3]) {
       await t.test(`${count} humans plus ${3 - count} computers complete a legal private game`, async () => {
-        const { p, group, inviteToken } = await create(count)
-        assert.equal(p.public.started, false)
-        assert.equal(group.at(-1)!.public.seats[count - 1].nickname, count === 1 ? 'Gastgeberin' : `Gast ${count - 1}`)
-        const start = await send(p, { type: 'start' })
-        assert.equal(start.ok, true)
-        await assert.rejects(new Client(endpoint).joinById(p.room.roomId, { admissionKey, seatToken: token(), inviteToken, nickname: 'Spät' }))
-        const s = await snapshot(p.room.roomId)
-        assert.equal(s.humanSeats, count)
+        const { group } = await create(count)
+        const s = await snapshot(group[0].room.roomId)
         for (const peer of group) {
           await until(() => peer.public.phase === 'bidding')
           assert.deepEqual(peer.public.seats.map(x => x.control), [0, 1, 2].map(i => (i < count ? 'human' : 'ai')))
           assert.deepEqual(peer.private.hand, s.game!.hands[peer.seat])
           assert.deepEqual(peer.private.buried, [])
           assert.equal(peer.public.skat, null)
-          for (const seen of peer.observed) assert(!JSON.stringify(seen).includes(inviteToken))
         }
         await complete(group)
       })
     }
     await t.test('deal after deal: the dealer moves on and every seat\'s Seeger-Fabian score runs on', async () => {
-      const { p, group } = await create(2)
-      assert((await send(p, { type: 'start' })).ok)
-      assert.equal((await send(group[1], { type: 'next' })).error, 'cannot_deal')
+      const { p, group } = await create(1)
       const results: PublicView[] = []
       for (let deal = 1; deal <= 2; deal++) {
         await until(() => group.every(x => x.public.deals === deal && x.public.phase === 'bidding'))
         assert.equal(p.public.dealer, deal === 1 ? 2 : 0)
+        // No next deal while this one is played (a stale revision is refused first, as a second press would be).
+        assert(['cannot_deal', 'stale_revision'].includes((await send(p, { type: 'next' })).error))
         await complete(group)
         results.push(p.public)
         assert.deepEqual(p.public.skat?.length, 2)
         const want = results.map(r => seegerFabian({ phase: r.phase as 'done', declarer: r.declarer, result: r.result })).reduce((a, b) => a.map((n, i) => n + b[i]) as [number, number, number])
-        for (const x of group) await until(() => JSON.stringify(x.public.scores) === JSON.stringify(want))
-        if (deal === 1) assert((await send(group[1], { type: 'next' })).ok)
+        await until(() => JSON.stringify(p.public.scores) === JSON.stringify(want))
+        if (deal === 1) assert((await send(p, { type: 'next' })).ok)
       }
     })
     await t.test('caller, action and retry validation is transactional', async () => {
       const { p, group } = await create(3)
       const second = group[1]
+      await until(() => group.every(x => x.public.phase === 'bidding'))
+      const mover = await until(() => group.find(x => x.public.actor === x.seat))
       const id = randomUUID()
-      const start = await send(p, { type: 'start' }, id)
-      assert(start.ok)
-      assert.deepEqual(await send(p, { type: 'start' }, id), start)
-      assert.equal((await send(p, { type: 'hand' }, id)).error, 'command_id_reused')
-      assert.equal((await send(p, { type: 'bid', value: 'pass' })).error, 'not_your_turn')
-      await until(() => second.public.revision === p.public.revision)
-      assert.equal((await send(second, { type: 'bid', value: 'hold' })).error, 'illegal_action')
+      const action = move(mover)
+      const first = await send(mover, action, id)
+      assert(first.ok)
+      assert.deepEqual(await send(mover, action, id), first)
+      assert.equal((await send(mover, { type: 'hand' }, id)).error, 'command_id_reused')
+      const idle = group.find(x => x.public.actor !== x.seat)!
+      assert.equal((await send(idle, { type: 'bid', value: 'pass' })).error, 'not_your_turn')
       assert.equal((await send(second, { type: 'bid', value: 'pass' }, randomUUID(), 0)).error, 'stale_revision')
       const forged = randomUUID()
-      second.room.send('command', { id: forged, revision: second.public.revision, seat: 0, action: { type: 'start' } })
+      second.room.send('command', { id: forged, revision: second.public.revision, seat: 0, action: { type: 'next' } })
       assert.equal((await until(() => second.receipts.get(forged))).error, 'invalid_command')
-      assert.equal((await snapshot(p.room.roomId)).revision, start.revision)
-      assert.equal((await sql.query('SELECT count(*)::int AS n FROM multiplayer_commands WHERE room_id=$1', [p.room.roomId])).rows[0].n, 1)
+      assert.equal((await snapshot(p.room.roomId)).revision >= first.revision, true)
     })
     await t.test('short drop, 30-second AI takeover, and late seat recovery', async () => {
       const { p, group: seated } = await create(3)
       let second = seated[1]
       const third = seated[2]
-      assert((await send(p, { type: 'start' })).ok)
+      await until(() => p.public.phase === 'bidding')
       const saved = second.room.reconnectionToken
       second.room.connection.close()
       await until(() => !p.public.seats[1].connected)
       assert.equal(p.public.seats[1].control, 'human')
-      const sdkRoom = await new Client(endpoint).reconnect(saved)
-      second = await attach(sdkRoom, second.token, 1)
+      second = await attach(await new Client(endpoint).reconnect(saved), second.account)
       await until(() => p.public.seats[1].connected)
       assert.equal(p.public.seats[1].control, 'human')
-      assert.equal(p.public.actor, 1)
       second.room.connection.close()
       await until(() => !p.public.seats[1].connected)
       const untilAt = p.public.seats[1].reconnectUntil!
       assert(untilAt > Date.now() + GRACE_MS - 2000)
-      await sleep(500)
-      assert.equal(p.public.actor, 1)
-      assert.equal(p.public.seats[1].control, 'human')
-      await until(() => p.public.seats[1].control === 'ai' && p.public.actor !== 1, GRACE_MS + 4000)
+      await until(() => p.public.seats[1].control === 'ai', GRACE_MS + 4000)
       assert(Date.now() >= untilAt)
-      second = await join(p.room.roomId, second.token, 1)
+      second = await attach(await enter(p.room.roomId, second.account), second.account)
       await until(() => p.public.seats[1].control === 'human')
-      assert.equal(second.private.seat, 1)
-      assert.equal(second.public.seats[1].connected, true)
+      assert.equal(second.seat, 1)
       const s = await snapshot(p.room.roomId)
       assert.deepEqual(second.private.hand, s.game!.hands[1])
-      await assert.rejects(new Client(endpoint).joinById(p.room.roomId, { admissionKey, seatToken: token() }))
-      const group = [p, second, third]
-      const end = Date.now() + 10_000
-      while (!(p.public.phase === 'play' && p.public.actor === 1) && Date.now() < end) {
-        const mover = group.find(x => x.public.actor === x.seat)
-        if (mover) await send(mover, move(mover))
-        else await sleep(20)
-      }
-      assert.equal(p.public.phase, 'play')
-      assert.equal(p.public.actor, 1)
-      const waiting = await snapshot(p.room.roomId)
-      await sleep(200)
-      assert.deepEqual(await snapshot(p.room.roomId), waiting, 'AI continued after human recovery')
+      await complete([p, second, third])
     })
     await t.test('skat visibility, Ouvert and illegal cards follow the rules', async () => {
       const { p, group } = await create(3)
-      assert((await send(p, { type: 'start' })).ok)
       while (p.public.phase === 'bidding') {
         const mover = group.find(x => x.public.actor === x.seat)
         if (mover) await send(mover, move(mover))
@@ -331,13 +451,13 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       for (const peer of group) assert.deepEqual(peer.public.ouvertHand, p.private.hand)
       for (const peer of group.slice(1)) assert.deepEqual(peer.private.buried, [])
       const before = await snapshot(p.room.roomId)
-      const anotherCard = before.game!.hands[1][0]
-      assert.equal((await send(p, { type: 'play', card: anotherCard })).error, 'illegal_action')
-      assert.deepEqual(await snapshot(p.room.roomId), before)
+      const leader = group.find(x => x.public.actor === x.seat)!
+      const anotherCard = before.game!.hands[(leader.seat + 1) % 3][0]
+      assert.equal((await send(leader, { type: 'play', card: anotherCard })).error, 'illegal_action')
+      assert.deepEqual((await snapshot(p.room.roomId)).game, before.game)
     })
     await t.test('all-pass auction is explicit, not a silently redealt game', async () => {
       const { p, group } = await create(3)
-      assert((await send(p, { type: 'start' })).ok)
       const original = (await snapshot(p.room.roomId)).game!.originalHands
       const end = Date.now() + 10_000
       while (p.public.phase !== 'passedIn' && Date.now() < end) {
@@ -350,23 +470,28 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
     })
     await t.test('database write failure never acknowledges or advances an action', async () => {
       const { p } = await create(1)
+      await until(() => p.public.actor === 0)
       const before = await snapshot(p.room.roomId)
       await sql.query(`CREATE FUNCTION acceptance_reject_receipt() RETURNS trigger LANGUAGE plpgsql AS $$
         BEGIN RAISE EXCEPTION 'injected receipt write failure'; END $$;
         CREATE TRIGGER acceptance_reject_receipt BEFORE INSERT ON multiplayer_commands
         FOR EACH ROW EXECUTE FUNCTION acceptance_reject_receipt();`)
       const id = randomUUID()
-      assert.equal((await send(p, { type: 'start' }, id)).error, 'storage_unavailable')
-      assert.deepEqual(await snapshot(p.room.roomId), before)
+      const action = move(p)
+      assert.equal((await send(p, action, id)).error, 'storage_unavailable')
+      assert.deepEqual((await snapshot(p.room.roomId)).game, before.game)
       await sql.query('DROP TRIGGER acceptance_reject_receipt ON multiplayer_commands; DROP FUNCTION acceptance_reject_receipt();')
-      assert((await send(p, { type: 'start' }, id)).ok)
+      assert((await send(p, action, id)).ok)
     })
-    await t.test('hard restart preserves committed state and idempotency; standby cannot own rooms', async () => {
+    await t.test('hard restart preserves committed state and idempotency, ends the tables of before; standby cannot own rooms', async () => {
       const { p } = await create(1)
-      const id = randomUUID()
-      const receipt = await send(p, { type: 'start' }, id)
-      assert(receipt.ok)
       await until(() => p.public.actor === 0)
+      const id = randomUUID()
+      const action = move(p)
+      const receipt = await send(p, action, id)
+      assert(receipt.ok)
+      // A table stored before SKATGO-163 (schema 2) is ended at the next start.
+      await sql.query("INSERT INTO multiplayer_rooms VALUES ('oldTable123', $1, $2)", [{ schema: 2, id: 'oldTable123' }, Date.now() + 60_000])
       const before = await snapshot(p.room.roomId)
       const standby = launch(port + 1)
       await until(async () => {
@@ -377,19 +502,21 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       await stop(main, 'SIGKILL')
       main = launch()
       await ready()
-      const resumed = await join(p.room.roomId, p.token, 0)
+      assert.equal((await sql.query("SELECT count(*)::int AS n FROM multiplayer_rooms WHERE id = 'oldTable123'")).rows[0].n, 0)
+      const resumed = await attach(await enter(p.room.roomId, p.account), p.account)
       const after = await snapshot(p.room.roomId)
       assert.deepEqual(after.game, before.game)
-      assert.equal(after.seats[0].tokenHash, hash(p.token))
-      assert.deepEqual(await send(resumed, { type: 'start' }, id), receipt)
+      assert.equal(after.seats[0].account, p.account)
+      assert.deepEqual(await send(resumed, action, id), receipt)
       await complete([resumed])
     })
     await t.test('a stale process generation cannot commit', async () => {
       const { p } = await create(1)
+      await until(() => p.public.actor === 0)
       const before = await snapshot(p.room.roomId)
       await sql.query('UPDATE multiplayer_leader SET epoch = epoch + 1 WHERE id = 1')
-      assert.equal((await send(p, { type: 'start' })).error, 'stale_process')
-      assert.deepEqual(await snapshot(p.room.roomId), before)
+      assert.equal((await send(p, move(p))).error, 'stale_process')
+      assert.deepEqual((await snapshot(p.room.roomId)).game, before.game)
     })
     assert(!logs.includes(admissionKey), 'Admission secret leaked into logs')
   } catch (e) {

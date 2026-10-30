@@ -36,6 +36,7 @@ import {
 import { type DealSummary, seegerFabian, summarize } from '~/lib/skat/tournament'
 import { BID_LADDER, type Declaration, NULL_VALUES, baseValue, expectedValue, highestValue, matadors, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
+import { getLocale, localizeHref } from '~/paraglide/runtime'
 import { Link } from '@tanstack/react-router'
 import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, X } from 'lucide-react'
 
@@ -148,8 +149,15 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
   names: [string, string, string]
   /** Under the result: this deal's scores and the running totals. */
   standings: ReactNode
-  /** Over the felt, where the table's messages go: while the connection comes back (SKATGO-117). */
+  /** Over the felt, where the table's messages go: while the connection comes back (SKATGO-117), or a newcomer waits. */
   notice?: ReactNode
+  /** The room's number (SKATGO-163), in the way out's menu: a tap copies the room's link. */
+  code: string
+  /** Leaves the room: the seat goes to a computer. */
+  leave: () => void
+  /** The people the host may take out of the room, by their seat in the room; none for anyone else. */
+  people: { seat: number; name: string }[]
+  kick: (seat: Seat) => void
 }
 
 /** An open-card endgame of the Skat-Tricks (SKATGO-110): a deal stopped a few tricks before its end, every hand
@@ -750,7 +758,13 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           </button>
         </div>
       ) : null}
-      {fullScreen && (exercise || pinned || !panelOpen) ? <TableMenu leave={exercise ? '/skat-tricks' : tournament ? '/daily' : room ? '/with-friends' : '/'} newRound={server?.newRound} /> : null}
+      {fullScreen && (exercise || pinned || !panelOpen) ? (
+        <TableMenu
+          leave={exercise ? '/skat-tricks' : tournament ? '/daily' : '/'}
+          newRound={server?.newRound}
+          room={room ? { code: room.code, leave: room.leave, people: room.people, kick: room.kick } : undefined}
+        />
+      ) : null}
     </div>
   )
 }
@@ -1571,14 +1585,25 @@ function useCardSounds(game: Game) {
  * corner, across from where the assistant's launcher stood at the top left until SKATGO-130, on every full-screen table. It opens a small menu — keep
  * playing, give up free play's round for a new one (asked once more first), or leave the table. Leaving loses
  * nothing: free play's game waits in this browser, the tournament's on the server, a private table's in its room.
+ * A room's button is the table's, a spade as the panel's Game tab, not the way out (SKATGO-163, the human:
+ * 「私人牌桌中，不要退出按钮，而要一个牌桌按钮。以示不同。然后菜单内容还相同」).
  */
-function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends' | '/skat-tricks'; newRound?: () => void }) {
+function TableMenu({ leave, newRound, room }: {
+  leave: '/' | '/daily' | '/skat-tricks'
+  newRound?: () => void
+  /** A room's own ways (SKATGO-163): its number, a tap copying its link; leaving it, and the host's taking a person
+   *  out — each asked once more first. */
+  room?: Pick<RoomTable, 'code' | 'leave' | 'people' | 'kick'>
+}) {
   const [open, setOpen] = useState(false)
   const [asking, setAsking] = useState(false)
+  /** The room action being asked about: leaving, or taking out the person in this seat. */
+  const [roomAsk, setRoomAsk] = useState<'leave' | number | null>(null)
   const box = useRef<HTMLDivElement>(null)
   const close = () => {
     setOpen(false)
     setAsking(false)
+    setRoomAsk(null)
   }
   useEffect(() => {
     if (!open) return
@@ -1595,17 +1620,32 @@ function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends
     <div ref={box} data-testid="skat-menu" {...stylex.props(styles.menuCorner)}>
       <button
         type="button"
-        aria-label={m.table_menu()}
+        aria-label={room ? m.room_menu() : m.table_menu()}
         aria-expanded={open}
         data-testid="skat-menu-button"
+        data-kind={room ? 'table' : 'out'}
         onClick={() => (open ? close() : setOpen(true))}
         {...stylex.props(styles.menuButton)}
       >
-        <LogOut aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
+        {room
+          ? <Spade aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />
+          : <LogOut aria-hidden="true" size={icon.launcher} strokeWidth={icon.launcherStroke} />}
       </button>
       {open ? (
         <div data-testid="skat-menu-list" {...stylex.props(styles.menuList)}>
-          {asking ? (
+          {room && roomAsk !== null ? (
+            <>
+              <p {...stylex.props(typography.appText, styles.menuAsk)}>
+                {roomAsk === 'leave' ? m.room_leave_ask() : m.room_kick_ask({ name: room.people.find((p) => p.seat === roomAsk)?.name ?? '' })}
+              </p>
+              <Btn testId="skat-menu-room-yes" tone="stop" shape="block" onClick={() => {
+                close()
+                if (roomAsk === 'leave') room.leave()
+                else room.kick(roomAsk as Seat)
+              }}>{roomAsk === 'leave' ? m.room_leave() : m.room_kick_yes()}</Btn>
+              <Btn testId="skat-menu-room-no" tone="quiet" shape="block" onClick={close}>{m.table_menu_back()}</Btn>
+            </>
+          ) : asking ? (
             <>
               <p {...stylex.props(typography.appText, styles.menuAsk)}>{m.free_round_abandon()}</p>
               <Btn testId="skat-menu-new-yes" tone="stop" shape="block" onClick={() => { close(); newRound?.() }}>{m.free_round_abandon_yes()}</Btn>
@@ -1614,13 +1654,47 @@ function TableMenu({ leave, newRound }: { leave: '/' | '/daily' | '/with-friends
           ) : (
             <>
               <Btn testId="skat-menu-continue" tone="go" shape="block" onClick={close}>{m.table_continue()}</Btn>
+              {room ? <RoomLink code={room.code} /> : null}
               {newRound ? <Btn testId="skat-menu-new" tone="quiet" shape="block" onClick={() => setAsking(true)}>{m.free_round_new()}</Btn> : null}
-              <Link to={leave} data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
+              {room?.people.map((p) => (
+                <Btn key={p.seat} testId="skat-menu-kick" tone="quiet" shape="block" onClick={() => setRoomAsk(p.seat)}>{m.room_kick({ name: p.name })}</Btn>
+              ))}
+              {room ? (
+                <Btn testId="skat-leave" tone="stop" shape="block" onClick={() => setRoomAsk('leave')}>{m.room_leave()}</Btn>
+              ) : (
+                <Link to={leave} data-testid="skat-leave" {...linkLook('stop', 'md', 'block')}>{m.table_leave()}</Link>
+              )}
             </>
           )}
         </div>
       ) : null}
     </div>
+  )
+}
+
+/** A room's link to copy (SKATGO-163): the page's own address, in its language — and whether it was copied a moment ago. */
+export function useRoomLink(code: string): [boolean, () => void] {
+  const [copied, setCopied] = useState(false)
+  useEffect(() => {
+    if (!copied) return
+    const t = setTimeout(() => setCopied(false), 2_000)
+    return () => clearTimeout(t)
+  }, [copied])
+  const copy = () => {
+    const link = `${window.location.origin}${localizeHref(`/table/${code}`, { locale: getLocale() })}`
+    void navigator.clipboard?.writeText(link).then(() => setCopied(true), () => {})
+  }
+  return [copied, copy]
+}
+
+/** A room's number in the table's menu (SKATGO-163, the human: 「我建议放到退出按钮里，加一个菜单项」): a tap copies the
+ *  room's link, and the item says so for a moment. */
+function RoomLink({ code }: { code: string }) {
+  const [copied, copy] = useRoomLink(code)
+  return (
+    <Btn testId="room-number" tone="quiet" shape="block" onClick={copy}>
+      {copied ? m.room_link_copied() : m.room_number_copy({ code: `${code.slice(0, 3)} ${code.slice(3)}` })}
+    </Btn>
   )
 }
 

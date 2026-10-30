@@ -17,7 +17,7 @@ export const FreeTable = lazy(() => pages().then((mod) => ({ default: mod.FreeTa
 export const DailyTable = lazy(() => pages().then((mod) => ({ default: mod.DailyTable })))
 export const DailyEntry = lazy(() => pages().then((mod) => ({ default: mod.DailyEntry })))
 export const DealOfDay = lazy(() => pages().then((mod) => ({ default: mod.DealOfDay })))
-export const OpenTable = lazy(() => pages().then((mod) => ({ default: mod.OpenTable })))
+export const RoomCards = lazy(() => pages().then((mod) => ({ default: mod.RoomCards })))
 export const PrivateTable = lazy(() => pages().then((mod) => ({ default: mod.PrivateTable })))
 
 /** Renders `children` in the browser only; `fallback` (or "dealing the cards…") until then. */

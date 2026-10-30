@@ -32,9 +32,9 @@ The independent **`multiplayer`** Colyseus service uses PostgreSQL for durable r
 (SKATGO-20, human-approved 2026-09-27). It supports 1-3 humans, fills other seats with AI,
 and gives disconnected players 30 seconds before temporary AI control. Original players
 can recover the same seat within the room's 24-hour inactivity lifetime. Browsers come in through
-the web's `/api/room/ticket` (SKATGO-61): opening a table needs an account (SKATGO-117), and a ticket
-is issued only while the service is ready, so during a deploy the pages wait and come back by
-themselves. Integration clients use the admission key.
+the web's `/api/room/ticket` (SKATGO-61): every seat needs an account (SKATGO-163), a room is entered by its six-digit
+number, and a ticket is issued only while the service is ready, so during a deploy the pages wait and come back by
+themselves. Integration clients use the admission key and name the account they play for.
 The same service runs the daily tournament (SKATGO-35) over HTTP under `/daily`, free play
 (SKATGO-40) under `/free` and the forum (SKATGO-118) under `/forum`, whose posts, comments and reports are in its
 PostgreSQL. Their one client is the web service, which holds the admission key. Free
@@ -242,9 +242,8 @@ releases `skatgo-multiplayer`, which has its own deploy below (found while deplo
 
 For multiplayer-only releases, do not redeploy `web`. A release that changes both — the daily
 tournament's or the forum's routes and the web's proxy to them — deploys `multiplayer` first, so the web never
-calls routes that are not live yet. A release that changes a private table's ticket (SKATGO-117)
-deploys `web` first instead: its tickets stay `v:1`, which the running multiplayer accepts, and only
-the new multiplayer then requires an `open` ticket to create a table. After a merged revision:
+calls routes that are not live yet. SKATGO-163's rooms (tickets `v:2`, the `/rooms/<number>` and `/rooms/mine` routes)
+deploy `multiplayer` first too; until `web` follows, private rooms cannot be opened or entered. After a merged revision:
 
 ```bash
 node multiplayer/scripts/render.mjs deploy

@@ -164,7 +164,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36), and the names a player is given (SKATGO-90): the agreed word list and `pickName`, which takes the first free name in an order fixed by the player's id, a number only once every name without one is taken |
 | `app/src/components/skat/profile-page.tsx`, `app/src/lib/skat/profile.ts`; `multiplayer/src/profile.ts` | a player's record of play (SKATGO-128): the page, the shared shape and sums, the recording and the reading; tested by `multiplayer/test/profile.test.ts` and `app/src/lib/profile-handler.test.ts` |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
-| `app/src/lib/room-handler.ts`, `room-ticket.ts`, `room-client.ts`, `app/src/components/skat/table-room.tsx`; `multiplayer/src/room.ts`, `referral.ts` | private tables (SKATGO-61): `/api/room/ticket` and `/api/room/referral`, the signed admission ticket, the browser's room client and way back, the table's pages; the room and the referral route |
+| `app/src/lib/room-handler.ts`, `room-ticket.ts`, `room-code.ts`, `room-client.ts`, `app/src/components/skat/table-room.tsx`; `multiplayer/src/room.ts`, `model.ts`, `referral.ts` | private rooms (SKATGO-61, rooms since SKATGO-163): `/api/room/ticket`, `/api/room/mine` and `/api/room/referral`, the signed admission ticket, the room's number, the browser's room client, the friends page's cards and the room's page; the room, its seats (`claimSeat`, `freeSeat`) and the service's `/rooms` routes (an account's room, a number's status, referrals) |
 | `app/src/lib/forum.ts`, `forum-handler.ts`, `forum-api.ts`, `app/src/components/skat/forum-page.tsx`, `forum-body.tsx`, `forum-announcement.tsx`; `multiplayer/src/forum.ts` | the forum (SKATGO-118): the shared rules (sections, `DAILY_LIMITS`, `postIndexable`, `slugOf`, the text's marks in `parseBody`), the web's `/api/forum/*` and `/sitemap-forum.xml`, the loaders' reads (`createIsomorphicFn`: on the server straight to the forum as the request's viewer, in the browser through `/api/forum`; the announcement cached a minute on the server), the pages, and the service's routes; tested by `lib/forum.test.ts` and `multiplayer/test/forum.test.ts` |
 | `app/src/lib/test-account.ts` | local test accounts for acceptance (SKATGO-117), read only by `session.ts` and the root route |
 | `app/src/components/skat/rules-page.tsx`, `bidding-table-page.tsx`, `app/src/lib/skat/rules/` | the rules reference and its text, with anchored sub-headings for topics looked up by name (`#grand`, `#null-ouvert`, `#ramsch`), the bidding table (SKATGO-50), and the printable short version (`rules-summary-page.tsx`, text in `rules/summary.{de,en}.ts`, SKATGO-53). Every number on these pages — card points, base and Null values, the bid ladder, the multiplier limits — is rendered from `value.ts` and `cards.ts` |
@@ -225,18 +225,23 @@ also built from the repository root. Neither project imports the other's runtime
   A route returns a deal's result only once the player has finished that deal, shown as "AI" in the
   player's seat. The one exception is the leaderboard (SKATGO-80, the human): it shows everyone the AI's
   total over the tournament, today's too — the total only, never a deal. Days dealt before have none.
-- **A private table's way in says what it is for** (SKATGO-117). `/api/room/ticket` signs `open`
-  only for a signed-in account and names it (`user:<id>`); the room creates a table from a browser
-  only with such a ticket and keeps the account as the snapshot's `host`; `join` needs no account.
+- **A private room's way in names the account** (SKATGO-117; SKATGO-163). `/api/room/ticket` signs a ticket only for a
+  signed-in account and names it (`user:<id>`): `open` a new room, whose number (six digits, the room's id and the
+  table's primary key) is drawn by the service; `join` the room with this number, after asking the service
+  (`/rooms/<number>`) whether the account may come in — wrong numbers are counted per account, ten a minute. A seat is
+  the account's (snapshot schema 3): coming back is joining again, from any device; the browser stores nothing. A room
+  waits with nothing dealt (`deals` 0) — an empty seat is one with no account and no computer — until the host starts
+  it (`computer`, `start`). Once it plays, a newcomer's seat waits for the next deal (`joinsAt`), the computer finishing the one being played; with nobody online
+  the computers do not play. The tables of before (schema 2, seats held by browser tokens) are deleted at start.
   Tickets are issued only while the multiplayer service answers `/readyz`: Render's health check
   stays `/healthz`, because the new process becomes ready only after the old one hands over the
   rooms, and a readiness check there would deadlock every deploy. The browser keeps trying to come
   back for two minutes (a seat still open elsewhere for 20 s), the table on screen under a
   reconnecting line. A move is stale only if the game changed after its revision (`played`), not
   when someone drops or returns; a room admits six connections for three seats so a reconnection
-  reservation never locks it. A guest who signs up at the table is recorded in `account_referrals`
-  (multiplayer's PostgreSQL) through `/api/room/referral`, only for an account made within the hour,
-  first table only.
+  reservation never locks it. A newcomer who signed up to come into a room is recorded in `account_referrals`
+  (multiplayer's PostgreSQL) through `/api/room/referral`, only for an account made within the hour, its seat in the
+  room the proof, first room only.
 - **Local test accounts** (SKATGO-117): acceptance acts as a signed-in learner without Clerk, whose
   sign-in an automated check may not perform. `lib/test-account.ts` signs a request in as
   `test_<name>` from the cookie `skatgo_test_account=<name>.<created ms>` only when the server's

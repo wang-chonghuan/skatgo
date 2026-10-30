@@ -1,36 +1,44 @@
+import { randomInt } from 'node:crypto'
 import { Room, ServerError, type Client } from '@colyseus/core'
 import { StateView } from '@colyseus/schema'
 import { z } from 'zod'
 import { actor, collectTrick, type Seat } from '../../app/src/lib/skat/game'
-import { cleanNickname } from '../../app/src/lib/skat/nickname'
-import { TICKET_MAX, ticketClaims, type TicketClaims } from '../../app/src/lib/room-ticket'
+import { TICKET_MAX, ticketClaims } from '../../app/src/lib/room-ticket'
 import { computerTurn, decided, type Logged } from './computers'
+import { nameOf } from './daily'
 import { deckOf, plan, poolDealIndex, type Pool } from './free'
 import {
-  applyAction, applySeatMove, commandSchema, GRACE_MS, hash, privateView, publicView,
-  Rejected, scoreEnded, secretEquals, tokenSchema, TTL_MS, type PoolDeal, type Snapshot,
+  applyAction, applySeatMove, claimSeat, commandSchema, emptyRoom, GRACE_MS, hash, newRoom, privateView, publicView,
+  Rejected, roomOnly, scoreEnded, secretEquals, TTL_MS, type PoolDeal, type Snapshot,
 } from './model'
 import type { Policy } from './skatzero/policy'
 import { MatchState, PlayerState } from './state'
 import { Store } from './store'
 
 export const RESTORE = Symbol('trusted-restore')
-/** Who may come in: a trusted integration client with the admission key, or a browser with a ticket
- *  the web server signed with it (SKATGO-61). A new seat needs a nickname; a seat token alone takes a
- *  seat back. A browser opens a table only with an `open` ticket, which names the host's account
- *  (SKATGO-117). */
+/** Whether anyone is at the table now. */
+const online = (s: Snapshot) => s.seats.some(p => p.session !== null)
+/** Who may come in: a trusted integration client with the admission key, naming the account it plays for, or a
+ *  browser with a ticket the web server signed with it (SKATGO-61), which names the account (SKATGO-163). A seat is an
+ *  account's: the same account comes back to it from any device. A browser opens a room only with an `open` ticket,
+ *  and joins only the room its ticket names. */
 const admission = z.object({
   admissionKey: z.string().min(32).max(256).optional(),
   ticket: z.string().max(TICKET_MAX).optional(),
-  seatToken: tokenSchema,
-  inviteToken: tokenSchema.optional(),
-  nickname: z.string().max(200).optional(),
+  account: z.string().regex(/^user:[A-Za-z0-9_]{1,64}$/).optional(),
 }).strict()
+/** Who came in, and what they may do: open a room, or join `room` (any room, for an integration client). */
+type Admitted = { account: string; open: boolean; room: string | null }
+/** A room's number: six digits, never starting with 0. */
+const drawNumber = () => String(randomInt(100_000, 1_000_000))
 
 export function makeRoom(store: Store, key: string, ready: () => boolean, aiDelay: number, policy: () => Policy | null, pool: () => Pool | null) {
-  /** `key` for an integration client, the ticket's claims for a browser, or null. */
-  const admitted = (o: z.infer<typeof admission>): 'key' | TicketClaims | null =>
-    o.admissionKey !== undefined && secretEquals(o.admissionKey, key) ? 'key' : ticketClaims(key, o.ticket)
+  const admitted = (o: z.infer<typeof admission>): Admitted | null => {
+    if (o.admissionKey !== undefined && secretEquals(o.admissionKey, key)) return o.account ? { account: o.account, open: true, room: null } : null
+    const t = ticketClaims(key, o.ticket)
+    if (!t) return null
+    return t.purpose === 'open' ? { account: t.user, open: true, room: null } : { account: t.user, open: false, room: t.room }
+  }
   /** A deal from free play's pool with this dealer, every seat's bidding with it. */
   const pick = (dealer: Seat): PoolDeal => {
     const p = pool()
@@ -63,29 +71,25 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             if (p.session) {
               p.session = null
               p.disconnectedAt = Date.now()
-              p.autopilot = false
+              p.autopilot = p.joinsAt !== null
             }
           }
           return { changed: true, value: null }
         })
         this.snapshot = restored.snapshot
       } else {
-        const o = admission.parse(options)
-        const by = admitted(o)
-        if (!ready() || !by || (by !== 'key' && by.purpose !== 'open')) throw new ServerError(403, 'admission_denied')
-        const nickname = cleanNickname(o.nickname ?? '')
-        if (!o.inviteToken) throw new ServerError(400, 'creation_options_required')
-        if (!nickname) throw new ServerError(400, 'nickname_refused')
-        this.snapshot = {
-          schema: 2, id: this.roomId, revision: 0, played: 0, humanSeats: 0, host: by === 'key' ? null : by.user,
-          inviteHash: hash(o.inviteToken), game: null, plans: null, deals: 0, scored: 0, scores: [0, 0, 0],
-          expiresAt: Date.now() + TTL_MS, nextActionAt: Date.now(),
-          seats: Array.from({ length: 3 }, (_, i) => ({
-            tokenHash: i === 0 ? hash(o.seatToken) : null, session: null,
-            disconnectedAt: null, autopilot: false, nickname: i === 0 ? nickname : null,
-          })),
+        const by = admitted(admission.parse(options))
+        if (!ready() || !by || !by.open) throw new ServerError(403, 'admission_denied')
+        if (await store.roomOf(by.account)) throw new ServerError(409, 'already_in_room')
+        const nickname = await store.transaction(c => nameOf(c, by.account, Date.now()))
+        // A number nobody's live room holds (the table's key keeps it unique); a few tries, then the room is refused.
+        let stored = false
+        for (let i = 0; i < 20 && !stored; i++) {
+          this.snapshot = newRoom(drawNumber(), by.account, nickname)
+          stored = await store.create(this.snapshot)
         }
-        await store.create(this.snapshot)
+        if (!stored) throw new ServerError(503, 'room_capacity')
+        this.roomId = this.snapshot.id
       }
       await this.setPrivate(true)
       this.setPatchRate(50)
@@ -100,41 +104,48 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
     }
     onAuth(_client: Client, options: unknown) {
       const parsed = admission.safeParse(options)
-      if (!ready() || !parsed.success || !admitted(parsed.data)) {
-        throw new ServerError(403, 'admission_denied')
-      }
-      return parsed.data
+      const by = parsed.success ? admitted(parsed.data) : null
+      if (!ready() || !by || (!by.open && by.room !== this.roomId)) throw new ServerError(403, 'admission_denied')
+      return by
     }
-    async onJoin(client: Client, _options: unknown, auth: z.infer<typeof admission>) {
+    /** The account's own seat back, or — as a newcomer — a computer's seat, or that of someone away (SKATGO-163). The
+     *  same account open elsewhere gives way to this connection. */
+    async onJoin(client: Client, _options: unknown, by: Admitted) {
       return this.enqueue(async () => {
-        const result = await store.change(this.roomId, s => {
-          const tokenHash = hash(auth.seatToken)
-          let seat = s.seats.findIndex(p => p.tokenHash === tokenHash)
-          if (seat < 0) {
-            if (!auth.inviteToken || hash(auth.inviteToken) !== s.inviteHash) throw new Rejected('invite_denied')
-            if (s.humanSeats > 0) throw new Rejected('room_started')
-            seat = s.seats.findIndex(p => !p.tokenHash)
-            if (seat < 0) throw new Rejected('room_full')
-            const nickname = cleanNickname(auth.nickname ?? '')
-            if (!nickname) throw new Rejected('nickname_refused')
-            s.seats[seat].nickname = nickname
+        const elsewhere: string[] = []
+        const result = await store.change(this.roomId, async (s, c) => {
+          let seat = s.seats.findIndex(p => p.account === by.account)
+          let claimed = false
+          if (seat >= 0) {
+            const p = s.seats[seat]
+            if (p.session && p.session !== client.sessionId) elsewhere.push(p.session)
+            p.session = client.sessionId
+            p.disconnectedAt = null
+            p.autopilot = p.joinsAt !== null
+            s.expiresAt = Date.now() + TTL_MS
+          } else {
+            if (await store.roomOf(by.account, s.id, c)) throw new Rejected('already_in_room')
+            seat = claimSeat(s, by.account, await nameOf(c, by.account, Date.now()), client.sessionId)
+            claimed = true
           }
-          const p = s.seats[seat]
-          if (p.session) throw new Rejected('seat_already_connected')
-          p.tokenHash = tokenHash
-          p.session = client.sessionId
-          p.disconnectedAt = null
-          p.autopilot = false
-          s.expiresAt = Date.now() + TTL_MS
-          return { changed: true, value: seat }
+          return { changed: true, value: { seat, claimed } }
         }).catch(e => {
           throw new ServerError(403, e instanceof Rejected ? e.message : 'storage_unavailable')
         })
-        client.userData = { seat: result.value }
+        for (const session of elsewhere) this.dismiss(session, 'elsewhere')
+        client.userData = { seat: result.value.seat, account: by.account }
         client.view = new StateView()
-        client.view.add(this.state.players.get(String(result.value))!)
+        client.view.add(this.state.players.get(String(result.value.seat))!)
         this.publish(result.snapshot)
       })
+    }
+    /** A connection that no longer holds its seat — taken out, gone, or open on another device — is told why and closed. */
+    private dismiss(session: string, why: 'kicked' | 'left' | 'elsewhere' | 'closed') {
+      const c = this.clients.find(x => x.sessionId === session)
+      if (!c) return
+      c.userData = undefined
+      c.send('dismissed', { why })
+      c.leave(4000)
     }
     onDrop(client: Client) {
       if (client.userData?.seat === undefined) return
@@ -150,7 +161,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           if (!p || (p.session && p.session !== client.sessionId)) throw new Rejected('seat_already_connected')
           p.session = client.sessionId
           p.disconnectedAt = null
-          p.autopilot = false
+          p.autopilot = p.joinsAt !== null
           s.expiresAt = Date.now() + TTL_MS
           return { changed: true, value: null }
         })
@@ -176,7 +187,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           if (p.session !== session) return { changed: false, value: null }
           p.session = null
           p.disconnectedAt = drop.at
-          p.autopilot = false
+          p.autopilot = p.joinsAt !== null
           return { changed: true, value: null }
         })
         this.pendingDrops.delete(session)
@@ -188,10 +199,15 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
       if (!parsed.success) throw new Rejected('invalid_command')
       const cmd = parsed.data
       const seat = client.userData?.seat as Seat
+      const type = cmd.action.type
+      /** Sessions whose seat went to a computer with this command: the person taken out, or the one leaving. */
+      const gone: string[] = []
       const result = await store.change(this.roomId, async (s, c) => {
-        if (!ready() || s.seats[seat]?.session !== client.sessionId || s.seats[seat].autopilot) {
-          throw new Rejected('not_your_seat')
-        }
+        const p = s.seats[seat]
+        if (!ready() || p?.session !== client.sessionId) throw new Rejected('not_your_seat')
+        // A newcomer waiting for the next deal, whose seat a computer plays, may still deal it, leave, or — the host — run
+        // the room; a move is the computer's.
+        if (p.autopilot && type !== 'next' && !roomOnly(cmd.action)) throw new Rejected('not_your_seat')
         const fingerprint = hash(JSON.stringify(cmd.action))
         const prior = await c.query(
           'SELECT fingerprint, receipt FROM multiplayer_commands WHERE room_id=$1 AND seat=$2 AND id=$3',
@@ -201,11 +217,14 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           if (prior.rows[0].fingerprint !== fingerprint) throw new Rejected('command_id_reused')
           return { changed: false, value: prior.rows[0].receipt }
         }
+        const room = roomOnly(cmd.action)
         // Stale only if the game changed since the move was made: someone else dropping or coming back
-        // changes the table, not the game (SKATGO-117).
-        if (cmd.revision < (s.played ?? s.revision) || cmd.revision > s.revision) throw new Rejected('stale_revision')
+        // changes the table, not the game (SKATGO-117). Running the room is no move.
+        if (!room && (cmd.revision < (s.played ?? s.revision) || cmd.revision > s.revision)) throw new Rejected('stale_revision')
+        const sessions = s.seats.map(x => x.session)
         applyAction(s, seat, cmd.action, pick)
-        s.played = s.revision + 1
+        s.seats.forEach((x, i) => { if (sessions[i] && x.session !== sessions[i]) gone.push(sessions[i]!) })
+        if (!room || type === 'start') s.played = s.revision + 1
         s.nextActionAt = Date.now() + aiDelay
         s.expiresAt = Date.now() + TTL_MS
         const receipt = { id: cmd.id, ok: true, revision: s.revision + 1 }
@@ -213,8 +232,18 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           [s.id, seat, cmd.id, fingerprint, receipt])
         return { changed: true, value: receipt }
       })
-      this.publish(result.snapshot)
       client.send('receipt', result.value)
+      for (const session of gone) this.dismiss(session, type === 'kick' ? 'kicked' : 'left')
+      if (emptyRoom(result.snapshot)) return this.close()
+      this.publish(result.snapshot)
+    }
+    /** Nobody is left (SKATGO-163): the room goes now, its number free again. */
+    private async close() {
+      clearTimeout(this.timer)
+      this.disposed = true
+      await store.drop(this.roomId).catch(() => console.error(JSON.stringify({ event: 'room_close_failed' })))
+      for (const c of [...this.clients]) this.dismiss(c.sessionId, 'closed')
+      await this.disconnect().catch(() => {})
     }
     private enqueue<T>(run: () => Promise<T>): Promise<T> {
       const job = this.serial.then(run)
@@ -235,7 +264,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
       for (const p of s.seats) {
         if (p.disconnectedAt !== null && !p.autopilot) deadlines.push(p.disconnectedAt + GRACE_MS)
       }
-      if (s.game && this.computerDue(s)) deadlines.push(s.nextActionAt)
+      if (s.game && online(s) && this.computerDue(s)) deadlines.push(s.nextActionAt)
       this.timer = setTimeout(() => {
         this.enqueue(() => this.advance()).catch(e => {
           if (e instanceof Rejected && e.message === 'room_expired') void this.expire()
@@ -269,7 +298,8 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             changed = true
           }
         }
-        if (s.game && now >= s.nextActionAt && this.computerDue(s)) {
+        // Nobody online, nothing played (SKATGO-163): the computers do not go on by themselves.
+        if (s.game && online(s) && now >= s.nextActionAt && this.computerDue(s)) {
           // The computers' moves (SKATGO-61): the trick collected, a decided deal ended, or SkatZero's
           // turn for a computer's seat — from the deal's prepared plan, or a person's seat while a
           // computer stands in for them.

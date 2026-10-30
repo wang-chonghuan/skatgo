@@ -393,9 +393,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   way out (SKATGO-163) — and its menu holds the room: under "Weiterspielen", "Raum 482 917 · Link kopieren" (`quiet`), which
   copies the room's link and reads "Link kopiert" for a moment; for the host, "<Name> entfernen" (`quiet`) per person;
   and "Raum verlassen" (`stop`) — removing and leaving each asked once more; under the number, "Statistik" (`quiet`,
-  SKATGO-165) opens a dialog over the table — "Statistik" (`dialogTitle`), one block a finished deal under a hairline:
-  "SPIEL 3" (`infoLabel`), the game line as the score sheets say it (`appText`), the three seats' points as the result
-  card shows them (`SeatScores`) — then "GESAMT" the same way, and "Weiterspielen" (`go`, full width) at its foot. The
+  SKATGO-165) opens a dialog over the table — "Statistik" (`dialogTitle`) over a score sheet (`small`): the names once,
+  in the board's order (left, "Du", right), then one row a finished deal under a hairline — its number, the game ("Pik ♠
+  Hand", "Eingepasst"), each seat's points, the declarer's bold, pale where someone else sat that deal — then "Gesamt"
+  (`smallBold`) under a heavier line, and "Weiterspielen" (`go`, full width) at its foot. The
   board's deal line reads "Spiel 3", where free play reads "Spiel 3 von 6", and the panel's strip the same pill. At a deal's
   end, the way on, once pressed, reads "Warten auf <Namen>" and takes no tap. Nothing of the room stands on the felt. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —

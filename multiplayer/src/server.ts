@@ -18,7 +18,8 @@ const url = process.env.DATABASE_URL
 const key = process.env.MULTIPLAYER_ADMISSION_KEY
 if (!url || !key || key.length < 32) throw new Error('DATABASE_URL and a 32+ character MULTIPLAYER_ADMISSION_KEY are required')
 const port = Number(process.env.PORT || 3221)
-const aiDelay = Number(process.env.AI_DELAY_MS || 350)
+// A private room's computers move one beat apart: free play's (BOT_DELAY in the web's game-table.tsx, SKATGO-164).
+const aiDelay = Number(process.env.AI_DELAY_MS || 850)
 if (!Number.isInteger(port) || port < 1 || port > 65535 || !Number.isFinite(aiDelay) || aiDelay < 10) {
   throw new Error('Invalid PORT or AI_DELAY_MS')
 }

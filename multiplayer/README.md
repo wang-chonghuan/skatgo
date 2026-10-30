@@ -39,7 +39,7 @@ disconnect deadline, not a mock clock; allow several minutes.
 | `DATABASE_URL` | Required, direct PostgreSQL connection; not transaction-pooled |
 | `MULTIPLAYER_ADMISSION_KEY` | Required, random secret of at least 32 characters |
 | `PORT` | Default 3221 locally; Render supplies its port |
-| `AI_DELAY_MS` | Default 350; minimum 10; short delays are useful for headless verification |
+| `AI_DELAY_MS` | A private room's beat between computer moves: default 850, free play's (SKATGO-164); minimum 10; short delays are useful for headless verification |
 | `APP_VERSION` | Local diagnostic override; Render uses `RENDER_GIT_COMMIT` |
 | `TEST_PORT` | Acceptance server port; next port is used to test a standby process |
 | `DATABASE_PORT` | Local database provisioning port |

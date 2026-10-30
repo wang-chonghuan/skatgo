@@ -27,6 +27,9 @@ export type RoomPublic = {
   /** The room's number. */
   roomId: string
   revision: number
+  /** The revision of the last change to the game itself (SKATGO-164): what changed besides — someone's connection, a seat —
+   *  leaves it as it was. */
+  played: number
   expiresAt: number
   /** Deals dealt so far; 0 while the room waits for the host to start. */
   deals: number

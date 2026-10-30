@@ -266,7 +266,7 @@ export function computerMove(g: Game): Game {
 export function publicView(s: Snapshot): RoomPublic {
   const g = s.game
   return {
-    roomId: s.id, revision: s.revision, expiresAt: s.expiresAt, deals: s.deals, scores: s.scores,
+    roomId: s.id, revision: s.revision, played: s.played ?? s.revision, expiresAt: s.expiresAt, deals: s.deals, scores: s.scores,
     seats: s.seats.map((p, i) => ({
       seat: i, kind: p.account ? 'human' : isEmpty(p) ? 'empty' : 'ai',
       nickname: p.nickname,

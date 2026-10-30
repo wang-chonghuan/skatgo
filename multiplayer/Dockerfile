@@ -5,8 +5,10 @@ COPY multiplayer/package*.json ./
 RUN npm ci
 COPY multiplayer/ ./
 COPY app/src/lib/skat/ /repo/app/src/lib/skat/
-# A private table's admission ticket (SKATGO-61), shared with the web server.
+# A private table's admission ticket (SKATGO-61), shared with the web server, and the room number's shape it checks
+# (SKATGO-163).
 COPY app/src/lib/room-ticket.ts /repo/app/src/lib/room-ticket.ts
+COPY app/src/lib/room-code.ts /repo/app/src/lib/room-code.ts
 # The forum's rules (SKATGO-118), shared with the web server.
 COPY app/src/lib/forum.ts /repo/app/src/lib/forum.ts
 RUN npm run build && npm prune --omit=dev

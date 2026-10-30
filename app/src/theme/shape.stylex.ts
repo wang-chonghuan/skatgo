@@ -213,6 +213,9 @@ export const dims = stylex.defineVars({
   /** The contracts in the pinned side panel (SKATGO-34): two by three, the panel is narrow. */
   contractColumnsPanel: 'repeat(2, minmax(0, 1fr))',
   auctionColumns: 'repeat(3, 1fr)',
+  /** A room's statistics (SKATGO-165), one row a deal: its number, the game, then the three seats' points, each seat as
+   *  wide as the board's (one cell for the whole sheet, so the columns line up). */
+  statsColumns: 'auto minmax(0, 1fr) repeat(3, 3.75em)',
   /** The narrowest a column of bids gets (SKATGO-29): one bid chip and the column's padding. */
   auctionCell: '56px',
   square: '1 / 1',

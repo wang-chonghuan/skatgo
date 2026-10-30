@@ -10,7 +10,8 @@ import {
 } from '~/lib/room-client'
 import { ROOM_CODE, ROOM_DIGITS } from '~/lib/room-code'
 import type { Seat } from '~/lib/skat/game'
-import { type RoomDeal, roomGame, roomSeat, viewSeat } from '~/lib/skat/room-view'
+import { contractName } from '~/lib/skat/i18n'
+import { type RoomDeal, roomGame, roomSeat } from '~/lib/skat/room-view'
 import { seegerFabian } from '~/lib/skat/tournament'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
@@ -20,7 +21,7 @@ import { elev, fill } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { SeatScores, gameLine } from './daily-comparison'
+import { signed } from './daily-comparison'
 import { BOT_DELAY, GameTable, useRoomLink } from './game-table'
 import { Btn, Panel, Pill, TextField, linkLook } from './ui'
 
@@ -524,41 +525,60 @@ function Playing({ state, busy, send, collect, notice }: { state: TableState; bu
 }
 
 /**
- * The room's statistics (SKATGO-165, the human: 「弹出菜单可以看到一个简明的每个deal的统计」): every finished deal, the
- * first first — what was played, by whom and how it went, as the score sheets say it, and each seat's points with the
- * names of that deal — then the running totals with today's. Turned so the viewer is the first seat, as at the table.
+ * The room's statistics (SKATGO-165, the human: 「弹出菜单可以看到一个简明的每个deal的统计」), as a score sheet: the names
+ * once, in the board's order — the left seat, the viewer, the right one — then one row a finished deal, the first first:
+ * its number, the game, each seat's points, the declarer's in bold; then the running totals. Where someone else sat in
+ * a seat that deal — a computer before a person came in — its points are pale: the totals count a newcomer from 0.
  */
 function Stats({ state }: { state: TableState }) {
   const me = state.mine.seat
   const mine = state.pub.seats[me].nickname
-  const turn = <T,>(xs: readonly T[]) => [0, 1, 2].map((v) => xs[roomSeat(v, me)]) as [T, T, T]
+  const order = [1, 0, 2].map((v) => roomSeat(v, me))
   /** A deal's names by room seat: the viewer "you", Lina or Noah where a computer played — the first in seat order Lina. */
-  const namesOf = (d: RoomDeal) => {
-    const computers = d.names.flatMap((n, seat) => (n === null ? [seat] : []))
-    return d.names.map((n, seat) => (seat === me && n === mine ? m.name_you() : n ?? (computers.indexOf(seat) === 0 ? m.name_lina() : m.name_max())))
+  const namesOf = (names: (string | null)[]) => {
+    const computers = names.flatMap((n, seat) => (n === null ? [seat] : []))
+    return names.map((n, seat) => (seat === me && n === mine ? m.name_you() : n ?? (computers.indexOf(seat) === 0 ? m.name_lina() : m.name_max())))
   }
+  // Who sits where now — a newcomer too — to head the sheet, and to tell a deal someone else played in a seat.
+  const seated = state.pub.seats.map((x) => (x.kind === 'human' ? x.nickname : null))
+  const now = namesOf(seated)
   const history = state.pub.history
+  const game = (d: RoomDeal['summary']) =>
+    d.declaration ? [contractName(d.declaration.contract), d.declaration.hand ? 'Hand' : null, d.declaration.ouvert ? 'Ouvert' : null].filter(Boolean).join(' ') : m.daily_passed_in_short()
   return (
     <div data-testid="room-stats-list" data-deals={history.length} {...stylex.props(styles.stats)}>
       <h2 {...stylex.props(typography.dialogTitle, styles.ink)}>{m.room_stats()}</h2>
-      {history.length === 0 ? <p {...stylex.props(typography.appText, styles.slate)}>{m.room_stats_none()}</p> : null}
-      <ol {...stylex.props(styles.statsDeals)}>
-        {history.map((d, i) => {
-          const names = turn(namesOf(d))
-          const summary = { ...d.summary, declarer: d.summary.declarer === null ? null : viewSeat(d.summary.declarer, me), scores: turn(d.summary.scores) }
-          return (
-            <li key={i} data-testid="room-stats-deal" data-scores={summary.scores.join(',')} {...stylex.props(styles.statsDeal)}>
-              <span {...stylex.props(typography.infoLabel, styles.slate)}>{m.info_deal_n({ n: i + 1 })}</span>
-              <p {...stylex.props(typography.appText, styles.ink)}>{gameLine(summary, names)}</p>
-              <SeatScores scores={summary.scores} names={names} />
-            </li>
-          )
-        })}
-      </ol>
-      {history.length === 0 ? null : (
-        <div data-testid="room-stats-total" data-scores={turn(state.pub.scores).join(',')} {...stylex.props(styles.statsDeal)}>
-          <span {...stylex.props(typography.infoLabel, styles.slate)}>{m.info_totals()}</span>
-          <SeatScores scores={turn(state.pub.scores)} names={[0, 1, 2].map((v) => seatName(state, roomSeat(v, me)))} />
+      {history.length === 0 ? (
+        <p {...stylex.props(typography.appText, styles.slate)}>{m.room_stats_none()}</p>
+      ) : (
+        <div role="table" {...stylex.props(styles.sheet)}>
+          <div role="row" {...stylex.props(styles.sheetRow)}>
+            <span role="columnheader" />
+            <span role="columnheader" />
+            {order.map((seat) => (
+              <span key={seat} role="columnheader" {...stylex.props(typography.small, styles.slate, styles.sheetName)}>{now[seat]}</span>
+            ))}
+          </div>
+          {history.map((d, i) => {
+            return (
+              <div key={i} role="row" data-testid="room-stats-deal" data-scores={order.map((seat) => d.summary.scores[seat]).join(',')} {...stylex.props(styles.sheetRow)}>
+                <span role="cell" {...stylex.props(typography.small, styles.slate, styles.sheetCell)}>{i + 1}</span>
+                <span role="cell" {...stylex.props(typography.small, styles.ink, styles.sheetCell, styles.sheetGame)}>{game(d.summary)}</span>
+                {order.map((seat) => (
+                  <span key={seat} role="cell" {...stylex.props(seat === d.summary.declarer ? typography.smallBold : typography.small, d.names[seat] === seated[seat] ? styles.ink : styles.slate, styles.sheetCell, styles.sheetScore)}>
+                    {signed(d.summary.scores[seat])}
+                  </span>
+                ))}
+              </div>
+            )
+          })}
+          <div role="row" data-testid="room-stats-total" data-scores={order.map((seat) => state.pub.scores[seat]).join(',')} {...stylex.props(styles.sheetRow)}>
+            <span role="cell" {...stylex.props(styles.sheetTotal)} />
+            <span role="cell" {...stylex.props(typography.smallBold, styles.ink, styles.sheetTotal, styles.sheetGame)}>{m.info_totals()}</span>
+            {order.map((seat) => (
+              <span key={seat} role="cell" {...stylex.props(typography.smallBold, styles.ink, styles.sheetTotal, styles.sheetScore)}>{signed(state.pub.scores[seat])}</span>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -615,18 +635,16 @@ const styles = stylex.create({
     boxShadow: elev.option,
   },
   standings: { display: 'flex', flexDirection: 'column', gap: space.x6 },
-  // The room's statistics: one block a deal, a hairline between them.
+  // The room's statistics: a score sheet, one grid for all its rows, a hairline over each deal and over the totals.
   stats: { display: 'flex', flexDirection: 'column', gap: space.x12 },
-  statsDeals: { display: 'flex', flexDirection: 'column', gap: space.x12, margin: 0, padding: 0, listStyle: 'none' },
-  statsDeal: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x6,
-    paddingTop: space.x12,
-    borderTopWidth: border.hair,
-    borderTopStyle: 'solid',
-    borderTopColor: color.hairline,
-  },
+  // No column gap: the cells' own padding keeps them apart, so each hairline runs the sheet's whole width.
+  sheet: { display: 'grid', gridTemplateColumns: dims.statsColumns },
+  sheetRow: { display: 'contents' },
+  sheetName: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'end', paddingBottom: space.x6, paddingInlineStart: space.x8 },
+  sheetCell: { paddingBlock: space.x6, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  sheetGame: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingInlineStart: space.x8 },
+  sheetScore: { textAlign: 'end', fontVariantNumeric: 'tabular-nums', paddingInlineStart: space.x8 },
+  sheetTotal: { paddingBlock: space.x6, borderTopWidth: border.tile, borderTopStyle: 'solid', borderTopColor: color.hairline },
   // The waiting room: the number, then the seats, one row each.
   number: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   seats: { display: 'flex', flexDirection: 'column', gap: space.x8, margin: 0, padding: 0, listStyle: 'none' },

@@ -141,6 +141,8 @@ export const dims = stylex.defineVars({
   cardAspect: '5 / 7',
   /** The card backs to choose from in the settings (SKATGO-102): as many small cards to a row as fit. */
   backChoices: 'repeat(auto-fill, minmax(52px, 1fr))',
+  /** The avatars to choose a seat's face from (SKATGO-167): all six in one row, on a phone too. */
+  faceChoices: 'repeat(6, minmax(0, 1fr))',
   slotXs: '38px',
   slotSm: '58px',
   slotMd: '80px',

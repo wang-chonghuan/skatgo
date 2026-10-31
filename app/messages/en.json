@@ -60,6 +60,8 @@
   "settings_talk_free": "Lina and Noah talk at the table",
   "settings_faces": "Avatars",
   "settings_faces_table": "Lina's and Noah's avatars at the table",
+  "settings_face_for": "Avatar for {name}",
+  "settings_face_option": "Avatar {n}",
   "bidcalc_label": "Game value",
   "bidcalc_value": "{matadors} · {level} × {base} = **{value}** · Hand {hand}",
   "bidcalc_null": "**{plain}** · Hand {hand} · Ouvert {ouvert} · Hand Ouvert {handOuvert}",

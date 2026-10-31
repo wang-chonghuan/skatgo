@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-167",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-167",
+  "branch": "SKATGO-167-face-sets",
+  "base": "ff4ca5d91d6bbf2be47d32b02c7063256403d5b3",
+  "ports": { "web": 55167, "multiplayer": 56167, "database": 57167 }
+}

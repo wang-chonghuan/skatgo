@@ -6,6 +6,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 
 import { LANG_TAG } from '~/lib/site'
 import { CARD_BACKS, DEFAULT_BACK, backSrc, isCardBack } from '~/lib/skat/backs'
+import { AVATARS, DEFAULT_AVATAR, faceSrc, isAvatar } from '~/lib/skat/face'
 import { type Deck, useSettings } from '~/lib/skat/settings'
 import { m } from '~/paraglide/messages'
 import { carryGame } from '~/lib/free-api'
@@ -245,6 +246,8 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const setTalk = useSettings((s) => s.setTalk)
   const faces = useSettings((s) => s.faces)
   const setFaces = useSettings((s) => s.setFaces)
+  const avatars = useSettings((s) => s.avatars)
+  const setAvatar = useSettings((s) => s.setAvatar)
   const bidCalc = useSettings((s) => s.bidCalc)
   const setBidCalc = useSettings((s) => s.setBidCalc)
   const current = getLocale()
@@ -373,6 +376,33 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
               <Check size={icon.inline} strokeWidth={icon.outline} />
             </span>
           </button>
+          {/* Each seat's face, chosen by its picture (SKATGO-167, the human: 「设置页面可以看着头像选桌上的头像……可以男明用女头像」):
+              a row of every avatar under the seat's name, the chosen one ringed as the card back is. */}
+          {([1, 2] as const).map((seat) => {
+            const name = seat === 1 ? m.name_lina() : m.name_max()
+            const chosen = isAvatar(avatars?.[seat]) ? avatars[seat] : DEFAULT_AVATAR[seat]
+            return (
+              <div key={seat} {...stylex.props(styles.faceRow)}>
+                <span {...stylex.props(typography.small, styles.faceSeat)}>{name}</span>
+                <div role="radiogroup" aria-label={m.settings_face_for({ name })} data-testid={`settings-avatar-${seat}`} {...stylex.props(styles.faceChoices)}>
+                  {AVATARS.map((a, i) => (
+                    <button
+                      key={a}
+                      type="button"
+                      role="radio"
+                      aria-checked={a === chosen}
+                      aria-label={m.settings_face_option({ n: i + 1 })}
+                      data-testid={`settings-avatar-${seat}-${a}`}
+                      onClick={() => setAvatar(seat, a)}
+                      {...stylex.props(styles.backChoice, a === chosen && styles.backOn)}
+                    >
+                      <img src={faceSrc(a, 'neutral')} alt="" loading="lazy" {...stylex.props(styles.faceThumb)} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </section>
         {/* Free play's bid calculator (SKATGO-157), on by default. */}
         <section {...stylex.props(styles.section)}>
@@ -455,6 +485,11 @@ const styles = stylex.create({
   },
   backOn: { borderColor: color.go },
   backThumb: { display: 'block', width: '100%', aspectRatio: dims.cardAspect, borderRadius: radii.card },
+  // The avatars in the settings (SKATGO-167): a seat's name over a row of all six, square, as the backs are chosen.
+  faceRow: { display: 'flex', flexDirection: 'column', gap: space.x6 },
+  faceSeat: { color: color.slate },
+  faceChoices: { display: 'grid', gridTemplateColumns: dims.faceChoices, gap: space.x6 },
+  faceThumb: { display: 'block', width: '100%', aspectRatio: dims.square, borderRadius: radii.card },
   // The deck settings (SKATGO-66): the gear, its dialog and the choice tiles.
   gear: {
     display: 'inline-flex',

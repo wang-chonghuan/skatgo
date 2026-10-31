@@ -5,10 +5,10 @@ import { type ReactNode, createContext, useContext, useEffect, useMemo, useRef, 
 import { createPortal } from 'react-dom'
 
 import { type Card, type Contract, SUITS, SUIT_SYMBOL, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
-import { type Face, faceOf } from '~/lib/skat/face'
+import { type Face, faceOf, faceSrc } from '~/lib/skat/face'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { playSound } from '~/lib/skat/sounds'
-import { useBoardTricks, useFaces, useSettings, useTapToCollect } from '~/lib/skat/settings'
+import { useAvatar, useBoardTricks, useFaces, useSettings, useTapToCollect } from '~/lib/skat/settings'
 import { calcLine, cardLabel, contractName, ledName, matadorLabel, resultReason, roleName, settleReason, settlementFormula } from '~/lib/skat/i18n'
 import {
   type Game,
@@ -920,8 +920,8 @@ const FACES: readonly Face[] = ['neutral', 'laugh', 'sad']
 /** How long a laugh or a sulk stays (SKATGO-148): a moment's reaction, under the human's two seconds. */
 const FACE_HOLD = 1500
 
-/** Lina's or Noah's face above their stack (SKATGO-147): neutral, laughing or sulking as the deal goes (`faceOf`). All
- *  three pictures are in the page, so a change of face never waits for a download. */
+/** Lina's or Noah's face above their stack (SKATGO-147): neutral, laughing or sulking as the deal goes (`faceOf`), in the
+ *  avatar the settings chose for the seat (SKATGO-167). All three pictures are in the page, so a change of face never waits for a download. */
 function SeatFace({ seat, game }: { seat: 1 | 2; game: Game }) {
   const nameOf = useNameOf()
   // A laugh or a sulk lasts FACE_HOLD, then the face is neutral again (SKATGO-148, the human: 「一个表情，最多持续2秒……
@@ -935,11 +935,12 @@ function SeatFace({ seat, game }: { seat: 1 | 2; game: Game }) {
     return () => clearTimeout(t)
   }, [moment, felt])
   const face = felt !== 'neutral' && over !== moment ? felt : 'neutral'
-  const who = seat === 1 ? 'lina' : 'noah'
+  // The face the seat wears, as the settings chose it (SKATGO-167); the name stays the seat's.
+  const avatar = useAvatar(seat)
   return (
     <div data-testid={`skat-face-${seat}`} data-face={face} {...stylex.props(styles.face, seat === 1 ? styles.faceLeft : styles.faceRight)}>
       {FACES.map((f) => (
-        <img key={f} src={`/faces/${who}-${f}.webp`} alt={f === face ? nameOf(seat) : ''} aria-hidden={f === face ? undefined : 'true'} {...stylex.props(styles.faceImage, f !== face && styles.faceHidden)} />
+        <img key={f} src={faceSrc(avatar, f)} alt={f === face ? nameOf(seat) : ''} aria-hidden={f === face ? undefined : 'true'} {...stylex.props(styles.faceImage, f !== face && styles.faceHidden)} />
       ))}
     </div>
   )

@@ -95,38 +95,45 @@ export function settlementFormula(r: Settlement, d: Declaration, bid: number, se
   return [calculation, lostBy, outcome].filter(Boolean).join(' · ')
 }
 
-/** One step of a deal's calculation as a row: what it is, and its number. */
-export type SettlementRow = { label: string; value: string }
+/**
+ * A deal's result in the line under its headline (SKATGO-166, the human: 「以常玩的用户的视角，重要的在前面。信息不重复」):
+ * the card points, or how a Null went, then what else decided it — Schneider or Schwarz, an announcement missed, an
+ * overbid — and a deal decided before its last trick.
+ */
+export function resultReason(r: Settlement & { declarerPoints: number; defenderPoints: number }, d: Declaration, early?: { kind: 'claim' | 'concede'; from: number } | null): string {
+  const kinds = new Set(r.parts.map((p) => p.kind))
+  const parts =
+    d.contract.kind === 'null'
+      ? [r.won ? m.result_reason_null_won() : m.result_reason_null_lost()]
+      : [m.result_reason_points({ declarer: r.declarerPoints, defenders: r.defenderPoints }), kinds.has('schwarz') ? 'Schwarz' : kinds.has('schneider') ? 'Schneider' : null]
+  if (r.reason.kind === 'schneiderMissed') parts.push(m.result_reason_schneider_missed())
+  if (r.reason.kind === 'schwarzMissed') parts.push(m.result_reason_schwarz_missed())
+  if (r.reason.kind === 'overbid') parts.push(m.result_reason_overbid({ worth: r.reason.worth, bid: r.reason.bid }))
+  if (early) parts.push(early.kind === 'claim' ? m.result_reason_claim({ n: 10 - early.from }) : m.result_reason_concede({ n: 10 - early.from }))
+  const line = parts.filter(Boolean).join(' · ')
+  return line.charAt(0).toUpperCase() + line.slice(1)
+}
 
 /**
- * A deal's calculation step by step, as the result card lists it (SKATGO-145, the human: 「计算过程写到浅绿色卡片里，
- * 要清晰点，别一坨普通文字」): the base value, the multiplier, the game value, an overbid, the outcome, and last the
- * player's own Seeger-Fabian score. `declarer` names the declarer when it is not the player.
+ * How a deal's score is counted, in one line under its score table (SKATGO-166): the game value from its base value and
+ * multiplier, an overbid, and the Seeger-Fabian outcome — without the scores themselves, the declarer's or the defenders',
+ * which the table shows.
  */
-export function settlementRows(r: Settlement, d: Declaration, bid: number, mine: boolean, declarer: string): SettlementRow[] {
-  // The calculation in as few rows as it reads (SKATGO-148, the human: 「那个公式占用的行数太多」): the game value from its
-  // contract's base value and multiplier in one row, then the outcome to its Seeger-Fabian number in another. The
-  // player's own score is the card's title, and everyone's is in the seats above.
-  const rows: SettlementRow[] = []
-  if (d.contract.kind === 'null') {
-    rows.push({ label: m.result_row_null({ contract: `Null${d.hand ? ' Hand' : ''}${d.ouvert ? ' Ouvert' : ''}` }), value: String(r.value) })
-  } else {
-    const parts = r.parts.map((p, i) => (i === 0 ? partLabel(p, r.matadors) : `${partLabel(p, r.matadors)} 1`)).join(' + ')
-    rows.push({ label: m.result_row_game({ contract: contractName(d.contract), base: r.base, multiplier: r.multiplier, parts }), value: String(r.base * r.multiplier) })
-  }
-  if (r.overbid) rows.push({ label: m.result_row_overbid({ bid }), value: String(r.value) })
+export function calcLine(r: Settlement, d: Declaration): string {
   const sf = SEEGER_FABIAN
-  const signedScore = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0')
-  if (mine) {
-    rows.push(r.won
-      ? { label: `${m.result_row_won()}: ${r.value} + ${sf.won}`, value: signedScore(r.value + sf.won) }
-      : { label: `${m.result_row_lost()}: −2 × ${r.value} − ${sf.lost}`, value: signedScore(-2 * r.value - sf.lost) })
-  } else {
-    rows.push(r.won
-      ? { label: `${m.result_row_other_won({ name: declarer })}: ${r.value} + ${sf.won}`, value: signedScore(r.value + sf.won) }
-      : { label: m.result_row_other_lost({ name: declarer }), value: signedScore(sf.defender) })
-  }
-  return rows
+  const parts =
+    d.contract.kind === 'null'
+      ? [m.result_calc_null({ contract: `Null${d.hand ? ' Hand' : ''}${d.ouvert ? ' Ouvert' : ''}`, value: r.base })]
+      : [m.result_calc_game({
+          contract: contractName(d.contract),
+          base: r.base,
+          multiplier: r.multiplier,
+          parts: r.parts.map((p, i) => (i === 0 ? partLabel(p, r.matadors) : `${partLabel(p, r.matadors)} 1`)).join(' + '),
+          value: r.base * r.multiplier,
+        })]
+  if (r.overbid) parts.push(m.result_calc_overbid({ value: r.value }))
+  parts.push(r.won ? m.result_calc_won({ value: r.value, bonus: sf.won }) : m.result_calc_lost({ value: r.value, bonus: sf.lost }))
+  return parts.join(' · ')
 }
 
 export function settleReason(r: SettleReason): string {

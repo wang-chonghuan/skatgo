@@ -216,6 +216,9 @@ export const dims = stylex.defineVars({
   /** A room's statistics (SKATGO-165), one row a deal: its number, the game, then the three seats' points, each seat as
    *  wide as the board's (one cell for the whole sheet, so the columns line up). */
   statsColumns: 'auto minmax(0, 1fr) repeat(3, 3.75em)',
+  /** A finished deal's score table (SKATGO-166): its row names ("This deal", "Total") as wide as they are, the three seats
+   *  sharing the rest equally. */
+  scoreColumns: 'max-content repeat(3, minmax(0, 1fr))',
   /** The narrowest a column of bids gets (SKATGO-29): one bid chip and the column's padding. */
   auctionCell: '56px',
   square: '1 / 1',

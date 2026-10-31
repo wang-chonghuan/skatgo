@@ -169,7 +169,7 @@ export function VsAiReview({ ask, cacheKey, names, after = false }: { ask: AskRe
   }
   return (
     <div data-testid="vs-ai-review" data-state="ready" {...stylex.props(styles.analysis, after && styles.ruled)}>
-      {after ? <AiSeat review={review} /> : <BidCompare review={review} names={names ?? youNames()} />}
+      {after ? <AiSeat review={review} names={names ?? youNames()} /> : <BidCompare review={review} names={names ?? youNames()} />}
       {review.mine.declarer === null ? null : <WorstTrick review={review} names={names ?? youNames()} heading={!after} />}
       {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} skat={!after} />}
     </div>
@@ -329,34 +329,84 @@ function BidCompare({ review, names }: { review: DealReview; names: string[] }) 
 }
 
 /**
- * The AI in the player's seat — "If the AI had played your cards" — under a deal's result (SKATGO-166, 「信息不重复」): its
- * score from that seat, and only what it did otherwise — where it bid otherwise, the player's bidding and its own with how
- * its deal ended; where the same bidding ended otherwise, how its deal ended. The player's own game and score are the
- * result's, above it. Nothing on a day dealt before the AI played it.
+ * The AI in the player's seat, under a deal's result (SKATGO-166): "If the AI had played your cards", then its deal told as
+ * the result tells the player's (the human: 「你那个+86是什么意思？然后70 50什么意思，然后为啥不写ai打的时候，最后每个人得几分呢」) — the
+ * bidding where the AI's differed from the player's, who won or lost which game and why, and each seat's score in a table
+ * of the result's own columns, the AI in the player's. Nothing on a day dealt before the AI played it.
  */
-function AiSeat({ review }: { review: DealReview }) {
+function AiSeat({ review, names }: { review: DealReview; names: string[] }) {
   const ai = review.ai
   if (!ai || !review.aiAuction) return null
-  const aiSaid = bidSaid(ai, review.aiAuction[PLAYER])
-  const same = bidSaid(review.mine, review.auction[PLAYER]) === aiSaid
-  // The player's bidding without the game they then played, which the result's title names.
-  const mine = review.mine.declarer === PLAYER ? m.review_bid_you_bid({ bid: review.mine.bid }) : bidSaid(review.mine, review.auction[PLAYER])
-  const rows: { who: Side; text: string }[] = !same
-    ? [{ who: 'you', text: mine }, { who: 'ai', text: [aiSaid, bidOutcome(ai, aiNames())].join(' · ') }]
-    : ai.won !== review.mine.won ? [{ who: 'ai', text: bidOutcome(ai, aiNames()) }] : []
+  const seats = [m.daily_ai(), names[1], names[2]]
+  // What each said, the game left to the line under it.
+  const said = (d: DealSummary, s: SeatBid) => (d.declarer === PLAYER ? m.review_bid_you_bid({ bid: d.bid }) : bidSaid(d, s))
+  const mine = said(review.mine, review.auction[PLAYER])
+  const its = said(ai, review.aiAuction[PLAYER])
+  const rows: { who: Side; text: string }[] = mine === its ? [] : [{ who: 'you', text: mine }, { who: 'ai', text: its }]
   return (
     <section data-testid="vs-ai-bid" data-rows={rows.length} {...stylex.props(styles.block)}>
-      <div {...stylex.props(styles.aiHead)}>
-        <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{m.review_ai_seat()}</h3>
-        <span data-testid="vs-ai-score" data-score={ai.scores[PLAYER]} {...stylex.props(typography.appBtnStrong, styles.ink)}>{signed(ai.scores[PLAYER])}</span>
-      </div>
+      <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{m.review_ai_seat()}</h3>
       {rows.map((r) => (
         <p key={r.who} data-who={r.who} {...stylex.props(styles.aiRow, styles.sheetNote)}>
           <Who side={r.who} />
           <span {...stylex.props(typography.appText, styles.ink)}><Rich text={r.text} /></span>
         </p>
       ))}
+      <p data-testid="vs-ai-deal" {...stylex.props(typography.appText, styles.ink, styles.sheetNote)}><Rich text={dealLine(ai, seats)} /></p>
+      <ScoreTable testId="vs-ai-scores" names={seats} deal={ai.scores} totals={null} />
     </section>
+  )
+}
+
+/** A deal in one line, as a result's title and reason say it (SKATGO-166): who won or lost which game, the card points or
+ *  how a Null went, and what made it big or lost it — or that all passed. */
+function dealLine(d: DealSummary, names: string[]): string {
+  if (d.declarer === null || !d.declaration) return m.result_head_passed()
+  const game = gameName(d)
+  const head = d.won ? m.result_head_won({ name: names[d.declarer], game }) : m.result_head_lost({ name: names[d.declarer], game })
+  const x = d.detail
+  const why =
+    d.declaration.contract.kind === 'null'
+      ? [d.won ? m.result_reason_null_won() : m.result_reason_null_lost()]
+      : x
+        ? [m.result_reason_points({ declarer: x.declarerPoints, defenders: x.defenderPoints }), x.schwarz ? 'Schwarz' : x.schneider ? 'Schneider' : null, x.overbid ? m.daily_overbid() : null]
+        : []
+  return [head, ...why].filter(Boolean).join(' · ')
+}
+
+/** Each seat's score of a deal and the running totals (SKATGO-166), in the board's order — the left seat, the player, the
+ *  right one — under the names; the deal's row bold. The totals only where they say something the deal's row does not: not
+ *  where the table plays one game, and not while they are the deal's own scores, as after a room's first deal. */
+export function ScoreTable({ names, deal, totals: all, testId = 'skat-result-scores' }: { names: string[]; deal: readonly [number, number, number]; totals: readonly [number, number, number] | null; testId?: string }) {
+  const order = [1, PLAYER, 2] as const
+  const totals = all && all.some((v, seat) => v !== deal[seat]) ? all : null
+  return (
+    <table data-testid={testId} data-deal={deal.join(',')} data-totals={totals ? totals.join(',') : undefined} {...stylex.props(styles.dealTable)}>
+      <thead {...stylex.props(styles.dealRows)}>
+        <tr {...stylex.props(styles.dealRows)}>
+          <td />
+          {order.map((seat) => (
+            <th key={seat} scope="col" data-seat={seat} {...stylex.props(typography.appText, styles.muted, styles.dealName)}>{names[seat]}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody {...stylex.props(styles.dealRows)}>
+        <tr data-row="deal" {...stylex.props(styles.dealRows)}>
+          <th scope="row" {...stylex.props(typography.appText, styles.muted, styles.dealLabel, styles.dealRule)}>{m.result_col_deal()}</th>
+          {order.map((seat) => (
+            <td key={seat} data-seat={seat} {...stylex.props(typography.appBtnStrong, styles.ink, styles.dealCell, styles.dealRule)}>{signed(deal[seat])}</td>
+          ))}
+        </tr>
+        {totals ? (
+          <tr data-row="total" {...stylex.props(styles.dealRows)}>
+            <th scope="row" {...stylex.props(typography.appText, styles.muted, styles.dealLabel)}>{m.result_col_total()}</th>
+            {order.map((seat) => (
+              <td key={seat} data-seat={seat} {...stylex.props(typography.appText, styles.ink, styles.dealCell)}>{signed(totals[seat])}</td>
+            ))}
+          </tr>
+        ) : null}
+      </tbody>
+    </table>
   )
 }
 
@@ -587,13 +637,20 @@ const styles = stylex.create({
   ruled: { paddingTop: space.x8, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   blockTitle: { margin: 0, color: color.navy },
   ink: { color: color.navy },
+  // The AI's side under a deal's result (SKATGO-166): a row a difference in the bidding.
+  aiRow: { display: 'flex', alignItems: 'baseline', gap: space.x8 },
+  // A deal's score table (SKATGO-166): a grid, so the row names take their own width and the seats share the rest; its
+  // rows are only the grid's cells. A name too long for its column wraps rather than losing its end (「Lina (AI)」).
+  dealTable: { display: 'grid', gridTemplateColumns: dims.scoreColumns, width: '100%' },
+  dealRows: { display: 'contents' },
+  dealName: { paddingBottom: space.x4, paddingInlineStart: space.x8, textAlign: 'end', alignSelf: 'end', overflowWrap: 'anywhere' },
+  dealLabel: { paddingBlock: space.x4, textAlign: 'start', whiteSpace: 'nowrap' },
+  dealCell: { paddingBlock: space.x4, paddingInlineStart: space.x8, textAlign: 'end', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' },
+  dealRule: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   // A side's bidding: its tag, what it said over how it went, and its score at the end.
   // Tags, words and score in three columns shared by both rows, so the two lines start under each other; each row's
   // tag and score on the baseline of its first line, however its words wrap (SKATGO-148, the human: 「you 和AI的两个结果的
   // 行都没对齐，错位了」). Where both sides bid alike, their two tags stand side by side.
-  // The AI's side under a deal's result (SKATGO-166): its name and score on one line, then a row a difference.
-  aiHead: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
-  aiRow: { display: 'flex', alignItems: 'baseline', gap: space.x8 },
   bidRows: { display: 'grid', gridTemplateColumns: 'max-content auto max-content', alignItems: 'baseline', columnGap: space.x8, rowGap: space.x8 },
   bidRow: { display: 'contents' },
   bidTags: { display: 'flex', alignItems: 'baseline', gap: space.x4 },

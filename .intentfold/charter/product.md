@@ -79,8 +79,9 @@ why: the card points, or how a Null went, and Schneider, Schwarz, an announcemen
 early. Under it each seat's Seeger-Fabian score of the deal and the running totals — the board's — in the board's order;
 then the skat, and how the score is counted in one line, without the scores. A private table's result is this and the
 way on. Against the AI there follows the AI's side (SKATGO-145, the human: 「先显示叫牌和ai的不同，再显示打的和ai最不同（打的最不好的一个
-trick），其他不显示」): its score from the player's seat, and only what it did otherwise — where it bid otherwise, the player's
-bidding and its own with how its deal went; where the same bidding ended otherwise, how its deal went; then the one trick
+trick），其他不显示」): "If the AI had played your cards" and its deal told as the result tells the player's (「你那个+86是什么意思？然后70 50
+什么意思，然后为啥不写ai打的时候，最后每个人得几分呢」): the bidding only where it bid otherwise, who won or lost which game and
+why, and each seat's score of its deal; then the one trick
 where the player's card was furthest from the AI's: which card the AI would have played, the cards already on the table,
 the player's hand at that moment with their card and the AI's marked, and who took the trick with its card points —
 ranked over every play, with no threshold (the human: 「通过10墩排序的方式，选出最差的」); last, folded, every trick against the

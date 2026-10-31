@@ -50,7 +50,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { type AskReview, VsAiReview, dailyAsk, gameName, signed } from './daily-comparison'
+import { type AskReview, ScoreTable, VsAiReview, dailyAsk, gameName } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
@@ -1429,7 +1429,7 @@ function DealResult({ game, totals, vsAi, next }: { game: Game; totals: [number,
             ) : null}
           </div>
         </Panel>
-        <ScoreTable deal={seegerFabian(game)} totals={totals} />
+        <ScoreTable names={[nameOf(0), nameOf(1), nameOf(2)]} deal={seegerFabian(game)} totals={totals} />
         {played ? (
           <div {...stylex.props(styles.resultBody)}>
             <div data-testid="skat-result-skat" {...stylex.props(styles.resultSkat)}>
@@ -1442,43 +1442,6 @@ function DealResult({ game, totals, vsAi, next }: { game: Game; totals: [number,
         {vsAi ? <VsAiReview after ask={vsAi.ask} cacheKey={vsAi.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
       </div>
     </Dialog>
-  )
-}
-
-/** Each seat's score of a deal and the running totals (SKATGO-166), in the board's order — the left seat, the player, the
- *  right one — under the board's names; the deal's row bold. The totals only where they say something the deal's row does
- *  not: not where the table plays one game, and not while they are the deal's own scores, as after a room's first deal. */
-function ScoreTable({ deal, totals: all }: { deal: [number, number, number]; totals: [number, number, number] | null }) {
-  const nameOf = useNameOf()
-  const order: Seat[] = [1, 0, 2]
-  const totals = all && all.some((v, seat) => v !== deal[seat]) ? all : null
-  return (
-    <table data-testid="skat-result-scores" data-deal={deal.join(',')} data-totals={totals ? totals.join(',') : undefined} {...stylex.props(styles.scoreTable)}>
-      <thead {...stylex.props(styles.scoreRows)}>
-        <tr {...stylex.props(styles.scoreRows)}>
-          <td />
-          {order.map((seat) => (
-            <th key={seat} scope="col" data-seat={seat} {...stylex.props(typography.appText, styles.inkLabel, styles.scoreName)}>{nameOf(seat)}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody {...stylex.props(styles.scoreRows)}>
-        <tr data-row="deal" {...stylex.props(styles.scoreRows)}>
-          <th scope="row" {...stylex.props(typography.appText, styles.inkLabel, styles.scoreLabel, styles.scoreRule)}>{m.result_col_deal()}</th>
-          {order.map((seat) => (
-            <td key={seat} data-seat={seat} {...stylex.props(typography.appBtnStrong, styles.resultTitle, styles.scoreCell, styles.scoreRule)}>{signed(deal[seat])}</td>
-          ))}
-        </tr>
-        {totals ? (
-          <tr data-row="total" {...stylex.props(styles.scoreRows)}>
-            <th scope="row" {...stylex.props(typography.appText, styles.inkLabel, styles.scoreLabel)}>{m.result_col_total()}</th>
-            {order.map((seat) => (
-              <td key={seat} data-seat={seat} {...stylex.props(typography.appText, styles.resultTitle, styles.scoreCell)}>{signed(totals[seat])}</td>
-            ))}
-          </tr>
-        ) : null}
-      </tbody>
-    </table>
   )
 }
 
@@ -2388,14 +2351,6 @@ const styles = stylex.create({
   // A finished deal (SKATGO-166): the box, the scores, the skat and the calculation, the review, one gap apart.
   result: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   resultLine: { margin: 0 },
-  // A grid, so the row names take their own width and the seats share the rest; its rows are only the grid's cells.
-  scoreTable: { display: 'grid', gridTemplateColumns: dims.scoreColumns, width: '100%' },
-  scoreRows: { display: 'contents' },
-  // A name too long for its column wraps rather than losing its end (「Lina (AI)」 on a phone).
-  scoreName: { paddingBottom: space.x4, paddingInlineStart: space.x8, textAlign: 'end', alignSelf: 'end', overflowWrap: 'anywhere' },
-  scoreLabel: { paddingBlock: space.x4, textAlign: 'start', whiteSpace: 'nowrap' },
-  scoreCell: { paddingBlock: space.x4, paddingInlineStart: space.x8, textAlign: 'end', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' },
-  scoreRule: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   resultTitle: { margin: 0, color: color.navy },
   // The calculation, a step a row: what it is at the left, its number at the right; the score under a rule.
   resultSkat: { display: 'flex', alignItems: 'center', gap: space.x6 },

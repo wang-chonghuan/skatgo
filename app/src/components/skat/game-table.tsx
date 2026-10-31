@@ -50,7 +50,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { type AskReview, ScoreTable, VsAiReview, dailyAsk, gameName } from './daily-comparison'
+import { type AskReview, ResultPart, ScoreTable, VsAiReview, dailyAsk, gameName } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
@@ -1421,24 +1421,26 @@ function DealResult({ game, totals, vsAi, next }: { game: Game; totals: [number,
   return (
     <Dialog foot={next}>
       <div ref={panel} data-testid="skat-result" data-human-won={humanWon === null ? undefined : String(humanWon)} {...stylex.props(styles.result)}>
-        <Panel tone={humanWon === null ? 'card' : humanWon ? 'good' : 'bad'}>
-          <div data-testid="skat-result-card" data-won={humanWon === null ? undefined : String(humanWon)} {...stylex.props(styles.resultBody)}>
-            <h3 data-testid="skat-result-title" {...stylex.props(typography.dialogTitle, styles.resultTitle)}><Rich text={title} /></h3>
-            {played ? (
-              <p data-testid="skat-result-reason" {...stylex.props(typography.appText, styles.resultTitle)}><Rich text={resultReason(played.r, played.d, game.early)} /></p>
-            ) : null}
-          </div>
-        </Panel>
-        <ScoreTable names={[nameOf(0), nameOf(1), nameOf(2)]} deal={seegerFabian(game)} totals={totals} />
-        {played ? (
-          <div {...stylex.props(styles.resultBody)}>
-            <div data-testid="skat-result-skat" {...stylex.props(styles.resultSkat)}>
-              <span {...stylex.props(typography.appText, styles.inkLabel)}>{m.result_skat_short()}</span>
-              {game.skat.map((c) => <PlayingCard key={cardId(c)} card={c} size="xs" />)}
+        <ResultPart first testId="result-part-deal" title={m.result_section_deal()}>
+          <Panel tone={humanWon === null ? 'card' : humanWon ? 'good' : 'bad'}>
+            <div data-testid="skat-result-card" data-won={humanWon === null ? undefined : String(humanWon)} {...stylex.props(styles.resultBody)}>
+              <h3 data-testid="skat-result-title" {...stylex.props(typography.dialogTitle, styles.resultTitle)}><Rich text={title} /></h3>
+              {played ? (
+                <p data-testid="skat-result-reason" {...stylex.props(typography.appText, styles.resultTitle)}><Rich text={resultReason(played.r, played.d, game.early)} /></p>
+              ) : null}
             </div>
-            <p data-testid="skat-result-calc" {...stylex.props(typography.appText, styles.inkLabel, styles.resultLine)}><Rich text={calcLine(played.r, played.d)} /></p>
-          </div>
-        ) : null}
+          </Panel>
+          <ScoreTable names={[nameOf(0), nameOf(1), nameOf(2)]} deal={seegerFabian(game)} totals={totals} />
+          {played ? (
+            <div {...stylex.props(styles.resultBody)}>
+              {/* The skat in symbols, as the words name cards (the human: 「skat的地方用符号，不要用牌的缩小版」). */}
+              <p data-testid="skat-result-skat" data-cards={game.skat.map(cardId).join(' ')} {...stylex.props(typography.appText, styles.resultTitle)}>
+                <span {...stylex.props(styles.inkLabel)}>{m.result_skat_short()}</span> <Rich text={game.skat.map(cardLabel).join(' ')} />
+              </p>
+              <p data-testid="skat-result-calc" {...stylex.props(typography.appText, styles.inkLabel, styles.resultLine)}><Rich text={calcLine(played.r, played.d)} /></p>
+            </div>
+          ) : null}
+        </ResultPart>
         {vsAi ? <VsAiReview after ask={vsAi.ask} cacheKey={vsAi.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
       </div>
     </Dialog>
@@ -2348,7 +2350,7 @@ const styles = stylex.create({
   bidCalcRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.x8 },
   bidCalcLabel: { flexShrink: 0, color: color.slate },
   resultBody: { display: 'flex', flexDirection: 'column', gap: space.x6 },
-  // A finished deal (SKATGO-166): the box, the scores, the skat and the calculation, the review, one gap apart.
+  // A finished deal (SKATGO-166): its parts — the result, and against the AI the AI's three — one gap apart.
   result: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   resultLine: { margin: 0 },
   resultTitle: { margin: 0, color: color.navy },

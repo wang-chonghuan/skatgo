@@ -327,6 +327,7 @@
   "result_head_won": "{name} hat {game} gewonnen",
   "result_head_lost": "{name} hat {game} verloren",
   "result_head_passed": "Alle drei haben gepasst",
+  "result_section_deal": "Ergebnis dieses Spiels",
   "result_reason_points": "{declarer} : {defenders} Augen",
   "result_reason_null_won": "keinen Stich bekommen",
   "result_reason_null_lost": "einen Stich bekommen",

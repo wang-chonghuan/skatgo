@@ -144,8 +144,9 @@ const reviews = new Map<string, DealReview>()
  * record; no model explains it (the human: 「解读太麻烦了」). The review is asked once.
  *
  * `after`: under a deal's own result in the after-deal dialog (SKATGO-166, 「信息不重复」), which already says the player's
- * game, score and skat: the AI's side only — its score from the player's seat and what it did otherwise — the trick
- * under its own title, and the record without the skat.
+ * game, score and skat — the dialog's other three parts, each under its heading (「分四段：本deal结果 / 如果AI打你的牌 / 偏差最大
+ * 的一墩牌 / 逐墩分析。四个标题，四块」): the AI's deal from the player's seat, the trick that differed most, and every trick,
+ * folded, without the skat.
  */
 export function VsAiReview({ ask, cacheKey, names, after = false }: { ask: AskReview; cacheKey?: string; names?: string[]; after?: boolean }) {
   const [review, setReview] = useState<DealReview | null>(cacheKey ? (reviews.get(cacheKey) ?? null) : null)
@@ -167,11 +168,20 @@ export function VsAiReview({ ask, cacheKey, names, after = false }: { ask: AskRe
       </p>
     )
   }
+  if (after) {
+    return (
+      <div data-testid="vs-ai-review" data-state="ready" {...stylex.props(styles.parts)}>
+        <AiSeat review={review} names={names ?? youNames()} />
+        {review.mine.declarer === null ? null : <WorstTrick review={review} names={names ?? youNames()} after />}
+        {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} after />}
+      </div>
+    )
+  }
   return (
-    <div data-testid="vs-ai-review" data-state="ready" {...stylex.props(styles.analysis, after && styles.ruled)}>
-      {after ? <AiSeat review={review} names={names ?? youNames()} /> : <BidCompare review={review} names={names ?? youNames()} />}
-      {review.mine.declarer === null ? null : <WorstTrick review={review} names={names ?? youNames()} heading={!after} />}
-      {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} skat={!after} />}
+    <div data-testid="vs-ai-review" data-state="ready" {...stylex.props(styles.analysis)}>
+      <BidCompare review={review} names={names ?? youNames()} />
+      {review.mine.declarer === null ? null : <WorstTrick review={review} names={names ?? youNames()} />}
+      {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} />}
     </div>
   )
 }
@@ -181,18 +191,20 @@ export function VsAiReview({ ask, cacheKey, names, after = false }: { ask: AskRe
  * difference for each Stich … These were excellent learning tools!"; the human: 「放到最下面一个明显的折叠卡片里，点了后就跟删掉的
  * 内容一样」): opened, the play record SKATGO-145 had removed, as it was.
  */
-function PlayRecord({ review, names, skat }: { review: DealReview; names: string[]; skat: boolean }) {
+function PlayRecord({ review, names, after = false }: { review: DealReview; names: string[]; after?: boolean }) {
   const [open, setOpen] = useState(false)
   const Chevron = open ? ChevronUp : ChevronDown
-  return (
-    <details data-testid="vs-ai-play-record" open={open} onToggle={(e) => setOpen(e.currentTarget.open)} {...stylex.props(styles.recordCard)}>
+  // After a deal, the dialog's last part (SKATGO-166): its heading is the line to tap, as the other parts' headings look.
+  const record = (
+    <details data-testid="vs-ai-play-record" open={open} onToggle={(e) => setOpen(e.currentTarget.open)} {...stylex.props(after ? styles.recordPart : styles.recordCard)}>
       <summary data-testid="vs-ai-play-record-head" {...stylex.props(typography.appBtnStrong, styles.recordHead)}>
         <span>{m.review_play_record()}</span>
         <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
       </summary>
-      {open ? <TrickReplay tricks={review.tricks} names={names} skat={skat ? review.skat : undefined} hand={review.hand} differs={review.differs} early={review.early} /> : null}
+      {open ? <TrickReplay tricks={review.tricks} names={names} skat={after ? undefined : review.skat} hand={review.hand} differs={review.differs} early={review.early} /> : null}
     </details>
   )
+  return after ? <section data-testid="result-part-tricks" {...stylex.props(styles.part, styles.partRuled)}>{record}</section> : record
 }
 
 /**
@@ -344,8 +356,7 @@ function AiSeat({ review, names }: { review: DealReview; names: string[] }) {
   const its = said(ai, review.aiAuction[PLAYER])
   const rows: { who: Side; text: string }[] = mine === its ? [] : [{ who: 'you', text: mine }, { who: 'ai', text: its }]
   return (
-    <section data-testid="vs-ai-bid" data-rows={rows.length} {...stylex.props(styles.block)}>
-      <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{m.review_ai_seat()}</h3>
+    <ResultPart testId="vs-ai-bid" title={m.review_ai_seat()} rows={rows.length}>
       {rows.map((r) => (
         <p key={r.who} data-who={r.who} {...stylex.props(styles.aiRow, styles.sheetNote)}>
           <Who side={r.who} />
@@ -354,6 +365,17 @@ function AiSeat({ review, names }: { review: DealReview; names: string[] }) {
       ))}
       <p data-testid="vs-ai-deal" {...stylex.props(typography.appText, styles.ink, styles.sheetNote)}><Rich text={dealLine(ai, seats)} /></p>
       <ScoreTable testId="vs-ai-scores" names={seats} deal={ai.scores} totals={null} />
+    </ResultPart>
+  )
+}
+
+/** One of the after-deal dialog's four parts (SKATGO-166, the human: 「分四段：本deal结果 / 如果AI打你的牌 / 偏差最大的一墩牌 /
+ *  逐墩分析。四个标题，四块」): its heading, then what it holds; each but the first under a fine rule. */
+export function ResultPart({ title, testId, first = false, rows, children }: { title: string; testId: string; first?: boolean; rows?: number; children: ReactNode }) {
+  return (
+    <section data-testid={testId} data-rows={rows} {...stylex.props(styles.part, !first && styles.partRuled)}>
+      <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{title}</h3>
+      {children}
     </section>
   )
 }
@@ -415,13 +437,12 @@ export function ScoreTable({ names, deal, totals: all, testId = 'skat-result-sco
  * the player's hand as it was — their card outlined navy, the AI's blue, each tagged — and who took the trick. A deal
  * where every card was the AI's choice says so in one line.
  */
-function WorstTrick({ review, names, heading = true }: { review: DealReview; names: string[]; heading?: boolean }) {
+function WorstTrick({ review, names, after = false }: { review: DealReview; names: string[]; after?: boolean }) {
   const w = review.differs[0]
   const t = w ? review.tricks[w.trick - 1] : undefined
   if (!w || !t) {
-    return (
-      <p data-testid="vs-ai-clean" {...stylex.props(typography.appText, styles.ink, styles.sheetNote)}>{m.daily_review_clean()}</p>
-    )
+    const clean = <p data-testid="vs-ai-clean" {...stylex.props(typography.appText, styles.ink, styles.sheetNote)}>{m.daily_review_clean()}</p>
+    return after ? <ResultPart testId="vs-ai-trick" title={m.review_trick_heading()}>{clean}</ResultPart> : clean
   }
   const mine = t.cards.findIndex((p) => p.seat === PLAYER)
   const before = t.cards.slice(0, mine)
@@ -429,10 +450,10 @@ function WorstTrick({ review, names, heading = true }: { review: DealReview; nam
   const earlier = review.tricks.slice(0, w.trick - 1).flatMap((x) => x.cards.filter((p) => p.seat === PLAYER).map((p) => p.card))
   const held = review.hand.filter((c) => !earlier.some((e) => sameCard(e, c)))
   const mark = (c: Card): Side | null => (sameCard(c, w.played) ? 'you' : sameCard(c, w.best) ? 'ai' : null)
-  return (
-    <section data-testid="vs-ai-trick" data-trick={w.trick} data-played={`${w.played.suit}${w.played.rank}`} data-best={`${w.best.suit}${w.best.rank}`} {...stylex.props(styles.block, styles.ruled)}>
-      {heading ? <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{m.review_trick_heading()}</h3> : null}
-      <p {...stylex.props(typography.appBtnStrong, styles.ink, styles.sheetNote)}>
+  const body = (
+    <>
+      {/* Under the dialog's part heading the trick's own line is words; on /daily's rows it is the block's title. */}
+      <p data-testid="vs-ai-trick-title" data-trick={w.trick} data-played={`${w.played.suit}${w.played.rank}`} data-best={`${w.best.suit}${w.best.rank}`} {...stylex.props(after ? typography.appText : typography.appBtnStrong, styles.ink, styles.sheetNote)}>
         <Rich text={m.review_trick_title({ trick: w.trick, best: cardLabel(w.best) })} />
       </p>
       <div {...stylex.props(styles.trickGrid)}>
@@ -462,6 +483,13 @@ function WorstTrick({ review, names, heading = true }: { review: DealReview; nam
       <p {...stylex.props(typography.appText, styles.muted, styles.sheetNote)}>
         {m.review_trick_taken({ name: names[t.winner], points: pointsOf(t.cards.map((p) => p.card)) })}
       </p>
+    </>
+  )
+  if (after) return <ResultPart testId="vs-ai-trick" title={m.review_trick_heading()}>{body}</ResultPart>
+  return (
+    <section data-testid="vs-ai-trick" data-trick={w.trick} data-played={`${w.played.suit}${w.played.rank}`} data-best={`${w.best.suit}${w.best.rank}`} {...stylex.props(styles.block, styles.ruled)}>
+      <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{m.review_trick_heading()}</h3>
+      {body}
     </section>
   )
 }
@@ -635,6 +663,11 @@ const styles = stylex.create({
   // the result card, whose edge already divides them.
   block: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   ruled: { paddingTop: space.x8, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  // The after-deal dialog's parts (SKATGO-166): each its heading over what it holds, the parts a fine rule apart.
+  parts: { display: 'flex', flexDirection: 'column', gap: space.x16 },
+  part: { display: 'flex', flexDirection: 'column', gap: space.x10 },
+  partRuled: { paddingTop: space.x16, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  recordPart: { display: 'flex', flexDirection: 'column', gap: space.x10 },
   blockTitle: { margin: 0, color: color.navy },
   ink: { color: color.navy },
   // The AI's side under a deal's result (SKATGO-166): a row a difference in the bidding.

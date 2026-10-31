@@ -327,6 +327,7 @@
   "result_head_won": "{name} won {game}",
   "result_head_lost": "{name} lost {game}",
   "result_head_passed": "All three passed",
+  "result_section_deal": "Result of this deal",
   "result_reason_points": "{declarer} : {defenders} card points",
   "result_reason_null_won": "no trick taken",
   "result_reason_null_lost": "took a trick",

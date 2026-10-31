@@ -329,10 +329,10 @@ function BidCompare({ review, names }: { review: DealReview; names: string[] }) 
 }
 
 /**
- * The AI in the player's seat, under a deal's result (SKATGO-166, 「信息不重复」): its score from that seat, and only what
- * it did otherwise — where it bid otherwise, the player's bidding and its own with how its deal ended; where the same
- * bidding ended otherwise, how its deal ended. The player's own game and score are the result's, above it. Nothing on a
- * day dealt before the AI played it.
+ * The AI in the player's seat — "If the AI had played your cards" — under a deal's result (SKATGO-166, 「信息不重复」): its
+ * score from that seat, and only what it did otherwise — where it bid otherwise, the player's bidding and its own with how
+ * its deal ended; where the same bidding ended otherwise, how its deal ended. The player's own game and score are the
+ * result's, above it. Nothing on a day dealt before the AI played it.
  */
 function AiSeat({ review }: { review: DealReview }) {
   const ai = review.ai

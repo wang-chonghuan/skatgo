@@ -343,7 +343,7 @@
   "result_calc_overbid": "überreizt, gewertet {value}",
   "result_calc_won": "gewonnen: {value} + {bonus}",
   "result_calc_lost": "verloren: −2 × {value} − {bonus}",
-  "review_ai_seat": "Die AI auf deinem Platz",
+  "review_ai_seat": "Hätte die AI deine Karten gespielt",
   "review_bid_you_bid": "Reizt {bid}",
   "result_new_game": "Noch ein Spiel",
   "auth_sign_in": "Anmelden",

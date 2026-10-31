@@ -343,7 +343,7 @@
   "result_calc_overbid": "overbid, scored at {value}",
   "result_calc_won": "won: {value} + {bonus}",
   "result_calc_lost": "lost: −2 × {value} − {bonus}",
-  "review_ai_seat": "The AI in your seat",
+  "review_ai_seat": "If the AI had played your cards",
   "review_bid_you_bid": "Bid {bid}",
   "result_new_game": "New game",
   "auth_sign_in": "Sign in",

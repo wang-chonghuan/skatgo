@@ -12,7 +12,6 @@ import { ROOM_CODE, ROOM_DIGITS } from '~/lib/room-code'
 import type { Seat } from '~/lib/skat/game'
 import { contractName } from '~/lib/skat/i18n'
 import { type RoomDeal, roomGame, roomSeat } from '~/lib/skat/room-view'
-import { seegerFabian } from '~/lib/skat/tournament'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
@@ -494,14 +493,7 @@ function Playing({ state, busy, send, collect, notice }: { state: TableState; bu
   const me = state.mine.seat
   const totals = [0, 1, 2].map((v) => state.pub.scores[roomSeat(v, me)]) as [number, number, number]
   if (!game) return null
-  const list = (scores: number[]) => names.map((name, v) => `${name} ${scores[v] > 0 ? '+' : ''}${scores[v]}`).join(' · ')
   const ended = game.phase === 'done' || game.phase === 'passedIn'
-  const standings = ended ? (
-    <div data-testid="table-standings" data-totals={totals.join(',')} data-deal-scores={seegerFabian(game).join(',')} {...stylex.props(styles.standings)}>
-      <p {...stylex.props(typography.note, styles.ink)}>{m.table_deal_scores({ list: list(seegerFabian(game)) })}</p>
-      <p {...stylex.props(typography.note, styles.ink)}>{m.table_totals({ list: list(totals) })}</p>
-    </div>
-  ) : null
   // Once this seat asked for the next deal, whom it waits for: the people here who have not (SKATGO-165).
   const others = state.pub.seats.filter((s) => s.kind === 'human' && s.connected && !s.ready && s.seat !== me)
   const waiting = ended && state.pub.seats[me].ready && others.length > 0 ? m.room_next_wait({ names: others.map((s) => s.nickname ?? '').join(', ') }) : null
@@ -515,7 +507,7 @@ function Playing({ state, busy, send, collect, notice }: { state: TableState; bu
       <GameTable
         fullScreen
         room={{
-          game, busy, send: (move) => send(move), collect, next: () => send({ type: 'next' }), names, totals, standings, notice, deal: state.pub.deals,
+          game, busy, send: (move) => send(move), collect, next: () => send({ type: 'next' }), names, totals, notice, deal: state.pub.deals,
           stats: <Stats state={state} />, waiting,
           code: state.pub.roomId, leave: () => send({ type: 'leave' }), people, kick: (seat: Seat) => send({ type: 'kick', seat }),
         }}
@@ -634,7 +626,6 @@ const styles = stylex.create({
     backgroundColor: color.surface,
     boxShadow: elev.option,
   },
-  standings: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   // The room's statistics: a score sheet, one grid for all its rows, a hairline over each deal and over the totals.
   stats: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   // No column gap: the cells' own padding keeps them apart, so each hairline runs the sheet's whole width.

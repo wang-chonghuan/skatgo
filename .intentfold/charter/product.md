@@ -71,19 +71,24 @@ person under several ids — guest days on other devices, a guest who signed up 
 human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」). The front page shows the ten highest with the AI's
 number among them, and how it is counted.
 
-After each deal the player sees how the computer, named "AI", played the same deal from their seat
-(SKATGO-42), and nothing else (SKATGO-145, the human: 「先显示叫牌和ai的不同，再显示打的和ai最不同（打的最不好的一个trick），
-其他不显示」): first the result — won or lost, the player's score, whose game it was and which, and the calculation a
-step a row, base value, multiplier, game value, the outcome and last the player's Seeger-Fabian score (SKATGO-127, a
-player's suggestion; 「计算过程写到浅绿色卡片里，要清晰点，别一坨普通文字」); then the bidding, the player's and the AI's: what each
-said or where it passed, how the deal went with the card points, and its score, one line when the two are the same;
-then the one trick where the player's card was furthest from the AI's, "the biggest difference from the AI": which
-card the AI would have played, the cards already on the table, the player's hand at that moment with their card
-and the AI's marked, and who took the trick with its card points — ranked over every play, with no threshold (the
-human: 「通过10墩排序的方式，选出最差的」); last, folded, every trick against the AI (SKATGO-153, after a player's word in the forum —
-"Now I am not seeing the AI difference for each Stich … These were excellent learning tools!" — the human: 「放到最下面一个明显的
-折叠卡片里，点了后就跟删掉的内容一样」): opened, the play record as SKATGO-145 had removed it, trick by trick with the AI's card
-under the player's wherever it differs, the hand before a tapped trick, and the skat; then the way on. No hint comes back to
+After each deal the player sees the deal's result and how the computer, named "AI", played the same deal from their
+seat (SKATGO-42) — the most important first, each fact once (SKATGO-166, the human: 「以常玩的用户的视角，重要的在前面。信息不重复。
+不要用超过4种层级的字体。一个信息只出现在一个地方……红框和绿框里的东西不要塞太多」; before it SKATGO-127/145/146/148). First, in a box green
+when the player's side won and pink when it lost, only who won or lost which game ("Lina won Spades") and, in one line,
+why: the card points, or how a Null went, and Schneider, Schwarz, an announcement missed, an overbid or a deal decided
+early. Under it each seat's Seeger-Fabian score of the deal and the running totals — the board's — in the board's order;
+then the skat, and how the score is counted in one line, without the scores. A private table's result is this and the
+way on. Against the AI there follows the AI's side (SKATGO-145, the human: 「先显示叫牌和ai的不同，再显示打的和ai最不同（打的最不好的一个
+trick），其他不显示」): its score from the player's seat, and only what it did otherwise — where it bid otherwise, the player's
+bidding and its own with how its deal went; where the same bidding ended otherwise, how its deal went; then the one trick
+where the player's card was furthest from the AI's: which card the AI would have played, the cards already on the table,
+the player's hand at that moment with their card and the AI's marked, and who took the trick with its card points —
+ranked over every play, with no threshold (the human: 「通过10墩排序的方式，选出最差的」); last, folded, every trick against the
+AI (SKATGO-153, after a player's word in the forum — "Now I am not seeing the AI difference for each Stich … These were
+excellent learning tools!" — the human: 「放到最下面一个明显的折叠卡片里，点了后就跟删掉的内容一样」; kept by SKATGO-166, 「最后那个ai打的如何的10
+tricks的东西要保留」): opened, the play record trick by trick with the AI's card under the player's wherever it differs and
+the hand before a tapped trick; then the way on. A deal all passed has the same result, "All three passed", in a white
+box. No hint comes back to
 free play: its deals feed the record of play (SKATGO-153, the human: 「同意，去掉叫牌建议，只做逐墩对比」). A deal where every card was the AI's choice says so in one
 line; a deal all players passed has no trick. It is the engine's record and SkatZero's choices only: no language
 model explains it (the human, 2026-10-11: 「解读太麻烦了」), and SkatZero's own numbers are not shown. The tournament's page keeps a row per

@@ -236,7 +236,7 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         // A finished game, reviewed on request from its own token (SKATGO-79), with the AI's game from the
         // player's seat (SKATGO-86) — free play and lesson 11 alike, the same table.
         review: token ? () => ask(token) : undefined,
-        round: mode === 'free' ? { deal: round.deals.length, of: ROUND_DEALS, total: totals(round.deals)[0] } : undefined,
+        round: mode === 'free' ? { deal: round.deals.length, of: ROUND_DEALS, totals: totals(round.deals) } : undefined,
         // Free play's round can be given up for a new one (SKATGO-96); the table asks first.
         newRound: mode === 'free' ? newRound : undefined,
         // Lesson 11 keeps its hints; free play's table is the tournament's, without (SKATGO-130).

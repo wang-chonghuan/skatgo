@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { dailyReview } from '~/lib/daily-api'
-import { type Card, type Contract, pointsOf, sameCard } from '~/lib/skat/cards'
+import { type Card, pointsOf, sameCard } from '~/lib/skat/cards'
 import { cardLabel, contractName } from '~/lib/skat/i18n'
 import type { Game } from '~/lib/skat/game'
 import { type DailySize, type DailyStatus, type DealReview, type DealSummary, type Differ, PLAYER, type SeatBid, totals } from '~/lib/skat/tournament'
@@ -43,7 +43,7 @@ function roleOf(d: DealSummary): string {
 }
 
 /** The game a deal was played as: the contract and what was announced with it. */
-function gameName(d: DealSummary): string {
+export function gameName(d: DealSummary): string {
   const decl = d.declaration!
   return [
     contractName(decl.contract),
@@ -127,9 +127,6 @@ export function ScoreSheet({ mine, ai, lines, testId }: { mine: Scores; ai: Scor
   )
 }
 
-type Tint = 'C' | 'S' | 'H' | 'D' | 'grand' | 'null'
-const tintOf = (c: Contract): Tint => (c.kind === 'suit' ? c.trump : c.kind)
-
 /** Fetches a finished deal's review: its auctions, the AI's deal from the same seat, and where the player's cards
  *  were not the AI's. */
 export type AskReview = () => Promise<DealReview | { error: string }>
@@ -145,8 +142,12 @@ const reviews = new Map<string, DealReview>()
  * trick），其他不显示」): the bidding, the player's over the AI's from the same seat, then the one trick where the
  * player's card fell furthest below the AI's choice. Every word of it is SkatZero's choice and the rules engine's
  * record; no model explains it (the human: 「解读太麻烦了」). The review is asked once.
+ *
+ * `after`: under a deal's own result in the after-deal dialog (SKATGO-166, 「信息不重复」), which already says the player's
+ * game, score and skat: the AI's side only — its score from the player's seat and what it did otherwise — the trick
+ * under its own title, and the record without the skat.
  */
-export function VsAiReview({ ask, cacheKey, names }: { ask: AskReview; cacheKey?: string; names?: string[] }) {
+export function VsAiReview({ ask, cacheKey, names, after = false }: { ask: AskReview; cacheKey?: string; names?: string[]; after?: boolean }) {
   const [review, setReview] = useState<DealReview | null>(cacheKey ? (reviews.get(cacheKey) ?? null) : null)
   const [failed, setFailed] = useState(false)
   useEffect(() => {
@@ -167,10 +168,10 @@ export function VsAiReview({ ask, cacheKey, names }: { ask: AskReview; cacheKey?
     )
   }
   return (
-    <div data-testid="vs-ai-review" data-state="ready" {...stylex.props(styles.analysis)}>
-      <BidCompare review={review} names={names ?? youNames()} />
-      {review.mine.declarer === null ? null : <WorstTrick review={review} names={names ?? youNames()} />}
-      {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} />}
+    <div data-testid="vs-ai-review" data-state="ready" {...stylex.props(styles.analysis, after && styles.ruled)}>
+      {after ? <AiSeat review={review} /> : <BidCompare review={review} names={names ?? youNames()} />}
+      {review.mine.declarer === null ? null : <WorstTrick review={review} names={names ?? youNames()} heading={!after} />}
+      {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} skat={!after} />}
     </div>
   )
 }
@@ -180,7 +181,7 @@ export function VsAiReview({ ask, cacheKey, names }: { ask: AskReview; cacheKey?
  * difference for each Stich … These were excellent learning tools!"; the human: 「放到最下面一个明显的折叠卡片里，点了后就跟删掉的
  * 内容一样」): opened, the play record SKATGO-145 had removed, as it was.
  */
-function PlayRecord({ review, names }: { review: DealReview; names: string[] }) {
+function PlayRecord({ review, names, skat }: { review: DealReview; names: string[]; skat: boolean }) {
   const [open, setOpen] = useState(false)
   const Chevron = open ? ChevronUp : ChevronDown
   return (
@@ -189,7 +190,7 @@ function PlayRecord({ review, names }: { review: DealReview; names: string[] }) 
         <span>{m.review_play_record()}</span>
         <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
       </summary>
-      {open ? <TrickReplay tricks={review.tricks} names={names} skat={review.skat} hand={review.hand} differs={review.differs} early={review.early} /> : null}
+      {open ? <TrickReplay tricks={review.tricks} names={names} skat={skat ? review.skat : undefined} hand={review.hand} differs={review.differs} early={review.early} /> : null}
     </details>
   )
 }
@@ -226,9 +227,9 @@ export function TrickReplay({ tricks, names, skat, hand, differs = null, early =
       <table ref={rows} data-testid="daily-replay" data-tricks={played.length} {...stylex.props(styles.replayTable)}>
         <thead>
           <tr>
-            <th scope="col" {...stylex.props(typography.micro, styles.replayHead)}>{m.daily_replay_trick()}</th>
-            {[1, 2, 3].map((n) => <th key={n} scope="col" {...stylex.props(typography.micro, styles.replayHead)}>{n}.</th>)}
-            <th scope="col" {...stylex.props(typography.micro, styles.replayHead, styles.end)}>{m.daily_replay_winner()}</th>
+            <th scope="col" {...stylex.props(typography.smallBold, styles.replayHead)}>{m.daily_replay_trick()}</th>
+            {[1, 2, 3].map((n) => <th key={n} scope="col" {...stylex.props(typography.smallBold, styles.replayHead)}>{n}.</th>)}
+            <th scope="col" {...stylex.props(typography.smallBold, styles.replayHead, styles.end)}>{m.daily_replay_winner()}</th>
           </tr>
         </thead>
         {played.map((t, i) => {
@@ -246,25 +247,25 @@ export function TrickReplay({ tricks, names, skat, hand, differs = null, early =
               {...stylex.props(styles.replayRow, marked && styles.replayMarked, held.length > 0 && styles.replayTap)}
             >
               <tr data-winner={t.winner}>
-                <td {...stylex.props(typography.small, styles.muted, styles.replayCell)}>{n}</td>
+                <td {...stylex.props(typography.appText, styles.muted, styles.replayCell)}>{n}</td>
                 {t.cards.map((p, k) => (
                   <td key={k} data-seat={p.seat} {...stylex.props(styles.replayCell)}>
-                    <span {...stylex.props(typography.micro, styles.muted, styles.replayName)}>{names[p.seat]}</span>
-                    <span {...stylex.props(p.seat === PLAYER ? typography.smallBold : typography.small, styles.replayCard)}><Rich text={cardLabel(p.card)} /></span>
+                    <span {...stylex.props(typography.smallBold, styles.muted, styles.replayName)}>{names[p.seat]}</span>
+                    <span {...stylex.props(p.seat === PLAYER ? typography.appBtnStrong : typography.appText, styles.replayCard)}><Rich text={cardLabel(p.card)} /></span>
                     {p.seat === PLAYER && best ? (
-                      <span data-testid="daily-replay-ai" data-card={`${best.suit}${best.rank}`} {...stylex.props(typography.small, styles.replayAi)}>
+                      <span data-testid="daily-replay-ai" data-card={`${best.suit}${best.rank}`} {...stylex.props(typography.appText, styles.replayAi)}>
                         <Rich text={cardLabel(best)} />
                         <Who side="ai" />
                       </span>
                     ) : null}
                   </td>
                 ))}
-                <td {...stylex.props(typography.small, styles.replayCell, styles.end)}>{m.daily_replay_points({ name: names[t.winner], points: pointsOf(t.cards.map((p) => p.card)) })}</td>
+                <td {...stylex.props(typography.appText, styles.replayCell, styles.end)}>{m.daily_replay_points({ name: names[t.winner], points: pointsOf(t.cards.map((p) => p.card)) })}</td>
               </tr>
               {held.length && shown === n ? (
                 <tr>
                   <td />
-                  <td colSpan={t.cards.length + 1} data-testid="daily-replay-hand" data-cards={held.length} {...stylex.props(typography.micro, styles.replayHand)}>
+                  <td colSpan={t.cards.length + 1} data-testid="daily-replay-hand" data-cards={held.length} {...stylex.props(typography.appText, styles.replayHand)}>
                     <span {...stylex.props(styles.muted)}>{m.daily_replay_hand()}</span> <Rich text={held.map(cardLabel).join(' ')} />
                   </td>
                 </tr>
@@ -273,9 +274,9 @@ export function TrickReplay({ tricks, names, skat, hand, differs = null, early =
           )
         })}
       </table>
-      {early ? <p {...stylex.props(typography.micro, styles.muted, styles.sheetNote)}>{m.daily_replay_rest({ n: 10 - early.from })}</p> : null}
+      {early ? <p {...stylex.props(typography.appText, styles.muted, styles.sheetNote)}>{m.daily_replay_rest({ n: 10 - early.from })}</p> : null}
       {skat?.length ? (
-        <p {...stylex.props(typography.small, styles.sheetNote)}>
+        <p {...stylex.props(typography.appText, styles.sheetNote)}>
           <span {...stylex.props(styles.muted)}>{m.result_skat()}</span> <Rich text={skat.map(cardLabel).join(' ')} />
         </p>
       ) : null}
@@ -327,31 +328,35 @@ function BidCompare({ review, names }: { review: DealReview; names: string[] }) 
   )
 }
 
-/** Whose game a deal was and which (SKATGO-145, the human: 「本trick谁当庄家，什么合约，最好更明显一点」, then 「这个合约应该放
- *  在this game is lost的下方」): the game in its contract's tint, as on the table's contract tiles, and the declarer. */
-export function GameTag({ deal, names }: { deal: DealSummary; names: string[] }) {
-  if (!deal.declaration || deal.declarer === null) return null
+/**
+ * The AI in the player's seat, under a deal's result (SKATGO-166, 「信息不重复」): its score from that seat, and only what
+ * it did otherwise — where it bid otherwise, the player's bidding and its own with how its deal ended; where the same
+ * bidding ended otherwise, how its deal ended. The player's own game and score are the result's, above it. Nothing on a
+ * day dealt before the AI played it.
+ */
+function AiSeat({ review }: { review: DealReview }) {
+  const ai = review.ai
+  if (!ai || !review.aiAuction) return null
+  const aiSaid = bidSaid(ai, review.aiAuction[PLAYER])
+  const same = bidSaid(review.mine, review.auction[PLAYER]) === aiSaid
+  // The player's bidding without the game they then played, which the result's title names.
+  const mine = review.mine.declarer === PLAYER ? m.review_bid_you_bid({ bid: review.mine.bid }) : bidSaid(review.mine, review.auction[PLAYER])
+  const rows: { who: Side; text: string }[] = !same
+    ? [{ who: 'you', text: mine }, { who: 'ai', text: [aiSaid, bidOutcome(ai, aiNames())].join(' · ') }]
+    : ai.won !== review.mine.won ? [{ who: 'ai', text: bidOutcome(ai, aiNames()) }] : []
   return (
-    <p data-testid="result-game" {...stylex.props(styles.sheetNote, styles.trickGame)}>
-      <span {...stylex.props(typography.appBtnStrong, styles.contractChip, contractTint[tintOf(deal.declaration.contract)])}><Rich text={gameName(deal)} /></span>
-      <span {...stylex.props(typography.appText, styles.ink)}>{m.review_trick_declarer({ name: names[deal.declarer] })}</span>
-    </p>
-  )
-}
-
-/** The deal's Seeger-Fabian score of each of the three at the table (SKATGO-146, the human: 「contract下面要显示本轮每个人
- *  得几分，这个是重点」): name and score on one line (SKATGO-148, 「每个人的得分，也不该占两行」), the player's cell named "You"
- *  and nothing more (「You这个不用加白色的框」). */
-export function SeatScores({ scores, names }: { scores: readonly [number, number, number]; names: string[] }) {
-  return (
-    <div data-testid="result-seats" data-scores={scores.join(',')} {...stylex.props(styles.seats)}>
-      {scores.map((v, seat) => (
-        <div key={seat} data-seat={seat} data-own={seat === PLAYER ? 'true' : undefined} {...stylex.props(styles.seat)}>
-          <span {...stylex.props(typography.appText, styles.muted)}>{names[seat]}</span>
-          <span {...stylex.props(typography.appBtnStrong, styles.ink)}>{signed(v)}</span>
-        </div>
+    <section data-testid="vs-ai-bid" data-rows={rows.length} {...stylex.props(styles.block)}>
+      <div {...stylex.props(styles.aiHead)}>
+        <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{m.review_ai_seat()}</h3>
+        <span data-testid="vs-ai-score" data-score={ai.scores[PLAYER]} {...stylex.props(typography.appBtnStrong, styles.ink)}>{signed(ai.scores[PLAYER])}</span>
+      </div>
+      {rows.map((r) => (
+        <p key={r.who} data-who={r.who} {...stylex.props(styles.aiRow, styles.sheetNote)}>
+          <Who side={r.who} />
+          <span {...stylex.props(typography.appText, styles.ink)}><Rich text={r.text} /></span>
+        </p>
       ))}
-    </div>
+    </section>
   )
 }
 
@@ -360,7 +365,7 @@ export function SeatScores({ scores, names }: { scores: readonly [number, number
  * the player's hand as it was — their card outlined navy, the AI's blue, each tagged — and who took the trick. A deal
  * where every card was the AI's choice says so in one line.
  */
-function WorstTrick({ review, names }: { review: DealReview; names: string[] }) {
+function WorstTrick({ review, names, heading = true }: { review: DealReview; names: string[]; heading?: boolean }) {
   const w = review.differs[0]
   const t = w ? review.tricks[w.trick - 1] : undefined
   if (!w || !t) {
@@ -376,7 +381,7 @@ function WorstTrick({ review, names }: { review: DealReview; names: string[] }) 
   const mark = (c: Card): Side | null => (sameCard(c, w.played) ? 'you' : sameCard(c, w.best) ? 'ai' : null)
   return (
     <section data-testid="vs-ai-trick" data-trick={w.trick} data-played={`${w.played.suit}${w.played.rank}`} data-best={`${w.best.suit}${w.best.rank}`} {...stylex.props(styles.block, styles.ruled)}>
-      <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{m.review_trick_heading()}</h3>
+      {heading ? <h3 {...stylex.props(typography.appBtnStrong, styles.blockTitle)}>{m.review_trick_heading()}</h3> : null}
       <p {...stylex.props(typography.appBtnStrong, styles.ink, styles.sheetNote)}>
         <Rich text={m.review_trick_title({ trick: w.trick, best: cardLabel(w.best) })} />
       </p>
@@ -586,6 +591,9 @@ const styles = stylex.create({
   // Tags, words and score in three columns shared by both rows, so the two lines start under each other; each row's
   // tag and score on the baseline of its first line, however its words wrap (SKATGO-148, the human: 「you 和AI的两个结果的
   // 行都没对齐，错位了」). Where both sides bid alike, their two tags stand side by side.
+  // The AI's side under a deal's result (SKATGO-166): its name and score on one line, then a row a difference.
+  aiHead: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x12 },
+  aiRow: { display: 'flex', alignItems: 'baseline', gap: space.x8 },
   bidRows: { display: 'grid', gridTemplateColumns: 'max-content auto max-content', alignItems: 'baseline', columnGap: space.x8, rowGap: space.x8 },
   bidRow: { display: 'contents' },
   bidTags: { display: 'flex', alignItems: 'baseline', gap: space.x4 },
@@ -597,10 +605,6 @@ const styles = stylex.create({
   // Beside words instead of cards ("You led"), a label shares their line (SKATGO-148: 「you led也没对齐左边的 on the table」).
   trickLabelText: { paddingTop: 0 },
   // Three equal cells.
-  seats: { display: 'flex', gap: space.x6 },
-  seat: { display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: space.x6, flexGrow: 1, flexBasis: 0, paddingBlock: space.x4, whiteSpace: 'nowrap' },
-  trickGame: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
-  contractChip: { paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.navy },
   // Cards in a row, wide enough apart that two ringed cards never touch; a hand too long for a phone's line goes
   // on in a second.
   cards: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: space.x8 },
@@ -671,14 +675,4 @@ const styles = stylex.create({
     borderTopStyle: 'solid',
     borderTopColor: color.hairline,
   },
-})
-
-// One tint per contract, as on the table's contract tiles.
-const contractTint = stylex.create({
-  C: { backgroundColor: color.tintClubs },
-  S: { backgroundColor: color.tintSpades },
-  H: { backgroundColor: color.tintHearts },
-  D: { backgroundColor: color.tintDiamonds },
-  grand: { backgroundColor: color.tintGrand },
-  null: { backgroundColor: color.tintNull },
 })

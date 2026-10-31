@@ -1446,10 +1446,12 @@ function DealResult({ game, totals, vsAi, next }: { game: Game; totals: [number,
 }
 
 /** Each seat's score of a deal and the running totals (SKATGO-166), in the board's order — the left seat, the player, the
- *  right one — under the board's names; the deal's row bold. Without totals, where the table plays one game, its row alone. */
-function ScoreTable({ deal, totals }: { deal: [number, number, number]; totals: [number, number, number] | null }) {
+ *  right one — under the board's names; the deal's row bold. The totals only where they say something the deal's row does
+ *  not: not where the table plays one game, and not while they are the deal's own scores, as after a room's first deal. */
+function ScoreTable({ deal, totals: all }: { deal: [number, number, number]; totals: [number, number, number] | null }) {
   const nameOf = useNameOf()
   const order: Seat[] = [1, 0, 2]
+  const totals = all && all.some((v, seat) => v !== deal[seat]) ? all : null
   return (
     <table data-testid="skat-result-scores" data-deal={deal.join(',')} data-totals={totals ? totals.join(',') : undefined} {...stylex.props(styles.scoreTable)}>
       <thead {...stylex.props(styles.scoreRows)}>

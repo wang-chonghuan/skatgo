@@ -523,8 +523,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     missed, an overbid ("overbid: worth 33, bid 36"), a deal decided early ("last 4 tricks claimed");
   - the score table: the board's names over three equal columns in the board's order (left, the player, right), the row
     names as wide as they are; "This deal" each seat's Seeger-Fabian score (`appBtnStrong`) under a `hairline`, "Total"
-    the running totals (`appText`) — the board's numbers. Free play and lesson 11 count Seeger-Fabian on the board too:
-    the round so far and the deal just finished. Lesson 11, one game, has no Total row. A long name wraps;
+    the running totals (`appText`) — the board's numbers, shown only where they differ from the deal's row (not after a first deal; not in lesson 11's one
+    game). Free play and lesson 11 count Seeger-Fabian on the board too: the round so far and the deal just finished. A
+    long name wraps;
   - "Skat" and its two `xs` cards; then how the score is counted in one `slate` line (SKATGO-127), without the scores —
     "Grand 24 × 3 (with 1 + game 1 + Schneider 1) = 72 · won: 72 + 50", "… · lost: −2 × 48 − 50", an overbid's
     "overbid, scored at 36" between;

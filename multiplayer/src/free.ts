@@ -60,7 +60,9 @@ export function plan(p: { maxBid: number; decisions: string }): SeatPlan {
   }
 }
 
-type Token = { v: 1; pool: string; id: number; t: number; log: Logged[] }
+/** `replay`: the same deal played again for the player's own reflection (SKATGO-170): sealed in the token, so no page can
+ *  have it counted, and its finished deal goes into no record. */
+type Token = { v: 1; pool: string; id: number; t: number; log: Logged[]; replay?: true }
 
 /** The key a token is sealed with, derived from the admission key; another `label` for another kind of token. */
 export function tokenKey(admissionKey: string, label = TOKEN_LABEL): Buffer {
@@ -115,11 +117,11 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     nextHandler()
   })
 
-  async function reply(p: Pool, id: number, t: number, log: Logged[], g: Game, steps: Game[]) {
+  async function reply(p: Pool, id: number, t: number, log: Logged[], g: Game, steps: Game[], replay?: true) {
     const d = p.deals[id]
     const plans = { '1': plan(d.computers['1']), '2': plan(d.computers['2']) }
     await advance(g, log, turn(policy()!, plans), steps)
-    return { token: seal(key, { v: 1, pool: p.version, id, t, log }), steps: steps.map(seatView), revision: log.length, computer: p.version }
+    return { token: seal(key, { v: 1, pool: p.version, id, t, log, ...(replay ? { replay } : {}) }), steps: steps.map(seatView), revision: log.length, computer: p.version }
   }
 
   const run = (work: (body: unknown) => Promise<unknown>) => async (req: express.Request, res: express.Response) => {
@@ -169,7 +171,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     refuseUnlawful(g, i.action as Move)
     g = applySeatMove(g, PLAYER, i.action as Move)
     t.log.push({ seat: PLAYER, move: i.action as Move })
-    return reply(p, t.id, t.t, t.log, g, [g])
+    return reply(p, t.id, t.t, t.log, g, [g], t.replay)
   }))
 
   const tokenInput = z.object({ token: z.string().max(20_000) }).strict()
@@ -182,11 +184,24 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     const g = replayLog(d.dealer, deckOf(d.deck), t.log)
     return { token: i.token, steps: [seatView(g)], revision: t.log.length, computer: p.version }
   }))
+  // The finished deal again, from its first move (SKATGO-170, the human: 「重打这幅牌……不计入到任何记录和数据里，只是为了让用户反思一下，
+  // 自己试试」): the same cards and the same dealer, under a token that says so.
+  router.post('/replay', run(async (body) => {
+    const i = tokenInput.parse(body)
+    const { p, t } = opened(i.token)
+    const d = p.deals[t.id]
+    const deck = deckOf(d.deck)
+    const end = replayLog(d.dealer, deck, t.log)
+    if (end.phase !== 'done' && end.phase !== 'passedIn') throw new Rejected('not_finished')
+    const g = deal(d.dealer, deck)
+    return reply(p, t.id, Date.now(), [], g, [g], true)
+  }))
   // A finished game's replay and where SkatZero would have played another card (SKATGO-79), and the same
   // deal played by SkatZero in all three seats from the pool's plans — the AI in the player's seat
   // (SKATGO-86) — from the game's own token: worked out on request. A game all three passed has no play to
   // judge, but the AI in the player's seat may well have bid. When the web names a signed-in player, the deal
-  // goes into their record of play (SKATGO-128): their Seeger-Fabian score and the AI's, once per game.
+  // goes into their record of play (SKATGO-128): their Seeger-Fabian score and the AI's, once per game; a deal played
+  // again does not (SKATGO-170).
   const reviewInput = z.object({ token: z.string().max(20_000), player: z.string().regex(/^user:/).max(200).optional() }).strict()
   router.post('/review', run(async (body) => {
     const i = reviewInput.parse(body)
@@ -198,7 +213,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     const plans = { 0: plan(d.computers['0']), 1: plan(d.computers['1']), 2: plan(d.computers['2']) }
     const ai = await advance(deal(d.dealer, deck), [], (g) => computerTurn(g, actor(g)!, plans[actor(g)!], policy()!), undefined, true)
     if (ai.phase !== 'done' && ai.phase !== 'passedIn') throw new ComputerFailed('ai_unfinished')
-    if (i.player) {
+    if (i.player && !t.replay) {
       const now = Date.now()
       await recordFreeDeal(store, {
         player: i.player, game: `free:${t.pool}:${t.id}:${t.t}`, day: dayOf(now), at: now,

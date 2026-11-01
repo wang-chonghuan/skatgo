@@ -101,7 +101,10 @@ as in progress or not yet played, never with their cards.
 
 Free play at `/play`: a round of six deals against the same two computer players, the deal going round
 as at a real table, so the player sits in each position twice (SKATGO-88: 「自由对局也要换发牌人……默认6
-deals」); unranked, free and without an account (SKATGO-40, SKATGO-50). Its table is the tournament's: no hint of any kind
+deals」); unranked, free and without an account (SKATGO-40, SKATGO-50). After a deal the player may play the same cards again
+(SKATGO-170, the human: 「重打这幅牌……不计入到任何记录和数据里，只是为了让用户反思一下，自己试试。仅限于free play」): the first time counts as ever, once; the
+replay counts in nothing — not the round, the record of play or any event — the server refusing to record it, whatever the
+page says. Its table is the tournament's: no hint of any kind
 (SKATGO-130, the human: 「砍掉自由牌局时的提示，和锦标赛应该一模一样」); lesson 11's game keeps its hints (「11课的保留」). One exception,
 free play's alone: a bid calculator in the bidding drawer (SKATGO-157, the human: 「减少玩家技术性的负担，但是不减少思维的挑战」) —
 the player picks a contract and it counts that contract's value with the ten cards in hand (matadors, multiplier, base,

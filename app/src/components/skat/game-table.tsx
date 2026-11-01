@@ -144,6 +144,10 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   review?: AskReview
   /** Free play: give up the round for a new one (SKATGO-96). */
   newRound?: () => void
+  /** Free play: the finished deal once more (SKATGO-170), counted nowhere. */
+  again?: () => void
+  /** Free play: the deal on the table is one played again: in the totals already, and its end adds nothing. */
+  replaying?: boolean
   /** Free play: what Lina (1) or Noah (2) just said (SKATGO-142), shown on their side. */
   talk?: { seat: 1 | 2; line: string; id: number } | null
 }
@@ -245,7 +249,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // Only the course's own table counts the game value alone, in `scores`.
   const before = server ? (server.round?.totals ?? [0, 0, 0]) : null
   const totals: [number, number, number] | null =
-    tournament?.totals ?? room?.totals ?? (before ? (seegerFabian(game).map((v, i) => v + before[i]) as [number, number, number]) : null)
+    tournament?.totals ?? room?.totals ?? (before ? (server?.replaying ? (before as [number, number, number]) : (seegerFabian(game).map((v, i) => v + before[i]) as [number, number, number])) : null)
   const [picked, setPicked] = useState<Card[]>([])
   // The trick's cards that have landed (SKATGO-41). A card flies in on a layer of its own under a
   // will-change hint, and such a layer keeps the scale it was drawn at during the flight: a card at rest
@@ -471,6 +475,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // improving against the AI's, from the review the server works out.
   const dailyAfter: DailyAfter | null = tournament?.deals ? { ask: dailyAsk(tournament.deal), cacheKey: `${tournament.day}|${tournament.deal}` } : null
 
+  const replayNotice = !!server?.replaying && game.phase !== 'done' && game.phase !== 'passedIn'
+
   return (
     <div data-testid="skat-table" data-phase={game.phase} data-layout={fullScreen ? 'full' : 'embedded'} {...stylex.props(styles.table, fullScreen ? styles.tableFull : styles.tableEmbedded, fullScreen && exercise && styles.tableAlone)}>
       <div data-testid="skat-felt" {...stylex.props(styles.felt, fullScreen && styles.feltFull)}>
@@ -493,14 +499,16 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                 </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} room={!!room} totals={dealOf?.of === 1 ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
                 </div>
               )}
             </div>
           ) : null}
-          {refusal || hint || server?.problem || room?.notice ? (
+          {refusal || hint || server?.problem || room?.notice || replayNotice ? (
             <div data-testid="skat-messages" {...stylex.props(styles.messages)}>
               {room?.notice}
+              {/* That this one does not count, as long as it is played; then the result says so (SKATGO-170). */}
+              {replayNotice ? <span data-testid="skat-replay-notice"><Pill tone="dark">{m.free_replay_notice()}</Pill></span> : null}
               {server?.problem ? (
                 <Panel tone="bad">
                   <div data-testid="server-problem" role="alert" {...stylex.props(styles.message)}>
@@ -623,7 +631,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} room={!!room} totals={dealOf?.of === 1 ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -705,7 +713,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} room={!!room} totals={dealOf?.of === 1 ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
             </section>
           ) : null}
 
@@ -774,7 +782,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} room={!!room} totals={dealOf?.of === 1 ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
         </div>
       ) : null}
 
@@ -816,6 +824,8 @@ function ActionsFor({
   last,
   daily,
   done,
+  again,
+  replaying,
   room,
   totals,
   freeReview,
@@ -846,6 +856,9 @@ function ActionsFor({
   daily?: DailyAfter | null
   /** The deal of the day's own way on after its deal (SKATGO-168). */
   done?: ReactNode
+  /** Free play: play the finished deal again (SKATGO-170), and whether this one is. */
+  again?: () => void
+  replaying?: boolean
   /** At a private table: after a deal, always on to the next one. */
   room: boolean
   /** The running totals the result shows under the deal's scores (SKATGO-166); none where the table plays one game. */
@@ -859,6 +872,8 @@ function ActionsFor({
     <Actions
       calc={calc}
       done={done}
+      again={again}
+      replaying={replaying}
       room={room}
       totals={totals}
       freeReview={freeReview}
@@ -1107,6 +1122,8 @@ type ActionsProps = {
   last: boolean
   daily?: DailyAfter | null
   done?: ReactNode
+  again?: () => void
+  replaying?: boolean
   room: boolean
   totals: [number, number, number] | null
   /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
@@ -1134,7 +1151,15 @@ function Actions(p: ActionsProps) {
     </Btn>
   )
   if (ended && (vsAi || !course)) {
-    return <DealResult game={game} totals={p.totals} vsAi={vsAi} next={p.done ?? <Row>{next(game.phase === 'passedIn' ? m.table_redeal() : m.result_new_game())}</Row>} />
+    const on = next(game.phase === 'passedIn' ? m.table_redeal() : m.result_new_game())
+    // Free play: on to the next deal, and under it this one once more (SKATGO-170).
+    const foot = p.done ?? (p.again ? (
+      <div {...stylex.props(styles.footStack)}>
+        {on}
+        <Btn testId="skat-replay" tone="quiet" shape="block" size="lg" onClick={p.again}>{m.free_replay()}</Btn>
+      </div>
+    ) : <Row>{on}</Row>)
+    return <DealResult game={game} totals={p.totals} vsAi={vsAi} next={foot} replaying={p.replaying} />
   }
 
   if (game.phase === 'passedIn') {
@@ -1414,7 +1439,7 @@ function Result({ game, next }: { game: Game; next: ReactNode }) {
  * score is counted, without the score; and against the AI, the review. Each fact once, in four levels: the dialog's
  * title, 16 bold, 16, and the tags' 13 bold.
  */
-function DealResult({ game, totals, vsAi, next }: { game: Game; totals: [number, number, number] | null; vsAi: { ask: AskReview; cacheKey?: string } | null; next: ReactNode }) {
+function DealResult({ game, totals, vsAi, next, replaying = false }: { game: Game; totals: [number, number, number] | null; vsAi: { ask: AskReview; cacheKey?: string } | null; next: ReactNode; replaying?: boolean }) {
   const nameOf = useNameOf()
   const panel = useScrolledIn()
   const r = game.phase === 'done' ? game.result : null
@@ -1430,7 +1455,7 @@ function DealResult({ game, totals, vsAi, next }: { game: Game; totals: [number,
   return (
     <Dialog foot={next}>
       <div ref={panel} data-testid="skat-result" data-human-won={humanWon === null ? undefined : String(humanWon)} {...stylex.props(styles.result)}>
-        <ResultPart first testId="result-part-deal" title={m.result_section_deal()}>
+        <ResultPart first testId="result-part-deal" title={replaying ? m.free_replay_result() : m.result_section_deal()}>
           <Panel tone={humanWon === null ? 'card' : humanWon ? 'good' : 'bad'}>
             <div data-testid="skat-result-card" data-won={humanWon === null ? undefined : String(humanWon)} {...stylex.props(styles.resultBody)}>
               <h3 data-testid="skat-result-title" {...stylex.props(typography.dialogTitle, styles.resultTitle)}><Rich text={title} /></h3>
@@ -2359,6 +2384,7 @@ const styles = stylex.create({
   bidCalcRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.x8 },
   bidCalcLabel: { flexShrink: 0, color: color.slate },
   resultBody: { display: 'flex', flexDirection: 'column', gap: space.x6 },
+  footStack: { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: space.x10 },
   // A finished deal (SKATGO-166): its parts — the result, and against the AI the AI's three — one gap apart.
   result: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   resultLine: { margin: 0 },

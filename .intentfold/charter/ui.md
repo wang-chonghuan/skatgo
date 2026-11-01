@@ -288,8 +288,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   pair of the app's standard buttons (`linkLook`, `md`; the chosen one `go`, the other `quiet` — SKATGO-156, the human:
   「1 deal today和 tournament 6 deals按钮的字太小，应该用app里的标准按钮风格」), "1 Spiel heute" | "Turnier · 6 Spiele"
   (SKATGO-131; SKATGO-77's 6 | 12 once stood there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
-  its one `go` button to its table (`/daily/play?size=1`, where after the last card the result stands a moment and the
-  page comes back here); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
+  its one `go` button to its table (`/daily/play?size=1`, where after the last card the deal's result stays, its foot two
+  buttons one over the other — "Share with friends" (`go`, the same share as below) and "Close" (`quiet`), back here —
+  and nothing goes by itself: SKATGO-168, 「打完弹出结果页面，很快就闪了……应该改成2个按钮，share的那个按钮，显示在结果页，下面是关闭
+  按钮」); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
   gespielt" (`dialogTitle`) over "Deine Freunde bekommen dieselben Karten – schau, wie viele Punkte sie holen." — and no
   scores, no place: the card below carries them (SKATGO-132, 「我不懂你显示这些垃圾干什么……你完成了same one deal today,
   分享给朋友，看看他们能打几分」, 「1 played today · you're #1 这个不要显示」) — "Mit Freunden teilen" as the one `go`
@@ -499,10 +501,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   "Avatare" — "Avatare von Lina und Noah am Tisch", on by default (「配置里要加上一个配置……默认是开的」), under the table
   talk's; off, the table stays exactly where it is. Two more sets (SKATGO-167, the human: 「再弄两套头像，一男一女，风格不同，然后
   设置页面可以看着头像选桌上的头像，名字暂时可以不变，可以男明用女头像」, then 「画风必须一致」): four more people, two women and two men,
-  in Lina's and Noah's own flat sticker style (a young Indian woman: 「wavy改为印度风格的美女」; a man with a beard; a blonde office lady of about 35: 「fringe那个改为35岁左右的金发的office lady」; an older man in a cap), made as they were (Azure `gpt-image-2`; the style sample the only reference for the
-  calm face, each person's face described on its own — 「你他妈的画的脸都是一样的」 — then the calm face for the other two; three expressions each, 192px WebP, `AVATARS` in `face.ts`). Under the switch, each seat's name over a row of all six
+  in Lina's and Noah's own flat sticker style (a young Indian woman: 「wavy改为印度风格的美女」; a man with a beard; a blonde office lady of about 35: 「fringe那个改为35岁左右的金发的office lady」; an older man in a cap, redrawn in SKATGO-168 as a lively, kind grandfather in a cardigan and bow tie — 「那个老头要画得
+  精神点，慈祥点……你画的太懒洋洋邋遢了」; since SKATGO-168 a shrewd white accountant in glasses and a young Japanese woman: 「加一个带眼镜的精明会计师的样子，白人。再加一个日本美少女」), made as they were (Azure `gpt-image-2`; the style sample the only reference for the
+  calm face, each person's face described on its own — 「你他妈的画的脸都是一样的」 — then the calm face for the other two; three expressions each, 192px WebP, `AVATARS` in `face.ts`). Under the switch, each seat's name over rows of four of all eight
   avatars' calm pictures, the chosen one ringed `color.go` as the card back is; either seat may wear any face, the names
-  stay; kept in this browser, Lina and Noah their own by default.
+  stay; only a face the player chose is kept, in this browser, for every later game; a seat never chosen wears the default
+  — the office lady in Lina's seat, the accountant in Noah's (SKATGO-168, 「默认是office lady和会计师，用户自己选择ai头像后，要能
+  保存下来，以后再打都还是这个头像」); a seat that still held SKATGO-167's stored default counts as never chosen.
 - **Free play's bid calculator** (SKATGO-157): under the bid's buttons in the drawer, a slate "Game value" / "Spielwert"
   and the contracts as the jump bid's toggles (♦ ♥ ♠ ♣ Grand Null), wrapping on a phone; a picked one (`toggleOn`)
   shows one centred line, "without 4 · 5 × 24 = **120** · Hand 144", and stays picked through the deal's bidding. Its

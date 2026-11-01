@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-168",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-168",
+  "branch": "SKATGO-168-dod-share",
+  "base": "4c37b6eb02be0b920e972de82ff44c941fab5d99",
+  "ports": { "web": 55168, "multiplayer": 56168, "database": 57168 }
+}

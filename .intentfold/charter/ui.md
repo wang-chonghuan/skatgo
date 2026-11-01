@@ -288,8 +288,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   pair of the app's standard buttons (`linkLook`, `md`; the chosen one `go`, the other `quiet` — SKATGO-156, the human:
   「1 deal today和 tournament 6 deals按钮的字太小，应该用app里的标准按钮风格」), "1 Spiel heute" | "Turnier · 6 Spiele"
   (SKATGO-131; SKATGO-77's 6 | 12 once stood there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
-  its one `go` button to its table (`/daily/play?size=1`, where after the last card the result stands a moment and the
-  page comes back here); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
+  its one `go` button to its table (`/daily/play?size=1`, where after the last card the deal's result stays, its foot two
+  buttons one over the other — "Share with friends" (`go`, the same share as below) and "Close" (`quiet`), back here —
+  and nothing goes by itself: SKATGO-168, 「打完弹出结果页面，很快就闪了……应该改成2个按钮，share的那个按钮，显示在结果页，下面是关闭
+  按钮」); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
   gespielt" (`dialogTitle`) over "Deine Freunde bekommen dieselben Karten – schau, wie viele Punkte sie holen." — and no
   scores, no place: the card below carries them (SKATGO-132, 「我不懂你显示这些垃圾干什么……你完成了same one deal today,
   分享给朋友，看看他们能打几分」, 「1 played today · you're #1 这个不要显示」) — "Mit Freunden teilen" as the one `go`

@@ -5,8 +5,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { type DailyError, dailyBoard, dailyState, isError } from '~/lib/daily-api'
-import { type Platform, cardUrl, platformLinks, shareSheet, shareText, shareUrl } from '~/lib/share'
-import { shareCode } from '~/lib/share-api'
+import { cardUrl, platformLinks, shareUrl } from '~/lib/share'
 import { DAILY_TIME_ZONE, DEAL_OF_DAY, type DailyBoard, type DailyStatus, PLAYER } from '~/lib/skat/tournament'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
@@ -19,6 +18,7 @@ import { typography } from '../../theme/type'
 import { BrandIcon } from './brand-icon'
 import { VsAiTable, dailyAsk } from './daily-comparison'
 import { Leaderboard } from './daily-table'
+import { ShareSaid, useDodShare } from './dod-share'
 import { Btn, Panel, linkLook } from './ui'
 
 // The deal of the day (SKATGO-131, the human: 「每日一副就是一副，每日6副就是6副」): one deal chosen for everyone, played
@@ -84,20 +84,9 @@ export function DealOfDayWayIn({ started = false }: { started?: boolean }) {
 function Result({ status }: { status: DailyStatus }) {
   const score = status.totals[PLAYER]
   const ai = status.benchmarks?.[0]?.scores[PLAYER] ?? null
-  const [said, setSaid] = useState<'copied' | 'failed' | null>(null)
-  // The result's code (SKATGO-132): the link carries it, never the score.
-  const [code, setCode] = useState<string | null>(null)
-  useEffect(() => {
-    void shareCode().then((r) => setCode('error' in r ? null : r.code))
-  }, [])
+  // The result's code and the share sheet (SKATGO-132), as the result at the table shares them (SKATGO-168).
+  const { code, text, said, setSaid, share: onShare } = useDodShare(status)
   const locale = getLocale()
-  const text = shareText(locale, { day: status.day, score })
-  async function onShare(via: Platform) {
-    if (!code) return
-    const r = await shareSheet(text, shareUrl(locale, code, via))
-    track('dod_shared', { how: r === 'shared' ? 'sheet' : r === 'copied' ? 'copy' : 'failed' })
-    setSaid(r === 'shared' ? null : r)
-  }
   async function onCopy() {
     if (!code) return
     const done = await navigator.clipboard.writeText(`${text} ${shareUrl(locale, code, 'copy')}`).then(() => true, () => false)
@@ -136,7 +125,7 @@ function Result({ status }: { status: DailyStatus }) {
             </button>
           </div>
         ) : null}
-        {said ? <p role="status" {...stylex.props(typography.small, styles.muted)}>{said === 'copied' ? m.dod_copied() : m.dod_share_failed()}</p> : null}
+        <ShareSaid said={said} />
         {/* The card the link goes out with, under the buttons, so it is seen before it is sent (the human: 「最好让用户看到待
             显示的卡片，再可以点发送，分享按钮可以在页面上面显示，下面是待分享的卡片」). */}
         {code ? <img data-testid="dod-card" src={cardUrl(locale, code)} alt={m.share_card_alt()} {...stylex.props(styles.card)} /> : null}

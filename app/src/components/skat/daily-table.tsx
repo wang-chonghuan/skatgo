@@ -18,6 +18,7 @@ import { border, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { DayDeals, VsAiTable, Who, dailyAsk } from './daily-comparison'
+import { DodDone } from './dod-share'
 import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, linkLook } from './ui'
 import { TableLoading } from './table-loading'
@@ -282,15 +283,6 @@ export function DailyTable({ size = DAILY_DEALS }: { size?: DailySize }) {
   }
 
   const game = useMemo(() => (shown ? gameFromView(shown) : null), [shown])
-  // The deal of the day has no settlement to read at the table (SKATGO-131): once its last trick is shown, the result
-  // stands a moment on the felt and the page goes on to its board.
-  const settled = one && !!reply?.status.finished && queue.length === 0 && game?.phase === 'done'
-  useEffect(() => {
-    if (!settled) return
-    const t = setTimeout(onLeave, DEAL_OF_DAY_PAUSE)
-    return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settled])
   if (failed) {
     return (
       <Panel tone="bad">
@@ -318,13 +310,13 @@ export function DailyTable({ size = DAILY_DEALS }: { size?: DailySize }) {
         deals: reply.status.deals,
         benchmarks: reply.status.benchmarks,
         talk,
+        // The deal of the day's result stays at the table with its own way on, share and close (SKATGO-168).
+        done: one && reply.status.finished ? <DodDone status={reply.status} onClose={onLeave} /> : undefined,
       }}
     />
   )
 }
 
-/** How long the deal of the day's result stands on the felt before its board (the ticket: 1–2 s). */
-const DEAL_OF_DAY_PAUSE = 1800
 
 const styles = stylex.create({
   text: { margin: 0, color: color.navy },

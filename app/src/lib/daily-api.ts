@@ -1,17 +1,19 @@
 import type { Move } from '~/lib/skat/game'
 import type { ProfileDeal, ProfileNote } from '~/lib/skat/profile'
+import { jsonHeaders } from '~/lib/session-token'
 import type { TalkKind, TalkReply } from '~/lib/table-talk'
 import { DAILY_DEALS, type DailyBoard, type DailyReply, type DailySize, type DealReview } from '~/lib/skat/tournament'
 
 // The browser's side of the daily tournament (SKATGO-35, SKATGO-36): its requests to /api/daily
-// (lib/daily-handler.ts). Who is playing travels in the session or the tournament's own cookie, never
-// in the body; a refusal comes back as `{ error }`.
+// (lib/daily-handler.ts). Who is playing travels in the session — the page's own token (SKATGO-169: on the cookie alone the
+// record of play said it could not load, for a player the page showed signed in) — or the tournament's own cookie, never in
+// the body; a refusal comes back as `{ error }`.
 
 export type DailyError = { error: string }
 
 async function post<T extends object>(op: 'state' | 'act' | 'name' | 'nick' | 'board' | 'review' | 'profile' | 'talk', body: object): Promise<T | DailyError> {
   try {
-    const res = await fetch(`/api/daily/${op}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+    const res = await fetch(`/api/daily/${op}`, { method: 'POST', headers: await jsonHeaders(), body: JSON.stringify(body) })
     const data = (await res.json()) as T | DailyError
     return res.ok ? data : { error: 'error' in data ? data.error : 'unavailable' }
   } catch {

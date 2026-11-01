@@ -7,6 +7,7 @@
 
 import { Client, type Room } from '@colyseus/sdk'
 
+import { jsonHeaders } from './session-token'
 import type { Move } from './skat/game'
 import type { RoomPrivate, RoomPublic } from './skat/room-view'
 
@@ -19,26 +20,9 @@ export type TableError =
 /** Refusals that pass by themselves — the service restarting, the network — so a way back keeps trying (SKATGO-117). */
 export const PASSING: ReadonlySet<TableError> = new Set(['not_ready', 'unreachable', 'slow_down'])
 
-/** This page's own Clerk session token, fresh, for the server to know the account by. The session cookie alone lasts a
- *  minute and is renewed by Clerk's script in the background — which a hidden tab or a sleeping laptop may not have done
- *  yet, and which another app on the same host may have overwritten (localhost's ports share cookies) — so a request on
- *  it alone could be told to sign in while the page shows the account signed in. `getToken` renews the token when it
- *  must. None for a guest, or a local test account, whose own cookie speaks for it. */
-async function sessionToken(): Promise<string | null> {
-  try {
-    const clerk = (window as { Clerk?: { session?: { getToken: () => Promise<string | null> } | null } }).Clerk
-    return (await clerk?.session?.getToken()) ?? null
-  } catch {
-    return null
-  }
-}
-
 async function post(path: string, body: object): Promise<{ status: number; data: Record<string, unknown> } | null> {
   try {
-    const token = await sessionToken()
-    const headers: Record<string, string> = { 'content-type': 'application/json' }
-    if (token) headers.authorization = `Bearer ${token}`
-    const r = await fetch(path, { method: 'POST', headers, body: JSON.stringify(body) })
+    const r = await fetch(path, { method: 'POST', headers: await jsonHeaders(), body: JSON.stringify(body) })
     return { status: r.status, data: (await r.json().catch(() => ({}))) as Record<string, unknown> }
   } catch {
     return null

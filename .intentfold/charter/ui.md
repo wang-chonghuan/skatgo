@@ -499,7 +499,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   "Avatare" — "Avatare von Lina und Noah am Tisch", on by default (「配置里要加上一个配置……默认是开的」), under the table
   talk's; off, the table stays exactly where it is. Two more sets (SKATGO-167, the human: 「再弄两套头像，一男一女，风格不同，然后
   设置页面可以看着头像选桌上的头像，名字暂时可以不变，可以男明用女头像」, then 「画风必须一致」): four more people, two women and two men,
-  in Lina's and Noah's own flat sticker style (no older woman: 「不要老奶奶，要年轻黑发性感女」; a blonde office lady of about 35: 「fringe那个改为35岁左右的金发的office lady」), made as they were (Azure `gpt-image-2`; the style sample the only reference for the
+  in Lina's and Noah's own flat sticker style (a young Indian woman: 「wavy改为印度风格的美女」; a man with a beard; a blonde office lady of about 35: 「fringe那个改为35岁左右的金发的office lady」; an older man in a cap), made as they were (Azure `gpt-image-2`; the style sample the only reference for the
   calm face, each person's face described on its own — 「你他妈的画的脸都是一样的」 — then the calm face for the other two; three expressions each, 192px WebP, `AVATARS` in `face.ts`). Under the switch, each seat's name over a row of all six
   avatars' calm pictures, the chosen one ringed `color.go` as the card back is; either seat may wear any face, the names
   stay; kept in this browser, Lina and Noah their own by default.

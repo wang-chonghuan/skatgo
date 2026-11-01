@@ -8,7 +8,7 @@ export type Face = 'neutral' | 'laugh' | 'sad'
  *  头像，名字暂时可以不变，可以男明用女头像」, then 「画风必须一致」): SKATGO-147's Lina and Noah and four more people in their own
  *  flat sticker style. Each is three pictures, `/faces/<avatar>-<face>.webp`. Lina's seat
  *  wears `lina` and Noah's `noah` until the player chooses otherwise; either may wear any. */
-export const AVATARS = ['lina', 'noah', 'woman-wavy', 'man-beard', 'woman-office', 'man-cap'] as const
+export const AVATARS = ['lina', 'noah', 'woman-indian', 'man-beard', 'woman-office', 'man-cap'] as const
 export type Avatar = (typeof AVATARS)[number]
 export const isAvatar = (a: unknown): a is Avatar => AVATARS.includes(a as Avatar)
 /** The avatar a seat wears by default: Lina's (1) and Noah's (2) own. */

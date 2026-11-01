@@ -82,6 +82,39 @@ export function versusAi(deals: ProfileDeal[]): { you: SideRecord; ai: SideRecor
   return judged.length ? { you: recordOf(judged.map((d) => d.mine)), ai: recordOf(judged.map((d) => d.ai)) } : null
 }
 
+/** How many of the latest deals the home page's figures and curve count (SKATGO-169). */
+export const RECENT_DEALS = 30
+
+/** What the last `RECENT_DEALS` of `judged` come to, fewer while there are fewer. */
+const recent = (judged: ProfileDeal[]) => {
+  const last = judged.slice(-RECENT_DEALS)
+  return { last, perDeal: Math.round(last.reduce((sum, d) => sum + (againstAi(d) ?? 0), 0) / last.length) }
+}
+
+/**
+ * Where the player stands now, for the home page (SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」): over the
+ * latest deals the AI played too, the win rate and the average per deal against the AI. Null before the first. Null win
+ * rate when all of them were passed in.
+ */
+export function standingOf(deals: ProfileDeal[]): { deals: number; winRate: number | null; perDeal: number } | null {
+  const judged = deals.filter((d) => d.ai !== null)
+  if (!judged.length) return null
+  const { last, perDeal } = recent(judged)
+  const r = recordOf(last.map((d) => d.mine))
+  return { deals: last.length, winRate: r.played ? Math.round((100 * r.won) / r.played) : null, perDeal }
+}
+
+/**
+ * The home page's curve: for each day played, the average per deal against the AI over the latest deals up to that day —
+ * the deals so far on the first days. On real records a day's win rate jumps between 0 and 100 on a handful of deals, and
+ * a day's average is mostly chance too; over thirty deals the line shows the player's own direction.
+ */
+export function rollingOf(deals: ProfileDeal[]): { day: string; perDeal: number }[] {
+  const judged = deals.filter((d) => d.ai !== null)
+  const days = [...new Set(judged.map((d) => d.day))].sort((a, b) => a.localeCompare(b))
+  return days.map((day) => ({ day, perDeal: recent(judged.filter((d) => d.day <= day)).perDeal }))
+}
+
 /**
  * The last day played against every day before it, per deal: better, worse, or the same within the noise — a
  * difference counts only beyond twice its standard error, from the spread of single deals. Null before a second day.

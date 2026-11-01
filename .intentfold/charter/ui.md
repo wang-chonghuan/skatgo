@@ -250,9 +250,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `GraduationCap`, the course) and "Reizen" (`tileNavy`, lucide's `Gavel`, an auction's hammer, to `/bidding-practice`; one line since SKATGO-151, the page
     keeping "Reizen üben"; SKATGO-149, the
     human: 「practice卡片的位置，做成一个叫牌练习的东西」 — the exercises' "Üben" with its `Puzzle` stood there before); on the right two long white cards, each
-    a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play
-    showing its days as on `/profile`, without dates or scale, as one smooth line — a monotone cubic through the days'
-    points, never above or below two days between them — 5px (`progressCurve`, SKATGO-136: 「我希望平缓的，粗一点的」, SKATGO-137: 「再粗一点」,
+    a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
+    over the latest 30 deals, fewer while there are fewer (`standingOf`, SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」),
+    the win rate and the average per deal against the AI (`homeCardTitle`, each over a `meta` label, the deals counted
+    at the row's end), and under them that average day by day (`rollingOf`), no win-rate curve — on real records a day's win
+    rate jumps between 0 and 100 and thirty deals' is alike across players of different results — without scale, as one
+    smooth line — a monotone cubic through the days' points, never above or below two days between them — 5px (`progressCurve`, SKATGO-136: 「我希望平缓的，粗一点的」, SKATGO-137: 「再粗一点」,
     SKATGO-138: 「线稍微细一点」), in `info` blue (SKATGO-139, the human: 「不如原来的蓝色好看，你马上给我改回来」; SKATGO-138 had
     made it navy) and with no AI tag (SKATGO-138, 「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」), a single day as its dot; framed lightly, no larger: the first
     and the last day under it (`meta`, slate) (「最好上面带一些日期……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der

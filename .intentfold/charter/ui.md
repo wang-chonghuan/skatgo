@@ -504,7 +504,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   in Lina's and Noah's own flat sticker style (a young Indian woman: 「wavy改为印度风格的美女」; a man with a beard; a blonde office lady of about 35: 「fringe那个改为35岁左右的金发的office lady」; an older man in a cap; since SKATGO-168 a shrewd white accountant in glasses and a young Japanese woman: 「加一个带眼镜的精明会计师的样子，白人。再加一个日本美少女」), made as they were (Azure `gpt-image-2`; the style sample the only reference for the
   calm face, each person's face described on its own — 「你他妈的画的脸都是一样的」 — then the calm face for the other two; three expressions each, 192px WebP, `AVATARS` in `face.ts`). Under the switch, each seat's name over rows of four of all eight
   avatars' calm pictures, the chosen one ringed `color.go` as the card back is; either seat may wear any face, the names
-  stay; kept in this browser, Lina and Noah their own by default.
+  stay; only a face the player chose is kept, in this browser, for every later game; a seat never chosen wears the default
+  — the office lady in Lina's seat, the accountant in Noah's (SKATGO-168, 「默认是office lady和会计师，用户自己选择ai头像后，要能
+  保存下来，以后再打都还是这个头像」); a seat that still held SKATGO-167's stored default counts as never chosen.
 - **Free play's bid calculator** (SKATGO-157): under the bid's buttons in the drawer, a slate "Game value" / "Spielwert"
   and the contracts as the jump bid's toggles (♦ ♥ ♠ ♣ Grand Null), wrapping on a phone; a picked one (`toggleOn`)
   shows one centred line, "without 4 · 5 × 24 = **120** · Hand 144", and stays picked through the deal's bidding. Its

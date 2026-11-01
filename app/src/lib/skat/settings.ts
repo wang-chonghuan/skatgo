@@ -36,8 +36,10 @@ type SettingsState = {
   /** SKATGO-147: Lina's and Noah's faces above their cards. On by default (the human: 「默认是开的」). */
   faces: boolean
   setFaces: (on: boolean) => void
-  /** SKATGO-167: the face each computer seat wears, Lina's (1) and Noah's (2), chosen by its picture in the settings. */
-  avatars: Record<1 | 2, Avatar>
+  /** SKATGO-167: the face each computer seat wears, Lina's (1) and Noah's (2), chosen by its picture in the settings. Only a
+   *  face the player chose is kept (SKATGO-168, the human: 「用户自己选择ai头像后，要能保存下来，以后再打都还是这个头像」); a
+   *  seat without one wears its default, so a new default reaches everyone who never chose. */
+  avatars: Partial<Record<1 | 2, Avatar>>
   setAvatar: (seat: 1 | 2, avatar: Avatar) => void
   /** SKATGO-157: free play's bid calculator in the bidding drawer. On by default. */
   bidCalc: boolean
@@ -61,7 +63,7 @@ export const useSettings = create<SettingsState>()(
       setTalk: (talk) => set({ talk }),
       faces: true,
       setFaces: (faces) => set({ faces }),
-      avatars: DEFAULT_AVATAR,
+      avatars: {},
       setAvatar: (seat, avatar) => set((s) => ({ avatars: { ...s.avatars, [seat]: avatar } })),
       bidCalc: true,
       setBidCalc: (bidCalc) => set({ bidCalc }),
@@ -69,10 +71,24 @@ export const useSettings = create<SettingsState>()(
     {
       name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
+      version: 1,
+      migrate: (stored, version) => migrateSettings(stored, version) as SettingsState,
       partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks, talk: s.talk, faces: s.faces, avatars: s.avatars, bidCalc: s.bidCalc }),
     },
   ),
 )
+
+/** Settings stored by an older version, brought to this one. Version 1 (SKATGO-168): SKATGO-167 stored both seats' faces
+ *  with any setting, its defaults too; a seat that still holds its old default ('lina', 'noah') was never chosen, and now
+ *  wears the new default. */
+export function migrateSettings(stored: unknown, version: number): unknown {
+  const s = (stored ?? {}) as { avatars?: Partial<Record<string, string>> }
+  if (version < 1 && s.avatars) {
+    const old: Record<string, string> = { 1: 'lina', 2: 'noah' }
+    return { ...s, avatars: Object.fromEntries(Object.entries(s.avatars).filter(([seat, a]) => old[seat] !== a)) }
+  }
+  return s
+}
 
 /** Whether Lina's and Noah's faces show (SKATGO-147): on on the server and in the first browser render, so the
  *  markup hydrates; a stored choice applies at once after mount. */

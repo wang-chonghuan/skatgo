@@ -7,13 +7,13 @@ export type Face = 'neutral' | 'laugh' | 'sad'
 /** The faces a computer seat may wear (SKATGO-167, the human: 「再弄两套头像，一男一女，风格不同，然后设置页面可以看着头像选桌上的
  *  头像，名字暂时可以不变，可以男明用女头像」, then 「画风必须一致」): SKATGO-147's Lina and Noah and four more people in their own
  *  flat sticker style, and since SKATGO-168 a shrewd accountant in glasses and a young Japanese woman (「加一个带眼镜的精明会计师的
- *  样子，白人。再加一个日本美少女」). Each is three pictures, `/faces/<avatar>-<face>.webp`. Lina's seat
- *  wears `lina` and Noah's `noah` until the player chooses otherwise; either may wear any. */
+ *  样子，白人。再加一个日本美少女」). Each is three pictures, `/faces/<avatar>-<face>.webp`. Either seat may wear any. */
 export const AVATARS = ['lina', 'noah', 'woman-indian', 'man-beard', 'woman-office', 'man-cap', 'man-accountant', 'woman-japan'] as const
 export type Avatar = (typeof AVATARS)[number]
 export const isAvatar = (a: unknown): a is Avatar => AVATARS.includes(a as Avatar)
-/** The avatar a seat wears by default: Lina's (1) and Noah's (2) own. */
-export const DEFAULT_AVATAR: Record<1 | 2, Avatar> = { 1: 'lina', 2: 'noah' }
+/** The avatar a seat wears until the player chooses one (SKATGO-168, the human: 「默认是office lady和会计师」): the office lady
+ *  in Lina's seat (1), the accountant in Noah's (2). */
+export const DEFAULT_AVATAR: Record<1 | 2, Avatar> = { 1: 'woman-office', 2: 'man-accountant' }
 export const faceSrc = (avatar: Avatar, face: Face) => `/faces/${avatar}-${face}.webp`
 
 /** The face a computer seat shows now. The bidding's winner laughs from the end of the auction until the first card;

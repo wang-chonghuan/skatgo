@@ -504,11 +504,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               )}
             </div>
           ) : null}
-          {refusal || hint || server?.problem || room?.notice || replayNotice ? (
+          {refusal || hint || server?.problem || room?.notice ? (
             <div data-testid="skat-messages" {...stylex.props(styles.messages)}>
               {room?.notice}
-              {/* That this one does not count, as long as it is played; then the result says so (SKATGO-170). */}
-              {replayNotice ? <span data-testid="skat-replay-notice"><Pill tone="dark">{m.free_replay_notice()}</Pill></span> : null}
               {server?.problem ? (
                 <Panel tone="bad">
                   <div data-testid="server-problem" role="alert" {...stylex.props(styles.message)}>
@@ -544,6 +542,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           <Stack key={seat} seat={seat} game={game} shown={exercise ? game.hands[seat] : rest?.[seat]} big={!!exercise} />
         ))}
         <div data-testid="skat-frame" {...stylex.props(styles.frame, styles.framePlay)}>
+          {/* That this deal does not count, as long as it is played; then the result says so (SKATGO-170). In the frame's middle and
+              first of all, so anything on the table lies over it (SKATGO-171, the human: 「应该显示在方框的正中间，而且可以被任何东西遮蔽」). */}
+          {replayNotice ? <div data-testid="skat-replay-notice" {...stylex.props(styles.replayNotice)}><Pill tone="dark">{m.free_replay_notice()}</Pill></div> : null}
           {/* The seat plates lie on the frame's edges: the opponents' along the left and right, the
               learner's under the bottom edge, all alike (SKATGO-72). First, so the skat and the
               trick's cards lie over them: the frame and its plates are only the table's backdrop (SKATGO-158, the human: 「方框只是背景板，
@@ -1934,6 +1935,7 @@ const styles = stylex.create({
     borderColor: color.gold,
   },
   framePlay: { width: stage.frame, aspectRatio: dims.square, borderWidth: dims.frameBorderPlay },
+  replayNotice: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: space.x8, textAlign: 'center', pointerEvents: 'none' },
 
   // Table talk (SKATGO-142, SKATGO-143): a white card as wide as its words, beside the speaker's face and level with it
   // (SKATGO-157).

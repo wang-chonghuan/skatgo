@@ -9,7 +9,15 @@ import type { Store } from './store'
 // declared and whether they won.
 
 /** How one game of a deal went, from a deal's summary. */
-export const played = (s: Pick<DealSummary, 'scores' | 'declarer' | 'won'>): Played => ({ scores: s.scores, declarer: s.declarer, won: s.won })
+export const played = (s: Pick<DealSummary, 'scores' | 'declarer' | 'won'> & Partial<Pick<DealSummary, 'declaration' | 'detail'>>): Played => {
+  const c = s.declaration?.contract
+  return {
+    scores: s.scores, declarer: s.declarer, won: s.won,
+    // Which game it was and its card points (SKATGO-169): where the difference to the AI comes from.
+    ...(c ? { game: `${c.kind === 'suit' ? c.trump : c.kind}${s.declaration?.hand ? ' hand' : ''}` } : {}),
+    ...(s.detail ? { points: [s.detail.declarerPoints, s.detail.defenderPoints] as [number, number] } : {}),
+  }
+}
 
 /** A finished free deal of a signed-in player, once per game however often its review is asked. */
 export async function recordFreeDeal(store: Store, d: { player: string; game: string; day: string; at: number; mine: Played; ai: Played }) {

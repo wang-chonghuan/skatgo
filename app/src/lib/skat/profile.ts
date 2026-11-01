@@ -10,7 +10,15 @@ export type Scores = [number, number, number]
 
 /** How one game of a deal went: the three seats' Seeger-Fabian scores ([0] the player's, or the AI's in the player's
  *  seat), who declared (null when all passed) and whether the declarer won. */
-export type Played = { scores: Scores; declarer: 0 | 1 | 2 | null; won: boolean | null }
+export type Played = {
+  scores: Scores
+  declarer: 0 | 1 | 2 | null
+  won: boolean | null
+  /** Which game was played, the contract and whether Hand, and the declarer's and the defenders' card points (SKATGO-169).
+   *  Missing on free deals recorded before, and when all passed. */
+  game?: string
+  points?: [number, number]
+}
 
 /** One deal: the tournament's day it was played on, where, the player's game and the AI's game of the same deal. */
 export type ProfileDeal = {
@@ -80,6 +88,40 @@ export function recordOf(games: Played[]): SideRecord {
 export function versusAi(deals: ProfileDeal[]): { you: SideRecord; ai: SideRecord } | null {
   const judged = deals.flatMap((d) => (d.ai === null ? [] : [{ mine: d.mine, ai: d.ai }]))
   return judged.length ? { you: recordOf(judged.map((d) => d.mine)), ai: recordOf(judged.map((d) => d.ai)) } : null
+}
+
+/**
+ * Where the difference to the AI comes from (SKATGO-169, the human on comparing card points: 「可以，加吧」): in the deals where
+ * both played the same game — same declarer, same contract — the player's side's card points against the AI's, per deal, Null
+ * aside, which no card points decide; and how much of the player's whole gap comes from the other deals, where bidding or
+ * the choice of game made it another game. Null where it says nothing: no such deal, or no gap to explain. Free deals
+ * recorded before the game was kept are left out.
+ */
+export function gapOf(deals: ProfileDeal[]): { cardPoints: number | null; cardDeals: number; otherGame: number | null } {
+  const known = (p: Played) => p.declarer === null || p.game !== undefined
+  const side = (p: Played & { points: [number, number] }) => (p.declarer === 0 ? p.points[0] : p.points[1])
+  let total = 0
+  let other = 0
+  let cardSum = 0
+  let cardDeals = 0
+  for (const d of deals) {
+    if (d.ai === null || !known(d.mine) || !known(d.ai)) continue
+    const diff = againstAi(d) ?? 0
+    total += diff
+    if (d.mine.declarer !== d.ai.declarer || d.mine.game !== d.ai.game) {
+      other += diff
+      continue
+    }
+    if (d.mine.points && d.ai.points && !d.mine.game?.startsWith('null')) {
+      cardSum += side(d.mine as Played & { points: [number, number] }) - side(d.ai as Played & { points: [number, number] })
+      cardDeals += 1
+    }
+  }
+  return {
+    cardPoints: cardDeals ? Math.round(cardSum / cardDeals) : null,
+    cardDeals,
+    otherGame: total < 0 && other < 0 ? Math.min(100, Math.round((100 * other) / total)) : null,
+  }
 }
 
 /** How many of the latest deals the home page's figures and curve count (SKATGO-169). */

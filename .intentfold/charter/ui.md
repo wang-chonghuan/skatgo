@@ -416,7 +416,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   −22 pro Spiel gegen die KI, davor −31: ↑ besser als zuvor", → or ↓, in navy, never `good` / `bad`); then a white card,
   "Du gegen die AI" (SKATGO-169, the human: 「profile里应该显示你这个表格，然后对手就是AI」): under the You and AI tags, for the same
   cards, the win rate, as declarer, how often declarer and as defender, each a whole percent (`appBtnStrong`) over what it
-  counts (`meta`, slate), and the points per deal; a `meta` note that all-passed deals are left out of the percentages; then a white
+  counts (`meta`, slate), and the points per deal; a `meta` note that all-passed deals are left out of the percentages; under it,
+  "Woher der Unterschied kommt" (`gapOf`): in the same game as the AI, the player's card points against its, per deal, and how much of the
+  gap comes from not playing the same game — bidding and choice of game — each row left out where it says nothing; then a white
   card, "Dein Niveau gegen die KI, Tag für Tag": the curve in SVG at the card's width (`profileChart` in
   `constants.ts`), one `info` dot per day, the same size on every screen, on an `info` line — the day's average per
   deal against the AI, judged against the whole table (`lib/skat/profile.ts`) — the zero line in `slate`, the highest

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { type Played, type ProfileDeal, RECENT_DEALS, recordOf, rollingOf, standingOf, versusAi } from './profile'
+import { type Played, type ProfileDeal, RECENT_DEALS, gapOf, recordOf, rollingOf, standingOf, versusAi } from './profile'
 
 const game = (scores: [number, number, number], declarer: 0 | 1 | 2 | null, won: boolean | null): Played => ({ scores, declarer, won })
 const deal = (day: string, mine: Played, ai: Played | null): ProfileDeal => ({ day, source: 'daily', mine, ai })
@@ -60,5 +60,36 @@ describe('where the player stands now', () => {
     const old = Array.from({ length: RECENT_DEALS }, () => worse('2026-10-01'))
     const half = Array.from({ length: RECENT_DEALS / 2 }, () => better('2026-10-02'))
     expect(rollingOf([...old, ...half])).toEqual([{ day: '2026-10-01', perDeal: -200 }, { day: '2026-10-02', perDeal: 0 }])
+  })
+})
+
+// Where the difference comes from: card play within the same game, the rest from another game.
+describe('where the difference to the AI comes from', () => {
+  const with_ = (p: Played, game: string, points: [number, number]): Played => ({ ...p, game, points })
+  const lostSpades = with_(lostAsDeclarer, 'S', [50, 70])
+  const wonSpades = with_(wonAsDeclarer, 'S', [80, 40])
+  const wonGrand = with_(wonAsDeclarer, 'grand', [70, 50])
+  const defendedSpades = with_(lostAsDefender, 'S', [70, 50])
+
+  it('compares card points only in the same game, the player’s side against the AI’s', () => {
+    // Same game: 50 against 80. Another game (Spades against Grand) is no card-point comparison.
+    expect(gapOf([deal('d', lostSpades, wonSpades), deal('d', lostSpades, wonGrand)])).toMatchObject({ cardPoints: -30, cardDeals: 1 })
+    // As defenders the side's points are the defenders'.
+    expect(gapOf([deal('d', defendedSpades, with_(lostAsDefender, 'S', [60, 60]))])).toMatchObject({ cardPoints: -10, cardDeals: 1 })
+  })
+  it('leaves Null out of the card points', () => {
+    const nul = with_(wonAsDeclarer, 'null', [0, 120])
+    expect(gapOf([deal('d', nul, nul)])).toMatchObject({ cardPoints: null, cardDeals: 0 })
+  })
+  it('says how much of the gap comes from another game, passing against playing included', () => {
+    // Against the table: same game −492, another game −492; half the gap.
+    const same = deal('d', lostSpades, wonSpades)
+    const other = deal('d', lostSpades, wonGrand)
+    expect(gapOf([same, other]).otherGame).toBe(50)
+    expect(gapOf([deal('d', passed, wonGrand)]).otherGame).toBe(100)
+  })
+  it('says nothing of a gap there is not, and leaves out free deals from before the game was kept', () => {
+    expect(gapOf([deal('d', wonGrand, lostSpades)]).otherGame).toBeNull()
+    expect(gapOf([deal('d', lostAsDeclarer, wonAsDeclarer)])).toEqual({ cardPoints: null, cardDeals: 0, otherGame: null })
   })
 })

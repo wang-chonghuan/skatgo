@@ -9,7 +9,7 @@ import { ForumBody } from './forum-body'
 import { Btn, Panel, linkLook } from './ui'
 import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
-import { type ProfileDay, type ProfileDeal, type ProfileNote, type ProfileWeek, daysOf, trendOf, versusAi, weeksOf } from '~/lib/skat/profile'
+import { type ProfileDay, type ProfileDeal, type ProfileNote, type ProfileWeek, daysOf, gapOf, trendOf, versusAi, weeksOf } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
@@ -108,6 +108,8 @@ function VersusAi({ deals }: { deals: ProfileDeal[] }) {
   const versus = versusAi(deals)
   if (!versus) return null
   const { you, ai } = versus
+  // Where the difference comes from (SKATGO-169): what to practise, under what the table says.
+  const { cardPoints, cardDeals, otherGame } = gapOf(deals)
   const share = (k: number, n: number) => ({ value: n ? `${Math.round((100 * k) / n)}%` : '–', count: `${k}/${n}` })
   const rows = [
     { key: 'win', label: m.profile_vs_win(), you: share(you.won, you.played), ai: share(ai.won, ai.played) },
@@ -145,6 +147,28 @@ function VersusAi({ deals }: { deals: ProfileDeal[] }) {
           </tbody>
         </table>
         <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_vs_note()}</p>
+        {cardPoints === null && otherGame === null ? null : (
+          <div data-testid="profile-gap" {...stylex.props(styles.stackTight)}>
+            <h3 {...stylex.props(typography.appBtnStrong, styles.title)}>{m.profile_gap_title()}</h3>
+            <dl {...stylex.props(styles.gap)}>
+              {cardPoints === null ? null : (
+                <div data-row="play" data-value={signed(cardPoints)} data-deals={cardDeals} {...stylex.props(styles.gapRow)}>
+                  <dt {...stylex.props(typography.appText, styles.text)}>{m.profile_gap_play()}</dt>
+                  <dd {...stylex.props(styles.gapValue)}>
+                    <span {...stylex.props(typography.appBtnStrong, styles.vsValue)}>{signed(cardPoints)}</span>
+                    <span {...stylex.props(typography.meta, styles.vsCount)}>{m.profile_day_deals({ count: cardDeals })}</span>
+                  </dd>
+                </div>
+              )}
+              {otherGame === null ? null : (
+                <div data-row="bid" data-value={`${otherGame}%`} {...stylex.props(styles.gapRow)}>
+                  <dt {...stylex.props(typography.appText, styles.text)}>{m.profile_gap_bid()}</dt>
+                  <dd {...stylex.props(styles.gapValue)}><span {...stylex.props(typography.appBtnStrong, styles.vsValue)}>{otherGame}%</span></dd>
+                </div>
+              )}
+            </dl>
+          </div>
+        )}
       </div>
     </Panel>
   )
@@ -315,4 +339,8 @@ const styles = stylex.create({
   vsRule: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   vsValue: { color: color.navy, fontVariantNumeric: 'tabular-nums' },
   vsCount: { color: color.slate, fontVariantNumeric: 'tabular-nums' },
+  // Where the difference comes from: the row's words, its figure at the end, a fine rule over each.
+  gap: { display: 'flex', flexDirection: 'column', margin: 0 },
+  gapRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: space.x12, paddingBlock: space.x8, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  gapValue: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, margin: 0 },
 })

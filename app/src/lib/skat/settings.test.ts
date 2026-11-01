@@ -6,7 +6,10 @@ import { migrateSettings } from './settings'
 describe('settings from before version 1', () => {
   it('drops a seat that still holds its old default, keeps a chosen face and the rest', () => {
     expect(migrateSettings({ deck: 'german', avatars: { 1: 'lina', 2: 'noah' } }, 0)).toEqual({ deck: 'german', avatars: {} })
-    expect(migrateSettings({ avatars: { 1: 'lina', 2: 'man-cap' } }, 0)).toEqual({ avatars: { 2: 'man-cap' } })
+    expect(migrateSettings({ avatars: { 1: 'lina', 2: 'man-beard' } }, 0)).toEqual({ avatars: { 2: 'man-beard' } })
+  })
+  it('moves a seat that chose the old man in a cap to the redrawn grandfather', () => {
+    expect(migrateSettings({ avatars: { 1: 'man-cap', 2: 'noah' } }, 0)).toEqual({ avatars: { 1: 'man-grandpa' } })
     expect(migrateSettings({ avatars: { 1: 'noah', 2: 'lina' } }, 0)).toEqual({ avatars: { 1: 'noah', 2: 'lina' } })
   })
   it('leaves settings without faces, and current ones, as they are', () => {

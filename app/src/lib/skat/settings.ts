@@ -80,12 +80,14 @@ export const useSettings = create<SettingsState>()(
 
 /** Settings stored by an older version, brought to this one. Version 1 (SKATGO-168): SKATGO-167 stored both seats' faces
  *  with any setting, its defaults too; a seat that still holds its old default ('lina', 'noah') was never chosen, and now
- *  wears the new default. */
+ *  wears the new default. The old man in a cap was redrawn as a lively grandfather (「那个老头要画得精神点，慈祥点」): a seat
+ *  that chose him wears the new one. */
 export function migrateSettings(stored: unknown, version: number): unknown {
   const s = (stored ?? {}) as { avatars?: Partial<Record<string, string>> }
   if (version < 1 && s.avatars) {
     const old: Record<string, string> = { 1: 'lina', 2: 'noah' }
-    return { ...s, avatars: Object.fromEntries(Object.entries(s.avatars).filter(([seat, a]) => old[seat] !== a)) }
+    const kept = Object.entries(s.avatars).filter(([seat, a]) => old[seat] !== a)
+    return { ...s, avatars: Object.fromEntries(kept.map(([seat, a]) => [seat, a === 'man-cap' ? 'man-grandpa' : a])) }
   }
   return s
 }

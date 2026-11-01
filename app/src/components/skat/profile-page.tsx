@@ -24,7 +24,7 @@ import { typography } from '../../theme/type'
  * A player's record of play (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，而且每个deal都要算和ai的
  * 差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's and free
  * play's — judged against the whole table and compared with the AI's game of the same cards (`lib/skat/profile.ts`):
- * a curve of the average per deal, day by day, whether the last day was better than before, and the days.
+ * a curve of the average per deal, day by day, and whether the last day was better than before.
  * Personal, never indexed; its title and lead render on the server, the record in the browser for an account.
  */
 export function ProfilePage() {
@@ -98,20 +98,6 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
         </div>
       </Panel>
       <Weeks weeks={weeksOf(deals)} notes={notes} />
-      <Panel>
-        <div {...stylex.props(styles.stack)}>
-          <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_days_title()}</h2>
-          <ol data-testid="profile-days" {...stylex.props(styles.days)}>
-            {[...days].reverse().map((d) => (
-              <li key={d.day} data-testid="profile-day" data-day={d.day} data-deals={d.deals} {...stylex.props(styles.day)}>
-                <span {...stylex.props(typography.appText, styles.date)}>{dayName(d.day)}</span>
-                <span {...stylex.props(typography.appText, styles.quiet)}>{m.profile_day_deals({ count: d.deals })}</span>
-                <span {...stylex.props(typography.appText, styles.figure)}>{d.perDeal === null ? '–' : m.profile_day_against({ diff: signed(d.perDeal) })}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </Panel>
     </>
   )
 }
@@ -285,8 +271,6 @@ const styles = stylex.create({
   lead: { margin: 0, color: color.navy },
   text: { margin: 0, color: color.text },
   quiet: { margin: 0, color: color.slate },
-  date: { margin: 0, color: color.text, flexGrow: 1 },
-  figure: { margin: 0, color: color.navy, textAlign: 'end' },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   stackTight: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   // The scale's twin under the curve: its width, nothing to see.
@@ -331,15 +315,4 @@ const styles = stylex.create({
   vsRule: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
   vsValue: { color: color.navy, fontVariantNumeric: 'tabular-nums' },
   vsCount: { color: color.slate, fontVariantNumeric: 'tabular-nums' },
-  days: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
-  day: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: space.x12,
-    alignItems: 'baseline',
-    paddingBlock: space.x8,
-    borderTopWidth: { default: 0, ':not(:first-child)': border.hair },
-    borderTopStyle: 'solid',
-    borderTopColor: color.hairline,
-  },
 })

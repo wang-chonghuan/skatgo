@@ -410,7 +410,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest a `go` "Anmelden und Profil ansehen" opening
   Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to free play.
   Otherwise a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt
-  −22 pro Spiel gegen die KI, davor −31: ↑ besser als zuvor", → or ↓, in navy, never `good` / `bad`); then a white
+  −22 pro Spiel gegen die KI, davor −31: ↑ besser als zuvor", → or ↓, in navy, never `good` / `bad`); then a white card,
+  "Du gegen die AI" (SKATGO-169, the human: 「profile里应该显示你这个表格，然后对手就是AI」): under the You and AI tags, for the same
+  cards, the win rate, as declarer, how often declarer and as defender, each a whole percent (`appBtnStrong`) over what it
+  counts (`meta`, slate), and the points per deal; a `meta` note that all-passed deals are left out of the percentages; then a white
   card, "Dein Niveau gegen die KI, Tag für Tag": the curve in SVG at the card's width (`profileChart` in
   `constants.ts`), one `info` dot per day, the same size on every screen, on an `info` line — the day's average per
   deal against the AI, judged against the whole table (`lib/skat/profile.ts`) — the zero line in `slate`, the highest

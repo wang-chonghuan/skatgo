@@ -3,11 +3,12 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
+import { Who } from './daily-comparison'
 import { ForumBody } from './forum-body'
 import { Btn, Panel, linkLook } from './ui'
 import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
-import { type ProfileDay, type ProfileDeal, type ProfileNote, type ProfileWeek, daysOf, trendOf, weeksOf } from '~/lib/skat/profile'
+import { type ProfileDay, type ProfileDeal, type ProfileNote, type ProfileWeek, daysOf, trendOf, versusAi, weeksOf } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
@@ -87,6 +88,7 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
           </p>
         ) : null}
       </div>
+      <VersusAi deals={deals} />
       <Panel>
         <div {...stylex.props(styles.stack)}>
           <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_curve_title()}</h2>
@@ -110,6 +112,54 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
         </div>
       </Panel>
     </>
+  )
+}
+
+/** The player against the AI on the same cards (SKATGO-169, the human: 「profile里应该显示你这个表格，然后对手就是AI」): win rate, as
+ *  declarer, how often declarer, as defender, each with what it counts under it, and the points per deal. */
+function VersusAi({ deals }: { deals: ProfileDeal[] }) {
+  const versus = versusAi(deals)
+  if (!versus) return null
+  const { you, ai } = versus
+  const share = (k: number, n: number) => ({ value: n ? `${Math.round((100 * k) / n)}%` : '–', count: `${k}/${n}` })
+  const rows = [
+    { key: 'win', label: m.profile_vs_win(), you: share(you.won, you.played), ai: share(ai.won, ai.played) },
+    { key: 'declarer', label: m.profile_vs_declarer(), you: share(you.declaredWon, you.declared), ai: share(ai.declaredWon, ai.declared) },
+    { key: 'declares', label: m.profile_vs_declares(), you: share(you.declared, you.played), ai: share(ai.declared, ai.played) },
+    { key: 'defender', label: m.profile_vs_defender(), you: share(you.defendedWon, you.defended), ai: share(ai.defendedWon, ai.defended) },
+    { key: 'points', label: m.profile_vs_points(), you: { value: signed(Math.round(you.perDeal)), count: null }, ai: { value: signed(Math.round(ai.perDeal)), count: null } },
+  ]
+  const cell = (c: { value: string; count: string | null }, side: string) => (
+    <td data-side={side} data-value={c.value} {...stylex.props(styles.vsCell, styles.vsRule)}>
+      <span {...stylex.props(typography.appBtnStrong, styles.vsValue)}>{c.value}</span>
+      {c.count ? <span {...stylex.props(typography.meta, styles.vsCount)}>{c.count}</span> : null}
+    </td>
+  )
+  return (
+    <Panel>
+      <div {...stylex.props(styles.stack)}>
+        <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_vs_title()}</h2>
+        <table data-testid="profile-vs" {...stylex.props(styles.vsTable)}>
+          <thead {...stylex.props(styles.vsRows)}>
+            <tr {...stylex.props(styles.vsRows)}>
+              <td />
+              <th scope="col" {...stylex.props(styles.vsHead)}><Who side="you" /></th>
+              <th scope="col" {...stylex.props(styles.vsHead)}><Who side="ai" /></th>
+            </tr>
+          </thead>
+          <tbody {...stylex.props(styles.vsRows)}>
+            {rows.map((r) => (
+              <tr key={r.key} data-row={r.key} {...stylex.props(styles.vsRows)}>
+                <th scope="row" {...stylex.props(typography.appText, styles.vsLabel, styles.vsRule)}>{r.label}</th>
+                {cell(r.you, 'you')}
+                {cell(r.ai, 'ai')}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_vs_note()}</p>
+      </div>
+    </Panel>
   )
 }
 
@@ -241,6 +291,15 @@ const styles = stylex.create({
   zero: { stroke: color.slate },
   curve: { fill: 'none', stroke: color.info, strokeLinejoin: 'round' },
   point: { stroke: color.info },
+  // The player against the AI (SKATGO-169): a grid, the row's name taking what the two figures leave; its rows only its cells.
+  vsTable: { display: 'grid', gridTemplateColumns: dims.versusColumns, width: '100%' },
+  vsRows: { display: 'contents' },
+  vsHead: { paddingBottom: space.x6, textAlign: 'end' },
+  vsLabel: { alignSelf: 'stretch', paddingBlock: space.x8, paddingInlineEnd: space.x8, textAlign: 'start', color: color.text },
+  vsCell: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', paddingBlock: space.x8 },
+  vsRule: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  vsValue: { color: color.navy, fontVariantNumeric: 'tabular-nums' },
+  vsCount: { color: color.slate, fontVariantNumeric: 'tabular-nums' },
   days: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
   day: {
     display: 'flex',

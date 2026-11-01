@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-169",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-169",
+  "branch": "SKATGO-169-profile-vs-ai",
+  "base": "e02c2556e6c6b572d3615ebb96b64d8775d95e08",
+  "ports": { "web": 55169, "multiplayer": 56169, "database": 57169 }
+}

@@ -52,6 +52,36 @@ export function daysOf(deals: ProfileDeal[]): ProfileDay[] {
     .map(([day, d]) => ({ day, deals: d.deals, perDeal: d.judged ? Math.round(d.sum / d.judged) : null }))
 }
 
+/** One side's record over a set of games (SKATGO-169): how many it played a game in, all passed left out, and won — as
+ *  declarer the game, as defender the declarer's loss — and its average Seeger-Fabian score over all of them. */
+export type SideRecord = { played: number; won: number; declared: number; declaredWon: number; defended: number; defendedWon: number; perDeal: number }
+
+export function recordOf(games: Played[]): SideRecord {
+  const r: SideRecord = { played: 0, won: 0, declared: 0, declaredWon: 0, defended: 0, defendedWon: 0, perDeal: 0 }
+  for (const g of games) {
+    r.perDeal += g.scores[0]
+    if (g.declarer === null) continue
+    r.played += 1
+    if (g.declarer === 0) {
+      r.declared += 1
+      if (g.won) r.declaredWon += 1
+    } else {
+      r.defended += 1
+      if (!g.won) r.defendedWon += 1
+    }
+  }
+  r.won = r.declaredWon + r.defendedWon
+  r.perDeal = games.length ? r.perDeal / games.length : 0
+  return r
+}
+
+/** The player and the AI side by side (SKATGO-169, the human: 「profile里应该显示你这个表格，然后对手就是AI」), over the deals the AI
+ *  played too, so both columns count the same cards. Null when it played none. */
+export function versusAi(deals: ProfileDeal[]): { you: SideRecord; ai: SideRecord } | null {
+  const judged = deals.flatMap((d) => (d.ai === null ? [] : [{ mine: d.mine, ai: d.ai }]))
+  return judged.length ? { you: recordOf(judged.map((d) => d.mine)), ai: recordOf(judged.map((d) => d.ai)) } : null
+}
+
 /**
  * The last day played against every day before it, per deal: better, worse, or the same within the noise — a
  * difference counts only beyond twice its standard error, from the spread of single deals. Null before a second day.

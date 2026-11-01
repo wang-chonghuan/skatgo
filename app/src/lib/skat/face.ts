@@ -4,6 +4,17 @@ import { type Game, type Seat, trickWinner } from './game'
 
 export type Face = 'neutral' | 'laugh' | 'sad'
 
+/** The faces a computer seat may wear (SKATGO-167, the human: 「再弄两套头像，一男一女，风格不同，然后设置页面可以看着头像选桌上的
+ *  头像，名字暂时可以不变，可以男明用女头像」, then 「画风必须一致」): SKATGO-147's Lina and Noah and four more people in their own
+ *  flat sticker style. Each is three pictures, `/faces/<avatar>-<face>.webp`. Lina's seat
+ *  wears `lina` and Noah's `noah` until the player chooses otherwise; either may wear any. */
+export const AVATARS = ['lina', 'noah', 'woman-indian', 'man-beard', 'woman-office', 'man-cap'] as const
+export type Avatar = (typeof AVATARS)[number]
+export const isAvatar = (a: unknown): a is Avatar => AVATARS.includes(a as Avatar)
+/** The avatar a seat wears by default: Lina's (1) and Noah's (2) own. */
+export const DEFAULT_AVATAR: Record<1 | 2, Avatar> = { 1: 'lina', 2: 'noah' }
+export const faceSrc = (avatar: Avatar, face: Face) => `/faces/${avatar}-${face}.webp`
+
 /** The face a computer seat shows now. The bidding's winner laughs from the end of the auction until the first card;
  *  a finished trick makes the side that took it laugh and the other side sulk, as Skat scores by side, until it is
  *  collected — the other way round in a Null, where the declarer must take no trick (the human: 「null是反过来的」).

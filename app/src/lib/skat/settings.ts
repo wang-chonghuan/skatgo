@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { type CardBack, DEFAULT_BACK, isCardBack } from './backs'
+import { type Avatar, DEFAULT_AVATAR, isAvatar } from './face'
 
 // The learner's display preferences, kept in this browser like the progress, under a key of their own so
 // a change here can never touch the progress. SKATGO-66: the deck the cards are drawn in. The default is
@@ -35,6 +36,9 @@ type SettingsState = {
   /** SKATGO-147: Lina's and Noah's faces above their cards. On by default (the human: 「默认是开的」). */
   faces: boolean
   setFaces: (on: boolean) => void
+  /** SKATGO-167: the face each computer seat wears, Lina's (1) and Noah's (2), chosen by its picture in the settings. */
+  avatars: Record<1 | 2, Avatar>
+  setAvatar: (seat: 1 | 2, avatar: Avatar) => void
   /** SKATGO-157: free play's bid calculator in the bidding drawer. On by default. */
   bidCalc: boolean
   setBidCalc: (on: boolean) => void
@@ -57,13 +61,15 @@ export const useSettings = create<SettingsState>()(
       setTalk: (talk) => set({ talk }),
       faces: true,
       setFaces: (faces) => set({ faces }),
+      avatars: DEFAULT_AVATAR,
+      setAvatar: (seat, avatar) => set((s) => ({ avatars: { ...s.avatars, [seat]: avatar } })),
       bidCalc: true,
       setBidCalc: (bidCalc) => set({ bidCalc }),
     }),
     {
       name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks, talk: s.talk, faces: s.faces, bidCalc: s.bidCalc }),
+      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks, talk: s.talk, faces: s.faces, avatars: s.avatars, bidCalc: s.bidCalc }),
     },
   ),
 )
@@ -75,6 +81,15 @@ export function useFaces(): boolean {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   return mounted ? stored : true
+}
+
+/** The face a computer seat wears (SKATGO-167): its default on the server and in the first browser render, so the markup
+ *  hydrates; a stored choice applies at once after mount, unless it names an avatar there no longer is. */
+export function useAvatar(seat: 1 | 2): Avatar {
+  const stored = useSettings((s) => s.avatars?.[seat])
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  return mounted && isAvatar(stored) ? stored : DEFAULT_AVATAR[seat]
 }
 
 /** The deck to draw in: the default on the server and in the first browser render, so the markup

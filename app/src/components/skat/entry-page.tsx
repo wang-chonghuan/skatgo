@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
 import type { Card } from '~/lib/skat/cards'
-import { type ProfileDay, daysOf } from '~/lib/skat/profile'
+import { type ProfileDeal, rollingOf, standingOf } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
@@ -141,32 +141,46 @@ function ProgressCard() {
   )
 }
 
-/** The player's curve on the progress card: the record of play's points, day by day, without dates or scale. An
- *  account's only, read in the browser; nothing for a guest or before the first deal. */
+/** A number with its sign, a true minus. */
+const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
+
+/** The player's standing on the progress card (SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」): over the latest
+ *  deals, the win rate — plain to read, but on real records no measure of a player: it swings, and players of quite different
+ *  results stand alike — and the average per deal against the AI, which tells them apart, as the curve under them, without
+ *  scale. An account's only, read in the browser; nothing for a guest or before the first deal. */
 function Progress({ account }: { account: string | undefined }) {
-  const [days, setDays] = useState<ProfileDay[] | null>(null)
+  const [deals, setDeals] = useState<ProfileDeal[] | null>(null)
   useEffect(() => {
     if (!account) return
     let live = true
-    void dailyProfile().then((r) => { if (live && !isError(r)) setDays(daysOf(r.deals)) })
+    void dailyProfile().then((r) => { if (live && !isError(r)) setDeals(r.deals) })
     return () => { live = false }
   }, [account])
-  const known = (days ?? []).flatMap((d, i) => (d.perDeal === null ? [] : [{ i, v: d.perDeal }]))
-  if (!days || known.length === 0) return null
+  const standing = deals && standingOf(deals)
+  if (!deals || !standing) return null
+  const known = rollingOf(deals)
   const { width, height, pad } = profileChart
-  const top = Math.max(0, ...known.map((p) => p.v))
-  const bottom = Math.min(0, ...known.map((p) => p.v))
+  const top = Math.max(0, ...known.map((p) => p.perDeal))
+  const bottom = Math.min(0, ...known.map((p) => p.perDeal))
   const span = top - bottom || 1
-  const x = (i: number) => (days.length > 1 ? pad + (i * (width - 2 * pad)) / (days.length - 1) : width / 2)
+  const x = (i: number) => (known.length > 1 ? pad + (i * (width - 2 * pad)) / (known.length - 1) : width / 2)
   const y = (v: number) => pad + ((top - v) * (height - 2 * pad)) / span
-  const points = known.map((p) => ({ x: x(p.i), y: y(p.v) }))
-  const first = days[known[0].i].day
-  const last = days[known[known.length - 1].i].day
-  // A light frame, no more (the human: 「最好上面带一些日期……不要扩大，一两个即可」): the first and the last day under the
-  // curve. No AI tag on the zero line (SKATGO-138, the human: 「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」); the
-  // line blue again (SKATGO-139: 「不如原来的蓝色好看，你马上给我改回来」).
+  const points = known.map((p, i) => ({ x: x(i), y: y(p.perDeal) }))
+  const first = known[0].day
+  const last = known[known.length - 1].day
   return (
     <div {...stylex.props(styles.chart)}>
+      <div data-testid="entry-progress-figures" data-deals={standing.deals} {...stylex.props(styles.figures)}>
+        <span {...stylex.props(styles.figure)}>
+          <span data-testid="entry-progress-win" {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{standing.winRate === null ? '–' : `${standing.winRate}%`}</span>
+          <span {...stylex.props(typography.meta, styles.figureLabel)}>{m.home_progress_win()}</span>
+        </span>
+        <span {...stylex.props(styles.figure)}>
+          <span data-testid="entry-progress-ai" {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{signed(standing.perDeal)}</span>
+          <span {...stylex.props(typography.meta, styles.figureLabel)}>{m.home_progress_ai()}</span>
+        </span>
+      </div>
+      <div {...stylex.props(styles.drawing)}>
       <div {...stylex.props(styles.plotRow)}>
         <span {...stylex.props(styles.plot)}>
         <svg data-testid="entry-progress-curve" aria-hidden="true" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" {...stylex.props(styles.curve)}>
@@ -180,9 +194,12 @@ function Progress({ account }: { account: string | undefined }) {
         </svg>
         </span>
       </div>
-      <div data-testid="entry-progress-dates" {...stylex.props(typography.meta, styles.dates, first === last && styles.datesOne)}>
+      <div data-testid="entry-progress-dates" {...stylex.props(typography.meta, styles.dates, first === last && standing.deals === 1 && styles.datesOne)}>
         <span>{shortDay(first)}</span>
+        {/* How many deals the figures and each point count; nothing to say of one. */}
+        {standing.deals > 1 ? <span data-testid="entry-progress-window">{m.home_progress_recent({ count: standing.deals })}</span> : null}
         {first === last ? null : <span>{shortDay(last)}</span>}
+      </div>
       </div>
     </div>
   )
@@ -349,8 +366,14 @@ const styles = stylex.create({
   // The curve takes what the card has left, never sizing the card itself: no taller than the colour cards' row on PC.
   // The curve and its frame take what the card has left, never sizing the card: no taller than the colour cards' row on
   // PC, `homeCurve` at the least where the card is as tall as its content.
-  chart: { display: 'flex', flexDirection: 'column', gap: space.x4, flexGrow: 1, minHeight: dims.homeCurve },
-  plotRow: { display: 'flex', gap: space.x8, flexGrow: 1, minHeight: 0 },
+  // The figures beside the curve in the card's fixed height, over it on a phone, where the card takes the height it needs
+  // (SKATGO-169).
+  chart: { display: 'flex', flexDirection: { default: 'row', [bp.phone]: 'column' }, gap: { default: space.x24, [bp.phone]: space.x12 }, flexGrow: 1, minHeight: dims.homeCurve },
+  figures: { display: 'flex', flexDirection: { default: 'column', [bp.phone]: 'row' }, justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, flexShrink: 0, gap: { default: space.x8, [bp.phone]: space.x24 } },
+  figure: { display: 'flex', flexDirection: 'column' },
+  figureLabel: { color: color.slate },
+  drawing: { display: 'flex', flexDirection: 'column', gap: space.x4, flexGrow: 1, minWidth: 0 },
+  plotRow: { display: 'flex', gap: space.x8, flexGrow: 1, minHeight: { default: 0, [bp.phone]: dims.homeCurve } },
   // The drawing fills its box and has no size of its own, so the box, not the drawing's proportions, sets the height.
   plot: { position: 'relative', flexGrow: 1, minWidth: 0 },
   curve: { position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%' },

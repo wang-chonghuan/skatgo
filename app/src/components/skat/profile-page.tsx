@@ -1,19 +1,21 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+import { Who } from './daily-comparison'
 import { ForumBody } from './forum-body'
 import { Btn, Panel, linkLook } from './ui'
 import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
-import { type ProfileDay, type ProfileDeal, type ProfileNote, type ProfileWeek, daysOf, trendOf, weeksOf } from '~/lib/skat/profile'
+import { type ProfileDay, type ProfileDeal, type ProfileNote, type ProfileWeek, daysOf, gapOf, trendOf, versusAi, weeksOf } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { profileChart } from '../../theme/constants'
+import { icon, profileChart } from '../../theme/constants'
 import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
@@ -22,7 +24,7 @@ import { typography } from '../../theme/type'
  * A player's record of play (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，而且每个deal都要算和ai的
  * 差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's and free
  * play's — judged against the whole table and compared with the AI's game of the same cards (`lib/skat/profile.ts`):
- * a curve of the average per deal, day by day, whether the last day was better than before, and the days.
+ * a curve of the average per deal, day by day, and whether the last day was better than before.
  * Personal, never indexed; its title and lead render on the server, the record in the browser for an account.
  */
 export function ProfilePage() {
@@ -87,6 +89,7 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
           </p>
         ) : null}
       </div>
+      <VersusAi deals={deals} />
       <Panel>
         <div {...stylex.props(styles.stack)}>
           <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_curve_title()}</h2>
@@ -95,21 +98,79 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
         </div>
       </Panel>
       <Weeks weeks={weeksOf(deals)} notes={notes} />
-      <Panel>
-        <div {...stylex.props(styles.stack)}>
-          <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_days_title()}</h2>
-          <ol data-testid="profile-days" {...stylex.props(styles.days)}>
-            {[...days].reverse().map((d) => (
-              <li key={d.day} data-testid="profile-day" data-day={d.day} data-deals={d.deals} {...stylex.props(styles.day)}>
-                <span {...stylex.props(typography.appText, styles.date)}>{dayName(d.day)}</span>
-                <span {...stylex.props(typography.appText, styles.quiet)}>{m.profile_day_deals({ count: d.deals })}</span>
-                <span {...stylex.props(typography.appText, styles.figure)}>{d.perDeal === null ? '–' : m.profile_day_against({ diff: signed(d.perDeal) })}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </Panel>
     </>
+  )
+}
+
+/** The player against the AI on the same cards (SKATGO-169, the human: 「profile里应该显示你这个表格，然后对手就是AI」): win rate, as
+ *  declarer, how often declarer, as defender, each with what it counts under it, and the points per deal. */
+function VersusAi({ deals }: { deals: ProfileDeal[] }) {
+  const versus = versusAi(deals)
+  if (!versus) return null
+  const { you, ai } = versus
+  // Where the difference comes from (SKATGO-169): what to practise, under what the table says.
+  const { cardPoints, cardDeals, otherGame } = gapOf(deals)
+  const share = (k: number, n: number) => ({ value: n ? `${Math.round((100 * k) / n)}%` : '–', count: `${k}/${n}` })
+  const rows = [
+    { key: 'win', label: m.profile_vs_win(), you: share(you.won, you.played), ai: share(ai.won, ai.played) },
+    { key: 'declarer', label: m.profile_vs_declarer(), you: share(you.declaredWon, you.declared), ai: share(ai.declaredWon, ai.declared) },
+    { key: 'declares', label: m.profile_vs_declares(), you: share(you.declared, you.played), ai: share(ai.declared, ai.played) },
+    { key: 'defender', label: m.profile_vs_defender(), you: share(you.defendedWon, you.defended), ai: share(ai.defendedWon, ai.defended) },
+    { key: 'points', label: m.profile_vs_points(), you: { value: signed(Math.round(you.perDeal)), count: null }, ai: { value: signed(Math.round(ai.perDeal)), count: null } },
+  ]
+  const cell = (c: { value: string; count: string | null }, side: string) => (
+    <td data-side={side} data-value={c.value} {...stylex.props(styles.vsCell, styles.vsRule)}>
+      <span {...stylex.props(typography.appBtnStrong, styles.vsValue)}>{c.value}</span>
+      {c.count ? <span {...stylex.props(typography.meta, styles.vsCount)}>{c.count}</span> : null}
+    </td>
+  )
+  return (
+    <Panel>
+      <div {...stylex.props(styles.stack)}>
+        <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_vs_title()}</h2>
+        <table data-testid="profile-vs" {...stylex.props(styles.vsTable)}>
+          <thead {...stylex.props(styles.vsRows)}>
+            <tr {...stylex.props(styles.vsRows)}>
+              <td />
+              <th scope="col" {...stylex.props(styles.vsHead)}><Who side="you" /></th>
+              <th scope="col" {...stylex.props(styles.vsHead)}><Who side="ai" /></th>
+            </tr>
+          </thead>
+          <tbody {...stylex.props(styles.vsRows)}>
+            {rows.map((r) => (
+              <tr key={r.key} data-row={r.key} {...stylex.props(styles.vsRows)}>
+                <th scope="row" {...stylex.props(typography.appText, styles.vsLabel, styles.vsRule)}>{r.label}</th>
+                {cell(r.you, 'you')}
+                {cell(r.ai, 'ai')}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_vs_note()}</p>
+        {cardPoints === null && otherGame === null ? null : (
+          <div data-testid="profile-gap" {...stylex.props(styles.stackTight)}>
+            <h3 {...stylex.props(typography.appBtnStrong, styles.title)}>{m.profile_gap_title()}</h3>
+            <dl {...stylex.props(styles.gap)}>
+              {cardPoints === null ? null : (
+                <div data-row="play" data-value={signed(cardPoints)} data-deals={cardDeals} {...stylex.props(styles.gapRow)}>
+                  <dt {...stylex.props(typography.appText, styles.text)}>{m.profile_gap_play()}</dt>
+                  <dd {...stylex.props(styles.gapValue)}>
+                    <span {...stylex.props(typography.appBtnStrong, styles.vsValue)}>{signed(cardPoints)}</span>
+                    <span {...stylex.props(typography.meta, styles.vsCount)}>{m.profile_day_deals({ count: cardDeals })}</span>
+                  </dd>
+                </div>
+              )}
+              {otherGame === null ? null : (
+                <div data-row="bid" data-value={`${otherGame}%`} {...stylex.props(styles.gapRow)}>
+                  <dt {...stylex.props(typography.appText, styles.text)}>{m.profile_gap_bid()}</dt>
+                  <dd {...stylex.props(styles.gapValue)}><span {...stylex.props(typography.appBtnStrong, styles.vsValue)}>{otherGame}%</span></dd>
+                </div>
+              )}
+            </dl>
+          </div>
+        )}
+      </div>
+    </Panel>
   )
 }
 
@@ -117,6 +178,7 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
  *  这么死板」 and 「挑重点……可以手动做」): what mattered that week, written by hand for the player, in the page's language
  *  (English where there is none in it). A week without one has no card; with none at all, the section is left out. */
 function Weeks({ weeks, notes }: { weeks: ProfileWeek[]; notes: ProfileNote[] }) {
+  const [more, setMore] = useState(false)
   const lang = getLocale()
   const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short', timeZone: 'UTC' })
   const noted = weeks.flatMap((w) => {
@@ -124,22 +186,35 @@ function Weeks({ weeks, notes }: { weeks: ProfileWeek[]; notes: ProfileNote[] })
     return note ? [{ w, body: note.body }] : []
   })
   if (!noted.length) return null
+  const card = ({ w, body }: (typeof noted)[number]) => (
+    <Panel key={w.week}>
+      <div data-testid="profile-week" data-week={w.week} {...stylex.props(styles.stack)}>
+        <div {...stylex.props(styles.stackTight)}>
+          <h3 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_week_title({ date: date.format(new Date(`${w.week}T00:00:00Z`)) })}</h3>
+          <p {...stylex.props(typography.appText, styles.quiet)}>
+            {w.perDeal === null ? m.profile_day_deals({ count: w.deals }) : m.profile_week_meta({ deals: w.deals, diff: signed(w.perDeal) })}
+          </p>
+        </div>
+        <ForumBody text={body} official />
+      </div>
+    </Panel>
+  )
+  const [newest, ...earlier] = noted
+  const Chevron = more ? ChevronUp : ChevronDown
   return (
     <section data-testid="profile-weeks" {...stylex.props(styles.stack)}>
       <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_weeks_title()}</h2>
-      {noted.map(({ w, body }) => (
-        <Panel key={w.week}>
-          <div data-testid="profile-week" data-week={w.week} {...stylex.props(styles.stack)}>
-            <div {...stylex.props(styles.stackTight)}>
-              <h3 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_week_title({ date: date.format(new Date(`${w.week}T00:00:00Z`)) })}</h3>
-              <p {...stylex.props(typography.appText, styles.quiet)}>
-                {w.perDeal === null ? m.profile_day_deals({ count: w.deals }) : m.profile_week_meta({ deals: w.deals, diff: signed(w.perDeal) })}
-              </p>
-            </div>
-            <ForumBody text={body} official />
-          </div>
+      {card(newest)}
+      {/* The newest open, the rest folded (SKATGO-169, the human: 「每周简评，只显示第一个，剩下的折叠」). */}
+      {earlier.length ? (
+        <Panel>
+          <button type="button" data-testid="profile-weeks-more" aria-expanded={more} onClick={() => setMore(!more)} {...stylex.props(typography.appBtnStrong, styles.more)}>
+            <span>{m.profile_weeks_more({ count: earlier.length })}</span>
+            <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+          </button>
         </Panel>
-      ))}
+      ) : null}
+      {more ? earlier.map(card) : null}
     </section>
   )
 }
@@ -220,8 +295,6 @@ const styles = stylex.create({
   lead: { margin: 0, color: color.navy },
   text: { margin: 0, color: color.text },
   quiet: { margin: 0, color: color.slate },
-  date: { margin: 0, color: color.text, flexGrow: 1 },
-  figure: { margin: 0, color: color.navy, textAlign: 'end' },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   stackTight: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   // The scale's twin under the curve: its width, nothing to see.
@@ -241,15 +314,33 @@ const styles = stylex.create({
   zero: { stroke: color.slate },
   curve: { fill: 'none', stroke: color.info, strokeLinejoin: 'round' },
   point: { stroke: color.info },
-  days: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
-  day: {
+  // The line that opens the earlier weeks (SKATGO-169): the white card's whole width, nothing of a button's look.
+  more: {
     display: 'flex',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     gap: space.x12,
-    alignItems: 'baseline',
-    paddingBlock: space.x8,
-    borderTopWidth: { default: 0, ':not(:first-child)': border.hair },
-    borderTopStyle: 'solid',
-    borderTopColor: color.hairline,
+    width: '100%',
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: color.navy,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focusSm,
+    outlineColor: color.info,
   },
+  // The player against the AI (SKATGO-169): a grid, the row's name taking what the two figures leave; its rows only its cells.
+  vsTable: { display: 'grid', gridTemplateColumns: dims.versusColumns, width: '100%' },
+  vsRows: { display: 'contents' },
+  vsHead: { paddingBottom: space.x6, textAlign: 'end' },
+  vsLabel: { alignSelf: 'stretch', paddingBlock: space.x8, paddingInlineEnd: space.x8, textAlign: 'start', color: color.text },
+  vsCell: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', paddingBlock: space.x8 },
+  vsRule: { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  vsValue: { color: color.navy, fontVariantNumeric: 'tabular-nums' },
+  vsCount: { color: color.slate, fontVariantNumeric: 'tabular-nums' },
+  // Where the difference comes from: the row's words, its figure at the end, a fine rule over each.
+  gap: { display: 'flex', flexDirection: 'column', margin: 0 },
+  gapRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: space.x12, paddingBlock: space.x8, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },
+  gapValue: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, margin: 0 },
 })

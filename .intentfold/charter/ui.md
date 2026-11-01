@@ -250,9 +250,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `GraduationCap`, the course) and "Reizen" (`tileNavy`, lucide's `Gavel`, an auction's hammer, to `/bidding-practice`; one line since SKATGO-151, the page
     keeping "Reizen üben"; SKATGO-149, the
     human: 「practice卡片的位置，做成一个叫牌练习的东西」 — the exercises' "Üben" with its `Puzzle` stood there before); on the right two long white cards, each
-    a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play
-    showing its days as on `/profile`, without dates or scale, as one smooth line — a monotone cubic through the days'
-    points, never above or below two days between them — 5px (`progressCurve`, SKATGO-136: 「我希望平缓的，粗一点的」, SKATGO-137: 「再粗一点」,
+    a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
+    over the latest 30 deals, fewer while there are fewer (`standingOf`, SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」),
+    the win rate and the average per deal against the AI (`homeCardTitle`, each over a `meta` label), beside the curve and
+    over it on a phone, and that average day by day as the curve (`rollingOf`), "Immer über die letzten 30 Spiele" in the dates' row, no win-rate curve — on real records a day's win
+    rate jumps between 0 and 100 and thirty deals' is alike across players of different results — without scale, as one
+    smooth line — a monotone cubic through the days' points, never above or below two days between them — 5px (`progressCurve`, SKATGO-136: 「我希望平缓的，粗一点的」, SKATGO-137: 「再粗一点」,
     SKATGO-138: 「线稍微细一点」), in `info` blue (SKATGO-139, the human: 「不如原来的蓝色好看，你马上给我改回来」; SKATGO-138 had
     made it navy) and with no AI tag (SKATGO-138, 「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」), a single day as its dot; framed lightly, no larger: the first
     and the last day under it (`meta`, slate) (「最好上面带一些日期……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
@@ -410,15 +413,20 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest a `go` "Anmelden und Profil ansehen" opening
   Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to free play.
   Otherwise a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt
-  −22 pro Spiel gegen die KI, davor −31: ↑ besser als zuvor", → or ↓, in navy, never `good` / `bad`); then a white
+  −22 pro Spiel gegen die KI, davor −31: ↑ besser als zuvor", → or ↓, in navy, never `good` / `bad`); then a white card,
+  "Du gegen die AI" (SKATGO-169, the human: 「profile里应该显示你这个表格，然后对手就是AI」): under the You and AI tags, for the same
+  cards, the win rate, as declarer, how often declarer and as defender, each a whole percent (`appBtnStrong`) over what it
+  counts (`meta`, slate), and the points per deal; a `meta` note that all-passed deals are left out of the percentages; under it,
+  "Woher der Unterschied kommt" (`gapOf`): in the same game as the AI, the player's card points against its, per deal, and how much of the
+  gap comes from not playing the same game — bidding and choice of game — each row left out where it says nothing; then a white
   card, "Dein Niveau gegen die KI, Tag für Tag": the curve in SVG at the card's width (`profileChart` in
   `constants.ts`), one `info` dot per day, the same size on every screen, on an `info` line — the day's average per
   deal against the AI, judged against the whole table (`lib/skat/profile.ts`) — the zero line in `slate`, the highest
   and lowest value beside it and each day's date under its dot in `meta`, every second, third … when more days than
-  fit, fewer on a phone (the human: 「一天一个点，为啥你的图上没显示几个点呢」), and a `meta` note on how to read it; then "Woche für Woche": a white card per
+  fit, fewer on a phone (the human: 「一天一个点，为啥你的图上没显示几个点呢」), and a `meta` note on how to read it; then "Woche für Woche": the newest week's white card open and the
+  rest behind a white card "Frühere Wochen (3)", a tap on it opening them (SKATGO-169, 「每周简评，只显示第一个，剩下的折叠」), a card per
   week with an analysis, newest first — "Woche vom 19. Okt.", its deals and average per deal, then the analysis as a
-  forum text (`ForumBody`: its points as a list, each led in bold, and the bold "Fazit"), in the page's language; then a white card, "Pro Tag", a row per day, newest first: the date, the deals, and the day's average per deal against the AI, signed. The same
-  line of the last day against before stands under a finished tournament's heading, with the link to the profile.
+  forum text (`ForumBody`: its points as a list, each led in bold, and the bold "Fazit"), in the page's language (no per-day list, SKATGO-169: 「Per day 这个不用显示」). The line of the last day against before stands under a finished tournament's heading, with the link to the profile.
 - **A shared result** (`shared-page.tsx`, SKATGO-132), `/d/<code>`: the H1 "Kannst du das schlagen?", a line of its
   day, a white card with the table's three scores — the shared one ("Zu schlagen") marked `goodSoft`, the declarer's
   name followed by an `amber` pill ("Alleinspieler") — and the one `go`, "Dieses Spiel spielen · 2 Min.", with a line that it is practice and a link to today's; its practice

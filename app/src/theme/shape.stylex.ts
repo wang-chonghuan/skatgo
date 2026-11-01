@@ -141,6 +141,8 @@ export const dims = stylex.defineVars({
   cardAspect: '5 / 7',
   /** The card backs to choose from in the settings (SKATGO-102): as many small cards to a row as fit. */
   backChoices: 'repeat(auto-fill, minmax(52px, 1fr))',
+  /** The player against the AI on the record of play (SKATGO-169): the row's name, then the two figures. */
+  versusColumns: 'minmax(0, 1fr) repeat(2, 4.5em)',
   /** The avatars to choose a seat's face from (SKATGO-167): rows of four — eight since SKATGO-168, two rows — big enough
    *  to tell apart on a phone. */
   faceChoices: 'repeat(4, minmax(0, 1fr))',

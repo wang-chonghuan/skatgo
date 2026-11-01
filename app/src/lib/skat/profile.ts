@@ -10,7 +10,15 @@ export type Scores = [number, number, number]
 
 /** How one game of a deal went: the three seats' Seeger-Fabian scores ([0] the player's, or the AI's in the player's
  *  seat), who declared (null when all passed) and whether the declarer won. */
-export type Played = { scores: Scores; declarer: 0 | 1 | 2 | null; won: boolean | null }
+export type Played = {
+  scores: Scores
+  declarer: 0 | 1 | 2 | null
+  won: boolean | null
+  /** Which game was played, the contract and whether Hand, and the declarer's and the defenders' card points (SKATGO-169).
+   *  Missing on free deals recorded before, and when all passed. */
+  game?: string
+  points?: [number, number]
+}
 
 /** One deal: the tournament's day it was played on, where, the player's game and the AI's game of the same deal. */
 export type ProfileDeal = {
@@ -50,6 +58,103 @@ export function daysOf(deals: ProfileDeal[]): ProfileDay[] {
   return [...days.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([day, d]) => ({ day, deals: d.deals, perDeal: d.judged ? Math.round(d.sum / d.judged) : null }))
+}
+
+/** One side's record over a set of games (SKATGO-169): how many it played a game in, all passed left out, and won — as
+ *  declarer the game, as defender the declarer's loss — and its average Seeger-Fabian score over all of them. */
+export type SideRecord = { played: number; won: number; declared: number; declaredWon: number; defended: number; defendedWon: number; perDeal: number }
+
+export function recordOf(games: Played[]): SideRecord {
+  const r: SideRecord = { played: 0, won: 0, declared: 0, declaredWon: 0, defended: 0, defendedWon: 0, perDeal: 0 }
+  for (const g of games) {
+    r.perDeal += g.scores[0]
+    if (g.declarer === null) continue
+    r.played += 1
+    if (g.declarer === 0) {
+      r.declared += 1
+      if (g.won) r.declaredWon += 1
+    } else {
+      r.defended += 1
+      if (!g.won) r.defendedWon += 1
+    }
+  }
+  r.won = r.declaredWon + r.defendedWon
+  r.perDeal = games.length ? r.perDeal / games.length : 0
+  return r
+}
+
+/** The player and the AI side by side (SKATGO-169, the human: 「profile里应该显示你这个表格，然后对手就是AI」), over the deals the AI
+ *  played too, so both columns count the same cards. Null when it played none. */
+export function versusAi(deals: ProfileDeal[]): { you: SideRecord; ai: SideRecord } | null {
+  const judged = deals.flatMap((d) => (d.ai === null ? [] : [{ mine: d.mine, ai: d.ai }]))
+  return judged.length ? { you: recordOf(judged.map((d) => d.mine)), ai: recordOf(judged.map((d) => d.ai)) } : null
+}
+
+/**
+ * Where the difference to the AI comes from (SKATGO-169, the human on comparing card points: 「可以，加吧」): in the deals where
+ * both played the same game — same declarer, same contract — the player's side's card points against the AI's, per deal, Null
+ * aside, which no card points decide; and how much of the player's whole gap comes from the other deals, where bidding or
+ * the choice of game made it another game. Null where it says nothing: no such deal, or no gap to explain. Free deals
+ * recorded before the game was kept are left out.
+ */
+export function gapOf(deals: ProfileDeal[]): { cardPoints: number | null; cardDeals: number; otherGame: number | null } {
+  const known = (p: Played) => p.declarer === null || p.game !== undefined
+  const side = (p: Played & { points: [number, number] }) => (p.declarer === 0 ? p.points[0] : p.points[1])
+  let total = 0
+  let other = 0
+  let cardSum = 0
+  let cardDeals = 0
+  for (const d of deals) {
+    if (d.ai === null || !known(d.mine) || !known(d.ai)) continue
+    const diff = againstAi(d) ?? 0
+    total += diff
+    if (d.mine.declarer !== d.ai.declarer || d.mine.game !== d.ai.game) {
+      other += diff
+      continue
+    }
+    if (d.mine.points && d.ai.points && !d.mine.game?.startsWith('null')) {
+      cardSum += side(d.mine as Played & { points: [number, number] }) - side(d.ai as Played & { points: [number, number] })
+      cardDeals += 1
+    }
+  }
+  return {
+    cardPoints: cardDeals ? Math.round(cardSum / cardDeals) : null,
+    cardDeals,
+    otherGame: total < 0 && other < 0 ? Math.min(100, Math.round((100 * other) / total)) : null,
+  }
+}
+
+/** How many of the latest deals the home page's figures and curve count (SKATGO-169). */
+export const RECENT_DEALS = 30
+
+/** What the last `RECENT_DEALS` of `judged` come to, fewer while there are fewer. */
+const recent = (judged: ProfileDeal[]) => {
+  const last = judged.slice(-RECENT_DEALS)
+  return { last, perDeal: Math.round(last.reduce((sum, d) => sum + (againstAi(d) ?? 0), 0) / last.length) }
+}
+
+/**
+ * Where the player stands now, for the home page (SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」): over the
+ * latest deals the AI played too, the win rate and the average per deal against the AI. Null before the first. Null win
+ * rate when all of them were passed in.
+ */
+export function standingOf(deals: ProfileDeal[]): { deals: number; winRate: number | null; perDeal: number } | null {
+  const judged = deals.filter((d) => d.ai !== null)
+  if (!judged.length) return null
+  const { last, perDeal } = recent(judged)
+  const r = recordOf(last.map((d) => d.mine))
+  return { deals: last.length, winRate: r.played ? Math.round((100 * r.won) / r.played) : null, perDeal }
+}
+
+/**
+ * The home page's curve: for each day played, the average per deal against the AI over the latest deals up to that day —
+ * the deals so far on the first days. On real records a day's win rate jumps between 0 and 100 on a handful of deals, and
+ * a day's average is mostly chance too; over thirty deals the line shows the player's own direction.
+ */
+export function rollingOf(deals: ProfileDeal[]): { day: string; perDeal: number }[] {
+  const judged = deals.filter((d) => d.ai !== null)
+  const days = [...new Set(judged.map((d) => d.day))].sort((a, b) => a.localeCompare(b))
+  return days.map((day) => ({ day, perDeal: recent(judged.filter((d) => d.day <= day)).perDeal }))
 }
 
 /**

@@ -366,7 +366,7 @@
   "home_progress": "Mein Fortschritt",
   "home_progress_win": "Gewinnquote",
   "home_progress_ai": "Pro Spiel gegen die AI",
-  "home_progress_recent": "Letzte {count} Spiele",
+  "home_progress_recent": "Immer über die letzten {count} Spiele",
   "home_progress_guest": "Melde dich an und verfolge, wie du besser wirst – mit der Analyse der KI.",
   "home_friends_title": "Privater Tisch",
   "home_friends_text": "Raum eröffnen, Nummer weitergeben – deine Freunde kommen mit ihrem kostenlosen Konto dazu.",

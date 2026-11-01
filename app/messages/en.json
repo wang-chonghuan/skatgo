@@ -366,7 +366,7 @@
   "home_progress": "My progress",
   "home_progress_win": "Win rate",
   "home_progress_ai": "Per deal vs. the AI",
-  "home_progress_recent": "Last {count} deals",
+  "home_progress_recent": "Always over the last {count} deals",
   "home_progress_guest": "Sign in to track how you improve, with the AI's analysis.",
   "home_friends_title": "Private table",
   "home_friends_text": "Open a room and share its number – friends join with their free account.",

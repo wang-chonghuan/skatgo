@@ -39,6 +39,7 @@
   "profile_trend_same": "Zuletzt {last} pro Spiel gegen die KI, davor {before}: → etwa wie zuvor",
   "profile_today": "Heute {last} pro Spiel gegen die KI",
   "profile_weeks_title": "Woche für Woche",
+  "profile_weeks_more": "Frühere Wochen ({count})",
   "profile_week_title": "Woche vom {date}",
   "profile_week_meta": "{deals} Spiele · {diff} pro Spiel gegen die KI",
   "profile_summary": "{deals} Spiele an {days} Tagen",

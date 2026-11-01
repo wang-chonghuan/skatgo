@@ -1,6 +1,7 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { Who } from './daily-comparison'
@@ -14,7 +15,7 @@ import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { profileChart } from '../../theme/constants'
+import { icon, profileChart } from '../../theme/constants'
 import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
@@ -167,6 +168,7 @@ function VersusAi({ deals }: { deals: ProfileDeal[] }) {
  *  这么死板」 and 「挑重点……可以手动做」): what mattered that week, written by hand for the player, in the page's language
  *  (English where there is none in it). A week without one has no card; with none at all, the section is left out. */
 function Weeks({ weeks, notes }: { weeks: ProfileWeek[]; notes: ProfileNote[] }) {
+  const [more, setMore] = useState(false)
   const lang = getLocale()
   const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short', timeZone: 'UTC' })
   const noted = weeks.flatMap((w) => {
@@ -174,22 +176,35 @@ function Weeks({ weeks, notes }: { weeks: ProfileWeek[]; notes: ProfileNote[] })
     return note ? [{ w, body: note.body }] : []
   })
   if (!noted.length) return null
+  const card = ({ w, body }: (typeof noted)[number]) => (
+    <Panel key={w.week}>
+      <div data-testid="profile-week" data-week={w.week} {...stylex.props(styles.stack)}>
+        <div {...stylex.props(styles.stackTight)}>
+          <h3 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_week_title({ date: date.format(new Date(`${w.week}T00:00:00Z`)) })}</h3>
+          <p {...stylex.props(typography.appText, styles.quiet)}>
+            {w.perDeal === null ? m.profile_day_deals({ count: w.deals }) : m.profile_week_meta({ deals: w.deals, diff: signed(w.perDeal) })}
+          </p>
+        </div>
+        <ForumBody text={body} official />
+      </div>
+    </Panel>
+  )
+  const [newest, ...earlier] = noted
+  const Chevron = more ? ChevronUp : ChevronDown
   return (
     <section data-testid="profile-weeks" {...stylex.props(styles.stack)}>
       <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_weeks_title()}</h2>
-      {noted.map(({ w, body }) => (
-        <Panel key={w.week}>
-          <div data-testid="profile-week" data-week={w.week} {...stylex.props(styles.stack)}>
-            <div {...stylex.props(styles.stackTight)}>
-              <h3 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_week_title({ date: date.format(new Date(`${w.week}T00:00:00Z`)) })}</h3>
-              <p {...stylex.props(typography.appText, styles.quiet)}>
-                {w.perDeal === null ? m.profile_day_deals({ count: w.deals }) : m.profile_week_meta({ deals: w.deals, diff: signed(w.perDeal) })}
-              </p>
-            </div>
-            <ForumBody text={body} official />
-          </div>
+      {card(newest)}
+      {/* The newest open, the rest folded (SKATGO-169, the human: 「每周简评，只显示第一个，剩下的折叠」). */}
+      {earlier.length ? (
+        <Panel>
+          <button type="button" data-testid="profile-weeks-more" aria-expanded={more} onClick={() => setMore(!more)} {...stylex.props(typography.appBtnStrong, styles.more)}>
+            <span>{m.profile_weeks_more({ count: earlier.length })}</span>
+            <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+          </button>
         </Panel>
-      ))}
+      ) : null}
+      {more ? earlier.map(card) : null}
     </section>
   )
 }
@@ -291,6 +306,22 @@ const styles = stylex.create({
   zero: { stroke: color.slate },
   curve: { fill: 'none', stroke: color.info, strokeLinejoin: 'round' },
   point: { stroke: color.info },
+  // The line that opens the earlier weeks (SKATGO-169): the white card's whole width, nothing of a button's look.
+  more: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space.x12,
+    width: '100%',
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: color.navy,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focusSm,
+    outlineColor: color.info,
+  },
   // The player against the AI (SKATGO-169): a grid, the row's name taking what the two figures leave; its rows only its cells.
   vsTable: { display: 'grid', gridTemplateColumns: dims.versusColumns, width: '100%' },
   vsRows: { display: 'contents' },

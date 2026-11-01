@@ -421,7 +421,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `constants.ts`), one `info` dot per day, the same size on every screen, on an `info` line — the day's average per
   deal against the AI, judged against the whole table (`lib/skat/profile.ts`) — the zero line in `slate`, the highest
   and lowest value beside it and each day's date under its dot in `meta`, every second, third … when more days than
-  fit, fewer on a phone (the human: 「一天一个点，为啥你的图上没显示几个点呢」), and a `meta` note on how to read it; then "Woche für Woche": a white card per
+  fit, fewer on a phone (the human: 「一天一个点，为啥你的图上没显示几个点呢」), and a `meta` note on how to read it; then "Woche für Woche": the newest week's white card open and the
+  rest behind a white card "Frühere Wochen (3)", a tap on it opening them (SKATGO-169, 「每周简评，只显示第一个，剩下的折叠」), a card per
   week with an analysis, newest first — "Woche vom 19. Okt.", its deals and average per deal, then the analysis as a
   forum text (`ForumBody`: its points as a list, each led in bold, and the bold "Fazit"), in the page's language; then a white card, "Pro Tag", a row per day, newest first: the date, the deals, and the day's average per deal against the AI, signed. The same
   line of the last day against before stands under a finished tournament's heading, with the link to the profile.

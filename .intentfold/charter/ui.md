@@ -473,7 +473,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   in sight on a phone; a number is picked first and named with the main button. While a move of the
   player's is on its way to the server, the table shows no move buttons, so none hangs there dead
   (SKATGO-100). After a free deal, in the result's foot, the next deal over `quiet` "Replay this deal" (SKATGO-170); a deal played
-  again keeps its number, says so while it is played in a dark pill over the felt ("Replay – this deal doesn't count"), and its result's first part is
+  again keeps its number, says so while it is played in a dark pill in the middle of the frame, under everything on the table (SKATGO-171, "Replay – this deal doesn't count"), and its result's first part is
   headed "Replay – not counted", without a Total row. Free play's table shows
   its round in the strip as the tournament does, "Spiel n von 6 · gesamt X"; after the sixth deal the
   round's result takes the felt's place: a white panel with its `VsAiTable`, "Neue Runde" (`go`) and

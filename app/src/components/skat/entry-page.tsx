@@ -179,8 +179,8 @@ function Progress({ account }: { account: string | undefined }) {
           <span data-testid="entry-progress-ai" {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{signed(standing.perDeal)}</span>
           <span {...stylex.props(typography.meta, styles.figureLabel)}>{m.home_progress_ai()}</span>
         </span>
-        <span {...stylex.props(typography.meta, styles.figureLabel, styles.figureWindow)}>{m.home_progress_recent({ count: standing.deals })}</span>
       </div>
+      <div {...stylex.props(styles.drawing)}>
       <div {...stylex.props(styles.plotRow)}>
         <span {...stylex.props(styles.plot)}>
         <svg data-testid="entry-progress-curve" aria-hidden="true" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" {...stylex.props(styles.curve)}>
@@ -194,9 +194,12 @@ function Progress({ account }: { account: string | undefined }) {
         </svg>
         </span>
       </div>
-      <div data-testid="entry-progress-dates" {...stylex.props(typography.meta, styles.dates, first === last && styles.datesOne)}>
+      <div data-testid="entry-progress-dates" {...stylex.props(typography.meta, styles.dates, first === last && standing.deals === 1 && styles.datesOne)}>
         <span>{shortDay(first)}</span>
+        {/* How many deals the figures and each point count; nothing to say of one. */}
+        {standing.deals > 1 ? <span data-testid="entry-progress-window">{m.home_progress_recent({ count: standing.deals })}</span> : null}
         {first === last ? null : <span>{shortDay(last)}</span>}
+      </div>
       </div>
     </div>
   )
@@ -363,13 +366,14 @@ const styles = stylex.create({
   // The curve takes what the card has left, never sizing the card itself: no taller than the colour cards' row on PC.
   // The curve and its frame take what the card has left, never sizing the card: no taller than the colour cards' row on
   // PC, `homeCurve` at the least where the card is as tall as its content.
-  chart: { display: 'flex', flexDirection: 'column', gap: space.x4, flexGrow: 1, minHeight: dims.homeCurve },
-  // The two figures over the curve (SKATGO-169), and how many deals they count at the row's end.
-  figures: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', columnGap: space.x24, rowGap: space.x4, paddingBottom: space.x8 },
+  // The figures beside the curve in the card's fixed height, over it on a phone, where the card takes the height it needs
+  // (SKATGO-169).
+  chart: { display: 'flex', flexDirection: { default: 'row', [bp.phone]: 'column' }, gap: { default: space.x24, [bp.phone]: space.x12 }, flexGrow: 1, minHeight: dims.homeCurve },
+  figures: { display: 'flex', flexDirection: { default: 'column', [bp.phone]: 'row' }, justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, flexShrink: 0, gap: { default: space.x8, [bp.phone]: space.x24 } },
   figure: { display: 'flex', flexDirection: 'column' },
   figureLabel: { color: color.slate },
-  figureWindow: { marginInlineStart: 'auto' },
-  plotRow: { display: 'flex', gap: space.x8, flexGrow: 1, minHeight: 0 },
+  drawing: { display: 'flex', flexDirection: 'column', gap: space.x4, flexGrow: 1, minWidth: 0 },
+  plotRow: { display: 'flex', gap: space.x8, flexGrow: 1, minHeight: { default: 0, [bp.phone]: dims.homeCurve } },
   // The drawing fills its box and has no size of its own, so the box, not the drawing's proportions, sets the height.
   plot: { position: 'relative', flexGrow: 1, minWidth: 0 },
   curve: { position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%' },

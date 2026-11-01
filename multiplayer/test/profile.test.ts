@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto'
 import pg from 'pg'
 import { againstAi, daysOf, trendOf, weeksOf } from '../../app/src/lib/skat/profile'
 import { DAILY_DEALS } from '../../app/src/lib/skat/tournament'
-import { played, playProfile, recordFreeDeal } from '../src/profile'
+import { played as playedGame, playProfile, recordFreeDeal } from '../src/profile'
 import { Store } from '../src/store'
 
 // A player's record of play (SKATGO-128) against a database of its own: the tournament's deals with the AI's on
@@ -85,6 +85,6 @@ test('profile: tournament and free deals, once each, the aliases as one person, 
 test('a game is recorded with which game it was and its card points', () => {
   const declaration = { contract: { kind: 'suit', trump: 'S' }, hand: true, schneiderAnnounced: false, schwarzAnnounced: false, ouvert: false } as const
   const detail = { value: 22, declarerPoints: 77, defenderPoints: 43, overbid: false, schneider: false, schwarz: false }
-  assert.deepEqual(played({ scores: [0, 72, 0], declarer: 1, won: true, declaration, detail }), { scores: [0, 72, 0], declarer: 1, won: true, game: 'S hand', points: [77, 43] })
-  assert.deepEqual(played({ scores: [0, 0, 0], declarer: null, won: null, declaration: null, detail: null }), { scores: [0, 0, 0], declarer: null, won: null })
+  assert.deepEqual(playedGame({ scores: [0, 72, 0], declarer: 1, won: true, declaration, detail }), { scores: [0, 72, 0], declarer: 1, won: true, game: 'S hand', points: [77, 43] })
+  assert.deepEqual(playedGame({ scores: [0, 0, 0], declarer: null, won: null, declaration: null, detail: null }), { scores: [0, 0, 0], declarer: null, won: null })
 })

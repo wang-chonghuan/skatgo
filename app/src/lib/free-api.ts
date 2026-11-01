@@ -8,7 +8,7 @@ import type { DealReview, SeatView } from '~/lib/skat/tournament'
 export type FreeError = { error: string }
 export type FreeReply = { token: string; steps: SeatView[]; revision: number; computer: string }
 
-async function post(op: 'new' | 'act' | 'resume', body: object): Promise<FreeReply | FreeError> {
+async function post(op: 'new' | 'act' | 'resume' | 'replay', body: object): Promise<FreeReply | FreeError> {
   try {
     const res = await fetch(`/api/free/${op}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
     const data = (await res.json()) as FreeReply | FreeError
@@ -21,6 +21,9 @@ async function post(op: 'new' | 'act' | 'resume', body: object): Promise<FreeRep
 /** A new game: a deal from the server's pool, played up to the learner's first move — dealt by `dealer`
  *  when named, the next deal of free play's round (SKATGO-88). */
 export const freeNew = (dealer?: Seat) => post('new', dealer === undefined ? {} : { dealer })
+
+/** The finished deal the token holds, from its first move again, counted nowhere (SKATGO-170). */
+export const freeReplay = (token: string) => post('replay', { token })
 
 /** One move in the game the token holds, quoting how many moves came before it. */
 export const freeAct = (token: string, revision: number, action: Move) => post('act', { token, revision, action })

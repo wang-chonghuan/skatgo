@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { type GameMode, track } from '~/lib/analytics'
-import { type FreeError, freeAct, freeNew, freeResume, freeReview, freeTalk, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
+import { type FreeError, freeAct, freeNew, freeReplay, freeResume, freeReview, freeTalk, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
 import { useTableTalk } from '~/lib/table-talk'
 import { type Move, type Seat, next as nextSeat } from '~/lib/skat/game'
 import type { Contract } from '~/lib/skat/cards'
@@ -40,10 +40,11 @@ const contractKey = (c: Contract) => (c.kind === 'suit' ? SUIT_KEY[c.trump] : c.
 
 /** Free play's round (SKATGO-88): six deals, the deal going round as at a real table, so the player sits
  *  in each position twice; its finished deals, the player's and the AI's from the same seat, and each deal's review,
- *  kept so the round's rows open to it (SKATGO-145; a round stored before it has none). Lesson 11 is one game, not
- *  a round. */
+ *  kept so the round's rows open to it (SKATGO-145; a round stored before it has none). `replaying`: the deal on the table
+ *  is the round's last, played again (SKATGO-170); it is in the round already, and its new end goes nowhere. Lesson 11 is
+ *  one game, not a round. */
 const ROUND_DEALS = 6
-type Round = { deals: DealSummary[]; ais: (DealSummary | null)[]; reviews?: (DealReview | null)[] }
+type Round = { deals: DealSummary[]; ais: (DealSummary | null)[]; reviews?: (DealReview | null)[]; replaying?: boolean }
 const NO_ROUND: Round = { deals: [], ais: [] }
 
 export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: GameMode; fullScreen?: boolean; onSettled?: (info: Settled) => void }) {
@@ -132,19 +133,38 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     return () => holdGame(null)
   }, [mode, token, round, summary])
 
-  /** After a deal of free play's round: it goes into the round, with the AI's deal from the same seat
-   *  when its review has it; then the next deal, dealt by the next seat, or after the sixth the round's
-   *  result. Lesson 11 just starts its game again. */
+  /** A deal of free play's round finished: it goes into the round, once, with the AI's deal from the same seat when its
+   *  review has it. */
+  async function counted(finished: NonNullable<typeof game>, t: string): Promise<Round> {
+    const r = await ask(t)
+    const played: Round = { deals: [...round.deals, summarize(finished)], ais: [...round.ais, 'error' in r ? null : r.ai], reviews: [...(round.reviews ?? []), 'error' in r ? null : r] }
+    if (played.deals.length >= ROUND_DEALS) track('free_round_finished', { total: totals(played.deals)[0], ai_total: played.ais.reduce((n, ai) => n + (ai?.scores[0] ?? 0), 0) })
+    return played
+  }
+
+  /** After a deal of free play's round: into the round, unless it was one played again; then the next deal, dealt by the
+   *  next seat, or after the sixth the round's result. Lesson 11 just starts its game again. */
   async function nextDeal(finished: NonNullable<typeof game>) {
     if (mode !== 'free' || !token) return void start()
-    const r = await ask(token)
-    const played: Round = { deals: [...round.deals, summarize(finished)], ais: [...round.ais, 'error' in r ? null : r.ai], reviews: [...(round.reviews ?? []), 'error' in r ? null : r] }
+    const played: Round = round.replaying ? { ...round, replaying: false } : await counted(finished, token)
     setRound(played)
-    if (played.deals.length >= ROUND_DEALS) {
-      track('free_round_finished', { total: totals(played.deals)[0], ai_total: played.ais.reduce((n, ai) => n + (ai?.scores[0] ?? 0), 0) })
-      return setSummary(true)
-    }
+    if (played.deals.length >= ROUND_DEALS) return setSummary(true)
     void start(nextSeat(finished.dealer))
+  }
+
+  /** The finished deal once more (SKATGO-170, the human: 「重打这幅牌……不计入到任何记录和数据里」): the first time it counts, as if
+   *  gone on from, and is marked as played again before the server is asked, so it can never count twice. No event: a deal
+   *  played again is in no figure. */
+  async function replay(finished: NonNullable<typeof game>) {
+    if (mode !== 'free' || !token || sending) return
+    setSending(true)
+    const played = round.replaying ? round : await counted(finished, token)
+    setRound({ ...played, replaying: true })
+    const r = await freeReplay(token)
+    setSending(false)
+    if (isFreeError(r)) return setFailure({ text: problemText(r), retry: () => void replay(finished) })
+    newDeal()
+    take(r.steps, r)
   }
   function newRound() {
     setRound(NO_ROUND)
@@ -215,6 +235,8 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
     <GameTable
       fullScreen={fullScreen}
       onSettled={(info: Settled) => {
+        // A deal played again is in no figure (SKATGO-170).
+        if (round.replaying) return
         // The game's facts at once; the AI's score on the same cards from its review, asked once and kept (the
         // result card asks the same).
         const deal = summarize(game)
@@ -236,7 +258,10 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         // A finished game, reviewed on request from its own token (SKATGO-79), with the AI's game from the
         // player's seat (SKATGO-86) — free play and lesson 11 alike, the same table.
         review: token ? () => ask(token) : undefined,
-        round: mode === 'free' ? { deal: round.deals.length, of: ROUND_DEALS, totals: totals(round.deals) } : undefined,
+        // A deal played again is the round's last, already counted in its totals (SKATGO-170).
+        round: mode === 'free' ? { deal: round.deals.length - (round.replaying ? 1 : 0), of: ROUND_DEALS, totals: totals(round.deals) } : undefined,
+        replaying: mode === 'free' && !!round.replaying,
+        again: mode === 'free' ? () => void replay(game) : undefined,
         // Free play's round can be given up for a new one (SKATGO-96); the table asks first.
         newRound: mode === 'free' ? newRound : undefined,
         // Lesson 11 keeps its hints; free play's table is the tournament's, without (SKATGO-130).

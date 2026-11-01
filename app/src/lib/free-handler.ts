@@ -1,8 +1,9 @@
 import { signedInUser } from '~/lib/session'
 
-// POST /api/free/new, /act, /resume, /review and /talk — free play and lesson 11 on the server (SKATGO-40;
+// POST /api/free/new, /act, /resume, /replay, /review and /talk — free play and lesson 11 on the server (SKATGO-40;
 // SKATGO-79: /resume takes a game up from its token after a change of language, /review is a finished
-// game's replay with SkatZero's card wherever the player's was not; SKATGO-142: /talk, Lina's and Noah's table talk). The game
+// game's replay with SkatZero's card wherever the player's was not; SKATGO-142: /talk, Lina's and Noah's table talk;
+// SKATGO-170: /replay, a finished deal played again, counted nowhere). The game
 // runs in the multiplayer service; this handler only passes requests on with the service's key and
 // keeps the door from being run through: per address, at most FREE_LIMITS new games an hour and
 // moves per ten seconds (a classroom or a family often shares one address, so the limits are wide).
@@ -47,11 +48,11 @@ export function clientIp(request: Request): string {
 export async function handleFree(request: Request): Promise<Response> {
   if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const op = new URL(request.url).pathname.slice('/api/free/'.length)
-  if (op !== 'new' && op !== 'act' && op !== 'resume' && op !== 'review' && op !== 'talk') return json(404, { error: 'not found' })
+  if (op !== 'new' && op !== 'act' && op !== 'resume' && op !== 'replay' && op !== 'review' && op !== 'talk') return json(404, { error: 'not found' })
   const base = process.env.MULTIPLAYER_URL
   const key = process.env.MULTIPLAYER_ADMISSION_KEY
   if (!base || !key) return json(503, { error: 'unavailable' })
-  if (!admitFree(op === 'new' ? 'new' : 'act', clientIp(request))) return json(429, { error: 'slow_down' })
+  if (!admitFree(op === 'new' || op === 'replay' ? 'new' : 'act', clientIp(request))) return json(429, { error: 'slow_down' })
   let body: unknown
   try {
     // A new game may name its dealer, free play's round going round (SKATGO-88); nothing else is passed on.

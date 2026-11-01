@@ -472,7 +472,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   one row of every higher number on the ladder in pills (`toggle`), scrolling sideways so the hand stays
   in sight on a phone; a number is picked first and named with the main button. While a move of the
   player's is on its way to the server, the table shows no move buttons, so none hangs there dead
-  (SKATGO-100). Free play's table shows
+  (SKATGO-100). After a free deal, in the result's foot, the next deal over `quiet` "Replay this deal" (SKATGO-170); a deal played
+  again keeps its number, says so while it is played in a dark pill over the felt ("Replay – this deal doesn't count"), and its result's first part is
+  headed "Replay – not counted", without a Total row. Free play's table shows
   its round in the strip as the tournament does, "Spiel n von 6 · gesamt X"; after the sixth deal the
   round's result takes the felt's place: a white panel with its `VsAiTable`, "Neue Runde" (`go`) and
   "Tisch verlassen" (`quiet`) (SKATGO-88). Lina's and Noah's table talk (SKATGO-142) is a white speech bubble (`radii.panel`,

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-170",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-170",
+  "branch": "SKATGO-170-free-replay",
+  "base": "0fead284f1754bf001e795f540aa9362191566d5",
+  "ports": { "web": 55170, "multiplayer": 56170, "database": 57170 }
+}

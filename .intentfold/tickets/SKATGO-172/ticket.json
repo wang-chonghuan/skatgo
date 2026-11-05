@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-172",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-172",
+  "branch": "SKATGO-172-weekly-xp",
+  "base": "60dfe4a",
+  "ports": { "web": 55172, "multiplayer": 56172, "database": 57172 }
+}

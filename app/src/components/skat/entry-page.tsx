@@ -19,18 +19,18 @@ import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { EloBoard } from './elo-board'
+import { XpBoard } from './xp-board'
 import { PlayingCard } from './playing-card'
 import { Btn } from './ui'
 
 // The front page (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后显示下面的四个卡片……长卡片做两个，
 // 一个是my progress……一个是 elo ranking」): the slogan, then the ways in — four colour cards two by two, each a link
 // with its icon over its title (the deal of the day, free play, the course, the bidding practice since SKATGO-149), and beside them two long
-// white cards: the player's progress, its curve when there is one, leading to the record of play, and the tournament's
-// Elo board (SKATGO-123). Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
+// white cards: the player's progress, its curve when there is one, leading to the record of play, and the week's XP
+// board (SKATGO-172, where SKATGO-123's Elo board stood). Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
 // hero buttons, no lead, no link row: the cards are the page. Rendered on the server; the curve in the browser.
 export function EntryPage() {
-  const { elo } = useLoaderData({ from: '/' })
+  const { xp } = useLoaderData({ from: '/' })
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
@@ -43,12 +43,12 @@ export function EntryPage() {
             title one line, "Bidding" (SKATGO-151). */}
         <Way to="/bidding-practice" section="bidding" tone="practice" Icon={Gavel} art={PRACTICE_ART} title={m.home_bidding()} />
         <ProgressCard />
-        <div data-testid="entry-card" data-section="elo" {...stylex.props(styles.long, styles.elo)}>
-          {elo ? (
-            <EloBoard board={elo} fill />
+        <div data-testid="entry-card" data-section="xp" {...stylex.props(styles.long, styles.board)}>
+          {xp ? (
+            <XpBoard board={xp} fill />
           ) : (
-            <div {...stylex.props(styles.white, styles.eloEmpty)}>
-              <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.elo_title()}</h2>
+            <div {...stylex.props(styles.white, styles.boardEmpty)}>
+              <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.xp_title()}</h2>
             </div>
           )}
         </div>
@@ -113,7 +113,7 @@ function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | 
  *  登录按钮」). */
 function ProgressCard() {
   const account = useAccount()
-  // As the Elo board's title beside it, with the record of play's icon from the account menu (SKATGO-128).
+  // As the XP board's title beside it, with the record of play's icon from the account menu (SKATGO-128).
   const head = (
     <span {...stylex.props(styles.whiteHead)}>
       <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.home_progress()}</h2>
@@ -321,9 +321,9 @@ const styles = stylex.create({
   // A long card: on PC in the third column, one row tall; under `bp.cards` the whole width.
   long: { gridColumn: { default: dims.homeLongColumn, [bp.cards]: dims.homeFullWidth }, minWidth: 0, minHeight: 0 },
   progress: { gridRow: { default: dims.homeRowFirst, [bp.cards]: dims.homeRowAuto } },
-  // On PC the Elo board is as tall as the cards beside it, its list scrolling inside (SKATGO-144, the human: 「高度不能超过它相邻
+  // On PC the XP board (the Elo board's place and size until SKATGO-172) is as tall as the cards beside it, its list scrolling inside (SKATGO-144, the human: 「高度不能超过它相邻
   // 卡片的高度，所以可以滚动，要一致」): no height of its own to size the row by, then the whole row's.
-  elo: {
+  board: {
     gridRow: { default: dims.homeRowSecond, [bp.cards]: dims.homeRowAuto },
     display: 'flex',
     flexDirection: 'column',
@@ -344,7 +344,7 @@ const styles = stylex.create({
   whiteHead: { display: 'flex', alignItems: 'center', gap: space.x8 },
   whiteIcon: { flexShrink: 0, color: color.info },
   whiteTitle: { margin: 0, color: color.navy },
-  eloEmpty: { flexGrow: 1 },
+  boardEmpty: { flexGrow: 1 },
   // A guest's progress card: the line and the sign-in in the middle of what the card has left.
   guest: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: space.x12, flexGrow: 1, textAlign: 'center' },
   guestText: { margin: 0, color: color.slate, textWrap: 'balance' },

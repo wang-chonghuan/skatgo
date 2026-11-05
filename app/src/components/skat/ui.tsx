@@ -147,7 +147,7 @@ export function toggleLook(pressed: boolean) {
 }
 
 /** A white card on the grey page (the design's option card), or a judged / tip panel. `fill` makes it as tall as
- *  where it sits, its content a column that may scroll inside (the hero's Elo board, SKATGO-123). */
+ *  where it sits, its content a column that may scroll inside (the front page's XP board, SKATGO-172). */
 /**
  * A dialog over the page (the settings' own since SKATGO-66, the kit's since SKATGO-140, the human: 「点开后那个toast不好关……
  * 改成行业最佳实践」): a title and a close button in its head; a tap on the dim around it or Escape closes it too; while it

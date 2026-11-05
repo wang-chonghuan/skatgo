@@ -17,7 +17,7 @@ export const BOARD_DAYS = 7
 export const DAILY_DEALS = 6
 
 /** The deal of the day (SKATGO-131, the human: 「每日一副就是一副，每日6副就是6副」): one deal, the same for everyone,
- *  a competition of its own beside the six-deal tournament — its own board, never in the Elo. Stored as a day's
+ *  a competition of its own beside the six-deal tournament — its own board. Stored as a day's
  *  tournament of size 1. */
 export const DEAL_OF_DAY = 1
 

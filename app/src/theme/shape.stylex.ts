@@ -193,7 +193,7 @@ export const dims = stylex.defineVars({
   homeWays: 'repeat(2, minmax(0, 1fr)) minmax(0, 2fr)',
   homeWaysNarrow: 'repeat(2, minmax(0, 1fr))',
   homeCard: '5 / 4',
-  /** Where a long card stands: the third column, the progress card in the first row and the Elo board in the second;
+  /** Where a long card stands: the third column, the progress card in the first row and the week's XP board in the second;
    *  under `bp.cards` the whole width, in the order written. */
   homeLongColumn: '3',
   homeFullWidth: '1 / -1',
@@ -205,9 +205,9 @@ export const dims = stylex.defineVars({
   homePicture: '16 / 9',
   /** The progress card's curve at its least, where the card is as tall as its content (under `bp.cards`). */
   homeCurve: '96px',
-  /** SKATGO-144: the front page's Elo list on a narrow screen — five rows and a half (rows ~29.5px), the cut row saying
-   *  it scrolls. */
-  eloListNarrow: '162px',
+  /** SKATGO-144: the front page's board list on a narrow screen — five rows and a half (rows ~29.5px), the cut row saying
+   *  it scrolls; the Elo's until SKATGO-172, the week's XP's since. */
+  xpListNarrow: '162px',
   /** The daily table of you against the AI (SKATGO-42, SKATGO-48): the deal's number (wide enough for
    *  "Total" / "Gesamt"), you and the AI in two equal columns, then the difference with the row's
    *  chevron. Every row is its own grid, so the columns line up only if none sizes to its content. */

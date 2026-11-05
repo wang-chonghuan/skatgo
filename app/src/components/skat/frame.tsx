@@ -182,7 +182,7 @@ export function SettingsButton() {
 }
 
 /** The account's nickname, first in the settings (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行
- *  榜就用这个昵称，改一次，整体都改」): the name every board, the Elo board and the forum show. Nothing for a guest. Under it,
+ *  榜就用这个昵称，改一次，整体都改」): the name every board, the XP board and the forum show. Nothing for a guest. Under it,
  *  the way to the account's record of play (SKATGO-128). */
 function Nickname({ onClose }: { onClose: () => void }) {
   const account = useAccount()

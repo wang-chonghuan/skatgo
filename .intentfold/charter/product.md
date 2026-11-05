@@ -32,7 +32,7 @@ its board at once, with nothing to fill in (SKATGO-90, the human: 「让用户�
 name: the one they set before, or a name of two friendly German words given at random — never the
 email address, never words of cards, a number only when every name without one is taken; the same
 device, or the same account, keeps its name. An account sets its nickname in the settings, to a name no other
-player holds, and it shows everywhere at once — on every day's board, earlier days' included, the Elo board and the
+player holds, and it shows everywhere at once — on every day's board, earlier days' included, the XP board and the
 forum (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行榜就用这个昵称，改一次，整体都改」); the board
 itself offers no renaming (「禁止改名了」). The system never changes a player's name (the human's red line:
 「禁止改变任何已经有的用户的名字……这是绝对红线」). A name cannot be hidden from the boards: the name is the
@@ -44,7 +44,7 @@ human: 「saldo都移除吧」).
 
 The deal of the day (SKATGO-131, the human: 「每日一副就是一副，每日6副就是6副。否则玩家有残缺感」): every day one deal,
 the same for everyone, played once and done — a competition of its own beside the six deals, with its own board ranked
-by its Seeger-Fabian score and the AI's row on it, never in the Elo. A guest may play it (the human: 游客能打); only the
+by its Seeger-Fabian score and the AI's row on it. A guest may play it (the human: 游客能打); only the
 six deals need an account. It is chosen, not just dealt (「每日一副要挑选那种好玩的，刺激的，最好不要让玩家一直被压着打的」): of
 fresh random deals, only one where the AI in the player's seat declared and won with 61–89 card points, won a Null, won
 Schneider or better, or defended and brought the declarer down — never the same kind two days running, the contract
@@ -58,18 +58,16 @@ no card, contract or name (「分享出去要有精美的卡片」, 「就显示
 a code so no one can make it say what was not played; whoever opens it plays the same deal: on its day as the day's
 deal, after it as practice on no board (「点击就能也打这一副牌」, 「过期的牌开放练习」).
 
-Beside the daily boards stands the tournament's Elo, one number per player (SKATGO-123, the human: 「既专业，
-又简单，别人容易理解，还能从给我的系统里产生出来的elo排名……别人看了，觉得不离谱，觉得能理解，还想通过我的系统来参与」),
-made as chess makes it so anyone can follow and check it: each ended tournament day is one game against
-everyone else who played it and against the AI — the six deals' and, for the days it was played, SKATGO-77's twelve's,
-each its own game (SKATGO-140, the human: 「要算，5天」) — won by the higher Seeger-Fabian total of the day, an equal one
-drawn; the expectation is FIDE's formula against each opponent, averaged; the number moves by K × (score −
-expectation), K 40 for a player's first 30 days and 20 after; everyone starts at 1500 and the AI stands fixed at
-1700, the scale's anchor (players' day totals beat its total about a quarter of the time). A number is
-provisional under five games; staying away costs nothing. A day counts once it is over, its field complete. One
-person under several ids — guest days on other devices, a guest who signed up later — counts as one, as the
-human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」). The front page shows the ten highest with the AI's
-number among them, and how it is counted.
+Beside the daily boards stands the week's experience points, XP (SKATGO-172, replacing SKATGO-123's Elo; the human:
+「看和ai的得分差距，比ai高了x分，一样了y分，低了z分，都加分，但是根据差值换算，作为经验值，可以每周重置」, 「那就不要平均值」, 「elo的卡片和
+算法都删除」): every deal a signed-in player plays against the AI — free play, the deal of the day, the tournament's deals
+— earns XP by its Seeger-Fabian score against the AI's in the player's seat on the same cards: 50 or more below 4, 1 to
+49 below 6, the same 10, 1 to 49 above 14, 50 or more above 20 (a deal without the AI's result counts as the same); a
+replayed deal earns none. A week, Monday to Sunday of the tournament's days, sums its deals, and every Monday starts at
+0; no average. The front page shows every account with XP this week, the most first — rank, name, 🔥 days in a row with
+at least one deal, the week's XP — the player's own row marked, and how XP is earned. After each deal the player sees
+its XP and why, and once a toast with the calculation; a guest is told that signed-in players earn XP. One person under
+several ids counts as one, as the human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」).
 
 After each deal the player sees the deal's result and how the computer, named "AI", played the same deal from their
 seat (SKATGO-42) — the most important first, each fact once (SKATGO-166, the human: 「以常玩的用户的视角，重要的在前面。信息不重复。
@@ -141,7 +139,7 @@ deals, also under a finished tournament, as the reason to come back (「我主�
 analysis on the same page (「本周ai分析加上到档案页，每周一个」): only what mattered that week, as many points as there were,
 and a conclusion (「不一定是四条吧，为啥这么死板」). While players are few it is written by hand from the week's deals, for whom
 the human names (「挑重点，目前用户少，可以手动做……就做我和mark的」), in English and German; a week without one shows none. It is the player's own: no one else sees it, and a guest is asked to sign in.
-The ids one person plays under count as one, as on the Elo board. Free play stays free and needs no account; only
+The ids one person plays under count as one, as on the XP board. Free play stays free and needs no account; only
 an account's deals are recorded. A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
 
 Private tables at `/with-friends` (SKATGO-61) are rooms since SKATGO-163 (the human: 「一个人开一个房间，可以打2个ai。另一个人

@@ -1,0 +1,150 @@
+import * as stylex from '@stylexjs/stylex'
+import { CircleHelp } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+
+import { useAccount } from '~/lib/use-account'
+import { XP, XP_FAR, type XpTier, xpOf } from '~/lib/skat/xp'
+import { m } from '~/paraglide/messages'
+import { color } from '../../theme/color.stylex'
+import { icon } from '../../theme/constants'
+import { elev } from '../../theme/elevation.stylex'
+import { border, layer, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
+import { typography } from '../../theme/type'
+import { Modal } from './ui'
+
+/** How long the toast with a deal's XP stays, unless tapped away first. */
+const TOAST_MS = 5000
+
+const signed = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0')
+
+/** The deal's difference to the AI in words: above or below by how much, or the same. */
+const versus = (diff: number | null) =>
+  diff === null || diff === 0 ? m.xp_vs_same() : diff > 0 ? m.xp_vs_above({ d: diff }) : m.xp_vs_below({ d: -diff })
+
+/**
+ * The XP a finished deal earned (SKATGO-172, the human: 「打完一副牌，就要跳出来，得了多少xp，或者在结算页面显示，弄个toast来显示计算
+ * 方法」): in the result, under its title, "+14 XP" and why — above or below the AI by how much — with the tiers behind a
+ * circled question mark; and once, over the page, a toast with the calculation, the player's score and the AI's, which
+ * goes by itself or with a tap. A guest is told that signed-in players earn XP. `mine` and `ai` are the deal's
+ * Seeger-Fabian scores in the player's seat, the AI's null when it has none.
+ */
+export function XpEarned({ mine, ai }: { mine: number; ai: number | null }) {
+  const account = useAccount()
+  const [toast, setToast] = useState(true)
+  const [how, setHow] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setToast(false), TOAST_MS)
+    return () => clearTimeout(t)
+  }, [])
+  if (account === undefined) return null
+  const diff = ai === null ? null : mine - ai
+  const xp = xpOf(diff)
+  const why = account ? versus(diff) : m.xp_guest()
+  const calc = ai === null ? versus(null) : `${m.xp_calc({ mine: signed(mine), ai: signed(ai) })}: ${versus(diff)}`
+  return (
+    <>
+      <div data-testid="xp-earned" data-xp={xp} data-guest={account ? undefined : 'true'} {...stylex.props(styles.line)}>
+        <span {...stylex.props(typography.appBtnStrong, account ? styles.plus : styles.plusGuest)}>{m.xp_earned({ n: xp })}</span>
+        <span {...stylex.props(typography.appText, styles.why)}>{why}</span>
+        <button type="button" data-testid="xp-earned-how" aria-label={m.xp_how()} title={m.xp_how()} onClick={() => setHow(true)} {...stylex.props(styles.help)}>
+          <CircleHelp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+        </button>
+      </div>
+      {how ? <XpHow onClose={() => setHow(false)} testId="xp-earned-how-text" /> : null}
+      {toast
+        ? createPortal(
+            <button type="button" role="status" data-testid="xp-toast" onClick={() => setToast(false)} {...stylex.props(styles.toast)}>
+              <span {...stylex.props(typography.dialogTitle, account ? styles.plus : styles.plusGuest)}>{m.xp_earned({ n: xp })}</span>
+              <span {...stylex.props(typography.appText, styles.why)}>{account ? calc : m.xp_guest()}</span>
+            </button>,
+            document.body,
+          )
+        : null}
+    </>
+  )
+}
+
+const TIERS: XpTier[] = ['farBelow', 'below', 'same', 'above', 'farAbove']
+const tierText = (t: XpTier) =>
+  ({
+    farBelow: m.xp_tier_farBelow({ n: XP_FAR }),
+    below: m.xp_tier_below({ n: XP_FAR - 1 }),
+    same: m.xp_tier_same(),
+    above: m.xp_tier_above({ n: XP_FAR - 1 }),
+    farAbove: m.xp_tier_farAbove({ n: XP_FAR }),
+  })[t]
+
+/** How XP is earned (SKATGO-172): what a deal is measured by, the five tiers and what each earns, and the week. A dialog
+ *  in the middle of the screen with its own close button, as the Elo's was (SKATGO-140). */
+export function XpHow({ onClose, testId }: { onClose: () => void; testId: string }) {
+  return (
+    <Modal title={m.xp_how()} onClose={onClose} testId={testId}>
+      <div {...stylex.props(styles.how)}>
+        <p {...stylex.props(typography.appText, styles.howText)}>{m.xp_how_lead()}</p>
+        <table {...stylex.props(styles.tiers)}>
+          <tbody>
+            {TIERS.map((t) => (
+              <tr key={t} data-tier={t}>
+                <td {...stylex.props(typography.appText, styles.tierCell)}>{tierText(t)}</td>
+                <td {...stylex.props(typography.appBtnStrong, styles.tierCell, styles.tierXp)}>{m.xp_points({ n: XP[t] })}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p {...stylex.props(typography.appText, styles.howText)}>{m.xp_how_week()}</p>
+      </div>
+    </Modal>
+  )
+}
+
+const styles = stylex.create({
+  line: { display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: space.x8, rowGap: space.x2 },
+  plus: { color: color.go, whiteSpace: 'nowrap' },
+  plusGuest: { color: color.slate, whiteSpace: 'nowrap' },
+  why: { color: color.navy },
+  help: {
+    display: 'inline-flex',
+    alignSelf: 'center',
+    margin: 0,
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: color.info,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+    borderRadius: radii.column,
+  },
+  // Over the page, at the top in the middle, above the dialog: a white card as wide as its words.
+  toast: {
+    position: 'fixed',
+    top: space.x16,
+    left: 0,
+    right: 0,
+    zIndex: layer.tip,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: space.x2,
+    width: 'max-content',
+    maxWidth: dims.tipWidth,
+    marginInline: 'auto',
+    paddingBlock: space.x12,
+    paddingInline: space.x20,
+    borderWidth: 0,
+    borderRadius: radii.panel,
+    backgroundColor: color.surface,
+    boxShadow: elev.option,
+    textAlign: 'center',
+    cursor: 'pointer',
+  },
+  how: { display: 'flex', flexDirection: 'column', gap: space.x12 },
+  howText: { margin: 0, color: color.text },
+  tiers: { width: '100%', borderCollapse: 'collapse' },
+  tierCell: { paddingBlock: space.x6, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline, color: color.navy },
+  tierXp: { textAlign: 'end', whiteSpace: 'nowrap' },
+})

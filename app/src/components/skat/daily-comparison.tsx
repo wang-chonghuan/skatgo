@@ -17,6 +17,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { PlayingCard } from './playing-card'
 import { Panel, Rich } from './ui'
+import { XpEarned } from './xp-earned'
 
 // The day against the AI (SKATGO-42, SKATGO-48): every deal the player has finished, beside the same deal
 // played by the computer in the player's seat against the same two computers — worked out when the day
@@ -148,7 +149,7 @@ const reviews = new Map<string, DealReview>()
  * 的一墩牌 / 逐墩分析。四个标题，四块」): the AI's deal from the player's seat, the trick that differed most, and every trick,
  * folded, without the skat.
  */
-export function VsAiReview({ ask, cacheKey, names, after = false }: { ask: AskReview; cacheKey?: string; names?: string[]; after?: boolean }) {
+export function VsAiReview({ ask, cacheKey, names, after = false, xp = false }: { ask: AskReview; cacheKey?: string; names?: string[]; after?: boolean; xp?: boolean }) {
   const [review, setReview] = useState<DealReview | null>(cacheKey ? (reviews.get(cacheKey) ?? null) : null)
   const [failed, setFailed] = useState(false)
   useEffect(() => {
@@ -171,6 +172,8 @@ export function VsAiReview({ ask, cacheKey, names, after = false }: { ask: AskRe
   if (after) {
     return (
       <div data-testid="vs-ai-review" data-state="ready" {...stylex.props(styles.parts)}>
+        {/* The deal's XP once the AI's game is in, where the deal counts (SKATGO-172). */}
+        {xp ? <XpEarned mine={review.mine.scores[PLAYER]} ai={review.ai ? review.ai.scores[PLAYER] : null} /> : null}
         <AiSeat review={review} names={names ?? youNames()} />
         {review.mine.declarer === null ? null : <WorstTrick review={review} names={names ?? youNames()} after />}
         {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} after />}

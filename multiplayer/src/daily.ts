@@ -11,13 +11,13 @@ import {
   type SeatView,
 } from '../../app/src/lib/skat/tournament'
 import { cleanNickname, pickName } from '../../app/src/lib/skat/nickname'
-import { ELO_KI, ELO_PROVISIONAL_DAYS, type EloBoard, type EloDay, eloRatings } from '../../app/src/lib/skat/elo'
 import { actionSchema, applySeatMove, computerMove, refuseUnlawful, Rejected, secretEquals, secureDeck, roomOnly } from './model'
 import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
 import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzero/bidding'
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, judgePlays, playsOf, raw, replayLog, reviewOf, skatzeroTurn } from './computers'
 import type { Store } from './store'
 import { playProfile } from './profile'
+import { weeklyXp } from './xp'
 import { type BidLimit, lineFor, momentOf, TALK_KINDS, type TalkKind, verdictOf } from './talk'
 import { type DealPick, kindOf, pickOfDay } from './pick'
 
@@ -25,7 +25,7 @@ import { type DealPick, kindOf, pickOfDay } from './pick'
 // played by one human in seat 0 against the two computers, and its board; and since SKATGO-131 the deal of the day,
 // one deal chosen for everyone, a competition of its own (size 1). Rows are keyed by their day and size: the
 // twelve-deal tournament of SKATGO-77 is gone (SKATGO-119), its stored rows kept; a request names its size, the six
-// deals when it names none, and the Elo reads the six deals and SKATGO-77's twelve (`ELO_SIZES`, SKATGO-140). The server owns the cards: a deal is its deck and
+// deals when it names none. The week's XP (SKATGO-172) reads every size's entries. The server owns the cards: a deal is its deck and
 // dealer plus the human's moves, replayed through the engine, and the score is what that replay
 // settles — never a number a browser sends. Only seat 0's view of the current deal leaves here.
 //
@@ -154,8 +154,8 @@ const talkInput = z.object({
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
 // A record of play is an account's (SKATGO-128).
 const profileInput = z.object({ player: z.string().regex(/^user:/).pipe(player) }).strict()
-// The Elo board is everyone's: it asks as nobody.
-const eloInput = z.object({ player: z.null() }).strict()
+// The week's XP board is everyone's; an account asking sees its own row marked (SKATGO-172).
+const xpInput = z.object({ player: z.string().regex(/^user:/).pipe(player).nullable() }).strict()
 
 /** Where the player stands. The computer's result of a deal goes with the player's own, only once the
  *  player has finished that deal (SKATGO-42); days dealt before it have none. Each finished deal's
@@ -484,7 +484,7 @@ export async function nameUnnamed(store: Store, now = Date.now()) {
 }
 
 /** A player sets their nickname in the settings (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行
- *  榜就用这个昵称，改一次，整体都改」): one name, shown on every board — today's and earlier days' — the Elo board and
+ *  榜就用这个昵称，改一次，整体都改」): one name, shown on every board — today's and earlier days' — the XP board and
  *  the forum, since they all read it from here. The system itself never changes a player's name (SKATGO-90's red
  *  line). A refused name is refused without saying why; a name another player holds is taken, whatever its case. */
 export async function dailyName(store: Store, who: string, raw: string, now = Date.now()) {
@@ -554,56 +554,6 @@ export async function dailyBoard(store: Store, who: string | null, which: 'today
   const played = ((dealt[0]?.deals ?? []) as DealSpec[]).map((spec) => spec.benchmark?.summary)
   const ai = played.length > 0 && played.every((b) => b) ? { total: totals(played as DealSummary[])[PLAYER] } : null
   return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, ai }
-}
-
-/** How many players the Elo board names (SKATGO-123). */
-const ELO_ROWS = 10
-/** The tournaments the Elo counts: the six deals, and the twelve of SKATGO-77 that once stood beside them, their kept rows
- *  (SKATGO-140, the human: 「要算，5天」) — each one game for each day it was played. */
-const ELO_SIZES = [DAILY_DEALS, 12]
-
-/**
- * The tournament's Elo (SKATGO-123): every ended day replayed from the first with the shared rule
- * (`lib/skat/elo.ts`) — each finished entry's total against that day's others and the AI's from the player's
- * seat, the same total the daily board shows; a day's six deals and its twelve (SKATGO-77's, SKATGO-140) are two games,
- * each among those who played it. Today counts once it has ended, its field complete. Ids that
- * `player_aliases` names as one person count as that person, under the name they hold now; of their two
- * entries on one day, the earlier finish. Only names leave here, as on the daily board.
- */
-export async function dailyElo(store: Store, now = Date.now()): Promise<EloBoard> {
-  const today = dayOf(now)
-  const { rows: entries } = await store.pool.query(
-    `SELECT e.day, e.size, coalesce(a.same_as, e.player) AS player, e.total FROM daily_entries e
-       LEFT JOIN player_aliases a ON a.player = e.player
-      WHERE e.size = ANY($1) AND e.finished_at IS NOT NULL AND e.day < $2
-      ORDER BY e.day, e.size, e.finished_at`, [ELO_SIZES, today])
-  const { rows: dealt } = await store.pool.query('SELECT day, size, deals FROM daily_deals WHERE size = ANY($1) AND day < $2', [ELO_SIZES, today])
-  const game = (day: string, size: number) => `${day}/${size}`
-  const ki = new Map<string, number | null>(dealt.map((d) => {
-    const played = (d.deals as DealSpec[]).map((spec) => spec.benchmark?.summary)
-    return [game(d.day, d.size), played.length > 0 && played.every((b) => b) ? totals(played as DealSummary[])[PLAYER] : null]
-  }))
-  const days: (EloDay & { day: string })[] = []
-  for (const e of entries) {
-    const g = game(e.day, e.size)
-    if (days.at(-1)?.day !== g) days.push({ day: g, ki: ki.get(g) ?? null, totals: [] })
-    const day = days.at(-1)!
-    if (!day.totals.some((t) => t.player === e.player)) day.totals.push({ player: e.player, total: e.total })
-  }
-  const standing = [...eloRatings(days)].map(([player, s]) => ({ player, elo: Math.round(s.elo), days: s.days }))
-    .sort((a, b) => b.elo - a.elo)
-  const top = standing.slice(0, ELO_ROWS)
-  const { rows: named } = await store.pool.query(
-    `SELECT p AS player, coalesce((SELECT nickname FROM daily_players WHERE player = p),
-       (SELECT nickname FROM daily_entries WHERE player = p AND nickname IS NOT NULL ORDER BY day DESC LIMIT 1)) AS nickname
-       FROM unnest($1::text[]) AS p`, [top.map((s) => s.player)])
-  const nameOfPlayer = new Map(named.map((r) => [r.player as string, (r.nickname as string | null) ?? '']))
-  const rows = top.map((s, i) => ({
-    rank: i === 0 || top[i - 1].elo !== s.elo ? i + 1 : 0,
-    nickname: nameOfPlayer.get(s.player) ?? '', elo: s.elo, provisional: s.days < ELO_PROVISIONAL_DAYS,
-  }))
-  for (let i = 1; i < rows.length; i++) if (rows[i].rank === 0) rows[i].rank = rows[i - 1].rank
-  return { rows, total: standing.length, ki: ELO_KI }
 }
 
 /**
@@ -720,10 +670,7 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
   }))
   // A signed-in player's record of play (SKATGO-128): every deal against the AI, the tournament's and free play's.
   router.post('/profile', run(async body => playProfile(store, profileInput.parse(body).player)))
-  router.post('/elo', run(async body => {
-    eloInput.parse(body)
-    return dailyElo(store)
-  }))
+  router.post('/xp', run(async body => weeklyXp(store, xpInput.parse(body).player, dayOf(Date.now()))))
   router.post('/talk', run(async body => {
     const i = talkInput.parse(body)
     return dailyTalk(store, policy()!, i.player, i.size, i.deal, i.said as TalkKind[], i.lang)

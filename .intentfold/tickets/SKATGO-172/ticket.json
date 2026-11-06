@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-172",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-172",
   "branch": "SKATGO-172-weekly-xp",

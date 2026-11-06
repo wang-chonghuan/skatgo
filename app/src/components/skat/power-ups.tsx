@@ -73,7 +73,7 @@ export function PowerUps({ game, nameOf, odds, putAway, onClose }: Props) {
   if (!tool) return null
   const title = tool === 'odds' ? m.powerup_odds_name() : tool === 'putaway' ? m.powerup_putaway_name() : m.powerup_counter_name()
   return (
-    <Modal title={title} onClose={onClose} testId="skat-power-ups">
+    <Modal title={title} onClose={onClose} testId="skat-power-ups" tight>
       <div data-testid={`power-up-${tool}`} {...stylex.props(styles.body)}>
         {tool === 'odds' ? <OddsTable game={game} odds={oddsNow} /> : tool === 'putaway' ? <PutAway put={putNow} /> : <Counter game={game} nameOf={nameOf} />}
       </div>

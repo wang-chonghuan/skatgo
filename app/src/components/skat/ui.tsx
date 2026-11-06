@@ -154,7 +154,7 @@ export function toggleLook(pressed: boolean) {
  * is open the page behind neither scrolls nor takes a touch (it lies on `body`, everything else there inert), and focus
  * moves into it and back to where it was.
  */
-export function Modal({ title, onClose, testId, closeTestId, children }: { title: string; onClose: () => void; testId: string; closeTestId?: string; children: ReactNode }) {
+export function Modal({ title, onClose, testId, closeTestId, tight, children }: { title: string; onClose: () => void; testId: string; closeTestId?: string; tight?: boolean; children: ReactNode }) {
   const box = useRef<HTMLDivElement | null>(null)
   const closeButton = useRef<HTMLButtonElement | null>(null)
   const close = useRef(onClose)
@@ -180,7 +180,7 @@ export function Modal({ title, onClose, testId, closeTestId, children }: { title
   }, [])
   return createPortal(
     <div ref={box} data-testid={testId} {...stylex.props(styles.scrim)} onClick={() => close.current()}>
-      <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} {...stylex.props(styles.modal)}>
+      <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} {...stylex.props(styles.modal, tight && styles.modalTight)}>
         <div {...stylex.props(styles.modalHead)}>
           <h2 {...stylex.props(typography.dialogTitle, styles.modalTitle)}>{title}</h2>
           <button ref={closeButton} type="button" aria-label={m.settings_close()} data-testid={closeTestId ?? `${testId}-close`} onClick={() => close.current()} {...stylex.props(styles.modalClose)}>
@@ -287,6 +287,9 @@ const styles = stylex.create({
     boxShadow: elev.panel,
     color: color.text,
   },
+  // `tight`: less room above the title and under it — the lightbulb's dialog at the table (SKATGO-177, the human: 「灯泡弹窗里的
+  // top padding或者top margin太大了」).
+  modalTight: { paddingTop: space.x12, gap: space.x8 },
   modalHead: { display: 'flex', flexShrink: 0, alignItems: 'center', justifyContent: 'space-between', gap: space.x12, paddingRight: space.x16 },
   modalBody: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', touchAction: 'pan-y', paddingRight: space.x16 },
   modalTitle: { margin: 0, color: color.navy },

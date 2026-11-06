@@ -1,59 +1,35 @@
 import * as stylex from '@stylexjs/stylex'
 import { CircleHelp } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useState } from 'react'
 
 import { useAccount } from '~/lib/use-account'
-import { XP, XP_FAR, XP_OWN_GAME, type XpTier, xpOf, xpTier } from '~/lib/skat/xp'
+import { XP, XP_FAR, XP_OWN_GAME, type XpTier, xpOf } from '~/lib/skat/xp'
 import { m } from '~/paraglide/messages'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
-import { elev } from '../../theme/elevation.stylex'
-import { border, layer, space } from '../../theme/scale.stylex'
-import { dims, radii } from '../../theme/shape.stylex'
+import { border, space } from '../../theme/scale.stylex'
+import { radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Modal } from './ui'
-
-/** How long the toast with a deal's XP stays, unless tapped away first. */
-const TOAST_MS = 5000
-
-/** A tier as the toast's rule says it, short: "1–49 below AI". */
-const ruleText = (t: XpTier) =>
-  ({
-    farBelow: m.xp_rule_farBelow({ n: XP_FAR }),
-    below: m.xp_rule_below({ n: XP_FAR - 1 }),
-    same: m.xp_rule_same(),
-    above: m.xp_rule_above({ n: XP_FAR - 1 }),
-    farAbove: m.xp_rule_farAbove({ n: XP_FAR }),
-  })[t]
 
 /** The deal's difference to the AI in words: above or below by how much, or the same. */
 const versus = (diff: number | null) =>
   diff === null || diff === 0 ? m.xp_vs_same() : diff > 0 ? m.xp_vs_above({ d: diff }) : m.xp_vs_below({ d: -diff })
 
 /**
- * The XP a finished deal earned (SKATGO-172, the human: 「打完一副牌，就要跳出来，得了多少xp，或者在结算页面显示，弄个toast来显示计算
- * 方法」): in the result, under its title, "+14 XP" and why — above or below the AI by how much — with the tiers behind a
- * circled question mark; and once, over the page above the dialog, a toast in one line with the rule that applied
- * ("+6 XP · 1–49 below AI = 6 XP", "+12 XP · same as AI 10 + own game 2"), which goes by itself or with a tap. A guest is
- * told that signed-in players earn XP. `mine` and `ai` are the deal's Seeger-Fabian scores in the player's seat, the AI's
- * null when it has none; `declared` when the player was the declarer, a game of their own that earns 2 more.
+ * The XP a finished deal earned (SKATGO-172), the result's first line (SKATGO-173, the human: 「经验值放在打牌结果页的第一行，
+ * 不要单独做一个弹窗」): "+12 XP" and why — above or below the AI by how much, and the own game's +2 — with the tiers
+ * behind a circled question mark; no toast. A guest is told that signed-in players earn XP. `mine` and `ai` are the
+ * deal's Seeger-Fabian scores in the player's seat, the AI's null when it has none; `declared` when the player was the
+ * declarer, a game of their own that earns 2 more.
  */
 export function XpEarned({ mine, ai, declared }: { mine: number; ai: number | null; declared: boolean }) {
   const account = useAccount()
-  const [toast, setToast] = useState(true)
   const [how, setHow] = useState(false)
-  useEffect(() => {
-    const t = setTimeout(() => setToast(false), TOAST_MS)
-    return () => clearTimeout(t)
-  }, [])
   if (account === undefined) return null
   const diff = ai === null ? null : mine - ai
   const xp = xpOf(diff, declared)
   const why = account ? (declared ? `${versus(diff)} · ${m.xp_own({ n: XP_OWN_GAME })}` : versus(diff)) : m.xp_guest()
-  // The toast tells the rule that applied, which the line in the result does not repeat (SKATGO-172).
-  const tier = xpTier(diff)
-  const rule = declared ? m.xp_rule_own({ tier: ruleText(tier), n: XP[tier], b: XP_OWN_GAME }) : m.xp_rule({ tier: ruleText(tier), n: xp })
   return (
     <>
       <div data-testid="xp-earned" data-xp={xp} data-guest={account ? undefined : 'true'} {...stylex.props(styles.line)}>
@@ -64,15 +40,6 @@ export function XpEarned({ mine, ai, declared }: { mine: number; ai: number | nu
         </button>
       </div>
       {how ? <XpHow onClose={() => setHow(false)} testId="xp-earned-how-text" /> : null}
-      {toast
-        ? createPortal(
-            <button type="button" role="status" data-testid="xp-toast" onClick={() => setToast(false)} {...stylex.props(styles.toast)}>
-              <span {...stylex.props(typography.appBtnStrong, account ? styles.plus : styles.plusGuest)}>{m.xp_earned({ n: xp })}</span>
-              <span {...stylex.props(typography.appText, styles.why)}>{rule}</span>
-            </button>,
-            document.body,
-          )
-        : null}
     </>
   )
 }
@@ -130,31 +97,6 @@ const styles = stylex.create({
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
     borderRadius: radii.column,
-  },
-  // Over the page, at the top in the middle, above the dialog and clear of the way out: a white pill as wide as its one
-  // line of words.
-  toast: {
-    position: 'fixed',
-    top: space.x8,
-    left: 0,
-    // Centred in the width left of the way out, which sits in the top right corner (`dims.launcher`).
-    right: dims.launcher,
-    zIndex: layer.tip,
-    display: 'flex',
-    alignItems: 'baseline',
-    gap: space.x8,
-    width: 'max-content',
-    maxWidth: dims.tipWidth,
-    marginInline: 'auto',
-    paddingBlock: space.x8,
-    // Narrow enough sideways that the longest rule ("50+ above AI 20 + own game 2") stays clear of the way out on a phone.
-    paddingInline: space.x12,
-    borderWidth: 0,
-    borderRadius: radii.pill,
-    backgroundColor: color.surface,
-    boxShadow: elev.option,
-    textAlign: 'center',
-    cursor: 'pointer',
   },
   how: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   howText: { margin: 0, color: color.text },

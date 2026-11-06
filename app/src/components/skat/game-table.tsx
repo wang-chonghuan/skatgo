@@ -33,7 +33,7 @@ import {
   runningTricks,
   trickWinner,
 } from '~/lib/skat/game'
-import { type DealSummary, seegerFabian, summarize } from '~/lib/skat/tournament'
+import { DAILY_DEALS, DEAL_OF_DAY, type DailySize, type DealSummary, seegerFabian, summarize } from '~/lib/skat/tournament'
 import { BID_LADDER, type Declaration, NULL_VALUES, baseValue, expectedValue, highestValue, matadors, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { getLocale, localizeHref } from '~/paraglide/runtime'
@@ -50,7 +50,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import { type AskReview, ResultPart, ScoreTable, VsAiReview, dailyAsk, gameName } from './daily-comparison'
+import { type AskReview, DealXp, ResultPart, ScoreTable, VsAiReview, dailyAsk, gameName } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
@@ -473,7 +473,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   ) : null
   // In the tournament, after each deal (SKATGO-145): the deal's result, then its bidding and its trick most worth
   // improving against the AI's, from the review the server works out.
-  const dailyAfter: DailyAfter | null = tournament?.deals ? { ask: dailyAsk(tournament.deal), cacheKey: `${tournament.day}|${tournament.deal}` } : null
+  // The deal of the day is a tournament of its own size: its review is asked as that (SKATGO-173 — asked as the six deals'
+  // first, it never came, and with it no XP).
+  const size: DailySize = tournament?.of === DEAL_OF_DAY ? DEAL_OF_DAY : DAILY_DEALS
+  const dailyAfter: DailyAfter | null = tournament?.deals ? { ask: dailyAsk(tournament.deal, size), cacheKey: `${tournament.day}|${size}|${tournament.deal}` } : null
 
   const replayNotice = !!server?.replaying && game.phase !== 'done' && game.phase !== 'passedIn'
 
@@ -1456,6 +1459,8 @@ function DealResult({ game, totals, vsAi, next, replaying = false }: { game: Gam
   return (
     <Dialog foot={next}>
       <div ref={panel} data-testid="skat-result" data-human-won={humanWon === null ? undefined : String(humanWon)} {...stylex.props(styles.result)}>
+        {/* The deal's XP, the result's first line, where the deal counts: not a deal played again (SKATGO-170/172/173). */}
+        {vsAi && !replaying ? <DealXp ask={vsAi.ask} cacheKey={vsAi.cacheKey} /> : null}
         <ResultPart first testId="result-part-deal" title={replaying ? m.free_replay_result() : m.result_section_deal()}>
           <Panel tone={humanWon === null ? 'card' : humanWon ? 'good' : 'bad'}>
             <div data-testid="skat-result-card" data-won={humanWon === null ? undefined : String(humanWon)} {...stylex.props(styles.resultBody)}>
@@ -1476,8 +1481,7 @@ function DealResult({ game, totals, vsAi, next, replaying = false }: { game: Gam
             </div>
           ) : null}
         </ResultPart>
-        {/* A deal played again is in no figure (SKATGO-170), so it earns no XP (SKATGO-172). */}
-        {vsAi ? <VsAiReview after xp={!replaying} ask={vsAi.ask} cacheKey={vsAi.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
+        {vsAi ? <VsAiReview after ask={vsAi.ask} cacheKey={vsAi.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
       </div>
     </Dialog>
   )

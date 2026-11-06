@@ -137,6 +137,30 @@ export const dailyAsk = (deal: number, size?: DailySize): AskReview => () => dai
 
 /** What this page already fetched, so reopening a deal does not ask again. */
 const reviews = new Map<string, DealReview>()
+/** Reviews on their way, by cache key or by the asking function, so two parts of one result ask once (SKATGO-173). */
+const asking = new Map<unknown, Promise<DealReview | { error: string }>>()
+
+/** A deal's review: null while it comes, 'failed' when it cannot. Asked once per key however many parts show it. */
+export function useReview(ask: AskReview, cacheKey?: string): DealReview | null | 'failed' {
+  const [review, setReview] = useState<DealReview | null | 'failed'>(cacheKey ? (reviews.get(cacheKey) ?? null) : null)
+  useEffect(() => {
+    if (review) return
+    const key = cacheKey ?? ask
+    let p = asking.get(key)
+    if (!p) {
+      p = ask()
+      asking.set(key, p)
+    }
+    void p.then((r) => {
+      if ('error' in r) return setReview('failed')
+      if (cacheKey) reviews.set(cacheKey, r)
+      setReview(r)
+    })
+    // Once, when the review is shown.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return review
+}
 
 /**
  * A finished deal against the AI (SKATGO-145, the human: 「先显示叫牌和ai的不同，再显示打的和ai最不同（打的最不好的一个
@@ -149,19 +173,10 @@ const reviews = new Map<string, DealReview>()
  * 的一墩牌 / 逐墩分析。四个标题，四块」): the AI's deal from the player's seat, the trick that differed most, and every trick,
  * folded, without the skat.
  */
-export function VsAiReview({ ask, cacheKey, names, after = false, xp = false }: { ask: AskReview; cacheKey?: string; names?: string[]; after?: boolean; xp?: boolean }) {
-  const [review, setReview] = useState<DealReview | null>(cacheKey ? (reviews.get(cacheKey) ?? null) : null)
-  const [failed, setFailed] = useState(false)
-  useEffect(() => {
-    if (review) return
-    void ask().then((r) => {
-      if ('error' in r) return setFailed(true)
-      if (cacheKey) reviews.set(cacheKey, r)
-      setReview(r)
-    })
-    // Once, when the review is shown.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+export function VsAiReview({ ask, cacheKey, names, after = false }: { ask: AskReview; cacheKey?: string; names?: string[]; after?: boolean }) {
+  const got = useReview(ask, cacheKey)
+  const failed = got === 'failed'
+  const review = got === 'failed' ? null : got
   if (!review) {
     return (
       <p role={failed ? 'alert' : undefined} data-testid="vs-ai-review" data-state={failed ? 'failed' : 'loading'} {...stylex.props(typography.appText, styles.muted, styles.sheetNote)}>
@@ -172,8 +187,6 @@ export function VsAiReview({ ask, cacheKey, names, after = false, xp = false }: 
   if (after) {
     return (
       <div data-testid="vs-ai-review" data-state="ready" {...stylex.props(styles.parts)}>
-        {/* The deal's XP once the AI's game is in, where the deal counts (SKATGO-172). */}
-        {xp ? <XpEarned mine={review.mine.scores[PLAYER]} ai={review.ai ? review.ai.scores[PLAYER] : null} declared={review.mine.declarer === PLAYER} /> : null}
         <AiSeat review={review} names={names ?? youNames()} />
         {review.mine.declarer === null ? null : <WorstTrick review={review} names={names ?? youNames()} after />}
         {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} after />}
@@ -187,6 +200,15 @@ export function VsAiReview({ ask, cacheKey, names, after = false, xp = false }: 
       {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} />}
     </div>
   )
+}
+
+/** The deal's XP as the result's first line (SKATGO-173, the human: 「经验值放在打牌结果页的第一行，不要单独做一个弹窗」), from
+ *  the same review the result's other parts read: "XP …" while it comes, nothing when it cannot. */
+export function DealXp({ ask, cacheKey }: { ask: AskReview; cacheKey?: string }) {
+  const review = useReview(ask, cacheKey)
+  if (review === 'failed') return null
+  if (!review) return <p data-testid="xp-earned" data-state="loading" {...stylex.props(typography.appBtnStrong, styles.muted, styles.sheetNote)}>{m.xp_loading()}</p>
+  return <XpEarned mine={review.mine.scores[PLAYER]} ai={review.ai ? review.ai.scores[PLAYER] : null} declared={review.mine.declarer === PLAYER} />
 }
 
 /**

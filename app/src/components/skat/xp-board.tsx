@@ -18,8 +18,8 @@ import { XpHow } from './xp-earned'
 /**
  * The week's XP board in the front page's long card (SKATGO-172, the human: 「这个卡片大小规格行为，还和当前的elo卡片一样。elo的卡片和
  * 算法都删除」): every account with XP this week, the most first — rank, name, 🔥 days in a row, the week's XP — the
- * player's own row marked; the title says both, "This week's XP and streaks" (the human: 「Every deal earns XP · starts again
- * in 3 days 这句去掉。标题改为本周经验和连胜天数」). The tiers open from a circled
+ * player's own row marked; the title "Weekly XP" / "Wochen-XP", short, the flames saying the streak (the human: 「用weekly XP
+ * 是否更好，哪个更短，德语呢」, then 「好」; it said "This week's XP and streaks" before, 「标题改为本周经验和连胜天数」). The tiers open from a circled
  * question mark beside the title, in a `Modal`. On PC its frame is the Elo card's (SKATGO-123/140/144): `fill`, as tall as
  * where it sits, the list scrolling inside. Wherever the page is one column (`bp.cards`) the list shows the first five and
  * scrolls, nothing folded and nothing running sideways (the human: 「经验表，pc上不变，手机上显示前5名，然后可以滚动，不要横向滚动了」).

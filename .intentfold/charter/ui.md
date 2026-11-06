@@ -526,7 +526,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `meta`, one line), Value, Hand, "Win at 22", the number the player would say or hold now — then one `meta` line on what the
   numbers are. Game & put away (the skat picked up, until the game is chosen): "The AI plays **Diamonds ♦** and puts these two
   away:" over the two cards (`sm`). Card counter (play): "Your side **47** · 14 more to 61", then a table — Trumps and each side
-  suit, the cards still out (`appText`, navy; no count) and who is void: a name, "both", or "—". The dialog keeps the result
+  suit, the cards still out (`appText`, navy; no count) and who is void: a name, "both" — also whenever nothing of it is out —
+  or "—". The dialog keeps the result
   dialog's four levels (SKATGO-146).
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),

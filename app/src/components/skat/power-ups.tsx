@@ -204,7 +204,9 @@ function Counter({ game, nameOf }: { game: Game; nameOf: (seat: Seat) => string 
         <tbody>
           {groups.map((g) => {
             const cards = out.filter((c) => effectiveSuit(c, contract) === g)
-            const blank = [1, 2].filter((s) => voids.get(s as Seat)!.has(g)).map((s) => nameOf(s as Seat))
+            // Nothing of it still out: neither can hold any, whether or not they have shown it yet (the human: 「红心明明两个对手都
+            // 没了，为啥只显示lina」).
+            const blank = cards.length === 0 ? [1, 2].map((s) => nameOf(s as Seat)) : [1, 2].filter((s) => voids.get(s as Seat)!.has(g)).map((s) => nameOf(s as Seat))
             return (
               <tr key={g} data-testid="power-up-counter-row" data-group={g}>
                 <td {...stylex.props(typography.appText, styles.td, styles.strong, styles.group)}>
@@ -213,7 +215,7 @@ function Counter({ game, nameOf }: { game: Game; nameOf: (seat: Seat) => string 
                 <td data-testid="power-up-counter-out" {...stylex.props(typography.appText, styles.td, styles.strong)}>
                   {cards.length > 0 ? <Rich text={cards.map(cardLabel).join(' ')} /> : '—'}
                 </td>
-                {/* Both may have shown it missing: then every card of it still out lies in the skat. */}
+                {/* Both are void when nothing of it is out, or when both have shown it missing — then what is out lies in the skat. */}
                 <td data-testid="power-up-counter-void" {...stylex.props(typography.appText, styles.td, styles.soft, styles.group)}>
                   {blank.length === 2 ? m.powerup_counter_void_both() : blank.length === 1 ? blank[0] : '—'}
                 </td>

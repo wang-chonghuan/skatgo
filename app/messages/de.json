@@ -268,8 +268,6 @@
   "powerup_counter_out": "Noch draußen",
   "powerup_counter_void": "Blank",
   "powerup_counter_void_both": "beide",
-  "powerup_counter_points": "Deine Seite **{points}** · noch {left} bis {goal}",
-  "powerup_counter_reached": "Deine Seite **{points}** · {goal} erreicht",
   "powerup_failed": "Gerade nicht verfügbar.",
   "bid_your_turn": "Du reizt {name} – sag den nächsten Wert oder spring höher.",
   "bid_button": "{value} sagen",

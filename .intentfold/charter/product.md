@@ -113,7 +113,7 @@ see: **win chances** while bidding — what the ten cards make each game worth, 
 AI's chance to make it at the number on the table after picking up the skat, over every skat it could find (Null's fixed
 values, no chance); **game and put away** once the player has picked up the skat — the game the AI would play and the two
 cards it would put away; **card counter** while the cards are played — per trumps and side suit which cards are still out (no
-count, 「你就显示具体剩了哪些牌就行了」), who has shown a suit missing, one or both, and the side's card points against what it needs. Never in the tournament, at a private table or in an exercise;
+count, 「你就显示具体剩了哪些牌就行了」) and who has shown a suit missing, one or both; no points (「your side 几分这个不用显示」). Never in the tournament, at a private table or in an exercise;
 lesson 11's game keeps its hints. SKATGO-157's bid calculator is gone (SKATGO-176). Acorns to pay for power-ups come later. There is no
 AI assistant on the site any more (SKATGO-130: 「先开单子砍ai助手」, 「彻底删」). The table shows which deal of
 six it is and the player's Seeger-Fabian total so far. A finished deal shows the tournament's result,

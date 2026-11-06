@@ -268,8 +268,6 @@
   "powerup_counter_out": "Still out",
   "powerup_counter_void": "Void",
   "powerup_counter_void_both": "both",
-  "powerup_counter_points": "Your side **{points}** · {left} more to {goal}",
-  "powerup_counter_reached": "Your side **{points}** · {goal} reached",
   "powerup_failed": "Not available right now.",
   "bid_your_turn": "Your turn to bid to {name} – the next number, or jump higher.",
   "bid_button": "Bid {value}",

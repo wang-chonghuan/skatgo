@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 
 import type { FreeError, FreeOdds, FreePutAway } from '~/lib/free-api'
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, fullDeck, sameCard, sortHand } from '~/lib/skat/cards'
-import { type Game, type Seat, runningPoints } from '~/lib/skat/game'
+import type { Game, Seat } from '~/lib/skat/game'
 import { cardLabel, contractName, matadorLabel } from '~/lib/skat/i18n'
 import { NULL_VALUES, baseValue, matadors, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
@@ -168,7 +168,7 @@ function seenBy(g: Game): Card[] {
   return [...g.hands[ME], ...played, ...skat]
 }
 
-/** The card counter: the side's points against what it needs, and per trumps and side suit which cards are still out —
+/** The card counter: per trumps and side suit which cards are still out — no points (the human: 「your side 几分这个不用显示」) —
  *  strongest first, no count (the human: 「还剩几张这一列不用显示，你就显示具体剩了哪些牌就行了」) — and who has shown they have
  *  none (they did not follow it): Lina, Noah, or both (「空的可能是两个人都空了」). */
 function Counter({ game, nameOf }: { game: Game; nameOf: (seat: Seat) => string }) {
@@ -182,17 +182,8 @@ function Counter({ game, nameOf }: { game: Game; nameOf: (seat: Seat) => string 
     const led = effectiveSuit(trick[0].card, contract)
     for (const p of trick.slice(1)) if (p.seat !== ME && effectiveSuit(p.card, contract) !== led) voids.get(p.seat)!.add(led)
   }
-  const mine = game.declarer === ME
-  const points = runningPoints(game)
-  const side = mine ? points.declarer : points.defenders
-  const goal = mine ? 61 : 60
   return (
     <>
-      {contract.kind !== 'null' ? (
-        <p data-testid="power-up-counter-points" {...stylex.props(typography.appText, styles.strong, styles.points)}>
-          <Rich text={side >= goal ? m.powerup_counter_reached({ points: side, goal }) : m.powerup_counter_points({ points: side, left: goal - side, goal })} />
-        </p>
-      ) : null}
       <table {...stylex.props(styles.table)}>
         <thead>
           <tr>
@@ -238,7 +229,6 @@ const styles = stylex.create({
   soft: { color: color.slate },
   sub: { display: 'block', whiteSpace: 'nowrap', color: color.slate },
   group: { whiteSpace: 'nowrap' },
-  points: { margin: 0 },
   note: { margin: 0, color: color.slate },
   cards: { display: 'flex', gap: space.x8 },
 })

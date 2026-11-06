@@ -53,7 +53,7 @@ import { Fan, flightId } from './card-row'
 import type { FreeError, FreeOdds, FreePutAway } from '~/lib/free-api'
 import { type AskReview, DealXp, ResultPart, ScoreTable, VsAiReview, dailyAsk, gameName } from './daily-comparison'
 import { SettingsDialog } from './frame'
-import { PowerUps } from './power-ups'
+import { PowerUps, powerUpOf } from './power-ups'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
 import { Btn, Panel, Pill, Rich, linkLook } from './ui'
@@ -649,9 +649,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         ) : null}
 
         {/* Free play's power-ups (SKATGO-177): the lightbulb on the felt's left edge (SKATGO-176, the human: 「应该改成一个灯泡图标
-            的，然后颜色最好也不要是白色」) through the whole deal, over the drawer a phone opens for the moves; it opens the dialog
-            of the three power-ups. */}
-        {server?.round && server.powerUps && game.phase !== 'done' && game.phase !== 'passedIn' ? (
+            的，然后颜色最好也不要是白色」) whenever a power-up serves the moment, over the drawer a phone opens for the moves; it
+            opens that one. */}
+        {server?.round && server.powerUps && powerUpOf(game) ? (
           <button
             type="button"
             aria-label={m.powerups_title()}
@@ -792,7 +792,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
       {exercise?.after ? <Dialog>{exercise.after}</Dialog> : null}
 
       {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
-      {powerUps && server?.powerUps && game.phase !== 'done' && game.phase !== 'passedIn' ? (
+      {powerUps && server?.powerUps && powerUpOf(game) ? (
         <PowerUps game={game} nameOf={nameOf} odds={server.powerUps.odds} putAway={server.powerUps.putAway} onClose={() => setPowerUps(false)} />
       ) : null}
 

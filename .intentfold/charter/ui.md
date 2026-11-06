@@ -521,15 +521,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   — the office lady in Lina's seat, the accountant in Noah's (SKATGO-168, 「默认是office lady和会计师，用户自己选择ai头像后，要能
   保存下来，以后再打都还是这个头像」); a seat that still held SKATGO-167's stored default counts as never chosen.
 - **Free play's power-ups** (SKATGO-177, `power-ups.tsx`): the hint's tab on the felt's left edge — the lightbulb in
-  `color.hintTab`, over the drawer — through the whole deal opens a `Modal`, "Power-ups" / "Extras", with three white cards in
-  the order a deal goes (`radii.panel`, a `hairline` border; the one that serves now in a `go` border, `border.tile`): an
-  icon square (`dims.powerUpIcon`) in a section tile's colour — win chances `tileNavy` (lucide `Percent`), put away
-  `tileOrange` (`ArrowDownToLine`), card counter `tileGreen` (`ListChecks`) — beside its name (`appBtnStrong`, navy). The one
-  that serves now adds its line (`appText`, slate), a `go` "Now" `Pill` and its content; the others say only when they serve
-  (`smallBold`, slate). Win chances: a table, Game (its matadors under the name, `meta`, one line), Value, Hand, "Win at 22" — the
-  number the player would say or hold now — then one `meta` line on what the numbers are. Put away: the two cards (`sm`) and
-  "The AI puts these away and plays **Diamonds ♦**." Card counter: "Your side **47** · 14 more to 61", then a table — Trumps and
-  each side suit, the cards still out (their count bold, then the cards), and who is void. The dialog keeps the result
+  `color.hintTab`, over the drawer — stands whenever a power-up serves the moment and opens that one in a `Modal` under its
+  name, nothing to choose (the human: 「不要让用户去选择了」). Win chances (bidding): a table — Game (its matadors under the name,
+  `meta`, one line), Value, Hand, "Win at 22", the number the player would say or hold now — then one `meta` line on what the
+  numbers are. Game & put away (the skat picked up, until the game is chosen): "The AI plays **Diamonds ♦** and puts these two
+  away:" over the two cards (`sm`). Card counter (play): "Your side **47** · 14 more to 61", then a table — Trumps and each side
+  suit, the cards still out (`appText`, navy; no count) and who is void: a name, "both", or "—". The dialog keeps the result
   dialog's four levels (SKATGO-146).
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),

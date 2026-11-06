@@ -240,7 +240,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
   }))
   // Free play's power-ups (SKATGO-177, the human: 「先把记牌器，叫牌胜率，该扣那两张，做成三个道具」). Win chances: the deal's
   // prepared chances for the player's seat — its own ten cards only, nothing of anyone else's. Put away: SkatZero's two
-  // cards and game for the player's twelve, only once the player has picked up the skat and before it is put away.
+  // cards and game for the player's twelve, once the player has picked up the skat — before putting away or while choosing.
   router.post('/odds', run(async (body) => {
     const i = tokenInput.parse(body)
     const { p, t } = opened(i.token)
@@ -253,7 +253,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     const { p, t } = opened(i.token)
     const d = p.deals[t.id]
     const g = replayLog(d.dealer, deckOf(d.deck), t.log)
-    if (g.phase !== 'skat' || g.declarer !== PLAYER || !g.pickedUp) throw new Rejected('not_at_put_away')
+    if ((g.phase !== 'skat' && g.phase !== 'declare') || g.declarer !== PLAYER || !g.pickedUp) throw new Rejected('not_at_put_away')
     return putAwayOf(policy()!, g, PLAYER)
   }))
   // Lina's and Noah's table talk (SKATGO-142): after a reply, the browser asks whether there is a line to say now, with

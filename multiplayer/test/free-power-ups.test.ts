@@ -79,6 +79,11 @@ test('win chances for the deal, and the put-away only after picking up', { timeo
   assert.equal(discard.length, 2)
   for (const c of discard) assert.ok(twelve.some((h) => sameCard(h, c as never)), 'from the twelve cards')
   assert.ok((put.data.declaration as { contract?: unknown }).contract)
+  // While choosing the game after putting away, the same twelve cards give the same answer.
+  move(0, { type: 'discard', cards: discard as never })
+  const after = await post('putaway', { token: token(id, log) })
+  assert.equal(after.status, 200)
+  assert.deepEqual(after.data, put.data)
 })
 
 test('the win chances belong to the pool; an altered file is refused', async () => {

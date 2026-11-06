@@ -106,13 +106,14 @@ deals」); unranked, free and without an account (SKATGO-40, SKATGO-50). After a
 (SKATGO-170, the human: 「重打这幅牌……不计入到任何记录和数据里，只是为了让用户反思一下，自己试试。仅限于free play」): the first time counts as ever, once; the
 replay counts in nothing — not the round, the record of play or any event — the server refusing to record it, whatever the
 page says. Its table gives no hint (SKATGO-130; SKATGO-177, the human: 「不要出牌提示，出牌提示让人不思考，没用」); its help is
-three power-ups behind a lightbulb on the felt's left edge, free and as often as wanted for now (SKATGO-177, the human: 「先把记牌器，
-叫牌胜率，该扣那两张，做成三个道具，放在灯泡打开的页面里，设计要美观。先不考虑橡果，这三个道具自由免费在free play里用」), each seeing only what the
-player's seat may see: **win chances** while bidding — what the ten cards make each game worth, without and with Hand, and the
+three power-ups, free and as often as wanted for now (SKATGO-177, the human: 「先把记牌器，叫牌胜率，该扣那两张，做成三个道具，放在灯泡
+打开的页面里，设计要美观。先不考虑橡果，这三个道具自由免费在free play里用」): a lightbulb on the felt's left edge opens the one that serves the
+moment, nothing to choose (「点这个灯泡之后就显示这个阶段适用的工具，不要让用户去选择了」), each seeing only what the player's seat may
+see: **win chances** while bidding — what the ten cards make each game worth, without and with Hand, and the
 AI's chance to make it at the number on the table after picking up the skat, over every skat it could find (Null's fixed
-values, no chance); **put away** once the player has picked up the skat — the two cards the AI would put away and the game it
-would play; **card counter** while the cards are played — per trumps and side suit the cards still out, who has shown a suit
-missing, and the side's card points against what it needs. Never in the tournament, at a private table or in an exercise;
+values, no chance); **game and put away** once the player has picked up the skat — the game the AI would play and the two
+cards it would put away; **card counter** while the cards are played — per trumps and side suit which cards are still out (no
+count, 「你就显示具体剩了哪些牌就行了」), who has shown a suit missing, one or both, and the side's card points against what it needs. Never in the tournament, at a private table or in an exercise;
 lesson 11's game keeps its hints. SKATGO-157's bid calculator is gone (SKATGO-176). Acorns to pay for power-ups come later. There is no
 AI assistant on the site any more (SKATGO-130: 「先开单子砍ai助手」, 「彻底删」). The table shows which deal of
 six it is and the player's Seeger-Fabian total so far. A finished deal shows the tournament's result,

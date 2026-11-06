@@ -10,6 +10,6 @@ settle (「最好不用刷新」).
    multiplayer service for a board read by a handful of players. 15 s keeps the AC's 20 s with room and costs one
    small request per open page per 15 s.
 2. **Which sentence?** Only `xp_how_week`, EN and DE (the human pointed at it; copy edits only where pointed).
-   EN: "🔥 days in a row with at least one deal; the streak carries on from week to week. Signed-in players only; XP starts at 0 every Monday."
-   DE: "🔥 Tage in Folge mit mindestens einem Spiel; die Serie läuft von Woche zu Woche weiter. Nur angemeldete Spieler; die XP beginnen jeden Montag bei 0."
+   EN: "🔥 days in a row with at least one deal. Signed-in players only; XP starts at 0 every Monday, the streak carries on."
+   DE: "🔥 Tage in Folge mit mindestens einem Spiel. Nur angemeldete Spieler; die XP beginnen jeden Montag bei 0, die Serie läuft weiter." (Shortened after the look through the human's eyes: the contrast sits beside the Monday reset.)
 3. **The server render's minute cache stays.** The browser asks again on mount, so the cached first paint is replaced at once.

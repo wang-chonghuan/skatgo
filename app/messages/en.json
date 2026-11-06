@@ -392,7 +392,7 @@
   "xp_rule": "{tier} = {n} XP",
   "xp_own": "+{n} for your own game",
   "xp_rule_own": "{tier} {n} + own game {b}",
-  "xp_how_own": "Your own game, as declarer: +4 XP more, won or lost.",
+  "xp_how_own": "Your own game, as declarer: +2 XP more, won or lost.",
   "xp_rule_farBelow": "{n}+ below AI",
   "xp_rule_below": "1–{n} below AI",
   "xp_rule_above": "1–{n} above AI",

@@ -35,9 +35,9 @@ const versus = (diff: number | null) =>
  * The XP a finished deal earned (SKATGO-172, the human: 「打完一副牌，就要跳出来，得了多少xp，或者在结算页面显示，弄个toast来显示计算
  * 方法」): in the result, under its title, "+14 XP" and why — above or below the AI by how much — with the tiers behind a
  * circled question mark; and once, over the page above the dialog, a toast in one line with the rule that applied
- * ("+6 XP · 1–49 below AI = 6 XP", "+14 XP · same as AI 10 + own game 4"), which goes by itself or with a tap. A guest is
+ * ("+6 XP · 1–49 below AI = 6 XP", "+12 XP · same as AI 10 + own game 2"), which goes by itself or with a tap. A guest is
  * told that signed-in players earn XP. `mine` and `ai` are the deal's Seeger-Fabian scores in the player's seat, the AI's
- * null when it has none; `declared` when the player was the declarer, a game of their own that earns 4 more.
+ * null when it has none; `declared` when the player was the declarer, a game of their own that earns 2 more.
  */
 export function XpEarned({ mine, ai, declared }: { mine: number; ai: number | null; declared: boolean }) {
   const account = useAccount()
@@ -147,7 +147,7 @@ const styles = stylex.create({
     maxWidth: dims.tipWidth,
     marginInline: 'auto',
     paddingBlock: space.x8,
-    // Narrow enough sideways that the longest rule ("50+ above AI 20 + own game 4") stays clear of the way out on a phone.
+    // Narrow enough sideways that the longest rule ("50+ above AI 20 + own game 2") stays clear of the way out on a phone.
     paddingInline: space.x12,
     borderWidth: 0,
     borderRadius: radii.pill,

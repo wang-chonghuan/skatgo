@@ -12,8 +12,8 @@ describe('a deal’s XP', () => {
     expect(xpTier(null)).toBe('same')
     expect(xpOf(null)).toBe(10)
   })
-  it('a game the player declared earns 4 more, won or lost', () => {
-    expect([xpOf(0, true), xpOf(-120, true), xpOf(60, true)]).toEqual([14, 8, 24])
+  it('a game the player declared earns 2 more, won or lost', () => {
+    expect([xpOf(0, true), xpOf(-120, true), xpOf(60, true)]).toEqual([12, 6, 22])
     expect(xpOf(0, false)).toBe(10)
   })
   it('a week is the sum of its deals', () => {

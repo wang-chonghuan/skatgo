@@ -40,13 +40,13 @@ test('xp: the week’s deals by tier, aliases as one person, guests off the boar
   await day('2026-11-03', DAILY_DEALS, [[70, 0, 0], [0, 0, 0]])
   await day('2026-11-05', DEAL_OF_DAY, [[0, 0, 0]])
   await day('2026-10-28', DEAL_OF_DAY, [[0, 0, 0]])
-  // Anna: 50 above the AI (20) in her own game (+4), the same (10) defending; a free deal 166 above (20) in her own game
-  // (+4); as a guest on another device, signed up later, 60 below (4) in her own game (+4). 66 XP, on three days in a row.
+  // Anna: 50 above the AI (20) in her own game (+2), the same (10) defending; a free deal 166 above (20) in her own game
+  // (+2); as a guest on another device, signed up later, 60 below (4) in her own game (+2). 60 XP, on three days in a row.
   await entry('2026-11-03', DAILY_DEALS, 'user:anna', [[120, 0, 0], [0, 0, 0]])
   await recordFreeDeal(store, { player: 'user:anna', game: 'free:p:1:1', day: '2026-11-04', at: 1, mine: played([66, 0, 0]), ai: played([-100, 40, 40]) })
   await entry('2026-11-05', DEAL_OF_DAY, 'anon:guest', [[-60, 0, 0]])
   await store.pool.query('INSERT INTO player_aliases (player, same_as) VALUES ($1, $2)', ['anon:guest', 'user:anna'])
-  // Ben: 10 below (6) in his own game (+4) today; last week's deal is not this week's.
+  // Ben: 10 below (6) in his own game (+2) today; last week's deal is not this week's.
   await recordFreeDeal(store, { player: 'user:ben', game: 'free:p:2:1', day: '2026-11-05', at: 1, mine: played([30, 0, 0]), ai: played([40, 0, 0]) })
   await entry('2026-10-28', DEAL_OF_DAY, 'user:ben', [[200, 0, 0]])
   // A guest's own deal, and an account seen only last week: neither is on the board.
@@ -58,9 +58,9 @@ test('xp: the week’s deals by tier, aliases as one person, guests off the boar
 
   assert.deepEqual(await weeklyXp(store, 'anon:guest', '2026-11-05'), {
     rows: [
-      { rank: 1, nickname: 'Anna', xp: 66, streak: 3, you: true },
-      { rank: 2, nickname: 'Ben', xp: 10, streak: 1 },
+      { rank: 1, nickname: 'Anna', xp: 60, streak: 3, you: true },
       { rank: 2, nickname: 'Dora', xp: 10, streak: 1 },
+      { rank: 3, nickname: 'Ben', xp: 8, streak: 1 },
     ],
     resetsIn: 4,
   })

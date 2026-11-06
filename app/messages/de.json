@@ -392,7 +392,7 @@
   "xp_rule": "{tier} = {n} XP",
   "xp_own": "+{n} fürs eigene Spiel",
   "xp_rule_own": "{tier} {n} + Alleinspiel {b}",
-  "xp_how_own": "Dein eigenes Spiel als Alleinspieler: +4 XP dazu, gewonnen oder verloren.",
+  "xp_how_own": "Dein eigenes Spiel als Alleinspieler: +2 XP dazu, gewonnen oder verloren.",
   "xp_rule_farBelow": "{n}+ unter KI",
   "xp_rule_below": "1–{n} unter KI",
   "xp_rule_above": "1–{n} über KI",

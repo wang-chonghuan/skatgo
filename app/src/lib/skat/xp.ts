@@ -21,9 +21,9 @@ export function xpTier(diff: number | null): XpTier {
 }
 
 /** What a deal earns on top of its tier when the player declared it, won or lost: taking a game is never worse for XP
- *  than passing it by (SKATGO-172 — on the regulars' 941 deals, the deals declared from the player's seat earned less
- *  per deal than the rest; the human: 「同意你的决定」). */
-export const XP_OWN_GAME = 4
+ *  than passing it by (SKATGO-172 — on the regulars' 941 deals the declared ones earned 8.13 a deal, the rest 9.50; 2
+ *  evens that out without making a lost game nearly free, as 4 did; the human: 「改成+2」). */
+export const XP_OWN_GAME = 2
 
 /** A deal's XP: its tier, and the own game's extra when the player declared. */
 export const xpOf = (diff: number | null, declared = false) => XP[xpTier(diff)] + (declared ? XP_OWN_GAME : 0)

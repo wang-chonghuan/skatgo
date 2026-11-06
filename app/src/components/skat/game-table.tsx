@@ -4,12 +4,12 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { type Card, type Contract, SUITS, SUIT_SYMBOL, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
+import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { type Face, faceOf, faceSrc } from '~/lib/skat/face'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { playSound } from '~/lib/skat/sounds'
 import { useAvatar, useBoardTricks, useFaces, useSettings, useTapToCollect } from '~/lib/skat/settings'
-import { calcLine, cardLabel, contractName, ledName, matadorLabel, resultReason, roleName, settleReason, settlementFormula } from '~/lib/skat/i18n'
+import { calcLine, cardLabel, contractName, ledName, resultReason, roleName, settleReason, settlementFormula } from '~/lib/skat/i18n'
 import {
   type Game,
   type Move,
@@ -34,7 +34,7 @@ import {
   trickWinner,
 } from '~/lib/skat/game'
 import { DAILY_DEALS, DEAL_OF_DAY, type DailySize, type DealSummary, seegerFabian, summarize } from '~/lib/skat/tournament'
-import { BID_LADDER, type Declaration, NULL_VALUES, baseValue, expectedValue, highestValue, matadors, nextBid } from '~/lib/skat/value'
+import { BID_LADDER, type Declaration, baseValue, expectedValue, highestValue, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { getLocale, localizeHref } from '~/paraglide/runtime'
 import { Link } from '@tanstack/react-router'
@@ -72,7 +72,7 @@ import { Btn, Panel, Pill, Rich, linkLook } from './ui'
 //                  a drawer parked off the right edge. A white tab folds it either way;
 //   the dialogs  — the settlement and a passed-in deal, white on a scrim.
 // Inside a lesson the same table is embedded: the panel stacks under the felt and there is no leave.
-// Free play and lesson 11 (SKATGO-40) play a server game the same way; only lesson 11 keeps the hints (SKATGO-130).
+// Free play and lesson 11 (SKATGO-40) play a server game the same way, with the hints (free play's back since SKATGO-176).
 // In the daily tournament (SKATGO-35) the server owns the deal: the table draws what it is sent and
 // sends the learner's moves, and offers no hints.
 //
@@ -132,8 +132,8 @@ type DailyAfter = { ask: AskReview; cacheKey: string }
 /** A game the server owns, as free play and lesson 11 play it (SKATGO-40): the learner's moves go to
  *  `send`, `game` is what came back. */
 export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 'next'> & {
-  /** Lesson 11 keeps the hints; free play has none, its table the tournament's (SKATGO-130, the human: 「砍掉自由牌局时的
-   *  提示，和锦标赛应该一模一样」, 「11课的保留」). */
+  /** Lesson 11 keeps the hints (SKATGO-130, 「11课的保留」); free play has them back for now (SKATGO-176, the human:
+   *  「左边加上标签和左边抽屉（以前删掉的）可以让用户看当前该咋办，这个功能在暂时恢复」). */
   hints?: boolean
   /** Free play's round of six deals (SKATGO-88): which deal this is (from 0), of how many, and each seat's
    *  Seeger-Fabian total over the deals before it (SKATGO-166). */
@@ -233,16 +233,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   // A card tapped while a finished trick waits: the trick goes, and the card follows at once if the
   // learner is on lead (SKATGO-73).
   const [intent, setIntent] = useState<Card | null>(null)
-  // Hints at the course's own table and in lesson 11 only (SKATGO-130): never in the tournament, at a private table,
-  // in an exercise or in free play.
+  // Hints at the course's own table, in lesson 11 and, for now, in free play (SKATGO-176, back after SKATGO-130): never in
+  // the tournament, at a private table or in an exercise.
   const hints = remote ? !!server?.hints : true
-  // Free play's bid calculator (SKATGO-157): only there — a round is free play's alone — and while the settings show it.
-  // The contract picked stays picked through the deal's bidding: it is kept with the hand it was picked for.
-  const bidCalc = useSettings((s) => s.bidCalc)
-  const [calcPick, setCalcPick] = useState<{ hand: string; pick: number } | null>(null)
-  const handKey = game.hands[ME].map(cardId).join()
-  const calc: BidCalcState | null =
-    server?.round && bidCalc ? { pick: calcPick?.hand === handKey ? calcPick.pick : null, setPick: (pick) => setCalcPick(pick === null ? null : { hand: handKey, pick }) } : null
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   // The running Seeger-Fabian totals, the board's and the result's alike (SKATGO-166): the tournament's and a room's as
   // the server keeps them; free play's round and lesson 11's one game from the deals before and the one just finished.
@@ -385,7 +378,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     if (game.phase !== 'play' || !myTurn || !contract) return
     if (!legal?.some((c) => sameCard(c, card))) {
       const led = ledName(effectiveSuit(game.trick[0].card, contract))
-      setRefusal(hints ? m.play_refusal({ led }) : m.play_refusal_short({ led }))
+      setRefusal(hints && !server?.round ? m.play_refusal({ led }) : m.play_refusal_short({ led }))
       return
     }
     dispatch({ type: 'play', card })
@@ -502,7 +495,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                 </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
                 </div>
               )}
             </div>
@@ -635,7 +628,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -717,7 +710,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
             </section>
           ) : null}
 
@@ -786,7 +779,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} calc={calc} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
         </div>
       ) : null}
 
@@ -835,7 +828,6 @@ function ActionsFor({
   freeReview,
   roundLast,
   seeger,
-  calc,
 }: {
   game: Game
   picked: Card[]
@@ -870,11 +862,9 @@ function ActionsFor({
   /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
   freeReview?: AskReview
   roundLast?: boolean | null
-  calc: BidCalcState | null
 }) {
   return (
     <Actions
-      calc={calc}
       done={done}
       again={again}
       replaying={replaying}
@@ -1132,8 +1122,6 @@ type ActionsProps = {
   totals: [number, number, number] | null
   /** Free play's review of the finished game (SKATGO-79): its settlement is then the short one. */
   freeReview?: AskReview
-  /** Free play's bid calculator (SKATGO-157), or null where there is none. */
-  calc: BidCalcState | null
 }
 
 function Actions(p: ActionsProps) {
@@ -1141,9 +1129,10 @@ function Actions(p: ActionsProps) {
   const wait = useContext(NextWait)
   const { game } = p
   const who = actor(game)
-  // The course's tables — its own and lesson 11's, the ones with hints — explain every step; a real table says at most
-  // one short line, the buttons say the rest (SKATGO-134, the human: 「我现在特别讨厌游戏页面里那么多垃圾的文字」).
-  const course = p.hints
+  // The course's tables — its own and lesson 11's — explain every step; a real table says at most one short line, the
+  // buttons say the rest (SKATGO-134, the human: 「我现在特别讨厌游戏页面里那么多垃圾的文字」). Free play keeps its few words
+  // with its hints back (SKATGO-176): a round is free play's alone.
+  const course = p.hints && p.roundLast == null
 
   // A finished deal (SKATGO-166): the same result at every table against the AI and at a private table; the course's own
   // table keeps its teaching settlement.
@@ -1194,7 +1183,6 @@ function Actions(p: ActionsProps) {
 
   if (game.phase === 'bidding') {
     const b = game.bidding
-    const calc = p.calc ? <BidCalc hand={game.hands[ME]} {...p.calc} /> : null
     if (b.awaiting === 'forehandAlone') {
       return (
         <Row>
@@ -1202,11 +1190,10 @@ function Actions(p: ActionsProps) {
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
           {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
-          {calc}
         </Row>
       )
     }
-    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} calc={calc} />
+    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} />
     return (
       <Row>
         {/* Who asks and what "yes" commits to, on every table (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」). */}
@@ -1214,7 +1201,6 @@ function Actions(p: ActionsProps) {
         <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
         {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
-        {calc}
       </Row>
     )
   }
@@ -1523,7 +1509,7 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
  * so the hand stays in sight on a phone; a number is picked first and named with the main button, so a
  * slip of the finger names nothing.
  */
-function SpeakerBid({ value, listener, hints, onBid, onBidHint, calc }: { value: number; listener: string; hints: boolean; onBid: ActionsProps['onBid']; onBidHint: () => void; calc: ReactNode }) {
+function SpeakerBid({ value, listener, hints, onBid, onBidHint }: { value: number; listener: string; hints: boolean; onBid: ActionsProps['onBid']; onBidHint: () => void }) {
   const [open, setOpen] = useState(false)
   const [picked, setPicked] = useState<number | null>(null)
   const next = nextBid(value)
@@ -1556,52 +1542,7 @@ function SpeakerBid({ value, listener, hints, onBid, onBidHint, calc }: { value:
         </div>
       ) : null}
       {hints ? <Btn tone="info" shape="block" size="lg" onClick={onBidHint}>{m.bid_hint_button()}</Btn> : null}
-      {calc}
     </Row>
-  )
-}
-
-type BidCalcState = { pick: number | null; setPick: (pick: number | null) => void }
-const CALC_CONTRACTS: Contract[] = [...[...SUITS].reverse().map((trump): Contract => ({ kind: 'suit', trump })), { kind: 'grand' }, { kind: 'null' }]
-
-/**
- * Free play's bid calculator (SKATGO-157, the human: 「减少玩家技术性的负担，但是不减少思维的挑战」): the player picks a
- * contract, and the drawer counts what it is worth with the ten cards in hand — matadors, multiplier, base value, and
- * Hand one step more. Which contract, and how high to go, stay the player's.
- */
-function BidCalc({ hand, pick, setPick }: { hand: Card[] } & BidCalcState) {
-  const contract = pick === null ? null : CALC_CONTRACTS[pick]
-  let line = ''
-  if (contract?.kind === 'null') line = m.bidcalc_null({ plain: NULL_VALUES.plain, hand: NULL_VALUES.hand, ouvert: NULL_VALUES.ouvert, handOuvert: NULL_VALUES.handOuvert })
-  else if (contract) {
-    const t = matadors(hand, contract)
-    const base = baseValue(contract)
-    line = m.bidcalc_value({ matadors: matadorLabel(t.with, t.count), level: t.count + 1, base, value: base * (t.count + 1), hand: base * (t.count + 2) })
-  }
-  return (
-    <div data-testid="skat-calc" {...stylex.props(styles.bidCalc)}>
-      <div role="group" aria-label={m.bidcalc_label()} {...stylex.props(styles.bidCalcRow)}>
-        <span {...stylex.props(typography.appText, styles.bidCalcLabel)}>{m.bidcalc_label()}</span>
-        {CALC_CONTRACTS.map((c, i) => (
-          <button
-            key={i}
-            type="button"
-            data-testid="skat-calc-contract"
-            aria-pressed={pick === i}
-            aria-label={contractName(c)}
-            onClick={() => setPick(pick === i ? null : i)}
-            {...stylex.props(typography.toggle, styles.toggle, styles.jumpValue, pick === i && styles.toggleOn)}
-          >
-            {c.kind === 'suit' ? SUIT_SYMBOL[c.trump] : contractName(c)}
-          </button>
-        ))}
-      </div>
-      {line ? (
-        <p data-testid="skat-calc-line" {...stylex.props(typography.appText, styles.say)}>
-          <Rich text={line} />
-        </p>
-      ) : null}
-    </div>
   )
 }
 
@@ -2386,10 +2327,6 @@ const styles = stylex.create({
     paddingBlock: space.x4,
   },
   jumpValue: { flexShrink: 0 },
-  // Free play's bid calculator (SKATGO-157): under the bid's buttons, its label and the contracts, wrapping on a phone.
-  bidCalc: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6, flexBasis: '100%' },
-  bidCalcRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.x8 },
-  bidCalcLabel: { flexShrink: 0, color: color.slate },
   resultBody: { display: 'flex', flexDirection: 'column', gap: space.x6 },
   footStack: { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: space.x10 },
   // A finished deal (SKATGO-166): its parts — the result, and against the AI the AI's three — one gap apart.

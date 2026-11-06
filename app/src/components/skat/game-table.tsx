@@ -498,7 +498,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                 </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onBidValues={server?.round ? () => setBidValues(true) : undefined} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} bidTab={!!server?.round} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
                 </div>
               )}
             </div>
@@ -631,7 +631,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onBidValues={server?.round ? () => setBidValues(true) : undefined} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} bidTab={!!server?.round} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -640,6 +640,22 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         {hints && game.phase === 'play' && myTurn ? (
           <button type="button" data-testid="skat-hint" aria-label={m.play_hint_button()} title={m.play_hint_button()} onClick={showPlayHint} {...stylex.props(styles.hintTab)}>
             <Lightbulb size={icon.table} strokeWidth={icon.outline} />
+          </button>
+        ) : null}
+
+        {/* Free play's bidding (SKATGO-176, the human: 「应该放到和右边抽屉标签对称的左边的标签，这个标签打开后，能显示这个叫牌分表」):
+            a white tab on the felt's left edge, the panel tab's mirror, opening every contract's value for the hand. */}
+        {server?.round && game.phase === 'bidding' ? (
+          <button
+            type="button"
+            aria-label={m.bid_hint_button()}
+            title={m.bid_hint_button()}
+            aria-expanded={bidValues}
+            data-testid="skat-bid-values-tab"
+            onClick={() => setBidValues(true)}
+            {...stylex.props(styles.bidTab)}
+          >
+            <ChevronRight size={icon.inline} strokeWidth={icon.outline} />
           </button>
         ) : null}
 
@@ -713,7 +729,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onBidValues={server?.round ? () => setBidValues(true) : undefined} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} bidTab={!!server?.round} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
             </section>
           ) : null}
 
@@ -783,7 +799,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onBidValues={server?.round ? () => setBidValues(true) : undefined} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} bidTab={!!server?.round} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
         </div>
       ) : null}
 
@@ -819,7 +835,7 @@ function ActionsFor({
   dispatch,
   setPicked,
   setHint,
-  onBidValues,
+  bidTab,
   onNewGame,
   hints,
   dealScore,
@@ -841,8 +857,8 @@ function ActionsFor({
   dispatch: (move: Move) => void
   setPicked: (cards: Card[]) => void
   setHint: (h: { card?: Card; cards?: Card[]; text: string } | null) => void
-  /** Free play: the bidding's hint button opens every contract's value instead (SKATGO-176). */
-  onBidValues?: () => void
+  /** Free play: the bidding's value table is the felt's left tab, so the drawer has no bidding hint button (SKATGO-176). */
+  bidTab?: boolean
   onNewGame: () => void
   /** In the pinned panel: narrower than the drawer, so the contracts take two rows. */
   compact?: boolean
@@ -900,7 +916,8 @@ function ActionsFor({
         dispatch({ type: 'declare', declaration: d })
         setDraft(null)
       }}
-      onBidHint={onBidValues ?? (() => setHint(bidHint(game)))}
+      bidHints={hints && !bidTab}
+      onBidHint={() => setHint(bidHint(game))}
       onSkatHint={() => setHint(skatHint(game))}
       onDeclareHint={() => setHint(declareHint(game))}
       onDiscardHint={() => setHint(discardHint(game))}
@@ -1108,6 +1125,8 @@ type ActionsProps = {
   onHand: () => void
   onDiscard: () => void
   onDeclare: (d: Declaration) => void
+  /** The bidding's hint button: the course's tables and lesson 11; free play has its value table in the left tab instead. */
+  bidHints: boolean
   onBidHint: () => void
   onSkatHint: () => void
   /** In free play's round (SKATGO-88): whether this is its last deal; null outside a round. */
@@ -1196,18 +1215,18 @@ function Actions(p: ActionsProps) {
           <Say>{course ? m.bid_forehand_alone() : m.bid_forehand_alone_short()}</Say>
           <Btn testId="skat-bid" shape="block" size="lg" onClick={() => p.onBid('bid')}>{m.bid_take_18()}</Btn>
           <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-          {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
+          {p.bidHints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
         </Row>
       )
     }
-    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.hints} onBid={p.onBid} onBidHint={p.onBidHint} />
+    if (b.awaiting === 'speaker') return <SpeakerBid key={b.log.length} value={b.value} listener={nameOf(b.listener)} hints={p.bidHints} onBid={p.onBid} onBidHint={p.onBidHint} />
     return (
       <Row>
         {/* Who asks and what "yes" commits to, on every table (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」). */}
         <Say>{m.bid_asked({ name: nameOf(b.speaker), value: b.value })}</Say>
         <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
-        {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
+        {p.bidHints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
       </Row>
     )
   }
@@ -2216,6 +2235,26 @@ const styles = stylex.create({
     borderWidth: 0,
     borderTopLeftRadius: radii.panel,
     borderBottomLeftRadius: radii.panel,
+    backgroundColor: color.surface,
+    color: color.navy,
+    boxShadow: elev.panel,
+    cursor: 'pointer',
+  },
+  // Free play's bidding values (SKATGO-176): the panel tab's mirror on the felt's left edge.
+  bidTab: {
+    display: 'flex',
+    position: 'absolute',
+    bottom: stage.tabBottom,
+    left: 0,
+    zIndex: layer.window,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: dims.panelTab,
+    height: dims.panelTabHeight,
+    padding: 0,
+    borderWidth: 0,
+    borderTopRightRadius: radii.panel,
+    borderBottomRightRadius: radii.panel,
     backgroundColor: color.surface,
     color: color.navy,
     boxShadow: elev.panel,

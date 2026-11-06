@@ -106,8 +106,8 @@ deals」); unranked, free and without an account (SKATGO-40, SKATGO-50). After a
 replay counts in nothing — not the round, the record of play or any event — the server refusing to record it, whatever the
 page says. Its table has the hints back for now, as lesson 11's game (SKATGO-176, the human: 「左边加上标签和左边抽屉（以前删掉的）
 可以让用户看当前该咋办，这个功能在暂时恢复」, after SKATGO-130 had taken them away): the tab on the felt's left edge while it is the
-player's card, and a hint button at the skat and choosing the game, each saying what to do now; while bidding, "How high
-can I bid?" opens a table of what the hand in play makes each contract worth — the matadors, the highest bid without and with
+player's card, and a hint button at the skat and choosing the game, each saying what to do now; while bidding, a tab on the felt's left edge opposite
+the side panel's (「应该放到和右边抽屉标签对称的左边的标签」) opens a table of what the hand in play makes each contract worth — the matadors, the highest bid without and with
 Hand, Null's fixed values (the human: 「这个点了应该显示一个表，就是这幅牌能叫到多少分，每个合约，就是一个弹窗」); never in the
 tournament, at a private table or in an exercise. SKATGO-157's bid calculator is gone (SKATGO-176: 「free play里移除掉那个辅助叫牌的
 计算器」). There is no

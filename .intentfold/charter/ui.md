@@ -462,9 +462,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a
   standard web-app table. Free play's search entry is the front page.
-- **What a table says** (SKATGO-134; the line is hidden while it has nothing to say, SKATGO-143): the course's tables — its own and lesson 11's, the ones with hints — explain every
+- **What a table says** (SKATGO-134; the line is hidden while it has nothing to say, SKATGO-143): the course's tables — its own and lesson 11's — explain every
   step as before. A real table (free play, the daily ones, a private table, a shared deal's practice) says at most one
-  short line, the buttons the rest. In the bidding it says whom the player bids with and what an answer means, as the
+  short line, the buttons the rest; free play keeps its few words with its hints back (SKATGO-176). In the bidding it says whom the player bids with and what an answer means, as the
   course does (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」): on the speaker's turn "Du reizt Lina – sag den
   nächsten Wert oder spring höher."; asked to hold, "Lina fragt dich: „18?“" with "Ja (ich halte 18)" / "Passe"; no line
   before the skat is picked up, while putting two away or while playing; forehand alone, "Beide haben gepasst – spielst du 18?"; the
@@ -520,10 +520,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   stay; only a face the player chose is kept, in this browser, for every later game; a seat never chosen wears the default
   — the office lady in Lina's seat, the accountant in Noah's (SKATGO-168, 「默认是office lady和会计师，用户自己选择ai头像后，要能
   保存下来，以后再打都还是这个头像」); a seat that still held SKATGO-167's stored default counts as never chosen.
-- **Free play's bid calculator** (SKATGO-157): under the bid's buttons in the drawer, a slate "Game value" / "Spielwert"
-  and the contracts as the jump bid's toggles (♦ ♥ ♠ ♣ Grand Null), wrapping on a phone; a picked one (`toggleOn`)
-  shows one centred line, "without 4 · 5 × 24 = **120** · Hand 144", and stays picked through the deal's bidding. Its
-  switch in the settings, on by default, follows the faces'.
+- **Free play's "How high can I bid?"** (SKATGO-176): no hint button in the bidding drawer; while bidding, the hint's tab on the
+  felt's left edge — the lightbulb in `color.hintTab`, as while playing — opens a `Modal` under that title —
+  a table, one row a contract (♣ ♠ ♥ ♦ Grand, then Null and Null Ouvert), its columns Game, Matadors ("with 3: 4 × 12",
+  slate), Bid up to (`appBtnStrong`) and Hand; column heads `smallBold` slate, `hairline` rows; under it one slate line that it
+  counts the ten cards in hand. The play's hint stays the lightbulb tab.
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),
   on every full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"

@@ -41,9 +41,6 @@ type SettingsState = {
    *  seat without one wears its default, so a new default reaches everyone who never chose. */
   avatars: Partial<Record<1 | 2, Avatar>>
   setAvatar: (seat: 1 | 2, avatar: Avatar) => void
-  /** SKATGO-157: free play's bid calculator in the bidding drawer. On by default. */
-  bidCalc: boolean
-  setBidCalc: (on: boolean) => void
 }
 
 export const useSettings = create<SettingsState>()(
@@ -65,15 +62,13 @@ export const useSettings = create<SettingsState>()(
       setFaces: (faces) => set({ faces }),
       avatars: {},
       setAvatar: (seat, avatar) => set((s) => ({ avatars: { ...s.avatars, [seat]: avatar } })),
-      bidCalc: true,
-      setBidCalc: (bidCalc) => set({ bidCalc }),
     }),
     {
       name: 'skatgo.settings.v2',
       storage: createJSONStorage(() => localStorage),
       version: 1,
       migrate: (stored, version) => migrateSettings(stored, version) as SettingsState,
-      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks, talk: s.talk, faces: s.faces, avatars: s.avatars, bidCalc: s.bidCalc }),
+      partialize: (s) => ({ deck: s.deck, tapToCollect: s.tapToCollect, sounds: s.sounds, back: s.back, boardTricks: s.boardTricks, talk: s.talk, faces: s.faces, avatars: s.avatars }),
     },
   ),
 )

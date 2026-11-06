@@ -104,12 +104,13 @@ as at a real table, so the player sits in each position twice (SKATGO-88: 「自
 deals」); unranked, free and without an account (SKATGO-40, SKATGO-50). After a deal the player may play the same cards again
 (SKATGO-170, the human: 「重打这幅牌……不计入到任何记录和数据里，只是为了让用户反思一下，自己试试。仅限于free play」): the first time counts as ever, once; the
 replay counts in nothing — not the round, the record of play or any event — the server refusing to record it, whatever the
-page says. Its table is the tournament's: no hint of any kind
-(SKATGO-130, the human: 「砍掉自由牌局时的提示，和锦标赛应该一模一样」); lesson 11's game keeps its hints (「11课的保留」). One exception,
-free play's alone: a bid calculator in the bidding drawer (SKATGO-157, the human: 「减少玩家技术性的负担，但是不减少思维的挑战」) —
-the player picks a contract and it counts that contract's value with the ten cards in hand (matadors, multiplier, base,
-and Hand one step more; Null's four fixed values). It never says which contract, whether to bid, or how high. On by
-default, a switch in the settings; never in the tournament, at a private table or in an exercise. There is no
+page says. Its table has the hints back for now, as lesson 11's game (SKATGO-176, the human: 「左边加上标签和左边抽屉（以前删掉的）
+可以让用户看当前该咋办，这个功能在暂时恢复」, after SKATGO-130 had taken them away): the tab on the felt's left edge while it is the
+player's card, and a hint button at the skat and choosing the game, each saying what to do now; while bidding, the same lightbulb tab on the felt's left edge
+(「应该放到和右边抽屉标签对称的左边的标签」, 「应该改成一个灯泡图标的」) opens a table of what the hand in play makes each contract worth — the matadors, the highest bid without and with
+Hand, Null's fixed values (the human: 「这个点了应该显示一个表，就是这幅牌能叫到多少分，每个合约，就是一个弹窗」); never in the
+tournament, at a private table or in an exercise. SKATGO-157's bid calculator is gone (SKATGO-176: 「free play里移除掉那个辅助叫牌的
+计算器」). There is no
 AI assistant on the site any more (SKATGO-130: 「先开单子砍ai助手」, 「彻底删」). The table shows which deal of
 six it is and the player's Seeger-Fabian total so far. A finished deal shows the tournament's result,
 bidding against the AI — the same deal played by the computer from the player's seat (SKATGO-86: 「打完了能显示AI打这幅牌叫的啥，打几分」)

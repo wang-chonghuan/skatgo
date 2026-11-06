@@ -50,5 +50,6 @@ export function streakOf(days: Iterable<string>, today: string): number {
 }
 
 /** The week's board as the service answers it: every account with XP this week, the most first, equal XP sharing a
- *  rank; `you` on the asker's own row; the days until it starts again. Names only, never a player id. */
+ *  rank; its streak, at least 1 for anyone on it; `you` on the asker's own row; the days until it starts again. Names
+ *  only, never a player id. */
 export type XpBoard = { rows: { rank: number; nickname: string; xp: number; streak: number; you?: true }[]; resetsIn: number }

@@ -264,7 +264,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     board (`xp-board.tsx`, SKATGO-172, in the Elo board's place, size and behaviour: 「这个卡片大小规格行为，还和当前的elo卡片一样」) —
     its title with a circled question mark (`info`) opening how XP is earned in a `Modal` (`XpHow`: one line, the five
     tiers in a table, one line on the week); under the title one `slate` line, "Every deal earns XP · starts again in n
-    days"; every account with XP this week — rank, name, 🔥 days in a row (`amber`, "–" when none), the week's XP
+    days"; every account with XP this week — rank, name, 🔥 days in a row (`amber`, at least 1: 「1天的也要显示个火焰，1就行」), the week's XP
     (`appBtnStrong`) — the player's own row on `goodSoft` with the "You" tag, close rows at `appText`, one column, the list
     scrolling inside the card, which is never taller than the cards beside it — it takes the row's height and never
     sets it (SKATGO-144, the human: 「高度不能超过它相邻卡片的高度，所以可以滚动，要一致」); wherever the page is one column

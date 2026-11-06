@@ -93,7 +93,7 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
                     {r.nickname}
                     {r.you ? <span {...stylex.props(styles.tag)}><Who side="you" /></span> : null}
                   </span>
-                  <span data-testid="xp-board-streak" {...stylex.props(r.streak > 0 ? styles.streak : styles.muted)}>{r.streak > 0 ? `🔥 ${r.streak}` : '–'}</span>
+                  <span data-testid="xp-board-streak" {...stylex.props(styles.streak)}>{`🔥 ${r.streak}`}</span>
                   <span {...stylex.props(typography.appBtnStrong, styles.score)}>{r.xp}</span>
                 </li>
               ))}

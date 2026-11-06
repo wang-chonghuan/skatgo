@@ -51,7 +51,8 @@ export async function weeklyXp(store: Store, who: string | null, today: string):
   const mine = (me[0]?.id as string | undefined) ?? null
   const rows: XpBoard['rows'] = people.map(([p, n], i) => ({
     rank: i === 0 || people[i - 1][1] !== n ? i + 1 : 0,
-    nickname: nameOf.get(p) ?? '', xp: n, streak: streakOf(days.get(p) ?? [], today),
+    // Everyone on the board played this week, so a flame at least 1 (the human: 「1天的也要显示个火焰，1就行」).
+    nickname: nameOf.get(p) ?? '', xp: n, streak: Math.max(1, streakOf(days.get(p) ?? [], today)),
     ...(p === mine ? { you: true as const } : {}),
   }))
   for (let i = 1; i < rows.length; i++) if (rows[i].rank === 0) rows[i].rank = rows[i - 1].rank

@@ -50,12 +50,15 @@ test('xp: the week’s deals by tier, aliases as one person, guests off the boar
   // A guest's own deal, and an account seen only last week: neither is on the board.
   await entry('2026-11-05', DEAL_OF_DAY, 'anon:stranger', [[100, 0, 0]])
   await entry('2026-10-28', DEAL_OF_DAY, 'user:carl', [[100, 0, 0]])
-  await store.pool.query("INSERT INTO daily_players (player, nickname, created_at) VALUES ('user:anna', 'Anna', 1), ('user:ben', 'Ben', 1)")
+  // Dora: one deal on Monday, none since — still a flame of 1, as everyone on the board has (SKATGO-172).
+  await recordFreeDeal(store, { player: 'user:dora', game: 'free:p:3:1', day: '2026-11-02', at: 1, mine: played([0, 0, 0]), ai: played([0, 0, 0]) })
+  await store.pool.query("INSERT INTO daily_players (player, nickname, created_at) VALUES ('user:anna', 'Anna', 1), ('user:ben', 'Ben', 1), ('user:dora', 'Dora', 1)")
 
   assert.deepEqual(await weeklyXp(store, 'anon:guest', '2026-11-05'), {
     rows: [
       { rank: 1, nickname: 'Anna', xp: 54, streak: 3, you: true },
-      { rank: 2, nickname: 'Ben', xp: 6, streak: 1 },
+      { rank: 2, nickname: 'Dora', xp: 10, streak: 1 },
+      { rank: 3, nickname: 'Ben', xp: 6, streak: 1 },
     ],
     resetsIn: 4,
   })

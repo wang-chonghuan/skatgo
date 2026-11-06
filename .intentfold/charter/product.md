@@ -65,7 +65,7 @@ Beside the daily boards stands the week's experience points, XP (SKATGO-172, rep
 49 below 6, the same 10, 1 to 49 above 14, 50 or more above 20 (a deal without the AI's result counts as the same); a
 replayed deal earns none. A week, Monday to Sunday of the tournament's days, sums its deals, and every Monday starts at
 0; no average. The front page shows every account with XP this week, the most first — rank, name, 🔥 days in a row with
-at least one deal, the week's XP — the player's own row marked, and how XP is earned. After each deal the player sees
+at least one deal (at least 1), the week's XP — the player's own row marked, and how XP is earned. After each deal the player sees
 its XP and why, and once a toast with the calculation; a guest is told that signed-in players earn XP. One person under
 several ids counts as one, as the human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」).
 

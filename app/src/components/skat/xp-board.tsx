@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { ChevronDown, ChevronUp, CircleHelp } from 'lucide-react'
+import { CircleHelp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { XpBoard as Board } from '~/lib/skat/xp'
@@ -8,7 +8,6 @@ import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
-import { marqueeSlide, timing } from '../../theme/effects.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
@@ -16,56 +15,27 @@ import { Who } from './daily-comparison'
 import { Panel } from './ui'
 import { XpHow } from './xp-earned'
 
-/** The folded board's names, running sideways without end. */
-const slide = stylex.keyframes({ from: { transform: marqueeSlide.start }, to: { transform: marqueeSlide.end } })
-
 /**
  * The week's XP board in the front page's long card (SKATGO-172, the human: 「这个卡片大小规格行为，还和当前的elo卡片一样。elo的卡片和
  * 算法都删除」): every account with XP this week, the most first — rank, name, 🔥 days in a row, the week's XP — the
  * player's own row marked; the title says both, "This week's XP and streaks" (the human: 「Every deal earns XP · starts again
  * in 3 days 这句去掉。标题改为本周经验和连胜天数」). The tiers open from a circled
- * question mark beside the title, in a `Modal`. Its frame is the Elo card's (SKATGO-123/140/144): `fill`, as tall as
- * where it sits, the list scrolling inside; wherever the page is one column (`bp.cards`) folded behind its title and a
- * line under it where the players run slowly sideways, a tap opening it to five rows and a half. Rendered on the server as nobody; in the
- * browser asked again as the player, so their row is marked.
+ * question mark beside the title, in a `Modal`. On PC its frame is the Elo card's (SKATGO-123/140/144): `fill`, as tall as
+ * where it sits, the list scrolling inside. Wherever the page is one column (`bp.cards`) the list shows the first five and
+ * scrolls, nothing folded and nothing running sideways (the human: 「经验表，pc上不变，手机上显示前5名，然后可以滚动，不要横向滚动了」).
+ * Rendered on the server as nobody; in the browser asked again as the player, so their row is marked.
  */
 export function XpBoard({ board: first, fill = false }: { board: Board; fill?: boolean }) {
   const [board, setBoard] = useState(first)
-  const [open, setOpen] = useState(false)
   const [how, setHow] = useState(false)
   useEffect(() => {
     void readXpBoard().then((b) => b && setBoard(b))
   }, [])
-  const names = board.rows.map((r) => `${r.rank}. ${r.nickname} · ${m.xp_points({ n: r.xp })}`)
   return (
     <Panel fill={fill}>
       <section data-testid="xp-board" aria-labelledby="xp-board-title" {...stylex.props(styles.board)}>
         <div {...stylex.props(styles.head)}>
-          <h2 id="xp-board-title" {...stylex.props(typography.homeCardTitle, styles.title, styles.wide)}>{m.xp_title()}</h2>
-          <button
-            type="button"
-            data-testid="xp-board-toggle"
-            aria-expanded={open}
-            aria-controls="xp-board-body"
-            onClick={() => setOpen(!open)}
-            {...stylex.props(styles.toggle)}
-          >
-            <span {...stylex.props(typography.homeCardTitle, styles.title, styles.titleLine)}>{m.xp_title()}</span>
-            {names.length > 0 && !open ? (
-              <span aria-hidden="true" data-testid="xp-board-marquee" {...stylex.props(typography.appText, styles.marquee)}>
-                <span {...stylex.props(styles.track)}>
-                  {[0, 1].map((copy) => (
-                    <span key={copy} {...stylex.props(styles.copy)}>
-                      {names.map((n) => <span key={n}>{n}</span>)}
-                    </span>
-                  ))}
-                </span>
-              </span>
-            ) : null}
-            <span {...stylex.props(styles.chevron)}>
-              {open ? <ChevronUp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} /> : <ChevronDown aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />}
-            </span>
-          </button>
+          <h2 id="xp-board-title" {...stylex.props(typography.homeCardTitle, styles.title)}>{m.xp_title()}</h2>
           <button
             type="button"
             data-testid="xp-board-how"
@@ -79,7 +49,7 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
           </button>
           {how ? <XpHow onClose={() => setHow(false)} testId="xp-board-how-text" /> : null}
         </div>
-        <div id="xp-board-body" data-open={open ? 'true' : undefined} {...stylex.props(styles.body, !open && styles.folded)}>
+        <div id="xp-board-body" {...stylex.props(styles.body)}>
           {board.rows.length === 0 ? (
             <p data-testid="xp-board-empty" {...stylex.props(typography.appText, styles.muted)}>{m.xp_empty()}</p>
           ) : (
@@ -106,46 +76,9 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
 const styles = stylex.create({
   board: { display: 'flex', flexDirection: 'column', gap: space.x12, flexGrow: 1, minHeight: 0 },
   // The title and the question mark; in one column the line that folds the board says the title.
-  // In one column the question mark keeps to the title's line, the first of the folded two.
-  head: { position: 'relative', display: 'flex', alignItems: { default: 'center', [bp.cards]: 'flex-start' }, gap: space.x8 },
+  // The title and the question mark.
+  head: { position: 'relative', display: 'flex', alignItems: 'center', gap: space.x8 },
   title: { margin: 0, color: color.navy },
-  wide: { display: { default: 'block', [bp.cards]: 'none' } },
-  // The title on a line of its own, too long on a phone to share one (SKATGO-172); under it the names running and the
-  // chevron at the line's end.
-  toggle: {
-    display: { default: 'none', [bp.cards]: 'flex' },
-    flexWrap: 'wrap',
-    flexGrow: 1,
-    minWidth: 0,
-    alignItems: 'center',
-    columnGap: space.x12,
-    rowGap: space.x4,
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    color: color.navy,
-    textAlign: 'start',
-    cursor: 'pointer',
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.info,
-    outlineOffset: border.focusOffset,
-    borderRadius: radii.column,
-  },
-  titleLine: { flexBasis: '100%' },
-  // The names in a window of their own, running from right to left; under reduced motion they stand still.
-  marquee: { display: 'flex', flexGrow: 1, flexBasis: 0, minWidth: 0, overflow: 'hidden', color: color.slate },
-  track: {
-    display: 'flex',
-    flexShrink: 0,
-    animationName: { default: slide, [bp.reducedMotion]: 'none' },
-    animationDuration: timing.marquee,
-    animationTimingFunction: timing.steady,
-    animationIterationCount: 'infinite',
-  },
-  chevron: { display: 'inline-flex', flexShrink: 0, marginInlineStart: 'auto' },
-  copy: { display: 'flex', flexShrink: 0, gap: space.x24, paddingInlineEnd: space.x24, whiteSpace: 'nowrap' },
   help: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -163,10 +96,8 @@ const styles = stylex.create({
     borderRadius: radii.column,
   },
   body: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 },
-  folded: { display: { default: 'flex', [bp.cards]: 'none' } },
   muted: { margin: 0, color: color.slate, flexShrink: 0 },
-  // On a narrow screen the list is never full height either (SKATGO-144): five rows and a half, the rest scrolling; on
-  // PC the card's row sets its height.
+  // In one column the first five rows show and the rest scroll (SKATGO-172); on PC the card's row sets its height.
   rows: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0, maxHeight: { default: null, [bp.cards]: dims.xpListNarrow }, overflowY: 'auto', margin: 0, padding: 0, listStyle: 'none' },
   row: {
     display: 'flex',

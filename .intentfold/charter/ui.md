@@ -268,10 +268,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (`appBtnStrong`) — the player's own row on `goodSoft` with the "You" tag, close rows at `appText`, one column, the list
     scrolling inside the card, which is never taller than the cards beside it — it takes the row's height and never
     sets it (SKATGO-144, the human: 「高度不能超过它相邻卡片的高度，所以可以滚动，要一致」); wherever the page is one column
-    (`bp.cards`, phones and narrow screens alike; 「只要变成列式布局，就用现在那种横向滚动的」) folded behind its title and, on a line
-    of their own under it (the title too long to share one), the players running slowly sideways (`marqueeSlide`,
-    `timing.marquee`), a tap opening it (SKATGO-123), the opened list five rows and a half tall (`dims.xpListNarrow`), the
-    rest scrolling. Under `bp.cards` the four stay two by two
+    (`bp.cards`, phones and narrow screens alike) the list itself, the first five rows (`dims.xpListNarrow`) and the
+    rest scrolling, nothing folded and nothing running sideways (「手机上显示前5名，然后可以滚动，不要横向滚动了」). Under `bp.cards` the four stay two by two
     (`dims.homeWaysNarrow`) and the long cards follow, the whole width;
   - under them, in the same columns, white picture cards (the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」, after a
     picture of event cards): the picture to the card's edges at the top (`dims.homePicture`), then the title

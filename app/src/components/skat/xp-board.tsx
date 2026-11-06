@@ -22,10 +22,11 @@ const slide = stylex.keyframes({ from: { transform: marqueeSlide.start }, to: { 
 /**
  * The week's XP board in the front page's long card (SKATGO-172, the human: 「这个卡片大小规格行为，还和当前的elo卡片一样。elo的卡片和
  * 算法都删除」): every account with XP this week, the most first — rank, name, 🔥 days in a row, the week's XP — the
- * player's own row marked; under the title what earns XP and when the week starts again. The tiers open from a circled
+ * player's own row marked; the title says both, "This week's XP and streaks" (the human: 「Every deal earns XP · starts again
+ * in 3 days 这句去掉。标题改为本周经验和连胜天数」). The tiers open from a circled
  * question mark beside the title, in a `Modal`. Its frame is the Elo card's (SKATGO-123/140/144): `fill`, as tall as
- * where it sits, the list scrolling inside; wherever the page is one column (`bp.cards`) folded behind one line where
- * the players run slowly sideways, a tap opening it to five rows and a half. Rendered on the server as nobody; in the
+ * where it sits, the list scrolling inside; wherever the page is one column (`bp.cards`) folded behind its title and a
+ * line under it where the players run slowly sideways, a tap opening it to five rows and a half. Rendered on the server as nobody; in the
  * browser asked again as the player, so their row is marked.
  */
 export function XpBoard({ board: first, fill = false }: { board: Board; fill?: boolean }) {
@@ -49,7 +50,7 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
             onClick={() => setOpen(!open)}
             {...stylex.props(styles.toggle)}
           >
-            <span {...stylex.props(typography.homeCardTitle, styles.title, styles.oneLine)}>{m.xp_title()}</span>
+            <span {...stylex.props(typography.homeCardTitle, styles.title, styles.titleLine)}>{m.xp_title()}</span>
             {names.length > 0 && !open ? (
               <span aria-hidden="true" data-testid="xp-board-marquee" {...stylex.props(typography.appText, styles.marquee)}>
                 <span {...stylex.props(styles.track)}>
@@ -79,9 +80,6 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
           {how ? <XpHow onClose={() => setHow(false)} testId="xp-board-how-text" /> : null}
         </div>
         <div id="xp-board-body" data-open={open ? 'true' : undefined} {...stylex.props(styles.body, !open && styles.folded)}>
-          <p data-testid="xp-board-sub" {...stylex.props(typography.appText, styles.muted)}>
-            {board.resetsIn === 1 ? m.xp_sub_tomorrow() : m.xp_sub({ n: board.resetsIn })}
-          </p>
           {board.rows.length === 0 ? (
             <p data-testid="xp-board-empty" {...stylex.props(typography.appText, styles.muted)}>{m.xp_empty()}</p>
           ) : (
@@ -108,15 +106,20 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
 const styles = stylex.create({
   board: { display: 'flex', flexDirection: 'column', gap: space.x12, flexGrow: 1, minHeight: 0 },
   // The title and the question mark; in one column the line that folds the board says the title.
-  head: { position: 'relative', display: 'flex', alignItems: 'center', gap: space.x8 },
+  // In one column the question mark keeps to the title's line, the first of the folded two.
+  head: { position: 'relative', display: 'flex', alignItems: { default: 'center', [bp.cards]: 'flex-start' }, gap: space.x8 },
   title: { margin: 0, color: color.navy },
   wide: { display: { default: 'block', [bp.cards]: 'none' } },
+  // The title on a line of its own, too long on a phone to share one (SKATGO-172); under it the names running and the
+  // chevron at the line's end.
   toggle: {
     display: { default: 'none', [bp.cards]: 'flex' },
+    flexWrap: 'wrap',
     flexGrow: 1,
     minWidth: 0,
     alignItems: 'center',
-    gap: space.x12,
+    columnGap: space.x12,
+    rowGap: space.x4,
     margin: 0,
     padding: 0,
     borderWidth: 0,
@@ -130,10 +133,9 @@ const styles = stylex.create({
     outlineOffset: border.focusOffset,
     borderRadius: radii.column,
   },
-  // The folded line stays one line: the title whole, a long name cut short.
-  oneLine: { flexShrink: 0, whiteSpace: 'nowrap' },
+  titleLine: { flexBasis: '100%' },
   // The names in a window of their own, running from right to left; under reduced motion they stand still.
-  marquee: { display: 'flex', flexGrow: 1, minWidth: 0, overflow: 'hidden', color: color.slate },
+  marquee: { display: 'flex', flexGrow: 1, flexBasis: 0, minWidth: 0, overflow: 'hidden', color: color.slate },
   track: {
     display: 'flex',
     flexShrink: 0,
@@ -142,7 +144,7 @@ const styles = stylex.create({
     animationTimingFunction: timing.steady,
     animationIterationCount: 'infinite',
   },
-  chevron: { display: 'inline-flex', flexShrink: 0 },
+  chevron: { display: 'inline-flex', flexShrink: 0, marginInlineStart: 'auto' },
   copy: { display: 'flex', flexShrink: 0, gap: space.x24, paddingInlineEnd: space.x24, whiteSpace: 'nowrap' },
   help: {
     display: 'inline-flex',
@@ -160,7 +162,6 @@ const styles = stylex.create({
     outlineOffset: border.focusOffset,
     borderRadius: radii.column,
   },
-  // The line on the week sits right over the rows, so three rows fit the card beside the progress card unscrolled.
   body: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 },
   folded: { display: { default: 'flex', [bp.cards]: 'none' } },
   muted: { margin: 0, color: color.slate, flexShrink: 0 },

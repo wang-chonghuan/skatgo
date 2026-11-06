@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { clientPage } from '~/components/skat/client-page'
-import { readEloBoard } from '~/lib/elo-api'
+import { readXpBoard } from '~/lib/xp-api'
 import { DAILY_DEALS } from '~/lib/daily'
 import { organization, pageHead, samePath } from '~/lib/head'
 import { SITE_URL, localizedUrl } from '~/lib/site'
@@ -9,8 +9,8 @@ import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 
 export const Route = createFileRoute('/')({
-  // The tournament's Elo board (SKATGO-123). The forum's announcement left the hero (SKATGO-131).
-  loader: async () => ({ elo: await readEloBoard() }),
+  // The week's XP board (SKATGO-172, replacing SKATGO-123's Elo). The forum's announcement left the hero (SKATGO-131).
+  loader: async () => ({ xp: await readXpBoard() }),
   head: () =>
     pageHead({
       title: m.home_meta_title(),

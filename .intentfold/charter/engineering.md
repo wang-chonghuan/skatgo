@@ -55,11 +55,12 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   refuses it (400). The leaderboard is computed from those rows on request, ranked by the
   entry's Seeger-Fabian total (`daily_entries.total`, SKATGO-81), ties to the earlier finish, with the
   AI's total from the player's seat beside it, from the deals' stored `benchmark` (SKATGO-80). The
-  tournament's Elo (SKATGO-123) is computed the same way, on request, from those rows: `POST /daily/elo` replays
-  every ended day with the rule in `app/src/lib/skat/elo.ts` (held to its worked examples by `elo.test.ts`),
-  counting the ids `player_aliases` names as one person as that person — rows written by hand, never ids in
-  code — and answers the top ten by name. The front page reads it on the server (`lib/elo-api.ts`, a minute's
-  answer cached), the browser through `/api/daily/elo`. The web service is its only client.
+  week's XP (SKATGO-172, replacing SKATGO-123's Elo) is computed the same way, on request, from those rows and
+  `play_deals`: `POST /daily/xp` (`multiplayer/src/xp.ts`) sums this week's deals of every account by the tiers in
+  `app/src/lib/skat/xp.ts` (held to its examples by `xp.test.ts`), counting the ids `player_aliases` names as one
+  person as that person — rows written by hand, never ids in code — and answers every account with XP by name, the
+  asker's row marked. The front page reads it on the server as nobody (`lib/xp-api.ts`, a minute's answer cached),
+  the browser through `/api/daily/xp` as the signed-in player. The web service is its only client.
 - **A player's record of play** (SKATGO-128) is read on request by `POST /daily/profile` (`multiplayer/src/profile.ts`),
   an account's only (the web's `/api/daily/profile` answers a guest 401): every tournament deal of the player's
   entries with its day's `benchmark`, of either size (the size-12 rows SKATGO-77 left are deals against the same AI), and every row of `play_deals` (player, game — `free:<pool>:<deal>:<start>` —
@@ -69,8 +70,7 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   the forum's marks), written by hand and loaded by `.intentfold/tickets/SKATGO-128/notes.mjs` from its `notes.json`.
 - **The deal of the day** (SKATGO-131) is the day's tournament of size 1 (`DEAL_OF_DAY`, `DAILY_SIZES` in
   `lib/skat/tournament.ts`): the same rows, routes and board, each request naming its `size` (6 when it names none);
-  Elo reads sizes 6 and 12 (SKATGO-77's kept rows, each day of each a game; `ELO_SIZES`, SKATGO-140), never the deal of
-  the day; the record of play every size. `prepareDays` prepares it after the six: candidates dealt
+  the week's XP and the record of play read every size. `prepareDays` prepares it after the six: candidates dealt
   fresh (never one of the day's six), each worked out like a tournament deal, sorted by the AI's game into four kinds
   and one taken by `multiplayer/src/pick.ts` — never yesterday's kind, the contract rotating, the closest win first —
   in rounds of 8 up to 32 inside the preparation's hour; the pick's kind is stored with the deal. `/api/daily/*` lets a

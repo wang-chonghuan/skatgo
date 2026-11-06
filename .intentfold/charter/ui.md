@@ -250,7 +250,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `GraduationCap`, the course) and "Reizen" (`tileNavy`, lucide's `Gavel`, an auction's hammer, to `/bidding-practice`; one line since SKATGO-151, the page
     keeping "Reizen üben"; SKATGO-149, the
     human: 「practice卡片的位置，做成一个叫牌练习的东西」 — the exercises' "Üben" with its `Puzzle` stood there before); on the right two long white cards, each
-    a row tall: "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
+    a row tall — the week's XP on top, then the progress (SKATGO-172, 「你建议？」): "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
     over the latest 30 deals, fewer while there are fewer (`standingOf`, SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」),
     the win rate and the average per deal against the AI (`homeCardTitle`, each over a `meta` label), beside the curve and
     over it on a phone, and that average day by day as the curve (`rollingOf`), "Immer über die letzten 30 Spiele" in the dates' row, no win-rate curve — on real records a day's win
@@ -260,15 +260,17 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     made it navy) and with no AI tag (SKATGO-138, 「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」), a single day as its dot; framed lightly, no larger: the first
     and the last day under it (`meta`, slate) (「最好上面带一些日期……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
     Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
-    保存你的表现记录以及ai分析，中间放个登录按钮」); and the tournament's Elo
-    board (`elo-board.tsx`) — its title with a circled question mark (`info`) opening how it is counted in a `Modal`, three
-    short lines (SKATGO-140, the human: 「点问号显示算法，文字啰嗦，而且点开后那个toast不好关」); the ten highest players — rank, name, number, a slate "?" when provisional — with
-    the AI's row (its blue tag, no rank) among them by its number, close rows at `appText`, one column, the list
+    保存你的表现记录以及ai分析，中间放个登录按钮」); and the week's XP
+    board (`xp-board.tsx`, SKATGO-172, in the Elo board's place, size and behaviour: 「这个卡片大小规格行为，还和当前的elo卡片一样」) —
+    its title with a circled question mark (`info`) opening how XP is earned in a `Modal` (`XpHow`: one line, the five
+    tiers in a table, one line on the own game's +2, one line on the week); the title "Weekly XP & streaks" / "Wochen-XP & Serien", short and naming
+    both, and no line under it (「Every deal earns XP · starts again in 3 days 这句去掉」, 「用weekly XP 是否更好，哪个更短，德语呢」,
+    「steak也要放上去吧」); every account with XP this week — rank, name, 🔥 days in a row (`amber`, at least 1: 「1天的也要显示个火焰，1就行」), the week's XP
+    (`appBtnStrong`) — the player's own row on `goodSoft` with the "You" tag, close rows at `appText`, one column, the list
     scrolling inside the card, which is never taller than the cards beside it — it takes the row's height and never
     sets it (SKATGO-144, the human: 「高度不能超过它相邻卡片的高度，所以可以滚动，要一致」); wherever the page is one column
-    (`bp.cards`, phones and narrow screens alike; 「只要变成列式布局，就用现在那种横向滚动的」) folded behind one line where the
-    players run slowly sideways (`marqueeSlide`, `timing.marquee`), a tap opening it (SKATGO-123), the opened list five
-    rows and a half tall (`dims.eloListNarrow`), the rest scrolling (「elo也在窄屏上也不能全高」). Under `bp.cards` the four stay two by two
+    (`bp.cards`, phones and narrow screens alike) the list itself, the first five rows (`dims.xpListNarrow`) and the
+    rest scrolling, nothing folded and nothing running sideways (「手机上显示前5名，然后可以滚动，不要横向滚动了」). Under `bp.cards` the four stay two by two
     (`dims.homeWaysNarrow`) and the long cards follow, the whole width;
   - under them, in the same columns, white picture cards (the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」, after a
     picture of event cards): the picture to the card's edges at the top (`dims.homePicture`), then the title
@@ -553,7 +555,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - "Skat" and its two cards in symbols ("Skat ♥8 ♦A", 「skat的地方用符号，不要用牌的缩小版」); then how the score is counted in one `slate` line (SKATGO-127), without the scores —
     "Grand 24 × 3 (with 1 + game 1 + Schneider 1) = 72 · won: 72 + 50", "… · lost: −2 × 48 − 50", an overbid's
     "overbid, scored at 36" between;
-  - against the AI, `VsAiReview` in its after-deal form, the other three parts; then the way on in the dialog's foot.
+  - against the AI, `VsAiReview` in its after-deal form, the other three parts — first, where the deal counts (not a deal
+    played again), its XP (`XpEarned`, SKATGO-172, 「打完一副牌，就要跳出来，得了多少xp……弄个toast来显示计算方法」): "+14 XP"
+    (`appBtnStrong`, `go`; `slate` for a guest) and why, "Above the AI by 23", with "· +2 for your own game" when the player
+    declared (a guest: "Sign in to earn XP and join this week's board"), the tiers behind a circled question mark; and once, over the page at its top in the middle, above the
+    dialog and clear of the way out, a white pill in one line, "+14 XP" (`appBtnStrong`, `go`) and the rule that applied,
+    "1–49 above AI = 14 XP", or "same as AI 10 + own game 2" for a declared game, gone after five seconds or a tap; then the way on in the dialog's foot.
 
   The dialog speaks in four levels only (SKATGO-146, 「结果卡片上的字太小」): the title `dialogTitle` (22), headings and
   numbers `appBtnStrong` (16), words `appText` (16), and the 13 bold of the You/AI tags and the play record's small labels

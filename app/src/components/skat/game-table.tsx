@@ -1476,7 +1476,8 @@ function DealResult({ game, totals, vsAi, next, replaying = false }: { game: Gam
             </div>
           ) : null}
         </ResultPart>
-        {vsAi ? <VsAiReview after ask={vsAi.ask} cacheKey={vsAi.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
+        {/* A deal played again is in no figure (SKATGO-170), so it earns no XP (SKATGO-172). */}
+        {vsAi ? <VsAiReview after xp={!replaying} ask={vsAi.ask} cacheKey={vsAi.cacheKey} names={[nameOf(0), nameOf(1), nameOf(2)]} /> : null}
       </div>
     </Dialog>
   )

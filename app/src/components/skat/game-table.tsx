@@ -51,6 +51,7 @@ import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
 import { type AskReview, DealXp, ResultPart, ScoreTable, VsAiReview, dailyAsk, gameName } from './daily-comparison'
+import { BidValues } from './bid-values'
 import { SettingsDialog } from './frame'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
@@ -425,6 +426,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     return () => query.removeEventListener('change', change)
   }, [panelled])
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // Free play's "How high can I bid?" opens a table of every contract's value instead of the hint (SKATGO-176).
+  const [bidValues, setBidValues] = useState(false)
   // A room's statistics, opened from the table's menu (SKATGO-165).
   const [statsOpen, setStatsOpen] = useState(false)
   // The side panel shows the game, or the rules with a way back (SKATGO-75).
@@ -495,7 +498,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                 </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onBidValues={server?.round ? () => setBidValues(true) : undefined} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
                 </div>
               )}
             </div>
@@ -628,7 +631,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onBidValues={server?.round ? () => setBidValues(true) : undefined} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -710,7 +713,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onBidValues={server?.round ? () => setBidValues(true) : undefined} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
             </section>
           ) : null}
 
@@ -767,6 +770,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
       {exercise?.after ? <Dialog>{exercise.after}</Dialog> : null}
 
       {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
+      {bidValues && game.phase === 'bidding' ? <BidValues hand={game.hands[ME]} onClose={() => setBidValues(false)} /> : null}
 
       {/* A room's statistics (SKATGO-165), over the table like its other dialogs; the way back is the menu's first item. */}
       {room && statsOpen ? (
@@ -779,7 +783,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onBidValues={server?.round ? () => setBidValues(true) : undefined} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
         </div>
       ) : null}
 
@@ -815,6 +819,7 @@ function ActionsFor({
   dispatch,
   setPicked,
   setHint,
+  onBidValues,
   onNewGame,
   hints,
   dealScore,
@@ -836,6 +841,8 @@ function ActionsFor({
   dispatch: (move: Move) => void
   setPicked: (cards: Card[]) => void
   setHint: (h: { card?: Card; cards?: Card[]; text: string } | null) => void
+  /** Free play: the bidding's hint button opens every contract's value instead (SKATGO-176). */
+  onBidValues?: () => void
   onNewGame: () => void
   /** In the pinned panel: narrower than the drawer, so the contracts take two rows. */
   compact?: boolean
@@ -893,7 +900,7 @@ function ActionsFor({
         dispatch({ type: 'declare', declaration: d })
         setDraft(null)
       }}
-      onBidHint={() => setHint(bidHint(game))}
+      onBidHint={onBidValues ?? (() => setHint(bidHint(game)))}
       onSkatHint={() => setHint(skatHint(game))}
       onDeclareHint={() => setHint(declareHint(game))}
       onDiscardHint={() => setHint(discardHint(game))}

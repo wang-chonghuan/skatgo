@@ -117,8 +117,8 @@ sets one, leading. Colour is not part of a role — the surface decides it.
 - **Sizes** are named by their px (`f12` … `f72`, with the reference's measured sizes such as `f19_6`);
   **leadings** `glyph`, `tight`, `control`, `compact`, `reading`, `ui`.
 - **Roles**, by where they are used:
-  - the public site: `landingHero`, `landingHeroLead`, `landingBrand`, `landingHeading` (the h1 of
-    every sub-page, and the front page's section headings), `landingBody`, `landingNav`, `landingBtn`,
+  - the public site: `landingHeroLead`, `landingBrand`, `landingHeading` (the h1 of
+    every sub-page and of the front page, and the front page's section headings), `landingBody`, `landingNav`, `landingBtn`,
     `landingCta`;
   - the app's pages: `appText`, `appBtn`, `appBtnStrong`, `appLink`, `optionTitle`, `optionDesc`,
     `tileTitle`, `tileSub`, `dialogTitle`;
@@ -236,8 +236,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   page sits the legal footer. The header is the same on every page.
 - **The front page** (`entry-page.tsx`), on white (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后
   显示下面的四个卡片，按我发你的两个响应式版本……长卡片做两个，一个是my progress……一个是 elo ranking」):
-  - the slogan alone as the H1 (`landingHero`, navy, at the column's left; `entry_title`: "Free Skat play and progress",
-    German "Skat kostenlos spielen und besser werden", SKATGO-132 — never reworded otherwise; 48px, `fHero`) — no lead
+  - the slogan alone as the H1 (`landingHeading`, the sub-pages' H1, navy, at the column's left; `entry_title`: "Free Skat play and progress",
+    German "Skat kostenlos spielen und besser werden", SKATGO-132 — never reworded otherwise; 16px under the top bar and above the cards: SKATGO-175, 「我觉得这个标题有点大，而且top margin偏大」, then 「改成这个字token如何？下面的margin要改」) — no lead
     (「这个副标题删了」), no buttons, no picture (SKATGO-120), never felt (Redline 4); the illustration stays only in the link
     previews (`og.mjs`);
   - then the ways in (`dims.homeWays`): on the left four colour cards two by two, each one link, `dims.homeCard` in shape — the shape, never the title, sets the height

@@ -33,7 +33,7 @@ export function EntryPage() {
   const { xp } = useLoaderData({ from: '/' })
   return (
     <div data-testid="entry" {...stylex.props(styles.root)}>
-      <h1 {...stylex.props(typography.landingHero, styles.title)}>{m.entry_title()}</h1>
+      <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.entry_title()}</h1>
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
         {/* The deal of the day stays "1 deal today" once played (SKATGO-135, the human: 「这个按钮文字不变」). */}
         <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
@@ -265,17 +265,19 @@ const styles = stylex.create({
   root: {
     display: 'flex',
     flexDirection: 'column',
-    gap: { default: space.x32, [bp.phone]: space.x24 },
     width: '100%',
     maxWidth: dims.landingColumn,
     marginInline: 'auto',
     boxSizing: 'border-box',
-    paddingTop: space.x32,
+    // Close under the top bar (SKATGO-175, the human: 「top margin偏大」; 32px before).
+    paddingTop: space.x16,
     paddingBottom: { default: space.x72, [bp.phone]: space.x36 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
   // Colour is stated, not inherited: the theme colours headings itself.
-  title: { margin: 0, color: color.navy, textWrap: 'balance' },
+  // The sub-pages' H1 (`landingHeading`, as "Daily Skat: 1 deal or a tournament of 6"), 16px above and below
+  // (SKATGO-175, the human: 「改成这个字token如何？下面的margin要改」).
+  title: { margin: 0, marginBottom: space.x16, color: color.navy, textWrap: 'balance' },
   ways: {
     display: 'grid',
     gridTemplateColumns: { default: dims.homeWays, [bp.cards]: dims.homeWaysNarrow },
@@ -350,6 +352,7 @@ const styles = stylex.create({
   guest: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: space.x12, flexGrow: 1, textAlign: 'center' },
   guestText: { margin: 0, color: color.slate, textWrap: 'balance' },
   more: {
+    marginTop: { default: space.x32, [bp.phone]: space.x24 },
     display: 'grid',
     // The ways in's columns, so each picture card stands under a colour card.
     gridTemplateColumns: { default: dims.homeWays, [bp.cards]: dims.homeWaysNarrow },

@@ -52,7 +52,6 @@ export const typography = stylex.create({
    *  headline and the button; now it is smaller, 22/18, and stays bold so it does not fade (SKATGO-91, the human:
    *  「字太多，字号太大」, then 「太短太淡了」 and 「字重不够，有点淡」).
    *  Both restate the family: the Astryx theme sets its own on every h1 and p, which the page does not load. */
-  landingHero: { fontFamily: family.body, fontSize: { default: fontSize.fHero, [bp.phone]: fontSize.fHeroPhone }, fontWeight: weight.black, lineHeight: leading.tight },
   landingHeroLead: { fontFamily: family.body, fontSize: { default: fontSize.f22, [bp.phone]: fontSize.f18 }, fontWeight: weight.bold, lineHeight: leading.ui },
   /** The site's name beside the mark in the front page header (SKATGO-31): the hero headline's face and weight. */
   landingBrand: { fontFamily: family.body, fontSize: { default: fontSize.f28, [bp.phone]: fontSize.f24 }, fontWeight: weight.black, lineHeight: leading.tight },

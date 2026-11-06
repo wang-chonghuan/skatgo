@@ -39,11 +39,6 @@ export const fontSize = stylex.defineVars({
   f25: '25px',
   f26_95: '26.95px',
   f72: '72px',
-  /** The front page's headline (SKATGO-69), the slogan — "Free Skat play and progress" since SKATGO-132 —
-   *  following the screen's width, up to 48px (36px on a phone) — one fourth above the 36px section headings, now that
-   *  the hero is type alone (SKATGO-120, the human: 「pc版上slogan字太大」; it was 66px beside the picture). */
-  fHero: 'min(48px, 5.2vw)',
-  fHeroPhone: 'min(36px, 8.6vw)',
   /** The table's three running totals on a phone (SKATGO-100): they share one cell of the info board, so they
    *  shrink with the screen rather than run past it. */
   fBoardTotal: 'min(24px, 5.2vw)',

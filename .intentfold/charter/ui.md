@@ -558,9 +558,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   - against the AI, `VsAiReview` in its after-deal form, the other three parts — first, where the deal counts (not a deal
     played again), its XP (`XpEarned`, SKATGO-172, 「打完一副牌，就要跳出来，得了多少xp……弄个toast来显示计算方法」): "+14 XP"
     (`appBtnStrong`, `go`; `slate` for a guest) and why, "Above the AI by 23" (a guest: "Sign in to earn XP and join this
-    week's board"), the tiers behind a circled question mark; and once, over the page at its top in the middle, a white
-    toast, "+14 XP" (`dialogTitle`) over the calculation ("You +40 · AI +17: Above the AI by 23"), gone after five seconds
-    or a tap; then the way on in the dialog's foot.
+    week's board"), the tiers behind a circled question mark; and once, over the page at its top in the middle, above the
+    dialog and clear of the way out, a white pill in one line, "+14 XP" (`appBtnStrong`, `go`) and the rule that applied,
+    "1–49 above the AI = 14 XP", gone after five seconds or a tap; then the way on in the dialog's foot.
 
   The dialog speaks in four levels only (SKATGO-146, 「结果卡片上的字太小」): the title `dialogTitle` (22), headings and
   numbers `appBtnStrong` (16), words `appText` (16), and the 13 bold of the You/AI tags and the play record's small labels

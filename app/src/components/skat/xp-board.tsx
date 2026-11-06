@@ -91,7 +91,7 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
                   <span {...stylex.props(styles.muted, styles.rank)}>{r.rank}</span>
                   <span data-testid="xp-board-name" {...stylex.props(styles.what)}>
                     {r.nickname}
-                    {r.you ? <> <Who side="you" /></> : null}
+                    {r.you ? <span {...stylex.props(styles.tag)}><Who side="you" /></span> : null}
                   </span>
                   <span data-testid="xp-board-streak" {...stylex.props(r.streak > 0 ? styles.streak : styles.muted)}>{r.streak > 0 ? `🔥 ${r.streak}` : '–'}</span>
                   <span {...stylex.props(typography.appBtnStrong, styles.score)}>{r.xp}</span>
@@ -184,6 +184,7 @@ const styles = stylex.create({
   // The player's own row, as the daily board marks it.
   own: { backgroundColor: color.goodSoft },
   rank: { minWidth: space.x24 },
+  tag: { marginInlineStart: space.x6 },
   what: { flexGrow: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   streak: { flexShrink: 0, color: color.amber, whiteSpace: 'nowrap' },
   score: { flexShrink: 0 },

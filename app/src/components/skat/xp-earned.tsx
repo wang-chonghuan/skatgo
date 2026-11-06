@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { useAccount } from '~/lib/use-account'
-import { XP, XP_FAR, type XpTier, xpOf } from '~/lib/skat/xp'
+import { XP, XP_FAR, type XpTier, xpOf, xpTier } from '~/lib/skat/xp'
 import { m } from '~/paraglide/messages'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
@@ -17,7 +17,15 @@ import { Modal } from './ui'
 /** How long the toast with a deal's XP stays, unless tapped away first. */
 const TOAST_MS = 5000
 
-const signed = (v: number) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0')
+/** A tier as the toast's rule says it, short: "1–49 below the AI". */
+const ruleText = (t: XpTier) =>
+  ({
+    farBelow: m.xp_rule_farBelow({ n: XP_FAR }),
+    below: m.xp_rule_below({ n: XP_FAR - 1 }),
+    same: m.xp_tier_same(),
+    above: m.xp_rule_above({ n: XP_FAR - 1 }),
+    farAbove: m.xp_rule_farAbove({ n: XP_FAR }),
+  })[t]
 
 /** The deal's difference to the AI in words: above or below by how much, or the same. */
 const versus = (diff: number | null) =>
@@ -26,9 +34,9 @@ const versus = (diff: number | null) =>
 /**
  * The XP a finished deal earned (SKATGO-172, the human: 「打完一副牌，就要跳出来，得了多少xp，或者在结算页面显示，弄个toast来显示计算
  * 方法」): in the result, under its title, "+14 XP" and why — above or below the AI by how much — with the tiers behind a
- * circled question mark; and once, over the page, a toast with the calculation, the player's score and the AI's, which
- * goes by itself or with a tap. A guest is told that signed-in players earn XP. `mine` and `ai` are the deal's
- * Seeger-Fabian scores in the player's seat, the AI's null when it has none.
+ * circled question mark; and once, over the page above the dialog, a toast in one line with the rule that applied
+ * ("+6 XP · 1–49 below the AI = 6 XP"), which goes by itself or with a tap. A guest is told that signed-in players earn
+ * XP. `mine` and `ai` are the deal's Seeger-Fabian scores in the player's seat, the AI's null when it has none.
  */
 export function XpEarned({ mine, ai }: { mine: number; ai: number | null }) {
   const account = useAccount()
@@ -42,7 +50,8 @@ export function XpEarned({ mine, ai }: { mine: number; ai: number | null }) {
   const diff = ai === null ? null : mine - ai
   const xp = xpOf(diff)
   const why = account ? versus(diff) : m.xp_guest()
-  const calc = ai === null ? versus(null) : `${m.xp_calc({ mine: signed(mine), ai: signed(ai) })}: ${versus(diff)}`
+  // The toast tells the rule that applied, which the line in the result does not repeat (SKATGO-172).
+  const rule = m.xp_rule({ tier: ruleText(xpTier(diff)), n: xp })
   return (
     <>
       <div data-testid="xp-earned" data-xp={xp} data-guest={account ? undefined : 'true'} {...stylex.props(styles.line)}>
@@ -56,8 +65,8 @@ export function XpEarned({ mine, ai }: { mine: number; ai: number | null }) {
       {toast
         ? createPortal(
             <button type="button" role="status" data-testid="xp-toast" onClick={() => setToast(false)} {...stylex.props(styles.toast)}>
-              <span {...stylex.props(typography.dialogTitle, account ? styles.plus : styles.plusGuest)}>{m.xp_earned({ n: xp })}</span>
-              <span {...stylex.props(typography.appText, styles.why)}>{account ? calc : m.xp_guest()}</span>
+              <span {...stylex.props(typography.appBtnStrong, account ? styles.plus : styles.plusGuest)}>{m.xp_earned({ n: xp })}</span>
+              <span {...stylex.props(typography.appText, styles.why)}>{rule}</span>
             </button>,
             document.body,
           )
@@ -119,24 +128,25 @@ const styles = stylex.create({
     outlineOffset: border.focusOffset,
     borderRadius: radii.column,
   },
-  // Over the page, at the top in the middle, above the dialog: a white card as wide as its words.
+  // Over the page, at the top in the middle, above the dialog and clear of the way out: a white pill as wide as its one
+  // line of words.
   toast: {
     position: 'fixed',
-    top: space.x16,
+    top: space.x8,
     left: 0,
-    right: 0,
+    // Centred in the width left of the way out, which sits in the top right corner (`dims.launcher`).
+    right: dims.launcher,
     zIndex: layer.tip,
     display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: space.x2,
+    alignItems: 'baseline',
+    gap: space.x8,
     width: 'max-content',
     maxWidth: dims.tipWidth,
     marginInline: 'auto',
-    paddingBlock: space.x12,
-    paddingInline: space.x20,
+    paddingBlock: space.x8,
+    paddingInline: space.x16,
     borderWidth: 0,
-    borderRadius: radii.panel,
+    borderRadius: radii.pill,
     backgroundColor: color.surface,
     boxShadow: elev.option,
     textAlign: 'center',

@@ -33,8 +33,8 @@ export function XpEarned({ mine, ai, declared }: { mine: number; ai: number | nu
   return (
     <>
       <div data-testid="xp-earned" data-xp={xp} data-guest={account ? undefined : 'true'} {...stylex.props(styles.line)}>
-        <span {...stylex.props(typography.appBtnStrong, account ? styles.plus : styles.plusGuest)}>{m.xp_earned({ n: xp })}</span>
-        <span {...stylex.props(typography.appText, styles.why)}>{why}</span>
+        <span {...stylex.props(typography.appBtnStrong, styles.pill, account ? styles.plus : styles.plusGuest)}>{m.xp_earned({ n: xp })}</span>
+        <span {...stylex.props(typography.appText, account ? styles.why : styles.whyGuest)}>{why}</span>
         <button type="button" data-testid="xp-earned-how" aria-label={m.xp_how()} title={m.xp_how()} onClick={() => setHow(true)} {...stylex.props(styles.help)}>
           <CircleHelp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
         </button>
@@ -79,13 +79,17 @@ export function XpHow({ onClose, testId }: { onClose: () => void; testId: string
 }
 
 const styles = stylex.create({
-  line: { display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: space.x8, rowGap: space.x2 },
-  plus: { color: color.go, whiteSpace: 'nowrap' },
-  plusGuest: { color: color.slate, whiteSpace: 'nowrap' },
-  why: { color: color.navy },
+  // One row (SKATGO-173, the human: 「看这截图，他妈的丑死了」): the XP as a pill at the left, why beside it — wrapping, if it
+  // must, within its own column — and the question mark at the right, all on the pill's middle.
+  line: { display: 'flex', alignItems: 'center', gap: space.x10 },
+  pill: { flexShrink: 0, paddingBlock: space.x2, paddingInline: space.x10, borderRadius: radii.pill, whiteSpace: 'nowrap' },
+  plus: { color: color.go, backgroundColor: color.goodSoft },
+  plusGuest: { color: color.slate, backgroundColor: color.page },
+  why: { flexGrow: 1, minWidth: 0, color: color.navy },
+  whyGuest: { flexGrow: 1, minWidth: 0, color: color.slate },
   help: {
     display: 'inline-flex',
-    alignSelf: 'center',
+    flexShrink: 0,
     margin: 0,
     padding: 0,
     borderWidth: 0,

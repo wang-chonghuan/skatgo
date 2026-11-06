@@ -543,10 +543,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   逐墩分析。四个标题，四块」): "Result of this deal", and against the AI "If the AI had played your cards", "Biggest difference
   from the AI" and "Every trick vs. the AI", the last its record folded under its heading, which is the line to tap. A
   private table has the first alone. Against the AI, where the deal counts (not a deal played again), the dialog's first
-  line is the deal's XP (`DealXp`/`XpEarned`, SKATGO-172/173, 「经验值放在打牌结果页的第一行，不要单独做一个弹窗」): "+12 XP" (`appBtnStrong`,
-  `go`; `slate` for a guest) and why, "Above the AI by 23", with "· +2 for your own game" when the player declared (a guest:
-  "Sign in to earn XP and join this week's board"), the tiers behind a circled question mark; "XP …" while the review
-  comes; no toast. The first part, top to bottom, each fact once:
+  line is the deal's XP (`DealXp`/`XpEarned`, SKATGO-172/173, 「经验值放在打牌结果页的第一行，不要单独做一个弹窗」), one row (「丑死了」):
+  "+12 XP" as a pill (`appBtnStrong`, `go` on `goodSoft`; `slate` on `page` for a guest), why beside it, "Above the AI by
+  23 · +2 own game" (a guest: "Sign in to earn XP", `slate`), wrapping only in its own column, and the circled question
+  mark at the row's right for the tiers; "XP …" while the review comes; no toast. The first part, top to bottom, each fact once:
   - the box, a `Panel` `good` when the player's side won and `bad` when it lost (`card` when all passed), holding only
     the title (`dialogTitle`): "Lina won Spades ♠", "You lost Grand", "All three passed" — and one line (`appText`) of
     why: "80 : 40 card points", a Null's "No trick taken" / "Took a trick", then Schneider or Schwarz, an announcement

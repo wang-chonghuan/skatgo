@@ -381,7 +381,7 @@
   "xp_tier_same": "Same as the AI",
   "xp_tier_above": "Above the AI by 1 to {n}",
   "xp_tier_farAbove": "Above the AI by {n} or more",
-  "xp_how_week": "🔥 days in a row with at least one deal. Signed-in players only; every Monday starts at 0.",
+  "xp_how_week": "🔥 days in a row with at least one deal; the streak carries on from week to week. Signed-in players only; XP starts at 0 every Monday.",
   "xp_empty": "No XP yet this week.",
   "xp_column": "XP",
   "xp_points": "{n} XP",

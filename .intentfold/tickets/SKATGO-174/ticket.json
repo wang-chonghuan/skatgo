@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-174",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-174",
+  "branch": "SKATGO-174-xp-live-board",
+  "base": "37ea2fd81f7a67ad358c69cd998774026efa8cee",
+  "ports": {
+    "web": 55174,
+    "multiplayer": 56174,
+    "database": 57174
+  }
+}

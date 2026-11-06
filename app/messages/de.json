@@ -381,7 +381,7 @@
   "xp_tier_same": "Gleich wie die KI",
   "xp_tier_above": "1 bis {n} über der KI",
   "xp_tier_farAbove": "{n} oder mehr über der KI",
-  "xp_how_week": "🔥 Tage in Folge mit mindestens einem Spiel. Nur angemeldete Spieler; jeden Montag geht es bei 0 los.",
+  "xp_how_week": "🔥 Tage in Folge mit mindestens einem Spiel; die Serie läuft von Woche zu Woche weiter. Nur angemeldete Spieler; die XP beginnen jeden Montag bei 0.",
   "xp_empty": "Diese Woche noch keine XP.",
   "xp_column": "XP",
   "xp_points": "{n} XP",

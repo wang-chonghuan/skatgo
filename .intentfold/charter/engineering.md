@@ -60,7 +60,9 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   `app/src/lib/skat/xp.ts` (held to its examples by `xp.test.ts`), counting the ids `player_aliases` names as one
   person as that person — rows written by hand, never ids in code — and answers every account with XP by name, the
   asker's row marked. The front page reads it on the server as nobody (`lib/xp-api.ts`, a minute's answer cached),
-  the browser through `/api/daily/xp` as the signed-in player. The web service is its only client.
+  the browser through `/api/daily/xp` as the signed-in player, and again every 15 s while the page is in view and at once
+  when it comes back, so the board follows the deals without a reload (SKATGO-174); a hidden page does not ask. The web
+  service is its only client.
 - **A player's record of play** (SKATGO-128) is read on request by `POST /daily/profile` (`multiplayer/src/profile.ts`),
   an account's only (the web's `/api/daily/profile` answers a guest 401): every tournament deal of the player's
   entries with its day's `benchmark`, of either size (the size-12 rows SKATGO-77 left are deals against the same AI), and every row of `play_deals` (player, game — `free:<pool>:<deal>:<start>` —

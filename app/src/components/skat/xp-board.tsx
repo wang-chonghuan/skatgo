@@ -23,13 +23,27 @@ import { XpHow } from './xp-earned'
  * question mark beside the title, in a `Modal`. On PC its frame is the Elo card's (SKATGO-123/140/144): `fill`, as tall as
  * where it sits, the list scrolling inside. Wherever the page is one column (`bp.cards`) the list shows the first five and
  * scrolls, nothing folded and nothing running sideways (the human: 「经验表，pc上不变，手机上显示前5名，然后可以滚动，不要横向滚动了」).
- * Rendered on the server as nobody; in the browser asked again as the player, so their row is marked.
+ * Rendered on the server as nobody; in the browser asked again as the player, so their row is marked, and then again
+ * every `XP_EVERY_MS` while the page is in view and at once when it comes back, so XP and streaks follow the deals
+ * without a reload (SKATGO-174, the human: 「我希望经验是实时更新的，最好不用刷新」); a hidden page does not ask.
  */
+/** How often an open front page asks for the board again. */
+const XP_EVERY_MS = 15_000
+
 export function XpBoard({ board: first, fill = false }: { board: Board; fill?: boolean }) {
   const [board, setBoard] = useState(first)
   const [how, setHow] = useState(false)
   useEffect(() => {
-    void readXpBoard().then((b) => b && setBoard(b))
+    const ask = () => {
+      if (document.visibilityState === 'visible') void readXpBoard().then((b) => b && setBoard(b))
+    }
+    ask()
+    const every = window.setInterval(ask, XP_EVERY_MS)
+    document.addEventListener('visibilitychange', ask)
+    return () => {
+      window.clearInterval(every)
+      document.removeEventListener('visibilitychange', ask)
+    }
   }, [])
   return (
     <Panel fill={fill}>

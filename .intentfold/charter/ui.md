@@ -237,7 +237,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **The front page** (`entry-page.tsx`), on white (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后
   显示下面的四个卡片，按我发你的两个响应式版本……长卡片做两个，一个是my progress……一个是 elo ranking」):
   - the slogan alone as the H1 (`landingHero`, navy, at the column's left; `entry_title`: "Free Skat play and progress",
-    German "Skat kostenlos spielen und besser werden", SKATGO-132 — never reworded otherwise; 48px, `fHero`) — no lead
+    German "Skat kostenlos spielen und besser werden", SKATGO-132 — never reworded otherwise; 36px, 26px on a phone, `fHero`, 16px under the top bar: SKATGO-175, 「我觉得这个标题有点大，而且top margin偏大」) — no lead
     (「这个副标题删了」), no buttons, no picture (SKATGO-120), never felt (Redline 4); the illustration stays only in the link
     previews (`og.mjs`);
   - then the ways in (`dims.homeWays`): on the left four colour cards two by two, each one link, `dims.homeCard` in shape — the shape, never the title, sets the height

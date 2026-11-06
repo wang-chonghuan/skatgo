@@ -270,7 +270,8 @@ const styles = stylex.create({
     maxWidth: dims.landingColumn,
     marginInline: 'auto',
     boxSizing: 'border-box',
-    paddingTop: space.x32,
+    // Close under the top bar (SKATGO-175, the human: 「top margin偏大」; 32px before).
+    paddingTop: space.x16,
     paddingBottom: { default: space.x72, [bp.phone]: space.x36 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },

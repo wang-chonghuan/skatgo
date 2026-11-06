@@ -20,7 +20,7 @@ export function BidValues({ hand, onClose }: { hand: Card[]; onClose: () => void
   const rows = GAMES.map((c) => {
     const t = matadors(hand, c)
     const base = baseValue(c)
-    return { key: contractName(c), name: contractName(c), count: `${matadorLabel(t.with, t.count)} · ${t.count + 1} × ${base}`, bid: base * (t.count + 1), hand: base * (t.count + 2) }
+    return { key: contractName(c), name: contractName(c), count: `${matadorLabel(t.with, t.count)}: ${t.count + 1} × ${base}`, bid: base * (t.count + 1), hand: base * (t.count + 2) }
   })
   rows.push(
     { key: 'null', name: 'Null', count: '', bid: NULL_VALUES.plain, hand: NULL_VALUES.hand },

@@ -521,7 +521,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   — the office lady in Lina's seat, the accountant in Noah's (SKATGO-168, 「默认是office lady和会计师，用户自己选择ai头像后，要能
   保存下来，以后再打都还是这个头像」); a seat that still held SKATGO-167's stored default counts as never chosen.
 - **Free play's "How high can I bid?"** (SKATGO-176): the bidding's `info` hint button opens a `Modal` under that title —
-  a table, one row a contract (♣ ♠ ♥ ♦ Grand, then Null and Null Ouvert), its columns Game, Matadors ("with 3 · 4 × 12",
+  a table, one row a contract (♣ ♠ ♥ ♦ Grand, then Null and Null Ouvert), its columns Game, Matadors ("with 3: 4 × 12",
   slate), Bid up to (`appBtnStrong`) and Hand; column heads `smallBold` slate, `hairline` rows; under it one slate line that it
   counts the ten cards in hand. The play's hint stays the lightbulb tab.
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the

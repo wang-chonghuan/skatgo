@@ -644,7 +644,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         ) : null}
 
         {/* Free play's bidding (SKATGO-176, the human: 「应该放到和右边抽屉标签对称的左边的标签，这个标签打开后，能显示这个叫牌分表」):
-            a white tab on the felt's left edge, the panel tab's mirror, opening every contract's value for the hand. */}
+            the hint's lightbulb tab on the felt's left edge, as while playing (「应该改成一个灯泡图标的，然后颜色最好也不要是白色」), opening
+            every contract's value for the hand. Over the drawer, which a phone opens for the bidding. */}
         {server?.round && game.phase === 'bidding' ? (
           <button
             type="button"
@@ -653,9 +654,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             aria-expanded={bidValues}
             data-testid="skat-bid-values-tab"
             onClick={() => setBidValues(true)}
-            {...stylex.props(styles.bidTab)}
+            {...stylex.props(styles.hintTab, styles.hintTabOverDrawer)}
           >
-            <ChevronRight size={icon.inline} strokeWidth={icon.outline} />
+            <Lightbulb size={icon.table} strokeWidth={icon.outline} />
           </button>
         ) : null}
 
@@ -2240,26 +2241,8 @@ const styles = stylex.create({
     boxShadow: elev.panel,
     cursor: 'pointer',
   },
-  // Free play's bidding values (SKATGO-176): the panel tab's mirror on the felt's left edge.
-  bidTab: {
-    display: 'flex',
-    position: 'absolute',
-    bottom: stage.tabBottom,
-    left: 0,
-    zIndex: layer.window,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: dims.panelTab,
-    height: dims.panelTabHeight,
-    padding: 0,
-    borderWidth: 0,
-    borderTopRightRadius: radii.panel,
-    borderBottomRightRadius: radii.panel,
-    backgroundColor: color.surface,
-    color: color.navy,
-    boxShadow: elev.panel,
-    cursor: 'pointer',
-  },
+  // Free play's bidding values (SKATGO-176): the hint tab, over the drawer a phone opens for the bidding.
+  hintTabOverDrawer: { zIndex: layer.window },
   panelTabOnDrawer: { right: { default: dims.sidePanel, [bp.phone]: dims.panelPhone } },
   panelBody: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, padding: space.x16, overflowY: 'auto', boxSizing: 'border-box' },
   // The body keeps its width while a pinned panel folds, so nothing inside reflows on the way.

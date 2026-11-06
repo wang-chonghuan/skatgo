@@ -26,8 +26,8 @@ import { Btn } from './ui'
 // The front page (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后显示下面的四个卡片……长卡片做两个，
 // 一个是my progress……一个是 elo ranking」): the slogan, then the ways in — four colour cards two by two, each a link
 // with its icon over its title (the deal of the day, free play, the course, the bidding practice since SKATGO-149), and beside them two long
-// white cards: the player's progress, its curve when there is one, leading to the record of play, and the week's XP
-// board (SKATGO-172, where SKATGO-123's Elo board stood). Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
+// white cards: the week's XP board (SKATGO-172, where SKATGO-123's Elo board stood, on top since), and the player's
+// progress, its curve when there is one, leading to the record of play. Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
 // hero buttons, no lead, no link row: the cards are the page. Rendered on the server; the curve in the browser.
 export function EntryPage() {
   const { xp } = useLoaderData({ from: '/' })
@@ -42,7 +42,7 @@ export function EntryPage() {
         {/* The bidding practice (SKATGO-149, the human: 「practice卡片的位置，做成一个叫牌练习的东西」): an auction's hammer; its
             title one line, "Bidding" (SKATGO-151). */}
         <Way to="/bidding-practice" section="bidding" tone="practice" Icon={Gavel} art={PRACTICE_ART} title={m.home_bidding()} />
-        <ProgressCard />
+        {/* The week's XP first, the player's progress under it (SKATGO-172, the human asked which goes on top: 「你建议？」). */}
         <div data-testid="entry-card" data-section="xp" {...stylex.props(styles.long, styles.board)}>
           {xp ? (
             <XpBoard board={xp} fill />
@@ -52,6 +52,7 @@ export function EntryPage() {
             </div>
           )}
         </div>
+        <ProgressCard />
       </div>
       {/* Under them the rest, as picture cards (SKATGO-135, the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」): a private
           table with the illustration the hero once had (SKATGO-33), and the forum with the human's picture of people at a
@@ -320,11 +321,11 @@ const styles = stylex.create({
   tileTitle: { margin: 0, color: color.onColor },
   // A long card: on PC in the third column, one row tall; under `bp.cards` the whole width.
   long: { gridColumn: { default: dims.homeLongColumn, [bp.cards]: dims.homeFullWidth }, minWidth: 0, minHeight: 0 },
-  progress: { gridRow: { default: dims.homeRowFirst, [bp.cards]: dims.homeRowAuto } },
+  progress: { gridRow: { default: dims.homeRowSecond, [bp.cards]: dims.homeRowAuto } },
   // On PC the XP board (the Elo board's place and size until SKATGO-172) is as tall as the cards beside it, its list scrolling inside (SKATGO-144, the human: 「高度不能超过它相邻
   // 卡片的高度，所以可以滚动，要一致」): no height of its own to size the row by, then the whole row's.
   board: {
-    gridRow: { default: dims.homeRowSecond, [bp.cards]: dims.homeRowAuto },
+    gridRow: { default: dims.homeRowFirst, [bp.cards]: dims.homeRowAuto },
     display: 'flex',
     flexDirection: 'column',
     height: { default: 0, [bp.cards]: 'auto' },

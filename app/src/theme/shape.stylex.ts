@@ -193,7 +193,7 @@ export const dims = stylex.defineVars({
   homeWays: 'repeat(2, minmax(0, 1fr)) minmax(0, 2fr)',
   homeWaysNarrow: 'repeat(2, minmax(0, 1fr))',
   homeCard: '5 / 4',
-  /** Where a long card stands: the third column, the progress card in the first row and the week's XP board in the second;
+  /** Where a long card stands: the third column, the week's XP board in the first row and the progress card in the second (SKATGO-172);
    *  under `bp.cards` the whole width, in the order written. */
   homeLongColumn: '3',
   homeFullWidth: '1 / -1',

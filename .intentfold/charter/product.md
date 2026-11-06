@@ -68,7 +68,7 @@ regulars' 941 deals the declared ones earned 8.13 a deal, the rest 9.50; 4 made 
 「同意你的决定」, then 「改成+2」); a replayed deal earns none. A week, Monday to Sunday of the tournament's days, sums its deals, and every Monday starts at
 0; no average. The front page shows every account with XP this week, the most first — rank, name, 🔥 days in a row with
 at least one deal (at least 1), the week's XP — the player's own row marked, and how XP is earned. After each deal the player sees
-its XP and why, and once a toast with the calculation; a guest is told that signed-in players earn XP. One person under
+its XP and why as the result's first line, every deal against the AI the deal of the day's included (SKATGO-173); a guest is told that signed-in players earn XP. One person under
 several ids counts as one, as the human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」).
 
 After each deal the player sees the deal's result and how the computer, named "AI", played the same deal from their

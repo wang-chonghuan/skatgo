@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-173",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-173",
+  "branch": "SKATGO-173-xp-first-line",
+  "base": "dbaf019",
+  "ports": { "web": 55173, "multiplayer": 56173, "database": 57173 }
+}

@@ -760,29 +760,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               ))}
             </div>
           </section>
-
-          <div data-testid="skat-strip" {...stylex.props(styles.strip)}>
-            {tournament ? (
-              <Pill tone="dark">
-                <span data-testid="daily-progress" data-deal={tournament.deal + 1}>{m.daily_deal_of({ n: tournament.deal + 1, of: tournament.of, total: tournament.totals[ME] })}</span>
-              </Pill>
-            ) : server?.round ? (
-              <Pill tone="dark">
-                <span data-testid="free-progress" data-deal={server.round.deal + 1} data-total={totals?.[ME]}>{m.daily_deal_of({ n: server.round.deal + 1, of: server.round.of, total: totals?.[ME] ?? 0 })}</span>
-              </Pill>
-            ) : room ? (
-              <Pill tone="dark">
-                <span data-testid="room-progress" data-deal={room.deal}>{m.info_deal_n({ n: room.deal })}</span>
-              </Pill>
-            ) : null}
-            {contract ? <Pill tone="amber">{contractName(contract)}{game.declaration?.hand ? ' · Hand' : ''}{game.declaration?.ouvert ? ' · Ouvert' : ''}</Pill> : null}
-            {game.declarer !== null ? <Pill tone="quiet">{m.table_declarer({ name: nameOf(game.declarer), bid: game.bid })}</Pill> : null}
-            {game.phase === 'play' || game.phase === 'trickEnd' ? (
-              <>
-                <Pill tone="quiet">{boardTricks ? m.table_tricks({ declarer: tricksTaken.declarer, defenders: tricksTaken.defenders }) : m.table_points({ declarer: points.declarer, defenders: points.defenders })}</Pill>
-              </>
-            ) : null}
-          </div>
         </div>
         )}
       </aside>
@@ -2301,7 +2278,6 @@ const styles = stylex.create({
   },
   chipPass: { backgroundColor: color.go, color: color.onColor },
   chipBid: { backgroundColor: color.tintHearts, color: color.plate },
-  strip: { display: 'flex', flexWrap: 'wrap', gap: space.x6, justifyContent: 'center' },
 
   // A row of moves is centred under what is asked, in the drawer and in a dialog alike.
   row: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.x10 },

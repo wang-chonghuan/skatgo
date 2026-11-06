@@ -404,7 +404,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   in the board's order (left, "Du", right), then one row a finished deal under a hairline — its number, the game ("Pik ♠
   Hand", "Eingepasst"), each seat's points, the declarer's bold, pale where someone else sat that deal — then "Gesamt"
   (`smallBold`) under a heavier line, and "Weiterspielen" (`go`, full width) at its foot. The
-  board's deal line reads "Spiel 3", where free play reads "Spiel 3 von 6", and the panel's strip the same pill. At a deal's
+  board's deal line reads "Spiel 3", where free play reads "Spiel 3 von 6". At a deal's
   end, the way on, once pressed, reads "Warten auf <Namen>" and takes no tap. Nothing of the room stands on the felt. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
@@ -535,12 +535,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`quiet`, which asks once more: "Ja, neue Runde" `stop`, "Nein, weiterspielen" `quiet`), and "Tisch
   verlassen" (`stop`). The side panel has no way out of its own. The button stays over the table's dialogs,
   which start below it, and keeps to the felt beside a pinned panel; an open drawer covers it (SKATGO-100).
-- **The info board** (SKATGO-100): a cell's content never runs past its padding. Hand and Ouvert stand on
+- **The info board** (SKATGO-100): what it shows stands nowhere else on the table — the side panel repeats none of it (SKATGO-177
+  removed SKATGO-26's strip of pills there, the human: 「顶部四个方块里已经有的信息，谁又在抽屉里加了一遍？」, 「在本工单里全部删掉」). A cell's content never runs past its padding. Hand and Ouvert stand on
   the small line under the contract; a long name wraps, a small line ends in an ellipsis; the three running
   totals share the cell in equal columns, smaller on a phone (`infoTotal`) and smaller again once one has four
   digits (`infoTotalLong`). The "Augen" cell is a button with nothing of a button's look: a tap switches it to
   "Stiche", the tricks each side has taken, and back, and the choice stays in this browser (SKATGO-127, the human:
-  「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」); the strip's pill follows it.
+  「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」).
 - **A deal's result** (SKATGO-166, the human: 「以常玩的用户的视角，重要的在前面。信息不重复。不要用超过4种层级的字体。一个信息只出现在一个
   地方……红框和绿框里的东西不要塞太多」) is one dialog at a private table and at every table against the AI — the tournament,
   free play, lesson 11 — the course's own table keeping its teaching settlement. It is four parts, each its heading

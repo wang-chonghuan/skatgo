@@ -62,8 +62,9 @@ Beside the daily boards stands the week's experience points, XP (SKATGO-172, rep
 「看和ai的得分差距，比ai高了x分，一样了y分，低了z分，都加分，但是根据差值换算，作为经验值，可以每周重置」, 「那就不要平均值」, 「elo的卡片和
 算法都删除」): every deal a signed-in player plays against the AI — free play, the deal of the day, the tournament's deals
 — earns XP by its Seeger-Fabian score against the AI's in the player's seat on the same cards: 50 or more below 4, 1 to
-49 below 6, the same 10, 1 to 49 above 14, 50 or more above 20 (a deal without the AI's result counts as the same); a
-replayed deal earns none. A week, Monday to Sunday of the tournament's days, sums its deals, and every Monday starts at
+49 below 6, the same 10, 1 to 49 above 14, 50 or more above 20 (a deal without the AI's result counts as the same), and
+4 more when the player declared, won or lost, so taking a game is never worse for XP than passing it by (on the
+regulars' 941 deals the declared ones earned less than the rest; the human: 「同意你的决定」); a replayed deal earns none. A week, Monday to Sunday of the tournament's days, sums its deals, and every Monday starts at
 0; no average. The front page shows every account with XP this week, the most first — rank, name, 🔥 days in a row with
 at least one deal (at least 1), the week's XP — the player's own row marked, and how XP is earned. After each deal the player sees
 its XP and why, and once a toast with the calculation; a guest is told that signed-in players earn XP. One person under

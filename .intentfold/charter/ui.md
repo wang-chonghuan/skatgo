@@ -263,7 +263,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     保存你的表现记录以及ai分析，中间放个登录按钮」); and the week's XP
     board (`xp-board.tsx`, SKATGO-172, in the Elo board's place, size and behaviour: 「这个卡片大小规格行为，还和当前的elo卡片一样」) —
     its title with a circled question mark (`info`) opening how XP is earned in a `Modal` (`XpHow`: one line, the five
-    tiers in a table, one line on the week); the title "Weekly XP & streaks" / "Wochen-XP & Serien", short and naming
+    tiers in a table, one line on the own game's +4, one line on the week); the title "Weekly XP & streaks" / "Wochen-XP & Serien", short and naming
     both, and no line under it (「Every deal earns XP · starts again in 3 days 这句去掉」, 「用weekly XP 是否更好，哪个更短，德语呢」,
     「steak也要放上去吧」); every account with XP this week — rank, name, 🔥 days in a row (`amber`, at least 1: 「1天的也要显示个火焰，1就行」), the week's XP
     (`appBtnStrong`) — the player's own row on `goodSoft` with the "You" tag, close rows at `appText`, one column, the list
@@ -557,10 +557,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     "overbid, scored at 36" between;
   - against the AI, `VsAiReview` in its after-deal form, the other three parts — first, where the deal counts (not a deal
     played again), its XP (`XpEarned`, SKATGO-172, 「打完一副牌，就要跳出来，得了多少xp……弄个toast来显示计算方法」): "+14 XP"
-    (`appBtnStrong`, `go`; `slate` for a guest) and why, "Above the AI by 23" (a guest: "Sign in to earn XP and join this
-    week's board"), the tiers behind a circled question mark; and once, over the page at its top in the middle, above the
+    (`appBtnStrong`, `go`; `slate` for a guest) and why, "Above the AI by 23", with "· +4 for your own game" when the player
+    declared (a guest: "Sign in to earn XP and join this week's board"), the tiers behind a circled question mark; and once, over the page at its top in the middle, above the
     dialog and clear of the way out, a white pill in one line, "+14 XP" (`appBtnStrong`, `go`) and the rule that applied,
-    "1–49 above the AI = 14 XP", gone after five seconds or a tap; then the way on in the dialog's foot.
+    "1–49 above AI = 14 XP", or "same as AI 10 + own game 4" for a declared game, gone after five seconds or a tap; then the way on in the dialog's foot.
 
   The dialog speaks in four levels only (SKATGO-146, 「结果卡片上的字太小」): the title `dialogTitle` (22), headings and
   numbers `appBtnStrong` (16), words `appText` (16), and the 13 bold of the You/AI tags and the play record's small labels

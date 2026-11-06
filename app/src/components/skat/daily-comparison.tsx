@@ -173,7 +173,7 @@ export function VsAiReview({ ask, cacheKey, names, after = false, xp = false }: 
     return (
       <div data-testid="vs-ai-review" data-state="ready" {...stylex.props(styles.parts)}>
         {/* The deal's XP once the AI's game is in, where the deal counts (SKATGO-172). */}
-        {xp ? <XpEarned mine={review.mine.scores[PLAYER]} ai={review.ai ? review.ai.scores[PLAYER] : null} /> : null}
+        {xp ? <XpEarned mine={review.mine.scores[PLAYER]} ai={review.ai ? review.ai.scores[PLAYER] : null} declared={review.mine.declarer === PLAYER} /> : null}
         <AiSeat review={review} names={names ?? youNames()} />
         {review.mine.declarer === null ? null : <WorstTrick review={review} names={names ?? youNames()} after />}
         {review.mine.declarer === null ? null : <PlayRecord review={review} names={names ?? youNames()} after />}

@@ -8,7 +8,7 @@ import type { Store } from './store'
 // the board. Computed on request from the rows already kept, as the boards are; only names leave here.
 
 /** Every deal of the week from `since`, with the player's Seeger-Fabian score and the AI's on the same cards (null when
- *  the day was dealt before the AI played it). */
+ *  the day was dealt before the AI played it), and whether the player declared it. */
 const WEEK_DEALS = `
   WITH d AS (
     SELECT e.player, e.day, x.mine, d.deals -> (x.i - 1)::int -> 'benchmark' -> 'summary' AS ai
@@ -18,7 +18,8 @@ const WEEK_DEALS = `
     UNION ALL
     SELECT player, day, mine, ai FROM play_deals WHERE day >= $1
   )
-  SELECT coalesce(a.same_as, d.player) AS person, (d.mine -> 'scores' ->> 0)::int AS mine, (d.ai -> 'scores' ->> 0)::int AS ai
+  SELECT coalesce(a.same_as, d.player) AS person, (d.mine -> 'scores' ->> 0)::int AS mine, (d.ai -> 'scores' ->> 0)::int AS ai,
+         (d.mine ->> 'declarer') = '0' AS declared
     FROM d LEFT JOIN player_aliases a ON a.player = d.player`
 
 /** Every day each person played at least one deal, for the streak. */
@@ -34,7 +35,7 @@ export async function weeklyXp(store: Store, who: string | null, today: string):
   const xp = new Map<string, number>()
   for (const d of deals) {
     if (!(d.person as string).startsWith('user:')) continue
-    xp.set(d.person, (xp.get(d.person) ?? 0) + xpOf(d.ai === null ? null : (d.mine as number) - (d.ai as number)))
+    xp.set(d.person, (xp.get(d.person) ?? 0) + xpOf(d.ai === null ? null : (d.mine as number) - (d.ai as number), d.declared === true))
   }
   const people = [...xp].sort((a, b) => b[1] - a[1])
   const { rows: dayRows } = await store.pool.query(DEAL_DAYS)

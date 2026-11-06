@@ -6,14 +6,18 @@ import { daysToReset, streakOf, weekStart, xpOf, xpTier } from './xp'
 
 describe('a deal’s XP', () => {
   it('every deal earns XP, more the better it went against the AI', () => {
-    expect([-120, -50, -49, -1, 0, 1, 49, 50, 200].map(xpOf)).toEqual([4, 4, 6, 6, 10, 14, 14, 20, 20])
+    expect([-120, -50, -49, -1, 0, 1, 49, 50, 200].map((d) => xpOf(d))).toEqual([4, 4, 6, 6, 10, 14, 14, 20, 20])
   })
   it('a deal without the AI’s result counts as the same', () => {
     expect(xpTier(null)).toBe('same')
     expect(xpOf(null)).toBe(10)
   })
+  it('a game the player declared earns 4 more, won or lost', () => {
+    expect([xpOf(0, true), xpOf(-120, true), xpOf(60, true)]).toEqual([14, 8, 24])
+    expect(xpOf(0, false)).toBe(10)
+  })
   it('a week is the sum of its deals', () => {
-    expect([23, 0, -60, 75].map(xpOf).reduce((a, b) => a + b)).toBe(14 + 10 + 4 + 20)
+    expect([23, 0, -60, 75].map((d) => xpOf(d)).reduce((a, b) => a + b)).toBe(14 + 10 + 4 + 20)
   })
 })
 

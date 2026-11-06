@@ -94,6 +94,8 @@ export const dims = stylex.defineVars({
   drawerHandle: '40px',
   drawerHandleHeight: '4px',
   hintTabWidth: '48px',
+  /** A free-play power-up's icon square in the lightbulb's dialog (SKATGO-177). */
+  powerUpIcon: '40px',
   hintTabHeight: '56px',
   panelPhone: 'min(360px, 88vw)',
   panelTab: '28px',

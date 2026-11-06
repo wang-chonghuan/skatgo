@@ -464,7 +464,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   standard web-app table. Free play's search entry is the front page.
 - **What a table says** (SKATGO-134; the line is hidden while it has nothing to say, SKATGO-143): the course's tables — its own and lesson 11's — explain every
   step as before. A real table (free play, the daily ones, a private table, a shared deal's practice) says at most one
-  short line, the buttons the rest; free play keeps its few words with its hints back (SKATGO-176). In the bidding it says whom the player bids with and what an answer means, as the
+  short line, the buttons the rest. In the bidding it says whom the player bids with and what an answer means, as the
   course does (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」): on the speaker's turn "Du reizt Lina – sag den
   nächsten Wert oder spring höher."; asked to hold, "Lina fragt dich: „18?“" with "Ja (ich halte 18)" / "Passe"; no line
   before the skat is picked up, while putting two away or while playing; forehand alone, "Beide haben gepasst – spielst du 18?"; the
@@ -520,11 +520,17 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   stay; only a face the player chose is kept, in this browser, for every later game; a seat never chosen wears the default
   — the office lady in Lina's seat, the accountant in Noah's (SKATGO-168, 「默认是office lady和会计师，用户自己选择ai头像后，要能
   保存下来，以后再打都还是这个头像」); a seat that still held SKATGO-167's stored default counts as never chosen.
-- **Free play's "How high can I bid?"** (SKATGO-176): no hint button in the bidding drawer; while bidding, the hint's tab on the
-  felt's left edge — the lightbulb in `color.hintTab`, as while playing — opens a `Modal` under that title —
-  a table, one row a contract (♣ ♠ ♥ ♦ Grand, then Null and Null Ouvert), its columns Game, Matadors ("with 3: 4 × 12",
-  slate), Bid up to (`appBtnStrong`) and Hand; column heads `smallBold` slate, `hairline` rows; under it one slate line that it
-  counts the ten cards in hand. The play's hint stays the lightbulb tab.
+- **Free play's power-ups** (SKATGO-177, `power-ups.tsx`): the hint's tab on the felt's left edge — the lightbulb in
+  `color.hintTab`, over the drawer — through the whole deal opens a `Modal`, "Power-ups" / "Extras", with three white cards in
+  the order a deal goes (`radii.panel`, a `hairline` border; the one that serves now in a `go` border, `border.tile`): an
+  icon square (`dims.powerUpIcon`) in a section tile's colour — win chances `tileNavy` (lucide `Percent`), put away
+  `tileOrange` (`ArrowDownToLine`), card counter `tileGreen` (`ListChecks`) — beside its name (`appBtnStrong`, navy). The one
+  that serves now adds its line (`appText`, slate), a `go` "Now" `Pill` and its content; the others say only when they serve
+  (`smallBold`, slate). Win chances: a table, Game (its matadors under the name, `meta`, one line), Value, Hand, "Win at 22" — the
+  number the player would say or hold now — then one `meta` line on what the numbers are. Put away: the two cards (`sm`) and
+  "The AI puts these away and plays **Diamonds ♦**." Card counter: "Your side **47** · 14 more to 61", then a table — Trumps and
+  each side suit, the cards still out (their count bold, then the cards), and who is void. The dialog keeps the result
+  dialog's four levels (SKATGO-146).
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),
   on every full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"

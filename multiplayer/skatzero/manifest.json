@@ -99,5 +99,12 @@
     "sha256": "7b16d22fa0528898a8a972b65f98a0b9422b8dab9ccec34dc28cc0fff4a5b146",
     "deals": 1000,
     "seed": "skatgo-free-pool/1"
+  },
+  "freeOdds": {
+    "name": "free-odds.json.gz",
+    "bytes": 32659,
+    "sha256": "ac3e13a1cd7e279ae236f35f0bc71c15c14742d681bd0662d9e8538a1cd0b560",
+    "deals": 1000,
+    "pool": "7b16d22fa0528898a8a972b65f98a0b9422b8dab9ccec34dc28cc0fff4a5b146"
   }
 }

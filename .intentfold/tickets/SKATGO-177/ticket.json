@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-177",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-177",
+  "branch": "SKATGO-177-table-items",
+  "base": "4098a397d8a25c292ad6f8bdc83d339d80a23e0d",
+  "ports": { "web": 55177, "multiplayer": 56177, "database": 57177 }
+}

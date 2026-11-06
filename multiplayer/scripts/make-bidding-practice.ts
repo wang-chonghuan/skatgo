@@ -110,7 +110,7 @@ function kindOf(q: Practice, hand: Card[]): Kind {
   return q.contract === 'pass' ? 'pass' : r === 'pass' ? 'play' : 'game'
 }
 
-const pool = await loadPool(DIR)
+const pool = await loadPool(DIR, { odds: false })
 const found: Record<Kind, Practice[]> = { routine: [], pass: [], play: [], game: [], far: [], border: [] }
 pool.deals.forEach((d, i) => {
   const dealt = deal(d.dealer, d.deck.split(' ').map(poolCard))

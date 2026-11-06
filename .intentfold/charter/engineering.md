@@ -113,7 +113,7 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   never features, in bidding or card play. Since SKATGO-40 free play (`/play`) and lesson 11's game
   play the same SkatZero computers on the server, their bidding taken from a committed pool of deals
   (`multiplayer/skatzero/free-pool.json.gz`, label `skatzero@1fe5cab`). Rooms and hints keep the
-  heuristics; the hints are the course's own table's, lesson 11's and, for now, free play's (SKATGO-176, after SKATGO-130). Since SKATGO-79 SkatZero also reviews a finished deal (shown since SKATGO-145 as the one trick of the biggest difference): at each of the
+  heuristics; the hints are the course's own table's and lesson 11's only — free play has its power-ups instead (SKATGO-177). Since SKATGO-79 SkatZero also reviews a finished deal (shown since SKATGO-145 as the one trick of the biggest difference): at each of the
   player's plays it values every legal card as it weighs its own choice (`Policy.ranked`), and
   `judgePlays` in `src/computers.ts` keeps the plays whose card fell below its best, furthest first
   (`DealReview.differs`). `/daily/review` and `/free/review` work it out on request and store no review;
@@ -174,7 +174,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/public/sounds/`, `app/src/lib/skat/sounds.ts` | the table's card sounds (SKATGO-101): a riffle when a deal is dealt, a card set down for each card played, a soft slide when a trick is gathered in — the lightest of six sets the human tried — played through Web Audio and on by default, with a switch in the settings ("Töne"). The files are Kenney's Casino Audio (CC0, its licence beside them), trimmed and levelled to MP3 by `.intentfold/tickets/SKATGO-101/make-sounds.sh` — regenerate them, never edit them |
 | `app/src/components/skat/score-sheet-page.tsx`, `print-links.tsx`, `app/src/lib/printables.ts`, `app/public/downloads/` | the printables (SKATGO-53): the score sheet (its Seeger-Fabian bonuses are `SEEGER_FABIAN` in `tournament.ts`); the download button and the links to the printables; which PDF belongs to which page; the committed PDFs, made by `app/scripts/make-printables.mjs` (Tools). Each PDF is served with a canonical Link header naming its page, set in `app/vite.config.ts` from `lib/printables.ts` and `lib/origin.ts` |
 | `app/src/components/skat/daily-page.tsx`, `daily-table.tsx`, `daily-comparison.tsx` | `/daily` with the tournament's button, result, board and table; `/daily/play` is its full-screen page. `daily-comparison.tsx` holds `ScoreSheet`, `VsAiTable` (one collapsible row per finished deal with the player's and the computer's score, opening to the deal's review, and the tournament's score sheet — SKATGO-42, SKATGO-48, SKATGO-79, SKATGO-81) and a deal's review against the AI (`VsAiReview`: the bidding and the trick of the biggest difference, SKATGO-145), which every result against the AI uses too |
-| `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy (`new`, `act`, `resume`, `review`) and its per-address limits, the browser's calls and the game carried across a change of language (SKATGO-79), and the table free play and lesson 11 use (`GameTable` with a `server` source; hints for lesson 11 and, for now, free play, SKATGO-176); free play's round of six deals — its progress, its finished deals with the AI's, the next deal's dealer asked of `/free/new`, and its result (SKATGO-88) |
+| `app/src/lib/free-handler.ts`, `app/src/lib/free-api.ts`, `app/src/components/skat/server-table.tsx` | free play on the server (SKATGO-40): the web's `/api/free/*` proxy (`new`, `act`, `resume`, `review`) and its per-address limits, the browser's calls and the game carried across a change of language (SKATGO-79), and the table free play and lesson 11 use (`GameTable` with a `server` source; hints for lesson 11 only; free play's power-ups, SKATGO-177); free play's round of six deals — its progress, its finished deals with the AI's, the next deal's dealer asked of `/free/new`, and its result (SKATGO-88) |
 | `multiplayer/` | room transport, admission, persistence, recovery, backend verification and deployment; `src/daily.ts` the daily tournament; `src/free.ts` free play; `src/computers.ts` the SkatZero computer turns both share; `scripts/make-free-pool.ts` the one-off generator of free play's pool |
 
 **Key decisions**
@@ -260,6 +260,14 @@ also built from the repository root. Neither project imports the other's runtime
   it was overbid, Schneider or Schwarz; it is written when the deal ends, for the player's deals and
   the computer's alike, and read as stored. There is no replay to fill it in for older records: the
   human ruled out compatibility code, and production's earlier days were deleted and re-dealt.
+- **Free play's power-ups** (SKATGO-177) are worked out where they cost least. The win chances are SkatZero's
+  `seatGames(...).made` for the player's seat of every pool deal — about a second of CPU a hand, so never on request — made
+  once by `multiplayer/scripts/make-free-odds.ts` into `multiplayer/skatzero/free-odds.json.gz` (per deal, C S H D G: whole
+  percent per `BIDS` entry), its manifest entry `freeOdds` naming the pool's SHA-256 it belongs to; `loadPool` checks it like the
+  pool, so a changed pool stops the service until its odds are made again. `POST /free/odds` (the game's token) returns the
+  deal's row; `POST /free/putaway` answers SkatZero's put-away and game (`putAwayOf` in `src/computers.ts`, what the computers
+  act on) only once the player has picked up and not yet put away. The card counter is the browser's, from the seat's view
+  (`components/skat/power-ups.tsx`). Neither route records anything.
 - **A free-play game is a deal from a committed pool, and its state travels with the page**
   (SKATGO-40).
   - The pool holds 1,000 deals (seed `skatgo-free-pool/1`). For every seat (since SKATGO-61) it stores

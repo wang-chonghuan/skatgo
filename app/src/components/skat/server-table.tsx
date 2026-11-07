@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { type GameMode, track } from '~/lib/analytics'
-import { type FreeError, freeAct, freeNew, freeOdds, freePutAway, freeReplay, freeResume, freeReview, freeTalk, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
+import { type FreeError, freeAct, freeNew, freeOdds, freeReplay, freeResume, freeReview, freeTalk, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
 import { useTableTalk } from '~/lib/table-talk'
 import { type Move, type Seat, next as nextSeat } from '~/lib/skat/game'
 import type { Contract } from '~/lib/skat/cards'
@@ -266,7 +266,7 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         newRound: mode === 'free' ? newRound : undefined,
         // Lesson 11 keeps its hints; free play's help is its power-ups (SKATGO-177, the human: 「不要出牌提示，出牌提示让人不思考」).
         hints: mode === 'lesson',
-        powerUps: mode === 'free' && token ? { odds: () => freeOdds(token), putAway: () => freePutAway(token) } : undefined,
+        powerUps: mode === 'free' && token ? { odds: () => freeOdds(token) } : undefined,
         talk,
       }}
     />

@@ -50,7 +50,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { stage } from '../../theme/table.stylex'
 import { typography } from '../../theme/type'
 import { Fan, flightId } from './card-row'
-import type { FreeError, FreeOdds, FreePutAway } from '~/lib/free-api'
+import type { FreeError, FreeOdds } from '~/lib/free-api'
 import { type AskReview, DealXp, ResultPart, ScoreTable, VsAiReview, dailyAsk, gameName } from './daily-comparison'
 import { SettingsDialog } from './frame'
 import { PowerUps, powerUpOf } from './power-ups'
@@ -138,9 +138,9 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   /** Lesson 11 keeps the hints (SKATGO-130, 「11课的保留」); free play has none — its help is the power-ups (SKATGO-177, the
    *  human: 「不要出牌提示，出牌提示让人不思考，没用」). */
   hints?: boolean
-  /** Free play's power-ups (SKATGO-177): the deal's win chances and SkatZero's put-away, asked of the server with the
-   *  game's token. */
-  powerUps?: { odds: () => Promise<FreeOdds | FreeError>; putAway: () => Promise<FreePutAway | FreeError> }
+  /** Free play's power-ups (SKATGO-177): the deal's win chances, asked of the server with the game's token; the put-away
+   *  tips and the card counter need nothing from it. */
+  powerUps?: { odds: () => Promise<FreeOdds | FreeError> }
   /** Free play's round of six deals (SKATGO-88): which deal this is (from 0), of how many, and each seat's
    *  Seeger-Fabian total over the deals before it (SKATGO-166). */
   round?: { deal: number; of: number; totals: [number, number, number] }
@@ -770,7 +770,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
       {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
       {powerUps && server?.powerUps && powerUpOf(game) ? (
-        <PowerUps game={game} nameOf={nameOf} odds={server.powerUps.odds} putAway={server.powerUps.putAway} onClose={() => setPowerUps(false)} />
+        <PowerUps game={game} nameOf={nameOf} odds={server.powerUps.odds} onClose={() => setPowerUps(false)} />
       ) : null}
 
       {/* A room's statistics (SKATGO-165), over the table like its other dialogs; the way back is the menu's first item. */}

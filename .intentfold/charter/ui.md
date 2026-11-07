@@ -524,8 +524,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `color.hintTab`, over the drawer — stands whenever a power-up serves the moment and opens that one in a `Modal` under its
   name, nothing to choose (the human: 「不要让用户去选择了」). Win chances (bidding): a table — Game (its matadors under the name,
   `meta`, one line), Value, Hand, "Win at 22", the number the player would say or hold now — then one `meta` line on what the
-  numbers are. Game & put away (the skat picked up, until the game is chosen): "The AI plays **Diamonds ♦** and puts these two
-  away:" over the two cards (`sm`). Card counter (play): a table, no points (「your side 几分这个不用显示」) — Trumps and each side
+  numbers are. Game & put away (the skat picked up, until the game is chosen): four numbered rules (the number in a navy
+  `dims.badge` circle), each its rule (`appBtnStrong`), why (`appText`, slate) and — all but the last — one pointer at the
+  twelve cards on `color.page` (`radii.tag`), "With your Jacks, your longest suit makes **7** trumps."; no card and no game
+  named. Card counter (play): a table, no points (「your side 几分这个不用显示」) — Trumps and each side
   suit, the cards still out (`appText`, navy; no count) and who is void: a name, "both" — also whenever nothing of it is out —
   or "—". The dialog keeps the result
   dialog's four levels (SKATGO-146).

@@ -265,9 +265,9 @@ also built from the repository root. Neither project imports the other's runtime
   once by `multiplayer/scripts/make-free-odds.ts` into `multiplayer/skatzero/free-odds.json.gz` (per deal, C S H D G: whole
   percent per `BIDS` entry), its manifest entry `freeOdds` naming the pool's SHA-256 it belongs to; `loadPool` checks it like the
   pool, so a changed pool stops the service until its odds are made again. `POST /free/odds` (the game's token) returns the
-  deal's row; `POST /free/putaway` answers SkatZero's put-away and game (`putAwayOf` in `src/computers.ts`, what the computers
-  act on) only once the player has picked up and not yet put away. The card counter is the browser's, from the seat's view
-  (`components/skat/power-ups.tsx`). Neither route records anything.
+  deal's row and records nothing. The put-away tips (`lib/skat/put-away-tips.ts`, plain rules over the declarer's twelve
+  cards) and the card counter (from the seat's view) are the browser's (`components/skat/power-ups.tsx`); the AI's put-away
+  is never asked for or shown (the human: 「不留看ai的扣法」).
 - **A free-play game is a deal from a committed pool, and its state travels with the page**
   (SKATGO-40).
   - The pool holds 1,000 deals (seed `skatgo-free-pool/1`). For every seat (since SKATGO-61) it stores

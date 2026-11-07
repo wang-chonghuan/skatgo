@@ -5,7 +5,7 @@ import express from 'express'
 import { z } from 'zod'
 import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
-import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, putAwayOf, replayLog, reviewOf } from './computers'
+import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
 import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals, roomOnly } from './model'
 import { BIDS, type HandMode } from './skatzero/bidding'
 import { type Policy, viewOf } from './skatzero/policy'
@@ -239,22 +239,14 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     return reviewOf(end, await judgePlays(policy()!, playsOf(d.dealer, deck, t.log)), { ai: summarize(ai), aiAuction: auctionOf(ai) })
   }))
   // Free play's power-ups (SKATGO-177, the human: 「先把记牌器，叫牌胜率，该扣那两张，做成三个道具」). Win chances: the deal's
-  // prepared chances for the player's seat — its own ten cards only, nothing of anyone else's. Put away: SkatZero's two
-  // cards and game for the player's twelve, once the player has picked up the skat — before putting away or while choosing.
+  // prepared chances for the player's seat — its own ten cards only, nothing of anyone else's. The put-away tips and the
+  // card counter are the browser's: no answer of the AI's on which two to put away (the human: 「不留看ai的扣法」).
   router.post('/odds', run(async (body) => {
     const i = tokenInput.parse(body)
     const { p, t } = opened(i.token)
     if (!p.odds) throw new ComputerFailed('odds_missing')
     const row = p.odds[t.id]
     return { bids: BIDS, made: Object.fromEntries(ODDS_MODES.map((m, k) => [m, row[k]])) }
-  }))
-  router.post('/putaway', run(async (body) => {
-    const i = tokenInput.parse(body)
-    const { p, t } = opened(i.token)
-    const d = p.deals[t.id]
-    const g = replayLog(d.dealer, deckOf(d.deck), t.log)
-    if ((g.phase !== 'skat' && g.phase !== 'declare') || g.declarer !== PLAYER || !g.pickedUp) throw new Rejected('not_at_put_away')
-    return putAwayOf(policy()!, g, PLAYER)
   }))
   // Lina's and Noah's table talk (SKATGO-142): after a reply, the browser asks whether there is a line to say now, with
   // the kinds this deal has said; the deal's record says which moment, SkatZero judges the human's own bid or card, the

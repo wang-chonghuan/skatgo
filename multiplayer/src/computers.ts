@@ -111,15 +111,6 @@ function lawful(at: Game, d: Declaration): Declaration {
   return declarationAdvice(at.hands[seat], known, at.bid, !at.pickedUp, (x) => mayAnnounce(at, x)).declaration
 }
 
-/** SkatZero's two cards to put away and its game, for a seat that has picked up the skat — the answer a computer acts on,
- *  given to free play's player as a power-up (SKATGO-177): its twelve in hand before putting away, hand and skat after. */
-export async function putAwayOf(policy: Policy, g: Game, seat: Seat): Promise<{ discard: Card[]; declaration: Declaration }> {
-  const twelve = g.phase === 'skat' ? g.hands[seat] : [...g.hands[seat], ...g.skat]
-  const d = await decide(declareAfterPickup(policy, twelve.map(raw), POSITION[roleOf(seat, g.dealer)], g.bid))
-  const put = d.discard.map(card)
-  return { discard: put, declaration: lawful(g.phase === 'skat' ? discard(g, put) : g, declaration(d.mode)) }
-}
-
 /** What a computer seat decided about the auction when its deal was prepared (SKATGO-39). */
 export type SeatPlan = {
   /** SkatZero's highest bid; 17 or 0 is a pass everywhere (SKATGO-39 Q2). */

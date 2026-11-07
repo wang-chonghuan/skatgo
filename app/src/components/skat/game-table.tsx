@@ -143,7 +143,7 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   hints?: boolean
   /** Free play's power-ups (SKATGO-177): the deal's win chances, asked of the server with the game's token; the put-away
    *  tips and the card counter need nothing from it. */
-  powerUps?: { odds: () => Promise<FreeOdds | FreeError> }
+  powerUps?: { odds: (discard?: Card[]) => Promise<FreeOdds | FreeError> }
   /** Free play's round of six deals (SKATGO-88): which deal this is (from 0), of how many, and each seat's
    *  Seeger-Fabian total over the deals before it (SKATGO-166). */
   round?: { deal: number; of: number; totals: [number, number, number] }
@@ -778,7 +778,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
       {settingsOpen ? <SettingsDialog onClose={() => setSettingsOpen(false)} /> : null}
       {powerUps && server?.powerUps && powerUpOf(game) ? (
-        <PowerUps game={game} nameOf={nameOf} odds={server.powerUps.odds} onClose={() => setPowerUps(false)} />
+        <PowerUps game={game} picked={picked} nameOf={nameOf} odds={server.powerUps.odds} onClose={() => setPowerUps(false)} />
       ) : null}
 
       {/* A room's statistics (SKATGO-165), over the table like its other dialogs; the way back is the menu's first item. */}

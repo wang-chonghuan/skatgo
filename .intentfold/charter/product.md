@@ -114,7 +114,8 @@ moment, nothing to choose (「点这个灯泡之后就显示这个阶段适用�
 see: **win chances** while bidding — what the ten cards make each game worth, without and with Hand, and the
 AI's chance to make it at the number on the table after picking up the skat, over every skat it could find (Null's fixed
 values, no chance), and again once the player has picked up the skat — with the twelve cards, the chance at the bid won
-with the skat found, then with the two put away (「在选合约阶段，也显示这个胜率表，根据用户skat的牌，让胜率自适应显示」), never
+with the skat found, then with the two picked to put away — before they are put away (「胜率应该根据我要放回去的牌而改变吧」)
+— and put away (「在选合约阶段，也显示这个胜率表，根据用户skat的牌，让胜率自适应显示」), never
 which two to put away or which game to play (「不留看ai的扣法」; the put-away tips that stood there are gone: 「我觉得这个灯泡
 提示不行……你那个放skat技巧的，删掉」); **card counter** while the cards are played — per trumps and side suit which cards are still out (no
 count, 「你就显示具体剩了哪些牌就行了」) and who has shown a suit missing, one or both; no points (「your side 几分这个不用显示」). Never in the tournament, at a private table or in an exercise;

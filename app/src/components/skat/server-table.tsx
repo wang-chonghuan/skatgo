@@ -266,7 +266,7 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         newRound: mode === 'free' ? newRound : undefined,
         // Lesson 11 keeps its hints; free play's help is its power-ups (SKATGO-177, the human: 「不要出牌提示，出牌提示让人不思考」).
         hints: mode === 'lesson',
-        powerUps: mode === 'free' && token ? { odds: () => freeOdds(token) } : undefined,
+        powerUps: mode === 'free' && token ? { odds: (discard) => freeOdds(token, discard) } : undefined,
         talk,
       }}
     />

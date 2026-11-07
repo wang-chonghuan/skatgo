@@ -268,8 +268,8 @@ also built from the repository root. Neither project imports the other's runtime
   percent per `BIDS` entry), its manifest entry `freeOdds` naming the pool's SHA-256 it belongs to; `loadPool` checks it like the
   pool, so a changed pool stops the service until its odds are made again. `POST /free/odds` (the game's token) returns the
   deal's row and records nothing; once the player has picked up, it answers instead the chances with their twelve cards,
-  worked out on the spot (`pickupChances` in `skatzero/bidding.ts`: one score per game, the skat found, the two put away
-  or before that each game's best two — the same values and tables as `seatGames`' `made`). The card counter is the
+  worked out on the spot (`pickupChances` in `skatzero/bidding.ts`: one score per game, the skat found, the two put away,
+  the two the page names as picked (`discard`, two of the twelve), or else each game's best two — the same values and tables as `seatGames`' `made`). The card counter is the
   browser's, from the seat's view (`components/skat/power-ups.tsx`); the AI's put-away is never asked for or shown (the
   human: 「不留看ai的扣法」).
 - **A free-play game is a deal from a committed pool, and its state travels with the page**

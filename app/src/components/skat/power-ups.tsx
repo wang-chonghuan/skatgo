@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type { FreeError, FreeOdds } from '~/lib/free-api'
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, fullDeck, sameCard, sortHand } from '~/lib/skat/cards'
@@ -44,8 +44,10 @@ function useAsked<T>(key: string | null, ask: (() => Promise<T | FreeError>) | u
 
 type Props = {
   game: Game
+  /** The cards the player has picked on the table: once two are picked to put away, the chances are with them. */
+  picked?: Card[]
   nameOf: (seat: Seat) => string
-  odds?: () => Promise<FreeOdds | FreeError>
+  odds?: (discard?: Card[]) => Promise<FreeOdds | FreeError>
   onClose: () => void
 }
 
@@ -63,17 +65,20 @@ export function powerUpOf(g: Game): PowerUp | null {
 
 /** The lightbulb's dialog: the one power-up of the moment, nothing to choose (the human: 「每个阶段……点这个灯泡之后就显示这个
  *  阶段适用的工具，不要让用户去选择了」). */
-export function PowerUps({ game, nameOf, odds, onClose }: Props) {
+export function PowerUps({ game, picked = [], nameOf, odds, onClose }: Props) {
   const tool = powerUpOf(game)
   const ids = (cards: Card[]) => cards.map(cardId).sort().join()
-  // Bidding: the ten cards. Picked up: the twelve in hand, then the ten kept and the two put away — each its own answer.
-  const oddsNow = useAsked<FreeOdds>(tool === 'odds' ? `odds|${game.dealer}|${ids(game.hands[ME])}|${pickedUp(game) ? ids(game.skat) : ''}` : null, odds)
+  // Bidding: the ten cards. Picked up: the twelve in hand, with the two picked to put away once two are (the human: 「我选了
+  // 2个skat，还没打出去，此时胜率表没变呢？」), then the ten kept and the two put away — each its own answer.
+  const put = game.phase === 'skat' && pickedUp(game) && picked.length === 2 ? picked : undefined
+  const ask = useMemo(() => (odds ? () => odds(put) : undefined), [odds, put && ids(put)])
+  const oddsNow = useAsked<FreeOdds>(tool === 'odds' ? `odds|${game.dealer}|${ids(game.hands[ME])}|${pickedUp(game) ? ids(game.skat) : ''}|${put ? ids(put) : ''}` : null, ask)
   if (!tool) return null
   const title = tool === 'odds' ? m.powerup_odds_name() : m.powerup_counter_name()
   return (
     <Modal title={title} onClose={onClose} testId="skat-power-ups" tight>
       <div data-testid={`power-up-${tool}`} {...stylex.props(styles.body)}>
-        {tool === 'odds' ? <OddsTable game={game} odds={oddsNow} /> : <Counter game={game} nameOf={nameOf} />}
+        {tool === 'odds' ? <OddsTable game={game} put={!!put} odds={oddsNow} /> : <Counter game={game} nameOf={nameOf} />}
       </div>
     </Modal>
   )
@@ -95,7 +100,7 @@ function bidNow(g: Game): number {
 /** Each game's value with the ten cards in hand, without and with Hand, and SkatZero's chance to make it at the number on
  *  the table now after picking up — the win chances. Once picked up: the value with the twelve cards, no Hand (it is gone),
  *  and the chance at the bid won with this skat. Null has its fixed values and no chance. */
-function OddsTable({ game, odds }: { game: Game; odds: FreeOdds | 'loading' | 'failed' | null }) {
+function OddsTable({ game, put, odds }: { game: Game; put: boolean; odds: FreeOdds | 'loading' | 'failed' | null }) {
   const after = pickedUp(game)
   const hand = after ? [...game.hands[ME], ...game.skat] : game.hands[ME]
   const at = bidNow(game)
@@ -140,7 +145,7 @@ function OddsTable({ game, odds }: { game: Game; odds: FreeOdds | 'loading' | 'f
         </tbody>
       </table>
       {odds === 'loading' || odds === 'failed' ? <Waiting state={odds} /> : null}
-      <p {...stylex.props(typography.meta, styles.note)}>{!after ? m.powerup_odds_note() : game.phase === 'declare' ? m.powerup_odds_note_put() : m.powerup_odds_note_skat()}</p>
+      <p {...stylex.props(typography.meta, styles.note)}>{!after ? m.powerup_odds_note() : game.phase === 'declare' || put ? m.powerup_odds_note_put() : m.powerup_odds_note_skat()}</p>
     </>
   )
 }

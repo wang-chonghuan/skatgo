@@ -70,8 +70,8 @@ test('win chances while bidding and after picking up, and no put-away answer', {
     move(seat, { type: 'bid', value: seat === 0 ? (g.bidding.awaiting === 'listener' ? 'hold' : 'bid') : 'pass' })
   }
   move(0, { type: 'pickup' })
-  const chances = async () => {
-    const r = await post('odds', { token: token(id, log) })
+  const chances = async (discard?: object[]) => {
+    const r = await post('odds', { token: token(id, log), ...(discard ? { discard } : {}) })
     assert.equal(r.status, 200)
     const made = r.data.made as Record<string, number[]>
     assert.deepEqual(Object.keys(made), [...ODDS_MODES])
@@ -83,8 +83,12 @@ test('win chances while bidding and after picking up, and no put-away answer', {
   assert.notDeepEqual(found, prepared, 'the skat found, not every skat')
   // Put away the two lowest: the chances with them.
   const two = [...g.hands[0]].sort((a, b) => '789QK1AJ'.indexOf(a.rank[0]) - '789QK1AJ'.indexOf(b.rank[0])).slice(0, 2)
+  // Picked, not yet put away: the same chances as once put away.
+  const picked = await chances(two)
+  assert.equal((await post('odds', { token: token(id, log), discard: [two[0], two[0]] })).status, 409, 'two different cards')
   move(0, { type: 'discard', cards: two })
   const put = await chances()
+  assert.deepEqual(picked, put)
   for (const m of ODDS_MODES) assert.ok(put[m].every((x, k) => x <= found[m][k]), 'no put-away beats the best one')
 })
 

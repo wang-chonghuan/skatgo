@@ -528,7 +528,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   name, nothing to choose (the human: 「不要让用户去选择了」). Win chances (bidding): a table — Game (its matadors under the name,
   `meta`, one line), Value, Hand, "Win at 22", the number the player would say or hold now — then one `meta` line on what the
   numbers are. The skat picked up, until the game is chosen: the same table with the twelve cards — no Hand column, "Win at"
-  the bid won — and its `meta` line saying the chances are with this skat, then with the two put away. Card counter (play): a table, no points (「your side 几分这个不用显示」) — Trumps and each side
+  the bid won — and its `meta` line saying the chances are with this skat, then with the two picked or put away (two cards
+  picked on the table and the lightbulb opened again: the chances with them). Card counter (play): a table, no points (「your side 几分这个不用显示」) — Trumps and each side
   suit, the cards still out (`appText`, navy; no count) and who is void: a name, "both" — also whenever nothing of it is out —
   or "—". The dialog keeps the result
   dialog's four levels (SKATGO-146).

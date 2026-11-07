@@ -1,3 +1,4 @@
+import type { Card } from '~/lib/skat/cards'
 import type { Move, Seat } from '~/lib/skat/game'
 import type { TalkKind, TalkReply } from '~/lib/table-talk'
 import type { DealReview, SeatView } from '~/lib/skat/tournament'
@@ -46,16 +47,17 @@ export async function freeTalk(token: string, said: TalkKind[], lang: 'en' | 'de
  *  made at each bid of `bids` after picking up the skat. */
 export type FreeOdds = { bids: number[]; made: Record<'C' | 'S' | 'H' | 'D' | 'G', number[]> }
 
-async function ask<T>(op: 'odds', token: string): Promise<T | FreeError> {
+async function ask<T>(op: 'odds', body: object): Promise<T | FreeError> {
   try {
-    const res = await fetch(`/api/free/${op}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token }) })
+    const res = await fetch(`/api/free/${op}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
     const data = (await res.json()) as T | FreeError
     return res.ok ? data : { error: data && typeof data === 'object' && 'error' in data ? (data as FreeError).error : 'unavailable' }
   } catch {
     return { error: 'unavailable' }
   }
 }
-export const freeOdds = (token: string) => ask<FreeOdds>('odds', token)
+/** `discard`: the two the player has picked to put away, not yet put away — the chances with them. */
+export const freeOdds = (token: string, discard?: Card[]) => ask<FreeOdds>('odds', discard ? { token, discard } : { token })
 
 /*
  * A free game carried across a change of language (SKATGO-79, the human: 「打牌过程中切换语言，咋导致牌都

@@ -12,7 +12,7 @@ import type { RoomDeal, RoomPrivate, RoomPublic } from '../../app/src/lib/skat/r
 export const GRACE_MS = 30_000
 export const TTL_MS = 24 * 60 * 60 * 1000
 export const tokenSchema = z.string().regex(/^[a-f0-9]{64}$/)
-const card = z.object({
+export const cardSchema = z.object({
   suit: z.enum(['C', 'S', 'H', 'D']),
   rank: z.enum(['7', '8', '9', 'Q', 'K', '10', 'A', 'J']),
 }).strict()
@@ -40,9 +40,9 @@ export const actionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('bid'), value: z.enum(['bid', 'hold', 'pass']), to: z.number().int().optional() }).strict(),
   z.object({ type: z.literal('pickup') }).strict(),
   z.object({ type: z.literal('hand') }).strict(),
-  z.object({ type: z.literal('discard'), cards: z.array(card).length(2) }).strict(),
+  z.object({ type: z.literal('discard'), cards: z.array(cardSchema).length(2) }).strict(),
   z.object({ type: z.literal('declare'), declaration }).strict(),
-  z.object({ type: z.literal('play'), card }).strict(),
+  z.object({ type: z.literal('play'), card: cardSchema }).strict(),
   z.object({ type: z.literal('claim') }).strict(),
   z.object({ type: z.literal('next') }).strict(),
 ])

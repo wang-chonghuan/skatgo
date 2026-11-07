@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { actor, deal, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, raw, replayLog, reviewOf } from './computers'
-import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals, roomOnly } from './model'
+import { actionSchema, applySeatMove, cardSchema, refuseUnlawful, Rejected, secretEquals, roomOnly } from './model'
 import { BIDS, type HandMode, pickupChances } from './skatzero/bidding'
 import { type Policy, viewOf } from './skatzero/policy'
 import { lineFor, momentOf, TALK_KINDS, verdictOf } from './talk'
@@ -240,17 +240,21 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
   }))
   // Free play's power-ups (SKATGO-177, the human: 「先把记牌器，叫牌胜率，该扣那两张，做成三个道具」). Win chances: the deal's
   // prepared chances for the player's seat — its own ten cards only, nothing of anyone else's. Once the player has picked
-  // up the skat, the chances with these twelve cards, worked out on the spot: the skat they found, and once put away, the
-  // two they put away (「根据用户skat的牌，让胜率自适应显示」). The card counter is the browser's; no answer of the AI's on
+  // up the skat, the chances with these twelve cards, worked out on the spot: the skat they found, with the two they have
+  // picked to put away (`discard`, before they put them away: 「我选了2个skat，还没打出去……胜率应该根据我要放回去的牌而改变」)
+  // or have put away (「根据用户skat的牌，让胜率自适应显示」). The card counter is the browser's; no answer of the AI's on
   // which two to put away or which game to play (「不留看ai的扣法」).
+  const oddsInput = z.object({ token: z.string().max(20_000), discard: z.array(cardSchema).length(2).optional() }).strict()
   router.post('/odds', run(async (body) => {
-    const i = tokenInput.parse(body)
+    const i = oddsInput.parse(body)
     const { p, t } = opened(i.token)
     const d = p.deals[t.id]
     const g = replayLog(d.dealer, deckOf(d.deck), t.log)
     if ((g.phase === 'skat' || g.phase === 'declare') && g.declarer === PLAYER && g.pickedUp) {
       const twelve = [...g.hands[PLAYER], ...g.skat].map(raw)
-      const put = g.phase === 'declare' ? (g.skat.map(raw) as [string, string]) : null
+      const picked = g.phase === 'skat' && i.discard ? i.discard.map(raw) : null
+      if (picked && (picked[0] === picked[1] || !picked.every((c) => twelve.includes(c)))) throw new Rejected('not_in_hand')
+      const put = (g.phase === 'declare' ? g.skat.map(raw) : picked) as [string, string] | null
       const made = await pickupChances(policy()!, twelve, POSITION[roleOf(PLAYER, d.dealer)], put)
       // Whole percent, as the prepared ones.
       return { bids: BIDS, made: Object.fromEntries(ODDS_MODES.map((m) => [m, made[m].map((x) => Math.round(x * 100))])) }

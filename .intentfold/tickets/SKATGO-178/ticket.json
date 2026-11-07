@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-178",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-178",
+  "branch": "SKATGO-178-xp-win-rate",
+  "base": "8c41bad",
+  "ports": { "web": 55178, "multiplayer": 56178, "database": 57178 }
+}

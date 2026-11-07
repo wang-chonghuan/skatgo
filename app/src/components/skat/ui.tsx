@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { X } from 'lucide-react'
-import { type ReactNode, useEffect, useRef } from 'react'
+import { type ReactNode, type Ref, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 import { m } from '~/paraglide/messages'
@@ -154,7 +154,16 @@ export function toggleLook(pressed: boolean) {
  * is open the page behind neither scrolls nor takes a touch (it lies on `body`, everything else there inert), and focus
  * moves into it and back to where it was.
  */
-export function Modal({ title, onClose, testId, closeTestId, children }: { title: string; onClose: () => void; testId: string; closeTestId?: string; children: ReactNode }) {
+/** A dialog's close: the round X in its top right corner (`Modal`'s; the table's result's since SKATGO-177). */
+export function CloseButton({ ref, testId, onClick }: { ref?: Ref<HTMLButtonElement>; testId: string; onClick: () => void }) {
+  return (
+    <button ref={ref} type="button" aria-label={m.settings_close()} data-testid={testId} onClick={onClick} {...stylex.props(styles.modalClose)}>
+      <X size={icon.menu} strokeWidth={icon.outline} />
+    </button>
+  )
+}
+
+export function Modal({ title, onClose, testId, closeTestId, tight, children }: { title: string; onClose: () => void; testId: string; closeTestId?: string; tight?: boolean; children: ReactNode }) {
   const box = useRef<HTMLDivElement | null>(null)
   const closeButton = useRef<HTMLButtonElement | null>(null)
   const close = useRef(onClose)
@@ -180,12 +189,10 @@ export function Modal({ title, onClose, testId, closeTestId, children }: { title
   }, [])
   return createPortal(
     <div ref={box} data-testid={testId} {...stylex.props(styles.scrim)} onClick={() => close.current()}>
-      <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} {...stylex.props(styles.modal)}>
+      <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} {...stylex.props(styles.modal, tight && styles.modalTight)}>
         <div {...stylex.props(styles.modalHead)}>
           <h2 {...stylex.props(typography.dialogTitle, styles.modalTitle)}>{title}</h2>
-          <button ref={closeButton} type="button" aria-label={m.settings_close()} data-testid={closeTestId ?? `${testId}-close`} onClick={() => close.current()} {...stylex.props(styles.modalClose)}>
-            <X size={icon.menu} strokeWidth={icon.outline} />
-          </button>
+          <CloseButton ref={closeButton} testId={closeTestId ?? `${testId}-close`} onClick={() => close.current()} />
         </div>
         {/* The body scrolls, not the box: its scroll bar stands inside the dialog's padding, never on its edge (SKATGO-156,
             the human: 「所有的弹窗，都要让滚动条在弹窗内部，而不是贴道外部」). */}
@@ -287,6 +294,9 @@ const styles = stylex.create({
     boxShadow: elev.panel,
     color: color.text,
   },
+  // `tight`: less room above the title and under it — the lightbulb's dialog at the table (SKATGO-177, the human: 「灯泡弹窗里的
+  // top padding或者top margin太大了」).
+  modalTight: { paddingTop: space.x12, gap: space.x8 },
   modalHead: { display: 'flex', flexShrink: 0, alignItems: 'center', justifyContent: 'space-between', gap: space.x12, paddingRight: space.x16 },
   modalBody: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', touchAction: 'pan-y', paddingRight: space.x16 },
   modalTitle: { margin: 0, color: color.navy },

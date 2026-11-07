@@ -184,7 +184,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `Stars` | `n` of 3 | a lesson's result |
 | `Rich` | — | every piece of course text: renders `**bold**` and each suit glyph in its suit's colour |
 | `Toggle` / `toggleLook(pressed)` | pressed or not; a button, or the same pill on a router `<Link>` | a choice that is on or off: a forum post's section, the forum's section filter (SKATGO-118) |
-| `Modal` | `title`, `onClose` | every dialog over the page (SKATGO-140; the settings' since SKATGO-66): its title and an X in its head, a tap on the dim around it or Escape closing it too, the page behind locked and inert, focus moved into it and back. Its body scrolls, never the box: the scroll bar stands 8px in from the dialog's edge, clear of its rounded corner, the content 24px in — so too the table's own dialog in `game-table.tsx` (SKATGO-156, the human: 「所有的弹窗，都要让滚动条在弹窗内部，而不是贴道外部」; SKATGO-157: 「滚动条右侧多了一个空白条，不能接受」) |
+| `Modal` | `title`, `onClose`; `tight` (less room above and under the title: the lightbulb's dialog, SKATGO-177) | every dialog over the page (SKATGO-140; the settings' since SKATGO-66): its title and an X in its head, a tap on the dim around it or Escape closing it too, the page behind locked and inert, focus moved into it and back. Its body scrolls, never the box: the scroll bar stands 8px in from the dialog's edge, clear of its rounded corner, the content 24px in — so too the table's own dialog in `game-table.tsx` (SKATGO-156, the human: 「所有的弹窗，都要让滚动条在弹窗内部，而不是贴道外部」; SKATGO-157: 「滚动条右侧多了一个空白条，不能接受」) |
 | `TextField` / `TextArea` | one line (Enter submits) / several: `size` `post` starts about six lines tall, `comment` about three (`dims.textPost`, `textComment`; SKATGO-119), both growing with the text | a name, a forum post's title and text, a comment, a reason |
 
 **Components — the course's and the table's widgets**
@@ -293,10 +293,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   pair of the app's standard buttons (`linkLook`, `md`; the chosen one `go`, the other `quiet` — SKATGO-156, the human:
   「1 deal today和 tournament 6 deals按钮的字太小，应该用app里的标准按钮风格」), "1 Spiel heute" | "Turnier · 6 Spiele"
   (SKATGO-131; SKATGO-77's 6 | 12 once stood there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
-  its one `go` button to its table (`/daily/play?size=1`, where after the last card the deal's result stays, its foot two
-  buttons one over the other — "Share with friends" (`go`, the same share as below) and "Close" (`quiet`), back here —
-  and nothing goes by itself: SKATGO-168, 「打完弹出结果页面，很快就闪了……应该改成2个按钮，share的那个按钮，显示在结果页，下面是关闭
-  按钮」); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
+  its one `go` button to its table (`/daily/play?size=1`, where after the last card the deal's result stays, its foot
+  "Share with friends" (`go`, the same share as below) over "Replay this deal" (`quiet`, to `/daily/replay`, SKATGO-177:
+  「每天1deal的，应该也能复盘」), its close the round X in the dialog's top right corner, back here (SKATGO-177: 「close还放在
+  右上角，不要下面那个close按钮了」) — and nothing goes by itself: SKATGO-168, 「打完弹出结果页面，很快就闪了」); `/daily/replay`
+  is the same table played again as free play's replay is (its pill, its result's heading, the review against the AI), its
+  foot "Replay this deal" (`quiet`), its close the same X; once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
   gespielt" (`dialogTitle`) over "Deine Freunde bekommen dieselben Karten – schau, wie viele Punkte sie holen." — and no
   scores, no place: the card below carries them (SKATGO-132, 「我不懂你显示这些垃圾干什么……你完成了same one deal today,
   分享给朋友，看看他们能打几分」, 「1 played today · you're #1 这个不要显示」) — "Mit Freunden teilen" as the one `go`
@@ -307,7 +309,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   preview, at most 600px, a `hairline` border: 「最好让用户看到待显示的卡片，再可以点发送……下面是待分享的卡片」), the time
   until the next deal; then its board as the tournament's, the
   AI's row on it (a guest who has not played sees it too, under the `go` "Jetzt spielen · 2 Min."); then, folded, how
-  the AI played the deal (`VsAiTable`); then a link to free play — and nothing more on either side: the page's
+  the AI played the deal (`VsAiTable`); then the link "Replay this deal" (SKATGO-177) and a link to free play — and
+  nothing more on either side: the page's
   explanations and its link row went to About SkatGo (SKATGO-134).
   The tournament's side (six deals; SKATGO-77's twelve gone, SKATGO-119): its one
   `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",
@@ -404,7 +407,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   in the board's order (left, "Du", right), then one row a finished deal under a hairline — its number, the game ("Pik ♠
   Hand", "Eingepasst"), each seat's points, the declarer's bold, pale where someone else sat that deal — then "Gesamt"
   (`smallBold`) under a heavier line, and "Weiterspielen" (`go`, full width) at its foot. The
-  board's deal line reads "Spiel 3", where free play reads "Spiel 3 von 6", and the panel's strip the same pill. At a deal's
+  board's deal line reads "Spiel 3", where free play reads "Spiel 3 von 6". At a deal's
   end, the way on, once pressed, reads "Warten auf <Namen>" and takes no tap. Nothing of the room stands on the felt. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
@@ -464,7 +467,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   standard web-app table. Free play's search entry is the front page.
 - **What a table says** (SKATGO-134; the line is hidden while it has nothing to say, SKATGO-143): the course's tables — its own and lesson 11's — explain every
   step as before. A real table (free play, the daily ones, a private table, a shared deal's practice) says at most one
-  short line, the buttons the rest; free play keeps its few words with its hints back (SKATGO-176). In the bidding it says whom the player bids with and what an answer means, as the
+  short line, the buttons the rest. In the bidding it says whom the player bids with and what an answer means, as the
   course does (SKATGO-141, the human: 「叫牌时的文案删除太多，你给我恢复点」): on the speaker's turn "Du reizt Lina – sag den
   nächsten Wert oder spring höher."; asked to hold, "Lina fragt dich: „18?“" with "Ja (ich halte 18)" / "Passe"; no line
   before the skat is picked up, while putting two away or while playing; forehand alone, "Beide haben gepasst – spielst du 18?"; the
@@ -520,23 +523,29 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   stay; only a face the player chose is kept, in this browser, for every later game; a seat never chosen wears the default
   — the office lady in Lina's seat, the accountant in Noah's (SKATGO-168, 「默认是office lady和会计师，用户自己选择ai头像后，要能
   保存下来，以后再打都还是这个头像」); a seat that still held SKATGO-167's stored default counts as never chosen.
-- **Free play's "How high can I bid?"** (SKATGO-176): no hint button in the bidding drawer; while bidding, the hint's tab on the
-  felt's left edge — the lightbulb in `color.hintTab`, as while playing — opens a `Modal` under that title —
-  a table, one row a contract (♣ ♠ ♥ ♦ Grand, then Null and Null Ouvert), its columns Game, Matadors ("with 3: 4 × 12",
-  slate), Bid up to (`appBtnStrong`) and Hand; column heads `smallBold` slate, `hairline` rows; under it one slate line that it
-  counts the ten cards in hand. The play's hint stays the lightbulb tab.
+- **Free play's power-ups** (SKATGO-177, `power-ups.tsx`): the hint's tab on the felt's left edge — the lightbulb in
+  `color.hintTab`, over the drawer — stands whenever a power-up serves the moment and opens that one in a `Modal` under its
+  name, nothing to choose (the human: 「不要让用户去选择了」). Win chances (bidding): a table — Game (its matadors under the name,
+  `meta`, one line), Value, Hand, "Win at 22", the number the player would say or hold now — then one `meta` line on what the
+  numbers are. The skat picked up, until the game is chosen: the same table with the twelve cards — no Hand column, "Win at"
+  the bid won — and its `meta` line saying the chances are with this skat, then with the two picked or put away (two cards
+  picked on the table and the lightbulb opened again: the chances with them). Card counter (play): a table, no points (「your side 几分这个不用显示」) — Trumps and each side
+  suit, the cards still out (`appText`, navy; no count) and who is void: a name, "both" — also whenever nothing of it is out —
+  or "—". The dialog keeps the result
+  dialog's four levels (SKATGO-146).
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),
   on every full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"
   (`quiet`, which asks once more: "Ja, neue Runde" `stop`, "Nein, weiterspielen" `quiet`), and "Tisch
   verlassen" (`stop`). The side panel has no way out of its own. The button stays over the table's dialogs,
   which start below it, and keeps to the felt beside a pinned panel; an open drawer covers it (SKATGO-100).
-- **The info board** (SKATGO-100): a cell's content never runs past its padding. Hand and Ouvert stand on
+- **The info board** (SKATGO-100): what it shows stands nowhere else on the table — the side panel repeats none of it (SKATGO-177
+  removed SKATGO-26's strip of pills there, the human: 「顶部四个方块里已经有的信息，谁又在抽屉里加了一遍？」, 「在本工单里全部删掉」). A cell's content never runs past its padding. Hand and Ouvert stand on
   the small line under the contract; a long name wraps, a small line ends in an ellipsis; the three running
   totals share the cell in equal columns, smaller on a phone (`infoTotal`) and smaller again once one has four
   digits (`infoTotalLong`). The "Augen" cell is a button with nothing of a button's look: a tap switches it to
   "Stiche", the tricks each side has taken, and back, and the choice stays in this browser (SKATGO-127, the human:
-  「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」); the strip's pill follows it.
+  「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」).
 - **A deal's result** (SKATGO-166, the human: 「以常玩的用户的视角，重要的在前面。信息不重复。不要用超过4种层级的字体。一个信息只出现在一个
   地方……红框和绿框里的东西不要塞太多」) is one dialog at a private table and at every table against the AI — the tournament,
   free play, lesson 11 — the course's own table keeping its teaching settlement. It is four parts, each its heading
@@ -546,7 +555,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   private table has the first alone. Against the AI, where the deal counts (not a deal played again), the dialog's first
   line is the deal's XP (`DealXp`/`XpEarned`, SKATGO-172/173, 「经验值放在打牌结果页的第一行，不要单独做一个弹窗」), one row (「丑死了」):
   "+12 XP" as a pill (`appBtnStrong`, `go` on `goodSoft`; `slate` on `page` for a guest), why beside it, "Above the AI by
-  23 · +2 own game" (a guest: "Sign in to earn XP", `slate`), wrapping only in its own column, and the circled question
+  23 · +2 own game" (a guest: "Sign in to earn XP", `slate`, then "Sign in", an `appLink` in `info` that opens the sign-in;
+  SKATGO-177, 「这里也要显示简单的登录按钮，可以用链接」), wrapping only in its own column, and the circled question
   mark at the row's right for the tiers; "XP …" while the review comes; no toast. The first part, top to bottom, each fact once:
   - the box, a `Panel` `good` when the player's side won and `bad` when it lost (`card` when all passed), holding only
     the title (`dialogTitle`): "Lina won Spades ♠", "You lost Grand", "All three passed" — and one line (`appText`) of

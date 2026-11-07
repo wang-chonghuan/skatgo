@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { type GameMode, track } from '~/lib/analytics'
-import { type FreeError, freeAct, freeNew, freeReplay, freeResume, freeReview, freeTalk, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
+import { type FreeError, freeAct, freeNew, freeOdds, freeReplay, freeResume, freeReview, freeTalk, holdGame, isFreeError, keepGame, keptGame, takeCarriedGame } from '~/lib/free-api'
 import { useTableTalk } from '~/lib/table-talk'
 import { type Move, type Seat, next as nextSeat } from '~/lib/skat/game'
 import type { Contract } from '~/lib/skat/cards'
@@ -23,8 +23,8 @@ import { TableLoading } from './table-loading'
 // against SkatZero's computers. The server keeps nothing per game: the page holds the game's token, and free
 // play keeps it in this browser with its round, so a reload goes on with the same deal (SKATGO-96); lesson 11
 // keeps nothing. The server answers each move with every state
-// the table passed through, and the table shows them one by one on its own beats. Its hints work as at the
-// local table, reading only what this seat may see; free play's back for now (SKATGO-176). A game's start and
+// the table passed through, and the table shows them one by one on its own beats. Lesson 11's hints work as at the
+// local table, reading only what this seat may see; free play has its power-ups instead (SKATGO-177). A game's start and
 // finish, and a round's end (SKATGO-152), are its only events (SKATGO-74): never a bid or a card.
 
 type Failure = { text: string; retry?: () => void }
@@ -264,8 +264,9 @@ export function ServerTable({ mode, fullScreen = false, onSettled }: { mode: Gam
         again: mode === 'free' ? () => void replay(game) : undefined,
         // Free play's round can be given up for a new one (SKATGO-96); the table asks first.
         newRound: mode === 'free' ? newRound : undefined,
-        // Lesson 11 keeps its hints; free play has them back for now (SKATGO-176, after SKATGO-130 took them away).
-        hints: true,
+        // Lesson 11 keeps its hints; free play's help is its power-ups (SKATGO-177, the human: 「不要出牌提示，出牌提示让人不思考」).
+        hints: mode === 'lesson',
+        powerUps: mode === 'free' && token ? { odds: (discard) => freeOdds(token, discard) } : undefined,
         talk,
       }}
     />

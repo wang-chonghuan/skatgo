@@ -56,13 +56,15 @@ export function DealOfDay({ waiting }: { waiting?: ReactNode }) {
     <div data-testid="dod" data-finished={status.finished ? 'true' : 'false'} {...stylex.props(styles.stack)}>
       {status.finished ? <Result status={status} /> : <DealOfDayWayIn started={status.started} />}
       <Leaderboard back={back} board={shown} onShow={show} />
-      {/* Under the board, as agreed: how the AI played this deal, folded, only for whoever has played it; then free play. */}
+      {/* Under the board, as agreed: how the AI played this deal, folded, only for whoever has played it; the deal once more,
+          counted nowhere (SKATGO-177, 「每天1deal的，应该也能复盘」); then free play. */}
       {status.finished ? (
         <>
           <details data-testid="dod-details" {...stylex.props(styles.details)}>
             <summary {...stylex.props(typography.appLink, styles.summary)}>{m.dod_details()}</summary>
             <VsAiTable deals={status.deals} benchmarks={status.benchmarks} openLatest review={(i) => ({ ask: dailyAsk(i, DEAL_OF_DAY), cacheKey: `${status.day}|${DEAL_OF_DAY}|${i}` })} />
           </details>
+          <Link to="/daily/replay" data-testid="dod-replay" {...stylex.props(typography.appLink, styles.link)}>{m.free_replay()}</Link>
           <Link to="/play" data-testid="dod-free" {...stylex.props(typography.appLink, styles.link)}>{m.dod_free()}</Link>
         </>
       ) : null}

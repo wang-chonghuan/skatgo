@@ -34,8 +34,8 @@ type Section = 'home' | 'daily' | 'course' | 'rules' | 'play' | 'forum'
 
 /** Which section a path belongs to. The router has already removed the language prefix. */
 export function sectionOf(pathname: string): Section {
-  // The tournament's table wears the table's frame (SKATGO-35).
-  if (pathname.startsWith('/daily/play')) return 'play'
+  // The tournament's table wears the table's frame (SKATGO-35); so does the deal of the day played again (SKATGO-177).
+  if (pathname.startsWith('/daily/play') || pathname.startsWith('/daily/replay')) return 'play'
   // So does a private table, its lobby included (SKATGO-61).
   if (pathname.startsWith('/table/')) return 'play'
   // So does the practice table of a shared deal (SKATGO-132).

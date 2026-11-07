@@ -298,6 +298,30 @@ export async function seatGames(policy: Policy, hand: ZCard[], position: number,
   return { pickup: share, hand: { mode: HAND_MODES[handAt.indexOf(top)], value: top }, pickupValue: pickupSum / order.length, made }
 }
 
+/**
+ * The win chances once the skat is picked up (SKATGO-177, the human: 「在选合约阶段，也显示这个胜率表，根据用户skat的牌，让胜率
+ * 自适应显示」): per suit game and Grand, the chance it is made at each bid of BIDS with these twelve cards — this skat,
+ * not every skat as `seatGames` — with the two the player put away (`discard`), or before that each game's best two.
+ * The same values and tables as `seatGames`' `made`; one score per game, so it is asked for on the spot.
+ */
+export async function pickupChances(policy: Policy, hand12: ZCard[], position: number, discard: [ZCard, ZCard] | null): Promise<Record<'C' | 'S' | 'H' | 'D' | 'G', number[]>> {
+  const others = DECK.filter((c) => !hand12.includes(c))
+  const pos = (3 - position) % 3
+  const made = {} as Record<'C' | 'S' | 'H' | 'D' | 'G', number[]>
+  for (const mode of ['C', 'S', 'H', 'D', 'G'] as const) {
+    const p = prepare(mode, hand12, others)
+    const { values } = await policy.score(p.gametype, state(p, { blindHand: false, discard: { pos } }))
+    let k = 0
+    if (discard) {
+      const put = mode === 'G' ? discard : swapColors(discard, 'D', mode)
+      k = discardPairs(p.hand).findIndex(([a, b]) => (a === put[0] && b === put[1]) || (a === put[1] && b === put[0]))
+      if (k < 0) throw new Error('skatzero_discard_not_in_hand')
+    } else for (let i = 1; i < values.length; i++) if (values[i] > values[k]) k = i
+    made[mode] = madeTable(policy.tables, p.hand, mode, values[k])
+  }
+  return made
+}
+
 /** Index of a winning bid in BIDS; an off-list bid takes the next higher list bid (grill Q4). */
 export function bidIndex(bid: number): number {
   const i = BIDS.findIndex((b) => b >= bid)

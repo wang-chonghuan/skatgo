@@ -1,7 +1,9 @@
+import { SignInButton } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { CircleHelp } from 'lucide-react'
 import { useState } from 'react'
 
+import { track } from '~/lib/analytics'
 import { useAccount } from '~/lib/use-account'
 import { XP, XP_FAR, XP_OWN_GAME, type XpTier, xpOf } from '~/lib/skat/xp'
 import { m } from '~/paraglide/messages'
@@ -19,7 +21,8 @@ const versus = (diff: number | null) =>
 /**
  * The XP a finished deal earned (SKATGO-172), the result's first line (SKATGO-173, the human: 「经验值放在打牌结果页的第一行，
  * 不要单独做一个弹窗」): "+12 XP" and why — above or below the AI by how much, and the own game's +2 — with the tiers
- * behind a circled question mark; no toast. A guest is told that signed-in players earn XP. `mine` and `ai` are the
+ * behind a circled question mark; no toast. A guest is told that signed-in players earn XP, with a link to sign in
+ * beside it (SKATGO-177, the human: 「这里也要显示简单的登录按钮，可以用链接」). `mine` and `ai` are the
  * deal's Seeger-Fabian scores in the player's seat, the AI's null when it has none; `declared` when the player was the
  * declarer, a game of their own that earns 2 more.
  */
@@ -35,6 +38,13 @@ export function XpEarned({ mine, ai, declared }: { mine: number; ai: number | nu
       <div data-testid="xp-earned" data-xp={xp} data-guest={account ? undefined : 'true'} {...stylex.props(styles.line)}>
         <span {...stylex.props(typography.appBtnStrong, styles.pill, account ? styles.plus : styles.plusGuest)}>{m.xp_earned({ n: xp })}</span>
         <span {...stylex.props(typography.appText, account ? styles.why : styles.whyGuest)}>{why}</span>
+        {account ? null : (
+          <SignInButton mode="modal">
+            <button type="button" data-testid="xp-sign-in" onClick={() => track('sign_in_clicked', { at: 'xp' })} {...stylex.props(typography.appLink, styles.signIn)}>
+              {m.auth_sign_in()}
+            </button>
+          </SignInButton>
+        )}
         <button type="button" data-testid="xp-earned-how" aria-label={m.xp_how()} title={m.xp_how()} onClick={() => setHow(true)} {...stylex.props(styles.help)}>
           <CircleHelp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
         </button>
@@ -87,6 +97,22 @@ const styles = stylex.create({
   plusGuest: { color: color.slate, backgroundColor: color.page },
   why: { flexGrow: 1, minWidth: 0, color: color.navy },
   whyGuest: { flexGrow: 1, minWidth: 0, color: color.slate },
+  signIn: {
+    flexShrink: 0,
+    margin: 0,
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: color.info,
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    textDecoration: { default: 'none', ':hover': 'underline' },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+    borderRadius: radii.column,
+  },
   help: {
     display: 'inline-flex',
     flexShrink: 0,

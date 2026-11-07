@@ -40,7 +40,7 @@ const poolCard = (s: string): Card => ({ suit: s[0] as Card['suit'], rank: (s[1]
 const z = (c: Card) => c.suit + (c.rank === '10' ? 'T' : c.rank)
 const round = (x: number) => Math.round(x * 1000) / 1000
 
-const pool = await loadPool(DIR)
+const pool = await loadPool(DIR, { odds: false })
 const policy = await loadPolicy(DIR)
 const games: Record<string, unknown> = existsSync(out) ? JSON.parse(readFileSync(out, 'utf8')) : {}
 let n = 0

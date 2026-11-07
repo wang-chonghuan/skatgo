@@ -89,7 +89,7 @@ export type ProductEvents = {
   /** The private table's first deal was started, with this many people seated. */
 }
 export type GameMode = 'free' | 'lesson'
-export type SignInAt = 'header' | 'home' | 'daily' | 'profile' | 'tricks' | 'bidding' | 'forum_post' | 'forum_comment' | 'table_open' | 'table_sign_up'
+export type SignInAt = 'header' | 'home' | 'daily' | 'profile' | 'tricks' | 'bidding' | 'forum_post' | 'forum_comment' | 'table_open' | 'table_sign_up' | 'xp'
 type Empty = Record<string, never>
 
 /**

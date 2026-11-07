@@ -3,11 +3,11 @@ import { readFile } from 'node:fs/promises'
 import { gunzipSync } from 'node:zlib'
 import express from 'express'
 import { z } from 'zod'
-import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
+import { actor, deal, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
-import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
-import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals, roomOnly } from './model'
-import { BIDS, type HandMode } from './skatzero/bidding'
+import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, raw, replayLog, reviewOf } from './computers'
+import { actionSchema, applySeatMove, cardSchema, refuseUnlawful, Rejected, secretEquals, roomOnly } from './model'
+import { BIDS, type HandMode, pickupChances } from './skatzero/bidding'
 import { type Policy, viewOf } from './skatzero/policy'
 import { lineFor, momentOf, TALK_KINDS, verdictOf } from './talk'
 import { dayOf } from './daily'
@@ -29,13 +29,20 @@ const TOKEN_LABEL = 'skatgo-free/1'
 const TOKEN_MS = 24 * 60 * 60 * 1000
 
 /** The pool: each deal's deck and dealer, and every seat's SkatZero bidding (`computers`, keyed by
- *  seat; free play uses seats 1 and 2, a private table any of them — SKATGO-61). */
-export type Pool = { version: string; deals: { dealer: Seat; deck: string; computers: Record<'0' | '1' | '2', { maxBid: number; decisions: string }> }[] }
-type Manifest = { freePool: { name: string; bytes: number; sha256: string; deals: number } }
+ *  seat; free play uses seats 1 and 2, a private table any of them — SKATGO-61). `odds` (SKATGO-177): per deal, for the
+ *  player's seat, SkatZero's chance in whole percent that each of ODDS_MODES is made at each bid of BIDS after picking up
+ *  the skat (scripts/make-free-odds.ts); null only when loaded without it, as that script loads the pool. */
+export type Pool = { version: string; deals: { dealer: Seat; deck: string; computers: Record<'0' | '1' | '2', { maxBid: number; decisions: string }> }[]; odds: number[][][] | null }
+type Manifest = {
+  freePool: { name: string; bytes: number; sha256: string; deals: number }
+  freeOdds?: { name: string; bytes: number; sha256: string; deals: number; pool: string }
+}
+/** The games whose win chances free play's power-up shows (SKATGO-177): the suits and Grand; Null has none. */
+export const ODDS_MODES = ['C', 'S', 'H', 'D', 'G'] as const
 
 /** The pool, checked against the manifest (size, SHA-256, count) and against the bid list it was
  *  made for. Rejects if anything differs. */
-export async function loadPool(dir: URL): Promise<Pool> {
+export async function loadPool(dir: URL, opts: { odds?: boolean } = {}): Promise<Pool> {
   const manifest = JSON.parse(await readFile(new URL('manifest.json', dir), 'utf8')) as Manifest
   const entry = manifest.freePool
   if (!entry) throw new Error('free_pool_missing')
@@ -43,7 +50,16 @@ export async function loadPool(dir: URL): Promise<Pool> {
   if (gz.length !== entry.bytes || createHash('sha256').update(gz).digest('hex') !== entry.sha256) throw new Error('free_pool_altered')
   const pool = JSON.parse(gunzipSync(gz).toString('utf8')) as Pool & { bids: number[] }
   if (pool.deals.length !== entry.deals || JSON.stringify(pool.bids) !== JSON.stringify(BIDS)) throw new Error('free_pool_shape')
-  return { version: pool.version, deals: pool.deals }
+  if (opts.odds === false) return { version: pool.version, deals: pool.deals, odds: null }
+  // The win chances belong to this pool (its SHA-256), checked as the pool is.
+  const o = manifest.freeOdds
+  if (!o || o.pool !== entry.sha256) throw new Error('free_odds_missing')
+  const ogz = new Uint8Array(await readFile(new URL(o.name, dir)))
+  if (ogz.length !== o.bytes || createHash('sha256').update(ogz).digest('hex') !== o.sha256) throw new Error('free_odds_altered')
+  const odds = JSON.parse(gunzipSync(ogz).toString('utf8')) as { bids: number[]; modes: string[]; deals: number[][][] }
+  if (odds.deals.length !== pool.deals.length || o.deals !== pool.deals.length || JSON.stringify(odds.bids) !== JSON.stringify(BIDS) ||
+    JSON.stringify(odds.modes) !== JSON.stringify(ODDS_MODES)) throw new Error('free_odds_shape')
+  return { version: pool.version, deals: pool.deals, odds: odds.deals }
 }
 
 const HAND_CODE: Record<string, HandMode> = { C: 'CH', S: 'SH', H: 'HH', D: 'DH', G: 'GH', N: 'NH', O: 'NOH' }
@@ -221,6 +237,31 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
       })
     }
     return reviewOf(end, await judgePlays(policy()!, playsOf(d.dealer, deck, t.log)), { ai: summarize(ai), aiAuction: auctionOf(ai) })
+  }))
+  // Free play's power-ups (SKATGO-177, the human: 「先把记牌器，叫牌胜率，该扣那两张，做成三个道具」). Win chances: the deal's
+  // prepared chances for the player's seat — its own ten cards only, nothing of anyone else's. Once the player has picked
+  // up the skat, the chances with these twelve cards, worked out on the spot: the skat they found, with the two they have
+  // picked to put away (`discard`, before they put them away: 「我选了2个skat，还没打出去……胜率应该根据我要放回去的牌而改变」)
+  // or have put away (「根据用户skat的牌，让胜率自适应显示」). The card counter is the browser's; no answer of the AI's on
+  // which two to put away or which game to play (「不留看ai的扣法」).
+  const oddsInput = z.object({ token: z.string().max(20_000), discard: z.array(cardSchema).length(2).optional() }).strict()
+  router.post('/odds', run(async (body) => {
+    const i = oddsInput.parse(body)
+    const { p, t } = opened(i.token)
+    const d = p.deals[t.id]
+    const g = replayLog(d.dealer, deckOf(d.deck), t.log)
+    if ((g.phase === 'skat' || g.phase === 'declare') && g.declarer === PLAYER && g.pickedUp) {
+      const twelve = [...g.hands[PLAYER], ...g.skat].map(raw)
+      const picked = g.phase === 'skat' && i.discard ? i.discard.map(raw) : null
+      if (picked && (picked[0] === picked[1] || !picked.every((c) => twelve.includes(c)))) throw new Rejected('not_in_hand')
+      const put = (g.phase === 'declare' ? g.skat.map(raw) : picked) as [string, string] | null
+      const made = await pickupChances(policy()!, twelve, POSITION[roleOf(PLAYER, d.dealer)], put)
+      // Whole percent, as the prepared ones.
+      return { bids: BIDS, made: Object.fromEntries(ODDS_MODES.map((m) => [m, made[m].map((x) => Math.round(x * 100))])) }
+    }
+    if (!p.odds) throw new ComputerFailed('odds_missing')
+    const row = p.odds[t.id]
+    return { bids: BIDS, made: Object.fromEntries(ODDS_MODES.map((m, k) => [m, row[k]])) }
   }))
   // Lina's and Noah's table talk (SKATGO-142): after a reply, the browser asks whether there is a line to say now, with
   // the kinds this deal has said; the deal's record says which moment, SkatZero judges the human's own bid or card, the

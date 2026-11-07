@@ -9,7 +9,7 @@ import { weeklyXp } from '../src/xp'
 
 // The week's XP board (SKATGO-172) against a database of its own: this week's deals of every account summed by their
 // tier against the AI, last week's left out, a guest's own deals off the board, the ids one person plays under counted
-// as one, the streak of days, and the asker's row marked.
+// as one, each person's win rate over the week's deals (SKATGO-178), and the asker's row marked.
 
 // The player declared when their own score is a game's (not 0 or a defender's 40).
 const declarerOf = (scores: [number, number, number]): 0 | null => (scores[0] !== 0 && scores[0] !== 40 ? 0 : null)
@@ -41,26 +41,29 @@ test('xp: the week’s deals by tier, aliases as one person, guests off the boar
   await day('2026-11-05', DEAL_OF_DAY, [[0, 0, 0]])
   await day('2026-10-28', DEAL_OF_DAY, [[0, 0, 0]])
   // Anna: 50 above the AI (20) in her own game (+2), the same (10) defending; a free deal 166 above (20) in her own game
-  // (+2); as a guest on another device, signed up later, 60 below (4) in her own game (+2). 60 XP, on three days in a row.
+  // (+2); as a guest on another device, signed up later, 60 below (4) in her own game (+2). 60 XP; two of her three games won,
+  // the deal all passed left out of the win rate.
   await entry('2026-11-03', DAILY_DEALS, 'user:anna', [[120, 0, 0], [0, 0, 0]])
   await recordFreeDeal(store, { player: 'user:anna', game: 'free:p:1:1', day: '2026-11-04', at: 1, mine: played([66, 0, 0]), ai: played([-100, 40, 40]) })
   await entry('2026-11-05', DEAL_OF_DAY, 'anon:guest', [[-60, 0, 0]])
   await store.pool.query('INSERT INTO player_aliases (player, same_as) VALUES ($1, $2)', ['anon:guest', 'user:anna'])
-  // Ben: 10 below (6) in his own game (+2) today; last week's deal is not this week's.
+  // Ben: 10 below (6) in his own game (+2) today, won; defending, the same as the AI (10) and the declarer won, so his
+  // side lost: 18 XP and half his games won. Last week's deal is not this week's.
   await recordFreeDeal(store, { player: 'user:ben', game: 'free:p:2:1', day: '2026-11-05', at: 1, mine: played([30, 0, 0]), ai: played([40, 0, 0]) })
+  await recordFreeDeal(store, { player: 'user:ben', game: 'free:p:2:2', day: '2026-11-05', at: 2, mine: { scores: [0, 50, 0], declarer: 1, won: true }, ai: { scores: [0, 50, 0], declarer: 1, won: true } })
   await entry('2026-10-28', DEAL_OF_DAY, 'user:ben', [[200, 0, 0]])
   // A guest's own deal, and an account seen only last week: neither is on the board.
   await entry('2026-11-05', DEAL_OF_DAY, 'anon:stranger', [[100, 0, 0]])
   await entry('2026-10-28', DEAL_OF_DAY, 'user:carl', [[100, 0, 0]])
-  // Dora: one deal on Monday, none since — still a flame of 1, as everyone on the board has (SKATGO-172).
+  // Dora: one deal on Monday, all passed — on the board with no win rate.
   await recordFreeDeal(store, { player: 'user:dora', game: 'free:p:3:1', day: '2026-11-02', at: 1, mine: played([0, 0, 0]), ai: played([0, 0, 0]) })
   await store.pool.query("INSERT INTO daily_players (player, nickname, created_at) VALUES ('user:anna', 'Anna', 1), ('user:ben', 'Ben', 1), ('user:dora', 'Dora', 1)")
 
   assert.deepEqual(await weeklyXp(store, 'anon:guest', '2026-11-05'), {
     rows: [
-      { rank: 1, nickname: 'Anna', xp: 60, streak: 3, you: true },
-      { rank: 2, nickname: 'Dora', xp: 10, streak: 1 },
-      { rank: 3, nickname: 'Ben', xp: 8, streak: 1 },
+      { rank: 1, nickname: 'Anna', xp: 60, winRate: 67, you: true },
+      { rank: 2, nickname: 'Ben', xp: 18, winRate: 50 },
+      { rank: 3, nickname: 'Dora', xp: 10, winRate: null },
     ],
     resetsIn: 4,
   })

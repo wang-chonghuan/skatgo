@@ -66,8 +66,9 @@ Beside the daily boards stands the week's experience points, XP (SKATGO-172, rep
 2 more when the player declared, won or lost, so taking a game is never worse for XP than passing it by (on the
 regulars' 941 deals the declared ones earned 8.13 a deal, the rest 9.50; 4 made a lost game nearly free; the human:
 「同意你的决定」, then 「改成+2」); a replayed deal earns none. A week, Monday to Sunday of the tournament's days, sums its deals, and every Monday starts at
-0; no average. The front page shows every account with XP this week, the most first — rank, name, 🔥 days in a row with
-at least one deal (at least 1), the week's XP — the player's own row marked, and how XP is earned. After each deal the player sees
+0; no average. The front page shows every account with XP this week, the most first — rank, name, the week's win rate, the
+week's XP — the player's own row marked, and how XP is earned. No days in a row anywhere: missing a day must not make a
+player feel guilty (SKATGO-178, the human: 「把那个连续登录去掉，我觉得会影响用户体验，不连续登录了有内疚感。可以把胜率放上去，替换steak那个列。然后排序还是按经验值排序」). After each deal the player sees
 its XP and why as the result's first line, every deal against the AI the deal of the day's included (SKATGO-173); a guest is told that signed-in players earn XP. One person under
 several ids counts as one, as the human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」).
 

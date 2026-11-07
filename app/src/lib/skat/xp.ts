@@ -41,20 +41,8 @@ export function weekStart(day: string): string {
 /** Days until the next Monday, when the week starts again: 7 on a Monday, 1 on a Sunday. */
 export const daysToReset = (day: string) => 7 - (dateOf(day) - dateOf(weekStart(day))) / DAY_MS
 
-/** Days in a row with at least one deal, ending today or yesterday; 0 when the last such day is older. */
-export function streakOf(days: Iterable<string>, today: string): number {
-  const played = new Set(days)
-  let t = dateOf(today)
-  if (!played.has(today)) t -= DAY_MS
-  let n = 0
-  while (played.has(dayAt(t))) {
-    n += 1
-    t -= DAY_MS
-  }
-  return n
-}
-
 /** The week's board as the service answers it: every account with XP this week, the most first, equal XP sharing a
- *  rank; its streak, at least 1 for anyone on it; `you` on the asker's own row; the days until it starts again. Names
- *  only, never a player id. */
-export type XpBoard = { rows: { rank: number; nickname: string; xp: number; streak: number; you?: true }[]; resetsIn: number }
+ *  rank; its win rate over the week's deals as the record of play counts it (`recordOf`, SKATGO-178), a whole percent,
+ *  null when no deal had a declarer; `you` on the asker's own row; the days until it starts again. Names only, never a
+ *  player id. */
+export type XpBoard = { rows: { rank: number; nickname: string; xp: number; winRate: number | null; you?: true }[]; resetsIn: number }

@@ -58,8 +58,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   week's XP (SKATGO-172, replacing SKATGO-123's Elo) is computed the same way, on request, from those rows and
   `play_deals`: `POST /daily/xp` (`multiplayer/src/xp.ts`) sums this week's deals of every account by the tiers in
   `app/src/lib/skat/xp.ts` (held to its examples by `xp.test.ts`), counting the ids `player_aliases` names as one
-  person as that person — rows written by hand, never ids in code — and answers every account with XP by name, the
-  asker's row marked. The front page reads it on the server as nobody (`lib/xp-api.ts`, a minute's answer cached),
+  person as that person — rows written by hand, never ids in code — and answers every account with XP by name, with
+  its win rate over the same deals as the record of play counts it (`recordOf`, SKATGO-178), the asker's row marked. The front page reads it on the server as nobody (`lib/xp-api.ts`, a minute's answer cached),
   the browser through `/api/daily/xp` as the signed-in player, and again every 15 s while the page is in view and at once
   when it comes back, so the board follows the deals without a reload (SKATGO-174); a hidden page does not ask. The web
   service is its only client.

@@ -17,14 +17,15 @@ import { XpHow } from './xp-earned'
 
 /**
  * The week's XP board in the front page's long card (SKATGO-172, the human: 「这个卡片大小规格行为，还和当前的elo卡片一样。elo的卡片和
- * 算法都删除」): every account with XP this week, the most first — rank, name, 🔥 days in a row, the week's XP — the
- * player's own row marked; the title "Weekly XP & streaks" / "Wochen-XP & Serien", short and naming both (the human:
- * 「标题改为本周经验和连胜天数」, 「用weekly XP 是否更好，哪个更短，德语呢」, then 「steak也要放上去吧」). The tiers open from a circled
+ * 算法都删除」): every account with XP this week, the most first — rank, name, the week's win rate, the week's XP —
+ * the player's own row marked; the title "Weekly XP" / "Wochen-XP" (the human: 「用weekly XP 是否更好，哪个更短，德语呢」). The win
+ * rate stands where days in a row stood (SKATGO-178, the human: 「把那个连续登录去掉……不连续登录了有内疚感。可以把胜率放上去，替换steak
+ * 那个列。然后排序还是按经验值排序」), "–" while no deal had a declarer. The tiers open from a circled
  * question mark beside the title, in a `Modal`. On PC its frame is the Elo card's (SKATGO-123/140/144): `fill`, as tall as
  * where it sits, the list scrolling inside. Wherever the page is one column (`bp.cards`) the list shows the first five and
  * scrolls, nothing folded and nothing running sideways (the human: 「经验表，pc上不变，手机上显示前5名，然后可以滚动，不要横向滚动了」).
  * Rendered on the server as nobody; in the browser asked again as the player, so their row is marked, and then again
- * every `XP_EVERY_MS` while the page is in view and at once when it comes back, so XP and streaks follow the deals
+ * every `XP_EVERY_MS` while the page is in view and at once when it comes back, so XP and win rates follow the deals
  * without a reload (SKATGO-174, the human: 「我希望经验是实时更新的，最好不用刷新」); a hidden page does not ask.
  */
 /** How often an open front page asks for the board again. */
@@ -75,7 +76,9 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
                     {r.nickname}
                     {r.you ? <span {...stylex.props(styles.tag)}><Who side="you" /></span> : null}
                   </span>
-                  <span data-testid="xp-board-streak" {...stylex.props(styles.streak)}>{`🔥 ${r.streak}`}</span>
+                  <span data-testid="xp-board-win" title={m.profile_vs_win()} {...stylex.props(styles.win)}>
+                    {r.winRate === null ? '–' : `${r.winRate}%`}
+                  </span>
                   <span {...stylex.props(typography.appBtnStrong, styles.score)}>{r.xp}</span>
                 </li>
               ))}
@@ -132,6 +135,6 @@ const styles = stylex.create({
   rank: { minWidth: space.x24 },
   tag: { marginInlineStart: space.x6 },
   what: { flexGrow: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  streak: { flexShrink: 0, color: color.amber, whiteSpace: 'nowrap' },
+  win: { flexShrink: 0, color: color.slate, whiteSpace: 'nowrap' },
   score: { flexShrink: 0 },
 })

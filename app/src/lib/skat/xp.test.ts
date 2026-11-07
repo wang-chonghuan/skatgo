@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { daysToReset, streakOf, weekStart, xpOf, xpTier } from './xp'
+import { daysToReset, weekStart, xpOf, xpTier } from './xp'
 
-// Experience points (SKATGO-172): a deal's tier by its difference to the AI's score, a week from Monday, a streak of days.
+// Experience points (SKATGO-172): a deal's tier by its difference to the AI's score, a week from Monday.
 
 describe('a deal’s XP', () => {
   it('every deal earns XP, more the better it went against the AI', () => {
@@ -21,7 +21,7 @@ describe('a deal’s XP', () => {
   })
 })
 
-describe('the week and the streak', () => {
+describe('the week', () => {
   it('a week starts on Monday', () => {
     expect(weekStart('2026-11-05')).toBe('2026-11-02')
     expect(weekStart('2026-11-02')).toBe('2026-11-02')
@@ -32,12 +32,5 @@ describe('the week and the streak', () => {
     expect(daysToReset('2026-11-02')).toBe(7)
     expect(daysToReset('2026-11-05')).toBe(4)
     expect(daysToReset('2026-11-08')).toBe(1)
-  })
-  it('a streak counts days in a row up to today, or up to yesterday before today’s deal', () => {
-    expect(streakOf(['2026-11-03', '2026-11-04', '2026-11-05'], '2026-11-05')).toBe(3)
-    expect(streakOf(['2026-11-03', '2026-11-04'], '2026-11-05')).toBe(2)
-    expect(streakOf(['2026-11-01', '2026-11-03', '2026-11-05'], '2026-11-05')).toBe(1)
-    expect(streakOf(['2026-11-02', '2026-11-03'], '2026-11-05')).toBe(0)
-    expect(streakOf(['2026-10-31', '2026-11-01'], '2026-11-01')).toBe(2)
   })
 })

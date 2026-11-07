@@ -22,10 +22,11 @@ const COOKIE = 'skatgo_daily'
 const COOKIE_PATH = '/api/daily'
 /** 400 days, the longest a browser keeps a cookie. */
 const COOKIE_MAX_AGE = 400 * 24 * 60 * 60
-const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'xp', 'profile', 'share', 'shared', 'practice-new', 'practice-act', 'talk'])
+const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'xp', 'profile', 'share', 'shared', 'practice-new', 'practice-act', 'practice-review', 'talk'])
 /** The shared deal of the day's operations (SKATGO-132), answered by the service's /share routes: the player's code
- *  for today's finished deal; what a code shares; a past day's deal played as practice. */
-const SHARE_PATHS: Record<string, string> = { share: 'code', shared: 'read', 'practice-new': 'practice/new', 'practice-act': 'practice/act' }
+ *  for today's finished deal; what a code shares; a past day's deal played as practice — or today's, played again by
+ *  whoever finished it, with its review (SKATGO-177). */
+const SHARE_PATHS: Record<string, string> = { share: 'code', shared: 'read', 'practice-new': 'practice/new', 'practice-act': 'practice/act', 'practice-review': 'practice/review' }
 
 /** A shared deal's card (SKATGO-132): `/api/card/<code>-<de|en>.png`, drawn by the service, kept a day by
  *  whoever fetches it. Anything else under /api/card is not found. */
@@ -104,11 +105,13 @@ export async function handleDaily(request: Request): Promise<Response> {
   // Looking at the board needs no player: a visitor nobody knows yet asks as nobody. The week's XP board is
   // everyone's; an account asks as itself, so its own row is marked, and a guest as nobody (SKATGO-172).
   const player = op === 'xp' ? (userId ? `user:${userId}` : null) : userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null
-  // A code, a practice game: nobody's (SKATGO-132). The player's own code needs who they are, guest or account.
+  // A code, a practice game: nobody's (SKATGO-132). The player's own code needs who they are, guest or account; so does
+  // today's deal played again, which only whoever finished it may (SKATGO-177) — the player named here, never by the page.
   if (op in SHARE_PATHS) {
     if (op === 'share' && !player) return json(409, { error: 'not_finished' })
+    const payload = op === 'share' ? { player } : op === 'practice-new' ? { day: (body as { day?: unknown }).day, ...(player ? { player } : {}) } : body
     try {
-      const upstream = await callShare(SHARE_PATHS[op], op === 'share' ? { player } : body)!
+      const upstream = await callShare(SHARE_PATHS[op], payload)!
       return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
     } catch {
       return json(503, { error: 'unavailable' })

@@ -293,10 +293,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   pair of the app's standard buttons (`linkLook`, `md`; the chosen one `go`, the other `quiet` — SKATGO-156, the human:
   「1 deal today和 tournament 6 deals按钮的字太小，应该用app里的标准按钮风格」), "1 Spiel heute" | "Turnier · 6 Spiele"
   (SKATGO-131; SKATGO-77's 6 | 12 once stood there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
-  its one `go` button to its table (`/daily/play?size=1`, where after the last card the deal's result stays, its foot two
-  buttons one over the other — "Share with friends" (`go`, the same share as below) and "Close" (`quiet`), back here —
-  and nothing goes by itself: SKATGO-168, 「打完弹出结果页面，很快就闪了……应该改成2个按钮，share的那个按钮，显示在结果页，下面是关闭
-  按钮」); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
+  its one `go` button to its table (`/daily/play?size=1`, where after the last card the deal's result stays, its foot
+  buttons one over the other — "Share with friends" (`go`, the same share as below), "Replay this deal" (`quiet`, to
+  `/daily/replay`, SKATGO-177: 「每天1deal的，应该也能复盘」) and "Close" (`quiet`), back here — and nothing goes by itself:
+  SKATGO-168, 「打完弹出结果页面，很快就闪了……应该改成2个按钮，share的那个按钮，显示在结果页，下面是关闭按钮」); `/daily/replay`
+  is the same table played again as free play's replay is (its pill, its result's heading, the review against the AI), its
+  foot "Close" (`go`) over "Replay this deal" (`quiet`); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
   gespielt" (`dialogTitle`) over "Deine Freunde bekommen dieselben Karten – schau, wie viele Punkte sie holen." — and no
   scores, no place: the card below carries them (SKATGO-132, 「我不懂你显示这些垃圾干什么……你完成了same one deal today,
   分享给朋友，看看他们能打几分」, 「1 played today · you're #1 这个不要显示」) — "Mit Freunden teilen" as the one `go`
@@ -307,7 +309,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   preview, at most 600px, a `hairline` border: 「最好让用户看到待显示的卡片，再可以点发送……下面是待分享的卡片」), the time
   until the next deal; then its board as the tournament's, the
   AI's row on it (a guest who has not played sees it too, under the `go` "Jetzt spielen · 2 Min."); then, folded, how
-  the AI played the deal (`VsAiTable`); then a link to free play — and nothing more on either side: the page's
+  the AI played the deal (`VsAiTable`); then the link "Replay this deal" (SKATGO-177) and a link to free play — and
+  nothing more on either side: the page's
   explanations and its link row went to About SkatGo (SKATGO-134).
   The tournament's side (six deals; SKATGO-77's twelve gone, SKATGO-119): its one
   `go` button, its deals, its result and its board. The board names its day beside its title — "Heute",

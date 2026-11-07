@@ -1,9 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
-import { Link, useLoaderData, useParams } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
+import { Link, useLoaderData, useNavigate, useParams } from '@tanstack/react-router'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { track } from '~/lib/analytics'
-import { type PracticeReply, type Shared, practiceAct, practiceNew, readShared } from '~/lib/share-api'
+import { dailyState, isError } from '~/lib/daily-api'
+import { type PracticeReply, type Shared, practiceAct, practiceNew, practiceReview, readShared } from '~/lib/share-api'
 import type { Move } from '~/lib/skat/game'
 import { DEAL_OF_DAY, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -17,7 +18,7 @@ import { ClientPart } from './client-part'
 import { Who, signed } from './daily-comparison'
 import { BOT_DELAY, GameTable } from './game-table'
 import { TableLoading } from './table-loading'
-import { Panel, linkLook } from './ui'
+import { Btn, Panel, linkLook } from './ui'
 
 // A shared deal of the day (SKATGO-132, the human: 「别人看到，点击就能也打这一副牌」): the result shared — no name — and
 // the challenge; on its day the way to that day's deal, ranked; after it the same deal as practice, on no board
@@ -93,32 +94,20 @@ export function PracticePage() {
   )
 }
 
-/** A past day's deal of the day played as practice: dealt anew from a sealed token, nothing kept; at its end the
- *  player's score beside the shared one and the AI's. */
-function PracticeTable() {
-  const { code } = useParams({ from: '/d_/$code/play' })
-  const [shared, setShared] = useState<Shared | null | undefined>(undefined)
+/** A practice game in the browser (SKATGO-132): the states each move went through shown one at a time, as a table plays
+ *  them, the player's moves sent on with the sealed token. `start` deals the day's deal, and deals it anew. */
+function usePractice() {
   const [reply, setReply] = useState<PracticeReply | null>(null)
   const [shown, setShown] = useState<SeatView | null>(null)
   const [queue, setQueue] = useState<SeatView[]>([])
   const [release, setRelease] = useState(false)
   const [sending, setSending] = useState(false)
   const [failed, setFailed] = useState(false)
-  const [over, setOver] = useState(false)
   function take(r: PracticeReply) {
     setReply(r)
     setShown(r.steps[0])
     setQueue(r.steps.slice(1))
   }
-  useEffect(() => {
-    void readShared(code).then(async (s) => {
-      setShared(s)
-      if (!s || s.today) return
-      const r = await practiceNew(s.day)
-      if ('error' in r) return setFailed(true)
-      take(r)
-    })
-  }, [code])
   useEffect(() => {
     if (queue.length === 0) return
     const held = shown?.phase === 'trickEnd'
@@ -130,13 +119,15 @@ function PracticeTable() {
     }, held ? 0 : BOT_DELAY)
     return () => clearTimeout(t)
   }, [queue, shown, release])
-  // Once the last trick is shown, the result stands a moment on the felt, then the comparison.
-  const done = !!reply?.result && queue.length === 0
-  useEffect(() => {
-    if (!done) return
-    const t = setTimeout(() => setOver(true), PRACTICE_PAUSE)
-    return () => clearTimeout(t)
-  }, [done])
+  async function start(day: string) {
+    setReply(null)
+    setShown(null)
+    setQueue([])
+    setRelease(false)
+    const r = await practiceNew(day)
+    if ('error' in r) return setFailed(true)
+    take(r)
+  }
   async function send(move: Move) {
     if (!reply) return
     setSending(true)
@@ -146,7 +137,30 @@ function PracticeTable() {
     take(r)
   }
   const game = useMemo(() => (shown ? gameFromView(shown) : null), [shown])
-  if (shared === null || shared?.today || failed) {
+  return { reply, game, failed, busy: sending || queue.length > 0, done: !!reply?.result && queue.length === 0, start, send, collect: () => setRelease(true) }
+}
+
+/** A past day's deal of the day played as practice: dealt anew from a sealed token, nothing kept; at its end the
+ *  player's score beside the shared one and the AI's. */
+function PracticeTable() {
+  const { code } = useParams({ from: '/d_/$code/play' })
+  const [shared, setShared] = useState<Shared | null | undefined>(undefined)
+  const [over, setOver] = useState(false)
+  const practice = usePractice()
+  const { reply, game, done } = practice
+  useEffect(() => {
+    void readShared(code).then((s) => {
+      setShared(s)
+      if (s && !s.today) void practice.start(s.day)
+    })
+  }, [code])
+  // Once the last trick is shown, the result stands a moment on the felt, then the comparison.
+  useEffect(() => {
+    if (!done) return
+    const t = setTimeout(() => setOver(true), PRACTICE_PAUSE)
+    return () => clearTimeout(t)
+  }, [done])
+  if (shared === null || shared?.today || practice.failed) {
     return (
       <div {...stylex.props(styles.summary)}>
         <Panel tone="bad">
@@ -188,10 +202,73 @@ function PracticeTable() {
       fullScreen
       server={{
         game,
-        busy: sending || queue.length > 0,
-        send: (move) => void send(move),
-        collect: () => setRelease(true),
+        busy: practice.busy,
+        send: (move) => void practice.send(move),
+        collect: practice.collect,
         next: () => setOver(true),
+      }}
+    />
+  )
+}
+
+/** Today's deal of the day played again (SKATGO-177, the human: 「每天1deal的，应该也能复盘」), the whole screen. */
+export function DodReplayPage() {
+  return (
+    <div {...stylex.props(styles.play)}>
+      <h1 {...stylex.props(styles.hidden)}>{m.dod_replay_title()}</h1>
+      <ClientPart fallback={<TableLoading />}>
+        <DodReplay />
+      </ClientPart>
+    </div>
+  )
+}
+
+/** As free play's replay (SKATGO-170): the same cards against the same AI, counted nowhere — no board, no XP, no record —
+ *  its result with the review against the AI, then once more or back to the day's page. The server deals it only to a
+ *  player who has finished today's deal; anyone else goes back to the day's page. */
+function DodReplay() {
+  const navigate = useNavigate()
+  const [day, setDay] = useState<string | null>(null)
+  const practice = usePractice()
+  const { reply, game } = practice
+  const token = reply?.token
+  const review = useCallback(() => practiceReview(token ?? ''), [token])
+  const close = () => void navigate({ to: '/daily' })
+  useEffect(() => {
+    void dailyState(false, DEAL_OF_DAY).then((r) => {
+      if (isError(r) || !r.status.finished) return close()
+      setDay(r.status.day)
+      void practice.start(r.status.day)
+    })
+  }, [])
+  if (practice.failed) {
+    return (
+      <div {...stylex.props(styles.summary)}>
+        <Panel tone="bad">
+          <p role="alert" {...stylex.props(typography.appText, styles.title)}>{m.daily_unavailable()}</p>
+          <Link to="/daily" {...linkLook('go', 'md')}>{m.dod_hero()}</Link>
+        </Panel>
+      </div>
+    )
+  }
+  if (!reply || !game || !day) return <TableLoading />
+  return (
+    <GameTable
+      fullScreen
+      server={{
+        game,
+        busy: practice.busy,
+        send: (move) => void practice.send(move),
+        collect: practice.collect,
+        next: close,
+        replaying: true,
+        review,
+        done: (
+          <div {...stylex.props(styles.foot)}>
+            <Btn testId="dod-replay-close" shape="block" size="lg" onClick={close}>{m.dod_close()}</Btn>
+            <Btn testId="dod-replay-again" tone="quiet" shape="block" size="lg" onClick={() => void practice.start(day)}>{m.free_replay()}</Btn>
+          </div>
+        ),
       }}
     />
   )
@@ -226,6 +303,8 @@ const styles = stylex.create({
   summary: { display: 'flex', flexDirection: 'column', justifyContent: 'center', flexGrow: 1, padding: space.x16, maxWidth: dims.readingColumn, marginInline: 'auto', width: '100%', boxSizing: 'border-box' },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
+  // The replay's two ways on, one over the other, each the foot's width, as the day's own result foot (dod-share.tsx).
+  foot: { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: space.x10 },
   action: { display: 'flex' },
   title: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.navy },

@@ -2,9 +2,9 @@ import { randomBytes } from 'node:crypto'
 import express from 'express'
 import { z } from 'zod'
 import { actor, deal, type Game, type Move } from '../../app/src/lib/skat/game'
-import { DEAL_OF_DAY, PLAYER, seatView, summarize, type DealSummary } from '../../app/src/lib/skat/tournament'
+import { DEAL_OF_DAY, PLAYER, auctionOf, seatView, summarize, type DealSummary } from '../../app/src/lib/skat/tournament'
 import { cardPng } from './card'
-import { ComputerFailed, type Logged, advance, replayLog } from './computers'
+import { ComputerFailed, type Logged, advance, judgePlays, playsOf, replayLog, reviewOf } from './computers'
 import { type DealSpec, computerTurn, dayOf, ended } from './daily'
 import { open, seal, tokenKey } from './free'
 import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals, roomOnly } from './model'
@@ -15,7 +15,8 @@ import type { Store } from './store'
 // finished entry gets a short code — the link carries the code, never the score, so no one can make a card say what
 // was not played; the code reads back the day, the table's scores and who declared, never who played; the card is drawn from it;
 // and whoever opens it plays the same deal — on its day as the day's deal, after it as practice: the day's deal
-// replayed from a sealed token, nothing stored, on no board (「过期的牌开放练习」).
+// replayed from a sealed token, nothing stored, on no board (「过期的牌开放练习」). The same practice is today's deal played
+// again by whoever has finished it (SKATGO-177, the human: 「每天1deal的，应该也能复盘」), with the free replay's review.
 
 /** The code's letters: lowercase and digits, eight of them. */
 const CODE = /^[a-z0-9]{8}$/
@@ -25,6 +26,12 @@ const newCode = () => Array.from(randomBytes(8), (b) => 'abcdefghijklmnopqrstuvw
 async function dealOfDay(store: Store, day: string): Promise<{ spec: DealSpec; computer: string } | null> {
   const { rows } = await store.pool.query('SELECT deals, computer FROM daily_deals WHERE day = $1 AND size = $2', [day, DEAL_OF_DAY])
   return rows[0] ? { spec: (rows[0].deals as DealSpec[])[0], computer: rows[0].computer } : null
+}
+
+/** Whether the player has finished the deal of the day of `day`. */
+async function finishedDealOfDay(store: Store, who: string, day: string): Promise<boolean> {
+  const { rows } = await store.pool.query('SELECT finished_at FROM daily_entries WHERE day = $1 AND size = $2 AND player = $3', [day, DEAL_OF_DAY, who])
+  return !!rows[0]?.finished_at
 }
 
 /** The code of the player's finished deal of today, made on the first ask: the table's scores and who declared. */
@@ -126,10 +133,12 @@ export function shareRoutes(store: Store, admissionKey: string, ready: () => boo
       result: over ? { mine: summarize(g), ai: (spec.benchmark?.summary ?? null) as DealSummary | null } : null,
     }
   }
-  /** A past day's deal of the day, dealt anew for practice. Today's is played as the day's own, ranked. */
+  /** A past day's deal of the day, dealt anew for practice. Today's is played as the day's own, ranked — and again, once
+   *  the asking player has finished it, as practice (「每天1deal的，应该也能复盘」): nobody plays it first unranked. */
   router.post('/practice/new', run(async (body) => {
-    const { day } = z.object({ day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).strict().parse(body)
-    if (day >= dayOf(Date.now())) throw new Rejected('not_past')
+    const { day, player: who } = z.object({ day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), player: player.optional() }).strict().parse(body)
+    const today = dayOf(Date.now())
+    if (day > today || (day === today && !(who && (await finishedDealOfDay(store, who, day))))) throw new Rejected('not_past')
     const found = await dealOfDay(store, day)
     if (!found) throw new Rejected('no_such_day')
     const g = deal(found.spec.dealer, found.spec.deck)
@@ -148,6 +157,22 @@ export function shareRoutes(store: Store, admissionKey: string, ready: () => boo
     g = applySeatMove(g, PLAYER, i.action as Move)
     t.log.push({ seat: PLAYER, move: i.action as Move })
     return reply(t.day, t.t, t.log, g, [g], found.spec, found.computer)
+  }))
+  /** A finished practice game's review, as free play's replay keeps it (SKATGO-170): the player's cards against SkatZero's
+   *  choice, and the AI's game of the deal from their seat. Nothing is recorded. */
+  router.post('/practice/review', run(async (body) => {
+    const i = z.object({ token: z.string().max(20_000) }).strict().parse(body)
+    const t = open<Practice>(key, i.token)
+    if (t.v !== 1) throw new Rejected('stale_revision')
+    const found = await dealOfDay(store, t.day)
+    if (!found) throw new Rejected('no_such_day')
+    const { dealer, deck, benchmark } = found.spec
+    const end = replayLog(dealer, deck, t.log)
+    if (!ended(end)) throw new Rejected('not_finished')
+    return reviewOf(end, await judgePlays(policy()!, playsOf(dealer, deck, t.log)), {
+      ai: benchmark?.summary ?? null,
+      aiAuction: benchmark ? auctionOf(replayLog(dealer, deck, benchmark.log)) : null,
+    })
   }))
   return router
 }

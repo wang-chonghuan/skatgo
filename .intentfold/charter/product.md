@@ -105,7 +105,9 @@ as at a real table, so the player sits in each position twice (SKATGO-88: 「自
 deals」); unranked, free and without an account (SKATGO-40, SKATGO-50). After a deal the player may play the same cards again
 (SKATGO-170, the human: 「重打这幅牌……不计入到任何记录和数据里，只是为了让用户反思一下，自己试试。仅限于free play」): the first time counts as ever, once; the
 replay counts in nothing — not the round, the record of play or any event — the server refusing to record it, whatever the
-page says. Its table gives no hint (SKATGO-130; SKATGO-177, the human: 「不要出牌提示，出牌提示让人不思考，没用」); its help is
+page says. The deal of the day may be played again the same way by whoever has finished it (SKATGO-177, the human: 「每天1deal的，
+应该也能复盘」): the same cards against the same AI, on no board, no XP, no record, with the review against the AI at its end;
+no one plays it unranked before playing it. Its table gives no hint (SKATGO-130; SKATGO-177, the human: 「不要出牌提示，出牌提示让人不思考，没用」); its help is
 three power-ups, free and as often as wanted for now (SKATGO-177, the human: 「先把记牌器，叫牌胜率，该扣那两张，做成三个道具，放在灯泡
 打开的页面里，设计要美观。先不考虑橡果，这三个道具自由免费在free play里用」): a lightbulb on the felt's left edge opens the one that serves the
 moment, nothing to choose (「点这个灯泡之后就显示这个阶段适用的工具，不要让用户去选择了」), each seeing only what the player's seat may

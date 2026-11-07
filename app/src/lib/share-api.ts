@@ -2,7 +2,7 @@ import { createIsomorphicFn } from '@tanstack/react-start'
 
 import { callShare } from './daily-handler'
 import type { Move } from './skat/game'
-import type { DealSummary, SeatView } from './skat/tournament'
+import type { DealReview, DealSummary, SeatView } from './skat/tournament'
 
 // The shared deal of the day's calls (SKATGO-132). A shared page's read runs in its route's loader — on the server
 // straight to the service, so the card and the result are in the HTML a link preview reads; in the browser through
@@ -40,6 +40,8 @@ export const readShared = createIsomorphicFn()
     return 'error' in r ? null : r
   })
 
-/** A past day's deal of the day, dealt for practice; then each move. */
+/** A past day's deal of the day, dealt for practice — or today's, once the player has finished it (SKATGO-177); then each
+ *  move; and at its end the review against the AI, recorded nowhere. */
 export const practiceNew = (day: string) => post<PracticeReply>('practice-new', { day })
 export const practiceAct = (token: string, revision: number, action: Move) => post<PracticeReply>('practice-act', { token, revision, action })
+export const practiceReview = (token: string) => post<DealReview>('practice-review', { token })

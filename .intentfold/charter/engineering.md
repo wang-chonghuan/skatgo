@@ -83,8 +83,10 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   OFL) and logo and turns it into a PNG with `@resvg/resvg-js` (exact version, approved in the ticket) — 1200×630,
   the link's preview and the picture on the result before it is sent (kept under 300 KB for WhatsApp; text is measured
   with resvg's own bounding box) — kept in memory per code. A past day's deal is played as practice from a sealed token (`free.ts` `seal`
-  with its own key label), nothing stored. The web passes the share ops through `/api/daily/*` (`share`, `shared`,
-  `practice-new`, `practice-act`; the player named only for `share`), serves the card at
+  with its own key label), nothing stored; today's deal the same way only for a player whose deal of the day is finished
+  (SKATGO-177), and a finished practice game's review (`/share/practice/review`, `reviewOf` as free play's) recorded
+  nowhere. The web passes the share ops through `/api/daily/*` (`share`, `shared`, `practice-new`, `practice-act`,
+  `practice-review`; the player named only for `share` and `practice-new`, by the web, never by the page), serves the card at
   `/api/card/<code>-<lang>.png`, and renders `/d/$code` (noindex; its `og:image` the card, read on the
   server by `lib/share-api.ts`) and `/d/$code/play`, the practice table.
 - **The forum runs in `multiplayer/`** (SKATGO-118), as plain HTTP routes under `/forum` behind the admission

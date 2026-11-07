@@ -152,8 +152,11 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   newRound?: () => void
   /** Free play: the finished deal once more (SKATGO-170), counted nowhere. */
   again?: () => void
-  /** Free play: the deal on the table is one played again: in the totals already, and its end adds nothing. */
+  /** Free play: the deal on the table is one played again: in the totals already, and its end adds nothing. The deal of
+   *  the day played again (SKATGO-177) is one too. */
   replaying?: boolean
+  /** The result's foot in place of the next deal: the deal of the day played again closes or goes once more (SKATGO-177). */
+  done?: ReactNode
   /** Free play: what Lina (1) or Noah (2) just said (SKATGO-142), shown on their side. */
   talk?: { seat: 1 | 2; line: string; id: number } | null
 }
@@ -503,7 +506,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                 </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
                 </div>
               )}
             </div>
@@ -636,7 +639,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -735,7 +738,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
             </section>
           ) : null}
 
@@ -784,7 +787,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
         </div>
       ) : null}
 

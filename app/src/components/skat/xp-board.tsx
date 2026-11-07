@@ -136,6 +136,8 @@ const styles = stylex.create({
   rank: { minWidth: space.x24 },
   tag: { marginInlineStart: space.x6 },
   what: { flexGrow: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  win: { flexShrink: 0, color: color.slate, whiteSpace: 'nowrap' },
-  score: { flexShrink: 0 },
+  // The win rate and the XP each in a column of their own width, right-aligned on even digits, so every row's figures
+  // stand under each other (SKATGO-178, the human: 「胜率列有点没对齐，要垂直对齐」).
+  win: { flexShrink: 0, minWidth: space.x48, textAlign: 'end', fontVariantNumeric: 'tabular-nums', color: color.slate, whiteSpace: 'nowrap' },
+  score: { flexShrink: 0, minWidth: space.x48, textAlign: 'end', fontVariantNumeric: 'tabular-nums' },
 })

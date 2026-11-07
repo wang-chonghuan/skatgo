@@ -3,11 +3,11 @@ import { readFile } from 'node:fs/promises'
 import { gunzipSync } from 'node:zlib'
 import express from 'express'
 import { z } from 'zod'
-import { actor, deal, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
+import { actor, deal, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
-import { ComputerFailed, type Logged, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
+import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, raw, replayLog, reviewOf } from './computers'
 import { actionSchema, applySeatMove, refuseUnlawful, Rejected, secretEquals, roomOnly } from './model'
-import { BIDS, type HandMode } from './skatzero/bidding'
+import { BIDS, type HandMode, pickupChances } from './skatzero/bidding'
 import { type Policy, viewOf } from './skatzero/policy'
 import { lineFor, momentOf, TALK_KINDS, verdictOf } from './talk'
 import { dayOf } from './daily'
@@ -239,11 +239,22 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     return reviewOf(end, await judgePlays(policy()!, playsOf(d.dealer, deck, t.log)), { ai: summarize(ai), aiAuction: auctionOf(ai) })
   }))
   // Free play's power-ups (SKATGO-177, the human: 「先把记牌器，叫牌胜率，该扣那两张，做成三个道具」). Win chances: the deal's
-  // prepared chances for the player's seat — its own ten cards only, nothing of anyone else's. The put-away tips and the
-  // card counter are the browser's: no answer of the AI's on which two to put away (the human: 「不留看ai的扣法」).
+  // prepared chances for the player's seat — its own ten cards only, nothing of anyone else's. Once the player has picked
+  // up the skat, the chances with these twelve cards, worked out on the spot: the skat they found, and once put away, the
+  // two they put away (「根据用户skat的牌，让胜率自适应显示」). The card counter is the browser's; no answer of the AI's on
+  // which two to put away or which game to play (「不留看ai的扣法」).
   router.post('/odds', run(async (body) => {
     const i = tokenInput.parse(body)
     const { p, t } = opened(i.token)
+    const d = p.deals[t.id]
+    const g = replayLog(d.dealer, deckOf(d.deck), t.log)
+    if ((g.phase === 'skat' || g.phase === 'declare') && g.declarer === PLAYER && g.pickedUp) {
+      const twelve = [...g.hands[PLAYER], ...g.skat].map(raw)
+      const put = g.phase === 'declare' ? (g.skat.map(raw) as [string, string]) : null
+      const made = await pickupChances(policy()!, twelve, POSITION[roleOf(PLAYER, d.dealer)], put)
+      // Whole percent, as the prepared ones.
+      return { bids: BIDS, made: Object.fromEntries(ODDS_MODES.map((m) => [m, made[m].map((x) => Math.round(x * 100))])) }
+    }
     if (!p.odds) throw new ComputerFailed('odds_missing')
     const row = p.odds[t.id]
     return { bids: BIDS, made: Object.fromEntries(ODDS_MODES.map((m, k) => [m, row[k]])) }

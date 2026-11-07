@@ -113,10 +113,10 @@ three power-ups, free and as often as wanted for now (SKATGO-177, the human: 「
 moment, nothing to choose (「点这个灯泡之后就显示这个阶段适用的工具，不要让用户去选择了」), each seeing only what the player's seat may
 see: **win chances** while bidding — what the ten cards make each game worth, without and with Hand, and the
 AI's chance to make it at the number on the table after picking up the skat, over every skat it could find (Null's fixed
-values, no chance); **game and put away** once the player has picked up the skat — four rules from Kulzer's book (the safe
-game first, put away the points you would lose, make a void, keep Aces and trumps), each with one pointer at the player's
-twelve cards, never which two to put away or which game to play (「让用户能学到东西，能思考，还不是直接告诉他怎么做」, 「不留看ai的扣法」);
-**card counter** while the cards are played — per trumps and side suit which cards are still out (no
+values, no chance), and again once the player has picked up the skat — with the twelve cards, the chance at the bid won
+with the skat found, then with the two put away (「在选合约阶段，也显示这个胜率表，根据用户skat的牌，让胜率自适应显示」), never
+which two to put away or which game to play (「不留看ai的扣法」; the put-away tips that stood there are gone: 「我觉得这个灯泡
+提示不行……你那个放skat技巧的，删掉」); **card counter** while the cards are played — per trumps and side suit which cards are still out (no
 count, 「你就显示具体剩了哪些牌就行了」) and who has shown a suit missing, one or both; no points (「your side 几分这个不用显示」). Never in the tournament, at a private table or in an exercise;
 lesson 11's game keeps its hints. SKATGO-157's bid calculator is gone (SKATGO-176). Acorns to pay for power-ups come later. There is no
 AI assistant on the site any more (SKATGO-130: 「先开单子砍ai助手」, 「彻底删」). The table shows which deal of

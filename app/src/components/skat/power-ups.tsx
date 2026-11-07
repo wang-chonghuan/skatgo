@@ -5,23 +5,21 @@ import type { FreeError, FreeOdds } from '~/lib/free-api'
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, fullDeck, sameCard, sortHand } from '~/lib/skat/cards'
 import type { Game, Seat } from '~/lib/skat/game'
 import { cardLabel, contractName, matadorLabel } from '~/lib/skat/i18n'
-import { putAwayTips } from '~/lib/skat/put-away-tips'
 import { NULL_VALUES, baseValue, matadors, nextBid } from '~/lib/skat/value'
 import { m } from '~/paraglide/messages'
 import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
-import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Modal, Rich } from './ui'
 
 // Free play's power-ups (SKATGO-177, the human: 「先把记牌器，叫牌胜率，该扣那两张，做成三个道具，放在灯泡打开的页面里，设计要美观。
 // 先不考虑橡果，这三个道具自由免费在free play里用」): the lightbulb opens the one that serves the moment — the win chances while
-// bidding, the rules for the game and the put-away once the skat is picked up, the card counter while the cards are played.
+// bidding and again once the skat is picked up, the card counter while the cards are played.
 // The dialog speaks in the result dialog's four levels (SKATGO-146): its title, numbers `appBtnStrong`, words `appText`,
 // the small bold 13. Each sees only what the player's seat may see: the win chances are SkatZero's on the server for the
-// player's own cards, the put-away tips and the counter are worked out here from the player's cards and the table. Nothing
-// says which card to play (the human: 「不要出牌提示，出牌提示让人不思考」), nor which two to put away or which game to play
-// (「选合约阶段提示的太多太直白了……能思考，还不是直接告诉他怎么做」, 「不留看ai的扣法」).
+// player's own cards, the counter is worked out here from the table. Nothing says which card to play (the human: 「不要出牌
+// 提示，出牌提示让人不思考」), nor which two to put away or which game to play — the put-away tips are gone (「我觉得这个灯泡
+// 提示不行……你那个放skat技巧的，删掉」).
 
 const ME = 0 as Seat
 const GAMES: Contract[] = [...[...SUITS].reverse().map((trump): Contract => ({ kind: 'suit', trump })), { kind: 'grand' }]
@@ -51,14 +49,14 @@ type Props = {
   onClose: () => void
 }
 
-export type PowerUp = 'odds' | 'putaway' | 'counter'
+export type PowerUp = 'odds' | 'counter'
 
-/** The power-up that serves the moment, or none — then there is no lightbulb: the win chances while bidding, the put-away
- *  tips once the player has picked up the skat (and while choosing the game after), the card counter while the cards are
- *  played. */
+/** The power-up that serves the moment, or none — then there is no lightbulb: the win chances while bidding, and again
+ *  once the player has picked up the skat, with the cards found in it (the human: 「在选合约阶段，也显示这个胜率表，根据用户
+ *  skat的牌，让胜率自适应显示」); the card counter while the cards are played. */
+export const pickedUp = (g: Game) => (g.phase === 'skat' || g.phase === 'declare') && g.declarer === ME && g.pickedUp
 export function powerUpOf(g: Game): PowerUp | null {
-  if (g.phase === 'bidding') return 'odds'
-  if ((g.phase === 'skat' || g.phase === 'declare') && g.declarer === ME && g.pickedUp) return 'putaway'
+  if (g.phase === 'bidding' || pickedUp(g)) return 'odds'
   if ((g.phase === 'play' || g.phase === 'trickEnd') && g.declaration !== null) return 'counter'
   return null
 }
@@ -68,13 +66,14 @@ export function powerUpOf(g: Game): PowerUp | null {
 export function PowerUps({ game, nameOf, odds, onClose }: Props) {
   const tool = powerUpOf(game)
   const ids = (cards: Card[]) => cards.map(cardId).sort().join()
-  const oddsNow = useAsked<FreeOdds>(tool === 'odds' ? `odds|${game.dealer}|${ids(game.hands[ME])}` : null, odds)
+  // Bidding: the ten cards. Picked up: the twelve in hand, then the ten kept and the two put away — each its own answer.
+  const oddsNow = useAsked<FreeOdds>(tool === 'odds' ? `odds|${game.dealer}|${ids(game.hands[ME])}|${pickedUp(game) ? ids(game.skat) : ''}` : null, odds)
   if (!tool) return null
-  const title = tool === 'odds' ? m.powerup_odds_name() : tool === 'putaway' ? m.powerup_putaway_name() : m.powerup_counter_name()
+  const title = tool === 'odds' ? m.powerup_odds_name() : m.powerup_counter_name()
   return (
     <Modal title={title} onClose={onClose} testId="skat-power-ups" tight>
       <div data-testid={`power-up-${tool}`} {...stylex.props(styles.body)}>
-        {tool === 'odds' ? <OddsTable game={game} odds={oddsNow} /> : tool === 'putaway' ? <Tips game={game} /> : <Counter game={game} nameOf={nameOf} />}
+        {tool === 'odds' ? <OddsTable game={game} odds={oddsNow} /> : <Counter game={game} nameOf={nameOf} />}
       </div>
     </Modal>
   )
@@ -84,17 +83,21 @@ const Waiting = ({ state }: { state: 'loading' | 'failed' }) => (
   <p {...stylex.props(typography.appText, styles.note)}>{state === 'loading' ? m.loading() : m.powerup_failed()}</p>
 )
 
-/** The number the player would have to say or hold now: the speaker's next one, the one asked of the listener, 18 alone. */
+/** The number the player would have to say or hold now: the speaker's next one, the one asked of the listener, 18 alone;
+ *  once the skat is picked up, the bid won. */
 function bidNow(g: Game): number {
+  if (pickedUp(g)) return g.bid
   const b = g.bidding
   if (b.awaiting === 'speaker') return nextBid(b.value) ?? b.value
   return Math.max(18, b.value)
 }
 
 /** Each game's value with the ten cards in hand, without and with Hand, and SkatZero's chance to make it at the number on
- *  the table now after picking up — the win chances. Null has its four fixed values and no chance. */
+ *  the table now after picking up — the win chances. Once picked up: the value with the twelve cards, no Hand (it is gone),
+ *  and the chance at the bid won with this skat. Null has its fixed values and no chance. */
 function OddsTable({ game, odds }: { game: Game; odds: FreeOdds | 'loading' | 'failed' | null }) {
-  const hand = game.hands[ME]
+  const after = pickedUp(game)
+  const hand = after ? [...game.hands[ME], ...game.skat] : game.hands[ME]
   const at = bidNow(game)
   const chance = (c: Contract): string => {
     if (!odds || typeof odds !== 'object' || c.kind === 'null') return '—'
@@ -118,7 +121,7 @@ function OddsTable({ game, odds }: { game: Game; odds: FreeOdds | 'loading' | 'f
           <tr>
             <th {...stylex.props(typography.smallBold, styles.th)}>{m.bidvalues_game()}</th>
             <th {...stylex.props(typography.smallBold, styles.th, styles.number)}>{m.bidvalues_bid()}</th>
-            <th {...stylex.props(typography.smallBold, styles.th, styles.number)}>{m.bidvalues_hand()}</th>
+            {after ? null : <th {...stylex.props(typography.smallBold, styles.th, styles.number)}>{m.bidvalues_hand()}</th>}
             <th {...stylex.props(typography.smallBold, styles.th, styles.number)}>{m.powerup_win_at({ bid: at })}</th>
           </tr>
         </thead>
@@ -130,47 +133,15 @@ function OddsTable({ game, odds }: { game: Game; odds: FreeOdds | 'loading' | 'f
                 {r.count ? <span {...stylex.props(typography.meta, styles.sub)}>{r.count}</span> : null}
               </td>
               <td {...stylex.props(typography.appBtnStrong, styles.td, styles.number, styles.strong)}>{r.bid}</td>
-              <td {...stylex.props(typography.appText, styles.td, styles.number, styles.soft)}>{r.hand}</td>
+              {after ? null : <td {...stylex.props(typography.appText, styles.td, styles.number, styles.soft)}>{r.hand}</td>}
               <td data-testid="power-up-odds-win" {...stylex.props(typography.appBtnStrong, styles.td, styles.number, styles.strong)}>{r.win}</td>
             </tr>
           ))}
         </tbody>
       </table>
       {odds === 'loading' || odds === 'failed' ? <Waiting state={odds} /> : null}
-      <p {...stylex.props(typography.meta, styles.note)}>{m.powerup_odds_note()}</p>
+      <p {...stylex.props(typography.meta, styles.note)}>{!after ? m.powerup_odds_note() : game.phase === 'declare' ? m.powerup_odds_note_put() : m.powerup_odds_note_skat()}</p>
     </>
-  )
-}
-
-/** The rules for choosing the game and putting away (Kulzer, Mein Skat-Kompendium 30–38), each with one pointer at the
- *  declarer's twelve cards — what to look for in them, never the card or the game. The last rule needs no pointer. */
-function Tips({ game }: { game: Game }) {
-  // The declarer's twelve: in hand before putting away, the ten kept and the two in the skat after.
-  const t = putAwayTips([...game.hands[ME], ...game.skat])
-  const short = { one: m.powerup_tip_void_one, two: m.powerup_tip_void_two, void: m.powerup_tip_void_done, none: m.powerup_tip_void_none }[t.short]
-  const tips = [
-    { rule: m.powerup_tip_safe(), why: m.powerup_tip_safe_why(), here: m.powerup_tip_safe_here({ n: t.trumps }) },
-    { rule: m.powerup_tip_points(), why: m.powerup_tip_points_why(), here: m.powerup_tip_points_here({ n: t.atRisk }) },
-    { rule: m.powerup_tip_void(), why: m.powerup_tip_void_why(), here: short() },
-    { rule: m.powerup_tip_keep(), why: m.powerup_tip_keep_why(), here: null },
-  ]
-  return (
-    <ol {...stylex.props(styles.tips)}>
-      {tips.map((tip, i) => (
-        <li key={tip.rule} data-testid="power-up-tip" {...stylex.props(styles.tip)}>
-          <span aria-hidden {...stylex.props(typography.badge, styles.step)}>{i + 1}</span>
-          <div {...stylex.props(styles.tipText)}>
-            <p {...stylex.props(typography.appBtnStrong, styles.strong)}>{tip.rule}</p>
-            <p {...stylex.props(typography.appText, styles.note)}>{tip.why}</p>
-            {tip.here ? (
-              <p data-testid="power-up-tip-here" {...stylex.props(typography.appText, styles.here)}>
-                <Rich text={tip.here} />
-              </p>
-            ) : null}
-          </div>
-        </li>
-      ))}
-    </ol>
   )
 }
 
@@ -243,19 +214,4 @@ const styles = stylex.create({
   sub: { display: 'block', whiteSpace: 'nowrap', color: color.slate },
   group: { whiteSpace: 'nowrap' },
   note: { margin: 0, color: color.slate },
-  tips: { display: 'flex', flexDirection: 'column', gap: space.x12, margin: 0, padding: 0, listStyle: 'none' },
-  tip: { display: 'flex', gap: space.x10, alignItems: 'flex-start' },
-  step: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: dims.badge,
-    height: dims.badge,
-    borderRadius: radii.round,
-    backgroundColor: color.navy,
-    color: color.onColor,
-  },
-  tipText: { display: 'flex', flexDirection: 'column', gap: space.x4, minWidth: 0 },
-  here: { margin: 0, paddingBlock: space.x6, paddingInline: space.x10, borderRadius: radii.tag, backgroundColor: color.page, color: color.navy },
 })

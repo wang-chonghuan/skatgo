@@ -310,8 +310,10 @@ export function DailyTable({ size = DAILY_DEALS }: { size?: DailySize }) {
         deals: reply.status.deals,
         benchmarks: reply.status.benchmarks,
         talk,
-        // The deal of the day's result stays at the table with its own way on, share and close (SKATGO-168).
-        done: one && reply.status.finished ? <DodDone status={reply.status} onClose={onLeave} /> : undefined,
+        // The deal of the day's result stays at the table with its own way on (SKATGO-168): share and the deal once more in
+        // its foot, its close in the top right corner (SKATGO-177).
+        done: one && reply.status.finished ? <DodDone status={reply.status} /> : undefined,
+        close: one && reply.status.finished ? onLeave : undefined,
       }}
     />
   )

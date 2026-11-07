@@ -294,11 +294,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   「1 deal today和 tournament 6 deals按钮的字太小，应该用app里的标准按钮风格」), "1 Spiel heute" | "Turnier · 6 Spiele"
   (SKATGO-131; SKATGO-77's 6 | 12 once stood there): the deal of the day by default, the tournament with `?t=6`. The deal of the day's side: before it is played
   its one `go` button to its table (`/daily/play?size=1`, where after the last card the deal's result stays, its foot
-  buttons one over the other — "Share with friends" (`go`, the same share as below), "Replay this deal" (`quiet`, to
-  `/daily/replay`, SKATGO-177: 「每天1deal的，应该也能复盘」) and "Close" (`quiet`), back here — and nothing goes by itself:
-  SKATGO-168, 「打完弹出结果页面，很快就闪了……应该改成2个按钮，share的那个按钮，显示在结果页，下面是关闭按钮」); `/daily/replay`
+  "Share with friends" (`go`, the same share as below) over "Replay this deal" (`quiet`, to `/daily/replay`, SKATGO-177:
+  「每天1deal的，应该也能复盘」), its close the round X in the dialog's top right corner, back here (SKATGO-177: 「close还放在
+  右上角，不要下面那个close按钮了」) — and nothing goes by itself: SKATGO-168, 「打完弹出结果页面，很快就闪了」); `/daily/replay`
   is the same table played again as free play's replay is (its pill, its result's heading, the review against the AI), its
-  foot "Close" (`go`) over "Replay this deal" (`quiet`); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
+  foot "Replay this deal" (`quiet`), its close the same X; once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
   gespielt" (`dialogTitle`) over "Deine Freunde bekommen dieselben Karten – schau, wie viele Punkte sie holen." — and no
   scores, no place: the card below carries them (SKATGO-132, 「我不懂你显示这些垃圾干什么……你完成了same one deal today,
   分享给朋友，看看他们能打几分」, 「1 played today · you're #1 这个不要显示」) — "Mit Freunden teilen" as the one `go`
@@ -556,7 +556,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   private table has the first alone. Against the AI, where the deal counts (not a deal played again), the dialog's first
   line is the deal's XP (`DealXp`/`XpEarned`, SKATGO-172/173, 「经验值放在打牌结果页的第一行，不要单独做一个弹窗」), one row (「丑死了」):
   "+12 XP" as a pill (`appBtnStrong`, `go` on `goodSoft`; `slate` on `page` for a guest), why beside it, "Above the AI by
-  23 · +2 own game" (a guest: "Sign in to earn XP", `slate`), wrapping only in its own column, and the circled question
+  23 · +2 own game" (a guest: "Sign in to earn XP", `slate`, then "Sign in", an `appLink` in `info` that opens the sign-in;
+  SKATGO-177, 「这里也要显示简单的登录按钮，可以用链接」), wrapping only in its own column, and the circled question
   mark at the row's right for the tiers; "XP …" while the review comes; no toast. The first part, top to bottom, each fact once:
   - the box, a `Panel` `good` when the player's side won and `bad` when it lost (`card` when all passed), holding only
     the title (`dialogTitle`): "Lina won Spades ♠", "You lost Grand", "All three passed" — and one line (`appText`) of

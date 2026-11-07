@@ -224,7 +224,7 @@ export function DodReplayPage() {
 }
 
 /** As free play's replay (SKATGO-170): the same cards against the same AI, counted nowhere — no board, no XP, no record —
- *  its result with the review against the AI, then once more or back to the day's page. The server deals it only to a
+ *  its result with the review against the AI, then once more, or its close in the top right corner back to the day's page. The server deals it only to a
  *  player who has finished today's deal; anyone else goes back to the day's page. */
 function DodReplay() {
   const navigate = useNavigate()
@@ -263,12 +263,8 @@ function DodReplay() {
         next: close,
         replaying: true,
         review,
-        done: (
-          <div {...stylex.props(styles.foot)}>
-            <Btn testId="dod-replay-close" shape="block" size="lg" onClick={close}>{m.dod_close()}</Btn>
-            <Btn testId="dod-replay-again" tone="quiet" shape="block" size="lg" onClick={() => void practice.start(day)}>{m.free_replay()}</Btn>
-          </div>
-        ),
+        close,
+        done: <Btn testId="dod-replay-again" tone="quiet" shape="block" size="lg" onClick={() => void practice.start(day)}>{m.free_replay()}</Btn>,
       }}
     />
   )
@@ -303,8 +299,6 @@ const styles = stylex.create({
   summary: { display: 'flex', flexDirection: 'column', justifyContent: 'center', flexGrow: 1, padding: space.x16, maxWidth: dims.readingColumn, marginInline: 'auto', width: '100%', boxSizing: 'border-box' },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
-  // The replay's two ways on, one over the other, each the foot's width, as the day's own result foot (dod-share.tsx).
-  foot: { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: space.x10 },
   action: { display: 'flex' },
   title: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.navy },

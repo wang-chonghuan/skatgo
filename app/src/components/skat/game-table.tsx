@@ -56,7 +56,7 @@ import { SettingsDialog } from './frame'
 import { PowerUps, powerUpOf } from './power-ups'
 import { PlayingCard } from './playing-card'
 import { RulesInPanel } from './rules-page'
-import { Btn, Panel, Pill, Rich, linkLook } from './ui'
+import { Btn, CloseButton, Panel, Pill, Rich, linkLook } from './ui'
 
 // A whole game of Skat against two computer players. All rules live in ~/lib/skat/game; this file
 // renders a state and dispatches the learner's moves, and lets the computers move on a timer so the
@@ -126,6 +126,9 @@ export type Tournament = {
   /** The deal of the day's way on after its deal (SKATGO-168): share and close, in the result's foot, instead of a next
    *  deal there is not. */
   done?: ReactNode
+  /** The deal of the day's result closes from its top right corner, back to the day's page (SKATGO-177, the human: 「close还
+   *  放在右上角，不要下面那个close按钮了」). */
+  close?: () => void
 }
 
 /** What the settlement shows in the tournament (SKATGO-57, simplified in SKATGO-79): this deal's score
@@ -155,8 +158,10 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   /** Free play: the deal on the table is one played again: in the totals already, and its end adds nothing. The deal of
    *  the day played again (SKATGO-177) is one too. */
   replaying?: boolean
-  /** The result's foot in place of the next deal: the deal of the day played again closes or goes once more (SKATGO-177). */
+  /** The result's foot in place of the next deal: the deal of the day played again goes once more (SKATGO-177). */
   done?: ReactNode
+  /** Its result closes from the top right corner, back to the day's page (SKATGO-177). */
+  close?: () => void
   /** Free play: what Lina (1) or Noah (2) just said (SKATGO-142), shown on their side. */
   talk?: { seat: 1 | 2; line: string; id: number } | null
 }
@@ -506,7 +511,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                 </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
                 </div>
               )}
             </div>
@@ -639,7 +644,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -738,7 +743,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
             </section>
           ) : null}
 
@@ -787,7 +792,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} />
         </div>
       ) : null}
 
@@ -829,6 +834,7 @@ function ActionsFor({
   last,
   daily,
   done,
+  close,
   again,
   replaying,
   room,
@@ -858,8 +864,9 @@ function ActionsFor({
   last: boolean
   /** In the tournament: the AI's result and the running table, shown once the deal is over. */
   daily?: DailyAfter | null
-  /** The deal of the day's own way on after its deal (SKATGO-168). */
+  /** The deal of the day's own way on after its deal (SKATGO-168), and its result's close (SKATGO-177). */
   done?: ReactNode
+  close?: () => void
   /** Free play: play the finished deal again (SKATGO-170), and whether this one is. */
   again?: () => void
   replaying?: boolean
@@ -874,6 +881,7 @@ function ActionsFor({
   return (
     <Actions
       done={done}
+      close={close}
       again={again}
       replaying={replaying}
       room={room}
@@ -1124,6 +1132,7 @@ type ActionsProps = {
   last: boolean
   daily?: DailyAfter | null
   done?: ReactNode
+  close?: () => void
   again?: () => void
   replaying?: boolean
   room: boolean
@@ -1159,7 +1168,7 @@ function Actions(p: ActionsProps) {
         <Btn testId="skat-replay" tone="quiet" shape="block" size="lg" onClick={p.again}>{m.free_replay()}</Btn>
       </div>
     ) : <Row>{on}</Row>)
-    return <DealResult game={game} totals={p.totals} vsAi={vsAi} next={foot} replaying={p.replaying} />
+    return <DealResult game={game} totals={p.totals} vsAi={vsAi} next={foot} replaying={p.replaying} onClose={p.close} />
   }
 
   if (game.phase === 'passedIn') {
@@ -1436,7 +1445,7 @@ function Result({ game, next }: { game: Game; next: ReactNode }) {
  * score is counted, without the score; and against the AI, the review. Each fact once, in four levels: the dialog's
  * title, 16 bold, 16, and the tags' 13 bold.
  */
-function DealResult({ game, totals, vsAi, next, replaying = false }: { game: Game; totals: [number, number, number] | null; vsAi: { ask: AskReview; cacheKey?: string } | null; next: ReactNode; replaying?: boolean }) {
+function DealResult({ game, totals, vsAi, next, replaying = false, onClose }: { game: Game; totals: [number, number, number] | null; vsAi: { ask: AskReview; cacheKey?: string } | null; next: ReactNode; replaying?: boolean; onClose?: () => void }) {
   const nameOf = useNameOf()
   const panel = useScrolledIn()
   const r = game.phase === 'done' ? game.result : null
@@ -1450,7 +1459,7 @@ function DealResult({ game, totals, vsAi, next, replaying = false }: { game: Gam
     return played.r.won ? m.result_head_won({ name, game: what }) : m.result_head_lost({ name, game: what })
   })()
   return (
-    <Dialog foot={next}>
+    <Dialog foot={next} onClose={onClose}>
       <div ref={panel} data-testid="skat-result" data-human-won={humanWon === null ? undefined : String(humanWon)} {...stylex.props(styles.result)}>
         {/* The deal's XP, the result's first line, where the deal counts: not a deal played again (SKATGO-170/172/173). */}
         {vsAi && !replaying ? <DealXp ask={vsAi.ask} cacheKey={vsAi.cacheKey} /> : null}
@@ -1717,12 +1726,18 @@ const Say = ({ children }: { children: ReactNode }) => <p {...stylex.props(typog
  *  human: 「modal应该是滚动区域，下面是next deal按钮」), the dialog's body scrolls inside its own box and the foot stays
  *  at its bottom, over the scrolled content. Either way the scrolling part is inset by the dialog's padding, so its scroll
  *  bar stands inside the dialog, never on its edge (SKATGO-156, 「所有的弹窗，都要让滚动条在弹窗内部，而不是贴道外部」). */
-function Dialog({ children, foot }: { children: ReactNode; foot?: ReactNode }) {
+function Dialog({ children, foot, onClose }: { children: ReactNode; foot?: ReactNode; onClose?: () => void }) {
   return (
     <div data-testid="skat-dialog" {...stylex.props(styles.scrim)}>
       {foot ? (
         <div role="dialog" aria-modal="false" {...stylex.props(styles.dialog, styles.dialogFramed)}>
-          <div data-testid="skat-dialog-body" {...stylex.props(styles.dialogBody)}>{children}</div>
+          {/* A close in the top right corner, over the body (SKATGO-177, the human: 「close还放在右上角」). */}
+          {onClose ? (
+            <div {...stylex.props(styles.dialogHead)}>
+              <CloseButton testId="skat-dialog-close" onClick={onClose} />
+            </div>
+          ) : null}
+          <div data-testid="skat-dialog-body" {...stylex.props(styles.dialogBody, onClose && styles.dialogBodyUnderHead)}>{children}</div>
           <div data-testid="skat-dialog-foot" {...stylex.props(styles.dialogFoot)}>{foot}</div>
         </div>
       ) : (
@@ -2375,6 +2390,9 @@ const styles = stylex.create({
   },
   dialogInner: { display: 'flex', flexDirection: 'column', gap: space.x16, flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', paddingRight: space.x16 },
   dialogFramed: { gap: 0, paddingBlock: 0, paddingLeft: 0, paddingRight: 0 },
+  // The close's row: the button in the corner, 8 in from the top and the right as the scroll bar is.
+  dialogHead: { display: 'flex', flexShrink: 0, justifyContent: 'flex-end', paddingTop: space.x8, paddingRight: space.x8 },
+  dialogBodyUnderHead: { marginTop: 0, paddingTop: 0 },
   // Its scroll bar clear of the rounded corner: 8 in from the top and the right, the content 24.
   dialogBody: { flexGrow: 1, flexShrink: 1, minHeight: 0, overflowY: 'auto', marginTop: space.x8, marginLeft: space.x24, marginRight: space.x8, paddingTop: space.x16, paddingBottom: space.x24, paddingRight: space.x16 },
   dialogFoot: {

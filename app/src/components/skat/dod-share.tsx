@@ -45,10 +45,11 @@ export function ShareSaid({ said }: { said: 'copied' | 'failed' | null }) {
 /**
  * The way on after the deal of the day at its table (SKATGO-168, the human: 「打完弹出结果页面，很快就闪了……应该改成2个按钮，share
  * 的那个按钮，显示在结果页，下面是关闭按钮。就是两个按钮」): in the result's foot, "share" as on the day's result, and under it
- * "close", to the day's page. The result no longer goes by itself. Between them, quiet as free play's, the deal once more,
- * counted nowhere (SKATGO-177, the human: 「每天1deal的，应该也能复盘」).
+ * "close", to the day's page. The result no longer goes by itself. Under "share", quiet as free play's, the deal once more,
+ * counted nowhere (SKATGO-177, the human: 「每天1deal的，应该也能复盘」); the close went to the dialog's top right corner
+ * (「close还放在右上角，不要下面那个close按钮了」).
  */
-export function DodDone({ status, onClose }: { status: DailyStatus; onClose: () => void }) {
+export function DodDone({ status }: { status: DailyStatus }) {
   const { code, said, share } = useDodShare(status)
   const navigate = useNavigate()
   return (
@@ -59,9 +60,6 @@ export function DodDone({ status, onClose }: { status: DailyStatus; onClose: () 
       </Btn>
       <Btn testId="dod-replay" tone="quiet" shape="block" size="lg" onClick={() => void navigate({ to: '/daily/replay' })}>
         {m.free_replay()}
-      </Btn>
-      <Btn testId="dod-close" tone="quiet" shape="block" size="lg" onClick={onClose}>
-        {m.dod_close()}
       </Btn>
       <ShareSaid said={said} />
     </div>

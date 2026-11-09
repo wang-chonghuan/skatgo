@@ -7,8 +7,8 @@ import { recordFreeDeal } from '../src/profile'
 import { Store } from '../src/store'
 import { xpBoard } from '../src/xp'
 
-// The XP board (SKATGO-172) against a database of its own: every deal of every account summed by their tier against
-// the AI, earlier weeks' too (SKATGO-179: no weekly reset), a guest's own deals off the board, the ids one person plays under counted
+// The XP board (SKATGO-172) against a database of its own: every deal of every account from XP_SINCE (Monday 2 November)
+// on summed by their tier against the AI, later weeks' too and none before (SKATGO-179: no weekly reset), a guest's own deals off the board, the ids one person plays under counted
 // as one, each person's win rate over all their deals (SKATGO-178), and the asker's row marked.
 
 // The player declared when their own score is a game's (not 0 or a defender's 40).
@@ -16,7 +16,7 @@ const declarerOf = (scores: [number, number, number]): 0 | null => (scores[0] !=
 const summary = (scores: [number, number, number]) => ({ declarer: declarerOf(scores), declaration: null, bid: 18, won: scores[0] > 0, scores, detail: null })
 const played = (scores: [number, number, number]) => ({ scores, declarer: declarerOf(scores), won: scores[0] > 0 })
 
-test('xp: every deal by tier, earlier weeks too, aliases as one person, guests off the board', { timeout: 60_000 }, async (t) => {
+test('xp: every deal since the start by tier, aliases as one person, guests off the board', { timeout: 60_000 }, async (t) => {
   const base = new URL(process.env.DATABASE_URL || '')
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname), 'Tests refuse external databases')
   const server = new pg.Pool({ connectionString: base.href })
@@ -47,11 +47,11 @@ test('xp: every deal by tier, earlier weeks too, aliases as one person, guests o
   await entry('2026-11-05', DEAL_OF_DAY, 'anon:guest', [[-60, 0, 0]])
   await store.pool.query('INSERT INTO player_aliases (player, same_as) VALUES ($1, $2)', ['anon:guest', 'user:anna'])
   // Ben: 10 below (6) in his own game (+2) today, won; defending, the same as the AI (10) and the declarer won, so his
-  // side lost: 18 XP; and the week before, 200 above (20) in his own game (+2), won: 40 XP, two of three games won.
+  // side lost: 18 XP, half his games won; his deal before the start does not count.
   await recordFreeDeal(store, { player: 'user:ben', game: 'free:p:2:1', day: '2026-11-05', at: 1, mine: played([30, 0, 0]), ai: played([40, 0, 0]) })
   await recordFreeDeal(store, { player: 'user:ben', game: 'free:p:2:2', day: '2026-11-05', at: 2, mine: { scores: [0, 50, 0], declarer: 1, won: true }, ai: { scores: [0, 50, 0], declarer: 1, won: true } })
   await entry('2026-10-28', DEAL_OF_DAY, 'user:ben', [[200, 0, 0]])
-  // A guest's own deal is not on the board; an account seen only the week before is, with that week's deal (22 XP).
+  // A guest's own deal, and an account seen only before the start: neither is on the board.
   await entry('2026-11-05', DEAL_OF_DAY, 'anon:stranger', [[100, 0, 0]])
   await entry('2026-10-28', DEAL_OF_DAY, 'user:carl', [[100, 0, 0]])
   // Dora: one deal on Monday, all passed — on the board with no win rate.
@@ -61,11 +61,12 @@ test('xp: every deal by tier, earlier weeks too, aliases as one person, guests o
   assert.deepEqual(await xpBoard(store, 'anon:guest'), {
     rows: [
       { rank: 1, nickname: 'Anna', xp: 60, winRate: 67, you: true },
-      { rank: 2, nickname: 'Ben', xp: 40, winRate: 67 },
-      { rank: 3, nickname: 'Carl', xp: 22, winRate: 100 },
-      { rank: 4, nickname: 'Dora', xp: 10, winRate: null },
+      { rank: 2, nickname: 'Ben', xp: 18, winRate: 50 },
+      { rank: 3, nickname: 'Dora', xp: 10, winRate: null },
     ],
   })
-  // Asked as nobody, no row is marked.
+  // A later week's deal adds to the same board; asked as nobody, no row is marked.
+  await recordFreeDeal(store, { player: 'user:dora', game: 'free:p:3:2', day: '2026-11-10', at: 2, mine: played([0, 0, 0]), ai: played([0, 0, 0]) })
+  assert.equal((await xpBoard(store, null)).rows.find((r) => r.nickname === 'Dora')?.xp, 20)
   assert.equal((await xpBoard(store, null)).rows.some((r) => r.you), false)
 })

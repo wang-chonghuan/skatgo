@@ -56,7 +56,7 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   entry's Seeger-Fabian total (`daily_entries.total`, SKATGO-81), ties to the earlier finish, with the
   AI's total from the player's seat beside it, from the deals' stored `benchmark` (SKATGO-80). The
   XP board (SKATGO-172, replacing SKATGO-123's Elo) is computed the same way, on request, from those rows and
-  `play_deals`: `POST /daily/xp` (`multiplayer/src/xp.ts`) sums every deal of every account, earlier weeks' too (SKATGO-179: no weekly reset), by the tiers in
+  `play_deals`: `POST /daily/xp` (`multiplayer/src/xp.ts`) sums every deal of every account from `XP_SINCE` (2026-11-02, the last weekly board continued; SKATGO-179: no weekly reset) on, by the tiers in
   `app/src/lib/skat/xp.ts` (held to its examples by `xp.test.ts`), counting the ids `player_aliases` names as one
   person as that person — rows written by hand, never ids in code — and answers every account with XP by name, with
   its win rate over the same deals as the record of play counts it (`recordOf`, SKATGO-178), the asker's row marked. The front page reads it on the server as nobody (`lib/xp-api.ts`, a minute's answer cached),

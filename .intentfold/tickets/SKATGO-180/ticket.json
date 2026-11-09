@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-180",
   "mode": "open",
-  "stage": "setup-complete",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-180",
   "branch": "codex/SKATGO-180-personas",

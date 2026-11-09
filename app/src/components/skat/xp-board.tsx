@@ -16,10 +16,10 @@ import { Panel } from './ui'
 import { XpHow } from './xp-earned'
 
 /**
- * The week's XP board in the front page's long card (SKATGO-172, the human: 「这个卡片大小规格行为，还和当前的elo卡片一样。elo的卡片和
- * 算法都删除」): every account with XP this week, the most first — rank, name, the week's win rate, the week's XP —
- * the player's own row marked; the title "Weekly XP & win rate" / "Wochen-XP & Gewinnquote", naming both as the streak was named (the human:
- * 「用weekly XP 是否更好，哪个更短，德语呢」, then 「steak也要放上去吧」). The win
+ * The XP board in the front page's long card (SKATGO-172, the human: 「这个卡片大小规格行为，还和当前的elo卡片一样。elo的卡片和
+ * 算法都删除」): every account with XP, the most first — rank, name, win rate, XP, over all their deals —
+ * the player's own row marked; the title "XP & win rate" / "XP & Gewinnquote" (SKATGO-179, the human: 「把weekly去掉，不要每周
+ * 刷新一次」; until then the week's, starting again every Monday). The win
  * rate stands where days in a row stood (SKATGO-178, the human: 「把那个连续登录去掉……不连续登录了有内疚感。可以把胜率放上去，替换steak
  * 那个列。然后排序还是按经验值排序」), "–" while no deal had a declarer. The tiers open from a circled
  * question mark beside the title, in a `Modal`. On PC its frame is the Elo card's (SKATGO-123/140/144): `fill`, as tall as

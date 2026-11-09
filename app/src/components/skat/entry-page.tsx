@@ -26,7 +26,7 @@ import { Btn } from './ui'
 // The front page (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后显示下面的四个卡片……长卡片做两个，
 // 一个是my progress……一个是 elo ranking」): the slogan, then the ways in — four colour cards two by two, each a link
 // with its icon over its title (the deal of the day, free play, the course, the bidding practice since SKATGO-149), and beside them two long
-// white cards: the week's XP board (SKATGO-172, where SKATGO-123's Elo board stood, on top since), and the player's
+// white cards: the XP board (SKATGO-172, where SKATGO-123's Elo board stood, on top since), and the player's
 // progress, its curve when there is one, leading to the record of play. Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
 // hero buttons, no lead, no link row: the cards are the page. Rendered on the server; the curve in the browser.
 export function EntryPage() {
@@ -42,7 +42,7 @@ export function EntryPage() {
         {/* The bidding practice (SKATGO-149, the human: 「practice卡片的位置，做成一个叫牌练习的东西」): an auction's hammer; its
             title one line, "Bidding" (SKATGO-151). */}
         <Way to="/bidding-practice" section="bidding" tone="practice" Icon={Gavel} art={PRACTICE_ART} title={m.home_bidding()} />
-        {/* The week's XP first, the player's progress under it (SKATGO-172, the human asked which goes on top: 「你建议？」). */}
+        {/* The XP board first, the player's progress under it (SKATGO-172, the human asked which goes on top: 「你建议？」). */}
         <div data-testid="entry-card" data-section="xp" {...stylex.props(styles.long, styles.board)}>
           {xp ? (
             <XpBoard board={xp} fill />

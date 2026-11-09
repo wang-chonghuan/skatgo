@@ -64,7 +64,7 @@ const tierText = (t: XpTier) =>
     farAbove: m.xp_tier_farAbove({ n: XP_FAR }),
   })[t]
 
-/** How XP is earned (SKATGO-172): what a deal is measured by, the five tiers and what each earns, and the week. A dialog
+/** How XP is earned (SKATGO-172): what a deal is measured by, the five tiers and what each earns, and the win rate. A dialog
  *  in the middle of the screen with its own close button, as the Elo's was (SKATGO-140). */
 export function XpHow({ onClose, testId }: { onClose: () => void; testId: string }) {
   return (
@@ -82,7 +82,7 @@ export function XpHow({ onClose, testId }: { onClose: () => void; testId: string
           </tbody>
         </table>
         <p {...stylex.props(typography.appText, styles.howText)}>{m.xp_how_own()}</p>
-        <p {...stylex.props(typography.appText, styles.howText)}>{m.xp_how_week()}</p>
+        <p {...stylex.props(typography.appText, styles.howText)}>{m.xp_how_rate()}</p>
       </div>
     </Modal>
   )

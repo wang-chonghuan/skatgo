@@ -9,7 +9,7 @@ import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 
 export const Route = createFileRoute('/')({
-  // The week's XP board (SKATGO-172, replacing SKATGO-123's Elo). The forum's announcement left the hero (SKATGO-131).
+  // The XP board (SKATGO-172, replacing SKATGO-123's Elo). The forum's announcement left the hero (SKATGO-131).
   loader: async () => ({ xp: await readXpBoard() }),
   head: () =>
     pageHead({

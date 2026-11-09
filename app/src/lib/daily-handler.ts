@@ -2,7 +2,7 @@ import { signedInUser } from '~/lib/session'
 
 // POST /api/daily/state, /act, /name, /board, /review and /xp — the daily tournament's only way in from the
 // browser (SKATGO-35, SKATGO-36: a finished player's nickname, and the leaderboard; SKATGO-79: a finished
-// deal's replay with SkatZero's card wherever the player's was not; SKATGO-172: the week's XP board, everyone's; SKATGO-128:
+// deal's replay with SkatZero's card wherever the player's was not; SKATGO-172: the XP board, everyone's; SKATGO-128:
 // /profile, an account's record of play). The tournament itself runs in the
 // multiplayer service, which owns the cards and the scores; this handler only says who is playing and
 // passes the request on with the service's key.
@@ -102,7 +102,7 @@ export async function handleDaily(request: Request): Promise<Response> {
   // (size 1) a guest may play too (SKATGO-131, the human: 游客能打); the tournament of six needs an account.
   const playing = op === 'act' || (op === 'state' && (body as { open?: unknown }).open === true)
   if (playing && !userId && (body as { size?: unknown }).size !== 1) return json(401, { error: 'sign_in_required' })
-  // Looking at the board needs no player: a visitor nobody knows yet asks as nobody. The week's XP board is
+  // Looking at the board needs no player: a visitor nobody knows yet asks as nobody. The XP board is
   // everyone's; an account asks as itself, so its own row is marked, and a guest as nobody (SKATGO-172).
   const player = op === 'xp' ? (userId ? `user:${userId}` : null) : userId ? `user:${userId}` : known || playing || op === 'state' ? anon : null
   // A code, a practice game: nobody's (SKATGO-132). The player's own code needs who they are, guest or account; so does

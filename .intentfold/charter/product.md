@@ -58,16 +58,16 @@ no card, contract or name (「分享出去要有精美的卡片」, 「就显示
 a code so no one can make it say what was not played; whoever opens it plays the same deal: on its day as the day's
 deal, after it as practice on no board (「点击就能也打这一副牌」, 「过期的牌开放练习」).
 
-Beside the daily boards stands the week's experience points, XP (SKATGO-172, replacing SKATGO-123's Elo; the human:
+Beside the daily boards stand the experience points, XP (SKATGO-172, replacing SKATGO-123's Elo; the human:
 「看和ai的得分差距，比ai高了x分，一样了y分，低了z分，都加分，但是根据差值换算，作为经验值，可以每周重置」, 「那就不要平均值」, 「elo的卡片和
 算法都删除」): every deal a signed-in player plays against the AI — free play, the deal of the day, the tournament's deals
 — earns XP by its Seeger-Fabian score against the AI's in the player's seat on the same cards: 50 or more below 4, 1 to
 49 below 6, the same 10, 1 to 49 above 14, 50 or more above 20 (a deal without the AI's result counts as the same), and
 2 more when the player declared, won or lost, so taking a game is never worse for XP than passing it by (on the
 regulars' 941 deals the declared ones earned 8.13 a deal, the rest 9.50; 4 made a lost game nearly free; the human:
-「同意你的决定」, then 「改成+2」); a replayed deal earns none. A week, Monday to Sunday of the tournament's days, sums its deals, and every Monday starts at
-0; no average. The front page shows every account with XP this week, the most first — rank, name, the week's win rate, the
-week's XP — the player's own row marked, and how XP is earned. No days in a row anywhere: missing a day must not make a
+「同意你的决定」, then 「改成+2」); a replayed deal earns none. A player's XP sums all their deals and never starts again (SKATGO-179, the human: 「把weekly去掉，不要每周刷新一次」; until
+then a week's, starting at 0 every Monday); no average. The front page shows every account with XP, the most first — rank, name, win rate and
+XP over all their deals — the player's own row marked, and how XP is earned. No days in a row anywhere: missing a day must not make a
 player feel guilty (SKATGO-178, the human: 「把那个连续登录去掉，我觉得会影响用户体验，不连续登录了有内疚感。可以把胜率放上去，替换steak那个列。然后排序还是按经验值排序」). After each deal the player sees
 its XP and why as the result's first line, every deal against the AI the deal of the day's included (SKATGO-173); a guest is told that signed-in players earn XP. One person under
 several ids counts as one, as the human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」).

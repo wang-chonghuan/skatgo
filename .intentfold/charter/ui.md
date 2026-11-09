@@ -250,7 +250,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `GraduationCap`, the course) and "Reizen" (`tileNavy`, lucide's `Gavel`, an auction's hammer, to `/bidding-practice`; one line since SKATGO-151, the page
     keeping "Reizen üben"; SKATGO-149, the
     human: 「practice卡片的位置，做成一个叫牌练习的东西」 — the exercises' "Üben" with its `Puzzle` stood there before); on the right two long white cards, each
-    a row tall — the week's XP on top, then the progress (SKATGO-172, 「你建议？」): "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
+    a row tall — the XP board on top, then the progress (SKATGO-172, 「你建议？」): "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
     over the latest 30 deals, fewer while there are fewer (`standingOf`, SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」),
     the win rate and the average per deal against the AI (`homeCardTitle`, each over a `meta` label), beside the curve and
     over it on a phone, and that average day by day as the curve (`rollingOf`), "Immer über die letzten 30 Spiele" in the dates' row, no win-rate curve — on real records a day's win
@@ -260,14 +260,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     made it navy) and with no AI tag (SKATGO-138, 「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」), a single day as its dot; framed lightly, no larger: the first
     and the last day under it (`meta`, slate) (「最好上面带一些日期……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
     Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
-    保存你的表现记录以及ai分析，中间放个登录按钮」); and the week's XP
+    保存你的表现记录以及ai分析，中间放个登录按钮」); and the XP
     board (`xp-board.tsx`, SKATGO-172, in the Elo board's place, size and behaviour: 「这个卡片大小规格行为，还和当前的elo卡片一样」) —
     its title with a circled question mark (`info`) opening how XP is earned in a `Modal` (`XpHow`: one line, the five
-    tiers in a table, one line on the own game's +2, one line on the week); the title "Weekly XP & win rate" / "Wochen-XP & Gewinnquote", naming
-    both, and no line under it (「Every deal earns XP · starts again in 3 days 这句去掉」, 「用weekly XP 是否更好，哪个更短，德语呢」,
-    「steak也要放上去吧」, SKATGO-178); every account with XP this week —
-    rank, name, the week's win rate in `slate` (a whole percent, "–" while no deal had a declarer; SKATGO-178, in place of
-    the days in a row: 「不连续登录了有内疚感。可以把胜率放上去，替换steak那个列」), the week's XP
+    tiers in a table, one line on the own game's +2, one line on the win rate); the title "XP & win rate" / "XP & Gewinnquote", naming
+    both (SKATGO-179, the human: 「把weekly去掉，不要每周刷新一次」; until then "Weekly XP & win rate"), and no line under it (「Every deal earns XP · starts again in 3 days 这句去掉」, 「用weekly XP 是否更好，哪个更短，德语呢」,
+    「steak也要放上去吧」, SKATGO-178); every account with XP, over all their deals —
+    rank, name, the win rate in `slate` (a whole percent, "–" while no deal had a declarer; SKATGO-178, in place of
+    the days in a row: 「不连续登录了有内疚感。可以把胜率放上去，替换steak那个列」), the XP
     (`appBtnStrong`) — the player's own row on `goodSoft` with the "You" tag, close rows at `appText`, one column, the list
     scrolling inside the card, which is never taller than the cards beside it — it takes the row's height and never
     sets it (SKATGO-144, the human: 「高度不能超过它相邻卡片的高度，所以可以滚动，要一致」); wherever the page is one column

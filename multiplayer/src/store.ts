@@ -122,6 +122,26 @@ export class Store {
           player text NOT NULL, game text NOT NULL, day text NOT NULL, at bigint NOT NULL, mine jsonb NOT NULL,
           ai jsonb NOT NULL, PRIMARY KEY (player, game)
         );
+        CREATE TABLE IF NOT EXISTS persona_players (
+          player text PRIMARY KEY CHECK (player LIKE 'sim:%'),
+          nickname text NOT NULL, created_at bigint NOT NULL
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS persona_names ON persona_players (lower(nickname));
+        CREATE TABLE IF NOT EXISTS persona_jobs (
+          player text NOT NULL REFERENCES persona_players(player), day text NOT NULL, slot text NOT NULL,
+          size integer NOT NULL CHECK (size IN (0, 1, 6)), due bigint NOT NULL, snapshot jsonb NOT NULL,
+          pool_version text, free_index integer, attempts integer NOT NULL DEFAULT 0, retry_at bigint NOT NULL DEFAULT 0,
+          error text, result jsonb, completed_at bigint, PRIMARY KEY (player, day, slot)
+        );
+        CREATE INDEX IF NOT EXISTS persona_due ON persona_jobs (day, due) WHERE result IS NULL;
+        CREATE UNIQUE INDEX IF NOT EXISTS persona_free_once ON persona_jobs (player, pool_version, free_index)
+          WHERE free_index IS NOT NULL;
+        CREATE TABLE IF NOT EXISTS persona_control (
+          id integer PRIMARY KEY CHECK (id = 1), enabled boolean NOT NULL,
+          population integer NOT NULL CHECK (population BETWEEN 1 AND 500),
+          revision integer NOT NULL DEFAULT 1, updated_at bigint NOT NULL,
+          heartbeat_at bigint, tick_ms integer, last_error text
+        );
         -- A week's analysis of a player's record of play, written by hand per language (SKATGO-128, the human: 「挑重点，目前
         -- 用户少，可以手动做」): the points that mattered that week and a conclusion, in the forum's marks. Keyed by the
         -- player's id as it stands, the week's Monday and the language.

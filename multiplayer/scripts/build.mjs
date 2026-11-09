@@ -1,7 +1,8 @@
 import { build } from 'esbuild'
 await build({
-  entryPoints: ['src/server.ts'],
-  outfile: 'dist/server.mjs',
+  entryPoints: { server: 'src/server.ts', personas: 'scripts/personas.ts' },
+  outdir: 'dist',
+  outExtension: { '.js': '.mjs' },
   platform: 'node',
   target: 'node24',
   format: 'esm',

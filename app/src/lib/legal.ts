@@ -5,6 +5,7 @@ type LegalDocument = { intro: string; sections: LegalSection[] }
 type LegalCopy = { privacy: LegalDocument; terms: LegalDocument }
 
 export const LEGAL_UPDATED = '2026-10-29'
+export const TERMS_UPDATED = '2026-11-09'
 
 export const LEGAL_OPERATOR = {
   name: 'Olena Holub',
@@ -123,7 +124,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'fair-play',
           title: 'Fair play and public nicknames',
           paragraphs: [
-            'The daily tournament of six deals allows one entry per player per day. Its scores are calculated from the moves recorded by the server. Do not manipulate scores, create extra identities to gain an advantage, automate abusive requests or interfere with other players.',
+            'The daily tournament of six deals allows one entry per player per day. Scores and leaderboard positions follow the applicable scoring rules and the completed games recorded by the server. Do not manipulate scores, create extra identities to gain an advantage, automate abusive requests or interfere with other players.',
             'Leaderboard names, whether assigned at random or chosen by you, appear publicly with tournament results. Do not impersonate someone, disclose private information or use illegal or abusive content. SkatGo may remove an unsuitable nickname or restrict abusive access.',
           ],
         },
@@ -247,7 +248,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'fair-play',
           title: 'Fair spielen und Spitznamen wählen',
           paragraphs: [
-            'Im Tagesturnier mit sechs Spielen ist ein Eintrag pro Spieler und Tag vorgesehen. Der Server berechnet die Punkte aus den gespeicherten Spielzügen. Manipuliere keine Ergebnisse, lege keine zusätzlichen Identitäten zur Vorteilsnahme an und störe andere Spieler oder den Dienst nicht durch automatisierte missbräuchliche Anfragen.',
+            'Im Tagesturnier mit sechs Spielen ist ein Eintrag pro Spieler und Tag vorgesehen. Punkte und Ranglistenplätze richten sich nach den geltenden Wertungsregeln und den auf dem Server aufgezeichneten abgeschlossenen Spielen. Manipuliere keine Ergebnisse, lege keine zusätzlichen Identitäten zur Vorteilsnahme an und störe andere Spieler oder den Dienst nicht durch automatisierte missbräuchliche Anfragen.',
             'Namen in der Rangliste – zufällig vergeben oder von dir gewählt – erscheinen öffentlich mit den Turnierergebnissen. Gib dich nicht als andere Person aus und veröffentliche keine privaten, rechtswidrigen oder beleidigenden Inhalte. SkatGo kann ungeeignete Spitznamen entfernen und missbräuchliche Zugriffe beschränken.',
           ],
         },

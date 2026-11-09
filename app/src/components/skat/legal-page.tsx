@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
-import { LEGAL, LEGAL_OPERATOR, LEGAL_UPDATED } from '~/lib/legal'
+import { LEGAL, LEGAL_OPERATOR, LEGAL_UPDATED, TERMS_UPDATED } from '~/lib/legal'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
@@ -13,6 +13,7 @@ import { typography } from '../../theme/type'
 function LegalPage({ document }: { document: 'privacy' | 'terms' }) {
   const copy = LEGAL[getLocale()][document]
   const privacy = document === 'privacy'
+  const updated = privacy ? LEGAL_UPDATED : TERMS_UPDATED
   return (
     <article data-testid={`legal-${document}`} {...stylex.props(styles.column)}>
       <header {...stylex.props(styles.section)}>
@@ -20,7 +21,7 @@ function LegalPage({ document }: { document: 'privacy' | 'terms' }) {
           {privacy ? m.privacy_title() : m.terms_title()}
         </h1>
         <p {...stylex.props(typography.small, styles.date)}>
-          {m.legal_updated()} <time dateTime={LEGAL_UPDATED}>{LEGAL_UPDATED}</time>
+          {m.legal_updated()} <time dateTime={updated}>{updated}</time>
         </p>
         <p {...stylex.props(typography.body, styles.text)}>{copy.intro}</p>
       </header>

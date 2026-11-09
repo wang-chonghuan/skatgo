@@ -17,7 +17,7 @@ import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzer
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, judgePlays, playsOf, raw, replayLog, reviewOf, skatzeroTurn } from './computers'
 import type { Store } from './store'
 import { playProfile } from './profile'
-import { weeklyXp } from './xp'
+import { xpBoard } from './xp'
 import { type BidLimit, lineFor, momentOf, TALK_KINDS, type TalkKind, verdictOf } from './talk'
 import { type DealPick, kindOf, pickOfDay } from './pick'
 
@@ -25,7 +25,7 @@ import { type DealPick, kindOf, pickOfDay } from './pick'
 // played by one human in seat 0 against the two computers, and its board; and since SKATGO-131 the deal of the day,
 // one deal chosen for everyone, a competition of its own (size 1). Rows are keyed by their day and size: the
 // twelve-deal tournament of SKATGO-77 is gone (SKATGO-119), its stored rows kept; a request names its size, the six
-// deals when it names none. The week's XP (SKATGO-172) reads every size's entries. The server owns the cards: a deal is its deck and
+// deals when it names none. The XP board (SKATGO-172) reads every size's entries. The server owns the cards: a deal is its deck and
 // dealer plus the human's moves, replayed through the engine, and the score is what that replay
 // settles — never a number a browser sends. Only seat 0's view of the current deal leaves here.
 //
@@ -154,7 +154,7 @@ const talkInput = z.object({
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
 // A record of play is an account's (SKATGO-128).
 const profileInput = z.object({ player: z.string().regex(/^user:/).pipe(player) }).strict()
-// The week's XP board is everyone's; an account asking sees its own row marked (SKATGO-172).
+// The XP board is everyone's; an account asking sees its own row marked (SKATGO-172).
 const xpInput = z.object({ player: z.string().regex(/^user:/).pipe(player).nullable() }).strict()
 
 /** Where the player stands. The computer's result of a deal goes with the player's own, only once the
@@ -670,7 +670,7 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
   }))
   // A signed-in player's record of play (SKATGO-128): every deal against the AI, the tournament's and free play's.
   router.post('/profile', run(async body => playProfile(store, profileInput.parse(body).player)))
-  router.post('/xp', run(async body => weeklyXp(store, xpInput.parse(body).player, dayOf(Date.now()))))
+  router.post('/xp', run(async body => xpBoard(store, xpInput.parse(body).player)))
   router.post('/talk', run(async body => {
     const i = talkInput.parse(body)
     return dailyTalk(store, policy()!, i.player, i.size, i.deal, i.said as TalkKind[], i.lang)

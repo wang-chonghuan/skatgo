@@ -1,17 +1,18 @@
 import { type Played, recordOf } from '../../app/src/lib/skat/profile'
-import { type XpBoard, daysToReset, weekStart, xpOf } from '../../app/src/lib/skat/xp'
+import { type XpBoard, XP_SINCE, xpOf } from '../../app/src/lib/skat/xp'
 import type { Store } from './store'
 
-// The week's experience points (SKATGO-172, replacing the tournament's Elo of SKATGO-123): every deal an account
-// played against the AI this week — the tournament's and the deal of the day's, from their entries against each day's
+// The experience points (SKATGO-172, replacing the tournament's Elo of SKATGO-123): every deal an account
+// played against the AI from `XP_SINCE` on — since SKATGO-179 not only this week's, and never starting again (the human:
+// 「把weekly去掉，不要每周刷新一次」, then 「经验就从上周开始算起，就是延续上周的表」) — the tournament's and the deal of the day's, from their entries against each day's
 // benchmark, and free play's, from `play_deals` — earns XP by its tier (`lib/skat/xp.ts`), summed per person, beside
 // the person's win rate over the same deals (SKATGO-178, where days in a row stood: 「不连续登录了有内疚感。可以把胜率放上去」). Ids
 // that `player_aliases` names as one person count as that person, under the name they hold now; only accounts are on
 // the board. Computed on request from the rows already kept, as the boards are; only names leave here.
 
-/** Every deal of the week from `since`, with the player's Seeger-Fabian score and the AI's on the same cards (null when
+/** Every deal from `$1` on, with the player's Seeger-Fabian score and the AI's on the same cards (null when
  *  the day was dealt before the AI played it), and the player's game for the win rate: who declared and whether they won. */
-const WEEK_DEALS = `
+const ALL_DEALS = `
   WITH d AS (
     SELECT e.player, e.day, x.mine, d.deals -> (x.i - 1)::int -> 'benchmark' -> 'summary' AS ai
       FROM daily_entries e JOIN daily_deals d ON d.day = e.day AND d.size = e.size,
@@ -25,9 +26,9 @@ const WEEK_DEALS = `
          (d.mine ->> 'won')::boolean AS won
     FROM d LEFT JOIN player_aliases a ON a.player = d.player`
 
-/** The week's board on `today` (a tournament day), `who` the asker or null. */
-export async function weeklyXp(store: Store, who: string | null, today: string): Promise<XpBoard> {
-  const { rows: deals } = await store.pool.query(WEEK_DEALS, [weekStart(today)])
+/** The board, `who` the asker or null. */
+export async function xpBoard(store: Store, who: string | null): Promise<XpBoard> {
+  const { rows: deals } = await store.pool.query(ALL_DEALS, [XP_SINCE])
   const xp = new Map<string, number>()
   const games = new Map<string, Played[]>()
   for (const d of deals) {
@@ -54,5 +55,5 @@ export async function weeklyXp(store: Store, who: string | null, today: string):
     }
   })
   for (let i = 1; i < rows.length; i++) if (rows[i].rank === 0) rows[i].rank = rows[i - 1].rank
-  return { rows, resetsIn: daysToReset(today) }
+  return { rows }
 }

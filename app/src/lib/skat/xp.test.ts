@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { daysToReset, weekStart, xpOf, xpTier } from './xp'
+import { xpOf, xpTier } from './xp'
 
-// Experience points (SKATGO-172): a deal's tier by its difference to the AI's score, a week from Monday.
+// Experience points (SKATGO-172): a deal's tier by its difference to the AI's score.
 
 describe('a deal’s XP', () => {
   it('every deal earns XP, more the better it went against the AI', () => {
@@ -16,21 +16,7 @@ describe('a deal’s XP', () => {
     expect([xpOf(0, true), xpOf(-120, true), xpOf(60, true)]).toEqual([12, 6, 22])
     expect(xpOf(0, false)).toBe(10)
   })
-  it('a week is the sum of its deals', () => {
+  it('a player’s XP is the sum of their deals', () => {
     expect([23, 0, -60, 75].map((d) => xpOf(d)).reduce((a, b) => a + b)).toBe(14 + 10 + 4 + 20)
-  })
-})
-
-describe('the week', () => {
-  it('a week starts on Monday', () => {
-    expect(weekStart('2026-11-05')).toBe('2026-11-02')
-    expect(weekStart('2026-11-02')).toBe('2026-11-02')
-    expect(weekStart('2026-11-08')).toBe('2026-11-02')
-    expect(weekStart('2027-01-01')).toBe('2026-12-28')
-  })
-  it('it starts again in 7 days on a Monday, tomorrow on a Sunday', () => {
-    expect(daysToReset('2026-11-02')).toBe(7)
-    expect(daysToReset('2026-11-05')).toBe(4)
-    expect(daysToReset('2026-11-08')).toBe(1)
   })
 })

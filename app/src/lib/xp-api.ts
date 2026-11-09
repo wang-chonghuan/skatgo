@@ -3,7 +3,7 @@ import { createIsomorphicFn } from '@tanstack/react-start'
 import { callDaily } from './daily-handler'
 import type { XpBoard } from './skat/xp'
 
-// The week's XP board (SKATGO-172), read by the front page's loader: on the server straight from the tournament
+// The XP board (SKATGO-172), read by the front page's loader: on the server straight from the tournament
 // service, asked as nobody, so its rows are in the HTML; in the browser through /api/daily/xp, as the signed-in player,
 // so their own row is marked. Null when the service does not answer: the board simply is not there.
 

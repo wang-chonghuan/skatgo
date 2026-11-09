@@ -443,7 +443,7 @@ export function dayBefore(day: string): string {
 }
 
 /** One at a time gives names out or changes them, so no two players come to hold the same (SKATGO-90). */
-const NAME_LOCK = 7392030
+export const NAME_LOCK = 7392030
 
 /**
  * A player's current name (SKATGO-90): the one they set or were given, or — the first time they need one —
@@ -458,7 +458,8 @@ export async function nameOf(c: pg.PoolClient, who: string, now: number): Promis
   const meanwhile = await held()
   if (meanwhile) return meanwhile
   const { rows } = await c.query(
-    'SELECT lower(nickname) AS n FROM daily_players UNION SELECT lower(nickname) FROM daily_entries WHERE nickname IS NOT NULL')
+    `SELECT lower(nickname) AS n FROM daily_players UNION SELECT lower(nickname) FROM daily_entries WHERE nickname IS NOT NULL
+     UNION SELECT lower(nickname) FROM persona_players`)
   const taken = new Set(rows.map((r) => r.n as string))
   const name = pickName(who, (n) => taken.has(n.toLowerCase()))
   await c.query('INSERT INTO daily_players (player, nickname, created_at) VALUES ($1, $2, $3)', [who, name, now])
@@ -492,7 +493,9 @@ export async function dailyName(store: Store, who: string, raw: string, now = Da
   if (!nickname) throw new Rejected('nickname_refused')
   return store.transaction(async c => {
     await c.query('SELECT pg_advisory_xact_lock($1)', [NAME_LOCK])
-    const { rows: clash } = await c.query('SELECT 1 FROM daily_players WHERE lower(nickname) = lower($1) AND player <> $2', [nickname, who])
+    const { rows: clash } = await c.query(
+      `SELECT 1 FROM daily_players WHERE lower(nickname) = lower($1) AND player <> $2
+       UNION ALL SELECT 1 FROM persona_players WHERE lower(nickname) = lower($1)`, [nickname, who])
     if (clash[0]) throw new Rejected('nickname_taken')
     await c.query(
       'INSERT INTO daily_players (player, nickname, created_at) VALUES ($1, $2, $3) ON CONFLICT (player) DO UPDATE SET nickname = EXCLUDED.nickname',
@@ -530,7 +533,11 @@ export async function dailyBoard(store: Store, who: string | null, which: 'today
     // player who has none.
     `SELECT e.player, coalesce(p.nickname, e.nickname) AS nickname, e.total, e.finished_at FROM daily_entries e
        LEFT JOIN daily_players p ON p.player = e.player
-      WHERE e.day = $1 AND e.size = $2 AND e.finished_at IS NOT NULL AND coalesce(p.nickname, e.nickname) IS NOT NULL`, [day, size])
+      WHERE e.day = $1 AND e.size = $2 AND e.finished_at IS NOT NULL AND coalesce(p.nickname, e.nickname) IS NOT NULL
+      UNION ALL
+      SELECT j.player, p.nickname, (j.result->>'total')::int AS total, j.completed_at AS finished_at
+        FROM persona_jobs j JOIN persona_players p ON p.player = j.player
+       WHERE j.day = $1 AND j.size = $2 AND j.completed_at IS NOT NULL AND j.result IS NOT NULL`, [day, size])
   const rows = found.sort((a, b) => b.total - a.total || Number(a.finished_at) - Number(b.finished_at))
   const ranked = rows.map((r, i) => ({
     rank: i === 0 || rows[i - 1].total !== r.total ? i + 1 : 0,

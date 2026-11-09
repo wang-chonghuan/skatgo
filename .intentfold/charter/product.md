@@ -72,6 +72,20 @@ player feel guilty (SKATGO-178, the human: 「把那个连续登录去掉，我�
 its XP and why as the result's first line, every deal against the AI the deal of the day's included (SKATGO-173); a guest is told that signed-in players earn XP. One person under
 several ids counts as one, as the human names them (「ju开头那几个人，算一个人……mark也是同一个人」, 「alice跟olena是一个人」).
 
+Synthetic players are permitted to support online participation and improve the experience of the existing
+games and competitions (SKATGO-180, the human, 2026-11-09: 「允许 Synthetic players来解决在线人数支撑，提高玩家游戏体验」).
+They are persistent simulated player personas, with different strengths, bidding styles, activity schedules,
+thinking times and interruption tendencies developed through the project skill
+(「首先写这个多个拟人角色的skill，放在本项目级别的skill目录，然后用这个skill指导生成相关代码和配置」).
+They may participate in the daily one- and six-deal boards, free-play activity and cumulative XP, and fill
+assigned computer seats in the existing private rooms. This does not introduce an arena or public matchmaking.
+Their scores and XP come from completed legal games under the applicable existing rules; ties remain possible.
+Their identities and records stay separate from accounts and private player profiles. Room play does not gain
+daily entries or XP merely because a Synthetic player sits there. The standard AI comparison and Lina and Noah
+do not change. The capability starts disabled; production activation and deployment remain separate decisions.
+Terms do not address participant composition: no statement about the presence, absence or possible presence of
+Synthetic players, and no statement that all players are human.
+
 After each deal the player sees the deal's result and how the computer, named "AI", played the same deal from their
 seat (SKATGO-42) — the most important first, each fact once (SKATGO-166, the human: 「以常玩的用户的视角，重要的在前面。信息不重复。
 不要用超过4种层级的字体。一个信息只出现在一个地方……红框和绿框里的东西不要塞太多」; before it SKATGO-127/145/146/148). First, in a box green
@@ -161,8 +175,9 @@ Private tables at `/with-friends` (SKATGO-61) are rooms since SKATGO-163 (the hu
 with the number, or the link, and sit down at once; the host gives a seat nobody takes to the AI, or takes it back, and
 starts the game once every seat is taken (「房间建好后，房主点进去，应该有个等待的页面，显示口令，复制按钮，然后等待拿到口令的人加入（或者设置为
 AI），点开始游戏」). Once it plays, a friend coming in takes a computer's seat from the next deal, starting at 0; with three
-people the number lets nobody else in. Everyone at the table has an account, the room's host and
-whoever comes in alike (the human: 「我打算把私人桌改成必须三个玩家都登录」), and sits under the name the boards show; an
+people the number lets nobody else in. Every human participant at the table has an account, the room's host and
+whoever comes in alike (the human: 「我打算把私人桌改成必须三个玩家都登录」), and sits under the name the boards show;
+Synthetic players use separate internal identities for assigned computer seats, not account admission; an
 account is in one room at a time. The page offers two cards, a new room and a room to come into, or, while the account
 is in one, the way back to it (「私人桌进入后，两张卡片，新建房间，加入房间。如果已经在了一个房间，则显示回到房间」). At the table the
 room's number is an item of the table's menu, and a tap copies its link (「点击后复制链接，而不只是房间号」, then, the
@@ -170,7 +185,7 @@ corner not working: 「我建议放到退出按钮里，加一个菜单项」); 
 tables (「私人牌桌中，不要退出按钮，而要一个牌桌按钮。以示不同。然后菜单内容还相同」).
 The seat of someone away, whom a computer plays for, may be taken by someone coming in; the host may take a person out,
 who may come back with the number (「别人可以占用，但是房主可以踢人」, 「踢了还可以自己加，基于信任」). Leaving passes the host's role
-on; the last one leaving closes the room. A deal's end waits until every person at the table has asked for the next
+on; the last human leaving closes the room. A deal's end waits until every human participant at the table has asked for the next
 (SKATGO-165, 「需要所有非ai玩家点了next deal后，才能进入next deal」); someone away, whom the AI plays for, does not hold it. The
 table counts its deals ("Spiel 3", no total) and keeps every finished one for its statistics. A newcomer who signs up to come into a room is recorded once as brought by its
 host (SKATGO-117), so it shows who brings players in; nothing else is recorded about it, and it needs no consent banner.

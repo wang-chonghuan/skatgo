@@ -44,8 +44,124 @@ disconnect deadline, not a mock clock; allow several minutes.
 | `TEST_PORT` | Acceptance server port; next port is used to test a standby process |
 | `DATABASE_PORT` | Local database provisioning port |
 | `DOCKER_CONTEXT` | Optional existing local Docker context, preserved in local `.env` |
+| `SKATGO_PERSONAS_ENABLED` | First-start bootstrap only: missing or `0` disables; `1` enables. Other values fail startup. Persisted control subsequently takes precedence. Activation is a separate explicit operation. |
+| `SKATGO_PERSONAS_COUNT` | First-start bootstrap population, default 17; integer 1–500. Persisted control subsequently takes precedence. |
 
 No Clerk, LLM or Azure configuration is needed by this service.
+
+## Simulated Personas
+
+The project development skill is `.agents/skills/skatgo-personas/SKILL.md`.
+The editable starter roster is `src/personas/roster.json`: 17 fictional players
+with independent card-play, bidding and activity styles. `config.ts` deterministically
+extends it to 500 independently varied profiles with stable IDs and names.
+Increasing population preserves the prior prefix; it does not clone 17 identical
+profiles. Starter names mix personal name variants, initials, individual handles,
+case and a few naturally spelled non-English letters; the exact approved list
+lives in the roster. The existing larger-population name generator is separate:
+a starter revision does not regenerate its prior identities. No player is
+automatically renamed.
+The roster is bundled with the backend; editing traits requires a release/restart,
+but changing enabled/count settings does not. No dependency, gameplay LLM or
+separate cloud worker is needed.
+The activity/game RNG format version is independent of the editable roster
+version. Nickname-only revisions keep the same seed and random sequence;
+their new version/hash is audit metadata, not a reason to reroll attendance,
+timing or play.
+
+Offline commands, from repo root:
+
+```sh
+npm --prefix multiplayer run build
+npm --prefix multiplayer run personas -- validate --count 17
+npm --prefix multiplayer run personas -- plan --days 30 --count 17
+npm --prefix multiplayer run personas -- calibrate --deals 30 --count 17
+```
+
+Calibration is real ONNX/engine play on the same pool sample for every persona.
+Scores are not generated directly. Report sample size; the roster's probabilities
+are initial hypotheses, not a promise of fixed difficulty or rank.
+
+The controller lives in the existing always-on multiplayer leader, not a new
+deployment. It starts immediately, then waits 10 seconds between ticks, including
+when disabled. An enabled tick executes at most 3 activities, serially, and stops
+starting more after a 5-second batch budget. One slow activity may exceed that
+budget; native inference is awaited, never abandoned behind a timeout.
+There is one background activity in flight and shared resident ONNX sessions.
+Service uptime is not player attendance: not all 17 appear on every board.
+
+Activities finish in independently sampled IANA-local windows inside the Berlin
+tournament day, respecting DST. Quiet periods and independent attendance allow
+skipped days. Only today's activities at most 30 minutes late are attempted:
+there is no historical backfill or unbounded catch-up. Missing daily deals wait
+for preparation. Each failed job records its error and retries at most three
+times, at 5/10/15-minute intervals, still subject to today's catch-up bound.
+Shutdown/handover cancels the runner before models are released.
+Newly activated personas receive only activities whose planned start is still
+in the future. A restart reads saved jobs, not a new catch-up plan; the controller
+does not replay yesterday or backfill earlier starts. Planned start and completion
+are stored separately from actual computation/commit time. This remains batch
+board simulation, not a persisted online-presence/room-actor lifecycle.
+
+Manual controls (local `.env` is loaded by the command):
+
+```sh
+npm --prefix multiplayer run personas -- status
+npm --prefix multiplayer run personas -- configure --enabled 1 --count 17
+npm --prefix multiplayer run personas -- configure --count 100
+npm --prefix multiplayer run personas -- configure --count 200
+npm --prefix multiplayer run personas -- configure --count 300
+npm --prefix multiplayer run personas -- configure --count 400
+npm --prefix multiplayer run personas -- configure --count 500
+npm --prefix multiplayer run personas -- configure --enabled 0
+```
+
+Settings live in `persona_control`, survive restart, and apply on the next tick.
+The command atomically increments the control revision. Each result transaction
+locks/checks it, so a finished disable/shrink operation blocks any stale result
+even if a native computation is still finishing. Shrinking does not erase earlier
+entries or XP; reenabling reuses saved slots.
+Status reports effective settings, heartbeat age, tick duration/error and the
+current active population's completed/due/future/expired/failed queue.
+`due` includes jobs waiting for retry or daily preparation; it is not all immediately
+runnable. `registered` includes inactive identities retained for their history.
+Bootstrap env variables do not override a persisted operator decision on restart.
+
+The CLI ships as `dist/personas.mjs` in the production image. An authorized operator
+can run `node dist/personas.mjs configure --count 100` in that service's shell;
+its remote database requires `--allow-remote --confirm`. These flags acknowledge
+an external write, not a substitute for the project's production authorization.
+`status` is read-only. No browser-facing control route or web proxy is added.
+
+`persona_players` reserves stable simulated nicknames without touching real
+users; a collision stops the tick rather than renaming someone. A registered
+persona nickname revision requires explicit human approval and a targeted
+migration with the runner stopped. Preserve identity and all saved activities,
+snapshots, results and XP; the reservation path still rejects automatic renames.
+Local revision approval does not authorize a production migration. `persona_jobs`
+holds each day's activity snapshot, seed, roster hash/version, planned time,
+actual completion time, full legal move logs, model version, summaries and XP.
+Its key excludes config version: restarting or changing the roster cannot count
+an already planned/completed slot twice. Free-play pool indices are reserved
+once per simulated player and pool version, across days. Exhaustion records an
+error; it never reuses a deal for XP.
+
+Once a persona has a plan for that day, changing bundled traits or volume cannot
+add/rearrange its slots that day; the new plan applies on later days. This preserves
+the original activity timeline as well as already completed scores.
+
+Only complete activities enter the daily and XP board reads. Simulated entries
+are never inserted into `daily_entries`, `play_deals`, user aliases, private
+profiles, forum, referrals or analytics. Existing routes do not accept `sim:`
+identities. Daily rank/tie rules and XP tiers are shared with real users.
+Disabling stops new work; already completed board history remains.
+
+500 is a supported population/configuration limit, not a measured promise of
+500 simultaneous tables. Before production growth, measure real-user latency,
+background inference, expired queues and memory on that instance. The 1,000-deal
+free pool remains finite for each persona; exhaustions must be acted on rather
+than silently recycling XP. Rooms, per-card thinking and simulated network
+interruptions are future adapters, not delivered by this board service.
 
 ## Protocol
 

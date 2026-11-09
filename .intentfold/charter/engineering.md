@@ -63,6 +63,28 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   the browser through `/api/daily/xp` as the signed-in player, and again every 15 s while the page is in view and at once
   when it comes back, so the board follows the deals without a reload (SKATGO-174); a hidden page does not ask. The web
   service is its only client.
+- **Synthetic players** (SKATGO-180) may support online participation and improve the experience of
+  existing competitions and games, including assigned computer seats in private rooms. They are developed with the project-local
+  `.agents/skills/skatgo-personas/SKILL.md`. `multiplayer/src/personas/` owns roster validation,
+  deterministic activity plans, seat-only choice sampling and a serial leader runner. `persona_players`
+  and `persona_jobs` hold separate `sim:` identities, stable names and reproducible activity snapshots
+  with inputs, move logs, policy/model versions and game-derived results. Complete daily activities join
+  daily board reads; all completed simulation deals join XP reads using the same `xpOf`. They never enter
+  account/profile/alias/forum/referral tables or human analytics. Existing account identity validation stays
+  unchanged. The runner starts disabled and follows the existing leadership epoch fence; runtime commands
+  and enablement are specified in `multiplayer/README.md`. A registered simulated nickname may change
+  only through a human-approved targeted revision that preserves identity and saved history; roster
+  reloads never rename a registered player automatically. Human nicknames remain untouched.
+  The initial implementation is batch board simulation; persistent presence and room actors are approved
+  integration targets, not capabilities delivered by this Charter edit. Their controller owns session state,
+  exclusive activity leases and due intents; the game/room backend remains authoritative for admission,
+  seat ownership, legal moves and scores. Reuse bounded shared SkatZero inference, not one model or browser
+  per character. Actor identities stay separate from signed human tickets, human presence and analytics;
+  persona choices do not change the standard AI or takeover of disconnected human seats. Private-room
+  host, friend takeover, human readiness and last-human closure rules remain intact. No arena or public
+  matchmaking is introduced. The project skill owns the detailed behavioral and capacity design.
+  Terms omit participant-composition claims rather than asserting presence, absence, possibility or
+  human-only participation.
 - **A player's record of play** (SKATGO-128) is read on request by `POST /daily/profile` (`multiplayer/src/profile.ts`),
   an account's only (the web's `/api/daily/profile` answers a guest 401): every tournament deal of the player's
   entries with its day's `benchmark`, of either size (the size-12 rows SKATGO-77 left are deals against the same AI), and every row of `play_deals` (player, game — `free:<pool>:<deal>:<start>` —
@@ -232,7 +254,7 @@ also built from the repository root. Neither project imports the other's runtime
 - **A private room's way in names the account** (SKATGO-117; SKATGO-163). `/api/room/ticket` signs a ticket only for a
   signed-in account and names it (`user:<id>`): `open` a new room, whose number (six digits, the room's id and the
   table's primary key) is drawn by the service; `join` the room with this number, after asking the service
-  (`/rooms/<number>`) whether the account may come in — wrong numbers are counted per account, ten a minute. A seat is
+  (`/rooms/<number>`) whether the account may come in — wrong numbers are counted per account, ten a minute. A human seat is
   the account's (snapshot schema 3): coming back is joining again, from any device; the browser stores nothing. A room
   waits with nothing dealt (`deals` 0) — an empty seat is one with no account and no computer — until the host starts
   it (`computer`, `start`). Once it plays, the computers move one move a beat, free play's 850 ms (`AI_DELAY_MS`), and the page puts each change

@@ -13,6 +13,8 @@ import { roomRoutes } from './referral'
 import { shareRoutes } from './shares'
 import { makeRoom, RESTORE } from './room'
 import { Store } from './store'
+import { defaults as personaDefaults } from './personas/control'
+import { PersonaService } from './personas/service'
 
 const url = process.env.DATABASE_URL
 const key = process.env.MULTIPLAYER_ADMISSION_KEY
@@ -27,6 +29,8 @@ let ready = false
 let stopping = false
 /** This instance handed its leadership to a newer one (SKATGO-156) and only waits to be stopped. */
 let handedOver = false
+let personas: PersonaService | null = null
+const initialPersonas = personaDefaults()
 const store = new Store(url)
 await store.migrate()
 // SkatZero's nine models (SKATGO-38) load, verify and warm while the service starts; it is not ready
@@ -85,6 +89,8 @@ async function elect() {
       for (const s of await store.all()) await matchMaker.createRoom('skat', { restore: RESTORE, id: s.id })
       await policyLoad
       ready = true
+      personas = new PersonaService(store, policy!, pool!, () => ready && !stopping, initialPersonas)
+      personas.start()
       // A newer instance asks to take over at its deploy (SKATGO-156).
       await store.listenHandoff((from) => void handOver(from))
       // The leader deals today and tomorrow ahead, with the computers' bidding (SKATGO-39); readiness
@@ -119,6 +125,7 @@ async function handOver(from: string) {
   handedOver = true
   ready = false
   console.log(JSON.stringify({ event: 'handover', to: from }))
+  await personas?.stop()
   await matchMaker.gracefullyShutdown().catch(() => {})
   await store.stepDown().catch(() => console.error('step_down_failed'))
   console.log(JSON.stringify({ event: 'stepped_down' }))
@@ -133,6 +140,7 @@ async function stop() {
   deadline.unref()
   // After a hand-over the tables are already closed.
   await server.gracefullyShutdown(false).catch(() => {})
+  await personas?.stop()
   await policy?.release()
   await store.close()
   process.exit(0)

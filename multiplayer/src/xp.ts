@@ -29,17 +29,25 @@ const ALL_DEALS = `
 /** The board, `who` the asker or null. */
 export async function xpBoard(store: Store, who: string | null): Promise<XpBoard> {
   const { rows: deals } = await store.pool.query(ALL_DEALS, [XP_SINCE])
+  const { rows: simulated } = await store.pool.query(
+    `SELECT j.player AS person, (g->'mine'->'scores'->>0)::int AS mine, (g->'ai'->'scores'->>0)::int AS ai,
+            (g->'mine'->>'declarer') = '0' AS declared, g->'mine'->'scores' AS scores,
+            (g->'mine'->>'declarer')::int AS declarer, (g->'mine'->>'won')::boolean AS won
+       FROM persona_jobs j, jsonb_array_elements(j.result->'games') AS g
+      WHERE j.day >= $1 AND j.completed_at IS NOT NULL AND j.result IS NOT NULL`, [XP_SINCE])
   const xp = new Map<string, number>()
   const games = new Map<string, Played[]>()
-  for (const d of deals) {
-    if (!(d.person as string).startsWith('user:')) continue
+  for (const d of [...deals.filter((d) => (d.person as string).startsWith('user:')), ...simulated]) {
     xp.set(d.person, (xp.get(d.person) ?? 0) + xpOf(d.ai === null ? null : (d.mine as number) - (d.ai as number), d.declared === true))
-    games.set(d.person, [...(games.get(d.person) ?? []), { scores: d.scores, declarer: d.declarer, won: d.won }])
+    const played = games.get(d.person) ?? []
+    played.push({ scores: d.scores, declarer: d.declarer, won: d.won })
+    games.set(d.person, played)
   }
   const people = [...xp].sort((a, b) => b[1] - a[1])
   const { rows: named } = await store.pool.query(
     `SELECT p AS player, coalesce((SELECT nickname FROM daily_players WHERE player = p),
-       (SELECT nickname FROM daily_entries WHERE player = p AND nickname IS NOT NULL ORDER BY day DESC LIMIT 1)) AS nickname
+       (SELECT nickname FROM daily_entries WHERE player = p AND nickname IS NOT NULL ORDER BY day DESC LIMIT 1),
+       (SELECT nickname FROM persona_players WHERE player = p)) AS nickname
        FROM unnest($1::text[]) AS p`, [people.map(([p]) => p)])
   const nameOf = new Map(named.map((r) => [r.player as string, (r.nickname as string | null) ?? '']))
   const { rows: me } = who

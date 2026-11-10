@@ -5,7 +5,7 @@ import { deckOf, plan, type Pool } from '../free'
 import { skatOrHand } from '../skatzero/bidding'
 import { type Policy } from '../skatzero/policy'
 import { type Store } from '../store'
-import { type Roster, random, rosterHash } from './config'
+import { type Roster, random, rosterHash, policyOf, LEGACY_POLICY } from './config'
 import { reservePopulation } from './control'
 import { type Activity, planDay } from './schedule'
 import { playGame, resultOf, simulateDeal, type ActivityResult, type GameResult, type SimDeal } from './play'
@@ -111,6 +111,8 @@ export class PersonaRunner {
 
   private async execute(job: Job, alive: () => boolean): Promise<ActivityResult | null> {
     const a = job.snapshot
+    const policy = a.policy ?? LEGACY_POLICY
+    if (policy !== policyOf(a.persona)) throw new Error('persona_snapshot_policy_mismatch')
     if (a.size !== 0) {
       const { rows } = await this.store.pool.query('SELECT deals, computer FROM daily_deals WHERE day=$1 AND size=$2', [a.day, a.size])
       if (!rows[0]) return null
@@ -125,7 +127,7 @@ export class PersonaRunner {
         games.push(await simulateDeal(this.policy, { dealer: s.dealer, deck: s.deck, opponents }, a.persona,
           `${a.seed}|${i}`, s.benchmark!.summary, undefined, alive))
       }
-      return resultOf(games)
+      return resultOf(games, policy)
     }
     if (job.free_index === null) {
       const used = await this.store.pool.query(
@@ -147,6 +149,6 @@ export class PersonaRunner {
     const spec: SimDeal = { dealer: s.dealer, deck: deckOf(s.deck), opponents: [plan(s.computers['1']), plan(s.computers['2'])] }
     // The free-play benchmark uses the pool's standard seat-0 plan, just like its real review.
     const ai = (await playGame(this.policy, spec, plan(s.computers['0']), this.policy, alive)).summary
-    return resultOf([await simulateDeal(this.policy, spec, a.persona, a.seed, ai, undefined, alive)])
+    return resultOf([await simulateDeal(this.policy, spec, a.persona, a.seed, ai, undefined, alive)], policy)
   }
 }

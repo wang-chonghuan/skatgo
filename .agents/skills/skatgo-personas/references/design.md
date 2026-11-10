@@ -42,8 +42,10 @@ mandatory archetypes or claims about real people.
 
 ## Playing Styles and Mistakes
 
-Use the existing mistake/severity/Null/form controls as the initial baseline,
-not as proof of human decision-making. Target choices a character plausibly
+Legacy jobs retain the original mistake/severity/Null/form controls. New strength
+profiles use role-specific card errors and bidding/pickup/discard/contract adapters
+described in [calibration.md](calibration.md). Neither is proof of human
+decision-making. Target choices a character plausibly
 makes, not just a weaker version of the best engine:
 
 - Condition error frequency on visible difficulty, role, contract, familiarity

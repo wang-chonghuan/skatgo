@@ -42,8 +42,10 @@ rank-depth sampling avoids pretending one absolute loss means the same in all.
 Contextual style reranking uses visible features and bounded persona state;
 see [design.md](design.md). Never interpret the raw values as win probabilities.
 
-Wrap only `choose`; preserve the base policy's truthful `ranked`, `values`,
-`score`, tables and resource ownership. Use `viewOf`, never hidden opponent hands.
+The card wrapper changes only `choose`; preserve the base policy's truthful
+`ranked`, `values`, `score`, tables and resource ownership. Persona-specific
+bidding/skat adapters call those public evaluators without modifying them.
+Use `viewOf`, never hidden opponent hands.
 The wrapper must not release shared model sessions.
 
 `seatBidding` returns `detail.pickupPen` and `detail.handMax`. Apply `maxBid` with
@@ -53,8 +55,10 @@ Changing a default threshold does not change committed pool/daily plans.
 
 Play through `advance` and `computerTurn`, validate every move via the engine,
 and summarize only a finished game. Keep the existing early-end rules.
-New discard/declaration preferences require a persona-only adapter; preserve
+Discard/declaration preferences require a persona-only adapter; preserve
 the canonical policy and do not claim the existing `choose` wrapper does this.
+Freeze the adapter version in activity snapshots and retain the old executable
+route. See [calibration.md](calibration.md) for activation and experiment rules.
 
 ## Activity and Persistence
 

@@ -9,6 +9,18 @@ export const INITIAL_POPULATION = 17
 export const RANDOM_STREAM_VERSION = 'skatgo-personas/2'
 
 const probability = z.number().min(0).max(1)
+export const LEGACY_POLICY = 'skatgo-personas/1'
+export const STRENGTH_POLICY = 'skatgo-personas/2'
+export const strengthSchema = z.object({
+  declarerError: probability, defenderError: probability, severeError: probability,
+  bidNoise: z.number().min(0).max(40),
+  pickupError: probability, contractError: probability, discardError: probability,
+}).strict().superRefine((s, ctx) => {
+  if (s.declarerError < 0.45 || s.defenderError < 0.45 || s.severeError < 0.4 ||
+    s.pickupError < 0.15 || s.contractError < 0.15 || s.discardError < 0.25) {
+    ctx.addIssue({ code: 'custom', message: 'Strength outside calibrated screening envelope' })
+  }
+})
 const zone = z.string().refine((s) => {
   try { new Intl.DateTimeFormat('en', { timeZone: s }).format(); return true } catch { return false }
 }, 'Invalid IANA time zone')
@@ -24,6 +36,7 @@ export const personaSchema = z.object({
     mistake: probability, deepMistake: probability,
     nullWeakness: probability, form: z.number().min(0).max(0.15),
     bidThreshold: z.number().min(-40).max(40),
+    strength: strengthSchema.optional(),
   }).strict(),
   activity: z.object({
     zone, windows: z.array(window).min(1).max(4),
@@ -36,6 +49,8 @@ export const personaSchema = z.object({
 export type Persona = z.infer<typeof personaSchema>
 export const rosterSchema = z.object({
   version: z.string().min(1).max(64), seed: z.string().min(1).max(128),
+  strengthSince: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((s) =>
+    Number.isFinite(Date.parse(`${s}T00:00:00Z`)) && new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s).optional(),
   personas: z.array(personaSchema).min(1).max(MAX_POPULATION),
 }).strict().superRefine((r, ctx) => {
   for (const key of ['id', 'nickname'] as const) {
@@ -50,6 +65,12 @@ export const rosterSchema = z.object({
 export type Roster = z.infer<typeof rosterSchema>
 export const roster = rosterSchema.parse(data)
 export const rosterHash = (r: Roster) => createHash('sha256').update(JSON.stringify(r)).digest('hex')
+export const policyOf = (p: Persona) => p.play.strength ? STRENGTH_POLICY : LEGACY_POLICY
+export function personaOnDay(p: Persona, r: Roster, day: string): Persona {
+  if (!r.strengthSince || day >= r.strengthSince) return p
+  const { strength, ...play } = p.play
+  return { ...p, play }
+}
 
 export function random(seed: string): () => number {
   let a = createHash('sha256').update(seed).digest().readUInt32LE(0)
@@ -137,6 +158,22 @@ export function population(count = INITIAL_POPULATION, source: Roster = roster):
         free: [base.activity.free[0], hi],
       },
     })
+    if (base.play.strength) {
+      // Separate stream preserves every pre-existing identity/activity/legacy-trait draw.
+      const strengthRandom = random(`${source.seed}|strength|${id}`)
+      const s = base.play.strength
+      const varyStrength = (n: number, lo: number, hi: number) =>
+        Math.round(Math.max(lo, Math.min(hi, n + (strengthRandom() * 2 - 1) * 0.025)) * 1000) / 1000
+      personas.at(-1)!.play.strength = {
+        declarerError: varyStrength(s.declarerError, 0.45, 0.95),
+        defenderError: varyStrength(s.defenderError, 0.45, 0.95),
+        severeError: varyStrength(s.severeError, 0.4, 0.95),
+        bidNoise: Math.round(Math.max(0, Math.min(40, s.bidNoise + (strengthRandom() * 2 - 1) * 2))),
+        pickupError: varyStrength(s.pickupError, 0.15, 0.65),
+        contractError: varyStrength(s.contractError, 0.15, 0.65),
+        discardError: varyStrength(s.discardError, 0.25, 0.8),
+      }
+    }
   }
   return rosterSchema.parse({ ...source, personas })
 }

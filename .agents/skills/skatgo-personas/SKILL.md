@@ -32,10 +32,11 @@ merge or deploy authority. Commands below run from the repository root.
 Choose the requested task:
 
 - Add or tune personas: read [design.md](references/design.md) and
-  [sessions.md](references/sessions.md), then map the requested dimensions to
+  [calibration.md](references/calibration.md) and [sessions.md](references/sessions.md), then map the requested dimensions to
   supported config and run the [profile gate](references/profile-gate.md).
 - Implement or change the service, gameplay or storage: read
-  [runtime.md](references/runtime.md) and [sessions.md](references/sessions.md).
+  [runtime.md](references/runtime.md), [calibration.md](references/calibration.md)
+  and [sessions.md](references/sessions.md).
 - Integrate existing rooms: also read [rooms.md](references/rooms.md).
 - Validate or operate: read [validation.md](references/validation.md).
 
@@ -66,6 +67,9 @@ stability at every requested expansion size.
 - Score once through the shared rules engine. XP uses the existing `xpOf`.
   Ties and occasional upsets are valid; never redraw a losing game or offset
   scores to force a desired ranking.
+- Win rate is the simulated seat's side, as `recordOf` counts human games:
+  declarer win or defending against a lost declaration; all-pass is excluded.
+  A tiny sample or a six-deal AI tie does not establish long-run strength.
 - Terms do not discuss participant composition: no statement about the presence,
   absence or possible presence of Synthetic players, and no all-human claim.
   Terms edits require an explicit ticketed human request; this is not blanket
@@ -75,6 +79,8 @@ stability at every requested expansion size.
 - Scope random streams separately, but let timing, errors and interruptions
   share explicit session state. Save sampled decisions, deadlines, config
   snapshots and logs; retries must not reroll or overwrite completed history.
+- Freeze executable policy as well as traits. Route old snapshots through their
+  original policy; refuse unknown/mismatched policies. No silent job migration.
 - One persona has one exclusive activity timeline. Room presence, solo play
   and board completion must not place the same character in two activities.
 

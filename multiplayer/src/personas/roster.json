@@ -1,23 +1,730 @@
 {
-  "version": "skatgo-personas/3",
+  "version": "skatgo-personas/4",
+  "strengthSince": "2026-11-11",
   "seed": "skatgo-personas-initial",
   "personas": [
-    {"id":"moss","nickname":"PeteM","play":{"mistake":0.48,"deepMistake":0.5,"nullWeakness":0.12,"form":0.08,"bidThreshold":-22},"activity":{"zone":"Europe/Berlin","windows":[{"start":1140,"end":1380,"weight":4},{"start":720,"end":900,"weight":1}],"weekday":0.55,"weekend":0.8,"quiet":0.25,"dailyOne":0.9,"dailySix":0.25,"free":[1,3]}},
-    {"id":"fern","nickname":"emmalou","play":{"mistake":0.35,"deepMistake":0.3,"nullWeakness":0.2,"form":0.07,"bidThreshold":16},"activity":{"zone":"Europe/Berlin","windows":[{"start":420,"end":660,"weight":3},{"start":1020,"end":1260,"weight":1}],"weekday":0.8,"weekend":0.4,"quiet":0.15,"dailyOne":0.95,"dailySix":0.45,"free":[0,2]}},
-    {"id":"river","nickname":"J\u00f6rg.P","play":{"mistake":0.27,"deepMistake":0.25,"nullWeakness":0.08,"form":0.06,"bidThreshold":-12},"activity":{"zone":"Europe/Dublin","windows":[{"start":1080,"end":1380,"weight":1}],"weekday":0.65,"weekend":0.9,"quiet":0.2,"dailyOne":0.75,"dailySix":0.7,"free":[0,4]}},
-    {"id":"cedar","nickname":"mick","play":{"mistake":0.19,"deepMistake":0.15,"nullWeakness":0.16,"form":0.04,"bidThreshold":5},"activity":{"zone":"America/New_York","windows":[{"start":480,"end":720,"weight":1},{"start":1140,"end":1380,"weight":3}],"weekday":0.75,"weekend":0.55,"quiet":0.18,"dailyOne":0.8,"dailySix":0.5,"free":[1,5]}},
-    {"id":"bright","nickname":"Clari","play":{"mistake":0.14,"deepMistake":0.12,"nullWeakness":0.04,"form":0.03,"bidThreshold":-8},"activity":{"zone":"Europe/Vienna","windows":[{"start":780,"end":960,"weight":1},{"start":1200,"end":1430,"weight":2}],"weekday":0.8,"weekend":0.85,"quiet":0.1,"dailyOne":0.7,"dailySix":0.85,"free":[0,2]}},
-    {"id":"willow","nickname":"PhilH","play":{"mistake":0.1,"deepMistake":0.08,"nullWeakness":0.1,"form":0.03,"bidThreshold":2},"activity":{"zone":"Europe/Berlin","windows":[{"start":1320,"end":180,"weight":1}],"weekday":0.4,"weekend":0.75,"quiet":0.35,"dailyOne":0.9,"dailySix":0.6,"free":[0,3]}},
-    {"id":"silver","nickname":"Benno","play":{"mistake":0.06,"deepMistake":0.05,"nullWeakness":0.03,"form":0.02,"bidThreshold":-4},"activity":{"zone":"Europe/Amsterdam","windows":[{"start":540,"end":780,"weight":1},{"start":1080,"end":1320,"weight":2}],"weekday":0.85,"weekend":0.6,"quiet":0.15,"dailyOne":0.65,"dailySix":0.9,"free":[1,3]}},
-    {"id":"quiet","nickname":"laurab","play":{"mistake":0.025,"deepMistake":0.02,"nullWeakness":0.015,"form":0.015,"bidThreshold":-5},"activity":{"zone":"America/Chicago","windows":[{"start":360,"end":600,"weight":1},{"start":1080,"end":1320,"weight":2}],"weekday":0.5,"weekend":0.7,"quiet":0.3,"dailyOne":0.8,"dailySix":0.55,"free":[0,1]}},
-    {"id":"katrin","nickname":"Stevie","play":{"mistake":0.22,"deepMistake":0.1,"nullWeakness":0.03,"form":0.05,"bidThreshold":8},"activity":{"zone":"Europe/Berlin","windows":[{"start":390,"end":540,"weight":2},{"start":1110,"end":1320,"weight":3}],"weekday":0.82,"weekend":0.65,"quiet":0.18,"dailyOne":0.96,"dailySix":0.62,"free":[0,2]}},
-    {"id":"jochen","nickname":"NoraBee","play":{"mistake":0.08,"deepMistake":0.04,"nullWeakness":0.12,"form":0.025,"bidThreshold":-10},"activity":{"zone":"Europe/Berlin","windows":[{"start":540,"end":840,"weight":1}],"weekday":0.7,"weekend":0.5,"quiet":0.12,"dailyOne":0.6,"dailySix":0.9,"free":[1,4]}},
-    {"id":"ute","nickname":"Moxie","play":{"mistake":0.4,"deepMistake":0.22,"nullWeakness":0.04,"form":0.055,"bidThreshold":20},"activity":{"zone":"Europe/Zurich","windows":[{"start":840,"end":1080,"weight":1}],"weekday":0.55,"weekend":0.86,"quiet":0.2,"dailyOne":0.92,"dailySix":0.32,"free":[0,1]}},
-    {"id":"alex","nickname":"Fips","play":{"mistake":0.16,"deepMistake":0.24,"nullWeakness":0.18,"form":0.07,"bidThreshold":-18},"activity":{"zone":"Europe/London","windows":[{"start":1260,"end":240,"weight":2},{"start":720,"end":900,"weight":1}],"weekday":0.64,"weekend":0.94,"quiet":0.26,"dailyOne":0.72,"dailySix":0.76,"free":[1,4]}},
-    {"id":"heide","nickname":"Pippo","play":{"mistake":0.29,"deepMistake":0.08,"nullWeakness":0.06,"form":0.04,"bidThreshold":3},"activity":{"zone":"Europe/Berlin","windows":[{"start":600,"end":840,"weight":2},{"start":990,"end":1140,"weight":1}],"weekday":0.9,"weekend":0.58,"quiet":0.1,"dailyOne":0.88,"dailySix":0.5,"free":[0,3]}},
-    {"id":"paul","nickname":"r\u00e9mi.r","play":{"mistake":0.055,"deepMistake":0.03,"nullWeakness":0.09,"form":0.03,"bidThreshold":12},"activity":{"zone":"Europe/Vienna","windows":[{"start":1020,"end":1260,"weight":1}],"weekday":0.47,"weekend":0.8,"quiet":0.28,"dailyOne":0.66,"dailySix":0.88,"free":[0,2]}},
-    {"id":"frank","nickname":"Brummel","play":{"mistake":0.18,"deepMistake":0.13,"nullWeakness":0.025,"form":0.02,"bidThreshold":-3},"activity":{"zone":"Europe/Berlin","windows":[{"start":300,"end":480,"weight":1},{"start":1140,"end":1380,"weight":2}],"weekday":0.76,"weekend":0.8,"quiet":0.14,"dailyOne":0.94,"dailySix":0.73,"free":[1,3]}},
-    {"id":"nico","nickname":"biscotti","play":{"mistake":0.43,"deepMistake":0.38,"nullWeakness":0.21,"form":0.09,"bidThreshold":-15},"activity":{"zone":"Europe/Paris","windows":[{"start":960,"end":1200,"weight":1},{"start":1290,"end":60,"weight":2}],"weekday":0.52,"weekend":0.88,"quiet":0.32,"dailyOne":0.86,"dailySix":0.4,"free":[1,5]}},
-    {"id":"sunny","nickname":"S\u00f8renK","play":{"mistake":0.12,"deepMistake":0.09,"nullWeakness":0.07,"form":0.04,"bidThreshold":6},"activity":{"zone":"America/Los_Angeles","windows":[{"start":420,"end":660,"weight":1},{"start":1110,"end":1350,"weight":2}],"weekday":0.73,"weekend":0.67,"quiet":0.16,"dailyOne":0.87,"dailySix":0.6,"free":[0,3]}}
+    {
+      "id": "moss",
+      "nickname": "PeteM",
+      "play": {
+        "mistake": 0.48,
+        "deepMistake": 0.5,
+        "nullWeakness": 0.12,
+        "form": 0.08,
+        "bidThreshold": -22,
+        "strength": {
+          "declarerError": 0.7,
+          "defenderError": 0.62,
+          "severeError": 0.6,
+          "bidNoise": 36,
+          "pickupError": 0.28,
+          "contractError": 0.28,
+          "discardError": 0.4
+        }
+      },
+      "activity": {
+        "zone": "Europe/Berlin",
+        "windows": [
+          {
+            "start": 1140,
+            "end": 1380,
+            "weight": 4
+          },
+          {
+            "start": 720,
+            "end": 900,
+            "weight": 1
+          }
+        ],
+        "weekday": 0.55,
+        "weekend": 0.8,
+        "quiet": 0.25,
+        "dailyOne": 0.9,
+        "dailySix": 0.25,
+        "free": [
+          1,
+          3
+        ]
+      }
+    },
+    {
+      "id": "fern",
+      "nickname": "emmalou",
+      "play": {
+        "mistake": 0.35,
+        "deepMistake": 0.3,
+        "nullWeakness": 0.2,
+        "form": 0.07,
+        "bidThreshold": 16,
+        "strength": {
+          "declarerError": 0.55,
+          "defenderError": 0.7,
+          "severeError": 0.58,
+          "bidNoise": 30,
+          "pickupError": 0.2,
+          "contractError": 0.23,
+          "discardError": 0.32
+        }
+      },
+      "activity": {
+        "zone": "Europe/Berlin",
+        "windows": [
+          {
+            "start": 420,
+            "end": 660,
+            "weight": 3
+          },
+          {
+            "start": 1020,
+            "end": 1260,
+            "weight": 1
+          }
+        ],
+        "weekday": 0.8,
+        "weekend": 0.4,
+        "quiet": 0.15,
+        "dailyOne": 0.95,
+        "dailySix": 0.45,
+        "free": [
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "id": "river",
+      "nickname": "J\u00f6rg.P",
+      "play": {
+        "mistake": 0.27,
+        "deepMistake": 0.25,
+        "nullWeakness": 0.08,
+        "form": 0.06,
+        "bidThreshold": -12,
+        "strength": {
+          "declarerError": 0.58,
+          "defenderError": 0.52,
+          "severeError": 0.52,
+          "bidNoise": 28,
+          "pickupError": 0.18,
+          "contractError": 0.2,
+          "discardError": 0.32
+        }
+      },
+      "activity": {
+        "zone": "Europe/Dublin",
+        "windows": [
+          {
+            "start": 1080,
+            "end": 1380,
+            "weight": 1
+          }
+        ],
+        "weekday": 0.65,
+        "weekend": 0.9,
+        "quiet": 0.2,
+        "dailyOne": 0.75,
+        "dailySix": 0.7,
+        "free": [
+          0,
+          4
+        ]
+      }
+    },
+    {
+      "id": "cedar",
+      "nickname": "mick",
+      "play": {
+        "mistake": 0.19,
+        "deepMistake": 0.15,
+        "nullWeakness": 0.16,
+        "form": 0.04,
+        "bidThreshold": 5,
+        "strength": {
+          "declarerError": 0.48,
+          "defenderError": 0.6,
+          "severeError": 0.48,
+          "bidNoise": 25,
+          "pickupError": 0.23,
+          "contractError": 0.16,
+          "discardError": 0.25
+        }
+      },
+      "activity": {
+        "zone": "America/New_York",
+        "windows": [
+          {
+            "start": 480,
+            "end": 720,
+            "weight": 1
+          },
+          {
+            "start": 1140,
+            "end": 1380,
+            "weight": 3
+          }
+        ],
+        "weekday": 0.75,
+        "weekend": 0.55,
+        "quiet": 0.18,
+        "dailyOne": 0.8,
+        "dailySix": 0.5,
+        "free": [
+          1,
+          5
+        ]
+      }
+    },
+    {
+      "id": "bright",
+      "nickname": "Clari",
+      "play": {
+        "mistake": 0.14,
+        "deepMistake": 0.12,
+        "nullWeakness": 0.04,
+        "form": 0.03,
+        "bidThreshold": -8,
+        "strength": {
+          "declarerError": 0.45,
+          "defenderError": 0.48,
+          "severeError": 0.45,
+          "bidNoise": 22,
+          "pickupError": 0.15,
+          "contractError": 0.17,
+          "discardError": 0.25
+        }
+      },
+      "activity": {
+        "zone": "Europe/Vienna",
+        "windows": [
+          {
+            "start": 780,
+            "end": 960,
+            "weight": 1
+          },
+          {
+            "start": 1200,
+            "end": 1430,
+            "weight": 2
+          }
+        ],
+        "weekday": 0.8,
+        "weekend": 0.85,
+        "quiet": 0.1,
+        "dailyOne": 0.7,
+        "dailySix": 0.85,
+        "free": [
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "id": "willow",
+      "nickname": "PhilH",
+      "play": {
+        "mistake": 0.1,
+        "deepMistake": 0.08,
+        "nullWeakness": 0.1,
+        "form": 0.03,
+        "bidThreshold": 2,
+        "strength": {
+          "declarerError": 0.52,
+          "defenderError": 0.45,
+          "severeError": 0.52,
+          "bidNoise": 30,
+          "pickupError": 0.2,
+          "contractError": 0.2,
+          "discardError": 0.28
+        }
+      },
+      "activity": {
+        "zone": "Europe/Berlin",
+        "windows": [
+          {
+            "start": 1320,
+            "end": 180,
+            "weight": 1
+          }
+        ],
+        "weekday": 0.4,
+        "weekend": 0.75,
+        "quiet": 0.35,
+        "dailyOne": 0.9,
+        "dailySix": 0.6,
+        "free": [
+          0,
+          3
+        ]
+      }
+    },
+    {
+      "id": "silver",
+      "nickname": "Benno",
+      "play": {
+        "mistake": 0.06,
+        "deepMistake": 0.05,
+        "nullWeakness": 0.03,
+        "form": 0.02,
+        "bidThreshold": -4,
+        "strength": {
+          "declarerError": 0.45,
+          "defenderError": 0.45,
+          "severeError": 0.4,
+          "bidNoise": 20,
+          "pickupError": 0.15,
+          "contractError": 0.15,
+          "discardError": 0.25
+        }
+      },
+      "activity": {
+        "zone": "Europe/Amsterdam",
+        "windows": [
+          {
+            "start": 540,
+            "end": 780,
+            "weight": 1
+          },
+          {
+            "start": 1080,
+            "end": 1320,
+            "weight": 2
+          }
+        ],
+        "weekday": 0.85,
+        "weekend": 0.6,
+        "quiet": 0.15,
+        "dailyOne": 0.65,
+        "dailySix": 0.9,
+        "free": [
+          1,
+          3
+        ]
+      }
+    },
+    {
+      "id": "quiet",
+      "nickname": "laurab",
+      "play": {
+        "mistake": 0.025,
+        "deepMistake": 0.02,
+        "nullWeakness": 0.015,
+        "form": 0.015,
+        "bidThreshold": -5,
+        "strength": {
+          "declarerError": 0.45,
+          "defenderError": 0.45,
+          "severeError": 0.4,
+          "bidNoise": 18,
+          "pickupError": 0.15,
+          "contractError": 0.15,
+          "discardError": 0.25
+        }
+      },
+      "activity": {
+        "zone": "America/Chicago",
+        "windows": [
+          {
+            "start": 360,
+            "end": 600,
+            "weight": 1
+          },
+          {
+            "start": 1080,
+            "end": 1320,
+            "weight": 2
+          }
+        ],
+        "weekday": 0.5,
+        "weekend": 0.7,
+        "quiet": 0.3,
+        "dailyOne": 0.8,
+        "dailySix": 0.55,
+        "free": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "id": "katrin",
+      "nickname": "Stevie",
+      "play": {
+        "mistake": 0.22,
+        "deepMistake": 0.1,
+        "nullWeakness": 0.03,
+        "form": 0.05,
+        "bidThreshold": 8,
+        "strength": {
+          "declarerError": 0.55,
+          "defenderError": 0.56,
+          "severeError": 0.5,
+          "bidNoise": 26,
+          "pickupError": 0.18,
+          "contractError": 0.2,
+          "discardError": 0.28
+        }
+      },
+      "activity": {
+        "zone": "Europe/Berlin",
+        "windows": [
+          {
+            "start": 390,
+            "end": 540,
+            "weight": 2
+          },
+          {
+            "start": 1110,
+            "end": 1320,
+            "weight": 3
+          }
+        ],
+        "weekday": 0.82,
+        "weekend": 0.65,
+        "quiet": 0.18,
+        "dailyOne": 0.96,
+        "dailySix": 0.62,
+        "free": [
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "id": "jochen",
+      "nickname": "NoraBee",
+      "play": {
+        "mistake": 0.08,
+        "deepMistake": 0.04,
+        "nullWeakness": 0.12,
+        "form": 0.025,
+        "bidThreshold": -10,
+        "strength": {
+          "declarerError": 0.45,
+          "defenderError": 0.5,
+          "severeError": 0.45,
+          "bidNoise": 22,
+          "pickupError": 0.16,
+          "contractError": 0.15,
+          "discardError": 0.25
+        }
+      },
+      "activity": {
+        "zone": "Europe/Berlin",
+        "windows": [
+          {
+            "start": 540,
+            "end": 840,
+            "weight": 1
+          }
+        ],
+        "weekday": 0.7,
+        "weekend": 0.5,
+        "quiet": 0.12,
+        "dailyOne": 0.6,
+        "dailySix": 0.9,
+        "free": [
+          1,
+          4
+        ]
+      }
+    },
+    {
+      "id": "ute",
+      "nickname": "Moxie",
+      "play": {
+        "mistake": 0.4,
+        "deepMistake": 0.22,
+        "nullWeakness": 0.04,
+        "form": 0.055,
+        "bidThreshold": 20,
+        "strength": {
+          "declarerError": 0.62,
+          "defenderError": 0.68,
+          "severeError": 0.6,
+          "bidNoise": 32,
+          "pickupError": 0.3,
+          "contractError": 0.25,
+          "discardError": 0.35
+        }
+      },
+      "activity": {
+        "zone": "Europe/Zurich",
+        "windows": [
+          {
+            "start": 840,
+            "end": 1080,
+            "weight": 1
+          }
+        ],
+        "weekday": 0.55,
+        "weekend": 0.86,
+        "quiet": 0.2,
+        "dailyOne": 0.92,
+        "dailySix": 0.32,
+        "free": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "id": "alex",
+      "nickname": "Fips",
+      "play": {
+        "mistake": 0.16,
+        "deepMistake": 0.24,
+        "nullWeakness": 0.18,
+        "form": 0.07,
+        "bidThreshold": -18,
+        "strength": {
+          "declarerError": 0.5,
+          "defenderError": 0.58,
+          "severeError": 0.55,
+          "bidNoise": 34,
+          "pickupError": 0.22,
+          "contractError": 0.18,
+          "discardError": 0.3
+        }
+      },
+      "activity": {
+        "zone": "Europe/London",
+        "windows": [
+          {
+            "start": 1260,
+            "end": 240,
+            "weight": 2
+          },
+          {
+            "start": 720,
+            "end": 900,
+            "weight": 1
+          }
+        ],
+        "weekday": 0.64,
+        "weekend": 0.94,
+        "quiet": 0.26,
+        "dailyOne": 0.72,
+        "dailySix": 0.76,
+        "free": [
+          1,
+          4
+        ]
+      }
+    },
+    {
+      "id": "heide",
+      "nickname": "Pippo",
+      "play": {
+        "mistake": 0.29,
+        "deepMistake": 0.08,
+        "nullWeakness": 0.06,
+        "form": 0.04,
+        "bidThreshold": 3,
+        "strength": {
+          "declarerError": 0.56,
+          "defenderError": 0.52,
+          "severeError": 0.5,
+          "bidNoise": 24,
+          "pickupError": 0.18,
+          "contractError": 0.22,
+          "discardError": 0.3
+        }
+      },
+      "activity": {
+        "zone": "Europe/Berlin",
+        "windows": [
+          {
+            "start": 600,
+            "end": 840,
+            "weight": 2
+          },
+          {
+            "start": 990,
+            "end": 1140,
+            "weight": 1
+          }
+        ],
+        "weekday": 0.9,
+        "weekend": 0.58,
+        "quiet": 0.1,
+        "dailyOne": 0.88,
+        "dailySix": 0.5,
+        "free": [
+          0,
+          3
+        ]
+      }
+    },
+    {
+      "id": "paul",
+      "nickname": "r\u00e9mi.r",
+      "play": {
+        "mistake": 0.055,
+        "deepMistake": 0.03,
+        "nullWeakness": 0.09,
+        "form": 0.03,
+        "bidThreshold": 12,
+        "strength": {
+          "declarerError": 0.45,
+          "defenderError": 0.46,
+          "severeError": 0.42,
+          "bidNoise": 20,
+          "pickupError": 0.15,
+          "contractError": 0.15,
+          "discardError": 0.25
+        }
+      },
+      "activity": {
+        "zone": "Europe/Vienna",
+        "windows": [
+          {
+            "start": 1020,
+            "end": 1260,
+            "weight": 1
+          }
+        ],
+        "weekday": 0.47,
+        "weekend": 0.8,
+        "quiet": 0.28,
+        "dailyOne": 0.66,
+        "dailySix": 0.88,
+        "free": [
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "id": "frank",
+      "nickname": "Brummel",
+      "play": {
+        "mistake": 0.18,
+        "deepMistake": 0.13,
+        "nullWeakness": 0.025,
+        "form": 0.02,
+        "bidThreshold": -3,
+        "strength": {
+          "declarerError": 0.5,
+          "defenderError": 0.54,
+          "severeError": 0.5,
+          "bidNoise": 28,
+          "pickupError": 0.2,
+          "contractError": 0.18,
+          "discardError": 0.28
+        }
+      },
+      "activity": {
+        "zone": "Europe/Berlin",
+        "windows": [
+          {
+            "start": 300,
+            "end": 480,
+            "weight": 1
+          },
+          {
+            "start": 1140,
+            "end": 1380,
+            "weight": 2
+          }
+        ],
+        "weekday": 0.76,
+        "weekend": 0.8,
+        "quiet": 0.14,
+        "dailyOne": 0.94,
+        "dailySix": 0.73,
+        "free": [
+          1,
+          3
+        ]
+      }
+    },
+    {
+      "id": "nico",
+      "nickname": "biscotti",
+      "play": {
+        "mistake": 0.43,
+        "deepMistake": 0.38,
+        "nullWeakness": 0.21,
+        "form": 0.09,
+        "bidThreshold": -15,
+        "strength": {
+          "declarerError": 0.68,
+          "defenderError": 0.74,
+          "severeError": 0.62,
+          "bidNoise": 38,
+          "pickupError": 0.28,
+          "contractError": 0.28,
+          "discardError": 0.42
+        }
+      },
+      "activity": {
+        "zone": "Europe/Paris",
+        "windows": [
+          {
+            "start": 960,
+            "end": 1200,
+            "weight": 1
+          },
+          {
+            "start": 1290,
+            "end": 60,
+            "weight": 2
+          }
+        ],
+        "weekday": 0.52,
+        "weekend": 0.88,
+        "quiet": 0.32,
+        "dailyOne": 0.86,
+        "dailySix": 0.4,
+        "free": [
+          1,
+          5
+        ]
+      }
+    },
+    {
+      "id": "sunny",
+      "nickname": "S\u00f8renK",
+      "play": {
+        "mistake": 0.12,
+        "deepMistake": 0.09,
+        "nullWeakness": 0.07,
+        "form": 0.04,
+        "bidThreshold": 6,
+        "strength": {
+          "declarerError": 0.5,
+          "defenderError": 0.56,
+          "severeError": 0.5,
+          "bidNoise": 24,
+          "pickupError": 0.18,
+          "contractError": 0.18,
+          "discardError": 0.28
+        }
+      },
+      "activity": {
+        "zone": "America/Los_Angeles",
+        "windows": [
+          {
+            "start": 420,
+            "end": 660,
+            "weight": 1
+          },
+          {
+            "start": 1110,
+            "end": 1350,
+            "weight": 2
+          }
+        ],
+        "weekday": 0.73,
+        "weekend": 0.67,
+        "quiet": 0.16,
+        "dailyOne": 0.87,
+        "dailySix": 0.6,
+        "free": [
+          0,
+          3
+        ]
+      }
+    }
   ]
 }

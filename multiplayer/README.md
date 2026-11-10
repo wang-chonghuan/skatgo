@@ -75,12 +75,83 @@ Offline commands, from repo root:
 npm --prefix multiplayer run build
 npm --prefix multiplayer run personas -- validate --count 17
 npm --prefix multiplayer run personas -- plan --days 30 --count 17
-npm --prefix multiplayer run personas -- calibrate --deals 30 --count 17
+node multiplayer/dist/personas.mjs calibrate --partition smoke --deals 30 --count 17 --output .intentfold/tmp/persona-smoke --cache .intentfold/tmp/persona-inputs
 ```
 
 Calibration is real ONNX/engine play on the same pool sample for every persona.
 Scores are not generated directly. Report sample size; the roster's probabilities
 are initial hypotheses, not a promise of fixed difficulty or rank.
+
+The `/4` roster adds `play.strength`: separate declarer/defender card-error
+probabilities, rank-depth severity, bid-estimate noise, and pickup/Hand,
+contract and discard judgement errors. Card errors depend on visible legal-choice
+complexity, contract weakness and seeded activity form. The adapter sees no
+hidden opponent hands, prior win totals, board ranks or desired outcomes.
+Forced moves and equal-valued alternatives are not counted as mistakes.
+Audit records include phase, role, candidates, selected rank, raw loss and severity;
+raw model losses are not card points or win probabilities. Only the selected
+contract's actual discard decision is counted in the played trace.
+
+Strength calibration protocol and acceptance:
+
+```sh
+node multiplayer/dist/personas.mjs calibrate --partition train --output .intentfold/tmp/persona-train --cache .intentfold/tmp/persona-inputs
+node multiplayer/dist/personas.mjs calibrate --partition holdout --training .intentfold/tmp/persona-train --output .intentfold/tmp/persona-holdout --cache .intentfold/tmp/persona-inputs
+```
+
+Training is indices 0-599 of the verified 1,000-deal pool; holdout is 600-999.
+Both use three fixed seeds. Holdout refuses missing/incomplete training or a
+different roster hash. The output folder freezes the experiment manifest and
+contains atomic per-deal checkpoints, full game/audit logs and `report.json`.
+Rerunning unchanged inputs resumes; changed configuration requires a new folder.
+The shared input cache contains canonical evaluations/benchmarks only, not
+sampled outcomes. Every loaded/generated game is legally replayed and its XP
+recomputed before entering the report. No database is used.
+
+Reports compare the exact legacy and new adapters on paired cards/seeds, including
+player-side win rate, declarations/defence, contract strata, score/XP distributions,
+AI gaps, six-deal copies, all-win rounds and upper score quantiles.
+The uncertainty unit is a distinct deal with its seeds grouped together, not
+every replay. 10,000 deterministic cluster bootstrap draws provide one-sided
+95% upper bounds and Bonferroni-adjusted family bounds for the tested profiles.
+The ordinary-card family upper edge is 35%, a calibration reference, never a
+display clamp, forced-loss quota or universal human maximum. `acceptanceSample`
+is true only for the full 400-card/three-seed holdout; `--deals` smoke/probe runs
+do not establish acceptance. Selected daily-one cards require separate date
+evidence and are not pooled into this ordinary-card gate.
+
+Read-only database diagnosis:
+
+```sh
+node multiplayer/dist/personas.mjs diagnose --day 2026-11-10
+```
+
+`--since` defaults to the same `XP_SINCE` as the XP board. `--player` selects a
+simulated six-deal incident, default `sim:sunny`; `--export <new-file>` exports
+only simulated snapshots/results and server deals for isolated replay.
+Server deals in the export cover `--since` through `--day`, preserving each
+daily-one deal's stored selection provenance.
+The command uses a repeatable read-only transaction, never migrations or a
+runner, and works with local or explicitly supplied remote DB configuration.
+Human aliases are merged for per-person/mode aggregates; account IDs and human
+game histories are not exported. External connections should use TLS with
+certificate validation (for example the connection URL's `sslmode=verify-full`).
+
+Separate daily-mode evaluation, after freezing training:
+
+```sh
+node multiplayer/dist/personas.mjs diagnose --day 2026-11-10 --since 2026-11-02 --export .intentfold/tmp/daily-fixture.json
+node multiplayer/dist/personas.mjs calibrate-daily --fixture .intentfold/tmp/daily-fixture.json --training .intentfold/tmp/persona-train --output .intentfold/tmp/persona-daily
+```
+
+The fixture is read-only input, never imported into production. This compares
+both policies with all three seeds and the stored canonical benchmark, legally
+replaying every saved game. Daily-six uncertainty groups whole dates; daily-one
+groups selected dates and has no artificial six-deal rounds. Neither daily mode
+uses the ordinary 35% acceptance gate. Fewer than 40 dates, including limited
+contract/role strata, are explicitly insufficient for a long-run conclusion.
+Unchanged input resumes; a changed fixture/configuration requires a new output
+folder. Full selected-mode logs and date/selection metadata remain in that folder.
 
 The controller lives in the existing always-on multiplayer leader, not a new
 deployment. It starts immediately, then waits 10 seconds between ticks, including
@@ -149,6 +220,15 @@ error; it never reuses a deal for XP.
 Once a persona has a plan for that day, changing bundled traits or volume cannot
 add/rearrange its slots that day; the new plan applies on later days. This preserves
 the original activity timeline as well as already completed scores.
+
+`strengthSince` declares the first eligible Berlin day (2026-11-11 for `/4`).
+Before it, new plans retain legacy traits/policy. Each new snapshot freezes its
+`policy`; snapshots predating the field route through `skatgo-personas/1`.
+`skatgo-personas/2` requires strength traits, and unknown/mismatched policies fail
+the job rather than changing its decisions. Existing queued and completed jobs
+are not migrated, even after the date boundary. Keep the legacy adapter until
+no retained job needs it. Deploy/activation or explicit queued-job migration is
+a separate operator decision; this configuration alone changes no production data.
 
 Only complete activities enter the daily and XP board reads. Simulated entries
 are never inserted into `daily_entries`, `play_deals`, user aliases, private

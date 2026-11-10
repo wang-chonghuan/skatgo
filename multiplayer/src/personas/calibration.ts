@@ -25,7 +25,7 @@ export async function save(file: string, value: unknown) {
 export const hash = (v: unknown) => createHash('sha256').update(JSON.stringify(v)).digest('hex')
 
 export async function frozenTraining(folder: string, roster: Roster, poolVersion?: string) {
-  const training = await json<{ partition: string; configHash: string; policy: string; pool: string; indices: number[]; seeds: string[] }>(
+  const training = await json<{ partition: string; configHash: string; policy: string; pool: string; indices: number[]; seeds: string[]; ms?: number }>(
     join(folder, 'report.json'))
   assert(training?.partition === 'train', 'Complete the frozen training run first')
   assert.deepEqual(training.indices, Array.from({ length: 600 }, (_, i) => i), 'Training requires 600 independent cards')
@@ -33,7 +33,8 @@ export async function frozenTraining(folder: string, roster: Roster, poolVersion
   assert.equal(training.configHash, rosterHash(roster), 'Freeze training config before evaluation')
   assert.equal(training.policy, STRENGTH_POLICY)
   if (poolVersion) assert.equal(training.pool, poolVersion)
-  return hash(training)
+  const { ms, ...frozen } = training
+  return hash(frozen)
 }
 
 /** Pure evaluation cache, bounded to one deal; sampled actions/results are never memoized. */

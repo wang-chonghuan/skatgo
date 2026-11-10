@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { before, after, test } from 'node:test'
 import { randomUUID } from 'node:crypto'
-import { mkdir, mkdtemp } from 'node:fs/promises'
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
@@ -18,7 +18,8 @@ import { loadPolicy, type Policy } from '../src/skatzero/policy'
 import { Store } from '../src/store'
 import { xpBoard } from '../src/xp'
 import { dailyBoard, dailyRoutes, prepareDay } from '../src/daily'
-import { population, roster, policyOf, personaSchema, LEGACY_POLICY, STRENGTH_POLICY, type Roster } from '../src/personas/config'
+import { population, roster, rosterHash, policyOf, personaSchema, LEGACY_POLICY, STRENGTH_POLICY, type Roster } from '../src/personas/config'
+import { frozenTraining } from '../src/personas/calibration'
 import { sideWon, groupedBounds, measurements, wilsonUpper, type Observation } from '../src/personas/metrics'
 import { diagnose } from '../src/personas/diagnosis'
 import { planDay } from '../src/personas/schedule'
@@ -257,4 +258,17 @@ test('calibration CLI resumes frozen experiments and rejects changed manifests',
   await assert.rejects(run(process.execPath, [...args, '--count', '16']), /Changed experiment/)
   await assert.rejects(run(process.execPath, [cli.pathname, 'calibrate', '--partition', 'holdout', '--deals', '1',
     '--output', join(output, 'holdout'), '--cache', cache]), /requires --training/)
+})
+
+test('training signature ignores elapsed time but refuses changed configuration', async () => {
+  const folder = await mkdtemp(join(tmpdir(), 'skatgo-training-signature-'))
+  const file = join(folder, 'report.json')
+  const fixture = { partition: 'train', configHash: rosterHash(roster), policy: STRENGTH_POLICY,
+    pool: pool.version, indices: Array.from({ length: 600 }, (_, i) => i),
+    seeds: ['strength-a', 'strength-b', 'strength-c'], ms: 123 }
+  await writeFile(file, JSON.stringify(fixture))
+  const first = await frozenTraining(folder, roster, pool.version)
+  await writeFile(file, JSON.stringify({ ...fixture, ms: 456 }))
+  assert.equal(await frozenTraining(folder, roster, pool.version), first)
+  await assert.rejects(frozenTraining(folder, { ...roster, seed: 'different' }, pool.version), /Freeze training config/)
 })

@@ -130,7 +130,7 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
         <div {...stylex.props(styles.stack)}>
           <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_curve_title()}</h2>
           <Curve deals={deals} />
-          <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_curve_note({ count: RECENT_DEALS })}</p>
+          <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_curve_note()}</p>
         </div>
       </Panel>
       <Weeks weeks={weeksOf(deals)} notes={notes} />
@@ -287,6 +287,9 @@ function Weeks({ weeks, notes }: { weeks: ProfileWeek[]; notes: ProfileNote[] })
   )
 }
 
+/** How many points the curve is drawn through at most. */
+const DRAWN = 40
+
 /** The curve as the home card's was (SKATGO-182, the human: 「曲线还换成那个平滑曲线」, 「应该是每个deal是一个点，就像本来显示在首页卡片上
  *  的那个chart一样」): a point a deal, the average per deal against the AI over the latest deals up to it (`rollingByDeal`), as
  *  one smooth line without scale over a zero line — a single deal as its dot — the first and the last day under it and how
@@ -300,15 +303,26 @@ function Curve({ deals }: { deals: ProfileDeal[] }) {
   const span = top - bottom || 1
   const x = (i: number) => (known.length > 1 ? pad + (i * (width - 2 * pad)) / (known.length - 1) : width / 2)
   const y = (v: number) => pad + ((top - v) * (height - 2 * pad)) / span
-  const points = known.map((p, i) => ({ x: x(i), y: y(p.perDeal) }))
+  // Drawn through at most `DRAWN` of them, evenly spread and the last always among them, so the line runs smooth however many
+  // deals there are (「平滑点」).
+  const step = Math.max(1, (known.length - 1) / (DRAWN - 1))
+  const drawn = known.length <= DRAWN ? known.map((_, i) => i) : Array.from({ length: DRAWN }, (_, k) => Math.round(k * step))
+  const points = drawn.map((i) => ({ x: x(i), y: y(known[i].perDeal) }))
   const short = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' })
   const day = (d: string) => short.format(new Date(`${d}T00:00:00Z`))
   const first = known[0].day
   const last = known[known.length - 1].day
   const window = Math.min(RECENT_DEALS, known.length)
+  // The axis (the human: 「纵轴也要有」): the highest, the middle and the lowest value, each with its fine line across.
+  const ticks = [top, Math.round((top + bottom) / 2), bottom]
   return (
     <div {...stylex.props(styles.stackTight)}>
+      <div {...stylex.props(styles.chart)}>
+      <div aria-hidden data-testid="profile-axis" {...stylex.props(typography.meta, styles.scale)}>
+        {ticks.map((v, i) => <span key={i}>{signed(v)}</span>)}
+      </div>
       <svg data-testid="profile-curve" data-points={known.length} role="img" aria-label={m.profile_curve_title()} viewBox={`0 0 ${width} ${height}`} {...stylex.props(styles.svg)}>
+        {ticks.map((v, i) => <line key={i} x1={0} x2={width} y1={y(v)} y2={y(v)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.grid)} />)}
         <line x1={0} x2={width} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
         {points.length > 1 ? (
           <path data-testid="profile-line" d={smoothPath(points)} strokeWidth={progressCurve.line} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.curve)} />
@@ -317,10 +331,17 @@ function Curve({ deals }: { deals: ProfileDeal[] }) {
           <line data-testid="profile-point" x1={points[0].x} x2={points[0].x} y1={points[0].y} y2={points[0].y} strokeWidth={progressCurve.dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)} />
         )}
       </svg>
-      <div data-testid="profile-dates" {...stylex.props(typography.meta, styles.dates, known.length === 1 && styles.datesOne)}>
-        <span>{day(first)}</span>
-        {known.length > 1 ? <span>{m.home_progress_recent({ count: window })}</span> : null}
-        {first === last ? null : <span>{day(last)}</span>}
+      </div>
+      <div {...stylex.props(styles.chart)}>
+        {/* As wide as the axis beside the curve, so the dates start where the curve does. */}
+        <div aria-hidden {...stylex.props(typography.meta, styles.scale, styles.scaleGhost)}>
+          {ticks.map((v, i) => <span key={i}>{signed(v)}</span>)}
+        </div>
+        <div data-testid="profile-dates" {...stylex.props(typography.meta, styles.dates, known.length === 1 && styles.datesOne)}>
+          <span>{day(first)}</span>
+          {known.length > 1 ? <span>{m.home_progress_recent({ count: window })}</span> : null}
+          {first === last ? null : <span>{day(last)}</span>}
+        </div>
       </div>
     </div>
   )
@@ -359,7 +380,8 @@ const styles = stylex.create({
   chart: { display: 'flex', alignItems: 'stretch', gap: space.x8 },
   scale: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: color.slate, textAlign: 'end' },
   svg: { display: 'block', flexGrow: 1, minWidth: 0, width: '100%', height: 'auto', overflow: 'visible' },
-  zero: { stroke: color.hairline },
+  zero: { stroke: color.slate },
+  grid: { stroke: color.hairline },
   curve: { fill: 'none', stroke: color.info },
   point: { stroke: color.info },
   // A game's way to be played again (SKATGO-182): a link under its date.

@@ -444,9 +444,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   gap comes from not playing the same game — bidding and choice of game — each row left out where it says nothing; then a white
   card, "Dein Niveau gegen die KI" (SKATGO-182, the human: 「这里的day by day去掉，然后曲线还换成那个平滑曲线」, 「应该是每个deal是
   一个点，就像本来显示在首页卡片上的那个chart一样」): a point a deal, the average per deal against the AI over the latest 30 deals
-  up to it (`rollingByDeal`), drawn as the home card's line was — one smooth monotone cubic (`smooth-path.ts`), `progressCurve`
-  thick, in `info`, over a `hairline` zero line, no scale, a single deal as its dot — the first and the last day under it
-  and "Immer über die letzten 30 Spiele" between them (`meta`, slate), and a `meta` note on how to read it; then "Woche für Woche": the newest week's white card open and the
+  up to it, each averaged again with the seven either side (`rollingByDeal`; 「平滑点」), drawn as the home card's line was —
+  one smooth monotone cubic (`smooth-path.ts`) through at most 40 of them, `progressCurve` thick, in `info`, a single deal as
+  its dot — over an axis (「纵轴也要有」): the highest, middle and lowest value at the left (`meta`, slate), each with a
+  `hairline` across, the zero line `slate`; the first and the last day under it and "Immer über die letzten 30 Spiele" between
+  them (`meta`, slate), and one `meta` line on how to read it (「必须一针见血」): "Über 0 warst du auf denselben Karten besser als
+  die KI, darunter schlechter."; then "Woche für Woche": the newest week's white card open and the
   rest behind a white card "Frühere Wochen (3)", a tap on it opening them (SKATGO-169, 「每周简评，只显示第一个，剩下的折叠」), a card per
   week with an analysis, newest first — "Woche vom 19. Okt.", its deals and average per deal, then the analysis as a
   forum text (`ForumBody`: its points as a list, each led in bold, and the bold "Fazit"), in the page's language (no per-day list, SKATGO-169: 「Per day 这个不用显示」). The line of the last day against before stands under a finished tournament's heading, with the link to the profile.

@@ -54,7 +54,7 @@
   "profile_gap_play": "Card play: in the same game as the AI, your card points against its",
   "profile_gap_bid": "Bidding and choice of game: how much of your gap comes from not playing the same game",
   "profile_curve_title": "Your level against the AI",
-  "profile_curve_note": "Each point is one deal: your average per deal against the AI over the last {count} deals up to it. A deal counts your score minus each opponent's, compared with the AI's game of the same cards from your seat. Above the line you did better than the AI.",
+  "profile_curve_note": "Above 0 you beat the AI on the same cards; below it, the AI beat you.",
   "profile_day_deals": "Deals: {count}",
   "profile_point": "{date}: {diff} per deal against the AI ({count} deals)",
   "history_title": "Your games ({count})",

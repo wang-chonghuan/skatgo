@@ -179,8 +179,16 @@ export function rollingOf(deals: ProfileDeal[]): { day: string; perDeal: number 
  */
 export function rollingByDeal(deals: ProfileDeal[]): { day: string; perDeal: number }[] {
   const judged = deals.filter((d) => d.ai !== null)
-  return judged.map((d, i) => ({ day: d.day, perDeal: recent(judged.slice(0, i + 1)).perDeal }))
+  const rolling = judged.map((_, i) => recent(judged.slice(0, i + 1)).perDeal)
+  // Smoothed once more over its neighbours (the human: 「平滑点」): each point the mean of the points `SMOOTH` either side.
+  return judged.map((d, i) => {
+    const near = rolling.slice(Math.max(0, i - SMOOTH), i + SMOOTH + 1)
+    return { day: d.day, perDeal: Math.round(near.reduce((s, v) => s + v, 0) / near.length) }
+  })
 }
+
+/** How many points either side the curve's points are averaged over. */
+const SMOOTH = 7
 
 /**
  * The last day played against every day before it, per deal: better, worse, or the same within the noise — a

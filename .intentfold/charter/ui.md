@@ -250,7 +250,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `GraduationCap`, the course) and "Reizen" (`tileNavy`, lucide's `Gavel`, an auction's hammer, to `/bidding-practice`; one line since SKATGO-151, the page
     keeping "Reizen üben"; SKATGO-149, the
     human: 「practice卡片的位置，做成一个叫牌练习的东西」 — the exercises' "Üben" with its `Puzzle` stood there before); on the right two long white cards, each
-    a row tall — the XP board on top, then the progress (SKATGO-172, 「你建议？」): "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
+    a row tall — the XP board on top, then the progress (SKATGO-172, 「你建议？」): "Verlauf & Analyse" (SKATGO-182, 「卡片名称 my progress改为my history and analyse」; until then "Mein Fortschritt") (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
     over the latest 30 deals, fewer while there are fewer (`standingOf`, SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」),
     the win rate and the average per deal against the AI (`homeCardTitle`, each over a `meta` label), beside the curve and
     over it on a phone, and that average day by day as the curve (`rollingOf`), "Immer über die letzten 30 Spiele" in the dates' row, no win-rate curve — on real records a day's win

@@ -19,4 +19,8 @@ Recording a finished free deal for a guest is covered by the service's test of `
    shows the sign-in line and button as before.
 6. **Account card and page.** Signed in: the card shows figures and curve as before; `/profile` starts with the folded
    history, opening to every deal including the merged guest ones; the sections under it unchanged.
-7. **Layout.** 5 and 6 at 1280×800 and 390×844, `/en` and `/` (German): no horizontal scroll, no console errors.
+7. **Replay.** Signed in, a row's replay opens `/replay` with a table dealt from that deal (its first state's
+   dealer and the player's ten cards equal the recorded deal's — checked on the seeded free deal and a seeded deal of
+   the six); XP and the record are the same before and after it starts. Signed out, the replay opens Clerk's sign-in.
+   The replay's finish is not played (gameplay is the human's).
+8. **Layout.** 5 and 6 at 1280×800 and 390×844, `/en` and `/` (German): no horizontal scroll, no console errors.

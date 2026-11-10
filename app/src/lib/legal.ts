@@ -59,7 +59,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           paragraphs: [
             'Lesson progress, stars, game totals and card-colour preferences are saved in this browser. They are not synchronized to your account. A language cookie remembers a language you select.',
             'Clearing site data removes local progress and preferences.',
-            'Clerk uses cookies and similar storage for authentication and security. Starting the daily tournament as a guest sets a secure device cookie, lasting up to 400 days, to recognize your entry. The tournament service receives a hash of that identifier, not the cookie value.',
+            'Clerk uses cookies and similar storage for authentication and security. Playing the deal of the day or finishing a free game as a guest sets a secure device cookie, lasting up to 400 days, to keep your games on this device. The game service receives a hash of that identifier, not the cookie value.',
           ],
         },
         {
@@ -67,7 +67,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Games and public results',
           paragraphs: [
             'The daily tournament stores a player identifier, moves, results, scores and timestamps on the server. When you finish a tournament, your entry appears with its score and rank on the public leaderboard under a name of two words assigned at random, which you can change. Do not choose a name that reveals information you do not want to publish.',
-            'Signing in can attach today\'s guest entry on this device to your account. Daily records do not automatically disappear at midnight. Free-play state is instead held in an encrypted game token that is valid for one day. This browser keeps it, with the round\'s finished deals, so that a reload continues the game. When you are signed in, each finished free-play deal is also stored with your account — your score and the AI\'s on the same cards, the day and who played — for your record of play, which only you see.',
+            'Signing in attaches this device\'s guest games to your account: today\'s guest entry, and every game kept for this device. Daily records do not automatically disappear at midnight. Free-play state is instead held in an encrypted game token that is valid for one day. This browser keeps it, with the round\'s finished deals, so that a reload continues the game. Each finished free-play deal is also stored — your score and the AI\'s on the same cards, the day and who played — with your account when you are signed in, or as a guest with this device, for your record of play, which only you see.',
             'If you share your deal of the day, its result — the day, your score and the AI\'s — is stored under a short code, so that the link you send can show it and let others play the same deal. The shared page and its picture show no name. Sharing to WhatsApp, Facebook, Telegram, X or Instagram happens in those apps, under their terms; SkatGo loads none of their scripts.',
             'Opening a private table takes an account; joining one does not. If you sit at someone else\'s table as a guest and sign up while you are there, we record once whose table it was, so that it is known who invited you.',
           ],
@@ -183,7 +183,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           paragraphs: [
             'Lernfortschritt, Sterne, Spielstatistik und Kartenfarben werden in diesem Browser gespeichert. Sie werden nicht mit deinem Konto synchronisiert. Ein Sprach-Cookie merkt sich die Sprache, die du auswählst.',
             'Das Löschen der Websitedaten entfernt lokalen Fortschritt und Einstellungen.',
-            'Clerk verwendet Cookies und ähnliche Speicher für Anmeldung und Sicherheit. Wenn du das Tagesturnier als Gast startest, wird ein sicheres Geräte-Cookie für bis zu 400 Tage gesetzt, um deinen Eintrag wiederzuerkennen. Der Turnierserver erhält nur einen Hash dieser Kennung, nicht den Cookie-Wert.',
+            'Clerk verwendet Cookies und ähnliche Speicher für Anmeldung und Sicherheit. Wenn du als Gast das Spiel des Tages spielst oder ein freies Spiel beendest, wird ein sicheres Geräte-Cookie für bis zu 400 Tage gesetzt, um deine Spiele auf diesem Gerät zu behalten. Der Spielserver erhält nur einen Hash dieser Kennung, nicht den Cookie-Wert.',
           ],
         },
         {
@@ -191,7 +191,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Spiele und öffentliche Ergebnisse',
           paragraphs: [
             'Das Tagesturnier speichert Spielerkennung, Spielzüge, Ergebnisse, Punkte und Zeitangaben auf dem Server. Wenn du ein Turnier beendest, erscheint dein Eintrag mit Punktzahl und Rang in der öffentlichen Bestenliste – unter einem zufällig vergebenen Namen aus zwei Wörtern, den du ändern kannst. Wähle keinen Namen, der unerwünschte persönliche Informationen offenlegt.',
-            'Bei der Anmeldung können der heutige Gasteintrag dieses Geräts deinem Konto zugeordnet werden. Turnierdaten werden nicht automatisch um Mitternacht gelöscht. Beim freien Spiel liegt der Spielstand dagegen in einem verschlüsselten Spiel-Token, das einen Tag gültig ist. Dieser Browser speichert es mit den fertigen Spielen der Runde, damit Neuladen das Spiel fortsetzt. Bist du angemeldet, wird jedes fertige Spiel im freien Spiel außerdem mit deinem Konto gespeichert – deine Punkte und die der KI auf denselben Karten, der Tag und wer gespielt hat – für dein Spielprofil, das nur du siehst.',
+            'Bei der Anmeldung werden die Gastspiele dieses Geräts deinem Konto zugeordnet: der heutige Gasteintrag und jedes für dieses Gerät gespeicherte Spiel. Turnierdaten werden nicht automatisch um Mitternacht gelöscht. Beim freien Spiel liegt der Spielstand dagegen in einem verschlüsselten Spiel-Token, das einen Tag gültig ist. Dieser Browser speichert es mit den fertigen Spielen der Runde, damit Neuladen das Spiel fortsetzt. Jedes fertige Spiel im freien Spiel wird außerdem gespeichert – deine Punkte und die der KI auf denselben Karten, der Tag und wer gespielt hat –, angemeldet mit deinem Konto, als Gast mit diesem Gerät, für dein Spielprofil, das nur du siehst.',
             'Teilst du dein Spiel des Tages, wird sein Ergebnis – der Tag, deine Punkte und die der KI – unter einem kurzen Code gespeichert, damit der geteilte Link es zeigen und andere dasselbe Spiel spielen lassen kann. Die geteilte Seite und ihr Bild zeigen keinen Namen. Das Teilen über WhatsApp, Facebook, Telegram, X oder Instagram geschieht in diesen Apps, nach deren Bedingungen; SkatGo lädt keine ihrer Skripte.',
             'Einen privaten Tisch eröffnest du mit einem Konto, mitspielen kannst du ohne. Wenn du als Gast an einem fremden Tisch sitzt und dich dort registrierst, speichern wir einmalig, an wessen Tisch das war – damit bekannt ist, wer dich eingeladen hat.',
           ],

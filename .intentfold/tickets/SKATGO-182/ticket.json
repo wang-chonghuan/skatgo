@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-182",
   "mode": "autonomous",
-  "stage": "developing",
+  "stage": "handoff-ready",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-182",
   "branch": "SKATGO-182-guest-progress",

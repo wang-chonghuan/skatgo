@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { type Played, type ProfileDeal, RECENT_DEALS, gapOf, recordOf, rollingOf, standingOf, versusAi } from './profile'
 
 const game = (scores: [number, number, number], declarer: 0 | 1 | 2 | null, won: boolean | null): Played => ({ scores, declarer, won })
-const deal = (day: string, mine: Played, ai: Played | null): ProfileDeal => ({ day, source: 'daily', mine, ai })
+let n = 0
+const deal = (day: string, mine: Played, ai: Played | null): ProfileDeal => ({ day, source: 'daily', key: `daily:${day}:6:${n++ % 6}`, mine, ai })
 
 const wonAsDeclarer = game([100, 0, 0], 0, true)
 const lostAsDeclarer = game([-146, 40, 40], 0, false)

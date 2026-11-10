@@ -152,8 +152,8 @@ const talkInput = z.object({
   said: z.array(z.enum(TALK_KINDS as [string, ...string[]])).max(5), lang: z.enum(['en', 'de']),
 }).strict()
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
-// A record of play is an account's (SKATGO-128).
-const profileInput = z.object({ player: z.string().regex(/^user:/).pipe(player) }).strict()
+// A record of play is an account's (SKATGO-128), or a guest device's own (SKATGO-182).
+const profileInput = z.object({ player }).strict()
 // The XP board is everyone's; an account asking sees its own row marked (SKATGO-172).
 const xpInput = z.object({ player: z.string().regex(/^user:/).pipe(player).nullable() }).strict()
 
@@ -423,7 +423,10 @@ export async function dailyAct(store: Store, policy: Policy, input: z.infer<type
 
 /** A player who signs in takes today's anonymous entries from this device into the account, each
  *  tournament's unless the account already has one in it today. Past days never move (SKATGO-35, grill
- *  Q7; SKATGO-77). An account without a name of its own takes the device's (SKATGO-90). */
+ *  Q7; SKATGO-77): their boards stay as they were. An account without a name of its own takes the device's (SKATGO-90).
+ *  Every game of the device — free play's, and the deal of the day's on any day — counts as the account's from then on
+ *  (SKATGO-182, the human: 「游客存档，登录后合并进账号」): the device becomes one of the account's ids in `player_aliases`,
+ *  joined to the person the account already belongs to; a device that went to an account first stays with it. */
 export async function dailyClaim(store: Store, from: string, to: string, now = Date.now()) {
   const day = dayOf(now)
   return store.transaction(async c => {
@@ -432,6 +435,11 @@ export async function dailyClaim(store: Store, from: string, to: string, now = D
          AND NOT EXISTS (SELECT 1 FROM daily_entries x WHERE x.day = $1 AND x.size = e.size AND x.player = $3)`, [day, from, to])
     await c.query(
       'UPDATE daily_players SET player = $2 WHERE player = $1 AND NOT EXISTS (SELECT 1 FROM daily_players WHERE player = $2)', [from, to])
+    const a = await c.query(
+      `INSERT INTO player_aliases (player, same_as)
+         VALUES ($1, coalesce((SELECT same_as FROM player_aliases WHERE player = $2), $2)) ON CONFLICT DO NOTHING`, [from, to])
+    // Ids that were the device's own person are the account's person now, so no one is one step removed.
+    if (a.rowCount) await c.query('UPDATE player_aliases SET same_as = (SELECT same_as FROM player_aliases WHERE player = $1) WHERE same_as = $1', [from])
     return { claimed: (r.rowCount ?? 0) > 0 }
   })
 }

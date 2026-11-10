@@ -39,9 +39,14 @@
 6. **The card** (`entry-page.tsx`): a guest with deals gets the account card's shape — the whole card a link to
    `/profile` — with the latest deals listed, scrolling inside as the XP board's list does, and one `slate` line that
    signing in keeps them. A guest without deals and every account: unchanged.
-7. **Words** — messages en/de; privacy text en/de; charter product.md / engineering.md / ui.md amended as the ticket
+7. **Replay** (grill Q1, Q12–Q15): each row on the page has a replay control. `/replay?deal=<key>` plays it on
+   a full-screen `GameTable` as `/daily/replay` does: a free deal through a new `/free/again` (the asker's own recorded
+   deal, a `replay` token, so its review records nothing), a daily one through the practice routes, extended to a deal
+   of the six (its day, size and number; only to a player whose entry has it finished). A guest's tap signs in first.
+   Every deal in the record carries the key that names it.
+8. **Words** — messages en/de; privacy text en/de; charter product.md / engineering.md / ui.md amended as the ticket
    says.
-8. **Tests** — after the code: the service's claim, guest profile and guest review; the handlers' naming of the
+9. **Tests** — after the code: the service's claim, guest profile and guest review; the handlers' naming of the
    guest.
 
 ## Departures from the proposed solution

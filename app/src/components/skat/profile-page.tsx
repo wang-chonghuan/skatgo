@@ -1,10 +1,11 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
 import { Who } from './daily-comparison'
+import { DealRows } from './deal-history'
 import { ForumBody } from './forum-body'
 import { Btn, Panel, linkLook } from './ui'
 import { track } from '~/lib/analytics'
@@ -24,25 +25,58 @@ import { typography } from '../../theme/type'
  * A player's record of play (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，而且每个deal都要算和ai的
  * 差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's and free
  * play's — judged against the whole table and compared with the AI's game of the same cards (`lib/skat/profile.ts`):
- * a curve of the average per deal, day by day, and whether the last day was better than before.
- * Personal, never indexed; its title and lead render on the server, the record in the browser for an account.
+ * a curve of the average per deal, day by day, and whether the last day was better than before. Above it, every game,
+ * newest first, each to be played again (SKATGO-182): folded for an account; a guest's games of this device open, the
+ * only thing a guest has, with the sign-in that keeps them.
+ * Personal, never indexed; its title and lead render on the server, the record in the browser.
  */
 export function ProfilePage() {
   const account = useAccount()
+  const navigate = useNavigate()
   const [record, setRecord] = useState<{ deals: ProfileDeal[]; notes: ProfileNote[] } | 'error' | null>(null)
+  /** The game a guest asked to play again, waiting for their sign-in (the human: 「想点此处的复牌，必须登录」). */
+  const [wanted, setWanted] = useState<string | null>(null)
   useEffect(() => {
-    if (!account) return
+    if (account === undefined) return
     let live = true
+    setRecord(null)
     void dailyProfile().then((r) => { if (live) setRecord(isError(r) ? 'error' : r) })
     return () => { live = false }
   }, [account])
-
+  // Once signed in and the account's record read — which takes this device's games into it — the asked game goes on.
+  useEffect(() => {
+    if (account && wanted && record && record !== 'error') void navigate({ to: '/replay', search: { deal: wanted } })
+  }, [account, wanted, record])
+  // Played again from its row: a link in the date's line (`info`), for a guest Clerk's window first.
+  const replay = (d: ProfileDeal) =>
+    account ? (
+      <Link to="/replay" search={{ deal: d.key }} data-testid="history-replay" {...stylex.props(typography.meta, styles.replay)}>{m.history_replay()}</Link>
+    ) : (
+      <SignInButton mode="modal">
+        <button type="button" data-testid="history-replay" onClick={() => {
+          setWanted(d.key)
+          track('sign_in_clicked', { at: 'history_replay' })
+        }} {...stylex.props(typography.meta, typography.control, styles.replay, styles.replayButton)}>{m.history_replay()}</button>
+      </SignInButton>
+    )
   return (
     <div data-testid="profile" {...stylex.props(styles.root)}>
       <section {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.profile_title()}</h1>
         <p {...stylex.props(typography.landingBody, styles.lead)}>{m.profile_lead()}</p>
-        {account === null ? (
+        {account === null && record !== null && record !== 'error' && record.deals.length > 0 ? (
+          <>
+            <History deals={record.deals} guest action={replay} />
+            <div data-testid="profile-sign-in" {...stylex.props(styles.stack)}>
+              <p {...stylex.props(typography.appText, styles.text)}>{m.history_guest_keep()}</p>
+              <div>
+                <SignInButton mode="modal">
+                  <Btn testId="profile-sign-in-go" size="lg" onClick={() => track('sign_in_clicked', { at: 'profile' })}>{m.auth_sign_in()}</Btn>
+                </SignInButton>
+              </div>
+            </div>
+          </>
+        ) : account === null && record !== null ? (
           <div data-testid="profile-sign-in">
             <SignInButton mode="modal">
               <Btn testId="profile-sign-in-go" size="lg" onClick={() => track('sign_in_clicked', { at: 'profile' })}>{m.profile_sign_in()}</Btn>
@@ -63,7 +97,10 @@ export function ProfilePage() {
             </div>
           </Panel>
         ) : (
-          <Record deals={record.deals} notes={record.notes} />
+          <>
+            <History deals={record.deals} action={replay} />
+            <Record deals={record.deals} notes={record.notes} />
+          </>
         )}
       </section>
     </div>
@@ -99,6 +136,38 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
       </Panel>
       <Weeks weeks={weeksOf(deals)} notes={notes} />
     </>
+  )
+}
+
+/** How many games the history shows at first, and more at each ask: an account has hundreds. */
+const HISTORY_PAGE = 20
+
+/** Every game, newest first, each with its way to be played again (SKATGO-182, the human: 「历史可以放在打开的页面的顶部，默认
+ *  折叠（不登录时，那就不折叠，因为就这一个）」): an account's folded behind one line, as the earlier weeks are; a guest's open. */
+function History({ deals, guest = false, action }: { deals: ProfileDeal[]; guest?: boolean; action: (d: ProfileDeal) => ReactNode }) {
+  const [open, setOpen] = useState(guest)
+  const [shown, setShown] = useState(HISTORY_PAGE)
+  const newest = [...deals].reverse()
+  const Chevron = open ? ChevronUp : ChevronDown
+  return (
+    <Panel>
+      <section data-testid="profile-history" data-open={open} {...stylex.props(styles.stack)}>
+        {guest ? (
+          <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.history_title({ count: deals.length })}</h2>
+        ) : (
+          <button type="button" data-testid="profile-history-toggle" aria-expanded={open} onClick={() => setOpen(!open)} {...stylex.props(typography.appBtnStrong, styles.more)}>
+            <span>{m.history_all({ count: deals.length })}</span>
+            <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+          </button>
+        )}
+        {open ? <DealRows deals={newest.slice(0, shown)} action={action} /> : null}
+        {open && newest.length > shown ? (
+          <div>
+            <Btn testId="profile-history-more" tone="quiet" onClick={() => setShown(shown + HISTORY_PAGE)}>{m.history_more()}</Btn>
+          </div>
+        ) : null}
+      </section>
+    </Panel>
   )
 }
 
@@ -314,6 +383,15 @@ const styles = stylex.create({
   zero: { stroke: color.slate },
   curve: { fill: 'none', stroke: color.info, strokeLinejoin: 'round' },
   point: { stroke: color.info },
+  // A game's way to be played again (SKATGO-182): a link in its date's line.
+  replay: {
+    color: color.info,
+    textDecoration: 'underline',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focusSm,
+    outlineColor: color.info,
+  },
+  replayButton: { padding: 0, borderWidth: 0, backgroundColor: 'transparent', cursor: 'pointer' },
   // The line that opens the earlier weeks (SKATGO-169): the white card's whole width, nothing of a button's look.
   more: {
     display: 'flex',

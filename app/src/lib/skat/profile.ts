@@ -24,9 +24,22 @@ export type Played = {
 export type ProfileDeal = {
   day: string
   source: 'daily' | 'free'
+  /** Which deal it was, so it can be played again (SKATGO-182): `free:<pool>:<deal>:<start>`, or
+   *  `daily:<day>:<size>:<deal>` for a tournament's (size 1, the deal of the day). */
+  key: string
   mine: Played
   /** The AI's game from the same seat; null for a tournament day dealt before it played them. */
   ai: Played | null
+}
+
+/** A record deal's key read (SKATGO-182): a free deal, as the service names it, or a tournament's deal by its day, its
+ *  tournament's size and its number in it. */
+export type DealKey = { kind: 'free'; game: string } | { kind: 'daily'; day: string; size: number; deal: number }
+
+export function dealKeyOf(key: string): DealKey | null {
+  if (/^free:[^:\s]{1,100}:\d{1,7}:\d{1,15}$/.test(key)) return { kind: 'free', game: key }
+  const d = /^daily:(\d{4}-\d{2}-\d{2}):(\d{1,2}):(\d{1,2})$/.exec(key)
+  return d ? { kind: 'daily', day: d[1], size: Number(d[2]), deal: Number(d[3]) } : null
 }
 
 /** A game against the table: the player's score minus each opponent's. */

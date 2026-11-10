@@ -1,27 +1,23 @@
+import { anonOf, guestCookie, guestDevice, newDevice } from '~/lib/guest'
 import { signedInUser } from '~/lib/session'
 
 // POST /api/daily/state, /act, /name, /board, /review and /xp — the daily tournament's only way in from the
 // browser (SKATGO-35, SKATGO-36: a finished player's nickname, and the leaderboard; SKATGO-79: a finished
 // deal's replay with SkatZero's card wherever the player's was not; SKATGO-172: the XP board, everyone's; SKATGO-128:
-// /profile, an account's record of play). The tournament itself runs in the
+// /profile, the record of play — an account's, or since SKATGO-182 a guest's own games). The tournament itself runs in the
 // multiplayer service, which owns the cards and the scores; this handler only says who is playing and
 // passes the request on with the service's key.
 //
 // Playing needs an account (SKATGO-123, the human: 「要求参加锦标赛必须登录」): opening the day's deals or making a
 // move as a guest is refused with 401; looking — the day's status, the boards — stays open to everyone.
 //
-// Who is playing: the signed-in account, or else this device — a random id in an httpOnly cookie,
-// stored at the service only as its hash. The cookie is strictly necessary and nothing else: it is
-// set only when a guest actually starts the day's deals, never for looking at /daily, so the site
-// needs no consent banner for it (the human, 2026-10-01). When someone signs in with a device entry
-// for today, that entry moves to the account (the service decides whether it may).
+// Who is playing: the signed-in account, or else this device (`lib/guest.ts`). When someone signs in on a device that
+// played as a guest, the device's games go to the account: today's entry moves (the service decides whether it may),
+// and every game of the device counts as the account's (SKATGO-182).
 //
 // Wired in src/server.ts before the page router: it is not a page.
 
-const COOKIE = 'skatgo_daily'
-const COOKIE_PATH = '/api/daily'
-/** 400 days, the longest a browser keeps a cookie. */
-const COOKIE_MAX_AGE = 400 * 24 * 60 * 60
+const PREFIX = '/api/daily'
 const OPS = new Set(['state', 'act', 'name', 'nick', 'board', 'review', 'xp', 'profile', 'share', 'shared', 'practice-new', 'practice-act', 'practice-review', 'talk'])
 /** The shared deal of the day's operations (SKATGO-132), answered by the service's /share routes: the player's code
  *  for today's finished deal; what a code shares; a past day's deal played as practice — or today's, played again by
@@ -72,16 +68,13 @@ export function callDaily(path: string, payload: object): Promise<Response> | nu
   })
 }
 
-function deviceId(request: Request): string | null {
-  const found = (request.headers.get('cookie') ?? '').split(';').map((c) => c.trim().split('=')).find(([name]) => name === COOKIE)
-  return found && /^[a-f0-9]{64}$/.test(found[1] ?? '') ? found[1] : null
-}
-
-const hex = (bytes: ArrayBuffer | Uint8Array) => Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, '0')).join('')
+/** The asks after which a signed-in device's guest games go to the account (SKATGO-182): the day's page and boards, and
+ *  the front page's XP board and progress, so they count from the first page after signing in. */
+const CLAIMING = new Set(['state', 'board', 'xp', 'profile'])
 
 export async function handleDaily(request: Request): Promise<Response> {
   if (request.method !== 'POST') return json(405, { error: 'POST only' })
-  const op = new URL(request.url).pathname.slice(`${COOKIE_PATH}/`.length)
+  const op = new URL(request.url).pathname.slice(`${PREFIX}/`.length)
   if (!OPS.has(op)) return json(404, { error: 'not found' })
   if (!process.env.MULTIPLAYER_URL || !process.env.MULTIPLAYER_ADMISSION_KEY) return json(503, { error: 'unavailable' })
 
@@ -94,9 +87,9 @@ export async function handleDaily(request: Request): Promise<Response> {
   // The player is this handler's to name, never the browser's.
   if (!body || typeof body !== 'object' || Array.isArray(body) || 'player' in body) return json(400, { error: 'invalid_request' })
 
-  const known = deviceId(request)
-  const device = known ?? hex(crypto.getRandomValues(new Uint8Array(32)))
-  const anon = `anon:${hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(device)))}`
+  const known = guestDevice(request)
+  const device = known ?? newDevice()
+  const anon = await anonOf(device)
   const userId = await signedInUser(request)
   // Opening the deals (state with `open`) or making a move is playing; anything else only looks. The deal of the day
   // (size 1) a guest may play too (SKATGO-131, the human: 游客能打); the tournament of six needs an account.
@@ -109,7 +102,9 @@ export async function handleDaily(request: Request): Promise<Response> {
   // today's deal played again, which only whoever finished it may (SKATGO-177) — the player named here, never by the page.
   if (op in SHARE_PATHS) {
     if (op === 'share' && !player) return json(409, { error: 'not_finished' })
-    const payload = op === 'share' ? { player } : op === 'practice-new' ? { day: (body as { day?: unknown }).day, ...(player ? { player } : {}) } : body
+    // A practice game names its day, and from the record of play (SKATGO-182) which tournament's deal it is.
+    const { day, size, deal } = body as { day?: unknown; size?: unknown; deal?: unknown }
+    const payload = op === 'share' ? { player } : op === 'practice-new' ? { day, ...(size === undefined ? {} : { size, deal }), ...(player ? { player } : {}) } : body
     try {
       const upstream = await callShare(SHARE_PATHS[op], payload)!
       return new Response(await upstream.text(), { status: upstream.status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
@@ -121,20 +116,20 @@ export async function handleDaily(request: Request): Promise<Response> {
   // Lina's and Noah's talk is about the asker's own deal (SKATGO-142): nobody's, nothing to say.
   if (op === 'talk' && !player) return json(200, { kind: null })
   // The nickname is an account's, set in the settings (SKATGO-126).
-  // So is the record of play (SKATGO-128).
-  if ((op === 'name' || op === 'nick' || op === 'profile') && !userId) return json(401, { error: 'sign_in_required' })
+  if ((op === 'name' || op === 'nick') && !userId) return json(401, { error: 'sign_in_required' })
+  // A guest's record of play is the games of this device (SKATGO-182); a device that never played has none.
+  if (op === 'profile' && !userId && !known) return json(200, { deals: [], notes: [] })
 
   const call = (path: string, payload: object) => callDaily(path, payload)!
 
   try {
-    if (userId && known && (op === 'state' || op === 'board')) await call('claim', { from: anon, to: `user:${userId}` })
+    if (userId && known && CLAIMING.has(op)) await call('claim', { from: anon, to: `user:${userId}` })
     const upstream = await call(op, { ...body, player })
     const headers: Record<string, string> = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
     // A guest without the cookie who only looks is a stranger the service has never seen: "not
-    // started", and no cookie. The id is kept only once a guest's play has been accepted.
-    if (!known && !userId && playing && upstream.ok) {
-      headers['set-cookie'] = `${COOKIE}=${device}; Path=${COOKIE_PATH}; Max-Age=${COOKIE_MAX_AGE}; HttpOnly; Secure; SameSite=Lax`
-    }
+    // started", and no cookie. The id is kept only once a guest's play has been accepted. A known one is set again for
+    // all of /api, so free play keeps the same guest's games (SKATGO-182).
+    if (known || (!userId && playing && upstream.ok)) headers['set-cookie'] = guestCookie(device)
     return new Response(await upstream.text(), { status: upstream.status, headers })
   } catch {
     return json(503, { error: 'unavailable' })

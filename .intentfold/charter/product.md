@@ -165,9 +165,18 @@ deals (「30副不行」); the last day stands against the days before, better o
 deals, also under a finished tournament, as the reason to come back (「我主要想让这个做为一个留存点」). A week can have its
 analysis on the same page (「本周ai分析加上到档案页，每周一个」): only what mattered that week, as many points as there were,
 and a conclusion (「不一定是四条吧，为啥这么死板」). While players are few it is written by hand from the week's deals, for whom
-the human names (「挑重点，目前用户少，可以手动做……就做我和mark的」), in English and German; a week without one shows none. It is the player's own: no one else sees it, and a guest is asked to sign in.
-The ids one person plays under count as one, as on the XP board. Free play stays free and needs no account; only
-an account's deals are recorded. A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
+the human names (「挑重点，目前用户少，可以手动做……就做我和mark的」), in English and German; a week without one shows none. It is the player's own: no one else sees it.
+The ids one person plays under count as one, as on the XP board. Free play stays free and needs no account. A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
+
+A guest's games are kept too (SKATGO-182, the human: 「游客存档，登录后合并进账号」): every free deal and deal of the day a guest
+finishes on a device, from SKATGO-182 on, under that device. Signing in on the device takes them all into the account —
+its XP, win rate and record of play — while the past days' boards stay as they were. The record's page starts with every
+game, newest first (「历史可以放在打开的页面的顶部，默认折叠（不登录时，那就不折叠，因为就这一个）」): folded for an account, whose
+record follows unchanged (「登录了就和当前一样」); open for a guest, whose games of the device are all they have there, with the
+sign-in that keeps them. The front page's "My progress" is the way in (「我建议my progress作为入口，没登录就显示打的牌的历史列表」):
+for a guest who has played, their games listed. Each game can be played again (「可以replay，不是复盘，就是让该人再打一盘，就如同正规的
+free play的replay，不计入任何分。但是呢，想点此处的复牌，必须登录」): the same cards against the same AI, counted nowhere — an account's
+only; a guest signs in first.
 
 Private tables at `/with-friends` (SKATGO-61) are rooms since SKATGO-163 (the human: 「一个人开一个房间，可以打2个ai。另一个人
 可以加入进来，需要6位数字邀请码，是房间号。还能再加入一个人，替换掉ai。如果三人满了，输入房间号就不能再加人了」, 「用同类游戏的最常见的实践，

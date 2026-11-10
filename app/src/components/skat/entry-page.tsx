@@ -19,6 +19,7 @@ import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { DealLines } from './deal-history'
 import { XpBoard } from './xp-board'
 import { PlayingCard } from './playing-card'
 import { Btn } from './ui'
@@ -109,11 +110,19 @@ function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | 
   )
 }
 
-/** The progress card: for an account a link to the record of play with its curve; for a guest what signing in
- *  keeps, and the sign-in in the middle (the human: 「progress如果用户没登录，就要显示登录后保存你的表现记录以及ai分析，中间放个
- *  登录按钮」). */
+/** The progress card: for an account a link to the record of play with its curve; for a guest who has played, the same
+ *  link with their games listed, newest first, and that signing in keeps them (SKATGO-182, the human: 「我建议my progress作为
+ *  入口，没登录就显示打的牌的历史列表，登录了就和当前一样」); for a guest who has not, what signing in keeps, and the sign-in in
+ *  the middle (the human: 「progress如果用户没登录，就要显示登录后保存你的表现记录以及ai分析，中间放个登录按钮」). */
 function ProgressCard() {
   const account = useAccount()
+  const [games, setGames] = useState<ProfileDeal[] | null>(null)
+  useEffect(() => {
+    if (account !== null) return
+    let live = true
+    void dailyProfile().then((r) => { if (live && !isError(r)) setGames(r.deals) })
+    return () => { live = false }
+  }, [account])
   // As the XP board's title beside it, with the record of play's icon from the account menu (SKATGO-128).
   const head = (
     <span {...stylex.props(styles.whiteHead)}>
@@ -121,6 +130,17 @@ function ProgressCard() {
       <ChartLine aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.whiteIcon)} />
     </span>
   )
+  if (account === null && games?.length) {
+    return (
+      <Link to="/profile" data-testid="entry-card" data-section="progress" data-guest="true" data-games={games.length} {...stylex.props(styles.long, styles.white, styles.lift, styles.progress, styles.listed)}>
+        {head}
+        <div {...stylex.props(styles.history)}>
+          <DealLines deals={[...games].reverse().slice(0, HOME_GAMES)} />
+        </div>
+        <p {...stylex.props(typography.meta, styles.guestKeep)}>{m.home_progress_keep()}</p>
+      </Link>
+    )
+  }
   if (account === null) {
     return (
       <div data-testid="entry-card" data-section="progress" data-guest="true" {...stylex.props(styles.long, styles.white, styles.progress)}>
@@ -141,6 +161,9 @@ function ProgressCard() {
     </Link>
   )
 }
+
+/** How many of a guest's games the card lists, scrolling inside it. */
+const HOME_GAMES = 20
 
 /** A number with its sign, a true minus. */
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
@@ -351,6 +374,11 @@ const styles = stylex.create({
   // A guest's progress card: the line and the sign-in in the middle of what the card has left.
   guest: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: space.x12, flexGrow: 1, textAlign: 'center' },
   guestText: { margin: 0, color: color.slate, textWrap: 'balance' },
+  // A guest's games on the card (SKATGO-182): as the XP board's list, the first five in one column and the rest scrolling.
+  history: { flexGrow: 1, minHeight: 0, maxHeight: { default: null, [bp.cards]: dims.xpListNarrow }, overflowY: 'auto' },
+  guestKeep: { margin: 0, flexShrink: 0, color: color.slate },
+  // The card with a guest's games takes the row's height as the XP board does, its list scrolling, never sizing the row.
+  listed: { height: { default: 0, [bp.cards]: 'auto' }, minHeight: { default: '100%', [bp.cards]: 0 } },
   more: {
     marginTop: { default: space.x32, [bp.phone]: space.x24 },
     display: 'grid',

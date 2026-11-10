@@ -260,7 +260,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     made it navy) and with no AI tag (SKATGO-138, 「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」), a single day as its dot; framed lightly, no larger: the first
     and the last day under it (`meta`, slate) (「最好上面带一些日期……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
     Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
-    保存你的表现记录以及ai分析，中间放个登录按钮」); and the XP
+    保存你的表现记录以及ai分析，中间放个登录按钮」) — a guest who has played sees instead, in the account's card's shape and link
+    (SKATGO-182, 「没登录就显示打的牌的历史列表」), their games one line each, newest first — the day (`meta`, slate), what happened
+    (`appText`, navy, cut with an ellipsis), their score (`appBtnStrong`) over a `hairline` — scrolling as the XP board's list,
+    the first five in one column, and under them "Melde dich an, um sie zu behalten." (`meta`, slate); and the XP
     board (`xp-board.tsx`, SKATGO-172, in the Elo board's place, size and behaviour: 「这个卡片大小规格行为，还和当前的elo卡片一样」) —
     its title with a circled question mark (`info`) opening how XP is earned in a `Modal` (`XpHow`: one line, the five
     tiers in a table, one line on the own game's +2, one line on the win rate); the title "XP & win rate" / "XP & Gewinnquote", naming
@@ -417,9 +420,20 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   scored and ranked; "Private Tische", how a table is opened and played. Each section ends in plain `info` links to
   where it is played or learnt.
 - **The record of play** (`profile-page.tsx`, SKATGO-128) is a sub-page on the grey page in the reading column,
-  noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest a `go` "Anmelden und Profil ansehen" opening
-  Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to free play.
-  Otherwise a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt
+  noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest who has not played a `go` "Anmelden und Profil
+  ansehen" opening Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to
+  free play. Then every game (SKATGO-182, 「历史可以放在打开的页面的顶部，默认折叠（不登录时，那就不折叠，因为就这一个）」) in a white
+  card: for an account folded behind "Alle deine Spiele (412)" and a chevron, as the earlier weeks are; for a guest open
+  under "Deine Spiele (5)" (`optionTitle`), followed by one line on what signing in keeps and the `go` "Anmelden". The games
+  stand in the columns of "Du gegen die KI" (`versusColumns`), its `Who` tags heading the two scores once; a row a game,
+  newest first, over a `hairline`: what happened from the player's seat in the result's words ("Du hast Grand gewonnen",
+  "Lina hat Kreuz ♣ verloren", "Eingepasst", `appText`, navy), under it where and when ("Freies Spiel · 10. Nov.", `meta`,
+  slate) and "Nochmal" in `info`, underlined, which plays it again — for a guest opening Clerk's sign-in first
+  (「想点此处的复牌，必须登录」), the game going on once signed in; the player's score (`appBtnStrong`) and the AI's (`appText`),
+  signed, never `good` / `bad`. Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
+  `/replay` plays the game again as `/daily/replay` does: the full-screen table, counted nowhere, its result's foot "Dieses
+  Spiel nochmal spielen", its close back to the profile; a free deal with free play's power-ups.
+  Otherwise, for an account, a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt
   −22 pro Spiel gegen die KI, davor −31: ↑ besser als zuvor", → or ↓, in navy, never `good` / `bad`); then a white card,
   "Du gegen die AI" (SKATGO-169, the human: 「profile里应该显示你这个表格，然后对手就是AI」): under the You and AI tags, for the same
   cards, the win rate, as declarer, how often declarer and as defender, each a whole percent (`appBtnStrong`) over what it

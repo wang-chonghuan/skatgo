@@ -42,13 +42,14 @@ export function dealLine(d: ProfileDeal): string {
 export function modeOf(d: ProfileDeal): string {
   const key = dealKeyOf(d.key)
   if (key?.kind === 'daily') return key.size === DEAL_OF_DAY ? m.history_dod() : m.history_tournament()
-  return m.nav_header_free()
+  return m.history_free()
 }
 
 const dayName = (day: string) => new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${day}T00:00:00Z`))
 
-/** The record's rows, newest first, laid out as "You vs. the AI" beside them (SKATGO-169): what happened, and under it where
- *  and when and the way to play it again (`action`); the player's score and the AI's in two columns under their tags. */
+/** The record's rows, newest first, laid out as "You vs. the AI" beside them (SKATGO-169): what happened, under it where
+ *  and when, and under that the way to play it again (`action`); the player's score and the AI's in two columns under
+ *  their tags. */
 export function DealRows({ deals, action }: { deals: ProfileDeal[]; action?: (d: ProfileDeal) => ReactNode }) {
   return (
     <div data-testid="history-rows" role="table" {...stylex.props(styles.table)}>
@@ -61,10 +62,8 @@ export function DealRows({ deals, action }: { deals: ProfileDeal[]; action?: (d:
         <div key={d.key} role="row" data-testid="history-row" data-key={d.key} {...stylex.props(styles.contents)}>
           <div role="cell" {...stylex.props(styles.cell, styles.main)}>
             <span data-testid="history-what" {...stylex.props(typography.appText, styles.what)}>{dealLine(d)}</span>
-            <span {...stylex.props(typography.meta, styles.meta)}>
-              {`${modeOf(d)} · ${dayName(d.day)}`}
-              {action ? <> · {action(d)}</> : null}
-            </span>
+            <span {...stylex.props(typography.meta, styles.meta)}>{`${modeOf(d)} · ${dayName(d.day)}`}</span>
+            {action ? <span {...stylex.props(styles.action)}>{action(d)}</span> : null}
           </div>
           <span role="cell" data-testid="history-you" {...stylex.props(typography.appBtnStrong, styles.cell, styles.number)}>{signed(d.mine.scores[0])}</span>
           <span role="cell" data-testid="history-ai" {...stylex.props(typography.appText, styles.cell, styles.number)}>{d.ai ? signed(d.ai.scores[0]) : '–'}</span>
@@ -98,6 +97,7 @@ const styles = stylex.create({
   main: { display: 'flex', flexDirection: 'column', gap: space.x2, minWidth: 0, paddingInlineEnd: space.x8 },
   what: { color: color.navy },
   meta: { color: color.slate },
+  action: { display: 'flex', paddingTop: space.x2 },
   number: { color: color.navy, textAlign: 'end', fontVariantNumeric: 'tabular-nums' },
   // On the card: as the XP board's list beside it, the rows scrolling inside the card (SKATGO-172).
   lines: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },

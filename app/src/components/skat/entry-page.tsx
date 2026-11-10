@@ -131,14 +131,19 @@ function ProgressCard() {
     </span>
   )
   if (account === null && games?.length) {
+    // The sign-in stays on the card (「中间放个登录按钮」), beside its title; the games are the way to the record.
     return (
-      <Link to="/profile" data-testid="entry-card" data-section="progress" data-guest="true" data-games={games.length} {...stylex.props(styles.long, styles.white, styles.lift, styles.progress, styles.listed)}>
-        {head}
-        <div {...stylex.props(styles.history)}>
-          <DealLines deals={[...games].reverse().slice(0, HOME_GAMES)} />
+      <div data-testid="entry-card" data-section="progress" data-guest="true" data-games={games.length} {...stylex.props(styles.long, styles.white, styles.progress, styles.listed)}>
+        <div {...stylex.props(styles.guestHead)}>
+          {head}
+          <SignInButton mode="modal">
+            <Btn testId="entry-progress-sign-in" size="lg" onClick={() => track('sign_in_clicked', { at: 'home' })}>{m.auth_sign_in()}</Btn>
+          </SignInButton>
         </div>
-        <p {...stylex.props(typography.meta, styles.guestKeep)}>{m.home_progress_keep()}</p>
-      </Link>
+        <Link to="/profile" data-testid="entry-progress-games" {...stylex.props(styles.history, styles.games)}>
+          <DealLines deals={[...games].reverse().slice(0, HOME_GAMES)} />
+        </Link>
+      </div>
     )
   }
   if (account === null) {
@@ -376,7 +381,15 @@ const styles = stylex.create({
   guestText: { margin: 0, color: color.slate, textWrap: 'balance' },
   // A guest's games on the card (SKATGO-182): as the XP board's list, the first five in one column and the rest scrolling.
   history: { flexGrow: 1, minHeight: 0, maxHeight: { default: null, [bp.cards]: dims.xpListNarrow }, overflowY: 'auto' },
-  guestKeep: { margin: 0, flexShrink: 0, color: color.slate },
+  guestHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12, flexShrink: 0 },
+  // The games, the link to the record: no look of a link of their own, the focus ring when reached by keyboard.
+  games: {
+    textDecoration: 'none',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
   // The card with a guest's games takes the row's height as the XP board does, its list scrolling, never sizing the row.
   listed: { height: { default: 0, [bp.cards]: 'auto' }, minHeight: { default: '100%', [bp.cards]: 0 } },
   more: {

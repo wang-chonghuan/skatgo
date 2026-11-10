@@ -47,16 +47,16 @@ export function ProfilePage() {
   useEffect(() => {
     if (account && wanted && record && record !== 'error') void navigate({ to: '/replay', search: { deal: wanted } })
   }, [account, wanted, record])
-  // Played again from its row: a link in the date's line (`info`), for a guest Clerk's window first.
+  // Played again from its row: a link under its date (`info`), for a guest Clerk's window first.
   const replay = (d: ProfileDeal) =>
     account ? (
-      <Link to="/replay" search={{ deal: d.key }} data-testid="history-replay" {...stylex.props(typography.meta, styles.replay)}>{m.history_replay()}</Link>
+      <Link to="/replay" search={{ deal: d.key }} data-testid="history-replay" {...stylex.props(typography.link, styles.replay)}>{m.history_replay()}</Link>
     ) : (
       <SignInButton mode="modal">
         <button type="button" data-testid="history-replay" onClick={() => {
           setWanted(d.key)
           track('sign_in_clicked', { at: 'history_replay' })
-        }} {...stylex.props(typography.meta, typography.control, styles.replay, styles.replayButton)}>{m.history_replay()}</button>
+        }} {...stylex.props(typography.link, typography.control, styles.replay, styles.replayButton)}>{m.history_replay()}</button>
       </SignInButton>
     )
   return (
@@ -155,8 +155,8 @@ function History({ deals, guest = false, action }: { deals: ProfileDeal[]; guest
         {guest ? (
           <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.history_title({ count: deals.length })}</h2>
         ) : (
-          <button type="button" data-testid="profile-history-toggle" aria-expanded={open} onClick={() => setOpen(!open)} {...stylex.props(typography.appBtnStrong, styles.more)}>
-            <span>{m.history_all({ count: deals.length })}</span>
+          <button type="button" data-testid="profile-history-toggle" aria-expanded={open} onClick={() => setOpen(!open)} {...stylex.props(typography.optionTitle, styles.more)}>
+            <span>{m.history_title({ count: deals.length })}</span>
             <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
           </button>
         )}
@@ -383,7 +383,7 @@ const styles = stylex.create({
   zero: { stroke: color.slate },
   curve: { fill: 'none', stroke: color.info, strokeLinejoin: 'round' },
   point: { stroke: color.info },
-  // A game's way to be played again (SKATGO-182): a link in its date's line.
+  // A game's way to be played again (SKATGO-182): a link under its date.
   replay: {
     color: color.info,
     textDecoration: 'underline',

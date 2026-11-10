@@ -264,7 +264,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     登录，这个my progress卡片都显示这个，想点击，必须登录」), one line each, newest first: the ten cards as dealt, in a Grand's
     order, as text with each suit in its colour, a thin space apart (`meta`, navy, so ten fit on a phone; cut with an
     ellipsis should they not), and the score less the AI's on the
-    same cards (`appBtnStrong`), under a `meta` head, "Deine Karten" over the cards and "vs. KI" over the differences (「手牌列最好也加个列名」), over a `hairline` — scrolling as the XP board's list, the first five
+    same cards (`appBtnStrong`), under a `meta` head, "Deine Blätter, neueste zuerst" over the cards and "vs. KI" over the differences (「手牌列最好也加个列名」, then 「应该是你的手牌，最新的在最上面……禁止直译」), over a `hairline` — scrolling as the XP board's list, the first five
     in one column. An account's card is the link to the record; a guest's games open Clerk's sign-in first, then the record,
     and the same `go` "Anmelden" stands beside the title. (SKATGO-169's win rate, average and curve are gone from the card.)
     And the XP

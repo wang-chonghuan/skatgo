@@ -442,11 +442,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   counts (`meta`, slate), and the points per deal; a `meta` note that all-passed deals are left out of the percentages; under it,
   "Woher der Unterschied kommt" (`gapOf`): in the same game as the AI, the player's card points against its, per deal, and how much of the
   gap comes from not playing the same game — bidding and choice of game — each row left out where it says nothing; then a white
-  card, "Dein Niveau gegen die KI, Tag für Tag": the curve in SVG at the card's width (`profileChart` in
-  `constants.ts`), one `info` dot per day, the same size on every screen, on an `info` line — the day's average per
-  deal against the AI, judged against the whole table (`lib/skat/profile.ts`) — the zero line in `slate`, the highest
-  and lowest value beside it and each day's date under its dot in `meta`, every second, third … when more days than
-  fit, fewer on a phone (the human: 「一天一个点，为啥你的图上没显示几个点呢」), and a `meta` note on how to read it; then "Woche für Woche": the newest week's white card open and the
+  card, "Dein Niveau gegen die KI" (SKATGO-182, the human: 「这里的day by day去掉，然后曲线还换成那个平滑曲线」, 「应该是每个deal是
+  一个点，就像本来显示在首页卡片上的那个chart一样」): a point a deal, the average per deal against the AI over the latest 30 deals
+  up to it (`rollingByDeal`), drawn as the home card's line was — one smooth monotone cubic (`smooth-path.ts`), `progressCurve`
+  thick, in `info`, over a `hairline` zero line, no scale, a single deal as its dot — the first and the last day under it
+  and "Immer über die letzten 30 Spiele" between them (`meta`, slate), and a `meta` note on how to read it; then "Woche für Woche": the newest week's white card open and the
   rest behind a white card "Frühere Wochen (3)", a tap on it opening them (SKATGO-169, 「每周简评，只显示第一个，剩下的折叠」), a card per
   week with an analysis, newest first — "Woche vom 19. Okt.", its deals and average per deal, then the analysis as a
   forum text (`ForumBody`: its points as a list, each led in bold, and the bold "Fazit"), in the page's language (no per-day list, SKATGO-169: 「Per day 这个不用显示」). The line of the last day against before stands under a finished tournament's heading, with the link to the profile.

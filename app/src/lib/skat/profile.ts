@@ -173,6 +173,16 @@ export function rollingOf(deals: ProfileDeal[]): { day: string; perDeal: number 
 }
 
 /**
+ * The record of play's curve (SKATGO-182, the human: 「应该是每个deal是一个点，就像本来显示在首页卡片上的那个chart一样」): a point a deal
+ * the AI played too, oldest first — the average per deal against the AI over the latest `RECENT_DEALS` deals up to it, as
+ * the home card's line was, so it shows the player's direction rather than the chance of single deals.
+ */
+export function rollingByDeal(deals: ProfileDeal[]): { day: string; perDeal: number }[] {
+  const judged = deals.filter((d) => d.ai !== null)
+  return judged.map((d, i) => ({ day: d.day, perDeal: recent(judged.slice(0, i + 1)).perDeal }))
+}
+
+/**
  * The last day played against every day before it, per deal: better, worse, or the same within the noise — a
  * difference counts only beyond twice its standard error, from the spread of single deals. Null before a second day.
  */

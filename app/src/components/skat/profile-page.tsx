@@ -7,16 +7,17 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { Who } from './daily-comparison'
 import { DealRows } from './deal-history'
 import { ForumBody } from './forum-body'
+import { smoothPath } from './smooth-path'
 import { Btn, Panel, linkLook } from './ui'
 import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
-import { type ProfileDay, type ProfileDeal, type ProfileNote, type ProfileWeek, daysOf, gapOf, trendOf, versusAi, weeksOf } from '~/lib/skat/profile'
+import { type ProfileDeal, type ProfileNote, type ProfileWeek, RECENT_DEALS, daysOf, gapOf, rollingByDeal, trendOf, versusAi, weeksOf } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { icon, profileChart } from '../../theme/constants'
+import { icon, profileChart, progressCurve } from '../../theme/constants'
 import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
@@ -112,8 +113,6 @@ const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }) {
   const days = daysOf(deals)
   const trend = trendOf(deals)
-  const date = new Intl.DateTimeFormat(getLocale(), { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
-  const dayName = (day: string) => date.format(new Date(`${day}T00:00:00Z`))
   return (
     <>
       <div {...stylex.props(styles.stackTight)}>
@@ -130,8 +129,8 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
       <Panel>
         <div {...stylex.props(styles.stack)}>
           <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_curve_title()}</h2>
-          <Curve days={days} dayName={dayName} />
-          <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_curve_note()}</p>
+          <Curve deals={deals} />
+          <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_curve_note({ count: RECENT_DEALS })}</p>
         </div>
       </Panel>
       <Weeks weeks={weeksOf(deals)} notes={notes} />
@@ -288,60 +287,40 @@ function Weeks({ weeks, notes }: { weeks: ProfileWeek[]; notes: ProfileNote[] })
   )
 }
 
-/** Which of a date's two screens it shows on: a computer's, a phone's, both or neither. */
-const shownOn = (pc: boolean, phone: boolean) =>
-  pc && phone ? null : pc ? styles.hiddenPhone : phone ? styles.hiddenPc : styles.hidden
-
-/** One point per day, oldest on the left: the day's average per deal against the AI, on a line; a zero line, and
- *  each day's date under its point — every second, third … when there are more days than fit, fewer on a phone. A
- *  day with no deal the AI played has no point. */
-function Curve({ days, dayName }: { days: ProfileDay[]; dayName: (day: string) => string }) {
-  const { width, height, pad, dot, line, dates, datesPhone } = profileChart
-  const short = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'numeric', timeZone: 'UTC' })
-  const every = Math.ceil(days.length / dates)
-  const everyPhone = Math.ceil(days.length / datesPhone)
-  const known = days.flatMap((d) => (d.perDeal === null ? [] : [d.perDeal]))
-  const top = Math.max(0, ...known)
-  const bottom = Math.min(0, ...known)
+/** The curve as the home card's was (SKATGO-182, the human: 「曲线还换成那个平滑曲线」, 「应该是每个deal是一个点，就像本来显示在首页卡片上
+ *  的那个chart一样」): a point a deal, the average per deal against the AI over the latest deals up to it (`rollingByDeal`), as
+ *  one smooth line without scale over a zero line — a single deal as its dot — the first and the last day under it and how
+ *  many deals each point counts. */
+function Curve({ deals }: { deals: ProfileDeal[] }) {
+  const known = rollingByDeal(deals)
+  if (!known.length) return null
+  const { width, height, pad } = profileChart
+  const top = Math.max(0, ...known.map((p) => p.perDeal))
+  const bottom = Math.min(0, ...known.map((p) => p.perDeal))
   const span = top - bottom || 1
-  // The first and the last day at the curve's edges, so the dates under it stand under their points.
-  const x = (i: number) => (days.length > 1 ? (i * width) / (days.length - 1) : width / 2)
+  const x = (i: number) => (known.length > 1 ? pad + (i * (width - 2 * pad)) / (known.length - 1) : width / 2)
   const y = (v: number) => pad + ((top - v) * (height - 2 * pad)) / span
-  const points = days.flatMap((d, i) => (d.perDeal === null ? [] : [{ i, d }]))
+  const points = known.map((p, i) => ({ x: x(i), y: y(p.perDeal) }))
+  const short = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' })
+  const day = (d: string) => short.format(new Date(`${d}T00:00:00Z`))
+  const first = known[0].day
+  const last = known[known.length - 1].day
+  const window = Math.min(RECENT_DEALS, known.length)
   return (
     <div {...stylex.props(styles.stackTight)}>
-      <div {...stylex.props(styles.chart)}>
-        <div aria-hidden {...stylex.props(typography.meta, styles.scale)}>
-          <span>{signed(top)}</span>
-          <span>{signed(bottom)}</span>
-        </div>
-        <svg data-testid="profile-curve" role="img" aria-label={m.profile_curve_title()} viewBox={`0 0 ${width} ${height}`} {...stylex.props(styles.svg)}>
-          <line x1={pad} x2={width - pad} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
-          <polyline points={points.map((p) => `${x(p.i)},${y(p.d.perDeal!)}`).join(' ')} strokeWidth={line} vectorEffect="non-scaling-stroke" {...stylex.props(styles.curve)} />
-          {points.map((p) => (
-            // A dot of the same size on every screen, however far the curve is scaled: a round end of a line of no
-            // length, whose stroke does not scale.
-            <line key={p.d.day} data-testid="profile-point" data-day={p.d.day} data-per-deal={p.d.perDeal} x1={x(p.i)} x2={x(p.i)} y1={y(p.d.perDeal!)} y2={y(p.d.perDeal!)} strokeWidth={dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)}>
-              <title>{m.profile_point({ date: dayName(p.d.day), diff: signed(p.d.perDeal!), count: p.d.deals })}</title>
-            </line>
-          ))}
-        </svg>
-      </div>
-      <div {...stylex.props(styles.chart)}>
-        {/* As wide as the scale beside the curve, so the dates start where the curve does. */}
-        <div aria-hidden {...stylex.props(typography.meta, styles.scale, styles.scaleGhost)}>
-          <span>{signed(top)}</span>
-          <span>{signed(bottom)}</span>
-        </div>
-        <div aria-hidden data-testid="profile-dates" {...stylex.props(typography.meta, styles.dates, days.length === 1 && styles.datesOne)}>
-          {days.map((d, i) => (
-            <span key={d.day} {...stylex.props(styles.date0)}>
-              <span data-testid="profile-date" {...stylex.props(styles.dateText, shownOn(i % every === 0, i % everyPhone === 0))}>
-                {short.format(new Date(`${d.day}T00:00:00Z`))}
-              </span>
-            </span>
-          ))}
-        </div>
+      <svg data-testid="profile-curve" data-points={known.length} role="img" aria-label={m.profile_curve_title()} viewBox={`0 0 ${width} ${height}`} {...stylex.props(styles.svg)}>
+        <line x1={0} x2={width} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
+        {points.length > 1 ? (
+          <path data-testid="profile-line" d={smoothPath(points)} strokeWidth={progressCurve.line} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.curve)} />
+        ) : (
+          // One deal: its point alone, a round end of a line of no length.
+          <line data-testid="profile-point" x1={points[0].x} x2={points[0].x} y1={points[0].y} y2={points[0].y} strokeWidth={progressCurve.dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)} />
+        )}
+      </svg>
+      <div data-testid="profile-dates" {...stylex.props(typography.meta, styles.dates, known.length === 1 && styles.datesOne)}>
+        <span>{day(first)}</span>
+        {known.length > 1 ? <span>{m.home_progress_recent({ count: window })}</span> : null}
+        {first === last ? null : <span>{day(last)}</span>}
       </div>
     </div>
   )
@@ -380,8 +359,8 @@ const styles = stylex.create({
   chart: { display: 'flex', alignItems: 'stretch', gap: space.x8 },
   scale: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: color.slate, textAlign: 'end' },
   svg: { display: 'block', flexGrow: 1, minWidth: 0, width: '100%', height: 'auto', overflow: 'visible' },
-  zero: { stroke: color.slate },
-  curve: { fill: 'none', stroke: color.info, strokeLinejoin: 'round' },
+  zero: { stroke: color.hairline },
+  curve: { fill: 'none', stroke: color.info },
   point: { stroke: color.info },
   // A game's way to be played again (SKATGO-182): a link under its date.
   replay: {

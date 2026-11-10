@@ -16,7 +16,7 @@ import { type Policy, SKATZERO_COMMIT, viewOf } from './skatzero/policy'
 import { type SeatBidding, SKAT_PAIRS, seatBidding, skatOrHand } from './skatzero/bidding'
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, judgePlays, playsOf, raw, replayLog, reviewOf, skatzeroTurn } from './computers'
 import type { Store } from './store'
-import { playProfile } from './profile'
+import { type PoolDecks, playProfile } from './profile'
 import { xpBoard } from './xp'
 import { type BidLimit, lineFor, momentOf, TALK_KINDS, type TalkKind, verdictOf } from './talk'
 import { type DealPick, kindOf, pickOfDay } from './pick'
@@ -642,7 +642,7 @@ export async function dailyTalk(store: Store, policy: Policy, who: string, size:
 }
 
 /** The routes, behind the admission key. */
-export function dailyRoutes(store: Store, key: string, ready: () => boolean, policy: () => Policy | null) {
+export function dailyRoutes(store: Store, key: string, ready: () => boolean, policy: () => Policy | null, pool: () => PoolDecks | null = () => null) {
   const router = express.Router()
   router.use(express.json({ limit: '16kb' }))
   router.use((req, res, nextHandler) => {
@@ -684,7 +684,7 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
     return dailyBoard(store, i.player, i.day, i.size)
   }))
   // A signed-in player's record of play (SKATGO-128): every deal against the AI, the tournament's and free play's.
-  router.post('/profile', run(async body => playProfile(store, profileInput.parse(body).player)))
+  router.post('/profile', run(async body => playProfile(store, profileInput.parse(body).player, pool())))
   router.post('/xp', run(async body => xpBoard(store, xpInput.parse(body).player)))
   router.post('/talk', run(async body => {
     const i = talkInput.parse(body)

@@ -27,6 +27,8 @@ export type ProfileDeal = {
   /** Which deal it was, so it can be played again (SKATGO-182): `free:<pool>:<deal>:<start>`, or
    *  `daily:<day>:<size>:<deal>` for a tournament's (size 1, the deal of the day). */
   key: string
+  /** The player's ten cards as dealt, `C10` … (SKATGO-182); missing where the deal's cards are not kept. */
+  hand?: string[]
   mine: Played
   /** The AI's game from the same seat; null for a tournament day dealt before it played them. */
   ai: Played | null

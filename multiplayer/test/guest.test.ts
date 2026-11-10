@@ -89,6 +89,18 @@ test('guest games: kept under the device, taken into the account at sign-in, onc
   await dailyClaim(store, b, 'user:alice', now)
   assert.deepEqual(await idsOf(store, 'user:olena').then((ids) => ids.sort()), ['user:alice', 'user:olena', b, c].sort())
   assert.deepEqual((await playProfile(store, 'user:alice')).deals.map((d) => d.key).sort(), ['free:p:3:3', 'free:p:4:4'])
+  // Each game carries the player's ten cards as dealt (the human: 「每一行显示用户拿到了啥牌」): a free deal's from the pool it
+  // was dealt from, a tournament's from the day's deck; none from another pool.
+  const deck = 'CJ SJ HJ DJ CA CT CK CQ C9 C8 C7 SA ST SK SQ S9 S8 S7 HA HT HK HQ H9 H8 H7 DA DT DK DQ D9 D8 D7'
+  await store.pool.query('UPDATE daily_deals SET deals = jsonb_set(deals, $2, $3) WHERE day = $1',
+    ['2026-11-08', '{0}', JSON.stringify({ dealer: 0, deck: deck.split(' ').map((c) => ({ suit: c[0], rank: c[1] === 'T' ? '10' : c[1] })), benchmark: { summary: summary([60, 0, 0]), log: [] } })])
+  const pool = { version: 'p', deals: Array.from({ length: 5 }, () => ({ dealer: 0 as const, deck })) }
+  const withHands = (await playProfile(store, 'user:anna', pool)).deals
+  const hand = (key: string) => withHands.find((d) => d.key === key)?.hand
+  assert.equal(hand('free:p:1:1')?.length, 10)
+  assert.deepEqual(hand(`daily:2026-11-08:${DEAL_OF_DAY}:0`), hand('free:p:1:1'))
+  assert.equal(hand(`daily:${today}:${DEAL_OF_DAY}:0`), undefined)
+  assert.equal((await playProfile(store, 'user:anna', { ...pool, version: 'q' })).deals.find((d) => d.key === 'free:p:1:1')?.hand, undefined)
   // A device's own record never shows an account's: signed out on the device, its games only.
   assert.deepEqual((await playProfile(store, b)).deals.map((d) => d.key), ['free:p:3:3'])
 })

@@ -1,5 +1,5 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
-import { Link, useLoaderData } from '@tanstack/react-router'
+import { Link, useLoaderData, useNavigate } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { CalendarDays, ChartLine, Gavel, GraduationCap, Swords, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -7,13 +7,12 @@ import { useEffect, useState } from 'react'
 import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
 import type { Card } from '~/lib/skat/cards'
-import { type ProfileDeal, rollingOf, standingOf } from '~/lib/skat/profile'
+import type { ProfileDeal } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
-import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { icon, profileChart, progressCurve } from '../../theme/constants'
+import { icon } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
@@ -28,8 +27,8 @@ import { Btn } from './ui'
 // 一个是my progress……一个是 elo ranking」): the slogan, then the ways in — four colour cards two by two, each a link
 // with its icon over its title (the deal of the day, free play, the course, the bidding practice since SKATGO-149), and beside them two long
 // white cards: the XP board (SKATGO-172, where SKATGO-123's Elo board stood, on top since), and the player's
-// progress, its curve when there is one, leading to the record of play. Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
-// hero buttons, no lead, no link row: the cards are the page. Rendered on the server; the curve in the browser.
+// progress — the player's games, each its cards and the difference to the AI (SKATGO-182) — leading to the record of play. Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
+// hero buttons, no lead, no link row: the cards are the page. Rendered on the server; the games in the browser.
 export function EntryPage() {
   const { xp } = useLoaderData({ from: '/' })
   return (
@@ -110,19 +109,27 @@ function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | 
   )
 }
 
-/** The progress card: for an account a link to the record of play with its curve; for a guest who has played, the same
- *  link with their games listed, newest first, and that signing in keeps them (SKATGO-182, the human: 「我建议my progress作为
- *  入口，没登录就显示打的牌的历史列表，登录了就和当前一样」); for a guest who has not, what signing in keeps, and the sign-in in
- *  the middle (the human: 「progress如果用户没登录，就要显示登录后保存你的表现记录以及ai分析，中间放个登录按钮」). */
+/** The progress card (SKATGO-182, the human: 「每一行显示用户拿到了啥牌，以及和ai差几分，不管是否登录，这个my progress卡片都显示这个，
+ *  想点击，必须登录」): whoever has played sees their games, newest first, each its ten cards and the difference to the AI. For an
+ *  account the card is the link to the record of play; a guest's games open Clerk's sign-in first, then the record, and
+ *  the sign-in stands beside the title too. A guest who has not played sees what signing in keeps, and the sign-in in the
+ *  middle (the human: 「progress如果用户没登录，就要显示登录后保存你的表现记录以及ai分析，中间放个登录按钮」). */
 function ProgressCard() {
   const account = useAccount()
+  const navigate = useNavigate()
   const [games, setGames] = useState<ProfileDeal[] | null>(null)
+  /** A guest tapped their games: once signed in, and the record read — which takes the device's games in — the record. */
+  const [wanted, setWanted] = useState(false)
   useEffect(() => {
-    if (account !== null) return
+    if (account === undefined) return
     let live = true
+    setGames(null)
     void dailyProfile().then((r) => { if (live && !isError(r)) setGames(r.deals) })
     return () => { live = false }
   }, [account])
+  useEffect(() => {
+    if (account && wanted && games) void navigate({ to: '/profile' })
+  }, [account, wanted, games])
   // As the XP board's title beside it, with the record of play's icon from the account menu (SKATGO-128).
   const head = (
     <span {...stylex.props(styles.whiteHead)}>
@@ -130,8 +137,16 @@ function ProgressCard() {
       <ChartLine aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.whiteIcon)} />
     </span>
   )
+  const list = games?.length ? <DealLines deals={[...games].reverse().slice(0, HOME_GAMES)} /> : null
+  if (account) {
+    return (
+      <Link to="/profile" data-testid="entry-card" data-section="progress" data-games={games?.length ?? 0} {...stylex.props(styles.long, styles.white, styles.lift, styles.progress, styles.listed)}>
+        {head}
+        <div {...stylex.props(styles.history)}>{list}</div>
+      </Link>
+    )
+  }
   if (account === null && games?.length) {
-    // The sign-in stays on the card (「中间放个登录按钮」), beside its title; the games are the way to the record.
     return (
       <div data-testid="entry-card" data-section="progress" data-guest="true" data-games={games.length} {...stylex.props(styles.long, styles.white, styles.progress, styles.listed)}>
         <div {...stylex.props(styles.guestHead)}>
@@ -140,130 +155,37 @@ function ProgressCard() {
             <Btn testId="entry-progress-sign-in" size="lg" onClick={() => track('sign_in_clicked', { at: 'home' })}>{m.auth_sign_in()}</Btn>
           </SignInButton>
         </div>
-        <Link to="/profile" data-testid="entry-progress-games" {...stylex.props(styles.history, styles.games)}>
-          <DealLines deals={[...games].reverse().slice(0, HOME_GAMES)} />
-        </Link>
-      </div>
-    )
-  }
-  if (account === null) {
-    return (
-      <div data-testid="entry-card" data-section="progress" data-guest="true" {...stylex.props(styles.long, styles.white, styles.progress)}>
-        {head}
-        <div {...stylex.props(styles.guest)}>
-          <p {...stylex.props(typography.appText, styles.guestText)}>{m.home_progress_guest()}</p>
-          <SignInButton mode="modal">
-            <Btn testId="entry-progress-sign-in" size="lg" onClick={() => track('sign_in_clicked', { at: 'home' })}>{m.auth_sign_in()}</Btn>
-          </SignInButton>
-        </div>
+        <SignInButton mode="modal">
+          <div role="button" tabIndex={0} data-testid="entry-progress-games" onClick={() => {
+            setWanted(true)
+            track('sign_in_clicked', { at: 'home' })
+          }} onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              e.currentTarget.click()
+            }
+          }} {...stylex.props(styles.history, styles.games)}>
+            {list}
+          </div>
+        </SignInButton>
       </div>
     )
   }
   return (
-    <Link to="/profile" data-testid="entry-card" data-section="progress" {...stylex.props(styles.long, styles.white, styles.lift, styles.progress)}>
+    <div data-testid="entry-card" data-section="progress" data-guest="true" {...stylex.props(styles.long, styles.white, styles.progress)}>
       {head}
-      <Progress account={account} />
-    </Link>
-  )
-}
-
-/** How many of a guest's games the card lists, scrolling inside it. */
-const HOME_GAMES = 20
-
-/** A number with its sign, a true minus. */
-const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
-
-/** The player's standing on the progress card (SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」): over the latest
- *  deals, the win rate — plain to read, but on real records no measure of a player: it swings, and players of quite different
- *  results stand alike — and the average per deal against the AI, which tells them apart, as the curve under them, without
- *  scale. An account's only, read in the browser; nothing for a guest or before the first deal. */
-function Progress({ account }: { account: string | undefined }) {
-  const [deals, setDeals] = useState<ProfileDeal[] | null>(null)
-  useEffect(() => {
-    if (!account) return
-    let live = true
-    void dailyProfile().then((r) => { if (live && !isError(r)) setDeals(r.deals) })
-    return () => { live = false }
-  }, [account])
-  const standing = deals && standingOf(deals)
-  if (!deals || !standing) return null
-  const known = rollingOf(deals)
-  const { width, height, pad } = profileChart
-  const top = Math.max(0, ...known.map((p) => p.perDeal))
-  const bottom = Math.min(0, ...known.map((p) => p.perDeal))
-  const span = top - bottom || 1
-  const x = (i: number) => (known.length > 1 ? pad + (i * (width - 2 * pad)) / (known.length - 1) : width / 2)
-  const y = (v: number) => pad + ((top - v) * (height - 2 * pad)) / span
-  const points = known.map((p, i) => ({ x: x(i), y: y(p.perDeal) }))
-  const first = known[0].day
-  const last = known[known.length - 1].day
-  return (
-    <div {...stylex.props(styles.chart)}>
-      <div data-testid="entry-progress-figures" data-deals={standing.deals} {...stylex.props(styles.figures)}>
-        <span {...stylex.props(styles.figure)}>
-          <span data-testid="entry-progress-win" {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{standing.winRate === null ? '–' : `${standing.winRate}%`}</span>
-          <span {...stylex.props(typography.meta, styles.figureLabel)}>{m.home_progress_win()}</span>
-        </span>
-        <span {...stylex.props(styles.figure)}>
-          <span data-testid="entry-progress-ai" {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{signed(standing.perDeal)}</span>
-          <span {...stylex.props(typography.meta, styles.figureLabel)}>{m.home_progress_ai()}</span>
-        </span>
-      </div>
-      <div {...stylex.props(styles.drawing)}>
-      <div {...stylex.props(styles.plotRow)}>
-        <span {...stylex.props(styles.plot)}>
-        <svg data-testid="entry-progress-curve" aria-hidden="true" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" {...stylex.props(styles.curve)}>
-      <line x1={0} x2={width} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
-      {points.length > 1 ? (
-        <path data-testid="entry-progress-line" d={smoothPath(points)} strokeWidth={progressCurve.line} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.line)} />
-      ) : (
-        // One day: its point alone, a round end of a line of no length.
-        <line data-testid="entry-progress-dot" x1={points[0].x} x2={points[0].x} y1={points[0].y} y2={points[0].y} strokeWidth={progressCurve.dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)} />
-      )}
-        </svg>
-        </span>
-      </div>
-      <div data-testid="entry-progress-dates" {...stylex.props(typography.meta, styles.dates, first === last && standing.deals === 1 && styles.datesOne)}>
-        <span>{shortDay(first)}</span>
-        {/* How many deals the figures and each point count; nothing to say of one. */}
-        {standing.deals > 1 ? <span data-testid="entry-progress-window">{m.home_progress_recent({ count: standing.deals })}</span> : null}
-        {first === last ? null : <span>{shortDay(last)}</span>}
-      </div>
+      <div {...stylex.props(styles.guest)}>
+        <p {...stylex.props(typography.appText, styles.guestText)}>{m.home_progress_guest()}</p>
+        <SignInButton mode="modal">
+          <Btn testId="entry-progress-sign-in" size="lg" onClick={() => track('sign_in_clicked', { at: 'home' })}>{m.auth_sign_in()}</Btn>
+        </SignInButton>
       </div>
     </div>
   )
 }
 
-/** A day as the curve's dates show it: "12 Oct" / "12. Okt.". */
-const shortDay = (day: string) => new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${day}T00:00:00Z`))
-
-/** A smooth line through the days' points (SKATGO-136, the human: 「我希望平缓的」): a monotone cubic (Fritsch–Carlson), so
- *  between two days it never rises above or falls below them, and every day's point is on it. */
-function smoothPath(points: { x: number; y: number }[]): string {
-  const n = points.length
-  const d = points.slice(1).map((p, i) => (p.y - points[i].y) / (p.x - points[i].x))
-  const m = points.map((_, i) => (i === 0 ? d[0] : i === n - 1 ? d[n - 2] : d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2))
-  for (let i = 0; i < n - 1; i++) {
-    if (d[i] === 0) {
-      m[i] = 0
-      m[i + 1] = 0
-      continue
-    }
-    const a = m[i] / d[i]
-    const b = m[i + 1] / d[i]
-    const r = a * a + b * b
-    if (r > 9) {
-      m[i] = (3 / Math.sqrt(r)) * a * d[i]
-      m[i + 1] = (3 / Math.sqrt(r)) * b * d[i]
-    }
-  }
-  return points.reduce((path, p, i) => {
-    if (i === 0) return `M${p.x},${p.y}`
-    const q = points[i - 1]
-    const h = (p.x - q.x) / 3
-    return `${path} C${q.x + h},${q.y + m[i - 1] * h} ${p.x - h},${p.y - m[i] * h} ${p.x},${p.y}`
-  }, '')
-}
+/** How many games the card lists, scrolling inside it. */
+const HOME_GAMES = 20
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
 const DAILY_ART = [card('H', 'A'), card('H', '10'), card('H', 'K')]
@@ -384,6 +306,7 @@ const styles = stylex.create({
   guestHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12, flexShrink: 0 },
   // The games, the link to the record: no look of a link of their own, the focus ring when reached by keyboard.
   games: {
+    cursor: 'pointer',
     textDecoration: 'none',
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focus,
@@ -408,23 +331,4 @@ const styles = stylex.create({
   // The third picture card on PC: in the wide third column, half of it — as wide as one colour card (both a quarter of
   // the row less its gaps); under `bp.cards` it takes the next free place.
   third: { gridColumn: { default: dims.homeLongColumn, [bp.cards]: 'auto' }, width: { default: dims.half, [bp.cards]: 'auto' } },
-  // The curve takes what the card has left, never sizing the card itself: no taller than the colour cards' row on PC.
-  // The curve and its frame take what the card has left, never sizing the card: no taller than the colour cards' row on
-  // PC, `homeCurve` at the least where the card is as tall as its content.
-  // The figures beside the curve in the card's fixed height, over it on a phone, where the card takes the height it needs
-  // (SKATGO-169).
-  chart: { display: 'flex', flexDirection: { default: 'row', [bp.phone]: 'column' }, gap: { default: space.x24, [bp.phone]: space.x12 }, flexGrow: 1, minHeight: dims.homeCurve },
-  figures: { display: 'flex', flexDirection: { default: 'column', [bp.phone]: 'row' }, justifyContent: { default: 'center', [bp.phone]: 'flex-start' }, flexShrink: 0, gap: { default: space.x8, [bp.phone]: space.x24 } },
-  figure: { display: 'flex', flexDirection: 'column' },
-  figureLabel: { color: color.slate },
-  drawing: { display: 'flex', flexDirection: 'column', gap: space.x4, flexGrow: 1, minWidth: 0 },
-  plotRow: { display: 'flex', gap: space.x8, flexGrow: 1, minHeight: { default: 0, [bp.phone]: dims.homeCurve } },
-  // The drawing fills its box and has no size of its own, so the box, not the drawing's proportions, sets the height.
-  plot: { position: 'relative', flexGrow: 1, minWidth: 0 },
-  curve: { position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%' },
-  dates: { display: 'flex', justifyContent: 'space-between', color: color.slate },
-  datesOne: { justifyContent: 'center' },
-  zero: { stroke: color.hairline },
-  line: { fill: 'none', stroke: color.info },
-  point: { stroke: color.info },
 })

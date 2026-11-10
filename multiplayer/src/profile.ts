@@ -1,4 +1,7 @@
+import { deal } from '../../app/src/lib/skat/game'
+import type { Card } from '../../app/src/lib/skat/cards'
 import type { DealSummary } from '../../app/src/lib/skat/tournament'
+import { card } from './computers'
 import type { Played, ProfileDeal, ProfileNote } from '../../app/src/lib/skat/profile'
 import type { Store } from './store'
 
@@ -44,7 +47,13 @@ export async function idsOf(store: Store, who: string): Promise<string[]> {
  * were played against the same AI on the same cards (the human: 「他的全档案必须建立好」) — and free play's. The ids `player_aliases` names as one person count as that person,
  * as on the Elo board. A tournament deal of a day dealt before the AI played it has no AI score.
  */
-export async function playProfile(store: Store, who: string): Promise<{ deals: ProfileDeal[]; notes: ProfileNote[] }> {
+/** The player's ten cards of a deal, as `C10` …, the dealer and deck known (SKATGO-182, the human: 「每一行显示用户拿到了啥牌」). */
+const handOf = (dealer: 0 | 1 | 2, deck: Card[]) => deal(dealer, deck).hands[0].map((c) => `${c.suit}${c.rank}`)
+
+/** Free play's pool, as far as a record needs it: its version and each deal's dealer and deck. */
+export type PoolDecks = { version: string; deals: { dealer: 0 | 1 | 2; deck: string }[] }
+
+export async function playProfile(store: Store, who: string, pool: PoolDecks | null = null): Promise<{ deals: ProfileDeal[]; notes: ProfileNote[] }> {
   const players = await idsOf(store, who)
   const { rows: entries } = await store.pool.query(
     `SELECT e.day, e.size, e.deals, e.created_at, d.deals AS specs FROM daily_entries e
@@ -52,14 +61,20 @@ export async function playProfile(store: Store, who: string): Promise<{ deals: P
       WHERE e.player = ANY($1) ORDER BY e.created_at`, [players])
   const deals: (ProfileDeal & { at: number })[] = []
   for (const e of entries) {
-    const specs = e.specs as { benchmark?: { summary: DealSummary } }[]
+    const specs = e.specs as { dealer?: 0 | 1 | 2; deck?: Card[]; benchmark?: { summary: DealSummary } }[]
     ;(e.deals as DealSummary[]).forEach((mine, i) => deals.push({
       day: e.day, source: 'daily', key: `daily:${e.day}:${e.size}:${i}`, at: Number(e.created_at) + i,
+      ...(specs[i]?.deck && specs[i].dealer !== undefined ? { hand: handOf(specs[i].dealer!, specs[i].deck!) } : {}),
       mine: played(mine), ai: specs[i]?.benchmark ? played(specs[i].benchmark!.summary) : null,
     }))
   }
   const { rows: free } = await store.pool.query('SELECT game, day, at, mine, ai FROM play_deals WHERE player = ANY($1)', [players])
-  for (const f of free) deals.push({ day: f.day, source: 'free', key: f.game, at: Number(f.at), mine: f.mine, ai: f.ai })
+  for (const f of free) {
+    // A deal of this pool is dealt again from it: `free:<pool>:<deal>:<start>`.
+    const [, version, id] = (f.game as string).split(':')
+    const d = pool && version === pool.version ? pool.deals[Number(id)] : undefined
+    deals.push({ day: f.day, source: 'free', key: f.game, at: Number(f.at), ...(d ? { hand: handOf(d.dealer, d.deck.split(' ').map(card)) } : {}), mine: f.mine, ai: f.ai })
+  }
   deals.sort((a, b) => a.day.localeCompare(b.day) || a.at - b.at)
   // The weeks' analyses written for this person, under any of their ids (SKATGO-128); none for a guest device.
   const { rows: notes } = who.startsWith('anon:')

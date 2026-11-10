@@ -17,8 +17,7 @@ import { loadPool, deckOf, plan, type Pool } from '../src/free'
 import { loadPolicy, type Policy } from '../src/skatzero/policy'
 import { Store } from '../src/store'
 import { xpBoard } from '../src/xp'
-import { dailyBoard, dailyRoutes, COMPUTER, type DealSpec } from '../src/daily'
-import { kindOf } from '../src/pick'
+import { dailyBoard, dailyRoutes, prepareDay } from '../src/daily'
 import { population, roster, policyOf, personaSchema, LEGACY_POLICY, STRENGTH_POLICY, type Roster } from '../src/personas/config'
 import { sideWon, groupedBounds, measurements, wilsonUpper, type Observation } from '../src/personas/metrics'
 import { diagnose } from '../src/personas/diagnosis'
@@ -192,26 +191,10 @@ test('saved legacy/new jobs survive restart and never rewrite human records or d
   assert.deepEqual(await xpBoard(store, null), board)
 })
 
-test('new policy completes daily-six and selected-one with authoritative HTTP boards', async (t) => {
+test('new policy completes daily-six and selected-one with authoritative HTTP boards', { timeout: 180_000 }, async (t) => {
   const day = '2026-11-13'
-  const specs: DealSpec[] = []
-  let selected: DealSpec | undefined
-  for (const d of pool.deals.slice(0, 20)) {
-    const spec = { dealer: d.dealer, deck: deckOf(d.deck),
-      opponents: [plan(d.computers['1']), plan(d.computers['2'])] as [ReturnType<typeof plan>, ReturnType<typeof plan>] }
-    const benchmark = await playGame(policy, spec, plan(d.computers['0']))
-    const stored: DealSpec = { dealer: d.dealer, deck: spec.deck,
-      computers: { '1': d.computers['1'], '2': d.computers['2'] }, benchmark }
-    if (specs.length < 6) specs.push(stored)
-    const pick = kindOf(benchmark.summary)
-    if (pick && !selected) selected = { ...stored, pick }
-    if (specs.length === 6 && selected) break
-  }
-  assert(selected, 'Use an actually eligible daily-one fixture')
-  for (const [size, deals] of [[6, specs], [1, [selected]]] as const) {
-    await store.pool.query('INSERT INTO daily_deals(day,size,deals,computer) VALUES ($1,$2,$3,$4)',
-      [day, size, JSON.stringify(deals), COMPUTER])
-  }
+  await prepareDay(store, policy, day)
+  await prepareDay(store, policy, day, Date.now, 1)
   const humanBefore = (await store.pool.query("SELECT * FROM play_deals WHERE player='user:fixture'")).rows
   const single: Roster = { ...roster, personas: [{ ...roster.personas[0], activity: {
     ...roster.personas[0].activity, weekday: 1, weekend: 1, quiet: 0, dailyOne: 1, dailySix: 1, free: [0, 0],

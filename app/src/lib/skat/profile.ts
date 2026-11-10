@@ -24,9 +24,24 @@ export type Played = {
 export type ProfileDeal = {
   day: string
   source: 'daily' | 'free'
+  /** Which deal it was, so it can be played again (SKATGO-182): `free:<pool>:<deal>:<start>`, or
+   *  `daily:<day>:<size>:<deal>` for a tournament's (size 1, the deal of the day). */
+  key: string
+  /** The player's ten cards as dealt, `C10` … (SKATGO-182); missing where the deal's cards are not kept. */
+  hand?: string[]
   mine: Played
   /** The AI's game from the same seat; null for a tournament day dealt before it played them. */
   ai: Played | null
+}
+
+/** A record deal's key read (SKATGO-182): a free deal, as the service names it, or a tournament's deal by its day, its
+ *  tournament's size and its number in it. */
+export type DealKey = { kind: 'free'; game: string } | { kind: 'daily'; day: string; size: number; deal: number }
+
+export function dealKeyOf(key: string): DealKey | null {
+  if (/^free:[^:\s]{1,100}:\d{1,7}:\d{1,15}$/.test(key)) return { kind: 'free', game: key }
+  const d = /^daily:(\d{4}-\d{2}-\d{2}):(\d{1,2}):(\d{1,2})$/.exec(key)
+  return d ? { kind: 'daily', day: d[1], size: Number(d[2]), deal: Number(d[3]) } : null
 }
 
 /** A game against the table: the player's score minus each opponent's. */
@@ -156,6 +171,24 @@ export function rollingOf(deals: ProfileDeal[]): { day: string; perDeal: number 
   const days = [...new Set(judged.map((d) => d.day))].sort((a, b) => a.localeCompare(b))
   return days.map((day) => ({ day, perDeal: recent(judged.filter((d) => d.day <= day)).perDeal }))
 }
+
+/**
+ * The record of play's curve (SKATGO-182, the human: 「应该是每个deal是一个点，就像本来显示在首页卡片上的那个chart一样」): a point a deal
+ * the AI played too, oldest first — the average per deal against the AI over the latest `RECENT_DEALS` deals up to it, as
+ * the home card's line was, so it shows the player's direction rather than the chance of single deals.
+ */
+export function rollingByDeal(deals: ProfileDeal[]): { day: string; perDeal: number }[] {
+  const judged = deals.filter((d) => d.ai !== null)
+  const rolling = judged.map((_, i) => recent(judged.slice(0, i + 1)).perDeal)
+  // Smoothed once more over its neighbours (the human: 「平滑点」): each point the mean of the points `SMOOTH` either side.
+  return judged.map((d, i) => {
+    const near = rolling.slice(Math.max(0, i - SMOOTH), i + SMOOTH + 1)
+    return { day: d.day, perDeal: Math.round(near.reduce((s, v) => s + v, 0) / near.length) }
+  })
+}
+
+/** How many points either side the curve's points are averaged over. */
+const SMOOTH = 7
 
 /**
  * The last day played against every day before it, per deal: better, worse, or the same within the noise — a

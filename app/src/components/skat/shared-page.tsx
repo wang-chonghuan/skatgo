@@ -1,11 +1,15 @@
 import * as stylex from '@stylexjs/stylex'
-import { Link, useLoaderData, useNavigate, useParams } from '@tanstack/react-router'
+import { Link, useLoaderData, useNavigate, useParams, useSearch } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { track } from '~/lib/analytics'
 import { dailyState, isError } from '~/lib/daily-api'
+import { type FreeReply, freeAct, freeAgain, freeOdds, freeReplay, freeReview, isFreeError } from '~/lib/free-api'
 import { type PracticeReply, type Shared, practiceAct, practiceNew, practiceReview, readShared } from '~/lib/share-api'
+import type { Card } from '~/lib/skat/cards'
 import type { Move } from '~/lib/skat/game'
+import { dealKeyOf } from '~/lib/skat/profile'
+import { useAccount } from '~/lib/use-account'
 import { DEAL_OF_DAY, PLAYER, type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
@@ -119,12 +123,12 @@ function usePractice() {
     }, held ? 0 : BOT_DELAY)
     return () => clearTimeout(t)
   }, [queue, shown, release])
-  async function start(day: string) {
+  async function start(day: string, which?: { size: number; deal: number }) {
     setReply(null)
     setShown(null)
     setQueue([])
     setRelease(false)
-    const r = await practiceNew(day)
+    const r = await practiceNew(day, which)
     if ('error' in r) return setFailed(true)
     take(r)
   }
@@ -267,6 +271,146 @@ function DodReplay() {
         done: <Btn testId="dod-replay-again" tone="quiet" shape="block" size="lg" onClick={() => void practice.start(day)}>{m.free_replay()}</Btn>,
       }}
     />
+  )
+}
+
+/** A game of the record of play played again (SKATGO-182, the human: 「可以replay，不是复盘，就是让该人再打一盘，就如同正规的free
+ *  play的replay，不计入任何分。但是呢，想点此处的复牌，必须登录」), the whole screen: as free play's replay (SKATGO-170) the same
+ *  cards against the same AI, counted nowhere — no board, no XP, no record — its result with the review against the AI, then
+ *  once more, or its close back to the record. An account's only: anyone else goes back to the record, which signs them in. */
+export function RecordReplayPage() {
+  return (
+    <div {...stylex.props(styles.play)}>
+      <h1 {...stylex.props(styles.hidden)}>{m.history_replay_title()}</h1>
+      <ClientPart fallback={<TableLoading />}>
+        <RecordReplay />
+      </ClientPart>
+    </div>
+  )
+}
+
+function RecordReplay() {
+  const navigate = useNavigate()
+  const { deal } = useSearch({ from: '/replay' })
+  const account = useAccount()
+  const key = deal ? dealKeyOf(deal) : null
+  const close = () => void navigate({ to: '/profile' })
+  useEffect(() => {
+    if (account === null || (account && !key)) close()
+  }, [account])
+  if (!account || !key) return <TableLoading />
+  return key.kind === 'free' ? <FreeAgain game={key.game} close={close} /> : <DailyAgain day={key.day} which={{ size: key.size, deal: key.deal }} close={close} />
+}
+
+/** A tournament's deal again, as practice: the deal of the day's as on its own replay (SKATGO-177), one of the six's by its
+ *  number. */
+function DailyAgain({ day, which, close }: { day: string; which: { size: number; deal: number }; close: () => void }) {
+  const practice = usePractice()
+  const { reply, game } = practice
+  const token = reply?.token
+  const review = useCallback(() => practiceReview(token ?? ''), [token])
+  const of = which.size === DEAL_OF_DAY ? undefined : which
+  useEffect(() => {
+    void practice.start(day, of)
+  }, [])
+  if (practice.failed) return <AgainFailed close={close} />
+  if (!reply || !game) return <TableLoading />
+  return (
+    <GameTable
+      fullScreen
+      server={{
+        game,
+        busy: practice.busy,
+        send: (move) => void practice.send(move),
+        collect: practice.collect,
+        next: close,
+        replaying: true,
+        review,
+        close,
+        done: <Btn testId="history-replay-again" tone="quiet" shape="block" size="lg" onClick={() => void practice.start(day, of)}>{m.free_replay()}</Btn>,
+      }}
+    />
+  )
+}
+
+/** A free deal again: dealt anew from the pool under a token that says it is played again, so its end goes into no record;
+ *  free play's power-ups as on its own table (SKATGO-177). */
+function FreeAgain({ game: key, close }: { game: string; close: () => void }) {
+  const [token, setToken] = useState<string | null>(null)
+  const [revision, setRevision] = useState(0)
+  const [shown, setShown] = useState<SeatView | null>(null)
+  const [queue, setQueue] = useState<SeatView[]>([])
+  const [release, setRelease] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [failed, setFailed] = useState(false)
+  function take(r: FreeReply) {
+    setToken(r.token)
+    setRevision(r.revision)
+    setShown(r.steps[0])
+    setQueue(r.steps.slice(1))
+  }
+  async function begin(ask: () => ReturnType<typeof freeAgain>) {
+    setSending(true)
+    setRelease(false)
+    const r = await ask()
+    setSending(false)
+    if (isFreeError(r)) return setFailed(true)
+    take(r)
+  }
+  async function send(move: Move) {
+    if (!token) return
+    setSending(true)
+    const r = await freeAct(token, revision, move)
+    setSending(false)
+    if (isFreeError(r)) return setFailed(true)
+    take(r)
+  }
+  useEffect(() => {
+    void begin(() => freeAgain(key))
+  }, [])
+  useEffect(() => {
+    if (queue.length === 0) return
+    const held = shown?.phase === 'trickEnd'
+    if (held && !release) return
+    const t = setTimeout(() => {
+      if (held) setRelease(false)
+      setShown(queue[0])
+      setQueue((q) => q.slice(1))
+    }, held ? 0 : BOT_DELAY)
+    return () => clearTimeout(t)
+  }, [queue, shown, release])
+  const game = useMemo(() => (shown ? gameFromView(shown) : null), [shown])
+  const review = useCallback(() => freeReview(token ?? ''), [token])
+  if (failed) return <AgainFailed close={close} />
+  if (!game || !token) return <TableLoading />
+  return (
+    <GameTable
+      fullScreen
+      server={{
+        game,
+        busy: sending || queue.length > 0,
+        send: (move) => void send(move),
+        collect: () => setRelease(true),
+        next: close,
+        powerUps: { odds: (discard?: Card[]) => freeOdds(token, discard) },
+        replaying: true,
+        review,
+        close,
+        done: <Btn testId="history-replay-again" tone="quiet" shape="block" size="lg" onClick={() => void begin(() => freeReplay(token))}>{m.free_replay()}</Btn>,
+      }}
+    />
+  )
+}
+
+/** A game that could not be dealt again: said plainly, with the way back to the record. */
+function AgainFailed({ close }: { close: () => void }) {
+  return (
+    <div {...stylex.props(styles.summary)}>
+      <Panel tone="bad">
+        <p role="alert" {...stylex.props(typography.appText, styles.title)}>{m.history_replay_failed()}</p>
+        <Btn testId="history-replay-back" onClick={close}>{m.history_back()}</Btn>
+      </Panel>
+    </div>
   )
 }
 

@@ -86,11 +86,20 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   Terms omit participant-composition claims rather than asserting presence, absence, possibility or
   human-only participation.
 - **A player's record of play** (SKATGO-128) is read on request by `POST /daily/profile` (`multiplayer/src/profile.ts`),
-  an account's only (the web's `/api/daily/profile` answers a guest 401): every tournament deal of the player's
+  an account's, or since SKATGO-182 a guest device's own (`anon:`, no aliases, no notes; the web answers a device that
+  never played with none): every tournament deal of the player's
   entries with its day's `benchmark`, of either size (the size-12 rows SKATGO-77 left are deals against the same AI), and every row of `play_deals` (player, game — `free:<pool>:<deal>:<start>` —
   the day by the tournament's `dayOf`, when, the three seats' Seeger-Fabian scores in the player's game and in the AI's), the ids
   `player_aliases` names as one person counted as that person. `app/src/lib/skat/profile.ts` is the shape both
-  sides share and the page's sums. The weeks' analyses are `profile_notes` (player, week's Monday, language, text in
+  sides share and the page's sums. Each deal carries its `key` (SKATGO-182): `play_deals.game`, or
+  `daily:<day>:<size>:<deal>`. `/replay?deal=<key>` plays it again for its account: a free one through `POST /free/again`
+  (the account's own recorded deal, a `replay` token), a tournament's through `/share/practice/new` with its `size` and
+  `deal` (one of the six only for an account whose entry has it played; the practice token carries them).
+- **A guest's games** (SKATGO-182): `app/src/lib/guest.ts` is the device id — the `skatgo_daily` httpOnly cookie, since
+  SKATGO-182 for all of `/api`, as `anon:<sha256>` at the service — set by the daily handler and by `/api/free/review`.
+  A free deal a guest finishes goes into `play_deals` under it. At sign-in (`/daily/claim`, asked by the web on `state`,
+  `board`, `xp` and `profile`) today's entries move as before, and `player_aliases` gets the device as one of the
+  account's ids — joined to the person the account already is; past boards keep their rows. The weeks' analyses are `profile_notes` (player, week's Monday, language, text in
   the forum's marks), written by hand and loaded by `.intentfold/tickets/SKATGO-128/notes.mjs` from its `notes.json`.
 - **The deal of the day** (SKATGO-131) is the day's tournament of size 1 (`DEAL_OF_DAY`, `DAILY_SIZES` in
   `lib/skat/tournament.ts`): the same rows, routes and board, each request naming its `size` (6 when it names none);
@@ -142,9 +151,9 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   `judgePlays` in `src/computers.ts` keeps the plays whose card fell below its best, furthest first
   (`DealReview.differs`). `/daily/review` and `/free/review` work it out on request and store no review;
   `/free/review` also has SkatZero play the deal in all three seats from the pool's plans and returns
-  that game as the AI's (`DealReview.ai`, SKATGO-86), for free play and lesson 11 alike. When the web names a
-  signed-in player with it (`/api/free/review` passes `user:<id>`, never a guest and never a browser-sent player),
-  the deal's Seeger-Fabian score and the AI's go into `play_deals`, once per game (SKATGO-128).
+  that game as the AI's (`DealReview.ai`, SKATGO-86), for free play and lesson 11 alike. When the web names the
+  player with it (`/api/free/review` passes `user:<id>`, or since SKATGO-182 a guest's device `anon:<sha256>`, never a
+  browser-sent player), the deal's Seeger-Fabian score and the AI's go into `play_deals`, once per game (SKATGO-128).
   No language model judges or explains play: the judgement is SkatZero's. Since SKATGO-142 the site's model voices it as
   Lina's and Noah's table talk at free play and the daily tournament: `POST /free/talk` (the game's token) and
   `POST /daily/talk` (the player, the tournament's size, the deal in progress), each with the kinds already said and the
@@ -301,11 +310,12 @@ also built from the repository root. Neither project imports the other's runtime
   - It is generated once by `scripts/make-free-pool.ts` and committed with its size, SHA-256 and
     count in the manifest. Readiness waits for it; an altered pool stops the service at start.
     Running the generator with a larger count extends the pool; earlier deals stay identical.
-  - The server keeps nothing per game but, for a signed-in player, the finished deal's two scores in `play_deals`
-    (SKATGO-128, below). The game is an AES-256-GCM token (key derived by HKDF from
+  - The server keeps nothing per game but the finished deal's two scores in `play_deals`, an account's (SKATGO-128,
+    below) or a guest device's (SKATGO-182). The game is an AES-256-GCM token (key derived by HKDF from
     the admission key, label `skatgo-free/1`, 24 h lifetime) holding the deal's index, the pool
     version, the start time and every move, the computers' included.
-  - Replay runs the engine only; a computer is asked only for new moves. There is no cookie. The
+  - Replay runs the engine only; a computer is asked only for new moves. The game needs no cookie; a guest's review
+    sets the device's (SKATGO-182). The
     browser keeps the token and the round's finished deals in `localStorage` (`skatgo.free.v1`,
     SKATGO-96), so a reload or a later visit takes the game up through `/free/resume`; when the round
     is over it is forgotten, and a token past its day starts a new round.

@@ -32,6 +32,7 @@ const PAGES = {
   shared: lazyRouteComponent(() => import('./shared-page'), 'SharedPage'),
   practice: lazyRouteComponent(() => import('./shared-page'), 'PracticePage'),
   dodReplay: lazyRouteComponent(() => import('./shared-page'), 'DodReplayPage'),
+  recordReplay: lazyRouteComponent(() => import('./shared-page'), 'RecordReplayPage'),
   profile: lazyRouteComponent(() => import('./profile-page'), 'ProfilePage'),
   friends: lazyRouteComponent(() => import('./friends-page'), 'FriendsPage'),
   table: lazyRouteComponent(() => import('./friends-page'), 'TablePage'),

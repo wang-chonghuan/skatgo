@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-182",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-182",
+  "branch": "SKATGO-182-guest-progress",
+  "base": "8ae67c1",
+  "ports": { "web": 55182, "multiplayer": 56182, "database": 57182 }
+}

@@ -11,7 +11,7 @@ import { BIDS, type HandMode, pickupChances } from './skatzero/bidding'
 import { type Policy, viewOf } from './skatzero/policy'
 import { lineFor, momentOf, TALK_KINDS, verdictOf } from './talk'
 import { dayOf } from './daily'
-import { played, recordFreeDeal } from './profile'
+import { idsOf, played, recordFreeDeal } from './profile'
 import type { Store } from './store'
 
 // Free play and lesson 11 on the server (SKATGO-40). A game is a deal drawn from a pool prepared
@@ -212,13 +212,28 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     const g = deal(d.dealer, deck)
     return reply(p, t.id, Date.now(), [], g, [g], true)
   }))
+  // A deal of the player's record of play once more (SKATGO-182, the human: 「可以replay……就如同正规的free play的replay，不计入
+  // 任何分。但是呢，想点此处的复牌，必须登录」): an account's own recorded free deal, dealt anew from the pool under a token that
+  // says it is played again, so nothing of it is counted. A deal of another pool, or not in the record, is no deal.
+  const againInput = z.object({ player: z.string().regex(/^user:[A-Za-z0-9_]{1,64}$/), game: z.string().regex(/^free:[^:\s]{1,100}:\d{1,7}:\d{1,15}$/) }).strict()
+  router.post('/again', run(async (body) => {
+    const i = againInput.parse(body)
+    const p = pool()!
+    const [, version, index] = i.game.split(':')
+    const id = Number(index)
+    const { rowCount } = await store.pool.query('SELECT 1 FROM play_deals WHERE player = ANY($1) AND game = $2', [await idsOf(store, i.player), i.game])
+    if (!rowCount || version !== p.version || !(id < p.deals.length)) throw new Rejected('no_such_deal')
+    const d = p.deals[id]
+    const g = deal(d.dealer, deckOf(d.deck))
+    return reply(p, id, Date.now(), [], g, [g], true)
+  }))
   // A finished game's replay and where SkatZero would have played another card (SKATGO-79), and the same
   // deal played by SkatZero in all three seats from the pool's plans — the AI in the player's seat
   // (SKATGO-86) — from the game's own token: worked out on request. A game all three passed has no play to
-  // judge, but the AI in the player's seat may well have bid. When the web names a signed-in player, the deal
-  // goes into their record of play (SKATGO-128): their Seeger-Fabian score and the AI's, once per game; a deal played
-  // again does not (SKATGO-170).
-  const reviewInput = z.object({ token: z.string().max(20_000), player: z.string().regex(/^user:/).max(200).optional() }).strict()
+  // judge, but the AI in the player's seat may well have bid. The deal goes into the record of play of the player the
+  // web names — a signed-in account (SKATGO-128), or a guest's device (SKATGO-182): their Seeger-Fabian score and the
+  // AI's, once per game; a deal played again does not (SKATGO-170).
+  const reviewInput = z.object({ token: z.string().max(20_000), player: z.string().regex(/^(user:[A-Za-z0-9_]{1,64}|anon:[a-f0-9]{64})$/).optional() }).strict()
   router.post('/review', run(async (body) => {
     const i = reviewInput.parse(body)
     const { p, t } = opened(i.token)

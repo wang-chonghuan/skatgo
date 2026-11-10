@@ -36,6 +36,8 @@ type Section = 'home' | 'daily' | 'course' | 'rules' | 'play' | 'forum'
 export function sectionOf(pathname: string): Section {
   // The tournament's table wears the table's frame (SKATGO-35); so does the deal of the day played again (SKATGO-177).
   if (pathname.startsWith('/daily/play') || pathname.startsWith('/daily/replay')) return 'play'
+  // So does a game of the record of play played again (SKATGO-182).
+  if (pathname.startsWith('/replay')) return 'play'
   // So does a private table, its lobby included (SKATGO-61).
   if (pathname.startsWith('/table/')) return 'play'
   // So does the practice table of a shared deal (SKATGO-132).

@@ -40,8 +40,9 @@ export const readShared = createIsomorphicFn()
     return 'error' in r ? null : r
   })
 
-/** A past day's deal of the day, dealt for practice — or today's, once the player has finished it (SKATGO-177); then each
- *  move; and at its end the review against the AI, recorded nowhere. */
-export const practiceNew = (day: string) => post<PracticeReply>('practice-new', { day })
+/** A past day's deal of the day, dealt for practice — or today's, once the player has finished it (SKATGO-177) — or a deal
+ *  of a day's tournament the player has played, from the record of play (SKATGO-182); then each move; and at its end the
+ *  review against the AI, recorded nowhere. */
+export const practiceNew = (day: string, which?: { size: number; deal: number }) => post<PracticeReply>('practice-new', { day, ...which })
 export const practiceAct = (token: string, revision: number, action: Move) => post<PracticeReply>('practice-act', { token, revision, action })
 export const practiceReview = (token: string) => post<DealReview>('practice-review', { token })

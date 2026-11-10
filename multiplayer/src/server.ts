@@ -60,7 +60,7 @@ app.get(['/healthz', '/readyz'], async (req, res) => {
     res.status(ok ? 200 : 503).json({ ok, ready: isReady, version, service: 'skatgo-multiplayer' })
   } catch { res.status(503).json({ ok: false, ready: false, version }) }
 })
-app.use('/daily', dailyRoutes(store, key, () => ready && !stopping, () => policy))
+app.use('/daily', dailyRoutes(store, key, () => ready && !stopping, () => policy, () => pool))
 app.use('/free', freeRoutes(store, key, () => ready && !stopping, () => policy, () => pool))
 app.use('/ladder', ladderRoutes(store, key, () => ready && !stopping))
 app.use('/bidding', biddingRoutes(store, key, () => ready && !stopping))

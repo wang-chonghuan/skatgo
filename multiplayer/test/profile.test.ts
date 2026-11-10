@@ -58,15 +58,17 @@ test('profile: tournament and free deals, once each, the aliases as one person, 
   await recordFreeDeal(store, { ...free, player: 'user:ben' })
 
   const { deals } = await playProfile(store, 'user:anna')
+  // Each deal names itself, so it can be played again (SKATGO-182).
   assert.deepEqual(deals, [
-    { day: '2026-10-20', source: 'daily', mine: played([120, 0, 0]), ai: played([70, 0, 0]) },
-    { day: '2026-10-20', source: 'daily', mine: played([0, 0, 90]), ai: played([0, 0, 110]) },
-    { day: '2026-10-20', source: 'daily', mine: played([40, 0, 0], 0), ai: played([-20, 0, 0]) },
-    { day: '2026-10-21', source: 'free', mine: played([66, 0, 0]), ai: played([-100, 40, 40]) },
+    { day: '2026-10-20', source: 'daily', key: `daily:2026-10-20:${DAILY_DEALS}:0`, mine: played([120, 0, 0]), ai: played([70, 0, 0]) },
+    { day: '2026-10-20', source: 'daily', key: `daily:2026-10-20:${DAILY_DEALS}:1`, mine: played([0, 0, 90]), ai: played([0, 0, 110]) },
+    { day: '2026-10-20', source: 'daily', key: 'daily:2026-10-20:12:0', mine: played([40, 0, 0], 0), ai: played([-20, 0, 0]) },
+    { day: '2026-10-21', source: 'free', key: 'free:p:7:123', mine: played([66, 0, 0]), ai: played([-100, 40, 40]) },
   ])
   assert.deepEqual(deals.map(againstAi), [100, 20, 120, 412])
-  // Asked under the alias, the same person.
-  assert.deepEqual((await playProfile(store, 'anon:guestday')).deals, deals)
+  // Asked as the guest device, only the device's own games (SKATGO-182): signed out on a shared device, no account's
+  // record shows through it.
+  assert.deepEqual((await playProfile(store, 'anon:guestday')).deals, deals.slice(0, 2))
   assert.deepEqual(daysOf(deals), [
     { day: '2026-10-20', deals: 3, perDeal: 80 },
     { day: '2026-10-21', deals: 1, perDeal: 412 },

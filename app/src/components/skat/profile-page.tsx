@@ -1,21 +1,23 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
 import { Who } from './daily-comparison'
+import { DealRows } from './deal-history'
 import { ForumBody } from './forum-body'
+import { smoothPath } from './smooth-path'
 import { Btn, Panel, linkLook } from './ui'
 import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
-import { type ProfileDay, type ProfileDeal, type ProfileNote, type ProfileWeek, daysOf, gapOf, trendOf, versusAi, weeksOf } from '~/lib/skat/profile'
+import { type ProfileDeal, type ProfileNote, type ProfileWeek, RECENT_DEALS, daysOf, gapOf, rollingByDeal, trendOf, versusAi, weeksOf } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { icon, profileChart } from '../../theme/constants'
+import { icon, profileChart, progressCurve } from '../../theme/constants'
 import { border, space } from '../../theme/scale.stylex'
 import { dims } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
@@ -24,25 +26,58 @@ import { typography } from '../../theme/type'
  * A player's record of play (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，而且每个deal都要算和ai的
  * 差值，做成一个曲线」): every deal they played against the AI on the same cards — the daily tournament's and free
  * play's — judged against the whole table and compared with the AI's game of the same cards (`lib/skat/profile.ts`):
- * a curve of the average per deal, day by day, and whether the last day was better than before.
- * Personal, never indexed; its title and lead render on the server, the record in the browser for an account.
+ * a curve of the average per deal, day by day, and whether the last day was better than before. Above it, every game,
+ * newest first, each to be played again (SKATGO-182): folded for an account; a guest's games of this device open, the
+ * only thing a guest has, with the sign-in that keeps them.
+ * Personal, never indexed; its title and lead render on the server, the record in the browser.
  */
 export function ProfilePage() {
   const account = useAccount()
+  const navigate = useNavigate()
   const [record, setRecord] = useState<{ deals: ProfileDeal[]; notes: ProfileNote[] } | 'error' | null>(null)
+  /** The game a guest asked to play again, waiting for their sign-in (the human: 「想点此处的复牌，必须登录」). */
+  const [wanted, setWanted] = useState<string | null>(null)
   useEffect(() => {
-    if (!account) return
+    if (account === undefined) return
     let live = true
+    setRecord(null)
     void dailyProfile().then((r) => { if (live) setRecord(isError(r) ? 'error' : r) })
     return () => { live = false }
   }, [account])
-
+  // Once signed in and the account's record read — which takes this device's games into it — the asked game goes on.
+  useEffect(() => {
+    if (account && wanted && record && record !== 'error') void navigate({ to: '/replay', search: { deal: wanted } })
+  }, [account, wanted, record])
+  // Played again from its row: a link under its date (`info`), for a guest Clerk's window first.
+  const replay = (d: ProfileDeal) =>
+    account ? (
+      <Link to="/replay" search={{ deal: d.key }} data-testid="history-replay" {...stylex.props(typography.link, styles.replay)}>{m.history_replay()}</Link>
+    ) : (
+      <SignInButton mode="modal">
+        <button type="button" data-testid="history-replay" onClick={() => {
+          setWanted(d.key)
+          track('sign_in_clicked', { at: 'history_replay' })
+        }} {...stylex.props(typography.link, typography.control, styles.replay, styles.replayButton)}>{m.history_replay()}</button>
+      </SignInButton>
+    )
   return (
     <div data-testid="profile" {...stylex.props(styles.root)}>
       <section {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.profile_title()}</h1>
         <p {...stylex.props(typography.landingBody, styles.lead)}>{m.profile_lead()}</p>
-        {account === null ? (
+        {account === null && record !== null && record !== 'error' && record.deals.length > 0 ? (
+          <>
+            <History deals={record.deals} guest action={replay} />
+            <div data-testid="profile-sign-in" {...stylex.props(styles.stack)}>
+              <p {...stylex.props(typography.appText, styles.text)}>{m.history_guest_keep()}</p>
+              <div>
+                <SignInButton mode="modal">
+                  <Btn testId="profile-sign-in-go" size="lg" onClick={() => track('sign_in_clicked', { at: 'profile' })}>{m.auth_sign_in()}</Btn>
+                </SignInButton>
+              </div>
+            </div>
+          </>
+        ) : account === null && record !== null ? (
           <div data-testid="profile-sign-in">
             <SignInButton mode="modal">
               <Btn testId="profile-sign-in-go" size="lg" onClick={() => track('sign_in_clicked', { at: 'profile' })}>{m.profile_sign_in()}</Btn>
@@ -63,7 +98,10 @@ export function ProfilePage() {
             </div>
           </Panel>
         ) : (
-          <Record deals={record.deals} notes={record.notes} />
+          <>
+            <History deals={record.deals} action={replay} />
+            <Record deals={record.deals} notes={record.notes} />
+          </>
         )}
       </section>
     </div>
@@ -75,8 +113,6 @@ const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }) {
   const days = daysOf(deals)
   const trend = trendOf(deals)
-  const date = new Intl.DateTimeFormat(getLocale(), { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
-  const dayName = (day: string) => date.format(new Date(`${day}T00:00:00Z`))
   return (
     <>
       <div {...stylex.props(styles.stackTight)}>
@@ -93,12 +129,44 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
       <Panel>
         <div {...stylex.props(styles.stack)}>
           <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_curve_title()}</h2>
-          <Curve days={days} dayName={dayName} />
+          <Curve deals={deals} />
           <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_curve_note()}</p>
         </div>
       </Panel>
       <Weeks weeks={weeksOf(deals)} notes={notes} />
     </>
+  )
+}
+
+/** How many games the history shows at first, and more at each ask: an account has hundreds. */
+const HISTORY_PAGE = 20
+
+/** Every game, newest first, each with its way to be played again (SKATGO-182, the human: 「历史可以放在打开的页面的顶部，默认
+ *  折叠（不登录时，那就不折叠，因为就这一个）」): an account's folded behind one line, as the earlier weeks are; a guest's open. */
+function History({ deals, guest = false, action }: { deals: ProfileDeal[]; guest?: boolean; action: (d: ProfileDeal) => ReactNode }) {
+  const [open, setOpen] = useState(guest)
+  const [shown, setShown] = useState(HISTORY_PAGE)
+  const newest = [...deals].reverse()
+  const Chevron = open ? ChevronUp : ChevronDown
+  return (
+    <Panel>
+      <section data-testid="profile-history" data-open={open} {...stylex.props(styles.stack)}>
+        {guest ? (
+          <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.history_title({ count: deals.length })}</h2>
+        ) : (
+          <button type="button" data-testid="profile-history-toggle" aria-expanded={open} onClick={() => setOpen(!open)} {...stylex.props(typography.optionTitle, styles.more)}>
+            <span>{m.history_title({ count: deals.length })}</span>
+            <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+          </button>
+        )}
+        {open ? <DealRows deals={newest.slice(0, shown)} action={action} /> : null}
+        {open && newest.length > shown ? (
+          <div>
+            <Btn testId="profile-history-more" tone="quiet" onClick={() => setShown(shown + HISTORY_PAGE)}>{m.history_more()}</Btn>
+          </div>
+        ) : null}
+      </section>
+    </Panel>
   )
 }
 
@@ -219,59 +287,60 @@ function Weeks({ weeks, notes }: { weeks: ProfileWeek[]; notes: ProfileNote[] })
   )
 }
 
-/** Which of a date's two screens it shows on: a computer's, a phone's, both or neither. */
-const shownOn = (pc: boolean, phone: boolean) =>
-  pc && phone ? null : pc ? styles.hiddenPhone : phone ? styles.hiddenPc : styles.hidden
+/** How many points the curve is drawn through at most. */
+const DRAWN = 40
 
-/** One point per day, oldest on the left: the day's average per deal against the AI, on a line; a zero line, and
- *  each day's date under its point — every second, third … when there are more days than fit, fewer on a phone. A
- *  day with no deal the AI played has no point. */
-function Curve({ days, dayName }: { days: ProfileDay[]; dayName: (day: string) => string }) {
-  const { width, height, pad, dot, line, dates, datesPhone } = profileChart
-  const short = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'numeric', timeZone: 'UTC' })
-  const every = Math.ceil(days.length / dates)
-  const everyPhone = Math.ceil(days.length / datesPhone)
-  const known = days.flatMap((d) => (d.perDeal === null ? [] : [d.perDeal]))
-  const top = Math.max(0, ...known)
-  const bottom = Math.min(0, ...known)
+/** The curve as the home card's was (SKATGO-182, the human: 「曲线还换成那个平滑曲线」, 「应该是每个deal是一个点，就像本来显示在首页卡片上
+ *  的那个chart一样」): a point a deal, the average per deal against the AI over the latest deals up to it (`rollingByDeal`), as
+ *  one smooth line without scale over a zero line — a single deal as its dot — the first and the last day under it and how
+ *  many deals each point counts. */
+function Curve({ deals }: { deals: ProfileDeal[] }) {
+  const known = rollingByDeal(deals)
+  if (!known.length) return null
+  const { width, height, pad } = profileChart
+  const top = Math.max(0, ...known.map((p) => p.perDeal))
+  const bottom = Math.min(0, ...known.map((p) => p.perDeal))
   const span = top - bottom || 1
-  // The first and the last day at the curve's edges, so the dates under it stand under their points.
-  const x = (i: number) => (days.length > 1 ? (i * width) / (days.length - 1) : width / 2)
+  const x = (i: number) => (known.length > 1 ? pad + (i * (width - 2 * pad)) / (known.length - 1) : width / 2)
   const y = (v: number) => pad + ((top - v) * (height - 2 * pad)) / span
-  const points = days.flatMap((d, i) => (d.perDeal === null ? [] : [{ i, d }]))
+  // Drawn through at most `DRAWN` of them, evenly spread and the last always among them, so the line runs smooth however many
+  // deals there are (「平滑点」).
+  const step = Math.max(1, (known.length - 1) / (DRAWN - 1))
+  const drawn = known.length <= DRAWN ? known.map((_, i) => i) : Array.from({ length: DRAWN }, (_, k) => Math.round(k * step))
+  const points = drawn.map((i) => ({ x: x(i), y: y(known[i].perDeal) }))
+  const short = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' })
+  const day = (d: string) => short.format(new Date(`${d}T00:00:00Z`))
+  const first = known[0].day
+  const last = known[known.length - 1].day
+  const window = Math.min(RECENT_DEALS, known.length)
+  // The axis (the human: 「纵轴也要有」): the highest, the middle and the lowest value, each with its fine line across.
+  const ticks = [top, Math.round((top + bottom) / 2), bottom]
   return (
     <div {...stylex.props(styles.stackTight)}>
       <div {...stylex.props(styles.chart)}>
-        <div aria-hidden {...stylex.props(typography.meta, styles.scale)}>
-          <span>{signed(top)}</span>
-          <span>{signed(bottom)}</span>
-        </div>
-        <svg data-testid="profile-curve" role="img" aria-label={m.profile_curve_title()} viewBox={`0 0 ${width} ${height}`} {...stylex.props(styles.svg)}>
-          <line x1={pad} x2={width - pad} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
-          <polyline points={points.map((p) => `${x(p.i)},${y(p.d.perDeal!)}`).join(' ')} strokeWidth={line} vectorEffect="non-scaling-stroke" {...stylex.props(styles.curve)} />
-          {points.map((p) => (
-            // A dot of the same size on every screen, however far the curve is scaled: a round end of a line of no
-            // length, whose stroke does not scale.
-            <line key={p.d.day} data-testid="profile-point" data-day={p.d.day} data-per-deal={p.d.perDeal} x1={x(p.i)} x2={x(p.i)} y1={y(p.d.perDeal!)} y2={y(p.d.perDeal!)} strokeWidth={dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)}>
-              <title>{m.profile_point({ date: dayName(p.d.day), diff: signed(p.d.perDeal!), count: p.d.deals })}</title>
-            </line>
-          ))}
-        </svg>
+      <div aria-hidden data-testid="profile-axis" {...stylex.props(typography.meta, styles.scale)}>
+        {ticks.map((v, i) => <span key={i}>{signed(v)}</span>)}
+      </div>
+      <svg data-testid="profile-curve" data-points={known.length} role="img" aria-label={m.profile_curve_title()} viewBox={`0 0 ${width} ${height}`} {...stylex.props(styles.svg)}>
+        {ticks.map((v, i) => <line key={i} x1={0} x2={width} y1={y(v)} y2={y(v)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.grid)} />)}
+        <line x1={0} x2={width} y1={y(0)} y2={y(0)} vectorEffect="non-scaling-stroke" {...stylex.props(styles.zero)} />
+        {points.length > 1 ? (
+          <path data-testid="profile-line" d={smoothPath(points)} strokeWidth={progressCurve.line} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.curve)} />
+        ) : (
+          // One deal: its point alone, a round end of a line of no length.
+          <line data-testid="profile-point" x1={points[0].x} x2={points[0].x} y1={points[0].y} y2={points[0].y} strokeWidth={progressCurve.dot * 2} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...stylex.props(styles.point)} />
+        )}
+      </svg>
       </div>
       <div {...stylex.props(styles.chart)}>
-        {/* As wide as the scale beside the curve, so the dates start where the curve does. */}
+        {/* As wide as the axis beside the curve, so the dates start where the curve does. */}
         <div aria-hidden {...stylex.props(typography.meta, styles.scale, styles.scaleGhost)}>
-          <span>{signed(top)}</span>
-          <span>{signed(bottom)}</span>
+          {ticks.map((v, i) => <span key={i}>{signed(v)}</span>)}
         </div>
-        <div aria-hidden data-testid="profile-dates" {...stylex.props(typography.meta, styles.dates, days.length === 1 && styles.datesOne)}>
-          {days.map((d, i) => (
-            <span key={d.day} {...stylex.props(styles.date0)}>
-              <span data-testid="profile-date" {...stylex.props(styles.dateText, shownOn(i % every === 0, i % everyPhone === 0))}>
-                {short.format(new Date(`${d.day}T00:00:00Z`))}
-              </span>
-            </span>
-          ))}
+        <div data-testid="profile-dates" {...stylex.props(typography.meta, styles.dates, known.length === 1 && styles.datesOne)}>
+          <span>{day(first)}</span>
+          {known.length > 1 ? <span>{m.home_progress_recent({ count: window })}</span> : null}
+          {first === last ? null : <span>{day(last)}</span>}
         </div>
       </div>
     </div>
@@ -312,8 +381,18 @@ const styles = stylex.create({
   scale: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: color.slate, textAlign: 'end' },
   svg: { display: 'block', flexGrow: 1, minWidth: 0, width: '100%', height: 'auto', overflow: 'visible' },
   zero: { stroke: color.slate },
-  curve: { fill: 'none', stroke: color.info, strokeLinejoin: 'round' },
+  grid: { stroke: color.hairline },
+  curve: { fill: 'none', stroke: color.info },
   point: { stroke: color.info },
+  // A game's way to be played again (SKATGO-182): a link under its date.
+  replay: {
+    color: color.info,
+    textDecoration: 'underline',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focusSm,
+    outlineColor: color.info,
+  },
+  replayButton: { padding: 0, borderWidth: 0, backgroundColor: 'transparent', cursor: 'pointer' },
   // The line that opens the earlier weeks (SKATGO-169): the white card's whole width, nothing of a button's look.
   more: {
     display: 'flex',

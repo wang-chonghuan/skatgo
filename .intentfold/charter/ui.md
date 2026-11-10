@@ -250,7 +250,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `GraduationCap`, the course) and "Reizen" (`tileNavy`, lucide's `Gavel`, an auction's hammer, to `/bidding-practice`; one line since SKATGO-151, the page
     keeping "Reizen üben"; SKATGO-149, the
     human: 「practice卡片的位置，做成一个叫牌练习的东西」 — the exercises' "Üben" with its `Puzzle` stood there before); on the right two long white cards, each
-    a row tall — the XP board on top, then the progress (SKATGO-172, 「你建议？」): "Mein Fortschritt" (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
+    a row tall — the XP board on top, then the progress (SKATGO-172, 「你建议？」): "Verlauf & Analyse" (SKATGO-182, 「卡片名称 my progress改为my history and analyse」; until then "Mein Fortschritt") (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
     over the latest 30 deals, fewer while there are fewer (`standingOf`, SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」),
     the win rate and the average per deal against the AI (`homeCardTitle`, each over a `meta` label), beside the curve and
     over it on a phone, and that average day by day as the curve (`rollingOf`), "Immer über die letzten 30 Spiele" in the dates' row, no win-rate curve — on real records a day's win
@@ -260,7 +260,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     made it navy) and with no AI tag (SKATGO-138, 「不要AI标签因为看起来都是蓝色的，用户觉得好像是ai的表现」), a single day as its dot; framed lightly, no larger: the first
     and the last day under it (`meta`, slate) (「最好上面带一些日期……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
     Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
-    保存你的表现记录以及ai分析，中间放个登录按钮」); and the XP
+    保存你的表现记录以及ai分析，中间放个登录按钮」) — whoever has played, account or guest, sees instead their games (SKATGO-182, 「每一行显示用户拿到了啥牌，以及和ai差几分，不管是否
+    登录，这个my progress卡片都显示这个，想点击，必须登录」), one line each, newest first: the ten cards as dealt, in a Grand's
+    order, as text with each suit in its colour, a thin space apart (`meta`, navy, so ten fit on a phone; cut with an
+    ellipsis should they not), and the score less the AI's on the
+    same cards (`appBtnStrong`), under a `meta` head, "Deine Blätter, neueste zuerst" over the cards and "vs. KI" over the differences (「手牌列最好也加个列名」, then 「应该是你的手牌，最新的在最上面……禁止直译」), over a `hairline` — scrolling as the XP board's list, the first five
+    in one column. An account's card is the link to the record; a guest's games open Clerk's sign-in first, then the record,
+    and the same `go` "Anmelden" stands beside the title. (SKATGO-169's win rate, average and curve are gone from the card.)
+    And the XP
     board (`xp-board.tsx`, SKATGO-172, in the Elo board's place, size and behaviour: 「这个卡片大小规格行为，还和当前的elo卡片一样」) —
     its title with a circled question mark (`info`) opening how XP is earned in a `Modal` (`XpHow`: one line, the five
     tiers in a table, one line on the own game's +2, one line on the win rate); the title "XP & win rate" / "XP & Gewinnquote", naming
@@ -417,20 +424,32 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   scored and ranked; "Private Tische", how a table is opened and played. Each section ends in plain `info` links to
   where it is played or learnt.
 - **The record of play** (`profile-page.tsx`, SKATGO-128) is a sub-page on the grey page in the reading column,
-  noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest a `go` "Anmelden und Profil ansehen" opening
-  Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to free play.
-  Otherwise a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt
+  noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest who has not played a `go` "Anmelden und Profil
+  ansehen" opening Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to
+  free play. Then every game (SKATGO-182, 「历史可以放在打开的页面的顶部，默认折叠（不登录时，那就不折叠，因为就这一个）」) in a white
+  card: headed "Deine Spiele (412)" (`optionTitle`): for an account folded, the heading the line to tap with a chevron, as the
+  earlier weeks open; for a guest open, followed by one line on what signing in keeps and the `go` "Anmelden". A row a game,
+  newest first, over a `hairline`: the ten cards as on the card (`appText`, navy), under them what happened in the result's
+  words, where and when ("Du hast Grand gewonnen · Freies Spiel · 10. Nov.", `meta`, slate), and under that "Nochmal"
+  (`link`, `info`, underlined), which plays it again — for a guest opening Clerk's sign-in first
+  (「想点此处的复牌，必须登录」), the game going on once signed in; at the right the score less the AI's (`appBtnStrong`), under a `meta` "vs. KI", signed, never `good` / `bad`. Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
+  `/replay` plays the game again as `/daily/replay` does: the full-screen table, counted nowhere, its result's foot "Dieses
+  Spiel nochmal spielen", its close back to the profile; a free deal with free play's power-ups.
+  Otherwise, for an account, a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt
   −22 pro Spiel gegen die KI, davor −31: ↑ besser als zuvor", → or ↓, in navy, never `good` / `bad`); then a white card,
   "Du gegen die AI" (SKATGO-169, the human: 「profile里应该显示你这个表格，然后对手就是AI」): under the You and AI tags, for the same
   cards, the win rate, as declarer, how often declarer and as defender, each a whole percent (`appBtnStrong`) over what it
   counts (`meta`, slate), and the points per deal; a `meta` note that all-passed deals are left out of the percentages; under it,
   "Woher der Unterschied kommt" (`gapOf`): in the same game as the AI, the player's card points against its, per deal, and how much of the
   gap comes from not playing the same game — bidding and choice of game — each row left out where it says nothing; then a white
-  card, "Dein Niveau gegen die KI, Tag für Tag": the curve in SVG at the card's width (`profileChart` in
-  `constants.ts`), one `info` dot per day, the same size on every screen, on an `info` line — the day's average per
-  deal against the AI, judged against the whole table (`lib/skat/profile.ts`) — the zero line in `slate`, the highest
-  and lowest value beside it and each day's date under its dot in `meta`, every second, third … when more days than
-  fit, fewer on a phone (the human: 「一天一个点，为啥你的图上没显示几个点呢」), and a `meta` note on how to read it; then "Woche für Woche": the newest week's white card open and the
+  card, "Dein Niveau gegen die KI" (SKATGO-182, the human: 「这里的day by day去掉，然后曲线还换成那个平滑曲线」, 「应该是每个deal是
+  一个点，就像本来显示在首页卡片上的那个chart一样」): a point a deal, the average per deal against the AI over the latest 30 deals
+  up to it, each averaged again with the seven either side (`rollingByDeal`; 「平滑点」), drawn as the home card's line was —
+  one smooth monotone cubic (`smooth-path.ts`) through at most 40 of them, `progressCurve` thick, in `info`, a single deal as
+  its dot — over an axis (「纵轴也要有」): the highest, middle and lowest value at the left (`meta`, slate), each with a
+  `hairline` across, the zero line `slate`; the first and the last day under it and "Immer über die letzten 30 Spiele" between
+  them (`meta`, slate), and one `meta` line on how to read it (「必须一针见血」): "Über 0 warst du auf denselben Karten besser als
+  die KI, darunter schlechter."; then "Woche für Woche": the newest week's white card open and the
   rest behind a white card "Frühere Wochen (3)", a tap on it opening them (SKATGO-169, 「每周简评，只显示第一个，剩下的折叠」), a card per
   week with an analysis, newest first — "Woche vom 19. Okt.", its deals and average per deal, then the analysis as a
   forum text (`ForumBody`: its points as a list, each led in bold, and the bold "Fazit"), in the page's language (no per-day list, SKATGO-169: 「Per day 这个不用显示」). The line of the last day against before stands under a finished tournament's heading, with the link to the profile.

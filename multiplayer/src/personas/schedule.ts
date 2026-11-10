@@ -1,6 +1,6 @@
 import { DAILY_TIME_ZONE } from '../../../app/src/lib/skat/tournament'
 import { weekOf } from '../../../app/src/lib/skat/profile'
-import { type Persona, type Roster, RANDOM_STREAM_VERSION, random, rosterHash } from './config'
+import { type Persona, type Roster, RANDOM_STREAM_VERSION, random, rosterHash, personaOnDay, policyOf } from './config'
 
 const MINUTE = 60_000
 const berlinDay = new Intl.DateTimeFormat('en-CA', { timeZone: DAILY_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' })
@@ -20,6 +20,7 @@ export function dayMinutes(day: string): number[] {
 export type Activity = {
   player: string; day: string; slot: string; size: 0 | 1 | 6; start: number; due: number;
   seed: string; version: string; configHash: string; persona: Persona;
+  policy?: string;
 }
 const inWindow = (n: number, w: Persona['activity']['windows'][number]) =>
   w.start < w.end ? n >= w.start && n < w.end : n >= w.start || n < w.end
@@ -29,7 +30,8 @@ export function planDay(r: Roster, day: string): Activity[] {
   const configHash = rosterHash(r)
   const jobs: Activity[] = []
   const clocks = new Map<string, Map<number, number>>()
-  for (const p of r.personas) {
+  for (const profile of r.personas) {
+    const p = personaOnDay(profile, r, day)
     const seed = `${r.seed}|${RANDOM_STREAM_VERSION}|${p.id}|${day}`
     const quiet = random(`${r.seed}|${p.id}|quiet|${weekOf(day)}`)
     const quietStart = Math.floor(quiet() * 6)
@@ -66,7 +68,7 @@ export function planDay(r: Roster, day: string): Activity[] {
       const due = chosen.times[Math.floor(rand() * chosen.times.length)] + Math.floor(rand() * MINUTE)
       occupied.push([due - duration, due])
       jobs.push({ player: `sim:${p.id}`, day, ...slot, start: due - duration, due,
-        seed: `${seed}|game|${slot.slot}`, version: r.version, configHash, persona: p })
+        seed: `${seed}|game|${slot.slot}`, version: r.version, configHash, persona: p, policy: policyOf(p) })
     }
   }
   return jobs.sort((a, b) => a.due - b.due || a.player.localeCompare(b.player) || a.slot.localeCompare(b.slot))

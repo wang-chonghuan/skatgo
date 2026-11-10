@@ -13,7 +13,7 @@ explicit day for reproducible planning:
 START_DAY="$(TZ=Europe/Berlin date +%F)"
 node --import ./multiplayer/node_modules/tsx/dist/loader.mjs multiplayer/scripts/personas.ts validate
 node --import ./multiplayer/node_modules/tsx/dist/loader.mjs multiplayer/scripts/personas.ts plan --day "$START_DAY" --days 30
-node --import ./multiplayer/node_modules/tsx/dist/loader.mjs multiplayer/scripts/personas.ts calibrate --deals 30
+node --import ./multiplayer/node_modules/tsx/dist/loader.mjs multiplayer/scripts/personas.ts calibrate --partition smoke --deals 30 --output .intentfold/tmp/persona-smoke --cache .intentfold/tmp/persona-inputs
 ```
 
 Validation must derive all personas from the roster and reject empty input,

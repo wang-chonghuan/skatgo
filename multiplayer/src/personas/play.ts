@@ -5,7 +5,8 @@ import { xpOf } from '../../../app/src/lib/skat/xp'
 import { advance, computerTurn, type Logged, POSITION, raw, type SeatPlan } from '../computers'
 import { maxBid, seatBidding, SKAT_PAIRS, skatOrHand } from '../skatzero/bidding'
 import { type PlayerView, type Policy, SKATZERO_COMMIT } from '../skatzero/policy'
-import { random, type Persona } from './config'
+import { LEGACY_POLICY, random, type Persona } from './config'
+import { strengthDecisions, type DecisionAudit } from './decisions'
 
 export type Bidding = Awaited<ReturnType<typeof seatBidding>>
 export type SimDeal = {
@@ -13,11 +14,12 @@ export type SimDeal = {
 }
 export type GameResult = {
   mine: DealSummary; ai: DealSummary; log: Logged[];
-  choices: number; deviations: number; maxBid: number; xp: number;
+  choices: number; deviations: number; maxBid?: number; xp: number;
   input: { dealer: 0 | 1 | 2; deck: Card[] };
+  audit?: DecisionAudit[];
 }
 export type ActivityResult = { games: GameResult[]; total: number; model: string; policy: string }
-export const PERSONA_POLICY = 'skatgo-personas/1'
+export const PERSONA_POLICY = LEGACY_POLICY
 
 export async function biddingFor(base: Policy, spec: SimDeal, seed: string): Promise<Bidding> {
   const g = deal(spec.dealer, spec.deck)
@@ -46,12 +48,14 @@ export function personaPolicy(base: Policy, p: Persona, seed: string, stats = { 
   } }
 }
 
-export async function playGame(base: Policy, spec: SimDeal, plan: SeatPlan, selected = base, alive = () => true): Promise<{ summary: DealSummary; log: Logged[] }> {
+export async function playGame(base: Policy, spec: SimDeal, plan: SeatPlan, selected = base, alive = () => true,
+  ownTurn?: (g: ReturnType<typeof deal>) => Promise<Logged[]>): Promise<{ summary: DealSummary; log: Logged[] }> {
   const plans = [plan, ...spec.opponents]
   const log: Logged[] = []
   const end = await advance(deal(spec.dealer, spec.deck), log, (g) => {
     if (!alive()) throw new Error('persona_cancelled')
     const seat = actor(g)!
+    if (seat === 0 && ownTurn) return ownTurn(g)
     return computerTurn(g, seat, plans[seat], seat === 0 ? selected : base)
   }, undefined, true)
   if (end.phase !== 'done' && end.phase !== 'passedIn') throw new Error('persona_unfinished')
@@ -65,12 +69,20 @@ export async function simulateDeal(base: Policy, spec: SimDeal, p: Persona, seed
   if (!alive()) throw new Error('persona_cancelled')
   const aiSummary = ai ?? (await playGame(base, spec, ownPlan(own, -5), base, alive)).summary
   const stats = { choices: 0, deviations: 0 }
-  const plan = ownPlan(own, p.play.bidThreshold)
-  const mine = await playGame(base, spec, plan, personaPolicy(base, p, seed, stats), alive)
+  const audit: DecisionAudit[] = []
+  const adapter = p.play.strength ? strengthDecisions(base, p, seed, audit) : null
+  const plan = adapter ? adapter.plan(own) : ownPlan(own, p.play.bidThreshold)
+  const mine = await playGame(base, spec, plan, adapter?.policy ?? personaPolicy(base, p, seed, stats), alive,
+    adapter ? (g) => adapter.turn(g, plan) : undefined)
+  if (adapter) {
+    stats.choices = audit.filter((d) => d.phase === 'card' && d.candidates.some((c) => c.value < d.candidates[0].value)).length
+    stats.deviations = audit.filter((d) => d.phase === 'card' && d.loss > 0).length
+  }
   return { mine: mine.summary, ai: aiSummary, log: mine.log, ...stats, maxBid: plan.maxBid,
+    ...(adapter ? { audit } : {}),
     input: { dealer: spec.dealer, deck: spec.deck },
     xp: xpOf(mine.summary.scores[0] - aiSummary.scores[0], mine.summary.declarer === 0) }
 }
-export const resultOf = (games: GameResult[]): ActivityResult => ({
-  games, total: games.reduce((s, g) => s + g.mine.scores[0], 0), model: SKATZERO_COMMIT, policy: PERSONA_POLICY,
+export const resultOf = (games: GameResult[], policy = PERSONA_POLICY): ActivityResult => ({
+  games, total: games.reduce((s, g) => s + g.mine.scores[0], 0), model: SKATZERO_COMMIT, policy,
 })

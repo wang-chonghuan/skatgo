@@ -72,9 +72,14 @@ function Gap({ deal }: { deal: ProfileDeal }) {
   return <span data-testid="history-gap" {...stylex.props(typography.appBtnStrong, styles.number)}>{gap === null ? '–' : signed(gap)}</span>
 }
 
-/** The head over the differences: what they are. */
-function GapHead() {
-  return <span {...stylex.props(typography.meta, styles.gapHead)}>{m.history_vs_ai()}</span>
+/** The list's head: what each column is — the cards (the human: 「手牌列最好也加个列名」) and the difference to the AI. */
+function Head() {
+  return (
+    <>
+      <span {...stylex.props(typography.meta, styles.gapHead)}>{m.history_cards()}</span>
+      <span {...stylex.props(typography.meta, styles.gapHead)}>{m.history_vs_ai()}</span>
+    </>
+  )
 }
 
 /** The record's rows, newest first: the ten cards, under them what happened, where and when, and under that the way to
@@ -82,7 +87,7 @@ function GapHead() {
 export function DealRows({ deals, action }: { deals: ProfileDeal[]; action?: (d: ProfileDeal) => ReactNode }) {
   return (
     <ul data-testid="history-rows" {...stylex.props(styles.list)}>
-      <li aria-hidden="true" {...stylex.props(styles.headRow)}><GapHead /></li>
+      <li aria-hidden="true" {...stylex.props(styles.headRow)}><Head /></li>
       {deals.map((d) => (
         <li key={d.key} data-testid="history-row" data-key={d.key} {...stylex.props(styles.row)}>
           <div {...stylex.props(styles.main)}>
@@ -101,7 +106,7 @@ export function DealRows({ deals, action }: { deals: ProfileDeal[]; action?: (d:
 export function DealLines({ deals }: { deals: ProfileDeal[] }) {
   return (
     <ul data-testid="history-lines" {...stylex.props(styles.list)}>
-      <li aria-hidden="true" {...stylex.props(styles.headRow, styles.lineHead)}><GapHead /></li>
+      <li aria-hidden="true" {...stylex.props(styles.headRow, styles.lineHead)}><Head /></li>
       {deals.map((d) => (
         <li key={d.key} data-testid="history-line" data-key={d.key} {...stylex.props(styles.line)}>
           <Hand deal={d} line />
@@ -114,7 +119,7 @@ export function DealLines({ deals }: { deals: ProfileDeal[] }) {
 
 const styles = stylex.create({
   list: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
-  headRow: { display: 'flex', justifyContent: 'flex-end', paddingBottom: space.x6 },
+  headRow: { display: 'flex', justifyContent: 'space-between', gap: space.x12, paddingBottom: space.x6 },
   lineHead: { paddingBottom: space.x2, paddingInlineEnd: space.x16 },
   gapHead: { color: color.slate },
   row: {

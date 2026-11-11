@@ -628,7 +628,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`landingHeading`) and a line, then "Was gelöscht wird", "Was bleibt" and "So löschst du es" (`dialogTitle`) with
   bulleted lists (`body`); signed in, "Mein Konto löschen" (`stop`, `lg`), asked once more in the kit's `Modal` ("Ja,
   löschen" `stop`, "Abbrechen" `quiet`); signed out, "Anmelden" (`quiet`, `lg`); then the line for whoever cannot sign in,
-  with the operator's address as a link. After the deletion the page comes back signed out under a `good` panel saying so.
+  with the operator's address as a link. After the deletion the page comes back signed out with only a `good` panel saying so and "Start"
+  (`go`, `lg`) to the front page.
 - **The offline page** (`offline-page.tsx`, SKATGO-185): what the service worker shows without a network — the H1
   ("Keine Verbindung"), a line, and "Noch einmal versuchen" (`go`, `lg`), in the frame like any page.
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible

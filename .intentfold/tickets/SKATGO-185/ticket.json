@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-185",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-185",
   "branch": "SKATGO-185-android-app",

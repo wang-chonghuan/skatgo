@@ -212,6 +212,9 @@ export const dims = stylex.defineVars({
    *  "Total" / "Gesamt"), you and the AI in two equal columns, then the difference with the row's
    *  chevron. Every row is its own grid, so the columns line up only if none sizes to its content. */
   vsAiColumns: '3.5em minmax(0, 1fr) minmax(0, 1fr) 5em',
+  /** The same on a phone (SKATGO-186, the human: 「you和旁边的points不该换行，应该在一行，我是说表头」): the deal's number and the
+   *  chevron need little, so the two score columns get room for "You Points" / "AI Points" on one line. */
+  vsAiColumnsPhone: '2.5em minmax(0, 1fr) minmax(0, 1fr) 2em',
   /** The front page's hero: the headline two thirds, the picture one third (the human, SKATGO-29). */
   contractColumns: 'repeat(6, 1fr)',
   contractColumnsPhone: 'repeat(3, 1fr)',

@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { track } from '~/lib/analytics'
 import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortHand } from '~/lib/skat/cards'
 import { type Face, faceOf, faceSrc } from '~/lib/skat/face'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
@@ -666,7 +667,10 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             title={m.powerups_title()}
             aria-expanded={powerUps}
             data-testid="skat-power-ups-tab"
-            onClick={() => setPowerUps(true)}
+            onClick={() => {
+              setPowerUps(true)
+              track('powerup_opened', { tool: powerUpOf(game)! })
+            }}
             {...stylex.props(styles.hintTab, styles.hintTabOverDrawer)}
           >
             <Lightbulb size={icon.table} strokeWidth={icon.outline} />

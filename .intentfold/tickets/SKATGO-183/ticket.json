@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-183",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-183",
+  "branch": "SKATGO-183-powerup-analytics",
+  "base": "4913ad5",
+  "ports": { "web": 55183, "multiplayer": 56183, "database": 57183 }
+}

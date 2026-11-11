@@ -4,8 +4,9 @@
 // below it to read, and its search entry is the front page. A Skat-Tricks exercise is not one either (SKATGO-103,
 // the human: 「单页不收录，但是题目页要收录」): the list of all of them, /skat-tricks, is the entry. A player's record of play
 // is theirs alone (SKATGO-128); a shared result and its practice table are a message's, not a search entry (SKATGO-132);
-// today's deal played again is its finisher's alone (SKATGO-177).
-export const PRIVATE_PAGES = ['/play', '/daily/play', '/table/$id', '/skat-tricks/$exercise', '/profile', '/d/$code', '/d/$code/play', '/daily/replay', '/replay'] as const
+// today's deal played again is its finisher's alone (SKATGO-177). Deleting an account and the offline page are service
+// pages, not search entries (SKATGO-185).
+export const PRIVATE_PAGES = ['/play', '/daily/play', '/table/$id', '/skat-tricks/$exercise', '/profile', '/d/$code', '/d/$code/play', '/daily/replay', '/replay', '/delete-account', '/offline'] as const
 
 const matches = (path: string, route: string) => new RegExp(`^${route.replace(/\$[A-Za-z0-9_]+/g, '[^/]+')}$`).test(path)
 

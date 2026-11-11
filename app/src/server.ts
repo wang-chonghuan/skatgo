@@ -1,5 +1,6 @@
 import handler from '@tanstack/react-start/server-entry'
 
+import { handleAccount } from './lib/account-handler'
 import { RELAY_PATH } from './lib/analytics'
 import { relayAnalytics } from './lib/analytics-relay'
 import { handleCard, handleDaily } from './lib/daily-handler'
@@ -11,6 +12,7 @@ import { handleTricks } from './lib/tricks-handler'
 import { chooseLocale, rootLocale } from './lib/locale'
 import { movedTo } from './lib/moved'
 import { buildSitemap } from './lib/sitemap'
+import { webManifest } from './lib/web-manifest'
 import { paraglideMiddleware } from './paraglide/server.js'
 import { defineCustomServerStrategy } from './paraglide/runtime.js'
 
@@ -30,6 +32,7 @@ defineCustomServerStrategy('custom-skatgo', {
 // Answered here, before the middleware and without the page router (SKATGO-29):
 //   moved pages   301 to where they live now (lib/moved.ts);
 //   sitemap.xml   built from the page list (lib/sitemap.ts);
+//   site.webmanifest  the web app manifest, its colour the design system's (SKATGO-185, lib/web-manifest.ts);
 //   sitemap-forum.xml  the forum's posts search engines may read, from the forum (SKATGO-118,
 //                 lib/forum-handler.ts);
 //   /             a visitor whose language is not German goes to /en, the query kept (SKATGO-113,
@@ -41,8 +44,8 @@ defineCustomServerStrategy('custom-skatgo', {
 // routes, not pages — no language prefix, no redirect, and nothing that reads the page route tree has to know
 // about them. The daily tournament's endpoints (SKATGO-35,
 // lib/daily-handler.ts), free play's (SKATGO-40, lib/free-handler.ts) and a private table's admission
-// and its referral (SKATGO-61, SKATGO-117, lib/room-handler.ts), the ladder's record (SKATGO-109, lib/tricks-handler.ts)
-// and the forum (SKATGO-118, lib/forum-handler.ts). The assistant's /api/ask is gone (SKATGO-130). Product analytics
+// and its referral (SKATGO-61, SKATGO-117, lib/room-handler.ts), the ladder's record (SKATGO-109, lib/tricks-handler.ts),
+// the forum (SKATGO-118, lib/forum-handler.ts) and an account's deletion (SKATGO-185, lib/account-handler.ts). The assistant's /api/ask is gone (SKATGO-130). Product analytics
 // reaches PostHog through /hx (SKATGO-152, lib/analytics-relay.ts).
 export default {
   fetch(req: Request): Promise<Response> {
@@ -53,11 +56,13 @@ export default {
     if (url.pathname.startsWith('/api/tricks/')) return handleTricks(req)
     if (url.pathname.startsWith('/api/forum/')) return handleForum(req)
     if (url.pathname.startsWith('/api/card/')) return handleCard(req)
+    if (url.pathname.startsWith('/api/account/')) return handleAccount(req)
     if (url.pathname.startsWith(`${RELAY_PATH}/`)) return relayAnalytics(req)
     const moved = movedTo(url.pathname, url.search)
     // Keep the public scheme when TLS terminates at the reverse proxy.
     if (moved) return Promise.resolve(new Response(null, { status: 301, headers: { location: moved } }))
     if (url.pathname === '/sitemap-forum.xml') return forumSitemap()
+    if (url.pathname === '/site.webmanifest') return Promise.resolve(webManifest())
     if (url.pathname === '/sitemap.xml') return Promise.resolve(new Response(buildSitemap(), { headers: { 'content-type': 'application/xml; charset=utf-8' } }))
     if (url.pathname === '/') {
       const vary = { vary: 'Accept-Language, Cookie' }

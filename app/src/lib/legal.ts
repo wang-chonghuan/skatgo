@@ -1,6 +1,7 @@
 import type { Locale } from '~/paraglide/runtime'
 
-type LegalSection = { id: string; title: string; paragraphs: string[]; contact?: boolean }
+/** `link`: a page of the site the section points to, with its label (SKATGO-185: deleting an account). */
+type LegalSection = { id: string; title: string; paragraphs: string[]; contact?: boolean; link?: { to: '/delete-account'; label: string } }
 type LegalDocument = { intro: string; sections: LegalSection[] }
 type LegalCopy = { privacy: LegalDocument; terms: LegalDocument }
 
@@ -98,12 +99,21 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           ],
         },
         {
+          id: 'deletion',
+          title: 'Deleting your account',
+          paragraphs: [
+            'You can delete your account yourself at any time, on skatgo.com or in the SkatGo app for Android: in the settings, under your nickname, or on the page linked below. This deletes your account at Clerk and everything SkatGo holds under it: your nickname, your daily tournament entries and places on the boards, your record of play, including the games of devices you signed in on, your practice answers, your shared results and the record of whose table you signed up at.',
+            'Your forum posts and comments stay public, under "Deleted player" and without any link to you. Data saved in your browser stays until you clear it. What service providers keep under their own terms, such as logs, is not part of this deletion.',
+          ],
+          link: { to: '/delete-account', label: 'Delete your account' },
+        },
+        {
           id: 'choices',
           title: 'Your choices and data requests',
           paragraphs: [
             'You can remain signed out, clear browser site data, and manage your Google connection in your Google Account. Revoking Google access does not itself delete data already held by Clerk or SkatGo.',
             'Applicable privacy law may give you rights to access, correct, delete or receive your personal data, restrict processing, object to processing, or withdraw consent where processing relies on consent. You may also complain to your data protection authority.',
-            'Browser data remains until cleared or expired. Account and tournament records can remain after you stop using the site; account deletion does not automatically erase tournament records or provider logs. You can contact the operator above to request access or deletion, including tournament records. Include enough information to identify the relevant account or entry, but do not send your password.',
+            'Browser data remains until cleared or expired. Account and tournament records remain after you stop using the site, until you delete your account (see "Deleting your account"). You can also contact the operator above to request access or deletion. Include enough information to identify the relevant account or entry, but do not send your password.',
           ],
         },
       ],
@@ -222,12 +232,21 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           ],
         },
         {
+          id: 'deletion',
+          title: 'Konto löschen',
+          paragraphs: [
+            'Du kannst dein Konto jederzeit selbst löschen, auf skatgo.com oder in der SkatGo-App für Android: in den Einstellungen unter deinem Spitznamen oder auf der unten verlinkten Seite. Gelöscht werden dein Konto bei Clerk und alles, was SkatGo darunter speichert: dein Spitzname, deine Einträge im Tagesturnier und deine Plätze in den Wertungen, dein Skat-Profil einschließlich der Spiele von Geräten, auf denen du angemeldet warst, deine Übungsantworten, deine geteilten Ergebnisse und der Vermerk, an wessen Tisch du dich registriert hast.',
+            'Deine Beiträge und Kommentare im Forum bleiben öffentlich, unter „Gelöschter Spieler“ und ohne Bezug zu dir. Daten in deinem Browser bleiben, bis du sie löschst. Was Dienstleister nach ihren eigenen Bedingungen speichern, etwa Protokolle, gehört nicht zu dieser Löschung.',
+          ],
+          link: { to: '/delete-account', label: 'Konto löschen' },
+        },
+        {
           id: 'choices',
           title: 'Deine Möglichkeiten und Datenanfragen',
           paragraphs: [
             'Du kannst ohne Anmeldung bleiben, Websitedaten im Browser löschen und die Google-Verbindung in deinem Google-Konto verwalten. Der Widerruf des Google-Zugriffs löscht nicht automatisch bereits bei Clerk oder SkatGo gespeicherte Daten.',
             'Das anwendbare Datenschutzrecht kann dir Rechte auf Auskunft, Berichtigung, Löschung, Datenübertragbarkeit, Einschränkung und Widerspruch geben. Beruht eine Verarbeitung auf Einwilligung, kannst du diese widerrufen. Du kannst dich auch bei deiner Datenschutzaufsichtsbehörde beschweren.',
-            'Browserdaten bleiben bis zum Löschen oder Ablauf erhalten. Konto- und Turnierdaten können auch nach Ende der Nutzung gespeichert bleiben; eine Kontolöschung entfernt nicht automatisch Turnierdaten oder Dienstleisterprotokolle. Du kannst bei der oben genannten Betreiberin Auskunft oder Löschung einschließlich der Turnierdaten anfragen. Nenne ausreichend Angaben zur Zuordnung des Kontos oder Eintrags, aber sende kein Passwort.',
+            'Browserdaten bleiben bis zum Löschen oder Ablauf erhalten. Konto- und Turnierdaten bleiben auch nach Ende der Nutzung gespeichert, bis du dein Konto löschst (siehe „Konto löschen“). Du kannst auch bei der oben genannten Betreiberin Auskunft oder Löschung anfragen. Nenne ausreichend Angaben zur Zuordnung des Kontos oder Eintrags, aber sende kein Passwort.',
           ],
         },
       ],

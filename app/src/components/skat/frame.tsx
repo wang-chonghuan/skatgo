@@ -186,7 +186,7 @@ export function SettingsButton() {
 
 /** The account's nickname, first in the settings (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行
  *  榜就用这个昵称，改一次，整体都改」): the name every board, the XP board and the forum show. Nothing for a guest. Under it,
- *  the way to the account's record of play (SKATGO-128). */
+ *  the way to the account's record of play (SKATGO-128) and to deleting the account (SKATGO-185). */
 function Nickname({ onClose }: { onClose: () => void }) {
   const account = useAccount()
   const [value, setValue] = useState('')
@@ -228,7 +228,11 @@ function Nickname({ onClose }: { onClose: () => void }) {
           {problem === 'taken' ? m.daily_nick_taken() : m.daily_nick_refused()}
         </p>
       ) : null}
-      <Link to="/profile" data-testid="settings-profile" onClick={onClose} {...stylex.props(typography.appLink, styles.profileLink)}>{m.profile_title()}</Link>
+      {/* The account's record of play (SKATGO-128) and, quieter, its deletion (SKATGO-185). */}
+      <div {...stylex.props(styles.accountLinks)}>
+        <Link to="/profile" data-testid="settings-profile" onClick={onClose} {...stylex.props(typography.appLink, styles.profileLink)}>{m.profile_title()}</Link>
+        <Link to="/delete-account" data-testid="settings-delete-account" onClick={onClose} {...stylex.props(typography.appLink, styles.deleteLink)}>{m.settings_delete_account()}</Link>
+      </div>
     </section>
   )
 }
@@ -531,7 +535,9 @@ const styles = stylex.create({
   // The button takes the field's height.
   nickRow: { display: 'flex', alignItems: 'stretch', gap: space.x8 },
   refused: { margin: 0, color: color.bad },
-  profileLink: { alignSelf: 'flex-start', color: color.info },
+  accountLinks: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', gap: space.x12 },
+  profileLink: { color: color.info },
+  deleteLink: { color: color.slate },
   sectionTitle: { margin: 0, color: color.slate, textTransform: 'uppercase' },
   deck: {
     display: 'flex',

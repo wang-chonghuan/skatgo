@@ -168,6 +168,22 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/tisch/:id'],
       ],
     },
+    // Deleting an account (SKATGO-185): the page the settings and Google Play point to.
+    {
+      pattern: '/delete-account',
+      localized: [
+        ['en', '/en/delete-account'],
+        ['de', '/de/konto-loeschen'],
+      ],
+    },
+    // What the service worker shows when a page cannot be reached (SKATGO-185).
+    {
+      pattern: '/offline',
+      localized: [
+        ['en', '/en/offline'],
+        ['de', '/de/offline'],
+      ],
+    },
     // About SkatGo (SKATGO-134): what the game pages no longer explain.
     {
       pattern: '/about',

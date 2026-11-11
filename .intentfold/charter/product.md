@@ -280,13 +280,14 @@ search entry.
 
 A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted
 「官方发公告，官方发一些技术的文章，用户可以评论，用户也可以发文章……就做一个简单版本的。以后既能用来seo又有个公告和用户交流，放文章的地方」.
-Four sections: announcements, which only SkatGo writes; articles, by SkatGo or a player; discussion; and feedback.
+Two sections: announcements, which only SkatGo writes; and articles, by SkatGo or a player (discussion and feedback were
+removed in SKATGO-186, the human: 「请删除feedback和discussion两个类，没用处」).
 The list shows them together, newest activity first, the latest announcement of the last two weeks on top, and
 can be narrowed to one. Under every post, comments in the order written, flat — no reply to a comment; whom one
 means is "@Name" in the text (the human: 「评论不要搞嵌套，太麻烦，用户自己 @ 一个人就行，也不用通知」). Nothing in the forum
 notifies anyone. Anyone reads; writing takes an account, and a player writes under their leaderboard name, never
 an email address; SkatGo writes as SkatGo. SkatGo's posts are for search engines; a player's post only once SkatGo
-marks it, and feedback never. The latest announcement also stands as one line on the front page and on `/daily`
+marks it. The latest announcement also stands as one line on the front page and on `/daily`
 for two weeks. The least moderation the law asks of a host: anyone signed in may report a post or comment,
 SkatGo hides with a reason its author sees, an author may delete their own, and each account writes only so much
 a day. It is one forum for both languages (the human, in review: 「德语和英语论坛不要分开」): its own words follow the

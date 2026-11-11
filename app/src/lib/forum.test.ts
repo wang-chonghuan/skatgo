@@ -22,16 +22,15 @@ describe('forum addresses', () => {
 
 describe('who may post where', () => {
   it('keeps announcements to the official', () => {
-    expect(sectionsFor(false)).toEqual(['articles', 'talk', 'feedback'])
-    expect(sectionsFor(true)).toEqual(['news', 'articles', 'talk', 'feedback'])
+    expect(sectionsFor(false)).toEqual(['articles'])
+    expect(sectionsFor(true)).toEqual(['news', 'articles'])
   })
-  it('offers search engines the official posts and marked ones, never hidden or feedback', () => {
-    const base = { section: 'talk' as const, official: false, indexed: false, hidden: null }
+  it('offers search engines the official posts and marked ones, never hidden ones', () => {
+    const base = { section: 'articles' as const, official: false, indexed: false, hidden: null }
     expect(postIndexable(base)).toBe(false)
     expect(postIndexable({ ...base, indexed: true })).toBe(true)
     expect(postIndexable({ ...base, official: true })).toBe(true)
     expect(postIndexable({ ...base, official: true, hidden: 'Spam' })).toBe(false)
-    expect(postIndexable({ ...base, section: 'feedback', official: true, indexed: true })).toBe(false)
   })
 })
 

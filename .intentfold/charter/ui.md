@@ -310,8 +310,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     picture of event cards): the picture to the card's edges at the top (`dims.homePicture`), then the title
     (`optionTitle`, navy) and one line (`optionDesc`, slate) — "Privater Tisch" with the illustration the hero once had
     (`hero-table.webp`, SKATGO-33) to `/with-friends`, and "Forum" with the human's picture of friends at a card table
-    (`forum-card.webp`, cropped to the card's shape, no icon; 「论坛的卡片图片用这个图片，剪裁成合适的，不要加图标」) and "News,
-    articles, discussion and feedback." to `/forum`, then "Üben" with cover B of three drawn for it (`practice-card.webp`, a grandfather
+    (`forum-card.webp`, cropped to the card's shape, no icon; 「论坛的卡片图片用这个图片，剪裁成合适的，不要加图标」) and "News
+    and articles about Skat." (SKATGO-186) to `/forum`, then "Üben" with cover B of three drawn for it (`practice-card.webp`, a grandfather
     and a girl over cards, a puzzle piece above, in the forum picture's flat style; SKATGO-149, the human: 「把practice放到forum下面」, 「选B」) and "Endspiel-Rätsel und
     Aufgaben für alle, die die Regeln schon kennen." to `/skat-tricks` — on PC in the wide third column at `dims.half`, so as wide as a
     colour card, under `bp.cards` the next free place. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).

@@ -29,8 +29,6 @@ import { Btn, Panel, TextArea, TextField, Toggle, toggleLook } from './ui'
 const SECTION_NAME: Record<ForumSection, () => string> = {
   news: m.forum_section_news,
   articles: m.forum_section_articles,
-  talk: m.forum_section_talk,
-  feedback: m.forum_section_feedback,
 }
 
 /** A date the same on the server and in the browser: the day, as UTC sees it. */
@@ -146,7 +144,7 @@ function WriteButton({ viewer, onWrite }: { viewer: ForumViewer; onWrite: () => 
 
 function Composer({ official, initial, onCancel }: { official: boolean; initial?: ForumSection; onCancel: () => void }) {
   const allowed = sectionsFor(official)
-  const [section, setSection] = useState<ForumSection>(initial && allowed.includes(initial) ? initial : official ? 'news' : 'talk')
+  const [section, setSection] = useState<ForumSection>(initial && allowed.includes(initial) ? initial : official ? 'news' : 'articles')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -344,7 +342,7 @@ function Actions({ viewer, post, comment }: { viewer: ForumViewer; post: ForumPo
     setMode('idle')
     void router.invalidate()
   }
-  const markable = !comment && !post.official && post.section !== 'feedback'
+  const markable = !comment && !post.official
   return (
     <div {...stylex.props(styles.actions)}>
       {mode === 'idle' ? (

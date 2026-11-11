@@ -11,7 +11,7 @@ import { Rejected, secretEquals } from './model'
 import type { Store } from './store'
 import { type Translation, translateForAll, translationsOf } from './translate'
 
-// The forum (SKATGO-118): posts in four sections, in whatever language their authors write, flat comments, and the least moderation the law
+// The forum (SKATGO-118): posts in two sections (SKATGO-186), in whatever language their authors write, flat comments, and the least moderation the law
 // asks of a host — a report, the official hiding with a reason, authors deleting their own. The web service
 // calls these routes with the admission key and names the viewer: a signed-in account (`user:<Clerk id>`) or
 // nobody, and whether the account is the official's. Only names leave here, never a player id: whether
@@ -243,8 +243,8 @@ export async function forumModerate(store: Store, i: z.infer<typeof moderateInpu
     if (i.action === 'index' || i.action === 'unindex') {
       const { rows } = await c.query('SELECT section, official FROM forum_posts WHERE id = $1', [i.post])
       if (!rows[0]) throw new NotFound()
-      // The official's own posts are always indexed, feedback never (SKATGO-118).
-      if (rows[0].official || rows[0].section === 'feedback') throw new Rejected('not_markable')
+      // The official's own posts are always indexed (SKATGO-118).
+      if (rows[0].official) throw new Rejected('not_markable')
       await c.query('UPDATE forum_posts SET indexed = $2 WHERE id = $1', [i.post, i.action === 'index'])
       return { done: true }
     }
@@ -284,7 +284,7 @@ export async function forumLatest(store: Store, i: z.infer<typeof latestInput>, 
 export async function forumSitemap(store: Store) {
   const { rows } = await store.pool.query(
     `SELECT id, title, last_activity FROM forum_posts
-      WHERE hidden_reason IS NULL AND section <> 'feedback' AND (official OR indexed) ORDER BY id`)
+      WHERE hidden_reason IS NULL AND (official OR indexed) ORDER BY id`)
   return { posts: rows.map((r) => ({ id: num(r.id), title: r.title, lastActivity: num(r.last_activity) })) }
 }
 

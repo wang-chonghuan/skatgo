@@ -100,9 +100,11 @@ export function ForumPage() {
 
 function PostCard({ post }: { post: ForumPostSummary }) {
   return (
-    <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} {...stylex.props(styles.card)}>
-      {/* In the reader's language (SKATGO-124); the original is one tap away on the post's page. */}
-      <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.optionDesc, styles.cardTitle)}>{post.translated?.title ?? post.title}</Link>
+    <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} {...stylex.props(styles.card, styles.listCard)}>
+      {/* In the reader's language (SKATGO-124); the original is one tap away on the post's page. The title's link covers
+          the whole card (SKATGO-186, the human: 「手机上，论坛打不开comments」): a tap on the excerpt or "5 comments" opens
+          the post too, not only one on the title. */}
+      <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.optionDesc, styles.cardTitle, styles.cardLink)}>{post.translated?.title ?? post.title}</Link>
       {post.excerpt ? <p data-testid="forum-excerpt" {...stylex.props(typography.bodySmall, styles.excerpt)}>{post.translated?.excerpt ?? post.excerpt}</p> : null}
       <Meta of={post} />
       {post.hidden !== null ? <p {...stylex.props(typography.small, styles.hidden)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
@@ -493,6 +495,8 @@ const styles = stylex.create({
     borderRadius: radii.option,
     boxShadow: elev.option,
   },
+  listCard: { position: 'relative' },
+  cardLink: { '::after': { content: "''", position: 'absolute', inset: 0, borderRadius: 'inherit' } },
   cardTitle: {
     color: { default: color.navy, ':hover': color.info },
     textDecoration: 'none',

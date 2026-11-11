@@ -729,7 +729,7 @@ const styles = stylex.create({
   frameYou: { outlineStyle: 'solid', outlineColor: color.navy },
   frameAi: { outlineStyle: 'solid', outlineColor: color.info },
   whoTag: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.onColor },
-  whoYou: { backgroundColor: color.navy },
+  whoYou: { backgroundColor: color.youTag },
   whoAi: { backgroundColor: color.info },
   table: { display: 'flex', flexDirection: 'column', color: color.navy },
   // Deal, you, the AI, the difference: the same columns in the header, every row and the total.

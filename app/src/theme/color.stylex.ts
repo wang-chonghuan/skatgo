@@ -104,5 +104,8 @@ export const color = stylex.defineVars({
   /** What a picture with a white ground is multiplied with (SKATGO-184): white by day, so it shows as drawn; a soft
    *  grey at night, so its white ground does not glare from a dark page. */
   imageDim: { default: '#FFFFFF', [NIGHT]: 'light-dark(#FFFFFF, #B4BCC6)' },
+  /** The "You" tag (SKATGO-186, the human: 「黑暗模式所有的you标签都不对，you应该是深色」): navy by day, a deep blue at night,
+   *  as the navy section tile, so it stays a dark chip with white text instead of following `navy` to near white. */
+  youTag: { default: '#022657', [NIGHT]: 'light-dark(#022657, #1A4383)' },
   scrim: { default: 'rgba(0, 0, 0, 0.5)', [NIGHT]: 'light-dark(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.66))' },
 })

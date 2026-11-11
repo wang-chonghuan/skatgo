@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-186",
   "mode": "autonomous",
-  "stage": "developing",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-186",
   "branch": "SKATGO-186-night-forum-fixes",

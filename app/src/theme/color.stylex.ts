@@ -50,8 +50,10 @@ export const color = stylex.defineVars({
   tileNavy: { default: '#022657', [NIGHT]: 'light-dark(#022657, #1A4383)' },
 
   // The card table
-  /** A playing card's face and the frame around its back: white, as a real card, day and night (SKATGO-184). */
-  cardFace: '#FFFFFF',
+  /** A playing card's face and the frame around its back: white by day, as a real card; at night a soft grey-white
+   *  (SKATGO-184, the human: 「请问牌面有没有方法简单调暗，而不用换图？」「做一下，我看看效果」), which the card's drawing
+   *  is multiplied with, so the whole card dims evenly without new art. */
+  cardFace: { default: '#FFFFFF', [NIGHT]: 'light-dark(#FFFFFF, #D8DCE1)' },
   /** The court frame's hairline on a card face (SKATGO-184: the light `slate`, kept at night). */
   cardLine: '#5D6D7D',
   /** The outline of the hand that asks for a tap (SKATGO-184: the light `navy`, kept at night). */

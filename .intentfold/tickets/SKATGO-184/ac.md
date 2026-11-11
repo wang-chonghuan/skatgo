@@ -15,5 +15,5 @@ Production build on 55184 (web) and 56184 (multiplayer). Playwright with `colorS
 4. **Readable everywhere.**
    - Screenshot sweep at night: front page, course page and a lesson, rules, Skat-Tricks list and an exercise, bidding practice, forum and a post, profile, daily, free play table (bidding and play), friends' room page, sign-in (Clerk), settings dialog. Phone and desktop, EN; DE for the front page and the table.
    - Scripted contrast scan on each: every visible text node's colour vs. its effective background, contrast ≥ 3:1. No element keeps a light background (luminance > 0.8) except playing cards and images.
-5. **Table unchanged.** In free play at night, the felt's background and a card face's colour equal the light mode's.
+5. **Table.** In free play, the felt's background is the same day and night. A card face is white by day and `#D8DCE1` at night, and the card's drawing is multiplied with it (rework round 1).
 6. **No sideways scroll and no layout change:** element boxes on the front page are equal in both modes.

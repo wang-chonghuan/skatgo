@@ -238,13 +238,15 @@ const styles = stylex.create({
     borderWidth: 0,
     borderRadius: radii.card,
     backgroundColor: color.cardFace,
+    // The drawing is multiplied with the face (SKATGO-184): white by day, so nothing changes; at night the card dims.
+    isolation: 'isolate',
     boxShadow: elev.card,
     overflow: 'hidden',
     transitionProperty: 'transform, box-shadow, opacity, filter',
     transitionDuration: { default: timing.card, [bp.reducedMotion]: timing.instant },
     transitionTimingFunction: timing.easeOut,
   },
-  face: { display: 'block', width: '100%', height: '100%' },
+  face: { display: 'block', width: '100%', height: '100%', mixBlendMode: 'multiply' },
   back: {
     display: 'block',
     width: '100%',

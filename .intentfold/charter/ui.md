@@ -80,8 +80,10 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
   - body text a soft grey, titles near white;
   - links and the AI blue lifted;
   - a picture with a white ground multiplied with `color.imageDim`.
-- **What stays the same day and night:** the action colours, the section tiles (the navy one lifted so it shows), the
-  card table and its board, and the playing cards (`cardFace`, `cardLine`).
+- **What stays the same day and night:** the action colours, the section tiles (the navy one lifted so it shows), and
+  the card table and its board.
+- **The playing cards dim at night without new art:** `cardFace` turns a soft grey-white, and the card's drawing is
+  multiplied with it.
 
 | Surface | What it is | Built from | Text on it |
 |---|---|---|---|
@@ -106,7 +108,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); a deal's result box (SKATGO-145, SKATGO-166), `goodSoft` when the player's side won and `badSoft` when it lost. `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson |
 | `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
-| `cardFace`, `cardLine`, `tapLine` | a playing card's white face and its back's frame, the court frame's hairline, the outline of the hand that asks for a tap; the same day and night |
+| `cardFace`, `cardLine`, `tapLine` | a playing card's face and its back's frame (white by day, a soft grey-white at night, which the card's drawing is multiplied with), the court frame's hairline, the outline of the hand that asks for a tap |
 | `edge` | a card's or panel's hairline at night, carried first in its `elev`; none by day |
 | `imageDim` | what a picture with a white ground is multiplied with: white by day, a soft grey at night |
 | `scrim` | the dim behind a dialog |

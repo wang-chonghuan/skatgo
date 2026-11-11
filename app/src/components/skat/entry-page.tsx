@@ -59,14 +59,14 @@ export function EntryPage() {
           card table (`forum-card.webp`, cropped to the card), then the exercises (SKATGO-149). */}
       <div data-testid="entry-more" {...stylex.props(styles.more)}>
         <Link to="/with-friends" data-testid="entry-card" data-section="friends" {...stylex.props(styles.white, styles.picture, styles.lift)}>
-          <img src="/hero-table.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage)} />
+          <span {...stylex.props(styles.pictureDim)}><img src="/hero-table.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage, styles.pictureMultiply)} /></span>
           <span {...stylex.props(styles.pictureBody)}>
             <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.home_friends_title()}</h2>
             <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_friends_text()}</span>
           </span>
         </Link>
         <Link to="/forum" data-testid="entry-card" data-section="forum" {...stylex.props(styles.white, styles.picture, styles.lift)}>
-          <img src="/forum-card.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage)} />
+          <span {...stylex.props(styles.pictureDim)}><img src="/forum-card.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage, styles.pictureMultiply)} /></span>
           <span {...stylex.props(styles.pictureBody)}>
             <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.home_forum_title()}</h2>
             <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_forum_text()}</span>
@@ -75,7 +75,7 @@ export function EntryPage() {
         {/* The exercises after the forum (SKATGO-149, the human: 「把practice放到forum下面」, cover B of three drawn for it):
             straight to them (SKATGO-105); the article is only for search engines. */}
         <Link to="/skat-tricks" data-testid="entry-card" data-section="tricks" {...stylex.props(styles.white, styles.picture, styles.lift, styles.third)}>
-          <img src="/practice-card.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage)} />
+          <span {...stylex.props(styles.pictureDim)}><img src="/practice-card.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage, styles.pictureMultiply)} /></span>
           <span {...stylex.props(styles.pictureBody)}>
             <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.home_practice()}</h2>
             <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_practice_text()}</span>
@@ -326,6 +326,9 @@ const styles = stylex.create({
   picture: { padding: 0, gap: 0, overflow: 'hidden' },
   pictureTop: { display: 'block', width: '100%', aspectRatio: dims.homePicture },
   pictureImage: { objectFit: 'cover' },
+  // A picture's white ground dimmed at night (SKATGO-184): multiplied with `color.imageDim`, which is white by day.
+  pictureDim: { display: 'block', backgroundColor: color.imageDim, isolation: 'isolate' },
+  pictureMultiply: { mixBlendMode: 'multiply' },
   pictureBody: { display: 'flex', flexDirection: 'column', gap: space.x8, padding: { default: space.x20, [bp.phone]: space.x16 } },
   pictureText: { margin: 0, color: color.slate },
   // The third picture card on PC: in the wide third column, half of it — as wide as one colour card (both a quarter of

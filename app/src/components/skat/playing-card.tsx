@@ -237,14 +237,16 @@ const styles = stylex.create({
     padding: 0,
     borderWidth: 0,
     borderRadius: radii.card,
-    backgroundColor: color.surface,
+    backgroundColor: color.cardFace,
+    // The drawing is multiplied with the face (SKATGO-184): white by day, so nothing changes; at night the card dims.
+    isolation: 'isolate',
     boxShadow: elev.card,
     overflow: 'hidden',
     transitionProperty: 'transform, box-shadow, opacity, filter',
     transitionDuration: { default: timing.card, [bp.reducedMotion]: timing.instant },
     transitionTimingFunction: timing.easeOut,
   },
-  face: { display: 'block', width: '100%', height: '100%' },
+  face: { display: 'block', width: '100%', height: '100%', mixBlendMode: 'multiply' },
   back: {
     display: 'block',
     width: '100%',
@@ -252,12 +254,12 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     borderWidth: border.frame,
     borderStyle: 'solid',
-    borderColor: color.surface,
+    borderColor: color.cardFace,
     borderRadius: 'inherit',
     overflow: 'hidden',
   },
   // The court frame's hairline.
-  frame: { fill: 'none', stroke: color.slate },
+  frame: { fill: 'none', stroke: color.cardLine },
   clickable: {
     cursor: 'pointer',
     transform: { default: move.rest, ':hover': move.cardHover },

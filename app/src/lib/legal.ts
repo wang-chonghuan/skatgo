@@ -4,7 +4,7 @@ type LegalSection = { id: string; title: string; paragraphs: string[]; contact?:
 type LegalDocument = { intro: string; sections: LegalSection[] }
 type LegalCopy = { privacy: LegalDocument; terms: LegalDocument }
 
-export const LEGAL_UPDATED = '2026-10-29'
+export const LEGAL_UPDATED = '2026-11-11'
 export const TERMS_UPDATED = '2026-11-09'
 
 export const LEGAL_OPERATOR = {
@@ -57,7 +57,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'device',
           title: 'Data on your device',
           paragraphs: [
-            'Lesson progress, stars, game totals and card-colour preferences are saved in this browser. They are not synchronized to your account. A language cookie remembers a language you select.',
+            'Lesson progress, stars, game totals and card-colour preferences are saved in this browser. They are not synchronized to your account. A language cookie remembers a language you select, and an appearance cookie remembers light or dark if you choose one.',
             'Clearing site data removes local progress and preferences.',
             'Clerk uses cookies and similar storage for authentication and security. Playing the deal of the day or finishing a free game as a guest sets a secure device cookie, lasting up to 400 days, to keep your games on this device. The game service receives a hash of that identifier, not the cookie value.',
           ],
@@ -181,7 +181,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           id: 'device',
           title: 'Daten auf deinem Gerät',
           paragraphs: [
-            'Lernfortschritt, Sterne, Spielstatistik und Kartenfarben werden in diesem Browser gespeichert. Sie werden nicht mit deinem Konto synchronisiert. Ein Sprach-Cookie merkt sich die Sprache, die du auswählst.',
+            'Lernfortschritt, Sterne, Spielstatistik und Kartenfarben werden in diesem Browser gespeichert. Sie werden nicht mit deinem Konto synchronisiert. Ein Sprach-Cookie merkt sich die Sprache, die du auswählst, und ein Darstellungs-Cookie Hell oder Dunkel, wenn du eines wählst.',
             'Das Löschen der Websitedaten entfernt lokalen Fortschritt und Einstellungen.',
             'Clerk verwendet Cookies und ähnliche Speicher für Anmeldung und Sicherheit. Wenn du als Gast das Spiel des Tages spielst oder ein freies Spiel beendest, wird ein sicheres Geräte-Cookie für bis zu 400 Tage gesetzt, um deine Spiele auf diesem Gerät zu behalten. Der Spielserver erhält nur einen Hash dieser Kennung, nicht den Cookie-Wert.',
           ],

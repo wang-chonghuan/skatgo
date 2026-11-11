@@ -133,7 +133,7 @@ const styles = stylex.create({
   label: { color: color.slate },
   row: { display: 'flex', flexWrap: 'wrap', gap: space.x8, justifyContent: 'center' },
   cell: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x4 },
-  caption: { color: color.slateDeep },
+  caption: { color: color.slateStrong },
   // The follow rule's verdict in the course's judging colours, as on an exercise answer.
   captionYes: { color: color.good },
   captionNo: { color: color.bad },

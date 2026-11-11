@@ -35,7 +35,6 @@ export const appTheme: DefinedTheme = parrottoonTheme
 // very first paint (no flash of unthemed content).
 export const APP_THEME_NAME = 'parrottoon'
 
-// Astryx supports 'light' | 'dark' | 'system'. Parrottoon is a daylight reading
-// product and pins light rather than following the OS. Every token already carries
-// its dark value, so 'system' is a one-word change if that is wanted.
-export const APP_THEME_MODE = 'light' as const
+// Astryx supports 'light' | 'dark' | 'system'. The mode is no longer pinned here: since SKATGO-184 it is the visitor's
+// night-mode choice (lib/appearance.ts), following the device unless they chose, and the product's own palette follows
+// the same `color-scheme` (theme/color.stylex.ts).

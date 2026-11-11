@@ -11,6 +11,11 @@ export const pinnedQuery = '(min-width: 900px)'
 /** The browser's toolbar colour on phones: the page's white surface (`color.surface`), which a meta tag
  *  cannot read as a variable. */
 export const themeColor = '#FFFFFF'
+/** The same at night (SKATGO-184): `color.surface`'s night value. */
+export const themeColorDark = '#19212B'
+/** The colour `CSS.supports` is asked about to learn whether this browser can show the night at all (SKATGO-184): the
+ *  same test as the palette's `@supports` (color.stylex.ts). */
+export const nightProbe = 'light-dark(#000, #fff)'
 
 /** lucide icon sizes in px. */
 export const icon = {

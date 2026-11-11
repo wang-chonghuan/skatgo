@@ -22,8 +22,8 @@ order underneath. There is no utility-CSS framework and no hand-written componen
 **Where components live**
 
 `app/src/components/skat/`. The product has **its own small kit** in `ui.tsx` and renders on native
-elements styled with StyleX; it uses no Astryx components, whose colours follow the app theme's
-light/dark mode while this palette is fixed. A new widget reuses the kit first.
+elements styled with StyleX; it uses no Astryx components. The Astryx theme's mode and the palette follow the same
+day or night (below). A new widget reuses the kit first.
 
 One third-party component draws its own markup and styles, approved by the human: **Clerk**'s sign-in window and
 account menu (SKATGO-12); deep-chat went with the assistant (SKATGO-130).
@@ -51,7 +51,7 @@ breakpoint of its own; `check-design-tokens.mjs` (Tools) fails the build otherwi
 | `table.stylex.ts` | `tableBand`, `stageUnit`, `stage` | the card table's stage, measured in one unit that follows the felt's room (SKATGO-34), including the trick's steps (SKATGO-68) and Lina's and Noah's faces (`face`, `faceTop`, `faceInset`, SKATGO-147); the board's foot in portrait (`tableBand.boardFoot`, SKATGO-158) |
 | `type.stylex.ts` | `family`, `fontSize`, `weight`, `leading` | typography primitives — used only by `type.ts` |
 | `type.ts` | `typography` | the typography roles product code picks from |
-| `constants.ts` | `phoneQuery`, `pinnedQuery`, `themeColor`, `icon`, `stepSlide`, `deal`, `cardIndex`, `playIn`, `trick`, `finish`, `shake`, `drawer`, `confettiBurst` | values for code that cannot read a CSS variable: `matchMedia`, the `theme-color` meta, lucide sizes, SVG attributes, `motion` and `canvas-confetti` |
+| `constants.ts` | `phoneQuery`, `pinnedQuery`, `themeColor`, `themeColorDark`, `icon`, `stepSlide`, `deal`, `cardIndex`, `playIn`, `trick`, `finish`, `shake`, `drawer`, `confettiBurst` | values for code that cannot read a CSS variable: `matchMedia`, the `theme-color` meta, lucide sizes, SVG attributes, `motion` and `canvas-confetti` |
 | `flags.tsx`, `icons.tsx` | `FlagEN` (the United States and the United Kingdom halved on the diagonal, SKATGO-104), `FlagDE`; the Astryx icon registry | the language switch's flags; the icons the Astryx theme is built with |
 | `parrottoonTheme.ts` | the Astryx theme, compiled to `parrottoon.{css,js,d.ts}` | the reset and prose defaults underneath (the name is historical) |
 
@@ -62,8 +62,28 @@ choosing. Read the registry for any value.
 `.intentfold/tickets/SKATGO-26/reference.md`)
 
 A light grey page with white surfaces, navy titles and slate secondary text; one action green; the
-sections as colour tiles; and the card table as a dark green felt at any hour. The palette is one
-fixed light palette, not a light/dark pair.
+sections as colour tiles; and the card table as a dark green felt at any hour.
+
+**Day and night** (SKATGO-184, the human: 「需要夜间模式，因为夜间太刺眼……实现精美的夜间模式」, 「不要做的丑陋」):
+
+- **Two palettes in one.** A colour that differs at night is written in `color.stylex.ts` as its day value, plus
+  `light-dark(<day>, <night>)` behind `@supports`. A browser without `light-dark()` keeps the day and is not offered the
+  night.
+- **Which one shows is the page's `color-scheme`.**
+  - With no choice, it follows the device.
+  - "Light" or "Dark" in the settings (the first section of the site's settings dialog) puts `data-theme` on `<html>`.
+  - The choice lives in the `skatgo_theme` cookie, so the server renders the first paint in it (`lib/appearance.ts`).
+  - Paper is always day.
+- **The night look,** measured at Lichess and Chess.com (Funbridge has none):
+  - a dark page tinted with the brand's navy, never pure black;
+  - cards and panels one step lighter, edged by a hairline (`color.edge` in their `elev`);
+  - body text a soft grey, titles near white;
+  - links and the AI blue lifted;
+  - a picture with a white ground multiplied with `color.imageDim`.
+- **What stays the same day and night:** the action colours, the section tiles (the navy one lifted so it shows), and
+  the card table and its board.
+- **The playing cards dim at night without new art:** `cardFace` turns a soft grey-white, and the card's drawing is
+  multiplied with it.
 
 | Surface | What it is | Built from | Text on it |
 |---|---|---|---|
@@ -80,7 +100,7 @@ fixed light palette, not a light/dark pair.
 | Tokens | Role |
 |---|---|
 | `page`, `surface`, `hairline` | the page, white surfaces, rules and borders |
-| `text`, `navy`, `slate`, `slateDeep`, `onColor` | body text, titles and links, secondary text, a darker slate (the slate button), text on colour or felt |
+| `text`, `navy`, `slate`, `slateDeep`, `slateStrong`, `onColor` | body text, titles and links, secondary text, a darker slate that stays day and night (the slate button, the quieter line on a contract's tint), a darker slate as text on a surface (the side panel's tabs, a card row's caption), text on colour or felt |
 | `go` | the one call to action, and the current state — the public site's landing buttons too (SKATGO-97, the human: 「改成我们按钮的标准绿色」); `goLanding` and `elev.btnGoLanding`, its former own green, are no longer used |
 | `info` | links in text, the hint button, the focus ring, and the "AI" tag wherever the AI is named — a score sheet, a deal's bidding and trick, the leaderboard (SKATGO-79, SKATGO-80, the human: 「AI标志都用app里那个蓝色的Ai标志」) |
 | `stop` | leaving the table |
@@ -88,9 +108,12 @@ fixed light palette, not a light/dark pair.
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); a deal's result box (SKATGO-145, SKATGO-166), `goodSoft` when the player's side won and `badSoft` when it lost. `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson |
 | `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
+| `cardFace`, `cardLine`, `tapLine` | a playing card's face and its back's frame (white by day, a soft grey-white at night, which the card's drawing is multiplied with), the court frame's hairline, the outline of the hand that asks for a tap |
+| `edge` | a card's or panel's hairline at night, carried first in its `elev`; none by day |
+| `imageDim` | what a picture with a white ground is multiplied with: white by day, a soft grey at night |
 | `scrim` | the dim behind a dialog |
 
-The browser's toolbar colour on phones is `themeColor` (`constants.ts`), the header's white.
+The browser's toolbar colour on phones is `themeColor` (`constants.ts`), the header's white; at night `themeColorDark`.
 
 **Suit colours** (`suits.stylex.ts`, SKATGO-27, SKATGO-66)
 
@@ -225,7 +248,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     use in full colour ringed in `color.go`, the other in its own colours faded (`opacity.flagOff`, never
     grey; SKATGO-104) — the settings gear (for an account first its nickname — a text field and beside it "Speichern" as tall and as rounded
     (`block`, `md`), a refusal in
-    `bad` when the name may not be used or another player holds it (SKATGO-126) — then the
+    `bad` when the name may not be used or another player holds it (SKATGO-126) — then the appearance, "Like this
+    device", "Light" or "Dark" with a monitor, sun or moon icon, as the deck's rows (SKATGO-184; not offered by a
+    browser that cannot show the night), then the
     choice of deck: the Turnierblatt by default, the Deutsches Blatt, or the Turnierblatt with English
     letters J / Q / K / A — SKATGO-66), and sign-in
     or the account. The account's menu (Clerk's, under its picture) starts with the account's record of play,

@@ -1,7 +1,8 @@
 import { SignInButton, useClerk } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
+import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { Btn, Modal, Panel } from './ui'
+import { Btn, Modal, Panel, linkLook } from './ui'
 import { LEGAL_OPERATOR } from '~/lib/legal'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
@@ -44,16 +45,25 @@ export function DeleteAccountPage() {
     window.location.replace(back)
   }
 
-  return (
-    <article data-testid="delete-account" {...stylex.props(styles.column)}>
-      {done && !account ? (
+  // Deleted: only that, and the way back to the game.
+  if (done && !account) {
+    return (
+      <article data-testid="delete-account" {...stylex.props(styles.column)}>
         <Panel tone="good" pad>
           <div data-testid="delete-account-done" {...stylex.props(styles.stack)}>
-            <h2 {...stylex.props(typography.dialogTitle, styles.title)}>{m.delete_done_title()}</h2>
+            <h1 {...stylex.props(typography.dialogTitle, styles.title)}>{m.delete_done_title()}</h1>
             <p {...stylex.props(typography.body, styles.text)}>{m.delete_done_text()}</p>
           </div>
         </Panel>
-      ) : null}
+        <div>
+          <Link to="/" data-testid="delete-account-home" {...linkLook('go', 'lg', 'pill')}>{m.nav_home()}</Link>
+        </div>
+      </article>
+    )
+  }
+
+  return (
+    <article data-testid="delete-account" {...stylex.props(styles.column)}>
       <header {...stylex.props(styles.stack)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.delete_title()}</h1>
         <p {...stylex.props(typography.body, styles.text)}>{m.delete_intro()}</p>
@@ -132,7 +142,8 @@ const styles = stylex.create({
   text: { margin: 0, color: color.text },
   list: { margin: 0, paddingInlineStart: space.x24, display: 'flex', flexDirection: 'column', gap: space.x8, listStyleType: 'disc' },
   failed: { margin: 0, color: color.bad },
-  actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12 },
+  // Room under the buttons for their shadow, which the dialog's scrolling body would cut.
+  actions: { display: 'flex', flexWrap: 'wrap', gap: space.x12, paddingBlockEnd: space.x8 },
   link: {
     color: color.info,
     textDecoration: { default: 'underline', ':hover': 'none' },

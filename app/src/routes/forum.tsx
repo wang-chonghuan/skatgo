@@ -16,7 +16,9 @@ export const Route = createFileRoute('/forum')({
   validateSearch: (search: Record<string, unknown>): ForumSearch => {
     const section = FORUM_SECTIONS.find((s) => s === search.section)
     const page = Number(search.page)
-    return { ...(section ? { section } : {}), ...(Number.isInteger(page) && page > 1 && page <= 1000 ? { page } : {}) }
+    // A section or page that is not one is named undefined, not left out: the router keeps a search key the validation
+    // drops, so an old `?section=talk` (SKATGO-186 removed the section) would still reach the list and fail it.
+    return { section, page: Number.isInteger(page) && page > 1 && page <= 1000 ? page : undefined }
   },
   loaderDeps: ({ search }) => ({ section: search.section, page: search.page }),
   loader: ({ deps }) => readForumList(deps),

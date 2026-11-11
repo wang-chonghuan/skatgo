@@ -104,6 +104,9 @@ export const color = stylex.defineVars({
   /** What a picture with a white ground is multiplied with (SKATGO-184): white by day, so it shows as drawn; a soft
    *  grey at night, so its white ground does not glare from a dark page. */
   imageDim: { default: '#FFFFFF', [NIGHT]: 'light-dark(#FFFFFF, #B4BCC6)' },
+  /** The front page's background (SKATGO-186, the human: 「home页面的背景色，应该和1 deal页面的背景色一样黑」): white by day,
+   *  as the cards on it; at night as dark as every other page (`page`). */
+  homePage: { default: '#FFFFFF', [NIGHT]: 'light-dark(#FFFFFF, #10161E)' },
   /** The "You" tag (SKATGO-186, the human: 「黑暗模式所有的you标签都不对，you应该是深色」): navy by day, a deep blue at night,
    *  as the navy section tile, so it stays a dark chip with white text instead of following `navy` to near white. */
   youTag: { default: '#022657', [NIGHT]: 'light-dark(#022657, #1A4383)' },

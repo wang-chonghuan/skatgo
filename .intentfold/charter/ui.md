@@ -103,7 +103,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | `text`, `navy`, `slate`, `slateDeep`, `slateStrong`, `onColor` | body text, titles and links, secondary text, a darker slate that stays day and night (the slate button, the quieter line on a contract's tint), a darker slate as text on a surface (the side panel's tabs, a card row's caption), text on colour or felt |
 | `go` | the one call to action, and the current state — the public site's landing buttons too (SKATGO-97, the human: 「改成我们按钮的标准绿色」); `goLanding` and `elev.btnGoLanding`, its former own green, are no longer used |
 | `info` | links in text, the hint button, the focus ring, and the "AI" tag wherever the AI is named — a score sheet, a deal's bidding and trick, the leaderboard (SKATGO-79, SKATGO-80, the human: 「AI标志都用app里那个蓝色的Ai标志」) |
-| `stop` | leaving the table |
+| `stop` | leaving the table, and the yes to a deletion (a forum post's, an account's, SKATGO-185) |
 | `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the bidding practice, a private table |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); a deal's result box (SKATGO-145, SKATGO-166), `goodSoft` when the player's side won and `badSoft` when it lost. `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson |
@@ -255,7 +255,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     letters J / Q / K / A — SKATGO-66), and sign-in
     or the account. The account's menu (Clerk's, under its picture) starts with the account's record of play,
     "Dein Skat-Profil", with lucide's `ChartLine` (SKATGO-128, the human: 「应该是点profile头像就能看到入口」); the
-    settings carry the same link in `info` under the nickname.
+    settings carry the same link in `info` under the nickname, and on its line, at the right, "Konto löschen" in `slate`
+    (SKATGO-185).
 
   A phone's header is the same, with no menu: the flags, the gear and sign-in or the avatar beside the mark. Under the
   page sits the legal footer. The header is the same on every page.
@@ -493,7 +494,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   first; then the posts as white
   option cards — the title (`optionDesc`, navy, a link) and the start of its text (`bodySmall`, SKATGO-119), both in
   the reader's language (SKATGO-124), and one
-  line of small facts (`meta`): the section in slate, the author in navy or "SkatGo" in `go` (`smallBold`), the
+  line of small facts (`meta`): the section in slate, the author in navy — "Gelöschter Spieler" for a deleted account's (SKATGO-185) — or "SkatGo" in `go` (`smallBold`), the
   date and the count of comments; at the foot of the list, in small slate print, a line on what the forum is for
   (the human chose 「摘要+底部小字」, SKATGO-119; nothing under the title). A post: "← Alle Beiträge" and its
   section as links, then the post in a white card of its own, as each comment is (the human: 「每一个帖子或回复，都放在
@@ -623,6 +624,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`badge`, `smallBold`). The dialog's body is the scroll area, its scrollbar inside the dialog's box, and the way on sits
   in a foot under a `hairline` rule that stays at the dialog's bottom over the scrolled content (`Dialog`'s `foot`,
   SKATGO-146).
+- **Deleting an account** (`delete-account-page.tsx`, SKATGO-185): the reading column on white — the H1
+  (`landingHeading`) and a line, then "Was gelöscht wird", "Was bleibt" and "So löschst du es" (`dialogTitle`) with
+  bulleted lists (`body`); signed in, "Mein Konto löschen" (`stop`, `lg`), asked once more in the kit's `Modal` ("Ja,
+  löschen" `stop`, "Abbrechen" `quiet`); signed out, "Anmelden" (`quiet`, `lg`); then the line for whoever cannot sign in,
+  with the operator's address as a link. After the deletion the page comes back signed out under a `good` panel saying so.
+- **The offline page** (`offline-page.tsx`, SKATGO-185): what the service worker shows without a network — the H1
+  ("Keine Verbindung"), a line, and "Noch einmal versuchen" (`go`, `lg`), in the frame like any page.
 - **Public search content** (SKATGO-44): titles, explanations and contextual links remain visible
   without JavaScript, in the lobby's own tokens and typography — never hidden keyword text or new
   decorative containers.

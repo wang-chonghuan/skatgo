@@ -41,15 +41,16 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   await assert.rejects(forumCreate(store, { ...anna, section: 'news', title: 'Neu hier', body: 'Hallo' }, tick()), { name: 'Error' })
   const news = await forumCreate(store, { ...admin, section: 'news', title: 'Turnier am Sonntag', body: 'Alle sind eingeladen.' }, tick())
   const article = await forumCreate(store, { ...admin, section: 'articles', title: 'Wann Grand?', body: '## Regel\n[♣B ♠B ♥A]' }, tick())
-  const post = await forumCreate(store, { ...anna, section: 'talk', title: 'Frage zum Reizen', body: 'Wie weit reize ich?' }, tick())
-  const feedback = await forumCreate(store, { ...anna, section: 'feedback', title: 'Fehler beim Tisch', body: 'Die Karte hing.' }, tick())
-  await forumCreate(store, { ...ben, section: 'talk', title: 'Hello', body: 'From Ohio' }, tick())
+  // A player posts under Articles, the one section left to them since SKATGO-186.
+  const post = await forumCreate(store, { ...anna, section: 'articles', title: 'Frage zum Reizen', body: 'Wie weit reize ich?' }, tick())
+  await forumCreate(store, { ...anna, section: 'articles', title: 'Fehler beim Tisch', body: 'Die Karte hing.' }, tick())
+  await forumCreate(store, { ...ben, section: 'articles', title: 'Hello', body: 'From Ohio' }, tick())
 
   // One forum for every language; the announcement first; names, never ids.
   const list = await forumList(store, { ...guest })
   assert.deepEqual(list.posts.map((p) => p.title), ['Turnier am Sonntag', 'Hello', 'Fehler beim Tisch', 'Frage zum Reizen', 'Wann Grand?'])
   assert.ok(list.posts.every((p) => p.author && !p.author.startsWith('user:') && !p.mine))
-  assert.deepEqual((await forumList(store, { ...guest, section: 'feedback' })).posts.map((p) => p.id), [feedback.id])
+  assert.deepEqual((await forumList(store, { ...guest, section: 'news' })).posts.map((p) => p.id), [news.id])
   assert.equal((await forumList(store, { ...anna })).posts.find((p) => p.id === post.id)?.mine, true)
 
   // Flat comments, in order; a comment moves the post up.
@@ -60,12 +61,12 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   assert.equal(thread.comments, 2)
   assert.equal((await forumList(store, { ...guest })).posts[1].id, post.id)
 
-  // Search engines: the official's posts; a player's once marked; feedback never.
+  // Search engines: the official's posts; a player's once marked.
   const indexed = async () => (await forumSitemap(store)).posts.map((p) => p.id).sort((a, b) => a - b)
   assert.deepEqual(await indexed(), [news.id, article.id])
   await forumModerate(store, { ...admin, action: 'index', post: post.id })
   assert.deepEqual(await indexed(), [news.id, article.id, post.id])
-  await assert.rejects(forumModerate(store, { ...admin, action: 'index', post: feedback.id }), /not_markable/)
+  await assert.rejects(forumModerate(store, { ...admin, action: 'index', post: article.id }), /not_markable/)
   await assert.rejects(forumModerate(store, { ...anna, action: 'index', post: post.id }))
 
   // Reports reach the official's list; hiding settles them and hides from everyone but author and official.
@@ -99,7 +100,7 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   assert.equal((await forumLatest(store, {}, now + (ANNOUNCEMENT_DAYS + 1) * DAY)).announcement, null)
 
   // A day's posts, then refused; the official has no limit.
-  for (let n = 1; n < DAILY_LIMITS.posts; n++) await forumCreate(store, { ...ben, section: 'talk', title: `Post ${n}`, body: 'x' })
-  await assert.rejects(forumCreate(store, { ...ben, section: 'talk', title: 'One more', body: 'x' }))
-  await forumCreate(store, { ...admin, section: 'talk', title: 'Official', body: 'x' })
+  for (let n = 1; n < DAILY_LIMITS.posts; n++) await forumCreate(store, { ...ben, section: 'articles', title: `Post ${n}`, body: 'x' })
+  await assert.rejects(forumCreate(store, { ...ben, section: 'articles', title: 'One more', body: 'x' }))
+  await forumCreate(store, { ...admin, section: 'articles', title: 'Official', body: 'x' })
 })

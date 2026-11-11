@@ -54,7 +54,7 @@ const styles = stylex.create({
     // Day or night as the page's `color-scheme` says (SKATGO-184, lib/appearance.ts); paper is always day.
     colorScheme: { default: null, [bp.print]: 'light' },
   },
-  landing: { backgroundColor: color.surface },
+  landing: { backgroundColor: color.homePage },
   // The table is exactly one screen and never scrolls (SKATGO-29).
   table: { height: dims.screenDynamic, minHeight: dims.screenDynamic, overflow: 'hidden', backgroundColor: color.feltOuter },
   // The header and footer stay off paper (SKATGO-50); on screen the wrapper is no box at all,

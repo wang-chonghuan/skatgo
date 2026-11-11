@@ -11,7 +11,8 @@ import { type Card, type Rank, type Suit } from './skat/cards'
 // language and kept (SKATGO-124, the human: 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版」), the text as written one
 // tap away.
 
-export const FORUM_SECTIONS = ['news', 'articles', 'talk', 'feedback'] as const
+// Two sections since SKATGO-186 (the human: 「请删除feedback和discussion两个类，没用处」): a player posts under Articles.
+export const FORUM_SECTIONS = ['news', 'articles'] as const
 export type ForumSection = (typeof FORUM_SECTIONS)[number]
 
 /** Where only the official may start a post. */
@@ -103,9 +104,9 @@ export type ForumReport = {
 }
 
 /** Whether search engines may read a post: the official's, or a player's the official marked — never a
- *  hidden one and never feedback (SKATGO-118: user content is not indexed until the official says so). */
+ *  hidden one (SKATGO-118: user content is not indexed until the official says so). */
 export function postIndexable(p: { section: ForumSection; official: boolean; indexed: boolean; hidden: string | null }): boolean {
-  return p.hidden === null && p.section !== 'feedback' && (p.official || p.indexed)
+  return p.hidden === null && (p.official || p.indexed)
 }
 
 const FOLD: Record<string, string> = { ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' }

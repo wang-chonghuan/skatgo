@@ -29,8 +29,6 @@ import { Btn, Panel, TextArea, TextField, Toggle, toggleLook } from './ui'
 const SECTION_NAME: Record<ForumSection, () => string> = {
   news: m.forum_section_news,
   articles: m.forum_section_articles,
-  talk: m.forum_section_talk,
-  feedback: m.forum_section_feedback,
 }
 
 /** A date the same on the server and in the browser: the day, as UTC sees it. */
@@ -93,8 +91,10 @@ export function ForumPage() {
           </div>
         ) : null}
         {/* What the forum is for, in small print at the foot — not under the title (SKATGO-119, the human chose
-            「摘要+底部小字」 after the lead went in SKATGO-118). The empty and unreachable lines say it themselves. */}
-        {data?.posts.length ? <p data-testid="forum-about" {...stylex.props(typography.note, styles.quiet)}>{m.forum_about()}</p> : null}
+            「摘要+底部小字」 after the lead went in SKATGO-118). The empty line says it itself; when the posts cannot be read
+            the foot stays too (SKATGO-186: with two sections fewer, that page alone fell under the 200 characters of text a
+            page is read for). */}
+        {!data || data.posts.length ? <p data-testid="forum-about" {...stylex.props(typography.note, styles.quiet)}>{m.forum_about()}</p> : null}
       </section>
     </div>
   )
@@ -102,9 +102,11 @@ export function ForumPage() {
 
 function PostCard({ post }: { post: ForumPostSummary }) {
   return (
-    <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} {...stylex.props(styles.card)}>
-      {/* In the reader's language (SKATGO-124); the original is one tap away on the post's page. */}
-      <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.optionDesc, styles.cardTitle)}>{post.translated?.title ?? post.title}</Link>
+    <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} {...stylex.props(styles.card, styles.listCard)}>
+      {/* In the reader's language (SKATGO-124); the original is one tap away on the post's page. The title's link covers
+          the whole card (SKATGO-186, the human: 「手机上，论坛打不开comments」): a tap on the excerpt or "5 comments" opens
+          the post too, not only one on the title. */}
+      <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.optionDesc, styles.cardTitle, styles.cardLink)}>{post.translated?.title ?? post.title}</Link>
       {post.excerpt ? <p data-testid="forum-excerpt" {...stylex.props(typography.bodySmall, styles.excerpt)}>{post.translated?.excerpt ?? post.excerpt}</p> : null}
       <Meta of={post} />
       {post.hidden !== null ? <p {...stylex.props(typography.small, styles.hidden)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
@@ -146,7 +148,7 @@ function WriteButton({ viewer, onWrite }: { viewer: ForumViewer; onWrite: () => 
 
 function Composer({ official, initial, onCancel }: { official: boolean; initial?: ForumSection; onCancel: () => void }) {
   const allowed = sectionsFor(official)
-  const [section, setSection] = useState<ForumSection>(initial && allowed.includes(initial) ? initial : official ? 'news' : 'talk')
+  const [section, setSection] = useState<ForumSection>(initial && allowed.includes(initial) ? initial : official ? 'news' : 'articles')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -344,7 +346,7 @@ function Actions({ viewer, post, comment }: { viewer: ForumViewer; post: ForumPo
     setMode('idle')
     void router.invalidate()
   }
-  const markable = !comment && !post.official && post.section !== 'feedback'
+  const markable = !comment && !post.official
   return (
     <div {...stylex.props(styles.actions)}>
       {mode === 'idle' ? (
@@ -495,6 +497,8 @@ const styles = stylex.create({
     borderRadius: radii.option,
     boxShadow: elev.option,
   },
+  listCard: { position: 'relative' },
+  cardLink: { '::after': { content: "''", position: 'absolute', inset: 0, borderRadius: 'inherit' } },
   cardTitle: {
     color: { default: color.navy, ':hover': color.info },
     textDecoration: 'none',

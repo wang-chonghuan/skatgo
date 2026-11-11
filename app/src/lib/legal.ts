@@ -77,7 +77,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'The forum',
           paragraphs: [
             'Reading the forum needs no account. If you write a post, comment or report there, we store it on the server with your account identifier and the time. Posts and comments are public and appear under your leaderboard name, never your email address. Announcements and articles by SkatGo appear under SkatGo.',
-            'A report and its optional reason are seen only by the operator. If the operator hides a post or comment, the reason is stored with it and shown to you. The forum sends no notifications. You can delete your own posts and comments at any time; deleting a post also deletes its comments. Posts the operator approves can be indexed by search engines; feedback posts never are.',
+            'A report and its optional reason are seen only by the operator. If the operator hides a post or comment, the reason is stored with it and shown to you. The forum sends no notifications. You can delete your own posts and comments at any time; deleting a post also deletes its comments. Posts the operator approves can be indexed by search engines.',
           ],
         },
         {
@@ -201,7 +201,7 @@ export const LEGAL: Record<Locale, LegalCopy> = {
           title: 'Das Forum',
           paragraphs: [
             'Zum Lesen des Forums brauchst du kein Konto. Wenn du dort einen Beitrag, Kommentar oder eine Meldung schreibst, speichern wir ihn mit deiner Kontokennung und der Uhrzeit auf dem Server. Beiträge und Kommentare sind öffentlich und erscheinen unter deinem Namen auf der Rangliste, nie unter deiner E-Mail-Adresse. Ankündigungen und Artikel von SkatGo erscheinen unter SkatGo.',
-            'Eine Meldung und ihr optionaler Grund sind nur für die Betreiberin sichtbar. Blendet die Betreiberin einen Beitrag oder Kommentar aus, wird der Grund dazu gespeichert und dir angezeigt. Das Forum verschickt keine Benachrichtigungen. Deine eigenen Beiträge und Kommentare kannst du jederzeit löschen; mit einem Beitrag werden auch seine Kommentare gelöscht. Beiträge, die die Betreiberin freigibt, können von Suchmaschinen erfasst werden; Feedback-Beiträge nie.',
+            'Eine Meldung und ihr optionaler Grund sind nur für die Betreiberin sichtbar. Blendet die Betreiberin einen Beitrag oder Kommentar aus, wird der Grund dazu gespeichert und dir angezeigt. Das Forum verschickt keine Benachrichtigungen. Deine eigenen Beiträge und Kommentare kannst du jederzeit löschen; mit einem Beitrag werden auch seine Kommentare gelöscht. Beiträge, die die Betreiberin freigibt, können von Suchmaschinen erfasst werden.',
           ],
         },
         {

@@ -35,7 +35,8 @@ export const fill = stylex.defineVars({
   felt: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>"), radial-gradient(circle at 50% 50%, ${color.feltInner} 0%, ${color.feltInner} 20%, ${color.feltOuter} 100%)`,
   /** The disc behind the turning logo while a table loads (SKATGO-93): white where the logo turns, fading
    *  into the felt at its rim (the human: 「白色圆形的边缘最好也是渐变，否则太生硬突兀」). */
-  loaderGlow: `radial-gradient(circle closest-side, ${color.surface} 0%, ${color.surface} 66%, transparent 100%)`,
+  // White day and night (SKATGO-186, the human: 「dark模式下，那个旋转等待的logo，还应该是白色阴影」): `onColor`, not the surface.
+  loaderGlow: `radial-gradient(circle closest-side, ${color.onColor} 0%, ${color.onColor} 66%, transparent 100%)`,
   dimmed: 'brightness(0.62) saturate(0.7)',
   /** A coloured button under the pointer. */
   hoverBright: 'brightness(1.06)',

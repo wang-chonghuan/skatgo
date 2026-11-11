@@ -729,13 +729,13 @@ const styles = stylex.create({
   frameYou: { outlineStyle: 'solid', outlineColor: color.navy },
   frameAi: { outlineStyle: 'solid', outlineColor: color.info },
   whoTag: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, color: color.onColor },
-  whoYou: { backgroundColor: color.navy },
+  whoYou: { backgroundColor: color.youTag },
   whoAi: { backgroundColor: color.info },
   table: { display: 'flex', flexDirection: 'column', color: color.navy },
   // Deal, you, the AI, the difference: the same columns in the header, every row and the total.
   grid: {
     display: 'grid',
-    gridTemplateColumns: dims.vsAiColumns,
+    gridTemplateColumns: { default: dims.vsAiColumns, [bp.phone]: dims.vsAiColumnsPhone },
     alignItems: 'center',
     columnGap: { default: space.x12, [bp.phone]: space.x8 },
     paddingInline: space.x8,
@@ -769,7 +769,8 @@ const styles = stylex.create({
   role: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   chevron: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end' },
   // On a phone a column is too narrow for the tag and its word side by side: the word goes under it (SKATGO-119).
-  headWho: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: space.x6, rowGap: space.x2, minWidth: 0 },
+  // "You" and "Points" on one line (SKATGO-186, the human: 「you和旁边的points不该换行，应该在一行，我是说表头」).
+  headWho: { display: 'flex', flexWrap: 'nowrap', alignItems: 'center', columnGap: space.x6, minWidth: 0, whiteSpace: 'nowrap' },
   end: { textAlign: 'end' },
   muted: { color: color.slate },
   detail: {

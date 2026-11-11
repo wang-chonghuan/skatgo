@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-186",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-186",
+  "branch": "SKATGO-186-night-forum-fixes",
+  "base": "414e9de",
+  "ports": { "web": 55186, "multiplayer": 56186, "database": 57186 }
+}

@@ -91,8 +91,10 @@ export function ForumPage() {
           </div>
         ) : null}
         {/* What the forum is for, in small print at the foot — not under the title (SKATGO-119, the human chose
-            「摘要+底部小字」 after the lead went in SKATGO-118). The empty and unreachable lines say it themselves. */}
-        {data?.posts.length ? <p data-testid="forum-about" {...stylex.props(typography.note, styles.quiet)}>{m.forum_about()}</p> : null}
+            「摘要+底部小字」 after the lead went in SKATGO-118). The empty line says it itself; when the posts cannot be read
+            the foot stays too (SKATGO-186: with two sections fewer, that page alone fell under the 200 characters of text a
+            page is read for). */}
+        {!data || data.posts.length ? <p data-testid="forum-about" {...stylex.props(typography.note, styles.quiet)}>{m.forum_about()}</p> : null}
       </section>
     </div>
   )

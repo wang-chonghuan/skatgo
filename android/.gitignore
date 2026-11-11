@@ -1,0 +1,11 @@
+# Built by Bubblewrap/Gradle (SKATGO-185): outputs and local state stay out of git; the signing key lives outside
+# the repository (operations.md, Android app).
+.gradle/
+build/
+app/build/
+local.properties
+*.apk
+*.aab
+*.idsig
+*.keystore
+*.jks

@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.skatgo.app",
+      "sha256_cert_fingerprints": ["FD:18:0E:D7:D6:CC:81:8E:1C:97:06:16:5B:F2:F5:EC:D7:5F:7C:75:51:D4:85:38:2D:2C:79:3C:E3:FD:00:FA"]
+    }
+  }
+]

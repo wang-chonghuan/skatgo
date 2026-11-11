@@ -18,6 +18,7 @@ import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, decide, 
 import type { Store } from './store'
 import { type PoolDecks, playProfile } from './profile'
 import { xpBoard } from './xp'
+import { forgetPlayer } from './forget'
 import { type BidLimit, lineFor, momentOf, TALK_KINDS, type TalkKind, verdictOf } from './talk'
 import { type DealPick, kindOf, pickOfDay } from './pick'
 
@@ -151,6 +152,7 @@ const talkInput = z.object({
   player, size, deal: z.number().int().min(0).max(DAILY_DEALS - 1),
   said: z.array(z.enum(TALK_KINDS as [string, ...string[]])).max(5), lang: z.enum(['en', 'de']),
 }).strict()
+const forgetInput = z.object({ player: z.string().regex(/^user:/).pipe(player) }).strict()
 const claimInput = z.object({ from: z.string().regex(/^anon:[a-f0-9]{64}$/), to: z.string().regex(/^user:/).pipe(player) }).strict()
 // A record of play is an account's (SKATGO-128), or a guest device's own (SKATGO-182).
 const profileInput = z.object({ player }).strict()
@@ -698,6 +700,8 @@ export function dailyRoutes(store: Store, key: string, ready: () => boolean, pol
     const i = claimInput.parse(body)
     return dailyClaim(store, i.from, i.to)
   }))
+  // An account deleted by its owner (SKATGO-185): everything held under it goes; its forum posts stay, under no one.
+  router.post('/forget', run(async body => forgetPlayer(store, forgetInput.parse(body).player)))
   router.use((_err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     res.status(400).json({ error: 'invalid_request' })
   })

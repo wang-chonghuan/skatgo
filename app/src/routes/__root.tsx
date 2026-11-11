@@ -5,6 +5,7 @@ import { Theme } from '@astryxdesign/core/theme'
 
 import { ProductAnalytics } from '~/components/product-analytics'
 import { readProjectKey } from '~/lib/analytics'
+import { type Appearance, readAppearance, toolbarMetas, useAppearance } from '~/lib/appearance'
 import { readTestAccount } from '~/lib/test-account'
 import { TestAccount } from '~/lib/use-account'
 import { clerkAppearance } from '~/lib/clerk-appearance'
@@ -12,8 +13,7 @@ import { LANG_TAG } from '~/lib/site'
 import { m } from '~/paraglide/messages'
 import { getLocale, localizeHref } from '~/paraglide/runtime'
 import { SkatLayout } from '~/skat-layout'
-import { APP_THEME_MODE, APP_THEME_NAME, appTheme } from '~/theme'
-import { themeColor } from '~/theme/constants'
+import { APP_THEME_NAME, appTheme } from '~/theme'
 import '~/styles/app.css'
 
 // The document shell, taken from Parrottoon's root route with only what the course uses: the same
@@ -21,9 +21,8 @@ import '~/styles/app.css'
 // render exactly what parrottoon.com/skat does, and every one of these reaches the page.
 //
 // Left out on purpose: Parrottoon's analytics beacon (its token would count this site's visits as
-// Parrottoon's — skatgo reports to its own PostHog project instead, SKATGO-25), its light/dark and
-// reading-order preferences (the course never offers either, so a visitor here always sees the light
-// page a first-time Parrottoon visitor sees), and its link adapter (the course uses the router's own
+// Parrottoon's — skatgo reports to its own PostHog project instead, SKATGO-25), its reading-order preference, and its
+// link adapter (the course uses the router's own
 // <Link>, never an Astryx `href`).
 //
 // The head is in the page's language (SKATGO-1): Paraglide's middleware has settled the locale for
@@ -33,17 +32,18 @@ export const Route = createRootRoute({
   // The PostHog project key (SKATGO-25), read on the server and handed to the page with its data. It
   // never changes while a page is open, so client navigations do not ask again. A local test account
   // (SKATGO-117, lib/test-account.ts) comes the same way.
-  loader: () => ({ posthogKey: readProjectKey(), testAccount: readTestAccount() }),
+  // The night mode chosen in the settings (SKATGO-184, lib/appearance.ts) comes the same way, so the first paint is in it.
+  loader: () => ({ posthogKey: readProjectKey(), testAccount: readTestAccount(), appearance: readAppearance() }),
   staleTime: Infinity,
   // Only what every page shares. Each route writes its own title, description, canonical URL, hreflang
   // links, Open Graph and Twitter tags and structured data (lib/head.ts, SKATGO-29); a route's title and
   // meta override these fallbacks, which only a page without its own head (not found) keeps.
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      // The header's felt; a meta tag cannot read a CSS variable, so the value is a constant.
-      { name: 'theme-color', content: themeColor },
+      // The header's colour by day or night (SKATGO-184); a meta tag cannot read a CSS variable, so the values are constants.
+      ...toolbarMetas(loaderData?.appearance ?? 'system'),
       { title: m.site_name() },
       // Pages override this; an unmatched route has no indexable document.
       { name: 'robots', content: 'noindex, follow' },
@@ -69,9 +69,9 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
-  const { posthogKey, testAccount } = Route.useLoaderData()
+  const { posthogKey, testAccount, appearance } = Route.useLoaderData()
   return (
-    <RootDocument>
+    <RootDocument appearance={appearance}>
       <TestAccount.Provider value={testAccount}>
         <ProductAnalytics projectKey={posthogKey} />
         <SkatLayout />
@@ -80,11 +80,14 @@ function RootComponent() {
   )
 }
 
-function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+function RootDocument({ children, appearance }: Readonly<{ children: ReactNode; appearance: Appearance }>) {
+  // Day or night (SKATGO-184): the loader's choice until one is made on the page. `data-theme` sets the page's
+  // `color-scheme`, which every colour of the palette follows; following the device, there is none.
+  const mode = useAppearance((s) => s.chosen) ?? appearance
   return (
     // The theme's generated CSS is @scope'd to [data-astryx-theme]; writing the attributes here,
     // server-side, is what keeps the first paint themed instead of flashing unstyled.
-    <html lang={LANG_TAG[getLocale()]} data-astryx-theme={APP_THEME_NAME} data-theme={APP_THEME_MODE}>
+    <html lang={LANG_TAG[getLocale()]} data-astryx-theme={APP_THEME_NAME} data-theme={mode === 'system' ? undefined : mode}>
       <head>
         <HeadContent />
         {/* In dev, StyleX serves the compiled atoms from a virtual endpoint; in a production build
@@ -100,7 +103,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             termsPageUrl: localizeHref('/terms'),
           },
         }}>
-          <Theme theme={appTheme} mode={APP_THEME_MODE}>
+          <Theme theme={appTheme} mode={mode}>
             {children}
           </Theme>
         </ClerkProvider>

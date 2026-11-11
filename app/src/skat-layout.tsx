@@ -51,7 +51,8 @@ const styles = stylex.create({
     flexDirection: 'column',
     backgroundColor: color.page,
     color: color.text,
-    colorScheme: 'light',
+    // Day or night as the page's `color-scheme` says (SKATGO-184, lib/appearance.ts); paper is always day.
+    colorScheme: { default: null, [bp.print]: 'light' },
   },
   landing: { backgroundColor: color.surface },
   // The table is exactly one screen and never scrolls (SKATGO-29).

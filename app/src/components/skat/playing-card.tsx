@@ -237,7 +237,7 @@ const styles = stylex.create({
     padding: 0,
     borderWidth: 0,
     borderRadius: radii.card,
-    backgroundColor: color.surface,
+    backgroundColor: color.cardFace,
     boxShadow: elev.card,
     overflow: 'hidden',
     transitionProperty: 'transform, box-shadow, opacity, filter',
@@ -252,12 +252,12 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     borderWidth: border.frame,
     borderStyle: 'solid',
-    borderColor: color.surface,
+    borderColor: color.cardFace,
     borderRadius: 'inherit',
     overflow: 'hidden',
   },
   // The court frame's hairline.
-  frame: { fill: 'none', stroke: color.slate },
+  frame: { fill: 'none', stroke: color.cardLine },
   clickable: {
     cursor: 'pointer',
     transform: { default: move.rest, ':hover': move.cardHover },

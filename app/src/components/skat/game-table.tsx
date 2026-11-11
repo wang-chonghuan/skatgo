@@ -2001,8 +2001,8 @@ const styles = stylex.create({
     overflow: 'visible',
     pointerEvents: 'none',
   },
-  collectSkin: { fill: color.tapSkin, stroke: color.navy },
-  collectLine: { stroke: color.navy },
+  collectSkin: { fill: color.tapSkin, stroke: color.tapLine },
+  collectLine: { stroke: color.tapLine },
 
   // In the frame's top corners (SKATGO-34): the action drawer rises from the bottom.
   saidChip: { position: 'absolute', top: space.x12 },
@@ -2250,7 +2250,7 @@ const styles = stylex.create({
   // leave it.
   // Three equal columns, each tab centred in its own (SKATGO-75).
   tabs: { display: 'grid', gridTemplateColumns: dims.panelTabs, paddingBottom: space.x16, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: color.hairline },
-  tab: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifySelf: 'center', gap: space.x4, color: color.slateDeep, textDecoration: 'none' },
+  tab: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifySelf: 'center', gap: space.x4, color: color.slateStrong, textDecoration: 'none' },
   // The rules in the panel (SKATGO-75): a way back to the game above them.
   panelBackRow: { display: 'grid', gridTemplateColumns: dims.panelBackRow, alignItems: 'center', gap: space.x8 },
   panelBack: { display: 'inline-flex', alignItems: 'center', gap: space.x4, padding: 0, borderWidth: 0, backgroundColor: 'transparent', color: color.info, cursor: 'pointer' },

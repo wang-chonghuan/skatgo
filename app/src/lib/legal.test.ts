@@ -16,7 +16,7 @@ describe('public legal documents', () => {
   })
 
   it('updates Terms without changing the Privacy Policy revision', () => {
-    expect(LEGAL_UPDATED).toBe('2026-10-29')
+    expect(LEGAL_UPDATED).toBe('2026-11-11')
     expect(TERMS_UPDATED).toBe('2026-11-09')
   })
 

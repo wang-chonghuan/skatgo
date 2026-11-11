@@ -1,12 +1,13 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChartLine, Check, Settings } from 'lucide-react'
+import { ChartLine, Check, Monitor, Moon, Settings, Sun } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { LANG_TAG } from '~/lib/site'
 import { CARD_BACKS, DEFAULT_BACK, backSrc, isCardBack } from '~/lib/skat/backs'
 import { AVATARS, DEFAULT_AVATAR, faceSrc, isAvatar } from '~/lib/skat/face'
+import { APPEARANCES, type Appearance, nightSupported, readAppearance, useAppearance } from '~/lib/appearance'
 import { type Deck, useSettings } from '~/lib/skat/settings'
 import { m } from '~/paraglide/messages'
 import { carryGame } from '~/lib/free-api'
@@ -232,6 +233,13 @@ function Nickname({ onClose }: { onClose: () => void }) {
   )
 }
 
+const APPEARANCE_ICON: Record<Appearance, typeof Sun> = { system: Monitor, light: Sun, dark: Moon }
+const APPEARANCE_NAME: Record<Appearance, () => string> = {
+  system: m.settings_appearance_system,
+  light: m.settings_appearance_light,
+  dark: m.settings_appearance_dark,
+}
+
 /** The settings (SKATGO-66, SKATGO-75): the deck, how a finished trick goes, and the language. A choice
  *  applies at once — the language reloads the page in it, as the header's menu does, so both always show
  *  the same one. A `Modal` (the kit's, SKATGO-140): the page behind neither scrolls nor takes a touch. */
@@ -251,9 +259,39 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const avatars = useSettings((s) => s.avatars)
   const setAvatar = useSettings((s) => s.setAvatar)
   const current = getLocale()
+  const appearance = useAppearance((s) => s.chosen) ?? readAppearance()
+  const chooseAppearance = useAppearance((s) => s.choose)
   return (
     <Modal title={m.settings_open()} onClose={onClose} testId="settings-dialog" closeTestId="settings-close">
         <Nickname onClose={onClose} />
+        {/* Day or night (SKATGO-184): like the device, or always one of them; it applies at once, on every page. A browser
+            that cannot show the night (lib/appearance.ts) is not offered it. */}
+        {nightSupported() ? <section {...stylex.props(styles.section)}>
+          <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_appearance()}</h3>
+          <div role="radiogroup" aria-label={m.settings_appearance()} {...stylex.props(styles.decks)}>
+            {APPEARANCES.map((a) => {
+              const Icon = APPEARANCE_ICON[a]
+              const on = a === appearance
+              return (
+                <button
+                  key={a}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  data-testid={`settings-appearance-${a}`}
+                  onClick={() => chooseAppearance(a)}
+                  {...stylex.props(typography.appBtnStrong, styles.deck, on && styles.deckOn)}
+                >
+                  <Icon aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+                  <span {...stylex.props(styles.deckName)}>{APPEARANCE_NAME[a]()}</span>
+                  <span aria-hidden="true" {...stylex.props(styles.check, !on && styles.checkOff)}>
+                    <Check size={icon.inline} strokeWidth={icon.outline} />
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </section> : null}
         <section {...stylex.props(styles.section)}>
           <h3 {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_title()}</h3>
           <div role="radiogroup" aria-label={m.settings_title()} {...stylex.props(styles.decks)}>

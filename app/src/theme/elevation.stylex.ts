@@ -5,15 +5,16 @@ import { color } from './color.stylex'
 // Shadows and fills of the lobby design (SKATGO-26). The reference gives every coloured surface a
 // shadow in its own colour; each such pairing is named here once.
 
+// A white card's and a panel's shadow carry `color.edge` first (SKATGO-184): nothing by day, a hairline at night.
 export const elev = stylex.defineVars({
   tileGreen: `0 5px 16px -6px ${color.tileGreen}`,
   tileOrange: `0 5px 16px -6px ${color.tileOrange}`,
   tileRed: `0 5px 16px -6px ${color.tileRed}`,
   tileNavy: `0 5px 16px -6px ${color.tileNavy}`,
-  eventCard: '0 5px 16px -6px rgba(93, 109, 125, 0.5)',
-  option: '0 5px 16px -6px rgba(0, 0, 0, 0.3)',
-  optionFeatured: '0 12px 22px -6px rgba(0, 0, 0, 0.3)',
-  panel: '0 5px 8px 2px rgba(24, 30, 37, 0.16)',
+  eventCard: `0 0 0 1px ${color.edge}, 0 5px 16px -6px rgba(93, 109, 125, 0.5)`,
+  option: `0 0 0 1px ${color.edge}, 0 5px 16px -6px rgba(0, 0, 0, 0.3)`,
+  optionFeatured: `0 0 0 1px ${color.edge}, 0 12px 22px -6px rgba(0, 0, 0, 0.3)`,
+  panel: `0 0 0 1px ${color.edge}, 0 5px 8px 2px rgba(24, 30, 37, 0.16)`,
   landingHeader: '0 2px 4px 0 rgba(0, 0, 0, 0.075)',
   btnGo: '0 4px 8px 1px rgba(0, 163, 54, 0.2)',
   btnGoLanding: '0 4px 8px 1px rgba(0, 168, 120, 0.2)',

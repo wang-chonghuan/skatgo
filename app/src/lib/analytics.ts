@@ -63,6 +63,9 @@ export type ProductEvents = {
   /** Free play's round of six deals was over (SKATGO-152): the learner's Seeger-Fabian total and the AI's from the
    *  same seats, over the deals whose AI game is known. */
   free_round_finished: { total: number; ai_total: number }
+  /** Free play's lightbulb was pressed (SKATGO-183, the human: 「我要看点的人多不多」): which power-up it opened — the win
+   *  chances while bidding or once the skat is picked up, the card counter while the cards are played. */
+  powerup_opened: { tool: 'odds' | 'counter' }
   /** An exercise was answered, its first answer (SKATGO-152): which section — a Skat-Tricks type, or `bidding` —
    *  its number there, and whether it was right. */
   exercise_finished: { section: string; number: number; right: boolean }

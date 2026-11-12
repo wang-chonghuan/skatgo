@@ -65,3 +65,13 @@ and the posts are reported as not checked; on the published site a 503 fails.
 `HEADED=1` runs Chromium visibly. Engineering's mechanical defence includes both commands.
 Passing protects rendered SEO contracts; it does not promise indexing, selected canonical, rankings
 or traffic, and cannot verify account settings or ownership DNS records.
+
+## IndexNow (SKATGO-188)
+
+```sh
+node app/scripts/indexnow.mjs https://skatgo.com
+```
+
+Submits every address in `/sitemap.xml` and `/sitemap-forum.xml` to `api.indexnow.org` in one request,
+after checking that the key file in `app/public/` is served. Operations' post-deploy block runs it.
+Given any other origin, such as a preview, it lists the addresses and sends nothing.

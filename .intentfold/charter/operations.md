@@ -278,6 +278,7 @@ if [ "$got" != "$want" ]; then
 fi
 
 npm run check:seo -- "$URL" || exit 1
+node app/scripts/indexnow.mjs "$URL" || exit 1
 printf 'OK: live search surface, serving %s\n' "$got"
 BASH
 ```
@@ -286,7 +287,9 @@ The commit guard must still reject an unreleased revision. The SEO check separat
 canonical URLs and missing content; local acceptance is not a claim that production has changed.
 
 After an SEO release, inspect the German root and core entry URLs in Search Console, run its live
-URL test and request indexing for important changed pages. Submit changed URLs to Bing too. Confirm
+URL test and request indexing for important changed pages. The block above has already sent every
+sitemap address to Bing and the other IndexNow engines (SKATGO-188); Bing's URL Submission is left for
+a page that must be recrawled between releases. Confirm
 sitemap reread in both consoles and watch the reported canonical after recrawls. Record pending
 operations and report dates; neither sitemap submission nor an index request guarantees indexing,
 ranking or traffic.
@@ -329,7 +332,13 @@ Uploading to Google Play, and anything in the Play Console, is the human's.
 - Bing site: `https://www.bing.com/webmasters?siteUrl=https://skatgo.com/`.
   Ownership uses DNS-only CNAME `ca6fc5fd7d1f41d62b788e61032110a4.skatgo.com` -> `verify.bing.com`
   (TTL 300). This is an independent verification record, not an application hostname.
-- Sitemap submitted to both: `https://skatgo.com/sitemap.xml`.
+- Sitemaps submitted to both: `https://skatgo.com/sitemap.xml` and the forum's,
+  `https://skatgo.com/sitemap-forum.xml` (2026-11-12).
+- IndexNow (SKATGO-188): the key is the one `<32 hex>.txt` file in `app/public/`, served at the site's
+  root, its name and content the key — public by the protocol, not an account's API key.
+  `node app/scripts/indexnow.mjs https://skatgo.com` sends both sitemaps' addresses to
+  `api.indexnow.org`; the post-deploy block runs it. Any other origin is a dry run that lists them.
+  Bing → IndexNow shows what arrived.
 - Google: URL Inspection -> request indexing. Bing: URL Submission -> submit the changed entry
   URLs; Sitemap details -> confirm actual crawl status and URL count. Read existing entries before
   submitting; do not add alternate sitemap addresses or repeat requests to try to increase priority.

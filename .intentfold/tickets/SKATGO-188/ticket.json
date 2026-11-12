@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-188",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-188",
+  "branch": "SKATGO-188-indexnow-bing-push",
+  "base": "4557a1f5bc73236831f8b9ba57feeaded0def44c",
+  "ports": {
+    "web": 55188,
+    "multiplayer": 56188,
+    "database": 57188
+  }
+}

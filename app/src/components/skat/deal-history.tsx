@@ -45,19 +45,23 @@ function keyCards(d: ProfileDeal): Card[][] | null {
 /** The player's Seeger-Fabian score less the AI's on the same cards from the same seat, or null without the AI's game. */
 export const vsAi = (d: ProfileDeal) => (d.ai ? d.mine.scores[0] - d.ai.scores[0] : null)
 
-/** The game and the player's part in it: declarer or defender, or that all passed. */
+/** The game, or that all passed. */
 function Game({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
-  const { declarer } = deal.mine
   const name = small ? typography.panelLabel : typography.appBtnStrong
-  if (declarer === null) return <span data-testid="history-game" {...stylex.props(name, styles.passed)}>{m.daily_passed_in_short()}</span>
+  if (deal.mine.declarer === null) return <span data-testid="history-game" {...stylex.props(name, styles.passed)}>{m.daily_passed_in_short()}</span>
   const game = gameName(deal.mine.game)
+  return game ? <span data-testid="history-game" {...stylex.props(name, styles.ink)}><Rich text={game} /></span> : null
+}
+
+/** The player's part in the game: declarer or defender; nothing when all passed. A label, never the look of a button
+ *  (outlined, the declarer's in navy, the defender's quieter). */
+function Role({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
+  const { declarer } = deal.mine
+  if (declarer === null) return null
   const mine = declarer === 0
   return (
-    <span {...stylex.props(styles.game)}>
-      {game ? <span data-testid="history-game" {...stylex.props(name, styles.ink)}><Rich text={game} /></span> : null}
-      <span data-testid="history-role" data-role={mine ? 'declarer' : 'defender'} {...stylex.props(small ? typography.label : typography.badge, styles.tag, small && styles.tagSmall, mine ? styles.declarer : styles.defender)}>
-        {mine ? m.history_declarer() : m.history_defender()}
-      </span>
+    <span data-testid="history-role" data-role={mine ? 'declarer' : 'defender'} {...stylex.props(small ? typography.label : typography.badge, styles.tag, small && styles.tagSmall, mine ? styles.declarer : styles.defender)}>
+      {mine ? m.history_declarer() : m.history_defender()}
     </span>
   )
 }
@@ -92,7 +96,8 @@ function Head({ action, small }: { action: boolean; small?: boolean }) {
   return (
     <li aria-hidden="true" {...stylex.props(typography.meta, styles.row, styles.headRow)}>
       <span {...stylex.props(styles.cell, styles.headCell, styles.first, styles.grow)}>{m.history_head_game()}</span>
-      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.wide, small && styles.phoneNone)}>{m.history_head_cards()}</span>
+      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.phoneNone)} />
+      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.wide)}>{m.history_head_cards()}</span>
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.phoneNone)} />
       {action ? <span {...stylex.props(styles.cell, styles.headCell, styles.second, styles.phoneNone)} /> : null}
       <span {...stylex.props(styles.cell, styles.headCell, styles.end, small && styles.close)}>{m.history_vs_ai()}</span>
@@ -106,7 +111,8 @@ function Head({ action, small }: { action: boolean; small?: boolean }) {
 function Row({ deal, action, small, testId }: { deal: ProfileDeal; action?: ReactNode; small?: boolean; testId: string }) {
   return (
     <li data-testid={testId} data-key={deal.key} {...stylex.props(styles.row, small && styles.rowSmall)}>
-      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.first, styles.grow)}><Game deal={deal} small={small} /></span>
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.first)}><Game deal={deal} small={small} /></span>
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.roleCell)}><Role deal={deal} small={small} /></span>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.wide, styles.grow)}><KeyCards deal={deal} small={small} /></span>
       <span data-testid="history-day" {...stylex.props(typography.meta, styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.day)}>{dayName(deal.day)}</span>
       {action !== undefined ? <span {...stylex.props(styles.cell, styles.second, styles.action)}>{action}</span> : null}
@@ -183,15 +189,16 @@ const styles = stylex.create({
   // The cards' column takes the room left, so the day and the difference keep to the right.
   wide: { width: { default: '100%', [bp.phone]: 'auto' }, whiteSpace: 'normal' },
   grow: { flexGrow: 1, flexBasis: 0, minWidth: 0 },
+  // On a phone the tag follows the game on its line and takes the room up to the difference.
+  roleCell: { flexGrow: 1, order: 0 },
   phoneNone: { display: { default: 'table-cell', [bp.phone]: 'none' } },
   lineEnd: { display: { default: 'none', [bp.phone]: 'block' }, flexBasis: '100%', order: 0 },
-  game: { display: 'flex', flexWrap: { default: 'nowrap', [bp.phone]: 'wrap' }, alignItems: 'center', gap: space.x8 },
   ink: { color: color.navy },
   passed: { color: color.slate },
-  tag: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill },
+  tag: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, borderWidth: border.hair, borderStyle: 'solid' },
   tagSmall: { paddingInline: space.x6 },
-  declarer: { backgroundColor: color.youTag, color: color.onColor },
-  defender: { backgroundColor: color.page, color: color.slate },
+  declarer: { borderColor: color.navy, color: color.navy },
+  defender: { borderColor: color.hairline, color: color.slate },
   cards: { display: 'flex', flexWrap: 'wrap', columnGap: space.x12, color: color.navy },
   cardsSmall: { columnGap: space.x8 },
   day: { color: color.slate, textAlign: 'end' },

@@ -454,15 +454,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   free play. Then every game (SKATGO-182, 「历史可以放在打开的页面的顶部，默认折叠（不登录时，那就不折叠，因为就这一个）」) in a white
   card: headed "Deine Spiele (412)" (`optionTitle`): for an account folded, the heading the line to tap with a chevron, as the
   earlier weeks open; for a guest open, followed by one line on what signing in keeps and the `go` "Anmelden". A row a game,
-  newest first, over a `hairline` (SKATGO-189): the game ("Herz ♥", "Grand Hand", `appBtnStrong`, navy) and the player's part
-  in it as a tag (`badge`, round) — "Alleinspieler" in `youTag` with `onColor`, "Gegenspieler" in `page` with slate — or
-  "Eingepasst" in slate without one; their jacks, then aces, then tens, each by suit (♣♠♥♦), as text with each suit in its colour
+  newest first, over a `hairline` (SKATGO-189): the game ("Herz ♥", "Grand Hand", `appBtnStrong`, navy), or "Eingepasst" in slate;
+  the player's part in it as a round, outlined tag (`badge`, a label, never the look of a button) — "Alleinspieler" in navy,
+  "Gegenspieler" in slate on a `hairline` outline — none when all passed; their jacks, then aces, then tens, each by suit (♣♠♥♦), as text with each suit in its colour
   (`appText`, navy), the three kinds a little apart, a dash for none and nothing where the deal's cards are not kept; the day
   ("12. Nov.", `meta`, slate); "Nochmal" (`link`, `info`, underlined), which plays it again — for a guest opening Clerk's
   sign-in first (「想点此处的复牌，必须登录」), the game going on once signed in; and the score less the AI's (`appBtnStrong`),
   signed, never `good` / `bad`. Where there is room the rows are a table, one line a game in that order, its columns lined up
-  under a `meta` head ("Spiel", "Deine Buben, Asse, Zehnen", "vs. KI"); on a phone a game is the game and the difference, then
-  the cards and the day, then "Nochmal", under a head of "Spiel" and "vs. KI" over "Deine Buben, Asse, Zehnen". Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
+  the tags in a column of their own, under a `meta` head ("Spiel", "Deine Buben, Asse, Zehnen", "vs. KI"); on a phone a game is the game, its tag and the difference,
+  then the cards and the day, then "Nochmal", under a head of "Spiel" and "vs. KI" over "Deine Buben, Asse, Zehnen". Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
   `/replay` plays the game again as `/daily/replay` does: the full-screen table, counted nowhere, its result's foot "Dieses
   Spiel nochmal spielen", its close back to the profile; a free deal with free play's power-ups.
   Otherwise, for an account, a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt

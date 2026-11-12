@@ -1,17 +1,18 @@
 import * as stylex from '@stylexjs/stylex'
+import { Check } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { signed } from './daily-comparison'
 import { Rich } from './ui'
 import type { ProfileDeal } from '~/lib/skat/profile'
-import { cardLabel, contractName } from '~/lib/skat/i18n'
-import type { Card, Contract, Rank, Suit } from '~/lib/skat/cards'
+import { cardLabel, contractName, suitName } from '~/lib/skat/i18n'
+import type { Card, Rank, Suit } from '~/lib/skat/cards'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { color } from '../../theme/color.stylex'
+import { icon } from '../../theme/constants'
 import { bp } from '../../theme/breakpoints.stylex'
 import { border, space } from '../../theme/scale.stylex'
-import { radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 
 // The player's games, one row each, newest first (SKATGO-182; SKATGO-189, the human: 「不要出现别人的名字。首页的卡片里的列表和
@@ -20,13 +21,14 @@ import { typography } from '../../theme/type'
 // colour (SKATGO-81). The front page's card and the record of play show the same row; the record's can be played again
 // (`action`).
 
-/** The game a deal's record names (`played` in multiplayer's profile.ts): "C", "grand", "null hand" … */
+/** The game a deal's record names (`played` in multiplayer's profile.ts): "C", "grand", "null hand" … — in words, a suit
+ *  game by its suit's name without its sign (the human: 「这里不要再显示红心等符号了」). */
 function gameName(game: string | undefined): string | null {
   if (!game) return null
   const [kind, hand] = game.split(' ')
-  const contract: Contract | null = kind === 'grand' ? { kind: 'grand' } : kind === 'null' ? { kind: 'null' } : /^[CSHD]$/.test(kind) ? { kind: 'suit', trump: kind as Suit } : null
-  if (!contract) return null
-  return hand === 'hand' ? `${contractName(contract)} Hand` : contractName(contract)
+  const name = kind === 'grand' || kind === 'null' ? contractName({ kind }) : /^[CSHD]$/.test(kind) ? suitName(kind as Suit) : null
+  if (!name) return null
+  return hand === 'hand' ? `${name} Hand` : name
 }
 
 const dayName = (day: string) => new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${day}T00:00:00Z`))
@@ -50,18 +52,17 @@ function Game({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
   const name = small ? typography.panelLabel : typography.appBtnStrong
   if (deal.mine.declarer === null) return <span data-testid="history-game" {...stylex.props(name, styles.passed)}>{m.daily_passed_in_short()}</span>
   const game = gameName(deal.mine.game)
-  return game ? <span data-testid="history-game" {...stylex.props(name, styles.ink)}><Rich text={game} /></span> : null
+  return game ? <span data-testid="history-game" {...stylex.props(name, styles.ink)}>{game}</span> : null
 }
 
-/** The player's part in the game: declarer or defender; nothing when all passed. A label, never the look of a button
- *  (outlined, the declarer's in navy, the defender's quieter). */
-function Role({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
-  const { declarer } = deal.mine
-  if (declarer === null) return null
-  const mine = declarer === 0
+/** A tick where the player was the declarer, under the column's "Declarer" (the human chose it: 「我比较喜欢第三个」); nothing
+ *  where they defended or all passed. On a phone, where there are no columns, the word follows the tick. */
+function Declarer({ deal }: { deal: ProfileDeal }) {
+  if (deal.mine.declarer !== 0) return null
   return (
-    <span data-testid="history-role" data-role={mine ? 'declarer' : 'defender'} {...stylex.props(typography.micro, styles.tag, mine ? styles.declarer : styles.defender)}>
-      {mine ? m.history_declarer() : m.history_defender()}
+    <span data-testid="history-role" data-role="declarer" {...stylex.props(styles.tick)}>
+      <Check role="img" aria-label={m.history_declarer()} size={icon.inline} strokeWidth={icon.outline} />
+      <span aria-hidden="true" {...stylex.props(typography.meta, styles.tickWord)}>{m.history_declarer()}</span>
     </span>
   )
 }
@@ -96,7 +97,7 @@ function Head({ action, small }: { action: boolean; small?: boolean }) {
   return (
     <li aria-hidden="true" {...stylex.props(typography.meta, styles.row, styles.headRow)}>
       <span {...stylex.props(styles.cell, styles.headCell, styles.first, styles.grow)}>{m.history_head_game()}</span>
-      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.phoneNone)} />
+      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.roleCell, styles.phoneNone)}>{m.history_declarer()}</span>
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.wide)}>{m.history_head_cards()}</span>
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.phoneNone)} />
       {action ? <span {...stylex.props(styles.cell, styles.headCell, styles.second, styles.phoneNone)} /> : null}
@@ -112,7 +113,7 @@ function Row({ deal, action, small, testId }: { deal: ProfileDeal; action?: Reac
   return (
     <li data-testid={testId} data-key={deal.key} {...stylex.props(styles.row, small && styles.rowSmall)}>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.first)}><Game deal={deal} small={small} /></span>
-      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.roleCell)}><Role deal={deal} small={small} /></span>
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.roleCell)}><Declarer deal={deal} /></span>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.wide, styles.grow)}><KeyCards deal={deal} small={small} /></span>
       <span data-testid="history-day" {...stylex.props(typography.meta, styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.day)}>{dayName(deal.day)}</span>
       {action !== undefined ? <span {...stylex.props(styles.cell, styles.second, styles.action)}>{action}</span> : null}
@@ -189,16 +190,15 @@ const styles = stylex.create({
   // The cards' column takes the room left, so the day and the difference keep to the right.
   wide: { width: { default: '100%', [bp.phone]: 'auto' }, whiteSpace: 'normal' },
   grow: { flexGrow: 1, flexBasis: 0, minWidth: 0 },
-  // On a phone the tag follows the game on its line and takes the room up to the difference.
-  roleCell: { flexGrow: 1, order: 0 },
+  // The tick under its head, in the middle of the column; on a phone it follows the game on its line and takes the room
+  // up to the difference.
+  roleCell: { flexGrow: 1, order: 0, textAlign: { default: 'center', [bp.phone]: 'start' } },
   phoneNone: { display: { default: 'table-cell', [bp.phone]: 'none' } },
   lineEnd: { display: { default: 'none', [bp.phone]: 'block' }, flexBasis: '100%', order: 0 },
   ink: { color: color.navy },
   passed: { color: color.slate },
-  // Small beside the game (the human: 「我觉得declare和defender的标签太大了」): the smallest text, no padding above or below.
-  tag: { display: 'inline-block', paddingInline: space.x6, paddingBlock: 0, borderRadius: radii.pill, borderWidth: border.hair, borderStyle: 'solid' },
-  declarer: { borderColor: color.navy, color: color.navy },
-  defender: { borderColor: color.hairline, color: color.slate },
+  tick: { display: 'inline-flex', alignItems: 'center', gap: space.x4, color: color.navy, verticalAlign: 'middle' },
+  tickWord: { display: { default: 'none', [bp.phone]: 'inline' }, color: color.slate },
   cards: { display: 'flex', flexWrap: 'wrap', columnGap: space.x12, color: color.navy },
   cardsSmall: { columnGap: space.x8 },
   day: { color: color.slate, textAlign: 'end' },

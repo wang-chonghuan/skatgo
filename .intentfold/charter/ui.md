@@ -288,7 +288,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
     保存你的表现记录以及ai分析，中间放个登录按钮」) — whoever has played, account or guest, sees instead their games (SKATGO-182, 「每一行显示用户拿到了啥牌，以及和ai差几分，不管是否
     登录，这个my progress卡片都显示这个，想点击，必须登录」), newest first, the record's rows (below) a step smaller: the game
-    (`panelLabel`) and its tag, the cards (`meta`, a thin space apart) — since SKATGO-189 (「不要出现别人的名字。首页的卡片里的列表和真实
+    (`panelLabel`), the tick, the cards (`meta`, a thin space apart) — since SKATGO-189 (「不要出现别人的名字。首页的卡片里的列表和真实
     列表，都要改。我认为只限显示 BA10这三张，然后日期，是否坐庄，合约是啥」) no other player's name, no result in words and no ten cards —
     over a `hairline`, scrolling as the XP board's list. An account's card is the link to the record; a guest's games open Clerk's sign-in first, then the record,
     and the same `go` "Anmelden" stands beside the title. (SKATGO-169's win rate, average and curve are gone from the card.)
@@ -454,14 +454,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   free play. Then every game (SKATGO-182, 「历史可以放在打开的页面的顶部，默认折叠（不登录时，那就不折叠，因为就这一个）」) in a white
   card: headed "Deine Spiele (412)" (`optionTitle`): for an account folded, the heading the line to tap with a chevron, as the
   earlier weeks open; for a guest open, followed by one line on what signing in keeps and the `go` "Anmelden". A row a game,
-  newest first, over a `hairline` (SKATGO-189): the game ("Herz ♥", "Grand Hand", `appBtnStrong`, navy), or "Eingepasst" in slate;
-  the player's part in it as a small round, outlined tag (`micro`, a label, never the look of a button) — "Alleinspieler" in navy,
-  "Gegenspieler" in slate on a `hairline` outline — none when all passed; their jacks, then aces, then tens, each by suit (♣♠♥♦), as text with each suit in its colour
+  newest first, over a `hairline` (SKATGO-189): the game in words, a suit game without its sign ("Herz", "Grand Hand", `appBtnStrong`, navy; 「这里不要再显示红心等符号了」), or
+  "Eingepasst" in slate; a tick (lucide's `Check`, navy) where the player was the declarer, nothing where they defended or all
+  passed (「我比较喜欢第三个」 — over a tag or a word); their jacks, then aces, then tens, each by suit (♣♠♥♦), as text with each suit in its colour
   (`appText`, navy), the three kinds a little apart, a dash for none and nothing where the deal's cards are not kept; the day
   ("12. Nov.", `meta`, slate); "Nochmal" (`link`, `info`, underlined), which plays it again — for a guest opening Clerk's
   sign-in first (「想点此处的复牌，必须登录」), the game going on once signed in; and the score less the AI's (`appBtnStrong`),
   signed, never `good` / `bad`. Where there is room the rows are a table, one line a game in that order, its columns lined up
-  the tags in a column of their own, under a `meta` head ("Spiel", "Deine Buben, Asse, Zehnen", "vs. KI"); on a phone a game is the game, its tag and the difference,
+  the ticks in a column of their own, in its middle, under a `meta` head ("Spiel" — "Contract" in English, as at the table —
+  "Alleinspieler", "Deine Buben, Asse, Zehnen", "vs. KI"); on a phone a game is the game, its tick followed by "Alleinspieler" (`meta`, slate) and the difference,
   then the cards and the day, then "Nochmal", under a head of "Spiel" and "vs. KI" over "Deine Buben, Asse, Zehnen". Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
   `/replay` plays the game again as `/daily/replay` does: the full-screen table, counted nowhere, its result's foot "Dieses
   Spiel nochmal spielen", its close back to the profile; a free deal with free play's power-ups.

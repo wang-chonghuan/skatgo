@@ -92,13 +92,14 @@ function Gap({ deal }: { deal: ProfileDeal }) {
 /** On a phone, the end of a game's first line. */
 const LineEnd = () => <span aria-hidden="true" {...stylex.props(styles.lineEnd)} />
 
-/** The list's head: the game, the cards and the difference to the AI. */
+/** The list's head: the game, the declarer's column and the difference to the AI. */
 function Head({ action, small }: { action: boolean; small?: boolean }) {
   return (
     <li aria-hidden="true" {...stylex.props(typography.meta, styles.row, styles.headRow)}>
       <span {...stylex.props(styles.cell, styles.headCell, styles.first, styles.grow)}>{m.history_head_game()}</span>
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.roleCell, styles.phoneNone)}>{m.history_declarer()}</span>
-      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.wide)}>{m.history_head_cards()}</span>
+      {/* The cards' column has no head (the human: 「第三列的列头很sb，删掉」). */}
+      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.wide, styles.phoneNone)} />
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.phoneNone)} />
       {action ? <span {...stylex.props(styles.cell, styles.headCell, styles.second, styles.phoneNone)} /> : null}
       <span {...stylex.props(styles.cell, styles.headCell, styles.end, small && styles.close)}>{m.history_vs_ai()}</span>

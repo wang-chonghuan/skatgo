@@ -462,8 +462,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   sign-in first (「想点此处的复牌，必须登录」), the game going on once signed in; and the score less the AI's (`appBtnStrong`),
   signed, never `good` / `bad`. Where there is room the rows are a table, one line a game in that order, its columns lined up
   the ticks in a column of their own, in its middle, under a `meta` head ("Spiel" — "Contract" in English, as at the table —
-  "Alleinspieler", "Deine Buben, Asse, Zehnen", "vs. KI"); on a phone a game is the game, its tick followed by "Alleinspieler" (`meta`, slate) and the difference,
-  then the cards and the day, then "Nochmal", under a head of "Spiel" and "vs. KI" over "Deine Buben, Asse, Zehnen". Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
+  "Alleinspieler", "vs. KI"; the cards' column without one — 「第三列的列头很sb，删掉」); on a phone a game is the game, its tick followed by "Alleinspieler" (`meta`, slate) and the difference,
+  then the cards and the day, then "Nochmal", under a head of "Spiel" and "vs. KI". Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
   `/replay` plays the game again as `/daily/replay` does: the full-screen table, counted nowhere, its result's foot "Dieses
   Spiel nochmal spielen", its close back to the profile; a free deal with free play's power-ups.
   Otherwise, for an account, a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt

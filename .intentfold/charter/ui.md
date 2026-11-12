@@ -287,11 +287,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     and the last day under it (`meta`, slate) (「最好上面带一些日期……不要扩大，一两个即可」); for a guest "Melde dich an und verfolge, wie du besser wirst – mit der
     Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
     保存你的表现记录以及ai分析，中间放个登录按钮」) — whoever has played, account or guest, sees instead their games (SKATGO-182, 「每一行显示用户拿到了啥牌，以及和ai差几分，不管是否
-    登录，这个my progress卡片都显示这个，想点击，必须登录」), one line each, newest first: the ten cards as dealt, in a Grand's
-    order, as text with each suit in its colour, a thin space apart (`meta`, navy, so ten fit on a phone; cut with an
-    ellipsis should they not), and the score less the AI's on the
-    same cards (`appBtnStrong`), under a `meta` head, "Deine Blätter, neueste zuerst" over the cards and "vs. KI" over the differences (「手牌列最好也加个列名」, then 「应该是你的手牌，最新的在最上面……禁止直译」), over a `hairline` — scrolling as the XP board's list, the first five
-    in one column. An account's card is the link to the record; a guest's games open Clerk's sign-in first, then the record,
+    登录，这个my progress卡片都显示这个，想点击，必须登录」), newest first, the record's rows (below) a step smaller: the game
+    (`panelLabel`) and its tag (`label`), the cards (`meta`, a thin space apart) — since SKATGO-189 (「不要出现别人的名字。首页的卡片里的列表和真实
+    列表，都要改。我认为只限显示 BA10这三张，然后日期，是否坐庄，合约是啥」) no other player's name, no result in words and no ten cards —
+    over a `hairline`, scrolling as the XP board's list. An account's card is the link to the record; a guest's games open Clerk's sign-in first, then the record,
     and the same `go` "Anmelden" stands beside the title. (SKATGO-169's win rate, average and curve are gone from the card.)
     And the XP
     board (`xp-board.tsx`, SKATGO-172, in the Elo board's place, size and behaviour: 「这个卡片大小规格行为，还和当前的elo卡片一样」) —
@@ -455,10 +454,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   free play. Then every game (SKATGO-182, 「历史可以放在打开的页面的顶部，默认折叠（不登录时，那就不折叠，因为就这一个）」) in a white
   card: headed "Deine Spiele (412)" (`optionTitle`): for an account folded, the heading the line to tap with a chevron, as the
   earlier weeks open; for a guest open, followed by one line on what signing in keeps and the `go` "Anmelden". A row a game,
-  newest first, over a `hairline`: the ten cards as on the card (`appText`, navy), under them what happened in the result's
-  words, where and when ("Du hast Grand gewonnen · Freies Spiel · 10. Nov.", `meta`, slate), and under that "Nochmal"
-  (`link`, `info`, underlined), which plays it again — for a guest opening Clerk's sign-in first
-  (「想点此处的复牌，必须登录」), the game going on once signed in; at the right the score less the AI's (`appBtnStrong`), under a `meta` "vs. KI", signed, never `good` / `bad`. Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
+  newest first, over a `hairline` (SKATGO-189): the game ("Herz ♥", "Grand Hand", `appBtnStrong`, navy) and the player's part
+  in it as a tag (`badge`, round) — "Alleinspieler" in `youTag` with `onColor`, "Gegenspieler" in `page` with slate — or
+  "Eingepasst" in slate without one; their jacks, then aces, then tens, each by suit (♣♠♥♦), as text with each suit in its colour
+  (`appText`, navy), the three kinds a little apart, a dash for none and nothing where the deal's cards are not kept; the day
+  ("12. Nov.", `meta`, slate); "Nochmal" (`link`, `info`, underlined), which plays it again — for a guest opening Clerk's
+  sign-in first (「想点此处的复牌，必须登录」), the game going on once signed in; and the score less the AI's (`appBtnStrong`),
+  signed, never `good` / `bad`. Where there is room the rows are a table, one line a game in that order, its columns lined up
+  under a `meta` head ("Spiel", "Deine Buben, Asse, Zehnen", "vs. KI"); on a phone a game is the game and the difference, then
+  the cards and the day, then "Nochmal", under a head of "Spiel" and "vs. KI" over "Deine Buben, Asse, Zehnen". Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
   `/replay` plays the game again as `/daily/replay` does: the full-screen table, counted nowhere, its result's foot "Dieses
   Spiel nochmal spielen", its close back to the profile; a free deal with free play's power-ups.
   Otherwise, for an account, a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt

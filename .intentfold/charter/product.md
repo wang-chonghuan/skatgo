@@ -174,8 +174,9 @@ its XP, win rate and record of play — while the past days' boards stay as they
 game, newest first (「历史可以放在打开的页面的顶部，默认折叠（不登录时，那就不折叠，因为就这一个）」): folded for an account, whose
 record follows unchanged (「登录了就和当前一样」); open for a guest, whose games of the device are all they have there, with the
 sign-in that keeps them. The front page's "History & analysis" (「卡片名称 my progress改为my history and analyse」, then without "My") is the way in (「我建议my progress作为入口，没登录就显示打的牌的历史列表」): for whoever has
-played, account or guest, their games, each the ten cards they were dealt and how far above or below the AI they finished
-on them (「每一行显示用户拿到了啥牌，以及和ai差几分，不管是否登录，这个my progress卡片都显示这个，想点击，必须登录」); opening it
+played, account or guest, their games, each the game and whether they were its declarer, their jacks, aces and tens, the day,
+and how far above or below the AI they finished on those cards (SKATGO-189: 「不要出现别人的名字……只限显示 BA10这三张，然后日期，是否坐庄，
+合约是啥」; until then the ten cards they were dealt) (「每一行显示用户拿到了啥牌，以及和ai差几分，不管是否登录，这个my progress卡片都显示这个，想点击，必须登录」); opening it
 takes an account. Each game can be played again (「可以replay，不是复盘，就是让该人再打一盘，就如同正规的
 free play的replay，不计入任何分。但是呢，想点此处的复牌，必须登录」): the same cards against the same AI, counted nowhere — an account's
 only; a guest signs in first.

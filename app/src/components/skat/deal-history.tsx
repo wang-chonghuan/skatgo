@@ -1,67 +1,80 @@
 import * as stylex from '@stylexjs/stylex'
+import { Check } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { signed } from './daily-comparison'
 import { Rich } from './ui'
-import { type ProfileDeal, dealKeyOf } from '~/lib/skat/profile'
-import { cardLabel, contractName } from '~/lib/skat/i18n'
-import { type Card, type Contract, type Suit, sortHand } from '~/lib/skat/cards'
-import { DEAL_OF_DAY } from '~/lib/skat/tournament'
+import type { ProfileDeal } from '~/lib/skat/profile'
+import { cardLabel, contractName, suitName } from '~/lib/skat/i18n'
+import type { Card, Rank, Suit } from '~/lib/skat/cards'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
 import { color } from '../../theme/color.stylex'
+import { icon } from '../../theme/constants'
+import { bp } from '../../theme/breakpoints.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { typography } from '../../theme/type'
 
-// The player's games, one row each, newest first (SKATGO-182, the human: 「没登录就显示打的牌的历史列表……打开后，既要显示当前的，又
-// 能显示历史」, then 「每一行显示用户拿到了啥牌，以及和ai差几分」): the ten cards they were dealt and their Seeger-Fabian score less
-// the AI's on the same cards, signed and never judged in colour (SKATGO-81). On the record of play a row also says what
-// happened — the game they played or defended against, won or lost, or that all passed — where and when, and can be
-// played again (`action`); on the front page's card a row is one line.
+// The player's games, one row each, newest first (SKATGO-182; SKATGO-189, the human: 「不要出现别人的名字。首页的卡片里的列表和
+// 真实列表，都要改。我认为只限显示 BA10这三张，然后日期，是否坐庄，合约是啥」): the game and whether they were its declarer, their
+// jacks, aces and tens, the day, and their Seeger-Fabian score less the AI's on the same cards, signed and never judged in
+// colour (SKATGO-81). The front page's card and the record of play show the same row; the record's can be played again
+// (`action`).
 
-/** The game a deal's record names (`played` in multiplayer's profile.ts): "C", "grand", "null hand" … */
+/** The game a deal's record names (`played` in multiplayer's profile.ts): "C", "grand", "null hand" … — in words, a suit
+ *  game by its suit's name without its sign (the human: 「这里不要再显示红心等符号了」). */
 function gameName(game: string | undefined): string | null {
   if (!game) return null
   const [kind, hand] = game.split(' ')
-  const contract: Contract | null = kind === 'grand' ? { kind: 'grand' } : kind === 'null' ? { kind: 'null' } : /^[CSHD]$/.test(kind) ? { kind: 'suit', trump: kind as Suit } : null
-  if (!contract) return null
-  return hand === 'hand' ? `${contractName(contract)} Hand` : contractName(contract)
-}
-
-/** What happened in the deal, from the player's seat. */
-export function dealLine(d: ProfileDeal): string {
-  const { declarer, won } = d.mine
-  if (declarer === null) return m.daily_passed_in_short()
-  const game = gameName(d.mine.game) ?? m.history_game()
-  if (declarer === 0) return won ? m.result_head_you_won({ game }) : m.result_head_you_lost({ game })
-  const name = declarer === 1 ? m.name_lina() : m.name_max()
-  return won ? m.result_head_won({ name, game }) : m.result_head_lost({ name, game })
-}
-
-/** Where the deal was played: free play, the deal of the day, or the daily tournament. */
-export function modeOf(d: ProfileDeal): string {
-  const key = dealKeyOf(d.key)
-  if (key?.kind === 'daily') return key.size === DEAL_OF_DAY ? m.history_dod() : m.history_tournament()
-  return m.history_free()
+  const name = kind === 'grand' || kind === 'null' ? contractName({ kind }) : /^[CSHD]$/.test(kind) ? suitName(kind as Suit) : null
+  if (!name) return null
+  return hand === 'hand' ? `${name} Hand` : name
 }
 
 const dayName = (day: string) => new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${day}T00:00:00Z`))
 
-/** The player's ten cards as dealt, in the hand's order (trumps of a Grand first), or null where they are not kept. */
-function handOf(d: ProfileDeal): Card[] | null {
-  return d.hand ? sortHand(d.hand.map((c) => ({ suit: c[0], rank: c.slice(1) }) as Card), null) : null
+/** The ranks a row shows, in that order, and the suits' order within each (the human: 「只限显示 BA10这三张」). */
+const RANKS: Rank[] = ['J', 'A', '10']
+const SUITS: Suit[] = ['C', 'S', 'H', 'D']
+
+/** The player's jacks, then aces, then tens, each by suit; null where the deal's cards are not kept. */
+function keyCards(d: ProfileDeal): Card[][] | null {
+  if (!d.hand) return null
+  const hand = d.hand.map((c) => ({ suit: c[0], rank: c.slice(1) }) as Card)
+  return RANKS.map((rank) => SUITS.flatMap((suit) => hand.filter((c) => c.rank === rank && c.suit === suit)))
 }
 
 /** The player's Seeger-Fabian score less the AI's on the same cards from the same seat, or null without the AI's game. */
 export const vsAi = (d: ProfileDeal) => (d.ai ? d.mine.scores[0] - d.ai.scores[0] : null)
 
-/** The ten cards in one line, each suit in its colour (SKATGO-182, the human: 「每一行显示用户拿到了啥牌，以及和ai差几分」). */
-function Hand({ deal, line }: { deal: ProfileDeal; line?: boolean }) {
-  const hand = handOf(deal)
+/** The game, or that all passed. */
+function Game({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
+  const name = small ? typography.panelLabel : typography.appBtnStrong
+  if (deal.mine.declarer === null) return <span data-testid="history-game" {...stylex.props(name, styles.passed)}>{m.daily_passed_in_short()}</span>
+  const game = gameName(deal.mine.game)
+  return game ? <span data-testid="history-game" {...stylex.props(name, styles.ink)}>{game}</span> : null
+}
+
+/** A tick where the player was the declarer, under the column's "Declarer" (the human chose it: 「我比较喜欢第三个」); nothing
+ *  where they defended or all passed. On a phone, where there are no columns, the word follows the tick. */
+function Declarer({ deal }: { deal: ProfileDeal }) {
+  if (deal.mine.declarer !== 0) return null
   return (
-    // On the card's one line the cards close up, a thin space apart and at the meta size, so ten fit on a phone.
-    <span data-testid="history-hand" {...stylex.props(line ? typography.meta : typography.appText, styles.hand, line && styles.cut)}>
-      {hand ? <Rich text={hand.map(cardLabel).join(line ? '\u2009' : ' ')} /> : dealLine(deal)}
+    <span data-testid="history-role" data-role="declarer" {...stylex.props(styles.tick)}>
+      <Check role="img" aria-label={m.history_declarer()} size={icon.inline} strokeWidth={icon.outline} />
+      <span aria-hidden="true" {...stylex.props(typography.meta, styles.tickWord)}>{m.history_declarer()}</span>
+    </span>
+  )
+}
+
+/** The jacks, aces and tens, each suit in its colour, the three kinds a little apart; a dash when there are none, nothing
+ *  where the deal's cards are not kept. */
+function KeyCards({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
+  const groups = keyCards(deal)?.filter((g) => g.length)
+  if (!groups) return null
+  return (
+    <span data-testid="history-hand" {...stylex.props(small ? typography.meta : typography.appText, styles.cards, small && styles.cardsSmall)}>
+      {groups.length ? groups.map((g) => <span key={g[0].rank}><Rich text={g.map(cardLabel).join(small ? '\u2009' : ' ')} /></span>) : '–'}
     </span>
   )
 }
@@ -72,81 +85,125 @@ function Gap({ deal }: { deal: ProfileDeal }) {
   return <span data-testid="history-gap" {...stylex.props(typography.appBtnStrong, styles.number)}>{gap === null ? '–' : signed(gap)}</span>
 }
 
-/** The list's head: what each column is — the cards (the human: 「手牌列最好也加个列名」) and the difference to the AI. */
-function Head() {
+// The rows are a table where there is room (the human: the same row on the card and the record), one line a game with
+// its columns lined up, so the front page's card shows several; on a phone each game is two lines — the game and the
+// difference, then the cards and the day — and the record's way to play it again under them, as before.
+
+/** On a phone, the end of a game's first line. */
+const LineEnd = () => <span aria-hidden="true" {...stylex.props(styles.lineEnd)} />
+
+/** The list's head: the game, the declarer's column and the difference to the AI. */
+function Head({ action, small }: { action: boolean; small?: boolean }) {
   return (
-    <>
-      <span {...stylex.props(typography.meta, styles.gapHead)}>{m.history_cards()}</span>
-      <span {...stylex.props(typography.meta, styles.gapHead)}>{m.history_vs_ai()}</span>
-    </>
+    <li aria-hidden="true" {...stylex.props(typography.meta, styles.row, styles.headRow)}>
+      <span {...stylex.props(styles.cell, styles.headCell, styles.first, styles.grow)}>{m.history_head_game()}</span>
+      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.roleCell, styles.phoneNone)}>{m.history_declarer()}</span>
+      {/* The cards' column has no head (the human: 「第三列的列头很sb，删掉」). */}
+      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.wide, styles.phoneNone)} />
+      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.phoneNone)} />
+      <span {...stylex.props(styles.cell, styles.headCell, styles.end, small && styles.close)}>{m.history_vs_ai()}</span>
+      {action ? <span {...stylex.props(styles.cell, styles.headCell, styles.second, styles.phoneNone)} /> : null}
+      <LineEnd />
+    </li>
   )
 }
 
-/** The record's rows, newest first: the ten cards, under them what happened, where and when, and under that the way to
- *  play it again (`action`); at the right the difference to the AI. */
+/** One game: the game and the player's part, the jacks, aces and tens, the day, the difference to the AI, and on the
+ *  record the way to play it again. */
+function Row({ deal, action, small, testId }: { deal: ProfileDeal; action?: ReactNode; small?: boolean; testId: string }) {
+  return (
+    <li data-testid={testId} data-key={deal.key} {...stylex.props(styles.row, small && styles.rowSmall)}>
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.first)}><Game deal={deal} small={small} /></span>
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.roleCell)}><Declarer deal={deal} /></span>
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.wide, styles.grow)}><KeyCards deal={deal} small={small} /></span>
+      <span data-testid="history-day" {...stylex.props(typography.meta, styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.day)}>{dayName(deal.day)}</span>
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.end, small && styles.close)}><Gap deal={deal} /></span>
+      {/* The way to play it again, last (the human: 「详情表里，replay放在最后一列」); on a phone its own line under the game. */}
+      {action !== undefined ? <span {...stylex.props(styles.cell, styles.second, styles.action)}>{action}</span> : null}
+      <LineEnd />
+    </li>
+  )
+}
+
+/** The record's rows, newest first, each with the way to play it again (`action`). */
 export function DealRows({ deals, action }: { deals: ProfileDeal[]; action?: (d: ProfileDeal) => ReactNode }) {
   return (
     <ul data-testid="history-rows" {...stylex.props(styles.list)}>
-      <li aria-hidden="true" {...stylex.props(styles.headRow)}><Head /></li>
-      {deals.map((d) => (
-        <li key={d.key} data-testid="history-row" data-key={d.key} {...stylex.props(styles.row)}>
-          <div {...stylex.props(styles.main)}>
-            <Hand deal={d} />
-            <span {...stylex.props(typography.meta, styles.meta)}>{`${d.hand ? `${dealLine(d)} · ` : ''}${modeOf(d)} · ${dayName(d.day)}`}</span>
-            {action ? <span {...stylex.props(styles.action)}>{action(d)}</span> : null}
-          </div>
-          <Gap deal={d} />
-        </li>
-      ))}
+      <Head action={!!action} />
+      {deals.map((d) => <Row key={d.key} deal={d} action={action?.(d) ?? undefined} testId="history-row" />)}
     </ul>
   )
 }
 
-/** The front page's card: one line a game — its ten cards and the difference to the AI. */
+/** The front page's card: the same rows, scrolling inside the card, smaller and closer — the game and its tag a step
+ *  down, the cards a thin space apart at the size of its earlier lines, and on a phone the head one line — so a hand keeps
+ *  to one line and more games show. */
 export function DealLines({ deals }: { deals: ProfileDeal[] }) {
   return (
-    <ul data-testid="history-lines" {...stylex.props(styles.list)}>
-      <li aria-hidden="true" {...stylex.props(styles.headRow, styles.lineHead)}><Head /></li>
-      {deals.map((d) => (
-        <li key={d.key} data-testid="history-line" data-key={d.key} {...stylex.props(styles.line)}>
-          <Hand deal={d} line />
-          <Gap deal={d} />
-        </li>
-      ))}
+    <ul data-testid="history-lines" {...stylex.props(styles.list, styles.cardEnd)}>
+      <Head action={false} small />
+      {deals.map((d) => <Row key={d.key} deal={d} small testId="history-line" />)}
     </ul>
   )
 }
 
 const styles = stylex.create({
-  list: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
-  headRow: { display: 'flex', justifyContent: 'space-between', gap: space.x12, paddingBottom: space.x6 },
-  lineHead: { paddingBottom: space.x2, paddingInlineEnd: space.x16 },
-  gapHead: { color: color.slate },
+  list: {
+    display: { default: 'table', [bp.phone]: 'flex' },
+    flexDirection: 'column',
+    width: '100%',
+    borderCollapse: 'collapse',
+    margin: 0,
+    padding: 0,
+    listStyle: 'none',
+  },
+  // On the card, room at the right for the list's scrollbar, as the XP board's list beside it (SKATGO-172).
+  cardEnd: { paddingInlineEnd: space.x16 },
   row: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: space.x12,
-    paddingBlock: space.x8,
-    borderTopWidth: border.hair,
+    display: { default: 'table-row', [bp.phone]: 'flex' },
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: space.x12,
+    rowGap: space.x2,
+    paddingBlock: { default: 0, [bp.phone]: space.x8 },
+    borderTopWidth: { default: 0, [bp.phone]: border.hair },
     borderTopStyle: 'solid',
     borderTopColor: color.hairline,
   },
-  main: { display: 'flex', flexDirection: 'column', gap: space.x2, minWidth: 0 },
-  hand: { color: color.navy },
-  cut: { flexGrow: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  meta: { color: color.slate },
-  action: { display: 'flex', paddingTop: space.x2 },
-  number: { flexShrink: 0, color: color.navy, textAlign: 'end', fontVariantNumeric: 'tabular-nums' },
-  // On the card: as the XP board's list beside it, the rows scrolling inside the card (SKATGO-172).
-  line: {
-    display: 'flex',
-    alignItems: 'baseline',
-    gap: space.x12,
-    paddingBlock: space.x2,
-    paddingInlineEnd: space.x16,
-    borderBottomWidth: border.hair,
-    borderBottomStyle: 'solid',
-    borderBottomColor: color.hairline,
+  headRow: { color: color.slate, borderTopWidth: 0, paddingTop: 0, paddingBottom: { default: 0, [bp.phone]: space.x6 } },
+  cell: {
+    display: { default: 'table-cell', [bp.phone]: 'block' },
+    verticalAlign: 'middle',
+    paddingBlock: { default: space.x8, [bp.phone]: 0 },
+    borderTopWidth: { default: border.hair, [bp.phone]: 0 },
+    borderTopStyle: 'solid',
+    borderTopColor: color.hairline,
+    whiteSpace: 'nowrap',
+    order: { default: 0, [bp.phone]: 1 },
   },
+  rowSmall: { paddingBlock: { default: 0, [bp.phone]: space.x6 } },
+  cellSmall: { paddingBlock: { default: space.x4, [bp.phone]: 0 } },
+  headCell: { paddingTop: 0, paddingBottom: { default: space.x6, [bp.phone]: 0 }, borderTopWidth: 0 },
+  // The game and the difference make a phone's first line; the rest follows on the next.
+  first: { paddingInlineStart: 0, order: 0 },
+  end: { paddingInlineStart: { default: space.x12, [bp.phone]: 0 }, textAlign: 'end', order: 0 },
+  second: { paddingInlineStart: { default: space.x12, [bp.phone]: 0 } },
+  close: { paddingInlineStart: { default: space.x8, [bp.phone]: 0 } },
+  // The cards' column takes the room left, so the day and the difference keep to the right.
+  wide: { width: { default: '100%', [bp.phone]: 'auto' }, whiteSpace: 'normal' },
+  grow: { flexGrow: 1, flexBasis: 0, minWidth: 0 },
+  // The tick under its head, in the middle of the column; on a phone it follows the game on its line and takes the room
+  // up to the difference.
+  roleCell: { flexGrow: 1, order: 0, textAlign: { default: 'center', [bp.phone]: 'start' } },
+  phoneNone: { display: { default: 'table-cell', [bp.phone]: 'none' } },
+  lineEnd: { display: { default: 'none', [bp.phone]: 'block' }, flexBasis: '100%', order: 0 },
+  ink: { color: color.navy },
+  passed: { color: color.slate },
+  tick: { display: 'inline-flex', alignItems: 'center', gap: space.x4, color: color.navy, verticalAlign: 'middle' },
+  tickWord: { display: { default: 'none', [bp.phone]: 'inline' }, color: color.slate },
+  cards: { display: 'flex', flexWrap: 'wrap', columnGap: space.x12, color: color.navy },
+  cardsSmall: { columnGap: space.x8 },
+  day: { color: color.slate, textAlign: 'end' },
+  number: { color: color.navy, fontVariantNumeric: 'tabular-nums' },
+  action: { flexBasis: { default: 'auto', [bp.phone]: '100%' }, paddingTop: { default: space.x8, [bp.phone]: space.x2 } },
 })

@@ -75,8 +75,8 @@ function KeyCards({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
   const groups = keyCards(deal)?.filter((g) => g.length)
   if (!groups) return null
   return (
-    <span data-testid="history-hand" {...stylex.props(small ? typography.meta : typography.appText, styles.cards, small && styles.cardsSmall)}>
-      {groups.length ? groups.map((g) => <span key={g[0].rank}><Rich text={g.map(cardLabel).join(small ? '\u2009' : ' ')} /></span>) : '–'}
+    <span data-testid="history-hand" {...stylex.props(small ? typography.meta : typography.appText, styles.cards)}>
+      {groups.length ? groups.map((g) => <span key={g[0].rank} {...stylex.props(small ? styles.groupSmall : styles.group)}><Rich text={g.map(cardLabel).join(small ? '\u2009' : ' ')} /></span>) : '–'}
     </span>
   )
 }
@@ -104,7 +104,7 @@ function Head({ action, small }: { action: boolean; small?: boolean }) {
       {/* The cards' column has no head (the human: 「第三列的列头很sb，删掉」). */}
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.wide, styles.phoneNone)} />
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.phoneNone)} />
-      <span {...stylex.props(styles.cell, styles.headCell, styles.end, small && styles.close)}>{m.history_vs_ai()}</span>
+      <span {...stylex.props(styles.cell, styles.headCell, styles.end, small && styles.close, styles.lineOne)}>{m.history_vs_ai()}</span>
       {action ? <span {...stylex.props(styles.cell, styles.headCell, styles.second, styles.phoneNone)} /> : null}
       <LineEnd />
     </li>
@@ -118,7 +118,7 @@ function Row({ deal, action, small, testId }: { deal: ProfileDeal; action?: Reac
     <li data-testid={testId} data-key={deal.key} {...stylex.props(styles.row, small && styles.rowSmall)}>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.first)}><Game deal={deal} small={small} /></span>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.roleCell)}><Role deal={deal} /></span>
-      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.wide, styles.grow)}><KeyCards deal={deal} small={small} /></span>
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.wide, styles.grow, styles.lineOne)}><KeyCards deal={deal} small={small} /></span>
       <span data-testid="history-day" {...stylex.props(typography.meta, styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.day)}>{dayName(deal.day)}</span>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.end, small && styles.close)}><Gap deal={deal} /></span>
       {/* The way to play it again, last (the human: 「详情表里，replay放在最后一列」); on a phone its own line under the game. */}
@@ -192,7 +192,9 @@ const styles = stylex.create({
   headCell: { paddingTop: 0, paddingBottom: { default: space.x6, [bp.phone]: 0 }, borderTopWidth: 0 },
   // The game and the difference make a phone's first line; the rest follows on the next.
   first: { paddingInlineStart: 0, order: 0 },
-  end: { paddingInlineStart: { default: space.x12, [bp.phone]: 0 }, textAlign: 'end', order: 0 },
+  end: { paddingInlineStart: { default: space.x12, [bp.phone]: 0 }, textAlign: 'end', order: { default: 0, [bp.phone]: 1 } },
+  // On a phone the first line is the game, the crown and the cards; the head keeps "vs. AI" on its one line.
+  lineOne: { order: 0 },
   second: { paddingInlineStart: { default: space.x12, [bp.phone]: 0 } },
   close: { paddingInlineStart: { default: space.x8, [bp.phone]: 0 } },
   // The cards' column takes the room left, so the day and the difference keep to the right.
@@ -200,15 +202,27 @@ const styles = stylex.create({
   grow: { flexGrow: 1, flexBasis: 0, minWidth: 0 },
   // The role's sign in the middle of its column; on a phone it follows the game on its line and takes the room
   // up to the difference.
-  roleCell: { flexGrow: 1, order: 0, textAlign: { default: 'center', [bp.phone]: 'start' } },
+  // On a phone an empty one (a defended game) takes no room, so the cards follow the game directly.
+  roleCell: { order: 0, textAlign: { default: 'center', [bp.phone]: 'start' }, display: { default: 'table-cell', [bp.phone]: { default: 'block', ':empty': 'none' } } },
   phoneNone: { display: { default: 'table-cell', [bp.phone]: 'none' } },
   lineEnd: { display: { default: 'none', [bp.phone]: 'block' }, flexBasis: '100%', order: 0 },
   ink: { color: color.navy },
   passed: { color: color.slate },
   role: { display: 'inline-flex', color: color.navy, verticalAlign: 'middle' },
-  cards: { display: 'flex', flexWrap: 'wrap', columnGap: space.x12, color: color.navy },
-  cardsSmall: { columnGap: space.x8 },
-  day: { color: color.slate, textAlign: 'end' },
+  // On a phone one line, cut with an ellipsis when the cards do not fit (SKATGO-192, the human: 「合约，庄，手牌，放第一行，要溢出
+  // 就放三个点截断手牌」).
+  cards: {
+    display: { default: 'flex', [bp.phone]: 'block' },
+    flexWrap: 'wrap',
+    whiteSpace: { default: 'normal', [bp.phone]: 'nowrap' },
+    overflow: { default: 'visible', [bp.phone]: 'hidden' },
+    textOverflow: { default: 'clip', [bp.phone]: 'ellipsis' },
+    color: color.navy,
+  },
+  group: { marginInlineEnd: { default: space.x12, ':last-child': 0 } },
+  groupSmall: { marginInlineEnd: { default: space.x8, ':last-child': 0 } },
+  // On a phone the second line: the day at the left, the difference and Replay at the right (「第二行放日期，差分，replay」).
+  day: { color: color.slate, textAlign: { default: 'end', [bp.phone]: 'start' }, flexGrow: { default: 0, [bp.phone]: 1 } },
   number: { color: color.navy, fontVariantNumeric: 'tabular-nums' },
-  action: { flexBasis: { default: 'auto', [bp.phone]: '100%' }, paddingTop: { default: space.x8, [bp.phone]: space.x2 } },
+  action: { paddingTop: { default: space.x8, [bp.phone]: 0 } },
 })

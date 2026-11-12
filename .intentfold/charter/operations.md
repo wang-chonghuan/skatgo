@@ -332,8 +332,8 @@ Uploading to Google Play, and anything in the Play Console, is the human's.
 - Bing site: `https://www.bing.com/webmasters?siteUrl=https://skatgo.com/`.
   Ownership uses DNS-only CNAME `ca6fc5fd7d1f41d62b788e61032110a4.skatgo.com` -> `verify.bing.com`
   (TTL 300). This is an independent verification record, not an application hostname.
-- Sitemap submitted to both: `https://skatgo.com/sitemap.xml`; the forum's, `https://skatgo.com/sitemap-forum.xml`,
-  also to Bing (2026-11-12).
+- Sitemaps submitted to both: `https://skatgo.com/sitemap.xml` and the forum's,
+  `https://skatgo.com/sitemap-forum.xml` (2026-11-12).
 - IndexNow (SKATGO-188): the key is the one `<32 hex>.txt` file in `app/public/`, served at the site's
   root, its name and content the key — public by the protocol, not an account's API key.
   `node app/scripts/indexnow.mjs https://skatgo.com` sends both sitemaps' addresses to

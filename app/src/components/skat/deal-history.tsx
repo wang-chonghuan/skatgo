@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Gavel } from 'lucide-react'
+import { Crown } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { signed } from './daily-comparison'
@@ -55,16 +55,16 @@ function Game({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
   return game ? <span data-testid="history-game" {...stylex.props(name, styles.ink)}>{game}</span> : null
 }
 
-/** Where the player was the declarer — who won the auction — an auction's hammer, small and outlined in navy, as the
- *  front page's "Reizen" has it (SKATGO-191, the human: 「那个declear表示还是太大，能否改成 一个符号？常用的？」, then 「同意你的推荐。
+/** Where the player was the declarer — the one who plays alone against two — a crown, small and outlined in navy
+ *  (SKATGO-191, the human: 「那个declear表示还是太大，能否改成 一个符号？常用的？」, then 「同意你的推荐。
  *  那就不要显示列头，也不要显示declearer，defender这些字样了」, 「可以，那就只做庄家，防就不做了」, 「你还是他妈的用拍卖锤子图标吧，别太大，
- *  透明就行」); nothing where they defended or all passed. No word in the table; a screen reader says it. */
+ *  透明就行」, then 「还是用刚才那个王冠吧」); nothing where they defended or all passed. No word in the table; a screen reader says it. */
 function Role({ deal }: { deal: ProfileDeal }) {
   if (deal.mine.declarer !== 0) return null
   const label = m.history_declarer()
   return (
     <span data-testid="history-role" data-role="declarer" title={label} {...stylex.props(styles.role)}>
-      <Gavel role="img" aria-label={label} size={icon.header} strokeWidth={icon.outline} />
+      <Crown role="img" aria-label={label} size={icon.header} strokeWidth={icon.outline} />
     </span>
   )
 }

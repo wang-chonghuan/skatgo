@@ -456,9 +456,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   earlier weeks open; for a guest open, followed by one line on what signing in keeps and the `go` "Anmelden". A row a game,
   newest first, over a `hairline` (SKATGO-189): the game in words, a suit game without its sign ("Herz", "Grand Hand", `appBtnStrong`, navy; 「这里不要再显示红心等符号了」), or
   "Eingepasst" in slate; their part as one against two (SKATGO-191, 「同意你的推荐。那就不要显示列头，也不要显示declearer，defender这些字样了」):
-  where they declared — won the auction — lucide's `Gavel`, outlined in navy at the header icons' size, as "Reizen" on the
-  front page (「可以，那就只做庄家，防就不做了」, then 「你还是他妈的用拍卖锤子图标吧，别太大，透明就行」; a letter would read as a
-  card's, D the Dame); nothing where they defended or all passed — no word in the table, "Alleinspieler" only for a screen reader; their jacks, then aces, then tens, each by suit (♣♠♥♦), as text with each suit in its colour
+  where they declared — alone against two — lucide's `Crown`, outlined in navy at the header icons' size (「可以，那就只做庄家，
+  防就不做了」, 「你还是他妈的用拍卖锤子图标吧，别太大，透明就行」, then 「还是用刚才那个王冠吧」; a letter would read as a card's, D the
+  Dame); nothing where they defended or all passed — no word in the table, "Alleinspieler" only for a screen reader; their jacks, then aces, then tens, each by suit (♣♠♥♦), as text with each suit in its colour
   (`appText`, navy), the three kinds a little apart, a dash for none and nothing where the deal's cards are not kept; the day
   ("12. Nov.", `meta`, slate); "Nochmal" (`link`, `info`, underlined), which plays it again — for a guest opening Clerk's
   sign-in first (「想点此处的复牌，必须登录」), the game going on once signed in; and the score less the AI's (`appBtnStrong`),

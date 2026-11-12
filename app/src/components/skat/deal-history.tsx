@@ -60,7 +60,7 @@ function Role({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
   if (declarer === null) return null
   const mine = declarer === 0
   return (
-    <span data-testid="history-role" data-role={mine ? 'declarer' : 'defender'} {...stylex.props(small ? typography.label : typography.badge, styles.tag, small && styles.tagSmall, mine ? styles.declarer : styles.defender)}>
+    <span data-testid="history-role" data-role={mine ? 'declarer' : 'defender'} {...stylex.props(typography.micro, styles.tag, mine ? styles.declarer : styles.defender)}>
       {mine ? m.history_declarer() : m.history_defender()}
     </span>
   )
@@ -195,8 +195,8 @@ const styles = stylex.create({
   lineEnd: { display: { default: 'none', [bp.phone]: 'block' }, flexBasis: '100%', order: 0 },
   ink: { color: color.navy },
   passed: { color: color.slate },
-  tag: { display: 'inline-block', paddingInline: space.x8, paddingBlock: space.x2, borderRadius: radii.pill, borderWidth: border.hair, borderStyle: 'solid' },
-  tagSmall: { paddingInline: space.x6 },
+  // Small beside the game (the human: 「我觉得declare和defender的标签太大了」): the smallest text, no padding above or below.
+  tag: { display: 'inline-block', paddingInline: space.x6, paddingBlock: 0, borderRadius: radii.pill, borderWidth: border.hair, borderStyle: 'solid' },
   declarer: { borderColor: color.navy, color: color.navy },
   defender: { borderColor: color.hairline, color: color.slate },
   cards: { display: 'flex', flexWrap: 'wrap', columnGap: space.x12, color: color.navy },

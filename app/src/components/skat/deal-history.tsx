@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Check } from 'lucide-react'
+import { Crown } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { signed } from './daily-comparison'
@@ -55,14 +55,16 @@ function Game({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
   return game ? <span data-testid="history-game" {...stylex.props(name, styles.ink)}>{game}</span> : null
 }
 
-/** A tick where the player was the declarer, under the column's "Declarer" (the human chose it: 「我比较喜欢第三个」); nothing
- *  where they defended or all passed. On a phone, where there are no columns, the word follows the tick. */
-function Declarer({ deal }: { deal: ProfileDeal }) {
+/** Where the player was the declarer — the one who plays alone against two — a crown, small and outlined in navy
+ *  (SKATGO-191, the human: 「那个declear表示还是太大，能否改成 一个符号？常用的？」, then 「同意你的推荐。
+ *  那就不要显示列头，也不要显示declearer，defender这些字样了」, 「可以，那就只做庄家，防就不做了」, 「你还是他妈的用拍卖锤子图标吧，别太大，
+ *  透明就行」, then 「还是用刚才那个王冠吧」); nothing where they defended or all passed. No word in the table; a screen reader says it. */
+function Role({ deal }: { deal: ProfileDeal }) {
   if (deal.mine.declarer !== 0) return null
+  const label = m.history_declarer()
   return (
-    <span data-testid="history-role" data-role="declarer" {...stylex.props(styles.tick)}>
-      <Check role="img" aria-label={m.history_declarer()} size={icon.inline} strokeWidth={icon.outline} />
-      <span aria-hidden="true" {...stylex.props(typography.meta, styles.tickWord)}>{m.history_declarer()}</span>
+    <span data-testid="history-role" data-role="declarer" title={label} {...stylex.props(styles.role)}>
+      <Crown role="img" aria-label={label} size={icon.header} strokeWidth={icon.outline} />
     </span>
   )
 }
@@ -97,7 +99,8 @@ function Head({ action, small }: { action: boolean; small?: boolean }) {
   return (
     <li aria-hidden="true" {...stylex.props(typography.meta, styles.row, styles.headRow)}>
       <span {...stylex.props(styles.cell, styles.headCell, styles.first, styles.grow)}>{m.history_head_game()}</span>
-      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.roleCell, styles.phoneNone)}>{m.history_declarer()}</span>
+      {/* The role's column has no head: one person or two says it (SKATGO-191). */}
+      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.roleCell, styles.phoneNone)} />
       {/* The cards' column has no head (the human: 「第三列的列头很sb，删掉」). */}
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.wide, styles.phoneNone)} />
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.phoneNone)} />
@@ -114,7 +117,7 @@ function Row({ deal, action, small, testId }: { deal: ProfileDeal; action?: Reac
   return (
     <li data-testid={testId} data-key={deal.key} {...stylex.props(styles.row, small && styles.rowSmall)}>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.first)}><Game deal={deal} small={small} /></span>
-      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.roleCell)}><Declarer deal={deal} /></span>
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.roleCell)}><Role deal={deal} /></span>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.wide, styles.grow)}><KeyCards deal={deal} small={small} /></span>
       <span data-testid="history-day" {...stylex.props(typography.meta, styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.day)}>{dayName(deal.day)}</span>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.end, small && styles.close)}><Gap deal={deal} /></span>
@@ -195,15 +198,14 @@ const styles = stylex.create({
   // The cards' column takes the room left, so the day and the difference keep to the right.
   wide: { width: { default: '100%', [bp.phone]: 'auto' }, whiteSpace: 'normal' },
   grow: { flexGrow: 1, flexBasis: 0, minWidth: 0 },
-  // The tick under its head, in the middle of the column; on a phone it follows the game on its line and takes the room
+  // The role's sign in the middle of its column; on a phone it follows the game on its line and takes the room
   // up to the difference.
   roleCell: { flexGrow: 1, order: 0, textAlign: { default: 'center', [bp.phone]: 'start' } },
   phoneNone: { display: { default: 'table-cell', [bp.phone]: 'none' } },
   lineEnd: { display: { default: 'none', [bp.phone]: 'block' }, flexBasis: '100%', order: 0 },
   ink: { color: color.navy },
   passed: { color: color.slate },
-  tick: { display: 'inline-flex', alignItems: 'center', gap: space.x4, color: color.navy, verticalAlign: 'middle' },
-  tickWord: { display: { default: 'none', [bp.phone]: 'inline' }, color: color.slate },
+  role: { display: 'inline-flex', color: color.navy, verticalAlign: 'middle' },
   cards: { display: 'flex', flexWrap: 'wrap', columnGap: space.x12, color: color.navy },
   cardsSmall: { columnGap: space.x8 },
   day: { color: color.slate, textAlign: 'end' },

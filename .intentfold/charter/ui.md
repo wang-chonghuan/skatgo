@@ -460,7 +460,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`appText`, navy), the three kinds a little apart, a dash for none and nothing where the deal's cards are not kept; the day
   ("12. Nov.", `meta`, slate); "Nochmal" (`link`, `info`, underlined), which plays it again — for a guest opening Clerk's
   sign-in first (「想点此处的复牌，必须登录」), the game going on once signed in; and the score less the AI's (`appBtnStrong`),
-  signed, never `good` / `bad`. Where there is room the rows are a table, one line a game in that order, its columns lined up
+  signed, never `good` / `bad`. Where there is room the rows are a table, one line a game in that order but "Nochmal" last, after the difference
+  (「详情表里，replay放在最后一列」), its columns lined up
   the ticks in a column of their own, in its middle, under a `meta` head ("Spiel" — "Contract" in English, as at the table —
   "Alleinspieler", "vs. KI"; the cards' column without one — 「第三列的列头很sb，删掉」); on a phone a game is the game, its tick followed by "Alleinspieler" (`meta`, slate) and the difference,
   then the cards and the day, then "Nochmal", under a head of "Spiel" and "vs. KI". Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.

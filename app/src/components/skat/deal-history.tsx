@@ -66,7 +66,8 @@ function Role({ deal }: { deal: ProfileDeal }) {
   const label = mine ? m.history_declarer() : m.history_defender()
   return (
     <span data-testid="history-role" data-role={mine ? 'declarer' : 'defender'} title={label} {...stylex.props(styles.role, mine ? styles.ink : styles.passed)}>
-      <Icon role="img" aria-label={label} size={icon.inline} strokeWidth={icon.outline} />
+      {/* One person filled, so a declared game reads at a glance (the human: 「看不清，一个小人时就fill那个图标吧」). */}
+      <Icon role="img" aria-label={label} size={icon.inline} strokeWidth={icon.outline} fill={mine ? 'currentColor' : 'none'} />
     </span>
   )
 }

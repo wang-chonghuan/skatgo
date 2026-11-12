@@ -81,6 +81,8 @@ function guardedBuffer(): Plugin {
 export default defineConfig(() => {
   return {
     server: { port: 3220 },
+    // The build's id (SKATGO-185): the service worker's version, so each build keeps its own offline pages.
+    define: { 'import.meta.env.VITE_BUILD_ID': JSON.stringify(Date.now().toString(36)) },
     resolve: {
       alias: { '~': `${ROOT}src` },
     },

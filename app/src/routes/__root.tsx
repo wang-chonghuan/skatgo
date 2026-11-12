@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { ClerkProvider } from '@clerk/tanstack-react-start'
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { Theme } from '@astryxdesign/core/theme'
@@ -6,6 +6,7 @@ import { Theme } from '@astryxdesign/core/theme'
 import { ProductAnalytics } from '~/components/product-analytics'
 import { readProjectKey } from '~/lib/analytics'
 import { type Appearance, readAppearance, toolbarMetas, useAppearance } from '~/lib/appearance'
+import { registerServiceWorker } from '~/lib/service-worker'
 import { readTestAccount } from '~/lib/test-account'
 import { TestAccount } from '~/lib/use-account'
 import { clerkAppearance } from '~/lib/clerk-appearance'
@@ -70,6 +71,7 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const { posthogKey, testAccount, appearance } = Route.useLoaderData()
+  useEffect(registerServiceWorker, [])
   return (
     <RootDocument appearance={appearance}>
       <TestAccount.Provider value={testAccount}>

@@ -33,6 +33,11 @@ function LegalPage({ document }: { document: 'privacy' | 'terms' }) {
           {section.paragraphs.map((text) => (
             <p key={text} {...stylex.props(typography.body, styles.text)}>{text}</p>
           ))}
+          {section.link ? (
+            <p {...stylex.props(typography.body, styles.text)}>
+              <Link to={section.link.to} data-testid={`legal-link-${section.id}`} {...stylex.props(typography.link, styles.link)}>{section.link.label}</Link>
+            </p>
+          ) : null}
           {section.contact && (
             <address {...stylex.props(typography.body, styles.contact)}>
               <span>{LEGAL_OPERATOR.name}</span>

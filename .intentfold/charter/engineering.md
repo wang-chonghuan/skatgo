@@ -28,7 +28,11 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   visitor's address as X-Forwarded-For and never the site's cookies. Events stay one per step — a game, a round, an
   exercise, a sign-in — never a bid or a card; no new service, table or server-side pipeline.
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
-  here. Accounts are optional: the course and free play require none; opening a private
+  here. An account is deleted by its owner (SKATGO-185): `/api/account/delete` (`lib/account-handler.ts`, signed in,
+  JSON only) has the game service forget it first — `/daily/forget` (`multiplayer/src/forget.ts`) deletes every row under
+  the account and the `anon:` ids joined to it in one transaction, and gives its forum posts and comments the author `gone`,
+  which has no name and shows as a deleted player — then deletes the user at Clerk (404 counts as done); the answer sets a
+  new device cookie. A local test account, which has no Clerk user, loses its cookie instead. Accounts are optional: the course and free play require none; opening a private
   table does (SKATGO-117), writing in the forum (SKATGO-118), and playing the daily tournament
   (SKATGO-123: `/api/daily/*` refuses a guest's opening of the deals and moves with 401; looking stays open).
 - **StyleX, compiled through Astryx's build integration** (`astryxStylex()`), with Astryx's reset and
@@ -188,7 +192,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/components/skat/` | every page and widget, and the product's own small UI kit (`ui.tsx`). One file per page: `entry-page.tsx` (the front page), `course-home.tsx`, `lesson-page.tsx` (around `lesson-player.tsx`), `rules-page.tsx`, `bidding-table-page.tsx`, `score-sheet-page.tsx`, `rules-summary-page.tsx`, `daily-page.tsx`, `free-play.tsx`, `legal-page.tsx` (privacy and terms; the footer is `legal-footer.tsx`, so every page does not carry their text), `forum-page.tsx` (the forum's list and a post, SKATGO-118), `about-page.tsx` (About SkatGo with the questions of `lib/faq.ts`, SKATGO-134), `not-found.tsx`; routes reach them only through `client-page.tsx`, which loads each page as its own chunk (SKATGO-107) |
 | `app/src/start.ts` | Clerk's request middleware, which hands each page its session state |
 | `app/src/skat-layout.tsx` | the frame around every page: the front page's header over every page but the tables (lessons included since SKATGO-47; the rail, tab bar and coloured band are gone), or the full-screen table; the legal footer. The header's pieces — links, language menu, card-colour settings, sign-in — are `components/skat/frame.tsx` |
-| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/quick-start` ("Skat in 5 Minuten", SKATGO-89; its Paraglide pattern stands ahead of the lessons' so its address is never read as a slug), `/course/$slug` (a lesson), `/rules`, `/rules/bidding-table` (SKATGO-50), `/rules/score-sheet` and `/rules/printable` (the printables, SKATGO-53), `/daily` and `/daily/play`, `/play`, `/with-friends` and `/table/$id` (private tables, SKATGO-61), `/skat-tricks` (the exercises, SKATGO-103) and `/skat-tricks/$exercise` (one exercise, noindex; an open-card endgame's wears the table frame, `frame.tsx` `frameOf`, SKATGO-111), `/forum` and `/forum/$post` (SKATGO-118; a post's address is its number and its title, in each language of the site), `/profile` (a player's record of play, noindex, SKATGO-128), `/about` (About SkatGo, SKATGO-134), `/privacy`, `/terms`; each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
+| `app/src/routes/` | thin route files: `/` (the front page), `/course`, `/course/quick-start` ("Skat in 5 Minuten", SKATGO-89; its Paraglide pattern stands ahead of the lessons' so its address is never read as a slug), `/course/$slug` (a lesson), `/rules`, `/rules/bidding-table` (SKATGO-50), `/rules/score-sheet` and `/rules/printable` (the printables, SKATGO-53), `/daily` and `/daily/play`, `/play`, `/with-friends` and `/table/$id` (private tables, SKATGO-61), `/skat-tricks` (the exercises, SKATGO-103) and `/skat-tricks/$exercise` (one exercise, noindex; an open-card endgame's wears the table frame, `frame.tsx` `frameOf`, SKATGO-111), `/forum` and `/forum/$post` (SKATGO-118; a post's address is its number and its title, in each language of the site), `/profile` (a player's record of play, noindex, SKATGO-128), `/about` (About SkatGo, SKATGO-134), `/privacy`, `/terms`, `/delete-account` (deleting an account) and `/offline` (the service worker's page; both noindex, SKATGO-185); each language's address comes from the Paraglide patterns (German-first, SKATGO-44) |
 | `app/src/theme/`, `app/src/styles/app.css` | styling — see `ui.md` |
 | `app/brand/skatgo-logo.png` | the SkatGo logo's master image; every icon in `app/public/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-*.png`, `logo-96.png`, and `logo-mark.png`, the clear-ground logo that turns while a table loads) is cut from it by `.intentfold/tickets/SKATGO-93/icons.mjs`, about the centre of the three outer suits — regenerate them, never edit them |
 | `app/brand/cards/`, `app/public/cards/` | the playing cards' pictures (SKATGO-66): the court figures of both decks, the German Daus and suit symbols, and the back, generated with Azure OpenAI `gpt-image-2` by `generate.sh` from `prompts/`, each call in `calls.txt` and each master's request beside it (`masters/*.png.json`); the masters are lossless WebP, pixel for pixel the model's PNGs, which stay out of git; `PROVENANCE.md` says how and that no commercial deck was copied. The served WebP files are cut from the masters by `app/scripts/make-card-images.mjs` — regenerate them, never edit them. |
@@ -202,6 +206,9 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/room-handler.ts`, `room-ticket.ts`, `room-code.ts`, `room-client.ts`, `app/src/components/skat/table-room.tsx`; `multiplayer/src/room.ts`, `model.ts`, `referral.ts` | private rooms (SKATGO-61, rooms since SKATGO-163): `/api/room/ticket`, `/api/room/mine` and `/api/room/referral`, the signed admission ticket, the room's number, the browser's room client, the friends page's cards and the room's page; the room, its seats (`claimSeat`, `freeSeat`) and the service's `/rooms` routes (an account's room, a number's status, referrals) |
 | `app/src/lib/forum.ts`, `forum-handler.ts`, `forum-api.ts`, `app/src/components/skat/forum-page.tsx`, `forum-body.tsx`, `forum-announcement.tsx`; `multiplayer/src/forum.ts` | the forum (SKATGO-118): the shared rules (sections, `DAILY_LIMITS`, `postIndexable`, `slugOf`, the text's marks in `parseBody`), the web's `/api/forum/*` and `/sitemap-forum.xml`, the loaders' reads (`createIsomorphicFn`: on the server straight to the forum as the request's viewer, in the browser through `/api/forum`; the announcement cached a minute on the server), the pages, and the service's routes; tested by `lib/forum.test.ts` and `multiplayer/test/forum.test.ts` |
 | `app/src/lib/test-account.ts` | local test accounts for acceptance (SKATGO-117), read only by `session.ts` and the root route |
+| `app/src/lib/account-handler.ts`, `app/src/components/skat/delete-account-page.tsx`; `multiplayer/src/forget.ts` | deleting an account (SKATGO-185): the web's `/api/account/delete`, the page, and the service's `/daily/forget`; tested by `multiplayer/test/forget.test.ts` |
+| `app/public/sw.js`, `app/src/lib/service-worker.ts`, `app/src/components/skat/offline-page.tsx` | the service worker (SKATGO-185), its registration, and the offline page it keeps |
+| `app/src/lib/web-manifest.ts`, `app/public/.well-known/assetlinks.json`, `android/` | SkatGo as an app (SKATGO-185): the web app manifest, answered by `server.ts`; the Digital Asset Links statement naming the Android app; the Android app itself |
 | `app/src/components/skat/rules-page.tsx`, `bidding-table-page.tsx`, `app/src/lib/skat/rules/` | the rules reference and its text, with anchored sub-headings for topics looked up by name (`#grand`, `#null-ouvert`, `#ramsch`), the bidding table (SKATGO-50), and the printable short version (`rules-summary-page.tsx`, text in `rules/summary.{de,en}.ts`, SKATGO-53). Every number on these pages — card points, base and Null values, the bid ladder, the multiplier limits — is rendered from `value.ts` and `cards.ts` |
 | `app/public/cards/backs/`, `app/src/lib/skat/backs.ts` | the card backs to choose from in the settings (SKATGO-102) besides the earlier `app/public/cards/back.webp`: four in its style, generated by `app/brand/cards/generate.sh` (kind `back2`, masters `back-*.webp`), cut to 500×700 with the logo in the middle by `.intentfold/tickets/SKATGO-102/make-backs.mjs` — regenerate them, never edit them |
 | `app/public/sounds/`, `app/src/lib/skat/sounds.ts` | the table's card sounds (SKATGO-101): a riffle when a deal is dealt, a card set down for each card played, a soft slide when a trick is gathered in — the lightest of six sets the human tried — played through Web Audio and on by default, with a switch in the settings ("Töne"). The files are Kenney's Casino Audio (CC0, its licence beside them), trimmed and levelled to MP3 by `.intentfold/tickets/SKATGO-101/make-sounds.sh` — regenerate them, never edit them |
@@ -332,6 +339,20 @@ also built from the repository root. Neither project imports the other's runtime
 - **Two build details are load-bearing and commented where they live**: the CSS layer order in
   `app/src/styles/app.css`, and the lightningcss targets in `app/vite.config.ts` that keep
   `light-dark()` native.
+- **SkatGo for Android is the site in a Trusted Web Activity** (SKATGO-185): `android/` is the shell Bubblewrap generates
+  from `android/twa-manifest.json` — package `com.skatgo.app`, starting at `https://skatgo.com/?src=android` — with no
+  copy of the product; Chrome on the phone shows the site full-screen once `/.well-known/assetlinks.json` names the app's
+  signing certificate. The shell depends on `androidbrowserhelper` (human-approved in SKATGO-185). Whatever the site does,
+  the app does; the shell is rebuilt only for its own settings and Google Play's yearly Android target.
+- **The service worker** (SKATGO-185, `app/public/sw.js`, hand-written) answers only two things: a page the network
+  cannot bring becomes the kept offline page of its language (`/en/offline`, `/de/offline`, a redirect naming the page
+  asked for, so the router hydrates the page it renders), and the site's pictures, sounds and fonts come from the device
+  and are refreshed behind. It never touches `/api`, `/hx`, other origins or pages that load. It is registered on a
+  production build as `/sw.js?v=<build id>` (`VITE_BUILD_ID`, defined in `vite.config.ts`), so each build keeps its own
+  offline pages; the offline page is bundled with `client-page.tsx` rather than lazily, since no chunk can be fetched when
+  it shows.
+- **The web app manifest** is `lib/web-manifest.ts`, answered at `/site.webmanifest`: `standalone`, its colours
+  `constants.ts`'s `themeColor`, as the `theme-color` meta takes it.
 
 ## Tools
 
@@ -452,6 +473,8 @@ node app/scripts/make-printables.mjs http://127.0.0.1:<port>
   master changes.
 - `app/public/forum-images/<lang>/*.svg` — the pictures of SkatGo's forum posts (SKATGO-129), drawn per language from
   the owner's own record by `node .intentfold/tickets/SKATGO-129/charts.mjs` (its header says how to export the rows it reads).
+- `android/` but `twa-manifest.json` — the Android shell (SKATGO-185), generated by Bubblewrap from `twa-manifest.json`;
+  operations.md's Tools say how. Edit `twa-manifest.json` and regenerate, never the project's files.
 - `app/src/components/skat/card-glyphs.ts` — the cards' corner-index outlines, extracted from Bebas Neue
   (OFL, `github.com/google/fonts` `ofl/bebasneue`) by `python3 app/scripts/extract-card-glyphs.py
   <BebasNeue-Regular.ttf> > app/src/components/skat/card-glyphs.ts` (needs fontTools, not an app

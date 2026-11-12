@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-185",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-185",
+  "branch": "SKATGO-185-android-app",
+  "base": "414e9ded5d499a53db173d66d631816043ee5b0a",
+  "ports": {
+    "web": 55185,
+    "multiplayer": 56185,
+    "database": 57185
+  }
+}

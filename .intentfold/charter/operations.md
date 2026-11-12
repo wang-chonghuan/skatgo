@@ -291,6 +291,37 @@ sitemap reread in both consoles and watch the reported canonical after recrawls.
 operations and report dates; neither sitemap submission nor an index request guarantees indexing,
 ranking or traffic.
 
+**Android app** (SKATGO-185)
+
+The shell in `android/` is built on this Mac with Bubblewrap at a pinned version, never added to a `package.json`. Its
+toolchain lives in `~/.bubblewrap/`: `config.json` names a Temurin JDK 17 (`jdk-temurin/`) and the Android SDK
+(`android_sdk/`: the command-line tools in `cmdline-tools/latest/`, with `tools` linking there for Bubblewrap; platform 36
+and build tools 36.1.0, licences accepted). Bubblewrap's own JDK download fetches JDK sources on Apple silicon, so both
+are unpacked by hand; the command-line tools unpacked straight into the SDK's root hide every other package from Gradle. The upload key is outside the repository, `~/.config/skatgo-android/upload.keystore` (alias
+`upload`) with its password in `keystore-password` beside it, both mode 600 and backed up by the human; losing them
+means asking Google Play to reset the upload key.
+
+After editing `android/twa-manifest.json` (raise `appVersionCode` for every upload), regenerate, then build:
+
+```bash
+cd android
+npx -y @bubblewrap/cli@1.27.0 update --skipVersionUpgrade --manifest=./twa-manifest.json
+BUBBLEWRAP_KEYSTORE_PASSWORD=$(cat ~/.config/skatgo-android/keystore-password) \
+BUBBLEWRAP_KEY_PASSWORD=$(cat ~/.config/skatgo-android/keystore-password) \
+  npx -y @bubblewrap/cli@1.27.0 build --skipPwaValidation
+```
+
+It writes `app-release-signed.apk` (installs on a phone directly) and `app-release-bundle.aab` (Google Play's upload),
+both git-ignored. The app shows the site without an address bar only while `app/public/.well-known/assetlinks.json`
+names its signing certificate's SHA-256: the upload key's now, and Google Play's app-signing key's once Play signs the
+app (Play Console → App integrity). After a deploy, Google's view of the statement:
+
+```bash
+curl -s 'https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://skatgo.com&relation=delegate_permission/common.handle_all_urls'
+```
+
+Uploading to Google Play, and anything in the Play Console, is the human's.
+
 **Search consoles**
 
 - Google domain property: `https://search.google.com/search-console?resource_id=sc-domain%3Askatgo.com`.

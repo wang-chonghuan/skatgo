@@ -1,6 +1,7 @@
 import { lazyRouteComponent } from '@tanstack/react-router'
 
 import { NotFoundPage } from './not-found'
+import { OfflinePage } from './offline-page'
 
 // How the routes reach the course's pages — the only way they may (engineering.md, redline 4).
 //
@@ -11,7 +12,8 @@ import { NotFoundPage } from './not-found'
 // Each page is its own chunk (SKATGO-107: the front page used to carry every page's code, a megabyte, and
 // a phone froze for seconds running it). A route's component is the page's lazy component; the router
 // loads it before it renders on the server and before the browser takes the page over, so the server's
-// HTML is never replaced by a gap.
+// HTML is never replaced by a gap. The offline page (SKATGO-185) is the exception: it is shown when no chunk can be
+// fetched, so it comes with this one, which the service worker keeps with it — it is a few lines.
 const PAGES = {
   entry: lazyRouteComponent(() => import('./entry-page'), 'EntryPage'),
   daily: lazyRouteComponent(() => import('./daily-page'), 'DailyPage'),
@@ -39,6 +41,8 @@ const PAGES = {
   about: lazyRouteComponent(() => import('./about-page'), 'AboutPage'),
   privacy: lazyRouteComponent(() => import('./legal-page'), 'PrivacyPage'),
   terms: lazyRouteComponent(() => import('./legal-page'), 'TermsPage'),
+  deleteAccount: lazyRouteComponent(() => import('./delete-account-page'), 'DeleteAccountPage'),
+  offline: OfflinePage,
 }
 
 /** The route component of a page. */

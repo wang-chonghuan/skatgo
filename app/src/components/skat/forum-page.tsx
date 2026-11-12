@@ -120,11 +120,11 @@ function Meta({ of }: { of: ForumPostSummary | ForumComment }) {
   return (
     <div {...stylex.props(styles.meta)}>
       {post ? <span {...stylex.props(typography.meta, styles.quiet)}>{post.section === 'news' ? m.forum_announcement() : SECTION_NAME[post.section]()}</span> : null}
-      {/* The official writes as SkatGo, not under a player's name. */}
+      {/* The official writes as SkatGo, not under a player's name; a deleted account's writing stands under no name (SKATGO-185). */}
       {of.official ? (
         <span data-testid="forum-official" {...stylex.props(typography.smallBold, styles.official)}>{m.forum_official()}</span>
       ) : (
-        <span data-testid="forum-author" {...stylex.props(typography.meta, styles.author)}>{of.author}</span>
+        <span data-testid="forum-author" {...stylex.props(typography.meta, styles.author)}>{of.author || m.forum_deleted()}</span>
       )}
       <span {...stylex.props(typography.meta, styles.quiet)}>{dateOf(of.createdAt)}</span>
       {post ? (
@@ -224,7 +224,7 @@ function ReportItem({ report: r, onDone }: { report: ForumReport; onDone: () => 
   return (
     <div data-testid="forum-report" data-post-id={r.postId} data-comment-id={r.commentId ?? undefined} {...stylex.props(styles.report)}>
       <p {...stylex.props(typography.meta, styles.quiet)}>
-        {[r.commentId !== null ? m.forum_report_on_comment({ title: r.postTitle }) : r.postTitle, m.forum_by({ name: r.author }), m.forum_report_count({ n: r.count })].join(' · ')}
+        {[r.commentId !== null ? m.forum_report_on_comment({ title: r.postTitle }) : r.postTitle, m.forum_by({ name: r.author || m.forum_deleted() }), m.forum_report_count({ n: r.count })].join(' · ')}
       </p>
       <p {...stylex.props(typography.appText, styles.note)}>{r.excerpt}</p>
       {r.reasons.length ? <p {...stylex.props(typography.small, styles.quiet)}>{r.reasons.map((x) => `„${x}“`).join(' ')}</p> : null}

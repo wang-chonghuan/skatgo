@@ -13,7 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as BiddingPracticeRouteImport } from './routes/bidding-practice'
 import { Route as DailyRouteImport } from './routes/daily'
+import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as ForumRouteImport } from './routes/forum'
+import { Route as OfflineRouteImport } from './routes/offline'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -56,9 +58,19 @@ const DailyRoute = DailyRouteImport.update({
   path: '/daily',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeleteAccountRoute = DeleteAccountRouteImport.update({
+  id: '/delete-account',
+  path: '/delete-account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForumRoute = ForumRouteImport.update({
   id: '/forum',
   path: '/forum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfflineRoute = OfflineRouteImport.update({
+  id: '/offline',
+  path: '/offline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayRoute = PlayRouteImport.update({
@@ -172,7 +184,9 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/bidding-practice': typeof BiddingPracticeRoute
   '/daily': typeof DailyRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/forum': typeof ForumRoute
+  '/offline': typeof OfflineRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -200,7 +214,9 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/bidding-practice': typeof BiddingPracticeRoute
   '/daily': typeof DailyRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/forum': typeof ForumRoute
+  '/offline': typeof OfflineRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -229,7 +245,9 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/bidding-practice': typeof BiddingPracticeRoute
   '/daily': typeof DailyRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/forum': typeof ForumRoute
+  '/offline': typeof OfflineRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -259,7 +277,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/bidding-practice'
     | '/daily'
+    | '/delete-account'
     | '/forum'
+    | '/offline'
     | '/play'
     | '/privacy'
     | '/profile'
@@ -287,7 +307,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/bidding-practice'
     | '/daily'
+    | '/delete-account'
     | '/forum'
+    | '/offline'
     | '/play'
     | '/privacy'
     | '/profile'
@@ -315,7 +337,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/bidding-practice'
     | '/daily'
+    | '/delete-account'
     | '/forum'
+    | '/offline'
     | '/play'
     | '/privacy'
     | '/profile'
@@ -344,7 +368,9 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   BiddingPracticeRoute: typeof BiddingPracticeRoute
   DailyRoute: typeof DailyRoute
+  DeleteAccountRoute: typeof DeleteAccountRoute
   ForumRoute: typeof ForumRoute
+  OfflineRoute: typeof OfflineRoute
   PlayRoute: typeof PlayRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
@@ -398,11 +424,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DailyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/delete-account': {
+      id: '/delete-account'
+      path: '/delete-account'
+      fullPath: '/delete-account'
+      preLoaderRoute: typeof DeleteAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forum': {
       id: '/forum'
       path: '/forum'
       fullPath: '/forum'
       preLoaderRoute: typeof ForumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offline': {
+      id: '/offline'
+      path: '/offline'
+      fullPath: '/offline'
+      preLoaderRoute: typeof OfflineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/play': {
@@ -560,7 +600,9 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   BiddingPracticeRoute: BiddingPracticeRoute,
   DailyRoute: DailyRoute,
+  DeleteAccountRoute: DeleteAccountRoute,
   ForumRoute: ForumRoute,
+  OfflineRoute: OfflineRoute,
   PlayRoute: PlayRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,

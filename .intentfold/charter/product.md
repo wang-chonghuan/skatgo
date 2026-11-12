@@ -301,6 +301,14 @@ human's agreement (「都同意」): notifications, nested replies, pictures in 
 language — SKATGO-129, the human: 「给论坛增加加图片的功能」), search, profiles, likes, blocking (with the
 apps later) and competitions (later, in the product itself).
 
+SkatGo for Android (SKATGO-185, the human: 「我打算做成google play app了……不要因为套web什么的被不许上架」): the site itself, opened
+full-screen as an app from Google Play — no second product beside it; the site goes on as it is (「我网页版也要运营」), and what
+changes on the site changes in the app. An account is deleted by its owner, from the settings or on a page anyone can open,
+the address Google Play is given: the account goes, and everything SkatGo holds under it — its name, its places on the
+boards, its games and those of the devices signed in to it, its practice answers, its shared results — while its forum
+posts and comments stay, under a deleted player (「帖子改匿名」). What the browser keeps, the course's progress among it, is the
+device's and stays. Without a network the site answers with a page of its own, not the browser's.
+
 **Who it is for**
 
 Learners from 6 to 99 (the human, 2026-09-21: 「年龄改为6-99岁」), who want to be able to sit down at a

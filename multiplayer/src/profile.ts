@@ -56,7 +56,15 @@ export type PoolDecks = { version: string; deals: { dealer: 0 | 1 | 2; deck: str
 export async function playProfile(store: Store, who: string, pool: PoolDecks | null = null): Promise<{ deals: ProfileDeal[]; notes: ProfileNote[] }> {
   const players = await idsOf(store, who)
   const { rows: entries } = await store.pool.query(
-    `SELECT e.day, e.size, e.deals, e.created_at, d.deals AS specs FROM daily_entries e
+    // Of each tournament deal only what a record reads — its dealer and deck, and the AI's summary — never the AI's whole
+    // game, which made a regular's record megabytes to read and parse (SKATGO-190, the human: 「首页打开，这个历史加载很慢」).
+    `SELECT e.day, e.size, e.deals, e.created_at,
+       (SELECT coalesce(jsonb_agg(
+           (CASE WHEN s ? 'dealer' THEN jsonb_build_object('dealer', s->'dealer') ELSE '{}' END)
+        || (CASE WHEN s ? 'deck' THEN jsonb_build_object('deck', s->'deck') ELSE '{}' END)
+        || (CASE WHEN s->'benchmark' ? 'summary' THEN jsonb_build_object('benchmark', jsonb_build_object('summary', s->'benchmark'->'summary')) ELSE '{}' END)
+         ORDER BY i), '[]') FROM jsonb_array_elements(d.deals) WITH ORDINALITY AS t(s, i)) AS specs
+       FROM daily_entries e
        JOIN daily_deals d ON d.day = e.day AND d.size = e.size
       WHERE e.player = ANY($1) ORDER BY e.created_at`, [players])
   const deals: (ProfileDeal & { at: number })[] = []

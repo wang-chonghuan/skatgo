@@ -152,7 +152,10 @@ const styles = stylex.create({
     display: { default: 'table', [bp.phone]: 'flex' },
     flexDirection: 'column',
     width: '100%',
-    borderCollapse: 'collapse',
+    // Separate, not collapsed: a collapsed table drops its own padding, and the card's room for the scrollbar with it
+    // (SKATGO-190, the human: 「vs AI分数的的右边连个padding都没有，紧贴滚动条」).
+    borderCollapse: 'separate',
+    borderSpacing: 0,
     margin: 0,
     padding: 0,
     listStyle: 'none',

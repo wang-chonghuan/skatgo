@@ -62,6 +62,7 @@
   "history_vs_ai": "vs. AI",
   "history_head_game": "Contract",
   "history_declarer": "Declarer",
+  "history_defender": "Defender",
   "history_replay": "Replay",
   "history_replay_title": "Play a game again",
   "history_replay_failed": "This game can't be dealt again right now.",

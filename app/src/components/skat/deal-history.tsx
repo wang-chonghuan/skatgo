@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { User, Users } from 'lucide-react'
+import { User } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { signed } from './daily-comparison'
@@ -13,6 +13,7 @@ import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
 import { bp } from '../../theme/breakpoints.stylex'
 import { border, space } from '../../theme/scale.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 
 // The player's games, one row each, newest first (SKATGO-182; SKATGO-189, the human: 「不要出现别人的名字。首页的卡片里的列表和
@@ -55,19 +56,16 @@ function Game({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
   return game ? <span data-testid="history-game" {...stylex.props(name, styles.ink)}>{game}</span> : null
 }
 
-/** The player's part as Skat has it, one against two (SKATGO-191, the human: 「那个declear表示还是太大，能否改成 一个符号？常用的？」,
- *  then 「同意你的推荐。那就不要显示列头，也不要显示declearer，defender这些字样了」): one person where they declared alone, two
- *  where they defended with a partner, nothing when all passed. No word in the table; a screen reader says the role. */
+/** Where the player was the declarer, a mark like a poker table's button without its letter — a navy disc with a white
+ *  person, one against two (SKATGO-191, the human: 「那个declear表示还是太大，能否改成 一个符号？常用的？」, then 「同意你的推荐。
+ *  那就不要显示列头，也不要显示declearer，defender这些字样了」, 「看不清，一个小人时就fill那个图标吧」, 「可以，那就只做庄家，防就不做了」);
+ *  nothing where they defended or all passed. No word in the table; a screen reader says it. */
 function Role({ deal }: { deal: ProfileDeal }) {
-  const { declarer } = deal.mine
-  if (declarer === null) return null
-  const mine = declarer === 0
-  const Icon = mine ? User : Users
-  const label = mine ? m.history_declarer() : m.history_defender()
+  if (deal.mine.declarer !== 0) return null
+  const label = m.history_declarer()
   return (
-    <span data-testid="history-role" data-role={mine ? 'declarer' : 'defender'} title={label} {...stylex.props(styles.role, mine ? styles.ink : styles.passed)}>
-      {/* One person filled, so a declared game reads at a glance (the human: 「看不清，一个小人时就fill那个图标吧」). */}
-      <Icon role="img" aria-label={label} size={icon.inline} strokeWidth={icon.outline} fill={mine ? 'currentColor' : 'none'} />
+    <span data-testid="history-role" data-role="declarer" title={label} {...stylex.props(styles.role)}>
+      <User role="img" aria-label={label} size={icon.header} strokeWidth={icon.outline} fill="currentColor" />
     </span>
   )
 }
@@ -208,7 +206,17 @@ const styles = stylex.create({
   lineEnd: { display: { default: 'none', [bp.phone]: 'block' }, flexBasis: '100%', order: 0 },
   ink: { color: color.navy },
   passed: { color: color.slate },
-  role: { display: 'inline-flex', verticalAlign: 'middle' },
+  role: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: dims.badge,
+    height: dims.badge,
+    borderRadius: radii.round,
+    backgroundColor: color.youTag,
+    color: color.onColor,
+    verticalAlign: 'middle',
+  },
   cards: { display: 'flex', flexWrap: 'wrap', columnGap: space.x12, color: color.navy },
   cardsSmall: { columnGap: space.x8 },
   day: { color: color.slate, textAlign: 'end' },

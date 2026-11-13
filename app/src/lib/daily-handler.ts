@@ -72,7 +72,9 @@ export function callDaily(path: string, payload: object): Promise<Response> | nu
  *  the front page's XP board and progress, so they count from the first page after signing in. */
 const CLAIMING = new Set(['state', 'board', 'xp', 'profile'])
 
-export async function handleDaily(request: Request): Promise<Response> {
+/** `asked` names the account when the caller already knows it — the front page's loader, from the session the page's
+ *  own request was signed in with (SKATGO-193); otherwise it is read from the request. */
+export async function handleDaily(request: Request, asked?: { userId: string | null }): Promise<Response> {
   if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const op = new URL(request.url).pathname.slice(`${PREFIX}/`.length)
   if (!OPS.has(op)) return json(404, { error: 'not found' })
@@ -90,7 +92,7 @@ export async function handleDaily(request: Request): Promise<Response> {
   const known = guestDevice(request)
   const device = known ?? newDevice()
   const anon = await anonOf(device)
-  const userId = await signedInUser(request)
+  const userId = asked ? asked.userId : await signedInUser(request)
   // Opening the deals (state with `open`) or making a move is playing; anything else only looks. The deal of the day
   // (size 1) a guest may play too (SKATGO-131, the human: 游客能打); the tournament of six needs an account.
   const playing = op === 'act' || (op === 'state' && (body as { open?: unknown }).open === true)

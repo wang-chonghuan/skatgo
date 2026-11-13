@@ -133,9 +133,9 @@ function Progress({ brought = null, waiting = false }: { brought?: HomeHistory |
   // Who asked: the browser's account once it knows it, until then the page's answer.
   const who = account !== undefined ? account : brought ? (brought.signedIn ? 'account' : null) : undefined
   useEffect(() => {
-    // The page's games stand while the account is the one they were read for; read again after signing in or out, or
-    // when the page came without them (a link on the site, or the service not answering).
-    if (waiting || account === undefined || (brought && !!account === brought.signedIn)) return
+    // The page's games stand while the account is the one they were read for; read again after signing in or out, when
+    // the page came without them (a link on the site, or the service not answering), or when it brought an account none.
+    if (waiting || account === undefined || (brought && !!account === brought.signedIn && (brought.games.length > 0 || !brought.signedIn))) return
     let live = true
     setGames(null)
     void fetchGames().then((g) => { if (live && g) setGames(g) })

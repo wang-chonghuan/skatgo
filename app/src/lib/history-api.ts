@@ -1,10 +1,11 @@
+import { auth } from '@clerk/tanstack-react-start/server'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 
 import { dailyProfile, isError } from './daily-api'
 import { handleDaily } from './daily-handler'
-import { signedInUser } from './session'
 import type { ProfileDeal } from './skat/profile'
+import { testAccount } from './test-account'
 
 // The front page's games (SKATGO-193, the human: 「你看看这个history在home上的加载速度如何，是否需要优化」), read by its
 // loader: on the server while the page is made, through the very ask the browser makes (/api/daily/profile — the same
@@ -31,10 +32,14 @@ const read = createIsomorphicFn()
     }
     const ask = new Request(new URL('/api/daily/profile', page.url), { method: 'POST', headers, body: '{}' })
     try {
-      const [res, user] = await Promise.all([handleDaily(ask), signedInUser(page)])
+      // The account the page's own request is signed in with, as Clerk's middleware settled it — never read again from
+      // the ask made up here, whose bare cookie Clerk may not take as signed in (on skatgo.com the card then showed an
+      // account with no games).
+      const userId = testAccount(page)?.userId ?? (await auth()).userId ?? null
+      const res = await handleDaily(ask, { userId })
       if (!res.ok) return null
       const { deals } = (await res.json()) as { deals: ProfileDeal[] }
-      return { signedIn: user !== null, games: newestGames(deals) }
+      return { signedIn: userId !== null, games: newestGames(deals) }
     } catch {
       return null
     }

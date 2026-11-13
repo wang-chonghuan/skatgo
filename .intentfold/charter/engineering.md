@@ -65,7 +65,10 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   person as that person — rows written by hand, never ids in code — and answers every account with XP by name, with
   its win rate over the same deals as the record of play counts it (`recordOf`, SKATGO-178), the asker's row marked. The front page reads it on the server as nobody (`lib/xp-api.ts`, a minute's answer cached),
   the browser through `/api/daily/xp` as the signed-in player, and again every 15 s while the page is in view and at once
-  when it comes back, so the board follows the deals without a reload (SKATGO-174); a hidden page does not ask. The web
+  when it comes back, so the board follows the deals without a reload (SKATGO-174); a hidden page does not ask. The front page's
+  games (SKATGO-193) are read while the page is made, through the same `/api/daily/profile` handler with the page's own
+  cookies (`lib/history-api.ts`) — the same player, guest device and claiming — and streamed into the page behind the rest
+  of it, never awaited; the browser asks only for a page reached by a link on the site, or after signing in or out. The web
   service is its only client.
 - **Synthetic players** (SKATGO-180) may support online participation and improve the experience of
   existing competitions and games, including assigned computer seats in private rooms. They are developed with the project-local

@@ -75,7 +75,7 @@ function KeyCards({ deal, small }: { deal: ProfileDeal; small?: boolean }) {
   const groups = keyCards(deal)?.filter((g) => g.length)
   if (!groups) return null
   return (
-    <span data-testid="history-hand" {...stylex.props(small ? typography.meta : typography.appText, styles.cards)}>
+    <span data-testid="history-hand" {...stylex.props(small ? typography.meta : typography.appText, styles.cards, small && styles.cardsLine)}>
       {groups.length ? groups.map((g) => <span key={g[0].rank} {...stylex.props(small ? styles.groupSmall : styles.group)}><Rich text={g.map(cardLabel).join(small ? '\u2009' : ' ')} /></span>) : '–'}
     </span>
   )
@@ -103,7 +103,7 @@ function Head({ action, small }: { action: boolean; small?: boolean }) {
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.roleCell, styles.phoneNone)} />
       {/* The cards' column has no head (the human: 「第三列的列头很sb，删掉」). */}
       <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.wide, styles.phoneNone)} />
-      <span {...stylex.props(styles.cell, styles.headCell, styles.second, small && styles.close, styles.phoneNone)} />
+      {small ? null : <span {...stylex.props(styles.cell, styles.headCell, styles.second, styles.phoneNone)} />}
       <span {...stylex.props(styles.cell, styles.headCell, styles.end, small && styles.close, styles.lineOne)}>{m.history_vs_ai()}</span>
       {action ? <span {...stylex.props(styles.cell, styles.headCell, styles.second, styles.phoneNone)} /> : null}
       <LineEnd />
@@ -118,12 +118,13 @@ function Row({ deal, action, small, testId }: { deal: ProfileDeal; action?: Reac
     <li data-testid={testId} data-key={deal.key} {...stylex.props(styles.row, small && styles.rowSmall)}>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.first)}><Game deal={deal} small={small} /></span>
       <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.roleCell)}><Role deal={deal} /></span>
-      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.wide, styles.grow, styles.lineOne)}><KeyCards deal={deal} small={small} /></span>
-      <span data-testid="history-day" {...stylex.props(typography.meta, styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.day)}>{dayName(deal.day)}</span>
-      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.end, small && styles.close)}><Gap deal={deal} /></span>
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.second, small && styles.close, styles.wide, styles.grow, styles.lineOne, small && styles.cutCell)}><KeyCards deal={deal} small={small} /></span>
+      {/* The front page's card has no day (SKATGO-193, the human: 「home页面的历史条目，不要显示日期了，尽量显示到一行」). */}
+      {small ? null : <span data-testid="history-day" {...stylex.props(typography.meta, styles.cell, styles.second, styles.day)}>{dayName(deal.day)}</span>}
+      <span {...stylex.props(styles.cell, small && styles.cellSmall, styles.end, small && styles.close, small && styles.lineOne)}><Gap deal={deal} /></span>
       {/* The way to play it again, last (the human: 「详情表里，replay放在最后一列」); on a phone its own line under the game. */}
       {action !== undefined ? <span {...stylex.props(styles.cell, styles.second, styles.action)}>{action}</span> : null}
-      <LineEnd />
+      {small ? null : <LineEnd />}
     </li>
   )
 }
@@ -219,6 +220,10 @@ const styles = stylex.create({
     textOverflow: { default: 'clip', [bp.phone]: 'ellipsis' },
     color: color.navy,
   },
+  // On the card one line everywhere, the cards cut with an ellipsis when the game, the crown and the difference leave too
+  // little room (「如果内容太长，可以阶段手牌」); the cell's zero max-width lets a table cell shrink below its content.
+  cardsLine: { display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  cutCell: { maxWidth: { default: 0, [bp.phone]: 'none' } },
   group: { marginInlineEnd: { default: space.x12, ':last-child': 0 } },
   groupSmall: { marginInlineEnd: { default: space.x8, ':last-child': 0 } },
   // On a phone the second line: the day at the left, the difference and Replay at the right (「第二行放日期，差分，replay」).

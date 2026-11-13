@@ -1,11 +1,11 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
-import { Link, useLoaderData, useNavigate } from '@tanstack/react-router'
+import { Await, Link, useLoaderData, useNavigate } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 import { CalendarDays, ChartLine, Gavel, GraduationCap, Swords, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
-import { dailyProfile, isError } from '~/lib/daily-api'
+import { type HomeHistory, fetchGames } from '~/lib/history-api'
 import type { Card } from '~/lib/skat/cards'
 import type { ProfileDeal } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
@@ -28,7 +28,7 @@ import { Btn } from './ui'
 // with its icon over its title (the deal of the day, free play, the course, the bidding practice since SKATGO-149), and beside them two long
 // white cards: the XP board (SKATGO-172, where SKATGO-123's Elo board stood, on top since), and the player's
 // progress — the player's games, each its cards and the difference to the AI (SKATGO-182) — leading to the record of play. Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
-// hero buttons, no lead, no link row: the cards are the page. Rendered on the server; the games in the browser.
+// hero buttons, no lead, no link row: the cards are the page. Rendered on the server, the games streamed in behind it (SKATGO-193).
 export function EntryPage() {
   const { xp } = useLoaderData({ from: '/' })
   return (
@@ -114,19 +114,33 @@ function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | 
  *  account the card is the link to the record of play; a guest's games open Clerk's sign-in first, then the record, and
  *  the sign-in stands beside the title too. A guest who has not played sees what signing in keeps, and the sign-in in the
  *  middle (the human: 「progress如果用户没登录，就要显示登录后保存你的表现记录以及ai分析，中间放个登录按钮」). */
+/** The progress card: the games the page brought, streamed in behind it (SKATGO-193); until they come, its head. */
 function ProgressCard() {
+  const { history } = useLoaderData({ from: '/' })
+  return (
+    <Await promise={history} fallback={<Progress waiting />}>
+      {(brought) => <Progress brought={brought} />}
+    </Await>
+  )
+}
+
+function Progress({ brought = null, waiting = false }: { brought?: HomeHistory | null; waiting?: boolean }) {
   const account = useAccount()
   const navigate = useNavigate()
-  const [games, setGames] = useState<ProfileDeal[] | null>(null)
+  const [games, setGames] = useState<ProfileDeal[] | null>(brought?.games ?? null)
   /** A guest tapped their games: once signed in, and the record read — which takes the device's games in — the record. */
   const [wanted, setWanted] = useState(false)
+  // Who asked: the browser's account once it knows it, until then the page's answer.
+  const who = account !== undefined ? account : brought ? (brought.signedIn ? 'account' : null) : undefined
   useEffect(() => {
-    if (account === undefined) return
+    // The page's games stand while the account is the one they were read for; read again after signing in or out, or
+    // when the page came without them (a link on the site, or the service not answering).
+    if (waiting || account === undefined || (brought && !!account === brought.signedIn)) return
     let live = true
     setGames(null)
-    void dailyProfile().then((r) => { if (live && !isError(r)) setGames(r.deals) })
+    void fetchGames().then((g) => { if (live && g) setGames(g) })
     return () => { live = false }
-  }, [account])
+  }, [account, waiting])
   useEffect(() => {
     if (account && wanted && games) void navigate({ to: '/profile' })
   }, [account, wanted, games])
@@ -137,8 +151,15 @@ function ProgressCard() {
       <ChartLine aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.whiteIcon)} />
     </span>
   )
-  const list = games?.length ? <DealLines deals={[...games].reverse().slice(0, HOME_GAMES)} /> : null
-  if (account) {
+  const list = games?.length ? <DealLines deals={games} /> : null
+  if (waiting) {
+    return (
+      <div data-testid="entry-card" data-section="progress" data-waiting="true" {...stylex.props(styles.long, styles.white, styles.progress, styles.listed)}>
+        {head}
+      </div>
+    )
+  }
+  if (who) {
     return (
       <Link to="/profile" data-testid="entry-card" data-section="progress" data-games={games?.length ?? 0} {...stylex.props(styles.long, styles.white, styles.lift, styles.progress, styles.listed)}>
         {head}
@@ -146,7 +167,7 @@ function ProgressCard() {
       </Link>
     )
   }
-  if (account === null && games?.length) {
+  if (who === null && games?.length) {
     return (
       <div data-testid="entry-card" data-section="progress" data-guest="true" data-games={games.length} {...stylex.props(styles.long, styles.white, styles.progress, styles.listed)}>
         <div {...stylex.props(styles.guestHead)}>
@@ -183,9 +204,6 @@ function ProgressCard() {
     </div>
   )
 }
-
-/** How many games the card lists, scrolling inside it. */
-const HOME_GAMES = 20
 
 const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
 const DAILY_ART = [card('H', 'A'), card('H', '10'), card('H', 'K')]

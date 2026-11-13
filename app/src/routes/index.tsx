@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { clientPage } from '~/components/skat/client-page'
+import { readHistory } from '~/lib/history-api'
 import { readXpBoard } from '~/lib/xp-api'
 import { DAILY_DEALS } from '~/lib/daily'
 import { organization, pageHead, samePath } from '~/lib/head'
@@ -10,7 +11,8 @@ import { getLocale } from '~/paraglide/runtime'
 
 export const Route = createFileRoute('/')({
   // The XP board (SKATGO-172, replacing SKATGO-123's Elo). The forum's announcement left the hero (SKATGO-131).
-  loader: async () => ({ xp: await readXpBoard() }),
+  // The player's games stream in behind the page (SKATGO-193): not awaited, so they never hold the page back.
+  loader: async () => ({ xp: await readXpBoard(), history: readHistory() }),
   head: () =>
     pageHead({
       title: m.home_meta_title(),

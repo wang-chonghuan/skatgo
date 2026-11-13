@@ -288,7 +288,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     Analyse der KI." (「最好能提现出进步，提高的意思，但是还是要简洁」) and the large `go` "Anmelden" in the middle of the card (「progress如果用户没登录，就要显示登录后
     保存你的表现记录以及ai分析，中间放个登录按钮」) — whoever has played, account or guest, sees instead their games (SKATGO-182, 「每一行显示用户拿到了啥牌，以及和ai差几分，不管是否
     登录，这个my progress卡片都显示这个，想点击，必须登录」), newest first, the record's rows (below) a step smaller: the game
-    (`panelLabel`), the sign, the cards (`meta`, a thin space apart) — since SKATGO-189 (「不要出现别人的名字。首页的卡片里的列表和真实
+    (`panelLabel`), the sign, the cards (`meta`, a thin space apart) and the difference, one line a game everywhere and no day
+    (SKATGO-193, 「home页面的历史条目，不要显示日期了，尽量显示到一行，如果内容太长，可以阶段手牌」 — the cards cut with an ellipsis) — since SKATGO-189 (「不要出现别人的名字。首页的卡片里的列表和真实
     列表，都要改。我认为只限显示 BA10这三张，然后日期，是否坐庄，合约是啥」) no other player's name, no result in words and no ten cards —
     over a `hairline`, scrolling as the XP board's list. An account's card is the link to the record; a guest's games open Clerk's sign-in first, then the record,
     and the same `go` "Anmelden" stands beside the title. (SKATGO-169's win rate, average and curve are gone from the card.)

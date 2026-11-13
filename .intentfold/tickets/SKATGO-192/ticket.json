@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-192",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-192",
+  "branch": "SKATGO-192-phone-rows",
+  "base": "0674247ff0898fd97c433cea979bbc1f038fc5b4",
+  "ports": { "web": 55192, "multiplayer": 56192, "database": 57192 }
+}

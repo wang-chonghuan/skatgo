@@ -465,8 +465,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   signed, never `good` / `bad`. Where there is room the rows are a table, one line a game in that order but "Nochmal" last, after the difference
   (「详情表里，replay放在最后一列」), its columns lined up
   the signs in a column of their own, in its middle, under a `meta` head ("Spiel" — "Contract" in English, as at the table —
-  and "vs. KI"; the signs' and the cards' columns without one — 「第三列的列头很sb，删掉」); on a phone a game is the game, its sign and the difference,
-  then the cards and the day, then "Nochmal", under a head of "Spiel" and "vs. KI". Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
+  and "vs. KI"; the signs' and the cards' columns without one — 「第三列的列头很sb，删掉」); on a phone a game is two lines (SKATGO-192, 「合约，庄，手牌，放第一行，要溢出就放三个点截断手牌。第二行放日期，差分，replay」):
+  the game, its sign and the cards, cut with an ellipsis when they do not fit; then the day at the left and the difference and
+  "Nochmal" at the right, under a head of "Spiel" and "vs. KI". Twenty rows, then a `quiet` "Mehr zeigen" for twenty more.
   `/replay` plays the game again as `/daily/replay` does: the full-screen table, counted nowhere, its result's foot "Dieses
   Spiel nochmal spielen", its close back to the profile; a free deal with free play's power-ups.
   Otherwise, for an account, a line of how many deals on how many days, and under it the last day against the days before ("Zuletzt

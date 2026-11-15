@@ -12,6 +12,8 @@ export const bp = stylex.defineConsts({
   /** Narrower than the common phones (360px and up): the header's controls close up a little, so the
    *  language flags still fit beside the name at full size (SKATGO-104, SKATGO-105). */
   narrowPhone: '@media (max-width: 359px)',
+  /** Too narrow for the header's name beside its controls once sign-in reads "Anmelden" (SKATGO-200): the mark alone. */
+  markOnly: '@media (max-width: 429px)',
   /** The contract picker wraps from six columns to three. */
   contracts: '@media (max-width: 600px)',
   /** The course map's hero stacks. */

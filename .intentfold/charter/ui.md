@@ -242,7 +242,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   public site's header (SKATGO-43; lessons too since SKATGO-47), 64px high and 56px on a phone (SKATGO-161, the human:
   「改」 after 「topbar的高度是否太高？」). The header has:
   - the SkatGo mark (`dims.landingMark`) and name (`landingBrand`), "SkatGo" without ".com" (SKATGO-105), under
-    `bp.narrowPhone` the mark alone so sign-in fits;
+    `bp.markOnly` (under 430px) the mark alone so sign-in, "Anmelden" included, fits without the page running sideways (SKATGO-200);
   - no section links (SKATGO-144, the human: 「topbar上的那些菜单都删了吧，不需要了」): the front page's cards are the way in;
   - on the right, the language switch — both flags side by side, bare, one tap switching; the language in
     use in full colour ringed in `color.go`, the other in its own colours faded (`opacity.flagOff`, never

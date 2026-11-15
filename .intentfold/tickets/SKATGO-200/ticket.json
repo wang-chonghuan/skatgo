@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-200",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-200",
+  "branch": "SKATGO-200-header-signin",
+  "base": "ab7b9c0",
+  "ports": {
+    "web": 55200,
+    "multiplayer": 56200,
+    "database": 57200
+  }
+}

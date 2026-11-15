@@ -3,17 +3,20 @@ import { Link } from '@tanstack/react-router'
 
 import { DAILY_DEALS } from '~/lib/daily'
 import { faq } from '~/lib/faq'
+import { FRIENDS } from '~/lib/friends'
 import { m } from '~/paraglide/messages'
+import { getLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { border, space } from '../../theme/scale.stylex'
-import { dims } from '../../theme/shape.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 
 /**
  * About SkatGo (SKATGO-134): what the game pages no longer explain, in one place — the front page's questions, how the
  * daily Skat is played, scored and ranked, and how a private table goes. The human: 「我现在特别讨厌游戏页面里那么多垃圾的
- * 文字……所有seo的都专门做seo页面」. Rendered on the server; its questions are the page's FAQPage too.
+ * 文字……所有seo的都专门做seo页面」. Rendered on the server; its questions are the page's FAQPage too. Last, the sites SkatGo
+ * recommends, each with its own picture, in a new tab (SKATGO-198).
  */
 export function AboutPage() {
   return (
@@ -54,6 +57,24 @@ export function AboutPage() {
             <Link to="/with-friends" {...stylex.props(typography.link, styles.link)}>{m.friends_title()}</Link>
           </nav>
         </section>
+
+        <section data-testid="about-sites" aria-labelledby="about-sites-title" {...stylex.props(styles.section)}>
+          <h2 id="about-sites-title" {...stylex.props(typography.optionTitle, styles.title)}>{m.about_sites_title()}</h2>
+          <ul {...stylex.props(styles.sites)}>
+            {FRIENDS.map((site) => (
+              <li key={site.name} {...stylex.props(styles.site)}>
+                <img src={site.logo} alt="" loading="lazy" {...stylex.props(styles.logo)} />
+                <p {...stylex.props(typography.body, styles.text)}>
+                  <a href={site.href(getLocale())} target="_blank" rel="noopener" {...stylex.props(typography.emphasis, styles.link)}>
+                    {site.name}
+                  </a>
+                  {' — '}
+                  {site.note()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
       </article>
     </div>
   )
@@ -78,6 +99,20 @@ const styles = stylex.create({
   list: { display: 'flex', flexDirection: 'column', gap: space.x16, margin: 0 },
   item: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   links: { display: 'flex', flexWrap: 'wrap', gap: space.x16 },
+  sites: { display: 'flex', flexDirection: 'column', gap: space.x12, margin: 0, padding: 0, listStyle: 'none' },
+  site: { display: 'flex', alignItems: 'flex-start', gap: space.x12 },
+  // The pictures have white or clear grounds: on `imageDim`, white by day and a soft grey at night (SKATGO-184).
+  logo: {
+    flexShrink: 0,
+    width: dims.badge,
+    height: dims.badge,
+    borderRadius: radii.tag,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.hairline,
+    backgroundColor: color.imageDim,
+    objectFit: 'contain',
+  },
   link: {
     color: color.info,
     textDecoration: { default: 'underline', ':hover': 'none' },

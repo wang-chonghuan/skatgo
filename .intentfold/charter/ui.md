@@ -93,7 +93,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | **Colour tile** | a section on the front page: ♣ the course (`tileOrange`), ♠ free play (`tileGreen`), the bidding practice (`tileNavy`, SKATGO-149), a private table (`tileRed`) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
 | **Felt** | where cards lie: the table, a drill's hand | `fill.felt` (`feltInner` → `feltOuter`, with a fine grain) | `color.onColor`; highlights `color.gold` / `color.amber` |
 | **Board and plates** | the table's info board, the seat plates, dark pills | `color.board` with `color.boardLine`; `color.plate` | `color.onColor`, quieter `color.onColorSoft`; the player's own numbers — their score, their side's card points — in `color.amber` (SKATGO-79) |
-| **Footer** | the legal links under every header page (SKATGO-46), the Skat-Tricks and the forum (SKATGO-118), then About SkatGo and the rules (SKATGO-134); under them "Recommended sites" / "Empfohlene Seiten" (as pagat's "Links to other sites"; the human: 「不要写朋友」), the sites SkatGo recommends (SKATGO-198: 32karten, pagat.com, DSkV, The Checker Maven), each its own picture in a 24px square (`dims.badge`, `radii.tag`, `hairline`, on `imageDim`) beside its name, opening in a new tab | `color.surface` with a `hairline` rule | links in `color.info` |
+| **Footer** | the legal links under every header page (SKATGO-46), the Skat-Tricks and the forum (SKATGO-118), then About SkatGo and the rules (SKATGO-134) | `color.surface` with a `hairline` rule | links in `color.info` |
 
 **Colour roles** (`color`)
 
@@ -450,7 +450,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
   FAQPage), each question bold over its answer; "Tägliches Skat", how the deal of the day and the six deals are played,
   scored and ranked; "Private Tische", how a table is opened and played. Each section ends in plain `info` links to
-  where it is played or learnt.
+  where it is played or learnt. Last "Empfohlene Seiten" / "Recommended sites" (SKATGO-198, the human: 「不要写朋友」;
+  on this page, not in every page's footer): 32karten, pagat.com, DSkV, The Checker Maven, each its own picture in a
+  24px square (`dims.badge`, `radii.tag`, `hairline`, on `imageDim`), then its bold `info` name, opening in a new tab,
+  and one line on what it is.
 - **The record of play** (`profile-page.tsx`, SKATGO-128) is a sub-page on the grey page in the reading column,
   noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest who has not played a `go` "Anmelden und Profil
   ansehen" opening Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to

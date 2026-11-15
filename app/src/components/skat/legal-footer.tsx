@@ -84,8 +84,8 @@ const styles = stylex.create({
   },
   logo: {
     flexShrink: 0,
-    width: dims.control,
-    height: dims.control,
+    width: dims.badge,
+    height: dims.badge,
     borderRadius: radii.tag,
     borderWidth: border.hair,
     borderStyle: 'solid',

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-198",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-198",
+  "branch": "SKATGO-198-footer-friends",
+  "base": "5829773",
+  "ports": { "web": 55198 }
+}

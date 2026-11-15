@@ -450,7 +450,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
   FAQPage), each question bold over its answer; "Tägliches Skat", how the deal of the day and the six deals are played,
   scored and ranked; "Private Tische", how a table is opened and played. Each section ends in plain `info` links to
-  where it is played or learnt.
+  where it is played or learnt. Last "Empfohlene Seiten" / "Recommended sites" (SKATGO-198, the human: 「不要写朋友」;
+  on this page, not in every page's footer): 32karten, pagat.com, DSkV, The Checker Maven, each its own picture in a
+  24px square (`dims.badge`, `radii.tag`, `hairline`, on `imageDim`), then its bold `info` name, opening in a new tab,
+  and one line on what it is.
 - **The record of play** (`profile-page.tsx`, SKATGO-128) is a sub-page on the grey page in the reading column,
   noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest who has not played a `go` "Anmelden und Profil
   ansehen" opening Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to

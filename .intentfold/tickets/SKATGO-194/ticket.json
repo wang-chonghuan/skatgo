@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-194",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-194",
+  "branch": "SKATGO-194-hide-dod-scores",
+  "base": "738949d49a67bfa19feb0b2ef3ce8e1c71fffdf2",
+  "ports": { "web": 55194 }
+}

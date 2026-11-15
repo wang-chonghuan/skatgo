@@ -109,19 +109,22 @@ function dayName(back: number, day: string | undefined): string {
  *  7天的」). The AI stands among the players by its total, after any player with the same, taking no rank
  *  (SKATGO-80); when it falls below the rows shown it follows them, with the player's own row. With nobody
  *  on the board yet it stands there alone, under the line that says so. */
-export function Leaderboard({ back, board, onShow }: { back: number; board: DailyBoard | DailyError | null; onShow: (back: number) => void }) {
+/** `hidden`: who has played, without any score — today's deal of the day before the player has played it, whose scores
+ *  and the AI's would tell which way the bidding goes (SKATGO-194, the human: 「用户打之前，显示已经打的名字，但是隐藏掉它们的分数，
+ *  以及ai的分数。否则透露叫牌方向了。打完可以显示」). The AI's row then stands last, where its place tells nothing either. */
+export function Leaderboard({ back, board, onShow, hidden = false }: { back: number; board: DailyBoard | DailyError | null; onShow: (back: number) => void; hidden?: boolean }) {
   const shown = board && !isError(board) ? board : null
   const rows = shown?.rows ?? []
   const ai = shown?.ai?.total ?? null
-  const cut = rows.length < (shown?.total ?? 0)
-  const at = ai === null ? -1 : rows.findIndex((r) => r.total < ai)
+  const cut = hidden || rows.length < (shown?.total ?? 0)
+  const at = ai === null || hidden ? -1 : rows.findIndex((r) => r.total < ai)
   const lines: Line[] = rows.map((row) => ({ row }))
   if (ai !== null && (at >= 0 || !cut)) lines.splice(at >= 0 ? at : lines.length, 0, { ai })
   const below: Line[] = [...(shown?.own ? [{ row: shown.own }] : []), ...(ai !== null && at < 0 && cut ? [{ ai }] : [])]
-  below.sort((a, b) => totalOf(b) - totalOf(a) || ('ai' in a ? 1 : 0) - ('ai' in b ? 1 : 0))
+  if (!hidden) below.sort((a, b) => totalOf(b) - totalOf(a) || ('ai' in a ? 1 : 0) - ('ai' in b ? 1 : 0))
   return (
     <Panel>
-      <section data-testid="daily-board" data-day={shown?.day} {...stylex.props(styles.result)}>
+      <section data-testid="daily-board" data-day={shown?.day} data-hidden={hidden ? 'true' : undefined} {...stylex.props(styles.result)}>
         <div {...stylex.props(styles.boardHead)}>
           <h2 {...stylex.props(typography.panelLabel, styles.text)}>{m.daily_board_title()}</h2>
           <span data-testid="daily-board-day" data-back={back} {...stylex.props(typography.toggle, styles.text, styles.what)}>{dayName(back, shown?.day)}</span>
@@ -147,28 +150,28 @@ export function Leaderboard({ back, board, onShow }: { back: number; board: Dail
                 {/* What the number is: the Seeger-Fabian total, by which the board ranks (SKATGO-81). */}
                 <li aria-hidden="true" {...stylex.props(typography.micro, styles.boardHeadRow, styles.muted)}>
                   <span {...stylex.props(styles.what)} />
-                  <span>{m.daily_points()}</span>
+                  <span>{hidden ? null : m.daily_points()}</span>
                 </li>
                 {[...lines, ...below].map((l, i) => {
                   const apart = i === lines.length
                   return 'ai' in l ? (
-                    <li key="ai" data-testid="daily-board-ai" data-total={l.ai} {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap)}>
+                    <li key="ai" data-testid="daily-board-ai" data-total={hidden ? undefined : l.ai} {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap)}>
                       <span {...stylex.props(styles.rank)} />
                       <span {...stylex.props(styles.what)}><Who side="ai" /></span>
-                      <span {...stylex.props(styles.score)}>{signed(l.ai)}</span>
+                      <span {...stylex.props(styles.score)}>{hidden ? null : signed(l.ai)}</span>
                     </li>
                   ) : (
                     <li
                       key={i}
                       data-testid="daily-board-row"
                       data-rank={l.row.rank}
-                      data-total={l.row.total}
+                      data-total={hidden ? undefined : l.row.total}
                       data-me={l.row.me ? 'true' : undefined}
                       {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap, l.row.me && styles.mine)}
                     >
                       <span {...stylex.props(styles.muted, styles.rank)}>{l.row.rank}</span>
                       <span data-testid="daily-board-name" {...stylex.props(styles.what)}>{l.row.nickname}</span>
-                      <span {...stylex.props(styles.score)}>{signed(l.row.total)}</span>
+                      <span {...stylex.props(styles.score)}>{hidden ? null : signed(l.row.total)}</span>
                     </li>
                   )
                 })}

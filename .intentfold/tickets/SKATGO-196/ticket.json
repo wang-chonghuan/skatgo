@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-196",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-196",
+  "branch": "SKATGO-196-home-de-title",
+  "base": "0157242",
+  "ports": {
+    "web": 55196,
+    "multiplayer": 56196,
+    "database": 57196
+  }
+}

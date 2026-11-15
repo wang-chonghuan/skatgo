@@ -346,9 +346,16 @@ test('personas: persistent 17-player controller, hot growth, heartbeat, restart 
     concurrentBackgroundActivities: 1, roomCapacity: 'not measured' }))
   assert(completed.every((j) => roster.personas.some((p) => j.player === `sim:${p.id}`)))
   for (const size of [1, 6] as const) {
-    const board = await dailyBoard(store, null, 'today', size, now)
+    // Today's deal of the day keeps its scores from whoever has not played it (SKATGO-195): the names only; the totals
+    // stand on the same day's board seen from the next day.
+    const today = await dailyBoard(store, null, 'today', size, now)
+    const board = size === 1 ? await dailyBoard(store, null, 'yesterday', size, now + 86_400_000) : today
     const expected = completed.filter((j) => j.slot === `daily:${size}`)
     assert(expected.length > 0)
+    if (size === 1) {
+      assert.equal(today.hidden, true)
+      assert(today.rows.length > 0 && today.rows.every((r) => r.total === null) && today.ai?.total == null)
+    }
     for (const j of expected) assert.equal(
       board.rows.find((row) => row.nickname === roster.personas.find((p) => j.player === `sim:${p.id}`)!.nickname)?.total, j.result.total)
   }

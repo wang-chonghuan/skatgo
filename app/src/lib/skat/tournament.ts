@@ -255,7 +255,8 @@ export type DailyReply = {
 
 /** One row of a day's leaderboard (SKATGO-36): a nickname and its Seeger-Fabian total, which ranks it
  *  (SKATGO-81), never who is behind it. */
-export type BoardRow = { rank: number; nickname: string; total: number; me: boolean }
+/** `total` is null on a board kept `hidden` (SKATGO-195). */
+export type BoardRow = { rank: number; nickname: string; total: number | null; me: boolean }
 
 /** A day's leaderboard, and where the asking player stands on it. */
 export type DailyBoard = {
@@ -271,5 +272,8 @@ export type DailyBoard = {
   me: { finished: boolean; total: number; nickname: string | null; rank: number | null } | null
   /** The AI's Seeger-Fabian total over the tournament that day, from the player's seat, for everyone
    *  (SKATGO-80, SKATGO-81); null for a day it did not play. */
-  ai: { total: number } | null
+  ai: { total: number | null } | null
+  /** Today's deal of the day before the asker has played it (SKATGO-194, SKATGO-195): who has played, every total null,
+   *  the AI's too — they would tell which way the bidding goes. */
+  hidden?: boolean
 }

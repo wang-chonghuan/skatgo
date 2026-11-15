@@ -217,7 +217,16 @@ test('new policy completes daily-six and selected-one with authoritative HTTP bo
       assert.deepEqual(summarize(replayLog(g.input.dealer, g.input.deck, g.log)), g.mine)
       assert.equal(g.xp, xpOf(g.mine.scores[0] - g.ai.scores[0], g.mine.declarer === 0))
     }
-    const board = await dailyBoard(store, null, 'today', j.snapshot.size, j.snapshot.due + 1)
+    // Today's deal of the day keeps its scores from whoever has not played it (SKATGO-195): the name only; its totals
+    // stand on the same day's board seen from the next day.
+    const at = j.snapshot.due + 1
+    const today = await dailyBoard(store, null, 'today', j.snapshot.size, at)
+    const board = j.snapshot.size === 1 ? await dailyBoard(store, null, 'yesterday', j.snapshot.size, at + 86_400_000) : today
+    if (j.snapshot.size === 1) {
+      assert.equal(today.hidden, true)
+      assert(today.rows.some((r) => r.nickname === single.personas[0].nickname))
+      assert(today.rows.every((r) => r.total === null) && today.ai?.total == null)
+    }
     assert.equal(board.rows.find((r) => r.nickname === single.personas[0].nickname)?.total, j.result.total)
   }
   const all = (await store.pool.query("SELECT result FROM persona_jobs WHERE player='sim:moss' AND result IS NOT NULL")).rows

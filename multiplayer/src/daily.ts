@@ -570,6 +570,13 @@ export async function dailyBoard(store: Store, who: string | null, which: 'today
   const { rows: dealt } = await store.pool.query('SELECT deals FROM daily_deals WHERE day = $1 AND size = $2', [day, size])
   const played = ((dealt[0]?.deals ?? []) as DealSpec[]).map((spec) => spec.benchmark?.summary)
   const ai = played.length > 0 && played.every((b) => b) ? { total: totals(played as DealSummary[])[PLAYER] } : null
+  // Today's deal of the day, before the asker has played it: who has played and in what order, never a score — the
+  // players' nor the AI's would leave here, which tell which way the bidding goes (SKATGO-195, the human: 「用户打之前，
+  // 显示已经打的名字，但是隐藏掉它们的分数，以及ai的分数。否则透露叫牌方向了。打完可以显示」, then 「好的，改」).
+  if (size === DEAL_OF_DAY && back === 0 && !me?.finished) {
+    const bare = (r: (typeof ranked)[number]) => ({ ...r, total: null })
+    return { day, rows: ranked.slice(0, BOARD_ROWS).map(bare), own: own && bare(own), total: ranked.length, me, ai: ai && { total: null }, hidden: true }
+  }
   return { day, rows: ranked.slice(0, BOARD_ROWS), own, total: ranked.length, me, ai }
 }
 

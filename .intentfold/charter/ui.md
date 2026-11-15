@@ -418,9 +418,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   behind. A lesson starts playing at once: under its title only a
   one-line kicker and the lesson's promise, then the lesson, which keeps its "back / continue" bar
   sticky at the bottom of the screen; then its ways on: the next lesson, its section of the rules, and
-  all lessons. No text stands under the lesson (SKATGO-161, the human: 「让教程页面下面的大段垃圾文字去掉」 —
+  all lessons. No open text stands under the lesson (SKATGO-161, the human: 「让教程页面下面的大段垃圾文字去掉」 —
   SKATGO-52's "Kurz erklärt" / "In short" is gone): the server renders the lesson's first teaching card in
-  the player's own frame (`lesson-frame.tsx`), which is what a search engine reads. A lesson's last
+  the player's own frame (`lesson-frame.tsx`); under the links, last and closed, a native `<details>` "Read the whole
+  lesson" / "Die ganze Lektion zum Nachlesen" (its summary the links' `appBtnStrong`, `info`) holds the lesson's own
+  words step by step — a teaching step's title and paragraphs, an exercise's question and the explanation of its
+  answer, no cards — which is what a search engine reads of the rest (SKATGO-199, the human: 「即使补，我希望也是能折叠的」). A lesson's last
   exercise is its final challenge, "Abschlussaufgabe" / "Final challenge" (`panelLabel`, slate) over it,
   and its done screen says what the learner can now do, "Jetzt kannst du: …" (`appText`, navy), over the
   stars' line.

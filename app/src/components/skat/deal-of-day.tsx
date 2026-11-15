@@ -55,7 +55,8 @@ export function DealOfDay({ waiting }: { waiting?: ReactNode }) {
   return (
     <div data-testid="dod" data-finished={status.finished ? 'true' : 'false'} {...stylex.props(styles.stack)}>
       {status.finished ? <Result status={status} /> : <DealOfDayWayIn started={status.started} />}
-      <Leaderboard back={back} board={shown} onShow={show} />
+      {/* Today's scores only once the player has played today's deal (SKATGO-194). */}
+      <Leaderboard back={back} board={shown} onShow={show} hidden={!status.finished && back === 0} />
       {/* Under the board, as agreed: how the AI played this deal, folded, only for whoever has played it; the deal once more,
           counted nowhere (SKATGO-177, 「每天1deal的，应该也能复盘」); then free play. */}
       {status.finished ? (

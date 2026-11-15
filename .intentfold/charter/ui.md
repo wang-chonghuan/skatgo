@@ -333,7 +333,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   「每天1deal的，应该也能复盘」), its close the round X in the dialog's top right corner, back here (SKATGO-177: 「close还放在
   右上角，不要下面那个close按钮了」) — and nothing goes by itself: SKATGO-168, 「打完弹出结果页面，很快就闪了」); `/daily/replay`
   is the same table played again as free play's replay is (its pill, its result's heading, the review against the AI), its
-  foot "Replay this deal" (`quiet`), its close the same X; once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
+  foot "Replay this deal" (`quiet`), its close the same X; until the player has played it, today's board shows who has played
+  but no score and no AI score, the AI's row last (SKATGO-194, 「否则透露叫牌方向了。打完可以显示」); once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
   gespielt" (`dialogTitle`) over "Deine Freunde bekommen dieselben Karten – schau, wie viele Punkte sie holen." — and no
   scores, no place: the card below carries them (SKATGO-132, 「我不懂你显示这些垃圾干什么……你完成了same one deal today,
   分享给朋友，看看他们能打几分」, 「1 played today · you're #1 这个不要显示」) — "Mit Freunden teilen" as the one `go`

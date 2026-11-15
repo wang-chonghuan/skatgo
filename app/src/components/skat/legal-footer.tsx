@@ -34,7 +34,7 @@ export function LegalFooter() {
           {FRIENDS.map((friend) => (
             <li key={friend.name}>
               <a href={friend.href(getLocale())} target="_blank" rel="noopener" {...stylex.props(typography.link, styles.link, styles.friend)}>
-                <img src={friend.logo} alt="" width={40} height={40} loading="lazy" {...stylex.props(styles.logo)} />
+                <img src={friend.logo} alt="" loading="lazy" {...stylex.props(styles.logo)} />
                 {friend.name}
               </a>
             </li>

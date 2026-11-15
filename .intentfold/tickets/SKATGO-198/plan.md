@@ -6,7 +6,7 @@ third-party image exists in the footer yet.
 
 Route:
 1. `app/public/friends/{32karten,checkermaven,pagat,dskv}.webp` — each site's own picture, cut square from that
-   site's own files (32karten's header jacks, The Checker Maven's header checker, pagat's banner jester and globe,
+   site's own files (32karten's header jack on its banner blue, The Checker Maven's header checker, the "P" of pagat's banner wordmark,
    DSkV's suit icon), 80×80 for a 40px mark. Made from files fetched from each site in this ticket.
 2. `app/src/lib/friends.ts` — the four sites: name, address (pagat's German page in German), picture.
 3. `legal-footer.tsx` — a second block under the links: a small heading (`footer_friends`: "Friends" / "Freunde") and a

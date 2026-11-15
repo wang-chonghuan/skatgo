@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-199",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-199",
+  "branch": "SKATGO-199-lesson-fulltext",
+  "base": "f2a1444",
+  "ports": {
+    "web": 55199,
+    "multiplayer": 56199,
+    "database": 57199
+  }
+}

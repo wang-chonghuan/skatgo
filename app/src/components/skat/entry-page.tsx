@@ -245,13 +245,16 @@ const styles = stylex.create({
   root: {
     display: 'flex',
     flexDirection: 'column',
+    // The page fills the screen, so the "Featured on" line sinks to its foot (SKATGO-203).
+    flexGrow: 1,
     width: '100%',
     maxWidth: dims.landingColumn,
     marginInline: 'auto',
     boxSizing: 'border-box',
     // Close under the top bar (SKATGO-175, the human: 「top margin偏大」; 32px before).
     paddingTop: space.x16,
-    paddingBottom: { default: space.x72, [bp.phone]: space.x36 },
+    // The cards end 72px (36px on a phone) above the "Featured on" line, which sits close above the footer (SKATGO-203).
+    paddingBottom: space.x20,
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
   // Colour is stated, not inherited: the theme colours headings itself.
@@ -347,6 +350,7 @@ const styles = stylex.create({
   listed: { height: { default: 0, [bp.cards]: 'auto' }, minHeight: { default: '100%', [bp.cards]: 0 } },
   more: {
     marginTop: { default: space.x32, [bp.phone]: space.x24 },
+    marginBottom: { default: space.x72, [bp.phone]: space.x36 },
     display: 'grid',
     // The ways in's columns, so each picture card stands under a colour card.
     gridTemplateColumns: { default: dims.homeWays, [bp.cards]: dims.homeWaysNarrow },
@@ -371,7 +375,8 @@ const styles = stylex.create({
     alignItems: 'center',
     gap: space.x8,
     margin: 0,
-    marginTop: { default: space.x32, [bp.phone]: space.x24 },
+    // At the page's foot: on a tall screen it drops to the bottom, above the footer (the human: 「应该沉底到home页面的底部位置」).
+    marginTop: 'auto',
     color: color.slate,
   },
   listedLink: {

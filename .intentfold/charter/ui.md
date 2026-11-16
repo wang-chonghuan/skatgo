@@ -322,7 +322,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     colour card, under `bp.cards` the next free place. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
     The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,
     `homePicture`, `icon.tile`, `progressCurve` (SKATGO-136) and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
-  - last, under the cards and above the footer, one line (`body`, `slate`): "Featured on" / "Bekannt aus" (rework, the human: 「所有的这种外链引用都是featured on」), then the
+  - last, at the page's foot, 20px above the footer and 72px (36px on a phone) under the cards at least, dropping to the
+    bottom of a taller screen (rework, 「应该沉底到home页面的底部位置」), one line (`body`, `slate`): "Featured on" / "Bekannt aus" (rework, the human: 「所有的这种外链引用都是featured on」), then the
     British Skat Association's picture in About SkatGo's 24px square (`dims.badge`) and its bold `info` name, "The British
     Skat Association" in both languages, opening its list of Skat servers (weddslist.com/skat/servers.html) in a new tab
     (SKATGO-203, the human: 「把这个英国协会的放到我首页，底部，listed by」). The association has no logo; its picture is the

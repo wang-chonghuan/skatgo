@@ -1,8 +1,8 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { ChartLine, Check, Monitor, Moon, Settings, Sun } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { ChartLine, Check, ChevronDown, Monitor, Moon, Settings, Sun } from 'lucide-react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { LANG_TAG } from '~/lib/site'
 import { CARD_BACKS, DEFAULT_BACK, backSrc, isCardBack } from '~/lib/skat/backs'
@@ -77,9 +77,9 @@ export function LandingHeader() {
     <header data-testid="landing-header" {...stylex.props(styles.landingHeader)}>
       <Link to="/" aria-label={m.site_name()} {...stylex.props(typography.landingHeading, styles.landingBrand)}>
         <img src="/logo-96.png" alt="" {...stylex.props(styles.landingMark)} />
-        {/* The site's name beside the mark, without ".com" (SKATGO-105), on a phone too (SKATGO-201, the human: 「logo必须显示」);
-            under 360px only the mark, so sign-in fits beside the flags and the gear (SKATGO-144). */}
-        <span {...stylex.props(typography.landingBrand, styles.brandName)}>{m.site_name()}</span>
+        {/* The site's name beside the mark, without ".com" (SKATGO-105), at every width (SKATGO-201, the human: 「logo必须显示」):
+            where both flags do not fit beside it, they become one (`LanguageSwitch`). */}
+        <span {...stylex.props(typography.landingBrand)}>{m.site_name()}</span>
       </Link>
       <div {...stylex.props(styles.landingEnd)}>
         <LanguageSwitch />
@@ -131,6 +131,7 @@ const FLAG: Record<Locale, () => ReactNode> = { en: FlagEN, de: FlagDE }
 export function LanguageSwitch() {
   const current = getLocale()
   return (
+    <>
     <div role="radiogroup" aria-label={m.language_label()} data-testid="language-switch" {...stylex.props(styles.flags)}>
       {locales.map((l) => {
         const Flag = FLAG[l]
@@ -159,6 +160,74 @@ export function LanguageSwitch() {
           </button>
         )
       })}
+    </div>
+    <LanguageMenu />
+    </>
+  )
+}
+
+/** Where both flags do not fit (`bp.oneFlag`, SKATGO-201): the language in use alone, opening a menu of the languages,
+ *  each its flag and own name. Shown only there; the two flags everywhere else. */
+function LanguageMenu() {
+  const current = getLocale()
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const away = (e: PointerEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false) }
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('pointerdown', away)
+    document.addEventListener('keydown', key)
+    return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', key) }
+  }, [open])
+  const Current = FLAG[current]
+  return (
+    <div ref={box} data-testid="language-menu" {...stylex.props(styles.languageMenu)}>
+      <button
+        type="button"
+        aria-label={m.language_label()}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        data-testid="language-menu-open"
+        onClick={() => setOpen((o) => !o)}
+        {...stylex.props(styles.flagButton, styles.menuOpener)}
+      >
+        <span {...stylex.props(styles.flag)}>
+          <Current />
+        </span>
+        <ChevronDown size={icon.header} strokeWidth={icon.outline} />
+      </button>
+      {open ? (
+        <div role="menu" aria-label={m.language_label()} {...stylex.props(styles.languageList)}>
+          {locales.map((l) => {
+            const Flag = FLAG[l]
+            const on = l === current
+            return (
+              <button
+                key={l}
+                type="button"
+                role="menuitemradio"
+                aria-checked={on}
+                lang={LANG_TAG[l]}
+                data-locale={l}
+                onClick={() => {
+                  setOpen(false)
+                  if (!on) {
+                    carryGame()
+                    void setLocale(l)
+                  }
+                }}
+                {...stylex.props(typography.control, typography.link, styles.languageItem)}
+              >
+                <span {...stylex.props(styles.flag, on && styles.flagOn)}>
+                  <Flag />
+                </span>
+                {NAME[l]}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -587,14 +656,50 @@ const styles = stylex.create({
     boxShadow: elev.landingHeader,
   },
   landingBrand: { display: 'flex', alignItems: 'center', gap: space.x10, color: color.navy, textDecoration: 'none', ...focus },
-  brandName: { display: { default: 'inline', [bp.narrowPhone]: 'none' } },
   // The flags, the gear and sign-in or the avatar, each clear of the next (SKATGO-105); closer on a phone, so the name fits
   // at 360px (SKATGO-201).
   landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x16, [bp.phone]: space.x8 } },
 
   // The language switch (SKATGO-104): two bare flags, each in a button as tall as the header's controls.
   // The two flags as far apart as the header's other controls nearly are (SKATGO-144, the human: 「英国和德国国旗距离太近」).
-  flags: { display: 'flex', alignItems: 'center', gap: { default: space.x12, [bp.phone]: space.x10, [bp.narrowPhone]: space.x8 }, flexShrink: 0 },
+  flags: {
+    display: { default: 'flex', [bp.oneFlag]: 'none' },
+    alignItems: 'center',
+    gap: { default: space.x12, [bp.phone]: space.x10 },
+    flexShrink: 0,
+  },
+  // One flag and its menu where two do not fit (SKATGO-201).
+  languageMenu: { display: { default: 'none', [bp.oneFlag]: 'block' }, position: 'relative', flexShrink: 0 },
+  menuOpener: { gap: space.x2, color: color.slate },
+  languageList: {
+    position: 'absolute',
+    insetBlockStart: '100%',
+    insetInlineEnd: 0,
+    marginBlockStart: space.x8,
+    display: 'flex',
+    flexDirection: 'column',
+    padding: space.x8,
+    backgroundColor: color.surface,
+    borderRadius: radii.panel,
+    boxShadow: elev.panel,
+    zIndex: layer.window,
+  },
+  languageItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: space.x10,
+    paddingBlock: space.x8,
+    paddingInline: space.x12,
+    borderWidth: 0,
+    borderRadius: radii.tag,
+    backgroundColor: { default: 'transparent', ':hover': color.page },
+    color: color.text,
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focusSm,
+    outlineColor: color.info,
+  },
   flagButton: {
     display: 'inline-flex',
     alignItems: 'center',

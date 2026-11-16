@@ -9,11 +9,9 @@ export const bp = stylex.defineConsts({
   /** Too narrow for the header's five links beside the logo and its controls (SKATGO-69): they fold
    *  into the menu, as on a phone. */
   headerMenu: '@media (max-width: 1099px)',
-  /** Narrower than the common phones (360px and up): the header's controls close up a little, so the
-   *  language flags still fit beside the name at full size (SKATGO-104, SKATGO-105). */
-  narrowPhone: '@media (max-width: 359px)',
-  /** Too narrow for the header's name beside its controls once sign-in reads "Anmelden" (SKATGO-200): the mark alone. */
-  markOnly: '@media (max-width: 429px)',
+  /** Too narrow for both language flags beside the header's name and controls (SKATGO-201, the human: 「实在放不下时，
+   *  国旗合并成一个，可以下来的，否则就还是两个」): one flag, opening a menu of the languages. */
+  oneFlag: '@media (max-width: 374px)',
   /** The contract picker wraps from six columns to three. */
   contracts: '@media (max-width: 600px)',
   /** The course map's hero stacks. */

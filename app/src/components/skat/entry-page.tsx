@@ -84,19 +84,30 @@ export function EntryPage() {
       </div>
       {/* SKATGO-203, the human: 「把这个英国协会的放到我首页，底部，listed by……链接就指向这个页面」 — the British Skat
           Association's list of Skat servers, SkatGo first. The association has no logo: its picture is the Union
-          Jack. */}
-      <p data-testid="entry-listed" {...stylex.props(typography.body, styles.listedBy)}>
-        <span>{m.home_listed_by()}</span>
-        <a href={LISTED_BY} target="_blank" rel="noopener" {...stylex.props(typography.emphasis, styles.listedLink)}>
-          <img src="/friends/bsa.webp" alt="" loading="lazy" {...stylex.props(styles.listedLogo)} />
-          {m.home_listed_bsa()}
-        </a>
-      </p>
+          Jack. Beside it SkatGo's thread on 32karten's forum (the human: 「那个32 karten的，应该也放个链接到首页底部，就是论坛链接，
+          用个合适的词，精简的」). */}
+      <div data-testid="entry-listed" {...stylex.props(typography.body, styles.listedBy)}>
+        <span {...stylex.props(styles.listedItem)}>
+          <span>{m.home_listed_by()}</span>
+          <a href={LISTED_BY} target="_blank" rel="noopener" {...stylex.props(typography.emphasis, styles.listedLink)}>
+            <img src="/friends/bsa.webp" alt="" loading="lazy" {...stylex.props(styles.listedLogo)} />
+            {m.home_listed_bsa()}
+          </a>
+        </span>
+        <span {...stylex.props(styles.listedItem)}>
+          <span>{m.home_discussed_on()}</span>
+          <a href={DISCUSSED_ON} target="_blank" rel="noopener" {...stylex.props(typography.emphasis, styles.listedLink)}>
+            <img src="/friends/32karten.webp" alt="" loading="lazy" {...stylex.props(styles.listedLogo)} />
+            32karten
+          </a>
+        </span>
+      </div>
     </div>
   )
 }
 
 const LISTED_BY = 'https://weddslist.com/skat/servers.html'
+const DISCUSSED_ON = 'https://32karten.de/forum/viewtopic.php?f=16&t=13701'
 
 /** The hero's ways in as they are counted (SKATGO-29; renamed by SKATGO-74's tracking plan): the deal of the day, free play. */
 const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
@@ -373,12 +384,14 @@ const styles = stylex.create({
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'center',
-    gap: space.x8,
+    columnGap: space.x24,
+    rowGap: space.x12,
     margin: 0,
     // At the page's foot: on a tall screen it drops to the bottom, above the footer (the human: 「应该沉底到home页面的底部位置」).
     marginTop: 'auto',
     color: color.slate,
   },
+  listedItem: { display: 'flex', alignItems: 'center', gap: space.x8 },
   listedLink: {
     display: 'inline-flex',
     alignItems: 'center',

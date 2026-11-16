@@ -1,6 +1,6 @@
 // What a day's two videos show and say (SKATGO-202), worked out from the deal of the day as stored: the quiz from
 // today's deal, the answer from yesterday's. Run through the multiplayer's tsx, which resolves the app's game code:
-//   cd multiplayer && node --import tsx ../video/scripts/plan.ts <spec.json> <quiz|answer> <de|en> <out.json>
+//   cd multiplayer && node --import tsx ../video/scripts/plan.ts <today.json> <yesterday.json> <de|en> <out.json>
 // English keeps the site's German Skat words (Bube, Dame, Grand, forehand), as the site's English does.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { type Card, type Contract, sortHand } from '../../app/src/lib/skat/cards'
@@ -170,7 +170,20 @@ function answer(spec: Spec, day: string) {
   }
 }
 
-const [specFile, kind, lang, out] = process.argv.slice(2)
+// One video a day (the human: 「合成一个比较好吧……你应该先播放昨天的打法。然后留一个问题」): yesterday's deal played
+// out first, then today's deal left as the question.
+const [todayFile, yesterdayFile, lang, out] = process.argv.slice(2)
 L = lang === 'en' ? 'en' : 'de'
-const { day, spec } = JSON.parse(readFileSync(specFile, 'utf8')) as { day: string; spec: Spec }
-writeFileSync(out, JSON.stringify(kind === 'quiz' ? quiz(spec, day) : answer(spec, day), null, 2))
+const read = (f: string) => JSON.parse(readFileSync(f, 'utf8')) as { day: string; spec: Spec }
+const today = read(todayFile)
+const yesterday = read(yesterdayFile)
+const q = quiz(today.spec, today.day)
+const a = answer(yesterday.spec, yesterday.day)
+const de = L === 'de'
+const segments = [
+  { id: 'answer-intro', part: 'answer', scene: 'intro', text: de ? `Deal des Tages: Erst die Auflösung vom ${a.date}.` : `Deal of the day: first, the answer for ${a.date}.` },
+  ...a.segments.filter((x) => x.scene !== 'intro' && x.scene !== 'cta').map((x) => ({ ...x, id: `answer-${x.id}`, part: 'answer' })),
+  { id: 'quiz-turn', part: 'quiz', scene: 'turn', text: de ? `Und jetzt du: der Deal vom ${q.date}.` : `Now it is your turn: the deal for ${q.date}.` },
+  ...q.segments.filter((x) => x.scene !== 'intro').map((x) => ({ ...x, id: `quiz-${x.id}`, part: 'quiz' })),
+]
+writeFileSync(out, JSON.stringify({ lang: L, day: today.day, today: q, yesterday: a, segments }, null, 2))

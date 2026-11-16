@@ -1,11 +1,12 @@
 import { Composition } from 'remotion'
 import { DailyVideo } from './DailyVideo'
 import { timeline } from './timeline'
-import { FPS, type Plan } from './types'
+import { FPS, type Day } from './types'
 
-const EMPTY: Plan = { kind: 'quiz', lang: 'de', day: '', date: '', role: '', hand: [], segments: [] }
+const NONE = { kind: 'quiz', lang: 'de', day: '', date: '', role: '', hand: [], segments: [] } as const
+const EMPTY: Day = { lang: 'de', day: '', today: { ...NONE, hand: [], segments: [] }, yesterday: { ...NONE, hand: [], segments: [] }, segments: [] }
 
-/** One composition; the plan given as props (scripts/make.mjs) says which video and how long. */
+/** One composition; the day given as props (scripts/make.mjs) says what it shows and how long. */
 export function Root() {
   return (
     <Composition
@@ -16,7 +17,10 @@ export function Root() {
       fps={FPS}
       durationInFrames={FPS}
       defaultProps={EMPTY as unknown as Record<string, unknown>}
-      calculateMetadata={({ props }) => ({ durationInFrames: Math.max(FPS, timeline(props as unknown as Plan).total) })}
+      calculateMetadata={({ props }) => {
+        const day = props as unknown as Day
+        return { durationInFrames: Math.max(FPS, timeline(day.segments, day.yesterday.tricks?.length ?? 0).total) }
+      }}
     />
   )
 }

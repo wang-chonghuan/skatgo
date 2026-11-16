@@ -3,7 +3,7 @@ import { AbsoluteFill, Audio, Img, Sequence, continueRender, delayRender, interp
 import { PlayingCard } from '~/components/skat/playing-card'
 import type { Card } from '~/lib/skat/cards'
 import { timeline, type Slot } from './timeline'
-import { FPS, THINK, TRICK, type Plan } from './types'
+import { FPS, THINK, TRICK, type Day, type Plan } from './types'
 
 // SkatGo's daily videos (SKATGO-202): the site's felt, logo and cards, a voice, and the words it says under it.
 // The colours are the site's (app/src/theme/color.stylex.ts); the cards are the site's own `PlayingCard`.
@@ -13,8 +13,8 @@ const FONT = 'Red Hat Display'
 
 /** What the video writes on screen, in its language (the spoken lines come from scripts/plan.ts). */
 const UI = {
-  de: { quiz: 'Deal des Tages', answer: 'Auflösung', quizTitle: 'Was machst du?', answerTitle: 'So geht’s richtig', bidTo: 'Gereizt bis', plays: 'spielt', discarded: 'gedrückt', yourGame: 'Dein Spiel', won: 'Gewonnen', points: 'Punkte', lost: 'Verloren', defence: 'Verteidigung gewinnt', playNow: 'Jetzt mitspielen', newDeal: 'Neuer Deal heute' },
-  en: { quiz: 'Deal of the Day', answer: 'The answer', quizTitle: 'What do you do?', answerTitle: 'How it’s done', bidTo: 'Bid to', plays: 'plays', discarded: 'discarded', yourGame: 'Your game', won: 'Won', points: 'points', lost: 'Lost', defence: 'Defence wins', playNow: 'Play now', newDeal: 'New deal today' },
+  de: { quiz: 'Deal des Tages', answer: 'Auflösung', quizTitle: 'Jetzt du!', answerTitle: 'So geht’s richtig', bidTo: 'Gereizt bis', plays: 'spielt', discarded: 'gedrückt', yourGame: 'Dein Spiel', won: 'Gewonnen', points: 'Punkte', lost: 'Verloren', defence: 'Verteidigung gewinnt', playNow: 'Jetzt mitspielen', newDeal: 'Neuer Deal heute' },
+  en: { quiz: 'Deal of the Day', answer: 'The answer', quizTitle: 'Your turn!', answerTitle: 'How it’s done', bidTo: 'Bid to', plays: 'plays', discarded: 'discarded', yourGame: 'Your game', won: 'Won', points: 'points', lost: 'Lost', defence: 'Defence wins', playNow: 'Play now', newDeal: 'New deal today' },
 }
 
 /** The logo on the white disc it turns on while a table loads (SKATGO-93's `loaderGlow`: white to two thirds, fading
@@ -149,13 +149,17 @@ function Tricks({ plan, from }: { plan: Plan; from: number }) {
   )
 }
 
-export function DailyVideo(plan: Plan) {
+export function DailyVideo(day: Day) {
   useFonts()
   const frame = useCurrentFrame()
-  const ui = UI[plan.lang]
-  const { slots } = timeline(plan)
-  const at = (scene: string) => slots.find((s) => s.scene === scene)
+  const ui = UI[day.lang]
+  const { slots } = timeline(day.segments, day.yesterday.tricks?.length ?? 0)
   const now = [...slots].reverse().find((s) => frame >= s.from)
+  // Yesterday's deal first, then today's: each part shows its own plan.
+  const part = now?.part ?? 'answer'
+  const plan: Plan = part === 'answer' ? day.yesterday : day.today
+  const mine = slots.filter((s) => s.part === part)
+  const at = (scene: string) => mine.find((s) => s.scene === scene)
   const scene = now?.scene ?? 'intro'
   const past = (s: string) => (at(s) ? frame >= at(s)!.from : false)
   const fadeIn = (from: number) => interpolate(frame, [from, from + 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
@@ -166,8 +170,8 @@ export function DailyVideo(plan: Plan) {
     <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 42%, ${C.feltInner} 0%, ${C.feltOuter} 100%)` }}>
       {slots.map((s) => (s.audio ? <Sequence key={s.id} from={s.from}><Audio src={staticFile(s.audio)} /></Sequence> : null))}
       <Header plan={plan} />
-      {scene === 'intro' ? (
-        <div style={{ position: 'absolute', top: 640, left: 0, right: 0, textAlign: 'center', opacity: fadeIn(0) }}>
+      {scene === 'intro' || scene === 'turn' ? (
+        <div style={{ position: 'absolute', top: 640, left: 0, right: 0, textAlign: 'center', opacity: fadeIn(now?.from ?? 0) }}>
           <p style={text(plan.kind === 'quiz' ? 120 : 104)}>{plan.kind === 'quiz' ? ui.quizTitle : ui.answerTitle}</p>
         </div>
       ) : null}
@@ -207,7 +211,8 @@ export function DailyVideo(plan: Plan) {
           <div style={{ ...text(52, 900), background: C.go, borderRadius: 999, padding: '22px 60px' }}>{plan.kind === 'quiz' ? ui.playNow : ui.newDeal}</div>
         </div>
       ) : null}
-      <Caption slot={now} />
+      {/* The question's panel says the line itself; the caption would sit under its countdown. */}
+      {scene === 'question' ? null : <Caption slot={now} />}
     </AbsoluteFill>
   )
 }

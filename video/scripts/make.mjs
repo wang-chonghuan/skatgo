@@ -1,5 +1,5 @@
-// A day's videos (SKATGO-202): the quiz from that day's deal of the day, the answer from the day before, each in German
-// and English.
+// A day's video (SKATGO-202), in German and in English: the day before's deal of the day played out by the AI, then
+// that day's as a question left for tomorrow.
 //   npm --prefix video run make [-- YYYY-MM-DD]      (default: today in Berlin)
 // Reads both deals from the production database (read-only, through the Render CLI), plans what each video shows
 // and says (plan.ts), has Azure speak each line (Seraphina HD, the human's choice), and renders out/<day>/*.mp4.
@@ -50,9 +50,9 @@ function spec(d) {
   return file
 }
 
-function plan(specFile, kind, lang) {
-  const file = path.join(out, `plan-${kind}-${lang}.json`)
-  execFileSync('node', ['--import', 'tsx', path.join(VIDEO, 'scripts/plan.ts'), specFile, kind, lang, file], { cwd: path.join(ROOT, 'multiplayer'), stdio: 'inherit' })
+function plan(lang) {
+  const file = path.join(out, `plan-${lang}.json`)
+  execFileSync('node', ['--import', 'tsx', path.join(VIDEO, 'scripts/plan.ts'), spec(day), spec(before), lang, file], { cwd: path.join(ROOT, 'multiplayer'), stdio: 'inherit' })
   return JSON.parse(readFileSync(file, 'utf8'))
 }
 
@@ -69,22 +69,20 @@ async function speak(text, file, lang) {
   return Math.ceil((statSync(file).size / BYTES_PER_SECOND) * FPS)
 }
 
-async function make(kind, d, lang) {
-  const p = plan(spec(d), kind, lang)
+/** One day's video in one language: yesterday's deal played out, then today's as the question. */
+async function make(lang) {
+  const p = plan(lang)
   for (const s of p.segments) {
-    const name = `${kind}-${lang}-${s.id}.mp3`
+    const name = `${lang}-${s.id}.mp3`
     s.frames = await speak(s.text, path.join(audioDir, name), lang)
     s.audio = `out/${day}/${name}`
   }
-  const props = path.join(out, `props-${kind}-${lang}.json`)
+  const props = path.join(out, `props-${lang}.json`)
   writeFileSync(props, JSON.stringify(p))
-  const mp4 = path.join(out, `${kind}-${d}-${lang}.mp4`)
+  const mp4 = path.join(out, `skatgo-${day}-${lang}.mp4`)
   execFileSync(path.join(VIDEO, 'node_modules/.bin/remotion'), ['render', 'src/index.ts', 'Daily', mp4, `--props=${props}`], { cwd: VIDEO, stdio: 'inherit' })
   console.log(`made ${mp4}`)
 }
 
 // German and English, the same voice (Seraphina speaks both).
-for (const lang of ['de', 'en']) {
-  await make('quiz', day, lang)
-  await make('answer', before, lang)
-}
+for (const lang of ['de', 'en']) await make(lang)

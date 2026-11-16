@@ -460,7 +460,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   where it is played or learnt. Last "Empfohlene Seiten" / "Recommended sites" (SKATGO-198, the human: 「不要写朋友」;
   on this page, not in every page's footer): 32karten, pagat.com, DSkV, The Checker Maven, each its own picture in a
   24px square (`dims.badge`, `radii.tag`, `hairline`, on `imageDim`), then its bold `info` name, opening in a new tab,
-  and one line on what it is.
+  and one line on what it is. Last "Featured on" / "Bekannt aus" (SKATGO-203, the human: 「about页加上featured on英国这个协会……home页不动」),
+  in the same shape: the British Skat Association, with the Union Jack as its picture (it has no logo), opening its list
+  of Skat servers, SkatGo first (weddslist.com/skat/servers.html). The front page carries no outside link.
 - **The record of play** (`profile-page.tsx`, SKATGO-128) is a sub-page on the grey page in the reading column,
   noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest who has not played a `go` "Anmelden und Profil
   ansehen" opening Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to

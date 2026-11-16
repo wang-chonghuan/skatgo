@@ -1,4 +1,5 @@
-// A day's two videos (SKATGO-202): the quiz from that day's deal of the day, the answer from the day before.
+// A day's videos (SKATGO-202): the quiz from that day's deal of the day, the answer from the day before, each in German
+// and English.
 //   npm --prefix video run make [-- YYYY-MM-DD]      (default: today in Berlin)
 // Reads both deals from the production database (read-only, through the Render CLI), plans what each video shows
 // and says (plan.ts), has Azure speak each line (Seraphina HD, the human's choice), and renders out/<day>/*.mp4.
@@ -35,26 +36,29 @@ cpSync(path.join(ROOT, 'app/public/cards'), path.join(site, 'cards'), { recursiv
 cpSync(path.join(ROOT, 'app/public/logo-mark.png'), path.join(site, 'logo-mark.png'))
 cpSync(path.join(ROOT, 'multiplayer/assets/fonts'), path.join(site, 'fonts'), { recursive: true })
 
-/** The day's deal of the day as stored: dealer, deck and the AI's game of it. */
+/** The day's deal of the day as stored: dealer, deck and the AI's game of it; read once per day. */
+const specs = new Map()
 function spec(d) {
+  if (specs.has(d)) return specs.get(d)
   const sql = `SELECT json_build_object('day', day, 'spec', deals->0)::text FROM daily_deals WHERE size = 1 AND day = '${d}'`
   const text = execFileSync('render', ['psql', 'skatgo-multiplayer-db', '--confirm', '--output', 'text', '--command', '\\pset tuples_only on', '--command', sql], { env: { ...process.env, RENDER_API_KEY: renderKey }, encoding: 'utf8' })
   const line = text.split('\n').map((l) => l.trim()).find((l) => l.startsWith('{'))
   if (!line) throw new Error(`no deal of the day stored for ${d}`)
   const file = path.join(out, `spec-${d}.json`)
   writeFileSync(file, line)
+  specs.set(d, file)
   return file
 }
 
-function plan(specFile, kind) {
-  const file = path.join(out, `plan-${kind}.json`)
-  execFileSync('node', ['--import', 'tsx', path.join(VIDEO, 'scripts/plan.ts'), specFile, kind, file], { cwd: path.join(ROOT, 'multiplayer'), stdio: 'inherit' })
+function plan(specFile, kind, lang) {
+  const file = path.join(out, `plan-${kind}-${lang}.json`)
+  execFileSync('node', ['--import', 'tsx', path.join(VIDEO, 'scripts/plan.ts'), specFile, kind, lang, file], { cwd: path.join(ROOT, 'multiplayer'), stdio: 'inherit' })
   return JSON.parse(readFileSync(file, 'utf8'))
 }
 
 const xml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-async function speak(text, file) {
-  const ssml = `<speak version='1.0' xml:lang='de-DE' xmlns='http://www.w3.org/2001/10/synthesis'><voice name='${VOICE}'>${xml(text)}</voice></speak>`
+async function speak(text, file, lang) {
+  const ssml = `<speak version='1.0' xml:lang='${lang === 'en' ? 'en-US' : 'de-DE'}' xmlns='http://www.w3.org/2001/10/synthesis'><voice name='${VOICE}'>${xml(text)}</voice></speak>`
   const r = await fetch(`https://${speech.AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`, {
     method: 'POST',
     headers: { 'Ocp-Apim-Subscription-Key': speech.AZURE_SPEECH_KEY, 'Content-Type': 'application/ssml+xml', 'X-Microsoft-OutputFormat': FORMAT, 'User-Agent': 'skatgo-video' },
@@ -65,19 +69,22 @@ async function speak(text, file) {
   return Math.ceil((statSync(file).size / BYTES_PER_SECOND) * FPS)
 }
 
-async function make(kind, d) {
-  const p = plan(spec(d), kind)
+async function make(kind, d, lang) {
+  const p = plan(spec(d), kind, lang)
   for (const s of p.segments) {
-    const name = `${kind}-${s.id}.mp3`
-    s.frames = await speak(s.text, path.join(audioDir, name))
+    const name = `${kind}-${lang}-${s.id}.mp3`
+    s.frames = await speak(s.text, path.join(audioDir, name), lang)
     s.audio = `out/${day}/${name}`
   }
-  const props = path.join(out, `props-${kind}.json`)
+  const props = path.join(out, `props-${kind}-${lang}.json`)
   writeFileSync(props, JSON.stringify(p))
-  const mp4 = path.join(out, `${kind === 'quiz' ? 'quiz' : 'answer'}-${d}.mp4`)
+  const mp4 = path.join(out, `${kind}-${d}-${lang}.mp4`)
   execFileSync(path.join(VIDEO, 'node_modules/.bin/remotion'), ['render', 'src/index.ts', 'Daily', mp4, `--props=${props}`], { cwd: VIDEO, stdio: 'inherit' })
   console.log(`made ${mp4}`)
 }
 
-await make('quiz', day)
-await make('answer', before)
+// German and English, the same voice (Seraphina speaks both).
+for (const lang of ['de', 'en']) {
+  await make('quiz', day, lang)
+  await make('answer', before, lang)
+}

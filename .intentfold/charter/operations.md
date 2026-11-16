@@ -296,8 +296,8 @@ ranking or traffic.
 
 **Daily videos** (SKATGO-202)
 
-A day's two 1080×1920 German videos — the quiz from that day's deal of the day, the answer from the day before's —
-into `video/out/<day>/`. It reads both deals from the production database read-only (Render CLI, `RENDER_API_KEY` from
+A day's 1080×1920 videos — the quiz from that day's deal of the day, the answer from the day before's, each in German
+and in English (the site's German Skat words kept, as its English does), the same voice — into `video/out/<day>/`. It reads both deals from the production database read-only (Render CLI, `RENDER_API_KEY` from
 `~/.zshrc`) and speaks through the Azure Speech resource `skatgo-speech` (resource group `rg-skatgo`, West Europe, free
 tier F0, tags `DrataExclude` and `project=skatgo`), voice `de-DE-Seraphina:DragonHDLatestNeural`; its key lives in the
 git-ignored `.intentfold/tmp/video/speech.env` (`AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION`). Posting them is the human's.

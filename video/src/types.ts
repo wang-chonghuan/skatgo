@@ -8,6 +8,7 @@ export type Trick = { winner: number; cards: { who: string; seat: number; card: 
 /** What one video shows and says (scripts/plan.ts). */
 export type Plan = {
   kind: 'quiz' | 'answer'
+  lang: 'de' | 'en'
   day: string
   date: string
   role: string
@@ -16,6 +17,8 @@ export type Plan = {
   skat?: Card[]
   discard?: Card[]
   declarer?: string | null
+  /** The player's seat declared. */
+  mine?: boolean
   contract?: string | null
   bid?: number
   won?: boolean | null

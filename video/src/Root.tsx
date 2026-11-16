@@ -3,7 +3,7 @@ import { DailyVideo } from './DailyVideo'
 import { timeline } from './timeline'
 import { FPS, type Plan } from './types'
 
-const EMPTY: Plan = { kind: 'quiz', day: '', date: '', role: '', hand: [], segments: [] }
+const EMPTY: Plan = { kind: 'quiz', lang: 'de', day: '', date: '', role: '', hand: [], segments: [] }
 
 /** One composition; the plan given as props (scripts/make.mjs) says which video and how long. */
 export function Root() {

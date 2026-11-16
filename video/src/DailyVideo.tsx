@@ -11,6 +11,23 @@ import { FPS, THINK, TRICK, type Plan } from './types'
 const C = { feltInner: '#085435', feltOuter: '#053320', navy: '#022657', go: '#00A336', gold: '#EDA010', white: '#FFFFFF', page: '#F2F4F7' }
 const FONT = 'Red Hat Display'
 
+/** What the video writes on screen, in its language (the spoken lines come from scripts/plan.ts). */
+const UI = {
+  de: { quiz: 'Deal des Tages', answer: 'Auflösung', quizTitle: 'Was machst du?', answerTitle: 'So geht’s richtig', bidTo: 'Gereizt bis', plays: 'spielt', discarded: 'gedrückt', yourGame: 'Dein Spiel', won: 'Gewonnen', points: 'Punkte', lost: 'Verloren', defence: 'Verteidigung gewinnt', playNow: 'Jetzt mitspielen', newDeal: 'Neuer Deal heute' },
+  en: { quiz: 'Deal of the Day', answer: 'The answer', quizTitle: 'What do you do?', answerTitle: 'How it’s done', bidTo: 'Bid to', plays: 'plays', discarded: 'discarded', yourGame: 'Your game', won: 'Won', points: 'points', lost: 'Lost', defence: 'Defence wins', playNow: 'Play now', newDeal: 'New deal today' },
+}
+
+/** The logo on the white disc it turns on while a table loads (SKATGO-93's `loaderGlow`: white to two thirds, fading
+ *  into the felt at the rim), so it stands out on the felt (the human: 「logo必须有个白色的渐变背景」). */
+function Logo({ size }: { size: number }) {
+  const disc = size * 1.5
+  return (
+    <div style={{ width: disc, height: disc, margin: -(disc - size) / 2, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `radial-gradient(circle closest-side, ${C.white} 0%, ${C.white} 66%, transparent 100%)` }}>
+      <Img src={staticFile('site/logo-mark.png')} style={{ width: size, height: size }} />
+    </div>
+  )
+}
+
 // The card faces' pictures resolve under Remotion's static base (remotion.config.ts).
 ;(globalThis as { __skatgoBase?: string }).__skatgoBase = staticFile('site/cards').replace(/\/cards$/, '')
 
@@ -31,12 +48,12 @@ const text = (size: number, weight = 900, color = C.white): CSSProperties => ({ 
 function Header({ plan }: { plan: Plan }) {
   return (
     <div style={{ position: 'absolute', top: 110, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
-        <Img src={staticFile('site/logo-mark.png')} style={{ width: 110, height: 110 }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 48 }}>
+        <Logo size={110} />
         <p style={text(84)}>SkatGo</p>
       </div>
       <div style={{ ...text(40, 700, C.navy), background: C.gold, borderRadius: 999, padding: '12px 34px' }}>
-        {plan.kind === 'quiz' ? 'Deal des Tages' : 'Auflösung'} · {plan.date}
+        {plan.kind === 'quiz' ? UI[plan.lang].quiz : UI[plan.lang].answer} · {plan.date}
       </div>
     </div>
   )
@@ -135,6 +152,7 @@ function Tricks({ plan, from }: { plan: Plan; from: number }) {
 export function DailyVideo(plan: Plan) {
   useFonts()
   const frame = useCurrentFrame()
+  const ui = UI[plan.lang]
   const { slots } = timeline(plan)
   const at = (scene: string) => slots.find((s) => s.scene === scene)
   const now = [...slots].reverse().find((s) => frame >= s.from)
@@ -150,7 +168,7 @@ export function DailyVideo(plan: Plan) {
       <Header plan={plan} />
       {scene === 'intro' ? (
         <div style={{ position: 'absolute', top: 640, left: 0, right: 0, textAlign: 'center', opacity: fadeIn(0) }}>
-          <p style={text(plan.kind === 'quiz' ? 120 : 104)}>{plan.kind === 'quiz' ? 'Was machst du?' : 'So geht’s richtig'}</p>
+          <p style={text(plan.kind === 'quiz' ? 120 : 104)}>{plan.kind === 'quiz' ? ui.quizTitle : ui.answerTitle}</p>
         </div>
       ) : null}
       {showHand ? <Hand hand={plan.hand} from={hand!.from} top={scene === 'hand' ? 520 : 440} /> : null}
@@ -162,11 +180,11 @@ export function DailyVideo(plan: Plan) {
       ) : null}
       {plan.kind === 'answer' && (scene === 'auction' || scene === 'discard') && plan.contract ? (
         <Panel top={1000} at={at('auction')!.from}>
-          <p style={text(40, 700, C.navy)}>{plan.declarer === 'du' ? `Gereizt bis ${plan.bid}` : `${plan.declarer} spielt`}</p>
+          <p style={text(40, 700, C.navy)}>{plan.mine ? `${ui.bidTo} ${plan.bid}` : `${plan.declarer} ${ui.plays}`}</p>
           <p style={text(76, 900, C.navy)}>{plan.contract}</p>
           {scene === 'discard' && plan.discard?.length ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <p style={text(36, 700, C.navy)}>gedrückt</p>
+              <p style={text(36, 700, C.navy)}>{ui.discarded}</p>
               {plan.discard.map((c, i) => <CardAt key={i} card={c} width={96} />)}
             </div>
           ) : null}
@@ -175,18 +193,18 @@ export function DailyVideo(plan: Plan) {
       {plan.kind === 'answer' && scene === 'play' ? <Tricks plan={plan} from={at('play')!.from} /> : null}
       {plan.kind === 'answer' && scene === 'result' && plan.points ? (
         <Panel top={600} at={at('result')!.from}>
-          <p style={text(44, 700, C.navy)}>{plan.declarer === 'du' ? 'Dein Spiel' : `${plan.declarer} · ${plan.contract}`}</p>
-          <p style={text(130, 900, plan.declarer === 'du' ? (plan.won ? C.go : '#E52F1D') : plan.won ? '#E52F1D' : C.go)}>
+          <p style={text(44, 700, C.navy)}>{plan.mine ? ui.yourGame : `${plan.declarer} · ${plan.contract}`}</p>
+          <p style={text(130, 900, plan.mine ? (plan.won ? C.go : '#E52F1D') : plan.won ? '#E52F1D' : C.go)}>
             {plan.points.declarer} : {plan.points.defenders}
           </p>
-          <p style={text(44, 700, C.navy)}>{plan.declarer === 'du' ? (plan.won ? `Gewonnen · ${plan.points.value} Punkte` : 'Verloren') : plan.won ? 'Gewonnen' : 'Verteidigung gewinnt'}</p>
+          <p style={text(44, 700, C.navy)}>{plan.mine ? (plan.won ? `${ui.won} · ${plan.points.value} ${ui.points}` : ui.lost) : plan.won ? ui.won : ui.defence}</p>
         </Panel>
       ) : null}
       {scene === 'cta' ? (
         <div style={{ position: 'absolute', top: 560, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 34, opacity: fadeIn(now!.from) }}>
-          <Img src={staticFile('site/logo-mark.png')} style={{ width: 260, height: 260 }} />
+          <Logo size={260} />
           <p style={text(104)}>skatgo.com</p>
-          <div style={{ ...text(52, 900), background: C.go, borderRadius: 999, padding: '22px 60px' }}>{plan.kind === 'quiz' ? 'Jetzt mitspielen' : 'Neuer Deal heute'}</div>
+          <div style={{ ...text(52, 900), background: C.go, borderRadius: 999, padding: '22px 60px' }}>{plan.kind === 'quiz' ? ui.playNow : ui.newDeal}</div>
         </div>
       ) : null}
       <Caption slot={now} />

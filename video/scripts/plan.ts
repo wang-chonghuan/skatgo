@@ -1,18 +1,23 @@
-// What a day's two videos show and say (SKATGO-202), worked out from the deal of the day as stored: the quiz from
-// today's deal, the answer from yesterday's. Run through the multiplayer's tsx, which resolves the app's game code:
+// What a day's video shows and says (SKATGO-202), worked out from two stored deals of the day: yesterday's broken down
+// — how would you play it, a pause to think, why the bidding went so, the key tricks, what to take away — then today's
+// left as the challenge (the human: 「这个解读要有活力的女声……要有解读，比如这幅牌你会怎么打，暂停视频思考一下，1秒后，讲为啥
+// 这么叫牌，打牌时的几个关键点。让人看了有学到东西……然后再留今日挑战，请来skatgo.com玩，关注本号，明天看答案解析」).
+// The breakdown's words are the site's model's (multiplayer/src/llm.ts), written only from the facts worked out here.
+// Run through the multiplayer's tsx, which resolves the app's game code; the model's LLM_* from app/.env:
 //   cd multiplayer && node --import tsx ../video/scripts/plan.ts <today.json> <yesterday.json> <de|en> <out.json>
 // English keeps the site's German Skat words (Bube, Dame, Grand, forehand), as the site's English does.
 import { readFileSync, writeFileSync } from 'node:fs'
-import { type Card, type Contract, sortHand } from '../../app/src/lib/skat/cards'
+import { type Card, type Contract, POINTS, effectiveSuit, isTrump, pointsOf, sortHand, trickWinnerIndex } from '../../app/src/lib/skat/cards'
 import { collectTrick, deal, roleOf, type Game, type Role, type Seat } from '../../app/src/lib/skat/game'
-import type { Declaration } from '../../app/src/lib/skat/value'
+import { bidAdvice } from '../../app/src/lib/skat/ai'
+import { type Declaration, matadors } from '../../app/src/lib/skat/value'
 import type { DealSummary } from '../../app/src/lib/skat/tournament'
 import { applySeatMove } from '../../multiplayer/src/model'
 
 type Logged = { seat: Seat; move: Parameters<typeof applySeatMove>[2] }
 type Spec = { dealer: Seat; deck: Card[]; benchmark: { summary: DealSummary; log: Logged[] } }
-
 type Lang = 'de' | 'en'
+
 const SUIT: Record<Lang, Record<Card['suit'], string>> = {
   de: { C: 'Kreuz', S: 'Pik', H: 'Herz', D: 'Karo' },
   en: { C: 'Clubs', S: 'Spades', H: 'Hearts', D: 'Diamonds' },
@@ -32,21 +37,31 @@ const MONTH: Record<Lang, string[]> = {
 const COUNT: Record<Lang, string[]> = { de: ['keine', 'ein', 'zwei', 'drei', 'vier'], en: ['no', 'one', 'two', 'three', 'four'] }
 
 let L: Lang = 'de'
-const cardName = (c: Card) => (L === 'de' ? `${SUIT.de[c.suit]}-${RANK.de[c.rank]}` : `${RANK.en[c.rank]} of ${SUIT.en[c.suit]}`)
+const de = () => L === 'de'
+const cardName = (c: Card) => (de() ? `${SUIT.de[c.suit]}-${RANK.de[c.rank]}` : `${RANK.en[c.rank]} of ${SUIT.en[c.suit]}`)
 const dateName = (day: string) => {
   const d = Number(day.slice(8, 10))
   const m = MONTH[L][Number(day.slice(5, 7)) - 1]
-  return L === 'de' ? `${d}. ${m}` : `${m} ${d}`
+  return de() ? `${d}. ${m}` : `${m} ${d}`
 }
-function contractName(d: Declaration): string {
-  const c: Contract = d.contract
-  const base = c.kind === 'grand' ? 'Grand' : c.kind === 'null' ? 'Null' : L === 'de' ? `${SUIT.de[c.trump]}-Spiel` : SUIT.en[c.trump]
+function contractName(d: { contract: Contract; hand?: boolean; ouvert?: boolean }): string {
+  const c = d.contract
+  const base = c.kind === 'grand' ? 'Grand' : c.kind === 'null' ? 'Null' : de() ? `${SUIT.de[c.trump]}-Spiel` : SUIT.en[c.trump]
   return [base, d.hand ? 'Hand' : '', d.ouvert ? 'Ouvert' : ''].filter(Boolean).join(' ')
 }
 const role = (seat: Seat, dealer: Seat) => ROLE[L][roleOf(seat, dealer)]
 /** Who a seat is, said to the viewer: the player's seat is "du" / "you", the others by their place at the table. */
-const who = (seat: Seat, dealer: Seat) => (seat === 0 ? (L === 'de' ? 'du' : 'you') : role(seat, dealer))
+const who = (seat: Seat, dealer: Seat) => (seat === 0 ? (de() ? 'du' : 'you') : role(seat, dealer))
 const capital = (s: string) => s[0].toUpperCase() + s.slice(1)
+
+function handWords(hand: Card[]): string {
+  const jacks = hand.filter((c) => c.rank === 'J').length
+  const aces = hand.filter((c) => c.rank === 'A').length
+  const n = (k: number) => COUNT[L][k] ?? String(k)
+  return de()
+    ? `${capital(n(jacks))} ${jacks === 1 ? 'Bube' : 'Buben'}, ${n(aces)} ${aces === 1 ? 'Ass' : 'Asse'}.`
+    : `${capital(n(jacks))} ${jacks === 1 ? 'Bube' : 'Buben'}, ${n(aces)} ${aces === 1 ? 'Ace' : 'Aces'}.`
+}
 
 /** The deal replayed from its stored moves, finished tricks collected as they close. */
 function replay(spec: Spec): Game {
@@ -58,15 +73,7 @@ function replay(spec: Spec): Game {
   return g.phase === 'trickEnd' ? collectTrick(g) : g
 }
 
-function handWords(hand: Card[]): string {
-  const jacks = hand.filter((c) => c.rank === 'J').length
-  const aces = hand.filter((c) => c.rank === 'A').length
-  const n = (k: number) => COUNT[L][k] ?? String(k)
-  if (L === 'de') return `${capital(n(jacks))} ${jacks === 1 ? 'Bube' : 'Buben'}, ${n(aces)} ${aces === 1 ? 'Ass' : 'Asse'}.`
-  return `${capital(n(jacks))} ${jacks === 1 ? 'Bube' : 'Buben'}, ${n(aces)} ${aces === 1 ? 'Ace' : 'Aces'}.`
-}
-
-type Segment = { id: string; text: string; scene: string }
+type Segment = { id: string; text: string; scene: string; part: 'answer' | 'quiz'; style: 'excited' | 'joyful'; trick?: number; pause?: boolean }
 type Question = { key: 'pass' | 'bid' | 'game' | 'hand'; text: string }
 
 const QUESTION: Record<Lang, Record<Question['key'], string>> = {
@@ -75,12 +82,11 @@ const QUESTION: Record<Lang, Record<Question['key'], string>> = {
 }
 const ask = (key: Question['key']): Question => ({ key, text: QUESTION[L][key] })
 
-/** The question a quiz asks, chosen by what the AI did in the player's seat, so it is always the deal's real
- *  decision; the answer itself is never said. */
+/** The challenge's question, chosen by what the AI did in the player's seat, so it is the deal's real decision; its
+ *  answer is never said (SKATGO-195: nothing of a deal's AI before it is played). */
 function question(spec: Spec, day: string): Question {
   const s = spec.benchmark.summary
-  const bidding = spec.benchmark.log.filter((l) => l.seat === 0 && l.move.type === 'bid')
-  const competed = bidding.some((l) => (l.move as { value: string }).value !== 'pass')
+  const competed = spec.benchmark.log.some((l) => l.seat === 0 && l.move.type === 'bid' && (l.move as { value: string }).value !== 'pass')
   if (s.declarer === 0 && s.declaration) {
     if (s.declaration.hand) return ask('hand')
     if (s.declaration.contract.kind !== 'suit') return ask('game')
@@ -89,101 +95,211 @@ function question(spec: Spec, day: string): Question {
   return ask(competed ? 'bid' : 'pass')
 }
 
-function quiz(spec: Spec, day: string) {
-  const g = deal(spec.dealer, spec.deck)
-  const hand = sortHand(g.hands[0], null)
-  const q = question(spec, day)
-  const place = role(0, spec.dealer)
-  const de = L === 'de'
-  const segments: Segment[] = [
-    { id: 'intro', scene: 'intro', text: de ? `Deal des Tages vom ${dateName(day)}.` : `Deal of the day, ${dateName(day)}.` },
-    { id: 'hand', scene: 'hand', text: `${de ? `Du sitzt in ${place}.` : `You sit in ${place}.`} ${handWords(hand)}` },
-    { id: 'question', scene: 'question', text: q.text },
-    { id: 'cta', scene: 'cta', text: de ? 'Spiel den Deal heute selbst auf skatgo.com. Die Auflösung gibt es morgen.' : 'Play this deal yourself today on skatgo.com. The answer comes tomorrow.' },
-  ]
-  return { kind: 'quiz', lang: L, day, date: dateName(day), role: place, hand, question: q, segments }
+const discardOf = (spec: Spec): Card[] => ((spec.benchmark.log.find((l) => l.seat === 0 && l.move.type === 'discard')?.move as { cards?: Card[] })?.cards ?? [])
+
+/** Everything true about yesterday's deal the breakdown may use, from the viewer's seat: the model is given nothing else. */
+function facts(spec: Spec, g: Game) {
+  const s = spec.benchmark.summary
+  const start = deal(spec.dealer, spec.deck)
+  const decl = s.declaration
+  const declarer = s.declarer
+  const advice = bidAdvice(start.hands[0])
+  const declarerTwelve = declarer === null ? [] : [...start.hands[declarer], ...start.skat]
+  const mine = declarer === 0
+  const pickup = !!decl && !decl.hand
+  const discard = mine && pickup ? discardOf(spec) : []
+  let declarerSoFar = mine && pickup ? pointsOf(discard) : 0
+  const contract = decl?.contract ?? null
+  const side = (seat: Seat) => (seat === declarer ? 'declarer' : 'defence')
+  // Each card as a player at the table would say it: led, followed, trumped in (gestochen), smeared to a partner
+  // already winning (geschmiert), or thrown off (abgeworfen).
+  const tricks = g.tricks.map((t, i) => {
+    const points = pointsOf(t.cards.map((p) => p.card))
+    if (side(t.winner) === 'declarer') declarerSoFar += points
+    const plays = t.cards.map((p, j) => {
+      const name = `${who(p.seat, spec.dealer)} (${side(p.seat)}): ${cardName(p.card)}${contract && isTrump(p.card, contract) ? ' [trump]' : ''}, ${POINTS[p.card.rank]} Augen`
+      if (j === 0 || !contract) return `${name} — led`
+      const before = t.cards.slice(0, j)
+      const winning = before[trickWinnerIndex(before.map((b) => b.card), contract)]
+      const followed = effectiveSuit(p.card, contract) === effectiveSuit(t.cards[0].card, contract)
+      const takes = trickWinnerIndex([...before.map((b) => b.card), p.card], contract) === j
+      const act = followed
+        ? takes ? 'followed suit and took the lead' : 'followed suit'
+        : isTrump(p.card, contract) ? (takes ? 'trumped in (gestochen) and took the lead' : 'trumped in but was over-trumped')
+        : side(winning.seat) === side(p.seat) && POINTS[p.card.rank] >= 10 ? 'smeared (geschmiert) to a partner already winning the trick'
+        : 'could not follow and threw it off (abgeworfen)'
+      return `${name} — ${act}`
+    })
+    return { trick: i + 1, plays, winner: `${who(t.winner, spec.dealer)} (${side(t.winner)})`, points, declarerAugenAfter: declarerSoFar }
+  })
+  const hand0 = start.hands[0]
+  const viewerTrumps = contract ? hand0.filter((c) => isTrump(c, contract)).map(cardName) : []
+  return {
+    viewerSeat: who(0, spec.dealer),
+    viewerPosition: role(0, spec.dealer),
+    viewerHand: hand0.map(cardName),
+    viewerHandAugen: pointsOf(hand0),
+    viewerBuben: hand0.filter((c) => c.rank === 'J').map(cardName),
+    viewerTrumpsInThisGame: viewerTrumps,
+    viewerCouldBid: advice.limit > 0 && advice.contract ? `up to ${advice.limit}, playing ${contractName({ contract: advice.contract })}` : 'no: too weak to bid at all',
+    biddingMoves: spec.benchmark.log.filter((l) => l.move.type === 'bid').map((l) => `${who(l.seat, spec.dealer)}: ${(l.move as { value: string }).value}`),
+    finalBid: s.bid,
+    declarer: declarer === null ? null : who(declarer, spec.dealer),
+    contract: decl ? contractName(decl) : null,
+    hand: decl?.hand ?? false,
+    skat: mine && pickup ? start.skat.map(cardName) : 'not seen by the viewer',
+    discard: discard.map(cardName),
+    matadors: decl && decl.contract.kind !== 'null' ? matadors(declarerTwelve, decl.contract) : null,
+    gameValue: s.detail?.value ?? null,
+    won: s.won,
+    declarerPoints: s.detail?.declarerPoints ?? null,
+    defenderPoints: s.detail?.defenderPoints ?? null,
+    tricks,
+    augenToWin: 61,
+    trumpSuit: contract?.kind === 'suit' ? SUIT[L][contract.trump] : contract?.kind ?? null,
+  }
 }
 
-function answer(spec: Spec, day: string) {
+/** The site's model (multiplayer/src/llm.ts), here at medium effort: a teaching script must be right. */
+async function model(system: string, user: string): Promise<Record<string, unknown> | null> {
+  const res = await fetch(`${process.env.LLM_BASE_URL!.replace(/\/$/, '')}/chat/completions`, {
+    method: 'POST',
+    signal: AbortSignal.timeout(180_000),
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${process.env.LLM_API_KEY}` },
+    body: JSON.stringify({
+      model: process.env.LLM_MODEL || 'gpt-5.6-luna',
+      reasoning_effort: 'medium',
+      response_format: { type: 'json_object' },
+      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+    }),
+  }).catch(() => null)
+  if (!res?.ok) return null
+  try {
+    return JSON.parse((await res.json()).choices?.[0]?.message?.content ?? 'null')
+  } catch {
+    return null
+  }
+}
+
+const language = (lang: Lang) => (lang === 'de' ? 'German' : 'English')
+const WORDS = (lang: Lang) =>
+  lang === 'de'
+    ? 'Use the words a German Skat table uses: Buben, Augen, Trumpf, Stich, stechen, übernehmen, schmieren, abwerfen, bedienen, Hand.'
+    : 'Keep only these German nouns, as SkatGo does: Bube/Buben, Augen, Trumpf, Skat, Hand. Use English verbs: trump, take over, smear, discard, follow suit.'
+
+const WRITE = (lang: Lang) => `You are SkatGo's Skat coach, voicing a short vertical video that breaks down yesterday's "deal of the day".
+Write in ${language(lang)}: lively and warm like an upbeat TV host, plain words, short spoken sentences.
+Teach something real: the viewer should finish with an "aha".
+Use ONLY the facts in the user's JSON. Never invent a card, a number, a bid, a move or who played what; never mention rules engines or "limits".
+"${lang === 'de' ? 'du' : 'you'}" is the viewer's seat (the AI played it). Speak of the others by their place (${lang === 'de' ? 'Vorhand, Mittelhand, Hinterhand' : 'Forehand, Middlehand, Rearhand'}).
+${WORDS(lang)}
+Return JSON: {"bidding": string, "keys": [{"trick": number, "text": string}], "lesson": string}.
+- bidding: 1–2 sentences: why the viewer's seat bid or passed, using the hand's real features (its Buben, trump length, Augen), and what the declarer then played.
+- keys: the 2 or 3 tricks that decided the game, in play order. For each, 1–2 sentences: what happened (only cards in that trick, as the facts annotate them) and why it was smart or costly.
+  Say stechen / gestochen only for a play the facts mark "trumped in"; a higher card of the suit led is "übernehmen" / "took the lead".
+- lesson: one strategic insight this deal shows — why a play was smart or costly — that a player can reuse, in one sentence of at most 20 words. Not a basic rule of the game (never "you must follow suit"), not a list of terms.
+Never call it "the answer" or "the solution". Under 70 words in total.`
+
+const CHECK = (lang: Lang) => `You check a ${language(lang)} Skat video script against the facts it was written from.
+For every sentence: is each card, number, seat and move exactly as in the facts (who played which card, who won, the Augen)?
+stechen / gestochen is only for a play the facts mark "trumped in".
+Rewrite any sentence that is wrong, unsupported, vague or ungrammatical so that it is true to the facts and correct ${language(lang)}; keep the lively tone and the length.
+The lesson must be one strategic insight this deal shows, not a basic rule of the game, at most 20 words.${lang === 'de' ? ' Check every verb after "du" (du passt / du hast gepasst, du übernimmst, du spielst aus).' : ''} ${WORDS(lang)}
+Return the same JSON shape: {"bidding": string, "keys": [{"trick": number, "text": string}], "lesson": string}.`
+
+type Breakdown = { bidding: string; keys: { trick: number; text: string }[]; lesson: string }
+function usable(r: Record<string, unknown> | null, tricks: number): Breakdown | null {
+  const keys = Array.isArray(r?.keys) ? (r!.keys as { trick: unknown; text: unknown }[]) : []
+  const ok = typeof r?.bidding === 'string' && typeof r?.lesson === 'string' && keys.length >= 2 && keys.length <= 3 &&
+    keys.every((k) => Number.isInteger(k.trick) && (k.trick as number) >= 1 && (k.trick as number) <= tricks && typeof k.text === 'string')
+  return ok ? { bidding: r!.bidding as string, keys: keys.map((k) => ({ trick: k.trick as number, text: k.text as string })).sort((a, b) => a.trick - b.trick), lesson: r!.lesson as string } : null
+}
+
+/** The breakdown: written from the facts, then checked against them. */
+async function breakdown(f: ReturnType<typeof facts>): Promise<Breakdown> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const draft = usable(await model(WRITE(L), JSON.stringify(f)), f.tricks.length)
+    if (!draft) continue
+    const checked = usable(await model(CHECK(L), JSON.stringify({ facts: f, script: draft })), f.tricks.length)
+    if (checked) return checked
+  }
+  throw new Error('the model gave no usable breakdown')
+}
+
+async function yesterdayPart(spec: Spec, day: string) {
   const s = spec.benchmark.summary
   const g = replay(spec)
   const start = deal(spec.dealer, spec.deck)
   const decl = s.declaration
   const declarer = s.declarer
-  const hand = sortHand(start.hands[0], decl?.contract ?? null)
+  const f = facts(spec, g)
+  const b = await breakdown(f)
   const place = role(0, spec.dealer)
-  const de = L === 'de'
   const lines: Segment[] = [
-    { id: 'intro', scene: 'intro', text: de ? `Die Auflösung: Deal des Tages vom ${dateName(day)}.` : `The answer: deal of the day, ${dateName(day)}.` },
-    { id: 'hand', scene: 'hand', text: de ? `Du sitzt in ${place} mit diesem Blatt.` : `You sit in ${place} with this hand.` },
+    { id: 'intro', part: 'answer', scene: 'intro', style: 'excited', text: de() ? `Hey, Skat-Fans! Der Deal des Tages vom ${dateName(day)}.` : `Hey, Skat fans! The deal of the day from ${dateName(day)}.` },
+    {
+      id: 'hand', part: 'answer', scene: 'hand', style: 'joyful', pause: true,
+      text: de() ? `Du sitzt in ${place}. Wie würdest du dieses Blatt spielen? Halt das Video an und überleg kurz!` : `You sit in ${place}. How would you play this hand? Pause the video and think for a second!`,
+    },
+    { id: 'bidding', part: 'answer', scene: 'auction', style: 'joyful', text: b.bidding },
+    ...b.keys.map((k, i): Segment => ({ id: `key${i + 1}`, part: 'answer', scene: 'key', style: 'joyful', trick: k.trick, text: k.text })),
   ]
-  let discard: Card[] = []
-  if (declarer === 0 && decl) {
-    const pickup = !decl.hand
-    discard = pickup ? ((spec.benchmark.log.find((l) => l.seat === 0 && l.move.type === 'discard')?.move as { cards?: Card[] })?.cards ?? []) : []
-    const skat = `${cardName(start.skat[0])} ${de ? 'und' : 'and'} ${cardName(start.skat[1])}`
-    lines.push({ id: 'auction', scene: 'auction', text: de ? `Die KI reizt bis ${s.bid}${pickup ? ` und nimmt den Skat auf: ${skat}` : ' und spielt Hand'}.` : `The AI bids to ${s.bid}${pickup ? ` and picks up the Skat: ${skat}` : ' and plays Hand'}.` })
-    if (discard.length) {
-      const pair = `${cardName(discard[0])} ${de ? 'und' : 'and'} ${cardName(discard[1])}`
-      lines.push({ id: 'discard', scene: 'discard', text: de ? `Sie drückt ${pair} und sagt ${contractName(decl)} an.` : `It discards ${pair} and announces ${contractName(decl)}.` })
-    } else lines.push({ id: 'discard', scene: 'auction', text: de ? `Angesagt: ${contractName(decl)}.` : `Announced: ${contractName(decl)}.` })
-  } else if (declarer !== null && decl) {
-    lines.push({ id: 'auction', scene: 'auction', text: de ? `Die KI passt. ${role(declarer, spec.dealer)} spielt ${contractName(decl)} – du verteidigst.` : `The AI passes. ${role(declarer, spec.dealer)} plays ${contractName(decl)} – you defend.` })
-  }
-  const tricks = g.tricks.map((t) => ({ winner: t.winner, cards: t.cards }))
-  const first = tricks[0]?.cards[0]
-  if (first) {
-    const lead = capital(who(first.seat, spec.dealer))
-    lines.push({ id: 'play', scene: 'play', text: de ? `${lead} ${first.seat === 0 ? 'spielst' : 'spielt'} ${cardName(first.card)} aus – so läuft das Spiel.` : `${lead} ${first.seat === 0 ? 'lead' : 'leads'} the ${cardName(first.card)} – this is how it goes.` })
-  }
   const d = s.detail
   if (d && declarer !== null) {
-    const mine = declarer === 0
     const them = role(declarer, spec.dealer)
-    const result = de
-      ? mine
-        ? s.won ? `Gewonnen mit ${d.declarerPoints} Augen – ${d.value} Punkte.` : `Verloren mit ${d.declarerPoints} Augen.`
-        : s.won ? `${them} gewinnt mit ${d.declarerPoints} Augen.` : `${them} bleibt bei ${d.declarerPoints} Augen – die Verteidigung gewinnt mit ${d.defenderPoints}.`
-      : mine
-        ? s.won ? `Won with ${d.declarerPoints} card points – ${d.value} points.` : `Lost with ${d.declarerPoints} card points.`
-        : s.won ? `${them} wins with ${d.declarerPoints} card points.` : `${them} stops at ${d.declarerPoints} card points – the defence wins with ${d.defenderPoints}.`
-    lines.push({ id: 'result', scene: 'result', text: result })
+    const result = de()
+      ? declarer === 0
+        ? s.won ? `Am Ende: ${d.declarerPoints} Augen – gewonnen!` : `Am Ende: ${d.declarerPoints} Augen – knapp verloren.`
+        : s.won ? `Am Ende holt ${them} ${d.declarerPoints} Augen.` : `Am Ende bleibt ${them} bei ${d.declarerPoints} Augen – die Verteidigung gewinnt!`
+      : declarer === 0
+        ? s.won ? `In the end: ${d.declarerPoints} card points – won!` : `In the end: ${d.declarerPoints} card points – just short.`
+        : s.won ? `In the end ${them} takes ${d.declarerPoints} card points.` : `In the end ${them} stops at ${d.declarerPoints} card points – the defence wins!`
+    lines.push({ id: 'result', part: 'answer', scene: 'result', style: 'excited', text: result })
   }
-  lines.push({ id: 'cta', scene: 'cta', text: de ? 'Heute wartet ein neuer Deal – auf skatgo.com.' : 'A new deal is waiting today – on skatgo.com.' })
+  lines.push({ id: 'lesson', part: 'answer', scene: 'lesson', style: 'joyful', text: b.lesson })
   return {
-    kind: 'answer',
+    kind: 'answer' as const,
     lang: L,
     day,
     date: dateName(day),
     role: place,
-    hand,
-    skat: start.skat,
-    discard,
+    hand: sortHand(start.hands[0], decl?.contract ?? null),
+    discard: f.discard.length ? discardOf(spec) : [],
     declarer: declarer === null ? null : who(declarer, spec.dealer),
     mine: declarer === 0,
-    contract: decl ? contractName(decl) : null,
+    contract: decl ? contractName(decl as Declaration) : null,
     bid: s.bid,
     won: s.won,
     points: d ? { declarer: d.declarerPoints, defenders: d.defenderPoints, value: d.value } : null,
-    tricks: tricks.map((t) => ({ winner: t.winner, cards: t.cards.map((p) => ({ who: who(p.seat, spec.dealer), seat: p.seat, card: p.card })) })),
+    lesson: b.lesson,
+    tricks: g.tricks.map((t) => ({ winner: t.winner, cards: t.cards.map((p) => ({ who: capital(who(p.seat, spec.dealer)), seat: p.seat, card: p.card })) })),
     segments: lines,
   }
 }
 
-// One video a day (the human: 「合成一个比较好吧……你应该先播放昨天的打法。然后留一个问题」): yesterday's deal played
-// out first, then today's deal left as the question.
+function todayPart(spec: Spec, day: string) {
+  const g = deal(spec.dealer, spec.deck)
+  const hand = sortHand(g.hands[0], null)
+  const q = question(spec, day)
+  const place = role(0, spec.dealer)
+  const segments: Segment[] = [
+    { id: 'turn', part: 'quiz', scene: 'turn', style: 'excited', text: de() ? 'Und jetzt deine Challenge: der Deal von heute!' : "And now your challenge: today's deal!" },
+    { id: 'hand', part: 'quiz', scene: 'hand', style: 'joyful', text: `${de() ? `Du sitzt in ${place}.` : `You sit in ${place}.`} ${handWords(hand)}` },
+    { id: 'question', part: 'quiz', scene: 'question', style: 'joyful', text: q.text },
+    {
+      id: 'cta', part: 'quiz', scene: 'cta', style: 'excited',
+      text: de() ? 'Spiel ihn jetzt auf skatgo.com! Folg uns – morgen gibt es die Analyse.' : 'Play it now on skatgo.com! Follow us – the breakdown comes tomorrow.',
+    },
+  ]
+  return { kind: 'quiz' as const, lang: L, day, date: dateName(day), role: place, hand, question: q, segments }
+}
+
 const [todayFile, yesterdayFile, lang, out] = process.argv.slice(2)
 L = lang === 'en' ? 'en' : 'de'
 const read = (f: string) => JSON.parse(readFileSync(f, 'utf8')) as { day: string; spec: Spec }
 const today = read(todayFile)
 const yesterday = read(yesterdayFile)
-const q = quiz(today.spec, today.day)
-const a = answer(yesterday.spec, yesterday.day)
-const de = L === 'de'
-const segments = [
-  { id: 'answer-intro', part: 'answer', scene: 'intro', text: de ? `Deal des Tages: Erst die Auflösung vom ${a.date}.` : `Deal of the day: first, the answer for ${a.date}.` },
-  ...a.segments.filter((x) => x.scene !== 'intro' && x.scene !== 'cta').map((x) => ({ ...x, id: `answer-${x.id}`, part: 'answer' })),
-  { id: 'quiz-turn', part: 'quiz', scene: 'turn', text: de ? `Und jetzt du: der Deal vom ${q.date}.` : `Now it is your turn: the deal for ${q.date}.` },
-  ...q.segments.filter((x) => x.scene !== 'intro').map((x) => ({ ...x, id: `quiz-${x.id}`, part: 'quiz' })),
-]
+const a = await yesterdayPart(yesterday.spec, yesterday.day)
+const q = todayPart(today.spec, today.day)
+const segments = [...a.segments, ...q.segments].map((x) => ({ ...x, id: `${x.part}-${x.id}` }))
 writeFileSync(out, JSON.stringify({ lang: L, day: today.day, today: q, yesterday: a, segments }, null, 2))

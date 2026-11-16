@@ -1,32 +1,31 @@
 import { type CSSProperties, type ReactNode, useEffect, useState } from 'react'
-import { AbsoluteFill, Audio, Img, Sequence, continueRender, delayRender, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion'
+import { AbsoluteFill, Audio, Img, Sequence, continueRender, delayRender, interpolate, spring, staticFile, useCurrentFrame } from 'remotion'
 import { PlayingCard } from '~/components/skat/playing-card'
 import type { Card } from '~/lib/skat/cards'
 import { timeline, type Slot } from './timeline'
-import { FPS, THINK, TRICK, type Day, type Plan } from './types'
+import { FPS, THINK, type Day, type Plan } from './types'
 
-// SkatGo's daily videos (SKATGO-202): the site's felt, logo and cards, a voice, and the words it says under it.
-// The colours are the site's (app/src/theme/color.stylex.ts); the cards are the site's own `PlayingCard`.
+// SkatGo's daily video (SKATGO-202): yesterday's deal broken down, then today's as the challenge — the site's felt,
+// logo and cards, a lively voice, and the words it says under it. The colours are the site's
+// (app/src/theme/color.stylex.ts); the cards are the site's own `PlayingCard`.
 
-const C = { feltInner: '#085435', feltOuter: '#053320', navy: '#022657', go: '#00A336', gold: '#EDA010', white: '#FFFFFF', page: '#F2F4F7' }
+const C = { feltInner: '#085435', feltOuter: '#053320', navy: '#022657', go: '#00A336', stop: '#E52F1D', gold: '#EDA010', white: '#FFFFFF' }
 const FONT = 'Red Hat Display'
 
 /** What the video writes on screen, in its language (the spoken lines come from scripts/plan.ts). */
 const UI = {
-  de: { quiz: 'Deal des Tages', answer: 'Auflösung', quizTitle: 'Jetzt du!', answerTitle: 'So geht’s richtig', bidTo: 'Gereizt bis', plays: 'spielt', discarded: 'gedrückt', yourGame: 'Dein Spiel', won: 'Gewonnen', points: 'Punkte', lost: 'Verloren', defence: 'Verteidigung gewinnt', playNow: 'Jetzt mitspielen', newDeal: 'Neuer Deal heute' },
-  en: { quiz: 'Deal of the Day', answer: 'The answer', quizTitle: 'Your turn!', answerTitle: 'How it’s done', bidTo: 'Bid to', plays: 'plays', discarded: 'discarded', yourGame: 'Your game', won: 'Won', points: 'points', lost: 'Lost', defence: 'Defence wins', playNow: 'Play now', newDeal: 'New deal today' },
+  de: {
+    breakdown: 'Analyse', challenge: 'Challenge', dealTitle: 'Deal des Tages', turnTitle: 'Deine Challenge!', pause: 'Video anhalten & überlegen',
+    bidTo: 'Gereizt bis', plays: 'spielt', discarded: 'gedrückt', trick: 'Stich', augen: 'Augen', yourGame: 'Dein Spiel', won: 'Gewonnen', points: 'Punkte',
+    lost: 'Verloren', defence: 'Verteidigung gewinnt', lesson: 'Merke', playNow: 'Jetzt mitspielen', follow: 'Folg uns · morgen die Analyse',
+  },
+  en: {
+    breakdown: 'Breakdown', challenge: 'Challenge', dealTitle: 'Deal of the Day', turnTitle: 'Your challenge!', pause: 'Pause & think',
+    bidTo: 'Bid to', plays: 'plays', discarded: 'discarded', trick: 'Trick', augen: 'Augen', yourGame: 'Your game', won: 'Won', points: 'points',
+    lost: 'Lost', defence: 'Defence wins', lesson: 'Takeaway', playNow: 'Play now', follow: 'Follow us · breakdown tomorrow',
+  },
 }
-
-/** The logo on the white disc it turns on while a table loads (SKATGO-93's `loaderGlow`: white to two thirds, fading
- *  into the felt at the rim), so it stands out on the felt (the human: 「logo必须有个白色的渐变背景」). */
-function Logo({ size }: { size: number }) {
-  const disc = size * 1.5
-  return (
-    <div style={{ width: disc, height: disc, margin: -(disc - size) / 2, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `radial-gradient(circle closest-side, ${C.white} 0%, ${C.white} 66%, transparent 100%)` }}>
-      <Img src={staticFile('site/logo-mark.png')} style={{ width: size, height: size }} />
-    </div>
-  )
-}
+const AUGEN: Record<string, number> = { A: 11, '10': 10, K: 4, Q: 3, J: 2 }
 
 // The card faces' pictures resolve under Remotion's static base (remotion.config.ts).
 ;(globalThis as { __skatgoBase?: string }).__skatgoBase = staticFile('site/cards').replace(/\/cards$/, '')
@@ -45,7 +44,18 @@ function useFonts() {
 
 const text = (size: number, weight = 900, color = C.white): CSSProperties => ({ fontFamily: FONT, fontSize: size, fontWeight: weight, color, lineHeight: 1.15, margin: 0 })
 
-function Header({ plan }: { plan: Plan }) {
+/** The logo on the white disc it turns on while a table loads (SKATGO-93's `loaderGlow`: white to two thirds, fading
+ *  into the felt at the rim), so it stands out on the felt (the human: 「logo必须有个白色的渐变背景」). */
+function Logo({ size }: { size: number }) {
+  const disc = size * 1.5
+  return (
+    <div style={{ width: disc, height: disc, margin: -(disc - size) / 2, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `radial-gradient(circle closest-side, ${C.white} 0%, ${C.white} 66%, transparent 100%)` }}>
+      <Img src={staticFile('site/logo-mark.png')} style={{ width: size, height: size }} />
+    </div>
+  )
+}
+
+function Header({ label, date }: { label: string; date: string }) {
   return (
     <div style={{ position: 'absolute', top: 110, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 48 }}>
@@ -53,13 +63,13 @@ function Header({ plan }: { plan: Plan }) {
         <p style={text(84)}>SkatGo</p>
       </div>
       <div style={{ ...text(40, 700, C.navy), background: C.gold, borderRadius: 999, padding: '12px 34px' }}>
-        {plan.kind === 'quiz' ? UI[plan.lang].quiz : UI[plan.lang].answer} · {plan.date}
+        {label} · {date}
       </div>
     </div>
   )
 }
 
-/** A card at a given width, popping in from `at`. */
+/** Something popping in from `at`. */
 function Pop({ at, children, style }: { at: number; children: ReactNode; style?: CSSProperties }) {
   const frame = useCurrentFrame()
   const s = spring({ frame: frame - at, fps: FPS, config: { damping: 14 } })
@@ -110,12 +120,12 @@ function Caption({ slot }: { slot: Slot | undefined }) {
   let before = 0
   const lit = (frame - slot.from) / spoken
   return (
-    <div style={{ position: 'absolute', top: 1330, left: 70, right: 70, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 16px', background: 'rgba(0,0,0,0.45)', borderRadius: 28, padding: '26px 30px' }}>
+    <div style={{ position: 'absolute', top: 1330, left: 70, right: 70, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 14px', background: 'rgba(0,0,0,0.45)', borderRadius: 28, padding: '24px 28px' }}>
       {words.map((w, i) => {
         const at = before / total
         before += w.length + 1
         return (
-          <span key={i} style={{ ...text(56, 900, lit >= at ? C.white : 'rgba(255,255,255,0.4)') }}>
+          <span key={i} style={{ ...text(50, 900, lit >= at ? C.white : 'rgba(255,255,255,0.4)') }}>
             {w}
           </span>
         )
@@ -131,20 +141,43 @@ function Countdown({ from }: { from: number }) {
   return <p style={{ ...text(120, 900, C.go) }}>{left}</p>
 }
 
-function Tricks({ plan, from }: { plan: Plan; from: number }) {
-  const tricks = plan.tricks ?? []
+/** The pause after "how would you play it?": a pause sign while the viewer thinks. */
+function PauseSign({ from, label }: { from: number; label: string }) {
+  const frame = useCurrentFrame()
+  if (frame < from) return null
   return (
-    <div style={{ position: 'absolute', top: 360, left: 60, right: 60, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 40px' }}>
-      {tricks.map((t, i) => (
-        <Pop key={i} at={from + i * TRICK}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <p style={{ ...text(36, 700), width: 44, textAlign: 'right' }}>{i + 1}</p>
-            {t.cards.map((p, j) => (
-              <CardAt key={j} card={p.card} width={104} glow={p.seat === t.winner} />
-            ))}
-          </div>
-        </Pop>
-      ))}
+    <Pop at={from} style={{ position: 'absolute', top: 1020, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
+      <div style={{ width: 150, height: 150, borderRadius: 999, background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 22, boxShadow: '0 18px 40px rgba(0,0,0,0.35)' }}>
+        <div style={{ width: 24, height: 70, borderRadius: 6, background: C.navy }} />
+        <div style={{ width: 24, height: 70, borderRadius: 6, background: C.navy }} />
+      </div>
+      <p style={text(46)}>{label}</p>
+    </Pop>
+  )
+}
+
+/** One key trick, large: its three cards in play order, who played each, the winner ringed. */
+function KeyTrick({ plan, n, from, ui }: { plan: Plan; n: number; from: number; ui: (typeof UI)['de'] }) {
+  const t = plan.tricks?.[n - 1]
+  if (!t) return null
+  const points = t.cards.reduce((sum, p) => sum + (AUGEN[p.card.rank] ?? 0), 0)
+  return (
+    <div style={{ position: 'absolute', top: 430, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30 }}>
+      <Pop at={from}>
+        <div style={{ ...text(56, 900, C.navy), background: C.white, borderRadius: 999, padding: '14px 44px' }}>
+          {ui.trick} {n} · {points} {ui.augen}
+        </div>
+      </Pop>
+      <div style={{ display: 'flex', gap: 26 }}>
+        {t.cards.map((p, j) => (
+          <Pop key={j} at={from + 6 + j * 8}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+              <CardAt card={p.card} width={260} glow={p.seat === t.winner} />
+              <p style={text(40, 700)}>{p.who}</p>
+            </div>
+          </Pop>
+        ))}
+      </div>
     </div>
   )
 }
@@ -153,7 +186,7 @@ export function DailyVideo(day: Day) {
   useFonts()
   const frame = useCurrentFrame()
   const ui = UI[day.lang]
-  const { slots } = timeline(day.segments, day.yesterday.tricks?.length ?? 0)
+  const { slots } = timeline(day.segments)
   const now = [...slots].reverse().find((s) => frame >= s.from)
   // Yesterday's deal first, then today's: each part shows its own plan.
   const part = now?.part ?? 'answer'
@@ -164,29 +197,24 @@ export function DailyVideo(day: Day) {
   const past = (s: string) => (at(s) ? frame >= at(s)!.from : false)
   const fadeIn = (from: number) => interpolate(frame, [from, from + 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
   const hand = at('hand')
-  const showHand = hand && past('hand') && !['play', 'result', 'cta'].includes(scene)
+  const showHand = hand && past('hand') && ['hand', 'auction', 'question'].includes(scene)
   const q = at('question')
   return (
     <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 42%, ${C.feltInner} 0%, ${C.feltOuter} 100%)` }}>
       {slots.map((s) => (s.audio ? <Sequence key={s.id} from={s.from}><Audio src={staticFile(s.audio)} /></Sequence> : null))}
-      <Header plan={plan} />
+      <Header label={part === 'answer' ? ui.breakdown : ui.challenge} date={plan.date} />
       {scene === 'intro' || scene === 'turn' ? (
         <div style={{ position: 'absolute', top: 640, left: 0, right: 0, textAlign: 'center', opacity: fadeIn(now?.from ?? 0) }}>
-          <p style={text(plan.kind === 'quiz' ? 120 : 104)}>{plan.kind === 'quiz' ? ui.quizTitle : ui.answerTitle}</p>
+          <p style={text(116)}>{scene === 'intro' ? ui.dealTitle : ui.turnTitle}</p>
         </div>
       ) : null}
       {showHand ? <Hand hand={plan.hand} from={hand!.from} top={scene === 'hand' ? 520 : 440} /> : null}
-      {plan.kind === 'quiz' && q && past('question') && scene !== 'cta' ? (
-        <Panel top={1000} at={q.from}>
-          <p style={text(66, 900, C.navy)}>{plan.question?.text}</p>
-          <Countdown from={q.from + (q.frames ?? 0)} />
-        </Panel>
-      ) : null}
-      {plan.kind === 'answer' && (scene === 'auction' || scene === 'discard') && plan.contract ? (
-        <Panel top={1000} at={at('auction')!.from}>
+      {scene === 'hand' && now?.pause ? <PauseSign from={now.from + (now.frames ?? 0)} label={ui.pause} /> : null}
+      {part === 'answer' && scene === 'auction' && plan.contract ? (
+        <Panel top={1000} at={now!.from}>
           <p style={text(40, 700, C.navy)}>{plan.mine ? `${ui.bidTo} ${plan.bid}` : `${plan.declarer} ${ui.plays}`}</p>
           <p style={text(76, 900, C.navy)}>{plan.contract}</p>
-          {scene === 'discard' && plan.discard?.length ? (
+          {plan.discard?.length ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <p style={text(36, 700, C.navy)}>{ui.discarded}</p>
               {plan.discard.map((c, i) => <CardAt key={i} card={c} width={96} />)}
@@ -194,25 +222,38 @@ export function DailyVideo(day: Day) {
           ) : null}
         </Panel>
       ) : null}
-      {plan.kind === 'answer' && scene === 'play' ? <Tricks plan={plan} from={at('play')!.from} /> : null}
-      {plan.kind === 'answer' && scene === 'result' && plan.points ? (
-        <Panel top={600} at={at('result')!.from}>
+      {part === 'answer' && scene === 'key' && now?.trick ? <KeyTrick plan={plan} n={now.trick} from={now.from} ui={ui} /> : null}
+      {part === 'answer' && scene === 'result' && plan.points ? (
+        <Panel top={600} at={now!.from}>
           <p style={text(44, 700, C.navy)}>{plan.mine ? ui.yourGame : `${plan.declarer} · ${plan.contract}`}</p>
-          <p style={text(130, 900, plan.mine ? (plan.won ? C.go : '#E52F1D') : plan.won ? '#E52F1D' : C.go)}>
+          <p style={text(130, 900, plan.mine ? (plan.won ? C.go : C.stop) : plan.won ? C.stop : C.go)}>
             {plan.points.declarer} : {plan.points.defenders}
           </p>
           <p style={text(44, 700, C.navy)}>{plan.mine ? (plan.won ? `${ui.won} · ${plan.points.value} ${ui.points}` : ui.lost) : plan.won ? ui.won : ui.defence}</p>
         </Panel>
       ) : null}
+      {part === 'answer' && scene === 'lesson' && plan.lesson ? (
+        <Panel top={520} at={now!.from}>
+          <p style={{ ...text(44, 900, C.navy), background: C.gold, borderRadius: 999, padding: '8px 30px' }}>{ui.lesson}</p>
+          <p style={text(58, 900, C.navy)}>{plan.lesson}</p>
+        </Panel>
+      ) : null}
+      {part === 'quiz' && q && past('question') && scene !== 'cta' ? (
+        <Panel top={1000} at={q.from}>
+          <p style={text(66, 900, C.navy)}>{plan.question?.text}</p>
+          <Countdown from={q.from + (q.frames ?? 0)} />
+        </Panel>
+      ) : null}
       {scene === 'cta' ? (
-        <div style={{ position: 'absolute', top: 560, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 34, opacity: fadeIn(now!.from) }}>
+        <div style={{ position: 'absolute', top: 520, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 34, opacity: fadeIn(now!.from) }}>
           <Logo size={260} />
           <p style={text(104)}>skatgo.com</p>
-          <div style={{ ...text(52, 900), background: C.go, borderRadius: 999, padding: '22px 60px' }}>{plan.kind === 'quiz' ? ui.playNow : ui.newDeal}</div>
+          <div style={{ ...text(52, 900), background: C.go, borderRadius: 999, padding: '22px 60px' }}>{ui.playNow}</div>
+          <p style={text(44, 700)}>{ui.follow}</p>
         </div>
       ) : null}
-      {/* The question's panel says the line itself; the caption would sit under its countdown. */}
-      {scene === 'question' ? null : <Caption slot={now} />}
+      {/* The question's panel and the lesson's say the line themselves; a caption would sit on them. */}
+      {scene === 'question' || scene === 'lesson' ? null : <Caption slot={now} />}
     </AbsoluteFill>
   )
 }

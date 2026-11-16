@@ -296,12 +296,18 @@ ranking or traffic.
 
 **Daily videos** (SKATGO-202)
 
-A day's one 1080×1920 video, in German and in English (the site's German Skat words kept, as its English does; the same
-voice): the day before's deal of the day as the AI played it, then that day's as the question, its answer the next
-day (the human: 「合成一个比较好吧……你应该先播放昨天的打法。然后留一个问题」) — `video/out/<day>/skatgo-<day>-<de|en>.mp4`. It reads both deals from the production database read-only (Render CLI, `RENDER_API_KEY` from
-`~/.zshrc`) and speaks through the Azure Speech resource `skatgo-speech` (resource group `rg-skatgo`, West Europe, free
-tier F0, tags `DrataExclude` and `project=skatgo`), voice `de-DE-Seraphina:DragonHDLatestNeural`; its key lives in the
-git-ignored `.intentfold/tmp/video/speech.env` (`AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION`). Posting them is the human's.
+A day's one 1080×1920 video, in German and in English (the site's German Skat words kept, as its English does): the day
+before's deal of the day broken down — how would you play it, a pause, why the bidding went so, its two or three key
+tricks, one takeaway — then that day's as the challenge, its breakdown the next day (the human: 「这个解读要有活力的女声，
+广告推销腔……让人看了有学到东西……然后再留今日挑战，请来skatgo.com玩，关注本号，明天看答案解析」) —
+`video/out/<day>/skatgo-<day>-<de|en>.mp4`. It reads both deals from the production database read-only (Render CLI,
+`RENDER_API_KEY` from `~/.zshrc`); the breakdown is written and then checked against the deal's facts by the site's model
+(`LLM_*` from `app/.env`); it speaks through the Azure Speech resource `skatgo-speech` (resource group `rg-skatgo`, West
+Europe, free tier F0, tags `DrataExclude` and `project=skatgo`) in lively voices with a speaking style —
+`de-DE-Mia:MAI-Voice-2.1`, `en-US-Olivia:MAI-Voice-2.1` — each line heard back through Azure's speech-to-text and spoken
+again when words went missing; its key lives in the git-ignored `.intentfold/tmp/video/speech.env` (`AZURE_SPEECH_KEY`,
+`AZURE_SPEECH_REGION`). The model's words are checked, not guaranteed: watch a video before posting it. Posting them is
+the human's.
 
 ```bash
 npm --prefix video ci

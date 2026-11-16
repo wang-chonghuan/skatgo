@@ -19,7 +19,7 @@ export function Root() {
       defaultProps={EMPTY as unknown as Record<string, unknown>}
       calculateMetadata={({ props }) => {
         const day = props as unknown as Day
-        return { durationInFrames: Math.max(FPS, timeline(day.segments, day.yesterday.tricks?.length ?? 0).total) }
+        return { durationInFrames: Math.max(FPS, timeline(day.segments).total) }
       }}
     />
   )

@@ -1,7 +1,7 @@
 import type { Card } from '~/lib/skat/cards'
 
 /** One spoken line: its text, the scene it belongs to, its audio and length (filled in by scripts/make.mjs). */
-export type Segment = { id: string; text: string; scene: string; part?: 'answer' | 'quiz'; audio?: string; frames?: number }
+export type Segment = { id: string; text: string; scene: string; part?: 'answer' | 'quiz'; style?: string; trick?: number; pause?: boolean; audio?: string; frames?: number }
 
 export type Trick = { winner: number; cards: { who: string; seat: number; card: Card }[] }
 
@@ -24,6 +24,7 @@ export type Plan = {
   won?: boolean | null
   points?: { declarer: number; defenders: number; value: number } | null
   tricks?: Trick[]
+  lesson?: string
   segments: Segment[]
 }
 
@@ -35,5 +36,5 @@ export const FPS = 30
 export const THINK = 5 * FPS
 /** A breath between lines. */
 export const GAP = 8
-/** The answer's tricks need time to be seen, one after another. */
-export const TRICK = 24
+/** The pause after "how would you play it?" (the human: 「暂停视频思考一下，1秒后」). */
+export const PAUSE = FPS

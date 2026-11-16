@@ -16,7 +16,7 @@ import { typography } from '../../theme/type'
  * About SkatGo (SKATGO-134): what the game pages no longer explain, in one place — the front page's questions, how the
  * daily Skat is played, scored and ranked, and how a private table goes. The human: 「我现在特别讨厌游戏页面里那么多垃圾的
  * 文字……所有seo的都专门做seo页面」. Rendered on the server; its questions are the page's FAQPage too. Last, the sites SkatGo
- * recommends, each with its own picture, in a new tab (SKATGO-198).
+ * recommends, each with its own picture, in a new tab (SKATGO-198), and where SkatGo is featured (SKATGO-203).
  */
 export function AboutPage() {
   return (
@@ -75,10 +75,28 @@ export function AboutPage() {
             ))}
           </ul>
         </section>
+
+        {/* SKATGO-203, the human: 「about页加上featured on英国这个协会……home页不动」 — the British Skat Association's list of
+            Skat servers, SkatGo first. The association has no logo: its picture is the Union Jack. */}
+        <section data-testid="about-featured" aria-labelledby="about-featured-title" {...stylex.props(styles.section)}>
+          <h2 id="about-featured-title" {...stylex.props(typography.optionTitle, styles.title)}>{m.about_featured_title()}</h2>
+          <div {...stylex.props(styles.site)}>
+            <img src="/friends/bsa.webp" alt="" loading="lazy" {...stylex.props(styles.logo)} />
+            <p {...stylex.props(typography.body, styles.text)}>
+              <a href={FEATURED_ON} target="_blank" rel="noopener" {...stylex.props(typography.emphasis, styles.link)}>
+                The British Skat Association
+              </a>
+              {' — '}
+              {m.about_featured_bsa()}
+            </p>
+          </div>
+        </section>
       </article>
     </div>
   )
 }
+
+const FEATURED_ON = 'https://weddslist.com/skat/servers.html'
 
 const styles = stylex.create({
   root: { display: 'flex', flexDirection: 'column' },

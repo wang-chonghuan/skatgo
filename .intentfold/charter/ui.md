@@ -322,14 +322,6 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     colour card, under `bp.cards` the next free place. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
     The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,
     `homePicture`, `icon.tile`, `progressCurve` (SKATGO-136) and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
-  - last, at the page's foot, 20px above the footer and 72px (36px on a phone) under the cards at least, dropping to the
-    bottom of a taller screen (rework, 「应该沉底到home页面的底部位置」), one line (`body`, `slate`): "Featured on" / "Bekannt aus" (rework, the human: 「所有的这种外链引用都是featured on」), then the
-    British Skat Association's picture in About SkatGo's 24px square (`dims.badge`) and its bold `info` name, "The British
-    Skat Association" in both languages, opening its list of Skat servers (weddslist.com/skat/servers.html) in a new tab
-    (SKATGO-203, the human: 「把这个英国协会的放到我首页，底部，listed by」). The association has no logo; its picture is the
-    Union Jack. Beside it, wrapping under it on a phone, "Discussed on" / "Diskutiert auf" with 32karten's picture and bold `info` name,
-    opening SkatGo's thread in its forum (rework, 「那个32 karten的，应该也放个链接到首页底部，就是论坛链接」). The front page's only outside
-    links; the recommended sites stay on About SkatGo (SKATGO-198).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
   the short rules, the daily tournament, the Skat-Tricks' page and their article, the bidding practice, a private table's page, About SkatGo,
   the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
@@ -466,9 +458,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   FAQPage), each question bold over its answer; "Tägliches Skat", how the deal of the day and the six deals are played,
   scored and ranked; "Private Tische", how a table is opened and played. Each section ends in plain `info` links to
   where it is played or learnt. Last "Empfohlene Seiten" / "Recommended sites" (SKATGO-198, the human: 「不要写朋友」;
-  on this page, not in every page's footer; the front page carries only the British Skat Association's listing and the 32karten thread, SKATGO-203): 32karten, pagat.com, DSkV, The Checker Maven, each its own picture in a
+  on this page, not in every page's footer): 32karten, pagat.com, DSkV, The Checker Maven, each its own picture in a
   24px square (`dims.badge`, `radii.tag`, `hairline`, on `imageDim`), then its bold `info` name, opening in a new tab,
-  and one line on what it is.
+  and one line on what it is. Last "Featured on" / "Bekannt aus" (SKATGO-203, the human: 「about页加上featured on英国这个协会……home页不动」),
+  in the same shape: the British Skat Association, with the Union Jack as its picture (it has no logo), opening its list
+  of Skat servers, SkatGo first (weddslist.com/skat/servers.html). The front page carries no outside link.
 - **The record of play** (`profile-page.tsx`, SKATGO-128) is a sub-page on the grey page in the reading column,
   noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest who has not played a `go` "Anmelden und Profil
   ansehen" opening Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to

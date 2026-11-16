@@ -82,32 +82,9 @@ export function EntryPage() {
           </span>
         </Link>
       </div>
-      {/* SKATGO-203, the human: 「把这个英国协会的放到我首页，底部，listed by……链接就指向这个页面」 — the British Skat
-          Association's list of Skat servers, SkatGo first. The association has no logo: its picture is the Union
-          Jack. Beside it SkatGo's thread on 32karten's forum (the human: 「那个32 karten的，应该也放个链接到首页底部，就是论坛链接，
-          用个合适的词，精简的」). */}
-      <div data-testid="entry-listed" {...stylex.props(typography.body, styles.listedBy)}>
-        <span {...stylex.props(styles.listedItem)}>
-          <span>{m.home_listed_by()}</span>
-          <a href={LISTED_BY} target="_blank" rel="noopener" {...stylex.props(typography.emphasis, styles.listedLink)}>
-            <img src="/friends/bsa.webp" alt="" loading="lazy" {...stylex.props(styles.listedLogo)} />
-            {m.home_listed_bsa()}
-          </a>
-        </span>
-        <span {...stylex.props(styles.listedItem)}>
-          <span>{m.home_discussed_on()}</span>
-          <a href={DISCUSSED_ON} target="_blank" rel="noopener" {...stylex.props(typography.emphasis, styles.listedLink)}>
-            <img src="/friends/32karten.webp" alt="" loading="lazy" {...stylex.props(styles.listedLogo)} />
-            32karten
-          </a>
-        </span>
-      </div>
     </div>
   )
 }
-
-const LISTED_BY = 'https://weddslist.com/skat/servers.html'
-const DISCUSSED_ON = 'https://32karten.de/forum/viewtopic.php?f=16&t=13701'
 
 /** The hero's ways in as they are counted (SKATGO-29; renamed by SKATGO-74's tracking plan): the deal of the day, free play. */
 const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
@@ -256,16 +233,13 @@ const styles = stylex.create({
   root: {
     display: 'flex',
     flexDirection: 'column',
-    // The page fills the screen, so the "Featured on" line sinks to its foot (SKATGO-203).
-    flexGrow: 1,
     width: '100%',
     maxWidth: dims.landingColumn,
     marginInline: 'auto',
     boxSizing: 'border-box',
     // Close under the top bar (SKATGO-175, the human: 「top margin偏大」; 32px before).
     paddingTop: space.x16,
-    // The cards end 72px (36px on a phone) above the "Featured on" line, which sits close above the footer (SKATGO-203).
-    paddingBottom: space.x20,
+    paddingBottom: { default: space.x72, [bp.phone]: space.x36 },
     paddingInline: { default: space.x24, [bp.phone]: space.x12 },
   },
   // Colour is stated, not inherited: the theme colours headings itself.
@@ -361,7 +335,6 @@ const styles = stylex.create({
   listed: { height: { default: 0, [bp.cards]: 'auto' }, minHeight: { default: '100%', [bp.cards]: 0 } },
   more: {
     marginTop: { default: space.x32, [bp.phone]: space.x24 },
-    marginBottom: { default: space.x72, [bp.phone]: space.x36 },
     display: 'grid',
     // The ways in's columns, so each picture card stands under a colour card.
     gridTemplateColumns: { default: dims.homeWays, [bp.cards]: dims.homeWaysNarrow },
@@ -379,39 +352,4 @@ const styles = stylex.create({
   // The third picture card on PC: in the wide third column, half of it — as wide as one colour card (both a quarter of
   // the row less its gaps); under `bp.cards` it takes the next free place.
   third: { gridColumn: { default: dims.homeLongColumn, [bp.cards]: 'auto' }, width: { default: dims.half, [bp.cards]: 'auto' } },
-  // Under the cards, the line naming who lists SkatGo (SKATGO-203); its picture as About SkatGo's recommended sites'.
-  listedBy: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    columnGap: space.x24,
-    rowGap: space.x12,
-    margin: 0,
-    // At the page's foot: on a tall screen it drops to the bottom, above the footer (the human: 「应该沉底到home页面的底部位置」).
-    marginTop: 'auto',
-    color: color.slate,
-  },
-  listedItem: { display: 'flex', alignItems: 'center', gap: space.x8 },
-  listedLink: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: space.x8,
-    color: color.info,
-    textDecoration: { default: 'underline', ':hover': 'none' },
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.info,
-    outlineOffset: border.focusOffset,
-  },
-  listedLogo: {
-    flexShrink: 0,
-    width: dims.badge,
-    height: dims.badge,
-    borderRadius: radii.tag,
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: color.hairline,
-    backgroundColor: color.imageDim,
-    objectFit: 'contain',
-  },
 })

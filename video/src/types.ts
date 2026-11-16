@@ -33,7 +33,7 @@ export type Day = { lang: 'de' | 'en'; day: string; today: Plan; yesterday: Plan
 
 export const FPS = 30
 /** The pause after the quiz's question, to think (with a countdown). */
-export const THINK = 5 * FPS
+export const THINK = 3 * FPS
 /** A breath between lines. */
 export const GAP = 8
 /** The pause after "how would you play it?" (the human: 「暂停视频思考一下，1秒后」). */

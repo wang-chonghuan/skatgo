@@ -303,8 +303,9 @@ tricks, one takeaway — then that day's as the challenge, its breakdown the nex
 `video/out/<day>/skatgo-<day>-<de|en>.mp4`. It reads both deals from the production database read-only (Render CLI,
 `RENDER_API_KEY` from `~/.zshrc`); the breakdown is written and then checked against the deal's facts by the site's model
 (`LLM_*` from `app/.env`); it speaks through the Azure Speech resource `skatgo-speech` (resource group `rg-skatgo`, West
-Europe, free tier F0, tags `DrataExclude` and `project=skatgo`) in lively voices with a speaking style —
-`de-DE-Mia:MAI-Voice-2.1`, `en-US-Olivia:MAI-Voice-2.1` — each line heard back through Azure's speech-to-text and spoken
+Europe, free tier F0, tags `DrataExclude` and `project=skatgo`) in one lively, lower woman's voice for both
+languages — `de-DE-Harper:MAI-Voice-2.1` and `en-US-Harper:MAI-Voice-2.1`, style `educational` (the human chose it over
+Mia / Olivia, 「太疯狂了」) — each line heard back through Azure's speech-to-text and spoken
 again when words went missing; its key lives in the git-ignored `.intentfold/tmp/video/speech.env` (`AZURE_SPEECH_KEY`,
 `AZURE_SPEECH_REGION`). The model's words are checked, not guaranteed: watch a video before posting it. Posting them is
 the human's.

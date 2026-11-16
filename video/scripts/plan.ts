@@ -73,7 +73,7 @@ function replay(spec: Spec): Game {
   return g.phase === 'trickEnd' ? collectTrick(g) : g
 }
 
-type Segment = { id: string; text: string; scene: string; part: 'answer' | 'quiz'; style: 'excited' | 'joyful'; trick?: number; pause?: boolean }
+type Segment = { id: string; text: string; scene: string; part: 'answer' | 'quiz'; trick?: number; pause?: boolean }
 type Question = { key: 'pass' | 'bid' | 'game' | 'hand'; text: string }
 
 const QUESTION: Record<Lang, Record<Question['key'], string>> = {
@@ -136,6 +136,8 @@ function facts(spec: Spec, g: Game) {
   const viewerTrumps = contract ? hand0.filter((c) => isTrump(c, contract)).map(cardName) : []
   return {
     viewerSeat: who(0, spec.dealer),
+    viewerPartner: declarer === null || declarer === 0 ? null : who(([1, 2] as Seat[]).find((x) => x !== declarer)!, spec.dealer),
+    viewerOpponents: declarer === null ? [] : declarer === 0 ? ([1, 2] as Seat[]).map((x) => who(x, spec.dealer)) : [who(declarer, spec.dealer)],
     viewerPosition: role(0, spec.dealer),
     viewerHand: hand0.map(cardName),
     viewerHandAugen: pointsOf(hand0),
@@ -160,15 +162,15 @@ function facts(spec: Spec, g: Game) {
   }
 }
 
-/** The site's model (multiplayer/src/llm.ts), here at medium effort: a teaching script must be right. */
-async function model(system: string, user: string): Promise<Record<string, unknown> | null> {
+/** The site's model (multiplayer/src/llm.ts), here at medium effort or more: a teaching script must be right. */
+async function model(system: string, user: string, effort = 'medium'): Promise<Record<string, unknown> | null> {
   const res = await fetch(`${process.env.LLM_BASE_URL!.replace(/\/$/, '')}/chat/completions`, {
     method: 'POST',
     signal: AbortSignal.timeout(180_000),
     headers: { 'content-type': 'application/json', authorization: `Bearer ${process.env.LLM_API_KEY}` },
     body: JSON.stringify({
       model: process.env.LLM_MODEL || 'gpt-5.6-luna',
-      reasoning_effort: 'medium',
+      reasoning_effort: effort,
       response_format: { type: 'json_object' },
       messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
     }),
@@ -191,20 +193,20 @@ const WRITE = (lang: Lang) => `You are SkatGo's Skat coach, voicing a short vert
 Write in ${language(lang)}: lively and warm like an upbeat TV host, plain words, short spoken sentences.
 Teach something real: the viewer should finish with an "aha".
 Use ONLY the facts in the user's JSON. Never invent a card, a number, a bid, a move or who played what; never mention rules engines or "limits".
-"${lang === 'de' ? 'du' : 'you'}" is the viewer's seat (the AI played it). Speak of the others by their place (${lang === 'de' ? 'Vorhand, Mittelhand, Hinterhand' : 'Forehand, Middlehand, Rearhand'}).
+"${lang === 'de' ? 'du' : 'you'}" is the viewer's seat (the AI played it). When the viewer defends, the other defender is the viewer's partner and only the declarer is the opponent; the facts mark each seat's side. Speak of the others by their place (${lang === 'de' ? 'Vorhand, Mittelhand, Hinterhand' : 'Forehand, Middlehand, Rearhand'}).
 ${WORDS(lang)}
 Return JSON: {"bidding": string, "keys": [{"trick": number, "text": string}], "lesson": string}.
 - bidding: 1–2 sentences: why the viewer's seat bid or passed, using the hand's real features (its Buben, trump length, Augen), and what the declarer then played.
 - keys: the 2 or 3 tricks that decided the game, in play order. For each, 1–2 sentences: what happened (only cards in that trick, as the facts annotate them) and why it was smart or costly.
   Say stechen / gestochen only for a play the facts mark "trumped in"; a higher card of the suit led is "übernehmen" / "took the lead".
-- lesson: one strategic insight this deal shows — why a play was smart or costly — that a player can reuse, in one sentence of at most 20 words. Not a basic rule of the game (never "you must follow suit"), not a list of terms.
+- lesson: one sentence of at most 22 words: a general Skat strategy that is true in any game, then one example from this deal already said in bidding or keys. ${lang === 'de' ? 'Like: "Gewinnt dein Partner den Stich sicher, schmier ihm volle Augen – wie Vorhand hier die Karo-Zehn."' : 'Like: "When your partner is sure to win the trick, smear full Augen onto it – as Forehand did with the Ten of Diamonds."'} Not a basic rule of the game, not a recap.
 Never call it "the answer" or "the solution". Under 70 words in total.`
 
 const CHECK = (lang: Lang) => `You check a ${language(lang)} Skat video script against the facts it was written from.
 For every sentence: is each card, number, seat and move exactly as in the facts (who played which card, who won, the Augen)?
-stechen / gestochen is only for a play the facts mark "trumped in".
+stechen / gestochen is only for a play the facts mark "trumped in". Partner and opponents must be exactly viewerPartner and viewerOpponents. The lesson may only use facts already said in bidding and keys.
 Rewrite any sentence that is wrong, unsupported, vague or ungrammatical so that it is true to the facts and correct ${language(lang)}; keep the lively tone and the length.
-The lesson must be one strategic insight this deal shows, not a basic rule of the game, at most 20 words.${lang === 'de' ? ' Check every verb after "du" (du passt / du hast gepasst, du übernimmst, du spielst aus).' : ''} ${WORDS(lang)}
+The lesson must stay a general Skat strategy plus one example from this deal (at most 22 words) — keep that shape; only correct it.${lang === 'de' ? ' Check every verb after "du" (du passt / du hast gepasst, du übernimmst, du spielst aus).' : ''} ${WORDS(lang)}
 Return the same JSON shape: {"bidding": string, "keys": [{"trick": number, "text": string}], "lesson": string}.`
 
 type Breakdown = { bidding: string; keys: { trick: number; text: string }[]; lesson: string }
@@ -220,10 +222,35 @@ async function breakdown(f: ReturnType<typeof facts>): Promise<Breakdown> {
   for (let attempt = 0; attempt < 3; attempt++) {
     const draft = usable(await model(WRITE(L), JSON.stringify(f)), f.tricks.length)
     if (!draft) continue
-    const checked = usable(await model(CHECK(L), JSON.stringify({ facts: f, script: draft })), f.tricks.length)
+    const checked = usable(await model(CHECK(L), JSON.stringify({ facts: f, script: draft }), 'high'), f.tricks.length)
     if (checked) return checked
   }
   throw new Error('the model gave no usable breakdown')
+}
+
+/** The takeaway written by rule when the deal shows a lesson the engine can name for sure: a defender smearing full
+ *  Augen onto a trick their partner already wins. The model's own takeaway is kept otherwise. */
+function ruleLesson(spec: Spec, g: Game): string | null {
+  const s = spec.benchmark.summary
+  const contract = s.declaration?.contract
+  if (!contract || s.declarer === null) return null
+  for (const t of g.tricks) {
+    for (let j = 1; j < t.cards.length; j++) {
+      const p = t.cards[j]
+      const before = t.cards.slice(0, j)
+      const winning = before[trickWinnerIndex(before.map((b) => b.card), contract)]
+      const followed = effectiveSuit(p.card, contract) === effectiveSuit(t.cards[0].card, contract)
+      const smear = !followed && !isTrump(p.card, contract) && p.seat !== s.declarer && winning.seat !== s.declarer && POINTS[p.card.rank] >= 10 && t.winner === winning.seat
+      if (!smear) continue
+      const by = who(p.seat, spec.dealer)
+      if (de()) {
+        const article = p.card.rank === '10' || p.card.rank === 'Q' ? 'der' : 'dem'
+        return `Gewinnt dein Partner den Stich sicher, schmier ihm volle Augen – wie ${by === 'du' ? 'du' : by} hier mit ${article} ${cardName(p.card)}.`
+      }
+      return `When your partner is sure to win the trick, smear full Augen onto it – as ${by} did here with the ${cardName(p.card)}.`
+    }
+  }
+  return null
 }
 
 async function yesterdayPart(spec: Spec, day: string) {
@@ -234,15 +261,16 @@ async function yesterdayPart(spec: Spec, day: string) {
   const declarer = s.declarer
   const f = facts(spec, g)
   const b = await breakdown(f)
+  b.lesson = ruleLesson(spec, g) ?? b.lesson
   const place = role(0, spec.dealer)
   const lines: Segment[] = [
-    { id: 'intro', part: 'answer', scene: 'intro', style: 'excited', text: de() ? `Hey, Skat-Fans! Der Deal des Tages vom ${dateName(day)}.` : `Hey, Skat fans! The deal of the day from ${dateName(day)}.` },
+    { id: 'intro', part: 'answer', scene: 'intro', text: de() ? `Hey, Skat-Fans! Der Deal des Tages vom ${dateName(day)}.` : `Hey, Skat fans! The deal of the day from ${dateName(day)}.` },
     {
-      id: 'hand', part: 'answer', scene: 'hand', style: 'joyful', pause: true,
+      id: 'hand', part: 'answer', scene: 'hand', pause: true,
       text: de() ? `Du sitzt in ${place}. Wie würdest du dieses Blatt spielen? Halt das Video an und überleg kurz!` : `You sit in ${place}. How would you play this hand? Pause the video and think for a second!`,
     },
-    { id: 'bidding', part: 'answer', scene: 'auction', style: 'joyful', text: b.bidding },
-    ...b.keys.map((k, i): Segment => ({ id: `key${i + 1}`, part: 'answer', scene: 'key', style: 'joyful', trick: k.trick, text: k.text })),
+    { id: 'bidding', part: 'answer', scene: 'auction', text: b.bidding },
+    ...b.keys.map((k, i): Segment => ({ id: `key${i + 1}`, part: 'answer', scene: 'key', trick: k.trick, text: k.text })),
   ]
   const d = s.detail
   if (d && declarer !== null) {
@@ -254,9 +282,9 @@ async function yesterdayPart(spec: Spec, day: string) {
       : declarer === 0
         ? s.won ? `In the end: ${d.declarerPoints} card points – won!` : `In the end: ${d.declarerPoints} card points – just short.`
         : s.won ? `In the end ${them} takes ${d.declarerPoints} card points.` : `In the end ${them} stops at ${d.declarerPoints} card points – the defence wins!`
-    lines.push({ id: 'result', part: 'answer', scene: 'result', style: 'excited', text: result })
+    lines.push({ id: 'result', part: 'answer', scene: 'result', text: result })
   }
-  lines.push({ id: 'lesson', part: 'answer', scene: 'lesson', style: 'joyful', text: b.lesson })
+  lines.push({ id: 'lesson', part: 'answer', scene: 'lesson', text: b.lesson })
   return {
     kind: 'answer' as const,
     lang: L,
@@ -283,11 +311,11 @@ function todayPart(spec: Spec, day: string) {
   const q = question(spec, day)
   const place = role(0, spec.dealer)
   const segments: Segment[] = [
-    { id: 'turn', part: 'quiz', scene: 'turn', style: 'excited', text: de() ? 'Und jetzt deine Challenge: der Deal von heute!' : "And now your challenge: today's deal!" },
-    { id: 'hand', part: 'quiz', scene: 'hand', style: 'joyful', text: `${de() ? `Du sitzt in ${place}.` : `You sit in ${place}.`} ${handWords(hand)}` },
-    { id: 'question', part: 'quiz', scene: 'question', style: 'joyful', text: q.text },
+    { id: 'turn', part: 'quiz', scene: 'turn', text: de() ? 'Und jetzt deine Challenge: der Deal von heute!' : "And now your challenge: today's deal!" },
+    { id: 'hand', part: 'quiz', scene: 'hand', text: `${de() ? `Du sitzt in ${place}.` : `You sit in ${place}.`} ${handWords(hand)}` },
+    { id: 'question', part: 'quiz', scene: 'question', text: q.text },
     {
-      id: 'cta', part: 'quiz', scene: 'cta', style: 'excited',
+      id: 'cta', part: 'quiz', scene: 'cta',
       text: de() ? 'Spiel ihn jetzt auf skatgo.com! Folg uns – morgen gibt es die Analyse.' : 'Play it now on skatgo.com! Follow us – the breakdown comes tomorrow.',
     },
   ]

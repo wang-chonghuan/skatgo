@@ -11,8 +11,10 @@ import path from 'node:path'
 
 const VIDEO = path.resolve(import.meta.dirname, '..')
 const ROOT = path.resolve(VIDEO, '..')
-// Lively women's voices that take a speaking style (the human: 「要有活力的女声，广告推销腔」); Microsoft's MAI voices.
-const VOICE = { de: { name: 'de-DE-Mia:MAI-Voice-2.1', lang: 'de-DE' }, en: { name: 'en-US-Olivia:MAI-Voice-2.1', lang: 'en-US' } }
+// One woman's voice in both languages, lively but lower and calmer (the human: 「要有活力的女声」, then 「这两个女声有点太疯狂了，
+// 有没有稍微低沉一点……但是还要有活力」 — chose Harper): Microsoft's MAI Harper, its "educational" style throughout.
+const VOICE = { de: { name: 'de-DE-Harper:MAI-Voice-2.1', lang: 'de-DE' }, en: { name: 'en-US-Harper:MAI-Voice-2.1', lang: 'en-US' } }
+const STYLE = 'educational'
 const FPS = 30
 // 96 kbit/s constant-rate MP3, so a line's length is its size.
 const FORMAT = 'audio-24khz-96kbitrate-mono-mp3'
@@ -65,8 +67,7 @@ const AZURE = `${speech.AZURE_SPEECH_REGION}.tts.speech.microsoft.com`
 
 async function synthesize(text, file, lang, style) {
   const v = VOICE[lang]
-  // A breath first: the styled voices otherwise sometimes swallow a line's first words. A little brisker, as they
-  // linger with an excited style.
+  // A breath first: the styled voices otherwise sometimes swallow a line's first words. A little brisker.
   const ssml = `<speak version='1.0' xml:lang='${v.lang}' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts'><voice name='${v.name}'><mstts:express-as style='${style}'><break time='300ms'/><prosody rate='+10%'>${xml(text)}</prosody></mstts:express-as></voice></speak>`
   const r = await fetch(`https://${AZURE}/cognitiveservices/v1`, {
     method: 'POST',
@@ -136,7 +137,7 @@ async function make(lang) {
   const p = plan(lang)
   for (const s of p.segments) {
     const name = `${lang}-${s.id}.mp3`
-    s.frames = await speak(s.text, path.join(audioDir, name), lang, s.style ?? 'joyful')
+    s.frames = await speak(s.text, path.join(audioDir, name), lang, STYLE)
     s.audio = `out/${day}/${name}`
   }
   const props = path.join(out, `props-${lang}.json`)

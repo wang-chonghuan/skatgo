@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-203",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-203",
+  "branch": "SKATGO-203-bsa-listing",
+  "base": "b486d1b",
+  "ports": {
+    "web": 55203,
+    "multiplayer": 56203,
+    "database": 57203
+  }
+}

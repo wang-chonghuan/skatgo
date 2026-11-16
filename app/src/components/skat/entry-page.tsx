@@ -82,9 +82,21 @@ export function EntryPage() {
           </span>
         </Link>
       </div>
+      {/* SKATGO-203, the human: 「把这个英国协会的放到我首页，底部，listed by……链接就指向这个页面」 — the British Skat
+          Association's list of Skat servers, SkatGo first. The association has no logo: its picture is the acorn from its
+          own site's border. */}
+      <p data-testid="entry-listed" {...stylex.props(typography.body, styles.listedBy)}>
+        <span>{m.home_listed_by()}</span>
+        <a href={LISTED_BY} target="_blank" rel="noopener" {...stylex.props(typography.emphasis, styles.listedLink)}>
+          <img src="/friends/bsa.webp" alt="" loading="lazy" {...stylex.props(styles.listedLogo)} />
+          {m.home_listed_bsa()}
+        </a>
+      </p>
     </div>
   )
 }
+
+const LISTED_BY = 'https://weddslist.com/skat/servers.html'
 
 /** The hero's ways in as they are counted (SKATGO-29; renamed by SKATGO-74's tracking plan): the deal of the day, free play. */
 const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
@@ -352,4 +364,36 @@ const styles = stylex.create({
   // The third picture card on PC: in the wide third column, half of it — as wide as one colour card (both a quarter of
   // the row less its gaps); under `bp.cards` it takes the next free place.
   third: { gridColumn: { default: dims.homeLongColumn, [bp.cards]: 'auto' }, width: { default: dims.half, [bp.cards]: 'auto' } },
+  // Under the cards, the line naming who lists SkatGo (SKATGO-203); its picture as About SkatGo's recommended sites'.
+  listedBy: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: space.x8,
+    margin: 0,
+    marginTop: { default: space.x32, [bp.phone]: space.x24 },
+    color: color.slate,
+  },
+  listedLink: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: space.x8,
+    color: color.info,
+    textDecoration: { default: 'underline', ':hover': 'none' },
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
+    outlineOffset: border.focusOffset,
+  },
+  listedLogo: {
+    flexShrink: 0,
+    width: dims.badge,
+    height: dims.badge,
+    borderRadius: radii.tag,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.hairline,
+    backgroundColor: color.imageDim,
+    objectFit: 'contain',
+  },
 })

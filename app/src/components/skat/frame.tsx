@@ -77,8 +77,8 @@ export function LandingHeader() {
     <header data-testid="landing-header" {...stylex.props(styles.landingHeader)}>
       <Link to="/" aria-label={m.site_name()} {...stylex.props(typography.landingHeading, styles.landingBrand)}>
         <img src="/logo-96.png" alt="" {...stylex.props(styles.landingMark)} />
-        {/* The site's name beside the mark, without ".com" (SKATGO-105); under 430px only the mark, so sign-in fits beside the
-            flags and the gear (SKATGO-144, SKATGO-200). */}
+        {/* The site's name beside the mark, without ".com" (SKATGO-105), on a phone too (SKATGO-201, the human: 「logo必须显示」);
+            under 360px only the mark, so sign-in fits beside the flags and the gear (SKATGO-144). */}
         <span {...stylex.props(typography.landingBrand, styles.brandName)}>{m.site_name()}</span>
       </Link>
       <div {...stylex.props(styles.landingEnd)}>
@@ -93,12 +93,13 @@ export function LandingHeader() {
 /** Signed out: the one way in, opening Clerk's window over the page. Signed in: Clerk's avatar menu.
  *  In the public site's header it takes that header's button shape, the same as "Play" beside it. */
 export function Account({ shape = 'pill' }: { shape?: 'pill' | 'landing' }) {
+  // The header's sign-in reads the short word, German's "Login", so the name fits beside it on a phone (SKATGO-201).
   return (
     <>
       <Show when="signed-out">
         <SignInButton mode="modal">
           <Btn tone="quiet" size="md" shape={shape} testId="sign-in" onClick={() => track('sign_in_clicked', { at: 'header' })}>
-            {m.auth_sign_in()}
+            {shape === 'landing' ? m.auth_sign_in_header() : m.auth_sign_in()}
           </Btn>
         </SignInButton>
       </Show>
@@ -586,10 +587,10 @@ const styles = stylex.create({
     boxShadow: elev.landingHeader,
   },
   landingBrand: { display: 'flex', alignItems: 'center', gap: space.x10, color: color.navy, textDecoration: 'none', ...focus },
-  // The name hides below 430px, where German's "Anmelden" no longer fits beside it (SKATGO-200).
-  brandName: { display: { default: 'inline', [bp.markOnly]: 'none' } },
-  // The flags, the gear and sign-in or the avatar, each clear of the next (SKATGO-105).
-  landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x16, [bp.phone]: space.x12, [bp.narrowPhone]: space.x10 } },
+  brandName: { display: { default: 'inline', [bp.narrowPhone]: 'none' } },
+  // The flags, the gear and sign-in or the avatar, each clear of the next (SKATGO-105); closer on a phone, so the name fits
+  // at 360px (SKATGO-201).
+  landingEnd: { display: 'flex', alignItems: 'center', gap: { default: space.x16, [bp.phone]: space.x8 } },
 
   // The language switch (SKATGO-104): two bare flags, each in a button as tall as the header's controls.
   // The two flags as far apart as the header's other controls nearly are (SKATGO-144, the human: 「英国和德国国旗距离太近」).

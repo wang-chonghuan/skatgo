@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-201",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-201",
+  "branch": "SKATGO-201-header-name",
+  "base": "a3f1c1a",
+  "ports": { "web": 55201 }
+}

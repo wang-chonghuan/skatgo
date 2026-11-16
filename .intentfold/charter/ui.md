@@ -326,7 +326,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     British Skat Association's picture in About SkatGo's 24px square (`dims.badge`) and its bold `info` name, "The British
     Skat Association" in both languages, opening its list of Skat servers (weddslist.com/skat/servers.html) in a new tab
     (SKATGO-203, the human: 「把这个英国协会的放到我首页，底部，listed by」). The association has no logo; its picture is the
-    acorn from its own site. The one outside link on the front page; the recommended sites stay on About SkatGo (SKATGO-198).
+    Union Jack. The one outside link on the front page; the recommended sites stay on About SkatGo (SKATGO-198).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
   the short rules, the daily tournament, the Skat-Tricks' page and their article, the bidding practice, a private table's page, About SkatGo,
   the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an

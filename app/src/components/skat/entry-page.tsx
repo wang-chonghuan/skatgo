@@ -83,8 +83,8 @@ export function EntryPage() {
         </Link>
       </div>
       {/* SKATGO-203, the human: 「把这个英国协会的放到我首页，底部，listed by……链接就指向这个页面」 — the British Skat
-          Association's list of Skat servers, SkatGo first. The association has no logo: its picture is the acorn from its
-          own site's border. */}
+          Association's list of Skat servers, SkatGo first. The association has no logo: its picture is the Union
+          Jack. */}
       <p data-testid="entry-listed" {...stylex.props(typography.body, styles.listedBy)}>
         <span>{m.home_listed_by()}</span>
         <a href={LISTED_BY} target="_blank" rel="noopener" {...stylex.props(typography.emphasis, styles.listedLink)}>

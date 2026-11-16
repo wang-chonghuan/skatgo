@@ -1,0 +1,23 @@
+{
+  "name": "skatgo-video",
+  "private": true,
+  "type": "module",
+  "description": "SkatGo's daily short videos (SKATGO-202): the deal of the day as a quiz, yesterday's as its answer.",
+  "scripts": {
+    "make": "node scripts/make.mjs",
+    "studio": "remotion studio src/index.ts"
+  },
+  "dependencies": {
+    "@babel/core": "7.29.7",
+    "@babel/preset-react": "7.29.7",
+    "@babel/preset-typescript": "7.29.7",
+    "@remotion/cli": "4.0.539",
+    "@stylexjs/babel-plugin": "0.19.0",
+    "@stylexjs/stylex": "0.19.0",
+    "babel-loader": "10.1.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "remotion": "4.0.539",
+    "zustand": "5.0.15"
+  }
+}

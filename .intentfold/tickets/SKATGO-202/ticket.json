@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-202",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-202",
+  "branch": "SKATGO-202-daily-video",
+  "base": "b486d1b",
+  "ports": { "web": 55202 }
+}

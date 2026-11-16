@@ -2,7 +2,7 @@
   "ticket": "SKATGO-203",
   "mode": "autonomous",
   "stage": "handed-off",
-  "finish": "review",
+  "finish": "auto-deploy",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-203",
   "branch": "SKATGO-203-bsa-listing",
   "base": "b486d1b",

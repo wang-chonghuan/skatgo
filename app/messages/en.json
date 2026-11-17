@@ -979,5 +979,8 @@
   "league_err_full": "This round has its players.",
   "league_err_over": "This round is over.",
   "league_finding": "Finding players …",
-  "home_bidding": "Bidding"
+  "home_bidding": "Bidding",
+  "league_coins_label": "coins",
+  "league_points_label": "League points",
+  "league_progress": "From relegation to promotion"
 }

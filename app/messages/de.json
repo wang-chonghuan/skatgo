@@ -979,5 +979,8 @@
   "league_err_full": "Diese Runde hat ihre Spieler.",
   "league_err_over": "Diese Runde ist vorbei.",
   "league_finding": "Suche Mitspieler …",
-  "home_bidding": "Reizen"
+  "home_bidding": "Reizen",
+  "league_coins_label": "Münzen",
+  "league_points_label": "Ligapunkte",
+  "league_progress": "Vom Abstieg bis zum Aufstieg"
 }

@@ -535,12 +535,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   "@Name" hint, "Kommentieren" `go`), or for a guest the invitation with the `go` sign-in. Dates are the day in
   UTC, the same on the server and in the browser.
 - **The League** (`league-page.tsx`, `league.tsx`, `/league`, SKATGO-204): a sub-page on the grey page in the reading column,
-  noindex: its H1 "Liga", then white cards — for an account, its League ("Gold-Liga", `optionTitle`) with a circled question
-  mark (`info`) opening how the League works in a `Modal` (a round and its points, moving up and down, the coins); "Ligapunkte
-  +5" (`appBtnStrong`) and, in slate, how far to promotion and to relegation — each only where there is one, none up from
-  Legend and none down from Bronze; its coins (`appBtnStrong`) with "+100 heute" in slate once today's check-in counted; then
-  the one `go`, "Spielen · 15 Münzen" — "Suche Mitspieler …" on it while it waits, disabled with one slate line when the coins
-  are too few ("Zu wenig Münzen – morgen gibt es 100 dazu.") — or "Zurück an deinen Tisch" while a round runs. A guest's card
+  noindex: its H1 "Liga", then for an account its League as the front page's League tile is (the human chose it from two:
+  「我选A」) — `tileNavy`, `radii.tile`, `elev.tileNavy`, white words: lucide's `Trophy` at `icon.tile` and "Gold-Liga"
+  (`homeTileTitle`), a circled question mark opening how the League works in a `Modal` (a round and its points, moving up and
+  down, the coins); then two large numbers (`homeCardTitle`), the coins first with lucide's `Coins` (the human: 「没显示该玩家
+  的总金币数」), "Münzen" and "+100 heute" under it, and the League points, "Ligapunkte" and how far to promotion and to
+  relegation under them (`appText`, `onColorSoft`) — each only where there is one, none up from Legend and none down from
+  Bronze; the `ProgressBar` from the relegation line to the promotion line (none in Legend); then the one `go`, "Spielen · 15
+  Münzen" — "Suche Mitspieler …" on it while it waits, disabled with one line when the coins are too few ("Zu wenig Münzen –
+  morgen gibt es 100 dazu.") — or "Zurück an deinen Tisch" while a round runs. White cards follow. A guest's card
   is one line and the `go` "Anmelden". Under it "Ligen": the six, Legend first, each with its fee at the right
   (`appBtnStrong`), over `hairline` rules, the player's own on `goodSoft` with the "You" tag; then, once anyone is in Legend,
   "Rangliste der Legenden" as the XP board's rows — rank, name, points — the player's own row marked. A round's table (`/league/play`) is a full-screen table as a private one,

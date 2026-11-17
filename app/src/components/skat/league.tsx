@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { CircleHelp } from 'lucide-react'
+import { CircleHelp, Coins, Trophy } from 'lucide-react'
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { checkInOnce } from '~/lib/checkin'
@@ -11,8 +11,10 @@ import { roomGame, roomSeat } from '~/lib/skat/room-view'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale, localizeHref } from '~/paraglide/runtime'
+import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
+import { elev } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
@@ -20,8 +22,9 @@ import { Who, signed } from './daily-comparison'
 import { GameTable } from './game-table'
 import { Tiers, leagueName } from './league-tiers'
 import { Shell, seatNames, useSeat } from './table-room'
-import { Btn, Modal, Panel, Pill, linkLook } from './ui'
+import { Btn, Modal, Panel, Pill, ProgressBar, linkLook } from './ui'
 import type { TableState } from '~/lib/room-client'
+import type { LeagueMe } from '~/lib/skat/league'
 
 // The League in the browser (SKATGO-204): the League page's own part — the player's tier, points and coins with the one
 // way to play, the tiers, the Legend board — and the round's table. A round is asked for on the League page, which waits
@@ -100,39 +103,66 @@ export function LeagueHome() {
           </section>
         </Panel>
       ) : me ? (
-        <Panel>
-          <section data-testid="league-me" data-tier={me.tier} data-points={me.points} data-coins={me.coins} data-today={String(me.today)} {...stylex.props(styles.card)}>
-            <div {...stylex.props(styles.head)}>
-              <h2 {...stylex.props(typography.optionTitle, styles.ink)}>{leagueName(me.tier)}</h2>
-              {helpButton}
-            </div>
-            {/* How far to move up and down, where there is a move: none up from Legend, none down from Bronze. */}
-            <p {...stylex.props(typography.appText, styles.ink)}>
-              <span data-testid="league-points" {...stylex.props(typography.appBtnStrong)}>{m.league_points({ points: signed(me.points) })}</span>
-              {me.tier < LEGEND ? <span {...stylex.props(styles.slate)}>{' · '}{m.league_to_up({ n: PROMOTE_AT - me.points })}</span> : null}
-              {me.tier > 0 ? <span {...stylex.props(styles.slate)}>{' · '}{m.league_to_down({ n: me.points - RELEGATE_AT })}</span> : null}
-            </p>
-            <p {...stylex.props(typography.appText, styles.ink)}>
-              <span data-testid="league-coins" {...stylex.props(typography.appBtnStrong)}>{m.league_coins({ coins: me.coins })}</span>
-              {me.today ? <span {...stylex.props(styles.slate)}>{' · '}{m.league_today({ n: CHECKIN_COINS })}</span> : null}
-            </p>
-            <div {...stylex.props(styles.row)}>
-              {me.table ? (
-                <Link to="/league/play" data-testid="league-back" {...linkLook('go', 'lg')}>{m.league_back()}</Link>
-              ) : (
-                // While players are found, the button says so (up to five seconds).
-                <Btn testId="league-play" size="lg" disabled={busy || me.coins < fee} onClick={() => void play()}>{busy ? m.league_finding() : m.league_play({ fee })}</Btn>
-              )}
-            </div>
-            {!busy && !me.table && me.coins < fee ? <p data-testid="league-poor" {...stylex.props(typography.appText, styles.slate)}>{m.league_poor()}</p> : null}
-            {error ? <p role="alert" data-testid="league-error" {...stylex.props(typography.appText, styles.bad)}>{error}</p> : null}
-          </section>
-        </Panel>
+        <MeCard me={me} fee={fee} busy={busy} error={error} onHelp={() => setHow(true)} onPlay={() => void play()} />
       ) : null}
       <Tiers mine={me ? me.tier : null} />
       {/* The Legend board once anyone is on it. */}
       {state?.board.rows.length ? <Board state={state} /> : null}
       {how ? <LeagueHow onClose={() => setHow(false)} /> : null}
+    </div>
+  )
+}
+
+/** The player's own League (SKATGO-204) as the front page's League tile is, navy with white words (the human chose this
+ *  look, 「我选A」): the League with its cup, then the coins and the League points large — the coins first, the human: 「没显示
+ *  该玩家的总金币数」 — how far to promotion and to relegation, the bar between the two lines, and the one way to play. */
+function MeCard({ me, fee, busy, error, onHelp, onPlay }: { me: LeagueMe; fee: number; busy: boolean; error: string | null; onHelp: () => void; onPlay: () => void }) {
+  // From the relegation line to the promotion line; Legend has no promotion, so no bar.
+  const progress = me.tier < LEGEND ? (me.points - RELEGATE_AT) / (PROMOTE_AT - RELEGATE_AT) : null
+  // How far to move up and down, where there is a move: none up from Legend, none down from Bronze.
+  const moves = [
+    me.tier < LEGEND ? m.league_to_up({ n: PROMOTE_AT - me.points }) : null,
+    me.tier > 0 ? m.league_to_down({ n: me.points - RELEGATE_AT }) : null,
+  ].filter(Boolean).join(' · ')
+  return (
+    <div {...stylex.props(styles.hero)}>
+      <section data-testid="league-me" data-tier={me.tier} data-points={me.points} data-coins={me.coins} data-today={String(me.today)} {...stylex.props(styles.card)}>
+        <div {...stylex.props(styles.head)}>
+          <span {...stylex.props(styles.titleRow)}>
+            <Trophy aria-hidden="true" size={icon.tile} strokeWidth={icon.outline} {...stylex.props(styles.onColor)} />
+            <h2 {...stylex.props(typography.homeTileTitle, styles.onColor)}>{leagueName(me.tier)}</h2>
+          </span>
+          <button type="button" data-testid="league-how" aria-label={m.league_how()} title={m.league_how()} onClick={onHelp} {...stylex.props(styles.help, styles.onColor)}>
+            <CircleHelp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+          </button>
+        </div>
+        <div {...stylex.props(styles.stats)}>
+          <div data-testid="league-coins" {...stylex.props(styles.stat)}>
+            <span {...stylex.props(styles.statValue)}>
+              <Coins aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.onColor)} />
+              <span {...stylex.props(typography.homeCardTitle, styles.onColor)}>{me.coins}</span>
+            </span>
+            <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_coins_label()}</span>
+            {me.today ? <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_today({ n: CHECKIN_COINS })}</span> : null}
+          </div>
+          <div data-testid="league-points" {...stylex.props(styles.stat)}>
+            <span {...stylex.props(typography.homeCardTitle, styles.onColor)}>{signed(me.points)}</span>
+            <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_points_label()}</span>
+            {moves ? <span {...stylex.props(typography.appText, styles.onColorSoft)}>{moves}</span> : null}
+          </div>
+        </div>
+        {progress !== null ? <ProgressBar value={progress} label={m.league_progress()} /> : null}
+        <div {...stylex.props(styles.row)}>
+          {me.table ? (
+            <Link to="/league/play" data-testid="league-back" {...linkLook('go', 'lg')}>{m.league_back()}</Link>
+          ) : (
+            // While players are found, the button says so (up to five seconds).
+            <Btn testId="league-play" size="lg" disabled={busy || me.coins < fee} onClick={onPlay}>{busy ? m.league_finding() : m.league_play({ fee })}</Btn>
+          )}
+        </div>
+        {!busy && !me.table && me.coins < fee ? <p data-testid="league-poor" {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_poor()}</p> : null}
+        {error ? <p role="alert" data-testid="league-error" {...stylex.props(typography.appText, styles.onColor)}>{error}</p> : null}
+      </section>
     </div>
   )
 }
@@ -366,4 +396,18 @@ const styles = stylex.create({
   tag: { marginInlineStart: space.x6 },
   number: { flexShrink: 0, textAlign: 'end', fontVariantNumeric: 'tabular-nums' },
   play: { display: 'flex', flexDirection: 'column', flexGrow: 1 },
+  // The player's League as the front page's League tile is: its navy, its corners and shadow, white words.
+  hero: {
+    boxSizing: 'border-box',
+    padding: { default: space.x24, [bp.phone]: space.x16 },
+    borderRadius: radii.tile,
+    backgroundColor: color.tileNavy,
+    boxShadow: elev.tileNavy,
+  },
+  titleRow: { display: 'flex', alignItems: 'center', gap: space.x10, minWidth: 0 },
+  stats: { display: 'flex', flexWrap: 'wrap', gap: { default: space.x32, [bp.phone]: space.x24 } },
+  stat: { display: 'flex', flexDirection: 'column', gap: space.x2 },
+  statValue: { display: 'flex', alignItems: 'center', gap: space.x6 },
+  onColor: { margin: 0, color: color.onColor },
+  onColorSoft: { margin: 0, color: color.onColorSoft },
 })

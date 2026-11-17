@@ -982,5 +982,6 @@
   "home_bidding": "Bidding",
   "league_coins_label": "coins",
   "league_points_label": "League points",
-  "league_progress": "From relegation to promotion"
+  "league_progress": "From relegation to promotion",
+  "league_finding_in": "Finding players … {s}"
 }

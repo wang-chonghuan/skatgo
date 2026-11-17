@@ -982,5 +982,6 @@
   "home_bidding": "Reizen",
   "league_coins_label": "Münzen",
   "league_points_label": "Ligapunkte",
-  "league_progress": "Vom Abstieg bis zum Aufstieg"
+  "league_progress": "Vom Abstieg bis zum Aufstieg",
+  "league_finding_in": "Suche Mitspieler … {s}"
 }

@@ -542,7 +542,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   的总金币数」), "Münzen" and "+100 heute" under it, and the League points, "Ligapunkte" and how far to promotion and to
   relegation under them (`appText`, `onColorSoft`) — each only where there is one, none up from Legend and none down from
   Bronze; the `ProgressBar` from the relegation line to the promotion line (none in Legend); then the one `go`, "Spielen · 15
-  Münzen" — "Suche Mitspieler …" on it while it waits, disabled with one line when the coins are too few ("Zu wenig Münzen –
+  Münzen" — "Suche Mitspieler … 5" on it while it waits, counting the five seconds down (the human: 「等待时要有个倒计时」), the number gone once they are up, disabled with one line when the coins are too few ("Zu wenig Münzen –
   morgen gibt es 100 dazu.") — or "Zurück an deinen Tisch" while a round runs. White cards follow. A guest's card
   is one line and the `go` "Anmelden". Under it "Ligen": the six, Legend first, each with its fee at the right
   (`appBtnStrong`), over `hairline` rules, the player's own on `goodSoft` with the "You" tag; then, once anyone is in Legend,

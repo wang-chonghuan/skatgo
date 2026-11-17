@@ -6,7 +6,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { checkInOnce } from '~/lib/checkin'
 import { type LeagueError, type LeagueState, PASSING_LEAGUE, enterLeague, leagueReview, leagueState, playLeague } from '~/lib/league-api'
-import { CHECKIN_COINS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, type LeagueResult } from '~/lib/skat/league'
+import { CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, type LeagueResult } from '~/lib/skat/league'
 import { roomGame, roomSeat } from '~/lib/skat/room-view'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
@@ -52,7 +52,8 @@ export function LeagueHome() {
   const account = useAccount()
   const navigate = useNavigate()
   const [state, setState] = useState<LeagueState | null>(null)
-  const [busy, setBusy] = useState(false)
+  /** When the wait for a round began; null while not waiting. */
+  const [busy, setBusy] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [how, setHow] = useState(false)
   useEffect(() => {
@@ -66,11 +67,11 @@ export function LeagueHome() {
   }, [account])
 
   async function play() {
-    setBusy(true)
+    setBusy(Date.now())
     setError(null)
     const r = await playLeague()
     if (typeof r === 'string') {
-      setBusy(false)
+      setBusy(null)
       setError(errorText(r))
       // The coins or the table may have changed meanwhile: what the card says is read again.
       void leagueState().then((s) => { if (typeof s !== 'string') setState(s) })
@@ -113,10 +114,22 @@ export function LeagueHome() {
   )
 }
 
+/** While players are found (the human: 「等待时要有个倒计时」): the seconds left of the League's wait, counting down from
+ *  five; once they are up, the table is being laid and the line keeps no number. */
+function Finding({ since }: { since: number }) {
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 250)
+    return () => clearInterval(t)
+  }, [])
+  const left = Math.ceil((since + MATCH_WAIT_MS - now) / 1000)
+  return <span data-testid="league-countdown" data-left={Math.max(0, left)}>{left > 0 ? m.league_finding_in({ s: `${left}` }) : m.league_finding()}</span>
+}
+
 /** The player's own League (SKATGO-204) as the front page's League tile is, navy with white words (the human chose this
  *  look, 「我选A」): the League with its cup, then the coins and the League points large — the coins first, the human: 「没显示
  *  该玩家的总金币数」 — how far to promotion and to relegation, the bar between the two lines, and the one way to play. */
-function MeCard({ me, fee, busy, error, onHelp, onPlay }: { me: LeagueMe; fee: number; busy: boolean; error: string | null; onHelp: () => void; onPlay: () => void }) {
+function MeCard({ me, fee, busy, error, onHelp, onPlay }: { me: LeagueMe; fee: number; busy: number | null; error: string | null; onHelp: () => void; onPlay: () => void }) {
   // From the relegation line to the promotion line; Legend has no promotion, so no bar.
   const progress = me.tier < LEGEND ? (me.points - RELEGATE_AT) / (PROMOTE_AT - RELEGATE_AT) : null
   // How far to move up and down, where there is a move: none up from Legend, none down from Bronze.
@@ -157,10 +170,10 @@ function MeCard({ me, fee, busy, error, onHelp, onPlay }: { me: LeagueMe; fee: n
             <Link to="/league/play" data-testid="league-back" {...linkLook('go', 'lg')}>{m.league_back()}</Link>
           ) : (
             // While players are found, the button says so (up to five seconds).
-            <Btn testId="league-play" size="lg" disabled={busy || me.coins < fee} onClick={onPlay}>{busy ? m.league_finding() : m.league_play({ fee })}</Btn>
+            <Btn testId="league-play" size="lg" disabled={busy !== null || me.coins < fee} onClick={onPlay}>{busy !== null ? <Finding since={busy} /> : m.league_play({ fee })}</Btn>
           )}
         </div>
-        {!busy && !me.table && me.coins < fee ? <p data-testid="league-poor" {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_poor()}</p> : null}
+        {busy === null && !me.table && me.coins < fee ? <p data-testid="league-poor" {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_poor()}</p> : null}
         {error ? <p role="alert" data-testid="league-error" {...stylex.props(typography.appText, styles.onColor)}>{error}</p> : null}
       </section>
     </div>
@@ -214,7 +227,7 @@ export function LeagueTable() {
   const account = useAccount()
   const navigate = useNavigate()
   const [result, setResult] = useState(false)
-  const [again, setAgain] = useState<{ busy: boolean; error: string | null }>({ busy: false, error: null })
+  const [again, setAgain] = useState<{ busy: number | null; error: string | null }>({ busy: null, error: null })
   const seat = useSeat<LeagueError>({
     enter: enterLeague,
     passing: PASSING_LEAGUE,
@@ -229,10 +242,10 @@ export function LeagueTable() {
 
   /** Another round in the same tier, from the round's result. */
   async function playAgain() {
-    setAgain({ busy: true, error: null })
+    setAgain({ busy: Date.now(), error: null })
     const r = await playLeague()
-    if (typeof r === 'string') return setAgain({ busy: false, error: errorText(r) })
-    setAgain({ busy: false, error: null })
+    if (typeof r === 'string') return setAgain({ busy: null, error: errorText(r) })
+    setAgain({ busy: null, error: null })
     setResult(false)
     await seat.reseat()
   }
@@ -299,7 +312,7 @@ function LeaguePlaying({ state, busy, send, collect, notice, onResult }: {
 /** The round's result over the felt: the place, the three totals in place order with the player's row marked, the points
  *  it brought and where they stand now — up, down or on — then another round, or back to the League. */
 function RoundResult({ state, result, again, onAgain, onLeave }: {
-  state: TableState; result: LeagueResult; again: { busy: boolean; error: string | null }; onAgain: () => void; onLeave: () => void
+  state: TableState; result: LeagueResult; again: { busy: number | null; error: string | null }; onAgain: () => void; onLeave: () => void
 }) {
   const me = state.mine.seat
   const mine = result.seats[me]
@@ -331,7 +344,7 @@ function RoundResult({ state, result, again, onAgain, onLeave }: {
           </p>
         ) : null}
         <div {...stylex.props(styles.row)}>
-          <Btn testId="league-again" size="lg" disabled={again.busy} onClick={onAgain}>{again.busy ? m.league_finding() : m.league_again({ fee: FEES[standing?.tier ?? result.tier] })}</Btn>
+          <Btn testId="league-again" size="lg" disabled={again.busy !== null} onClick={onAgain}>{again.busy !== null ? <Finding since={again.busy} /> : m.league_again({ fee: FEES[standing?.tier ?? result.tier] })}</Btn>
           <Btn testId="league-leave" tone="quiet" size="lg" onClick={onLeave}>{m.league_to_page()}</Btn>
         </div>
         {again.error ? <p role="alert" data-testid="league-again-error" {...stylex.props(typography.appText, styles.bad)}>{again.error}</p> : null}

@@ -35,7 +35,8 @@ test('League: check-in, matching, a round of three, the grace, scoring once, rev
   base.pathname = `/${dbName}`
   const sql = new pg.Pool({ connectionString: base.href })
   const admissionKey = randomBytes(32).toString('hex')
-  const port = Number(process.env.TEST_PORT || 56020)
+  // Test files run side by side: rooms.test.ts takes TEST_PORT and the port after it, so this one stands a few apart.
+  const port = Number(process.env.TEST_PORT || 56020) + 5
   const endpoint = `http://127.0.0.1:${port}`
   let server: ChildProcess | null = null
   let logs = ''

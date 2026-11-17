@@ -537,14 +537,16 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **The League** (`league-page.tsx`, `league.tsx`, `/league`, SKATGO-204): a sub-page on the grey page in the reading column,
   noindex: its H1 "Liga", then for an account its League as the front page's League tile is (the human chose it from two:
   「我选A」) — `tileNavy`, `radii.tile`, `elev.tileNavy`, white words: lucide's `Trophy` at `icon.tile` and "Gold-Liga"
-  (`homeTileTitle`), a circled question mark opening how the League works in a `Modal` (a round and its points, moving up and
-  down, the coins); then two large numbers (`homeCardTitle`), the coins first with lucide's `Coins` (the human: 「没显示该玩家
+  (`homeTileTitle`); then two large numbers (`homeCardTitle`), the coins first with lucide's `Coins` (the human: 「没显示该玩家
   的总金币数」), "Münzen" and "+100 heute" under it, and the League points, "Ligapunkte" and how far to promotion and to
   relegation under them (`appText`, `onColorSoft`) — each only where there is one, none up from Legend and none down from
   Bronze; the `ProgressBar` from the relegation line to the promotion line (none in Legend); then the one `go`, "Spielen · 15
   Münzen" — "Suche Mitspieler … 5" on it while it waits, counting the five seconds down (the human: 「等待时要有个倒计时」), the number gone once they are up, disabled with one line when the coins are too few ("Zu wenig Münzen –
-  morgen gibt es 100 dazu.") — or "Zurück an deinen Tisch" while a round runs. A guest's card is one line and the `go`
-  "Anmelden". Under it "Ligen" (`optionTitle`, on the page): the six as a row of picture cards that scrolls sideways
+  morgen gibt es 100 dazu.") — or "Zurück an deinen Tisch" while its table runs. A guest's card is one line and the `go`
+  "Anmelden". Under either, "Was ist die Liga – und warum macht sie Spaß?" (`optionTitle`): a `Panel` closed until tapped,
+  its chevron at the right (the human: 「改成一个折叠卡片，默认折叠……必须精简，要考虑到大部分玩家没耐心。可以用bullets」),
+  four short bullets (`appText`) — the tiers, each deal's points, up and down, the coins. Then "Ligen" (`optionTitle`, on
+  the page): the six as a row of picture cards that scrolls sideways
   (the human: 「tiers最好做成横向滚动的carousel，然后玩家当前位于的段位在最左侧。要用彩色卡片，背景是档位的图片」) — Bronze to
   Legend, each card snapping to the left edge, the player's own scrolled there on opening and tagged "You"; a card is
   `dims.tierCard` wide (the next one showing at the edge) in `homeCard`'s shape, `radii.tile`, `elev.option`, its own
@@ -553,7 +555,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   anyone is in Legend, "Rangliste der Legenden" as the XP board's rows — rank, name, points — the player's own row marked. A League table (`/league/play`) is a full-screen table as a private one,
   its board "Spiel n", its top right button the way out, whose "Tisch verlassen" leaves the table (the deal on it played out
   for the seat), no Lina and Noah faces (the seats are people's); each deal's result is free play's, its first line the
-  deal's League points (SKATGO-205: "Ligapunkte +3" in `appBtnStrong`, then why — "Dein Spiel gewonnen", "Den Alleinspieler
+  deal's League points (SKATGO-205: "Ligapunkte +3" as the XP line's pill — `go` on `goodSoft` won, `bad` on `badSoft` lost,
+  `slate` on `page` at 0 — then why — "Dein Spiel gewonnen", "Den Alleinspieler
   geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Alle haben gepasst" — and, when it moved the player,
   "Aufstieg in die Gold-Liga!" / "Abstieg in die Silber-Liga.", or when the coins are too few for the next, the coins line),
   then the XP line and the AI's game; its foot the next deal, or "Zur Liga" when the player moved or cannot pay. The League

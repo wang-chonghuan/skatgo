@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { CircleHelp, Coins, Trophy } from 'lucide-react'
+import { ChevronDown, ChevronUp, Coins, Trophy } from 'lucide-react'
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { checkInOnce } from '~/lib/checkin'
@@ -22,7 +22,7 @@ import { Who, signed } from './daily-comparison'
 import { GameTable } from './game-table'
 import { Tiers, leagueName } from './league-tiers'
 import { Shell, seatNames, useSeat } from './table-room'
-import { Btn, Modal, Panel, Pill, ProgressBar, linkLook } from './ui'
+import { Btn, Panel, Pill, ProgressBar, linkLook } from './ui'
 import type { TableState } from '~/lib/room-client'
 import type { LeagueMe } from '~/lib/skat/league'
 
@@ -55,7 +55,6 @@ export function LeagueHome() {
   /** When the wait for a table began; null while not waiting. */
   const [busy, setBusy] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [how, setHow] = useState(false)
   useEffect(() => {
     if (account === undefined) return
     let live = true
@@ -82,20 +81,12 @@ export function LeagueHome() {
 
   const me = state?.me ?? null
   const fee = me ? FEES[me.tier] : 0
-  const helpButton = (
-    <button type="button" data-testid="league-how" aria-label={m.league_how()} title={m.league_how()} onClick={() => setHow(true)} {...stylex.props(styles.help)}>
-      <CircleHelp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
-    </button>
-  )
   return (
     <div {...stylex.props(styles.stack)}>
       {account === null ? (
         <Panel>
           <section data-testid="league-guest" {...stylex.props(styles.card)}>
-            <div {...stylex.props(styles.head)}>
-              <p {...stylex.props(typography.appText, styles.ink)}>{m.league_guest()}</p>
-              {helpButton}
-            </div>
+            <p {...stylex.props(typography.appText, styles.ink)}>{m.league_guest()}</p>
             <div {...stylex.props(styles.row)}>
               <SignInButton mode="modal">
                 <Btn testId="league-sign-in" size="lg">{m.auth_sign_in()}</Btn>
@@ -105,12 +96,12 @@ export function LeagueHome() {
           </section>
         </Panel>
       ) : me ? (
-        <MeCard me={me} fee={fee} busy={busy} error={error} onHelp={() => setHow(true)} onPlay={() => void play()} />
+        <MeCard me={me} fee={fee} busy={busy} error={error} onPlay={() => void play()} />
       ) : null}
+      {account !== undefined ? <About /> : null}
       <Tiers mine={me ? me.tier : null} />
       {/* The Legend board once anyone is on it. */}
       {state?.board.rows.length ? <Board state={state} /> : null}
-      {how ? <LeagueHow onClose={() => setHow(false)} /> : null}
     </div>
   )
 }
@@ -130,7 +121,7 @@ function Finding({ since }: { since: number }) {
 /** The player's own League (SKATGO-204) as the front page's League tile is, navy with white words (the human chose this
  *  look, 「我选A」): the League with its cup, then the coins and the League points large — the coins first, the human: 「没显示
  *  该玩家的总金币数」 — how far to promotion and to relegation, the bar between the two lines, and the one way to play. */
-function MeCard({ me, fee, busy, error, onHelp, onPlay }: { me: LeagueMe; fee: number; busy: number | null; error: string | null; onHelp: () => void; onPlay: () => void }) {
+function MeCard({ me, fee, busy, error, onPlay }: { me: LeagueMe; fee: number; busy: number | null; error: string | null; onPlay: () => void }) {
   // From the relegation line to the promotion line; Legend has no promotion, so no bar.
   const progress = me.tier < LEGEND ? (me.points - RELEGATE_AT) / (PROMOTE_AT - RELEGATE_AT) : null
   // How far to move up and down, where there is a move: none up from Legend, none down from Bronze.
@@ -141,15 +132,10 @@ function MeCard({ me, fee, busy, error, onHelp, onPlay }: { me: LeagueMe; fee: n
   return (
     <div {...stylex.props(styles.hero)}>
       <section data-testid="league-me" data-tier={me.tier} data-points={me.points} data-coins={me.coins} data-today={String(me.today)} {...stylex.props(styles.card)}>
-        <div {...stylex.props(styles.head)}>
-          <span {...stylex.props(styles.titleRow)}>
-            <Trophy aria-hidden="true" size={icon.tile} strokeWidth={icon.outline} {...stylex.props(styles.onColor)} />
-            <h2 {...stylex.props(typography.homeTileTitle, styles.onColor)}>{leagueName(me.tier)}</h2>
-          </span>
-          <button type="button" data-testid="league-how" aria-label={m.league_how()} title={m.league_how()} onClick={onHelp} {...stylex.props(styles.help, styles.onColor)}>
-            <CircleHelp aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
-          </button>
-        </div>
+        <span {...stylex.props(styles.titleRow)}>
+          <Trophy aria-hidden="true" size={icon.tile} strokeWidth={icon.outline} {...stylex.props(styles.onColor)} />
+          <h2 {...stylex.props(typography.homeTileTitle, styles.onColor)}>{leagueName(me.tier)}</h2>
+        </span>
         <div {...stylex.props(styles.stats)}>
           <div data-testid="league-coins" {...stylex.props(styles.stat)}>
             <span {...stylex.props(styles.statValue)}>
@@ -182,16 +168,26 @@ function MeCard({ me, fee, busy, error, onHelp, onPlay }: { me: LeagueMe; fee: n
   )
 }
 
-/** How the League goes, in the site's dialog: each deal's points, moving up and down, the coins. */
-function LeagueHow({ onClose }: { onClose: () => void }) {
+/** What the League is and how it works, a card closed until opened (the human: 「改成一个折叠卡片，默认折叠，标题是，什么是
+ *  League以及它为什么好玩……必须精简，要考虑到大部分玩家没耐心。可以用bullets」): the tiers, each deal's points, moving up
+ *  and down, the coins — four short lines. */
+function About() {
+  const [open, setOpen] = useState(false)
+  const Chevron = open ? ChevronUp : ChevronDown
   return (
-    <Modal title={m.league_how()} onClose={onClose} testId="league-how-text">
-      <div {...stylex.props(styles.stack)}>
-        <p {...stylex.props(typography.appText, styles.ink)}>{m.league_how_round()}</p>
-        <p {...stylex.props(typography.appText, styles.ink)}>{m.league_how_move()}</p>
-        <p {...stylex.props(typography.appText, styles.ink)}>{m.league_how_coins()}</p>
-      </div>
-    </Modal>
+    <Panel>
+      <details data-testid="league-about" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
+        <summary data-testid="league-about-head" {...stylex.props(styles.aboutHead)}>
+          <h2 {...stylex.props(typography.optionTitle, styles.ink)}>{m.league_about()}</h2>
+          <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.chevron)} />
+        </summary>
+        <ul data-testid="league-about-text" {...stylex.props(styles.bullets)}>
+          {[m.league_about_tiers(), m.league_about_deal(), m.league_about_move(), m.league_about_coins()].map((t) => (
+            <li key={t} {...stylex.props(typography.appText, styles.ink)}>{t}</li>
+          ))}
+        </ul>
+      </details>
+    </Panel>
   )
 }
 
@@ -355,28 +351,28 @@ const styles = stylex.create({
   dealWhy: { flexGrow: 1, minWidth: 0, color: color.navy },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   card: { display: 'flex', flexDirection: 'column', gap: space.x12 },
-  head: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12 },
   row: { display: 'flex', alignItems: 'center', gap: space.x10, flexWrap: 'wrap' },
   ink: { margin: 0, color: color.navy },
   slate: { margin: 0, color: color.slate },
   bad: { margin: 0, color: color.bad },
-  help: {
-    display: 'inline-flex',
+  // The About card's line to tap, as the result's play record's (daily-comparison.tsx): the title, the chevron at the right.
+  aboutHead: {
+    display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    color: color.info,
+    justifyContent: 'space-between',
+    gap: space.x12,
     cursor: 'pointer',
+    listStyleType: 'none',
+    '::-webkit-details-marker': { display: 'none' },
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focus,
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
     borderRadius: radii.column,
   },
+  chevron: { flexShrink: 0, color: color.navy },
+  // The space above the bullets is theirs, so the closed card is only its title line.
+  bullets: { display: 'flex', flexDirection: 'column', gap: space.x6, marginBlock: 0, marginTop: space.x12, paddingInlineStart: space.x20, listStyleType: 'disc' },
   rows: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
   boardRow: {
     display: 'flex',

@@ -203,6 +203,9 @@ export const dims = stylex.defineVars({
   /** The picture cards under the ways in (SKATGO-135, the human's picture of event cards): a picture on top in this
    *  shape, its title and line under it. */
   homePicture: '16 / 9',
+  /** SKATGO-204: a League tier's picture card in the tiers' carousel — under half the column, so the next card shows at
+   *  the edge and says the row scrolls; no wider than a front-page colour card. Its shape is `homeCard`. */
+  tierCard: 'min(42%, 240px)',
   /** The progress card's curve at its least, where the card is as tall as its content (under `bp.cards`). */
   homeCurve: '96px',
   /** The front page's XP list in one column (SKATGO-172, the human: 「手机上显示前5名，然后可以滚动」): five rows of 29px, the

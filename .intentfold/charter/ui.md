@@ -543,10 +543,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   relegation under them (`appText`, `onColorSoft`) — each only where there is one, none up from Legend and none down from
   Bronze; the `ProgressBar` from the relegation line to the promotion line (none in Legend); then the one `go`, "Spielen · 15
   Münzen" — "Suche Mitspieler … 5" on it while it waits, counting the five seconds down (the human: 「等待时要有个倒计时」), the number gone once they are up, disabled with one line when the coins are too few ("Zu wenig Münzen –
-  morgen gibt es 100 dazu.") — or "Zurück an deinen Tisch" while a round runs. White cards follow. A guest's card
-  is one line and the `go` "Anmelden". Under it "Ligen": the six, Legend first, each with its fee at the right
-  (`appBtnStrong`), over `hairline` rules, the player's own on `goodSoft` with the "You" tag; then, once anyone is in Legend,
-  "Rangliste der Legenden" as the XP board's rows — rank, name, points — the player's own row marked. A round's table (`/league/play`) is a full-screen table as a private one,
+  morgen gibt es 100 dazu.") — or "Zurück an deinen Tisch" while a round runs. A guest's card is one line and the `go`
+  "Anmelden". Under it "Ligen" (`optionTitle`, on the page): the six as a row of picture cards that scrolls sideways
+  (the human: 「tiers最好做成横向滚动的carousel，然后玩家当前位于的段位在最左侧。要用彩色卡片，背景是档位的图片」) — Bronze to
+  Legend, each card snapping to the left edge, the player's own scrolled there on opening and tagged "You"; a card is
+  `dims.tierCard` wide (the next one showing at the edge) in `homeCard`'s shape, `radii.tile`, `elev.option`, its own
+  flat picture edge to edge (`public/league/<tier>.webp`: a medal, a cup, a shield, a diamond, a crown, each on its own deep
+  colour), the tier's name (`homeCardTitle`) and its fee (`appText`, `onColorSoft`) white at its bottom left; then, once
+  anyone is in Legend, "Rangliste der Legenden" as the XP board's rows — rank, name, points — the player's own row marked. A round's table (`/league/play`) is a full-screen table as a private one,
   its board "Spiel n von 3", its top right button the way out back to the League, no Lina and Noah faces (the seats are
   people's); each deal's result is free play's, with the XP line and the AI's game; the third's foot, "Ergebnis der Runde",
   opens the round's result in a white panel on the felt: the place ("Platz 1", `dialogTitle`), the three totals in place

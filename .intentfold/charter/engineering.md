@@ -15,8 +15,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   server endpoints are answered in `app/src/server.ts` before the page router and pass requests on to
   `multiplayer/` (the assistant and its `/api/ask` are gone, SKATGO-130, the human: 「彻底删」):
   `/api/daily/*` (SKATGO-35), naming the player — the Clerk account, or else a device id from an
-  httpOnly cookie, sent on only as its hash — `/api/free/*`, free play (SKATGO-40), and `/api/forum/*`, the
-  forum (SKATGO-118), which also answers `/sitemap-forum.xml`.
+  httpOnly cookie, sent on only as its hash — `/api/free/*`, free play (SKATGO-40), `/api/league/*`, the League
+  (SKATGO-204), and `/api/forum/*`, the forum (SKATGO-118), which also answers `/sitemap-forum.xml`.
 - **Paraglide** (`@inlang/paraglide-js`) owns the two languages: messages in `app/messages/{en,de}.json`,
   translated addresses in `app/paraglide.options.ts`, compiled into `app/src/paraglide/` (generated).
 - **PostHog** (`posthog-js`, SKATGO-25) counts page views and product events from the browser
@@ -88,10 +88,28 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   seat ownership, legal moves and scores. Reuse bounded shared SkatZero inference, not one model or browser
   per character. Actor identities stay separate from signed human tickets, human presence and analytics;
   persona choices do not change the standard AI or takeover of disconnected human seats. Private-room
-  host, friend takeover, human readiness and last-human closure rules remain intact. No arena or public
-  matchmaking is introduced. The project skill owns the detailed behavioral and capacity design.
+  host, friend takeover, human readiness and last-human closure rules remain intact. Beyond the League's empty seats
+  (SKATGO-204, below) no arena or public matchmaking is introduced. The project skill owns the detailed behavioral and
+  capacity design.
   Terms omit participant-composition claims rather than asserting presence, absence, possibility or
   human-only participation.
+- **The League** (SKATGO-204) runs in `multiplayer/src/league.ts` under `/league` behind the admission key; the rules both
+  sides share — tiers, fees, places, promotion and relegation — are `app/src/lib/skat/league.ts`, held to the ticket by
+  `league.test.ts`. `league_players` holds an account's coins (the day's check-in: `checkin_day` by `dayOf`), tier and
+  points; `league_matches` a round (its own id, its room, tier, who sat where, its result once); `league_deals` each finished
+  deal's pool deal and moves. A round is a room of `room.ts` with `Snapshot.league`: made by the service, never by a browser
+  — `/league/play` waits in the leader's memory up to `MATCH_WAIT_MS` for other accounts of the tier, then fills the seats
+  with personas of that tier's band (`population(500)` weakest to strongest by their card-error rates, six equal bands; none
+  already at a League table, none with a board activity due within 30 minutes, none under a name a person holds), takes the
+  fees and stores room and round in one transaction, and hosts the room as a restored one. Persona seats bid on the
+  pool's plan and play their cards with their own strength policy, its card errors kept by tier (`TIER_ERRORS`, Legend
+  none: SkatZero's cards; measured in the ticket's `calibration.txt`), and publish as players; nobody comes in by number; the computers play on with nobody
+  online and deal the next deal themselves, so a round always ends; its three deals scored, `settleLeague` moves each
+  account's standing once, in the transaction that ended the third, and the room stops counting for `roomOf`, expiring ten
+  minutes later. `/league/review` turns the asking account's seat to seat 0 (`viewSeat`, same deck) and answers free play's
+  review, recording the deal in `play_deals` as `league:<pool>:<deal>:<seat>:<round>:<n>` — so it counts for XP and the
+  record of play, not to be played again. The web's `lib/league-handler.ts` names the account and signs the room's join
+  ticket; the frame checks in once per page load (`lib/checkin.ts`). Tested by `multiplayer/test/league.test.ts`.
 - **A player's record of play** (SKATGO-128) is read on request by `POST /daily/profile` (`multiplayer/src/profile.ts`),
   an account's, or since SKATGO-182 a guest device's own (`anon:`, no aliases, no notes; the web answers a device that
   never played with none): every tournament deal of the player's
@@ -206,6 +224,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/skat/nickname.ts` | what may stand on the public leaderboard as a nickname (SKATGO-36), and the names a player is given (SKATGO-90): the agreed word list and `pickName`, which takes the first free name in an order fixed by the player's id, a number only once every name without one is taken |
 | `app/src/components/skat/profile-page.tsx`, `app/src/lib/skat/profile.ts`; `multiplayer/src/profile.ts` | a player's record of play (SKATGO-128): the page, the shared shape and sums, the recording and the reading; tested by `multiplayer/test/profile.test.ts` and `app/src/lib/profile-handler.test.ts` |
 | `app/src/lib/daily-handler.ts`, `app/src/lib/session.ts` | the web's `/api/daily/*` proxy, and the Clerk session lookup the server routes share |
+| `app/src/lib/league-handler.ts`, `league-api.ts`, `checkin.ts`, `app/src/lib/skat/league.ts`, `app/src/components/skat/league-page.tsx`, `league.tsx`, `league-tiers.tsx`; `multiplayer/src/league.ts` | the League (SKATGO-204): `/api/league/*`, the browser's calls, the day's check-in, the shared rules, the page, its table and the round's result (`useSeat` of `table-room.tsx`), the tiers; the service's routes, matching, scoring and reviews |
 | `app/src/lib/room-handler.ts`, `room-ticket.ts`, `room-code.ts`, `room-client.ts`, `app/src/components/skat/table-room.tsx`; `multiplayer/src/room.ts`, `model.ts`, `referral.ts` | private rooms (SKATGO-61, rooms since SKATGO-163): `/api/room/ticket`, `/api/room/mine` and `/api/room/referral`, the signed admission ticket, the room's number, the browser's room client, the friends page's cards and the room's page; the room, its seats (`claimSeat`, `freeSeat`) and the service's `/rooms` routes (an account's room, a number's status, referrals) |
 | `app/src/lib/forum.ts`, `forum-handler.ts`, `forum-api.ts`, `app/src/components/skat/forum-page.tsx`, `forum-body.tsx`, `forum-announcement.tsx`; `multiplayer/src/forum.ts` | the forum (SKATGO-118): the shared rules (sections, `DAILY_LIMITS`, `postIndexable`, `slugOf`, the text's marks in `parseBody`), the web's `/api/forum/*` and `/sitemap-forum.xml`, the loaders' reads (`createIsomorphicFn`: on the server straight to the forum as the request's viewer, in the browser through `/api/forum`; the announcement cached a minute on the server), the pages, and the service's routes; tested by `lib/forum.test.ts` and `multiplayer/test/forum.test.ts` |
 | `app/src/lib/test-account.ts` | local test accounts for acceptance (SKATGO-117), read only by `session.ts` and the root route |

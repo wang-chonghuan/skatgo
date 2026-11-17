@@ -379,6 +379,27 @@ reference used in SKATGO-22/38/39), refresh `test/fixtures/skatzero-parity.json`
 `test/fixtures/skatzero-bidding.json`, update the manifest, and give the day's computer a new
 name — never edit a recorded day.
 
+## The League (SKATGO-204)
+
+`POST /league/<op>` behind the admission key; the web's `/api/league/*` (`app/src/lib/league-handler.ts`) is its one
+client and names the account (`user:<Clerk id>`), never a guest for anything but `state`.
+
+- `state` (`{ player | null }`): the fees, the Legend board, and for an account its coins, tier, points, whether today's
+  check-in counted and the round it is seated at.
+- `checkin` (`{ player }`): `CHECKIN_COINS` on the account's first call of a Berlin day (`dayOf`), else nothing.
+- `play` (`{ player }`): the account's running round, or a new one in its tier: the request waits up to `MATCH_WAIT_MS`
+  for other accounts of the tier (in the leader's memory), then the seats left go to personas of the tier's band, the
+  fees are taken and the room and `league_matches` row stored in one transaction; answers `{ room }`, or 409
+  `not_enough_coins` / `already_in_room`.
+- `review` (`{ player, match, deal }`): a finished deal of the account's round, its seat turned to seat 0, as `/free/review`
+  answers it, recorded once in `play_deals`.
+
+The round is an ordinary room (`Snapshot.league`): the browser joins it with a `join` ticket the web signs for the room
+`state` names; nobody else is admitted. It deals at once, three deals each dealt by another seat; personas and a person
+away past the grace are played by the computers even with nobody online, so the round ends; when the third deal ends the
+places move each account's standing in the same transaction, once, and the room expires ten minutes later. Tests:
+`test/league.test.ts`, against a database of its own.
+
 ## The ladder's record (SKATGO-109)
 
 `POST /ladder/state`, `/ladder/answer` and `/ladder/merge`, behind the admission key like `/daily`, keep the

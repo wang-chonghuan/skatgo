@@ -78,7 +78,8 @@ They are persistent simulated player personas, with different strengths, bidding
 thinking times and interruption tendencies developed through the project skill
 (「首先写这个多个拟人角色的skill，放在本项目级别的skill目录，然后用这个skill指导生成相关代码和配置」).
 They may participate in the daily one- and six-deal boards, free-play activity and cumulative XP, and fill
-assigned computer seats in the existing private rooms. This does not introduce an arena or public matchmaking.
+assigned computer seats in the existing private rooms. They also take the empty seats of the League's rounds (SKATGO-204,
+the human: 「有人则匹配人，没人则匹配AI」), the one matchmaking there is; there is no other arena or public matchmaking.
 Their scores and XP come from completed legal games under the applicable existing rules; ties remain possible.
 Their identities and records stay separate from accounts and private player profiles. Room play does not gain
 daily entries or XP merely because a Synthetic player sits there. The standard AI comparison and Lina and Noah
@@ -180,6 +181,25 @@ and how far above or below the AI they finished on those cards (SKATGO-189: 「�
 takes an account. Each game can be played again (「可以replay，不是复盘，就是让该人再打一盘，就如同正规的
 free play的replay，不计入任何分。但是呢，想点此处的复牌，必须登录」): the same cards against the same AI, counted nowhere — an account's
 only; a guest signs in first.
+
+The League at `/league` (SKATGO-204, the human: 「分场天梯先做，而且人机匹配，有人则匹配人，没人则匹配AI」, 「我认为分场天梯事强留存
+手段」): six tiers named as Duolingo and Chess.com name theirs, never by card suits (「不要用方块红心，否则会让用户困惑混淆」) —
+Bronze, Silver, Gold, Platinum, Diamond and Legend, German Bronze, Silber, Gold, Platin, Diamant, Legende ("Gold-Liga",
+"Legenden-Liga"; the top one Legend, 「最高级的钻石改为传奇」; Platinum and Diamond as a European ranks them, under Legend) —
+each round of three deals, every player dealing once, for an entry fee of 10, 12, 15, 20, 25 or 30 coins, taken when it
+starts and kept if the player leaves. Coins come only from checking in: a signed-in player's first open of SkatGo on a
+day gives 100 (「不打开游戏就不给，打开了就能积累」), the day the daily tournament's; they add up with no limit, cannot be
+bought for now (「暂时不开放购买」) and are never exchanged for money or goods (「金币只要不能换实物就行」). Too few coins
+stops the League only. A round waits five seconds for other people of the same tier (「就等5秒」), then personas of that
+tier's strength take the empty seats, the higher the tier the stronger, Legend's near the AI's. Its place at the table
+by the three deals' Seeger-Fabian totals, never the difference to the AI (「就按sf分」), brings +3, +1 or −2 League
+points, equal totals sharing the better place; +12 moves the player up a tier and −8 down, from 0 again; Bronze has no
+relegation (its points stop at −8) and Legend no promotion, its points ranking the accounts in it on its board. Standings
+never start again — no week, no season. Each deal ends in free play's result with the AI's game and earns XP as any deal
+against the AI does; a deal the AI finished for a player away earns it when its result is opened. Its page shows the
+player's tier, points and how far from moving, the coins, the fees and the Legend board; a guest sees the tiers and signs
+in. The front page's colour card that was the bidding practice's is the League's; the bidding practice is the fourth
+picture card (the human: 「同意」).
 
 Private tables at `/with-friends` (SKATGO-61) are rooms since SKATGO-163 (the human: 「一个人开一个房间，可以打2个ai。另一个人
 可以加入进来，需要6位数字邀请码，是房间号。还能再加入一个人，替换掉ai。如果三人满了，输入房间号就不能再加人了」, 「用同类游戏的最常见的实践，
@@ -337,7 +357,7 @@ Search Console measures Google search exposure. Neither alone proves that learne
   themselves. The homepage `skatgo.com/` follows the visitor's language: a German browser, or a request
   that names no language, gets the German homepage; any other language goes to `/en`; a language the
   visitor picked in the header wins (SKATGO-113).
-- It is the course, free play, the daily tournament, private tables with friends, the Skat-Tricks, the
+- It is the course, free play, the daily tournament, the League, private tables with friends, the Skat-Tricks, the
   bidding practice, the rules reference and the forum — nothing from
   Parrottoon, from which it was split on 2026-09-21: none of Parrottoon's English content, and no link
   back to it.

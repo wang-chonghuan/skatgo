@@ -1,0 +1,340 @@
+import { randomBytes, randomInt } from 'node:crypto'
+import express from 'express'
+import type pg from 'pg'
+import { z } from 'zod'
+import { actor, deal, type Seat } from '../../app/src/lib/skat/game'
+import {
+  CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PLACE_POINTS, ROUND_DEALS, TIERS, placesOf, standingAfter,
+  type LeagueMe, type LeagueResult, type LegendBoard,
+} from '../../app/src/lib/skat/league'
+import { roomSeat, viewSeat } from '../../app/src/lib/skat/room-view'
+import { auctionOf, summarize } from '../../app/src/lib/skat/tournament'
+import { ComputerFailed, type Logged, advance, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
+import { dayOf, nameOf } from './daily'
+import { deckOf, plan, poolDealOf, type Pool } from './free'
+import { Rejected, TTL_MS, dealNext, secretEquals, type Slot, type Snapshot } from './model'
+import { MAX_POPULATION, population, type Persona } from './personas/config'
+import { strengthDecisions } from './personas/decisions'
+import { personaPolicy } from './personas/play'
+import { played, recordFreeDeal } from './profile'
+import type { Policy } from './skatzero/policy'
+import type { Store } from './store'
+
+// The League (SKATGO-204, the human: 「分场天梯先做，而且人机匹配，有人则匹配人，没人则匹配AI」): a signed-in player's coins from a
+// daily check-in, their tier and league points, and the round of three deals they pay a tier's fee for. A round is a room
+// as a private table is (SKATGO-61/163: the same engine, the 30-second grace and the computer standing in, restored after a
+// restart), started by the service: it waits MATCH_WAIT_MS for other people of the tier, then gives the empty seats to
+// personas of that tier's strength (SKATGO-180's Synthetic players, the weakest sixth in Bronze up to the strongest in
+// Legend). Each deal's moves are kept, so each person's review of it — their seat turned to seat 0, free play's review —
+// can be worked out after the room is gone, and counts for their XP and record as a free deal does. When the third deal
+// ends the places at the table move each person's standing, once. The web's /api/league/* is the only client, behind the
+// admission key.
+
+const ACCOUNT = /^user:[A-Za-z0-9_]{1,64}$/
+/** How long a finished round's room stays for its last result. */
+const FINISHED_MS = 10 * 60 * 1000
+/** A persona with a board activity planned this close to now is busy (one timeline per persona, the personas skill). */
+const BUSY_MS = 30 * 60 * 1000
+
+/** How weak a persona's card play is: its strength policy's two card-error rates (skatgo-personas/2, the boards' since
+ *  2026-11-11), or the legacy `mistake` for a persona without them. */
+export const weakness = (p: Persona) => (p.play.strength ? p.play.strength.declarerError + p.play.strength.defenderError : p.play.mistake)
+/** How much of its own card errors a persona keeps at each tier's table: all in Bronze, none in Legend, where it plays
+ *  SkatZero's cards (the human: 「档位越高对手越强」, the ticket: 传奇档接近 SkatZero 的水平). Measured with the ticket's
+ *  calibrate.mts, 300 rounds a tier: SkatZero in a seat earns +1.98 League points a round in Bronze and +0.90 in Legend,
+ *  near parity; the median persona +1.25 in Bronze down to −0.45 in Legend. */
+export const TIER_ERRORS: readonly number[] = [1, 0.8, 0.6, 0.4, 0.2, 0]
+
+/** The personas weakest first, in six bands of equal size: a tier's opponents come from its band. */
+let bands: Persona[][] | null = null
+export function bandOf(tier: number): Persona[] {
+  if (!bands) {
+    const all = [...population(MAX_POPULATION).personas].sort((a, b) => weakness(b) - weakness(a) || a.id.localeCompare(b.id))
+    bands = TIERS.map((_, i) => all.slice(Math.floor((i * all.length) / TIERS.length), Math.floor(((i + 1) * all.length) / TIERS.length)))
+  }
+  return bands[tier]
+}
+const byId = new Map<string, Persona>()
+/** A persona by its `sim:` id. */
+export function personaOf(id: string): Persona {
+  if (byId.size === 0) for (const p of population(MAX_POPULATION).personas) byId.set(`sim:${p.id}`, p)
+  const p = byId.get(id)
+  if (!p) throw new ComputerFailed('persona_unknown')
+  return p
+}
+/** How a persona plays its cards at a tier's table: its own strength policy, its card errors scaled by the tier
+ *  (`TIER_ERRORS`); a persona without one, the legacy slips. Its bidding is the pool's plan, SkatZero's, as every seat's. */
+export function leaguePolicy(base: Policy, p: Persona, tier: number, seed: string): Policy {
+  const s = p.play.strength
+  if (!s) return personaPolicy(base, p, seed)
+  const f = TIER_ERRORS[tier]
+  return strengthDecisions(base, { ...p, play: { ...p.play, strength: { ...s, declarerError: s.declarerError * f, defenderError: s.defenderError * f } } }, seed, []).policy
+}
+/** How a persona plays its seat's card now, seeded by the round, the deal and the moment so a retried turn chooses the
+ *  same. */
+export function personaTurnPolicy(base: Policy, s: Snapshot, seat: Seat): Policy | null {
+  const id = s.seats[seat].persona
+  if (!id || !s.league || !s.game) return null
+  return leaguePolicy(base, personaOf(id), s.league.tier, `${s.league.match}|${s.deals}|${seat}|${s.game.tricks.length}|${s.game.trick.length}`)
+}
+
+/** Two (or however many are asked) personas of the tier free now: at no live League table, with no board activity due
+ *  close by, and under a name no person holds. */
+async function opponents(c: pg.PoolClient, tier: number, count: number, now: number): Promise<{ id: string; nickname: string }[]> {
+  if (count === 0) return []
+  const { rows: seated } = await c.query(
+    `SELECT DISTINCT s->>'persona' AS id FROM multiplayer_rooms, jsonb_array_elements(snapshot->'seats') s
+      WHERE expires_at > $1 AND snapshot ? 'league' AND s ? 'persona'`, [now])
+  const { rows: due } = await c.query(
+    'SELECT DISTINCT player AS id FROM persona_jobs WHERE result IS NULL AND due BETWEEN $1 AND $2', [now - BUSY_MS, now + BUSY_MS])
+  const busy = new Set([...seated, ...due].map((r) => r.id as string))
+  const free = bandOf(tier).filter((p) => !busy.has(`sim:${p.id}`))
+  const { rows: held } = await c.query('SELECT lower(nickname) AS n FROM daily_players WHERE lower(nickname) = ANY($1)',
+    [free.map((p) => p.nickname.toLowerCase())])
+  const taken = new Set(held.map((r) => r.n as string))
+  const left = free.filter((p) => !taken.has(p.nickname.toLowerCase()))
+  const chosen: { id: string; nickname: string }[] = []
+  while (chosen.length < count && left.length) {
+    const [p] = left.splice(randomInt(left.length), 1)
+    chosen.push({ id: `sim:${p.id}`, nickname: p.nickname })
+  }
+  if (chosen.length < count) throw new Rejected('no_opponents')
+  return chosen
+}
+
+/** An account's League row, made on first sight: Bronze, 0 points, no coins until its first check-in. */
+async function standingOf(c: pg.Pool | pg.PoolClient, player: string, lock = false) {
+  await c.query('INSERT INTO league_players (player, updated_at) VALUES ($1, $2) ON CONFLICT DO NOTHING', [player, Date.now()])
+  const { rows } = await c.query(`SELECT coins, tier, points, checkin_day FROM league_players WHERE player = $1${lock ? ' FOR UPDATE' : ''}`, [player])
+  return rows[0] as { coins: number; tier: number; points: number; checkin_day: string | null }
+}
+
+/** The League round the account is seated at while it runs, by its room's number; null if none. */
+async function tableOf(store: Store, player: string): Promise<string | null> {
+  const { rows } = await store.pool.query(
+    `SELECT id FROM multiplayer_rooms WHERE expires_at > $1 AND snapshot ? 'league'
+        AND NOT coalesce((snapshot->'league'->>'finished')::boolean, false)
+        AND snapshot->'seats' @> $2::jsonb LIMIT 1`, [Date.now(), JSON.stringify([{ account: player }])])
+  return (rows[0]?.id as string | undefined) ?? null
+}
+
+/** The Legend board: every account in Legend by its points there, then who got there first. */
+async function legendBoard(store: Store, who: string | null): Promise<LegendBoard> {
+  const { rows } = await store.pool.query(
+    `SELECT l.player, l.points, p.nickname FROM league_players l LEFT JOIN daily_players p ON p.player = l.player
+      WHERE l.tier = $1 ORDER BY l.points DESC, l.updated_at ASC LIMIT 100`, [LEGEND])
+  const board: LegendBoard['rows'] = []
+  rows.forEach((r, i) => {
+    const rank = i > 0 && rows[i - 1].points === r.points ? board[i - 1].rank : i + 1
+    board.push({ rank, nickname: (r.nickname as string | null) ?? '', points: r.points, ...(r.player === who ? { you: true as const } : {}) })
+  })
+  return { rows: board }
+}
+
+/** A finished deal of a round (SKATGO-204), kept for its reviews; and once the third has ended, the round scored: each
+ *  person's place at the table moves their standing, once, and the room is done. Called in the transaction of the change
+ *  that may have ended a deal; `scoredBefore` is the room's count of scored deals before it. */
+export async function settleLeague(s: Snapshot, c: pg.PoolClient, scoredBefore: number, now = Date.now()) {
+  const l = s.league
+  if (!l || s.scored <= scoredBefore || !l.current) return
+  await c.query('INSERT INTO league_deals (match, deal, pool, pool_id, dealer, log) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING',
+    [l.match, s.scored - 1, l.current.pool, l.current.id, l.current.dealer, JSON.stringify(l.current.log)])
+  if (s.scored < ROUND_DEALS || l.finished) return
+  const places = placesOf(s.scores)
+  const result: LeagueResult = { tier: l.tier, seats: [] }
+  for (let seat = 0; seat < 3; seat++) {
+    const p = s.seats[seat]
+    const row: LeagueResult['seats'][number] = { name: p.nickname ?? '', total: s.scores[seat], place: places[seat], person: !!p.account }
+    if (p.account) {
+      const before = await standingOf(c, p.account, true)
+      const after = standingAfter({ tier: before.tier, points: before.points }, places[seat])
+      await c.query('UPDATE league_players SET tier = $2, points = $3, updated_at = $4 WHERE player = $1', [p.account, after.tier, after.points, now])
+      // What the place brought, and where it left them — from 0 after a move up or down.
+      Object.assign(row, { points: PLACE_POINTS[places[seat]], standing: { tier: after.tier, points: after.points }, moved: after.moved })
+    }
+    result.seats.push(row)
+  }
+  await c.query('UPDATE league_matches SET finished_at = $2, result = $3 WHERE id = $1 AND finished_at IS NULL', [l.match, now, JSON.stringify(result)])
+  l.finished = true
+  l.result = result
+  s.expiresAt = now + FINISHED_MS
+}
+
+type Matched = { room: string } | { error: string }
+type Waiter = { player: string; done: (m: Matched) => void }
+type Group = { tier: number; waiters: Waiter[]; timer: ReturnType<typeof setTimeout> }
+
+export function leagueRoutes(store: Store, admissionKey: string, ready: () => boolean, pool: () => Pool | null,
+  host: (room: string) => Promise<void>, policy: () => Policy | null) {
+  const router = express.Router()
+  router.use(express.json({ limit: '4kb' }))
+  router.use((req, res, nextHandler) => {
+    if (!ready()) return void res.status(503).json({ error: 'not_ready' })
+    if (!secretEquals(req.get('x-admission-key'), admissionKey)) return void res.status(403).json({ error: 'admission_denied' })
+    nextHandler()
+  })
+  const run = (work: (body: Record<string, unknown>) => Promise<unknown>) => async (req: express.Request, res: express.Response) => {
+    try {
+      res.set('cache-control', 'no-store').json(await work((req.body ?? {}) as Record<string, unknown>))
+    } catch (e) {
+      if (e instanceof z.ZodError) res.status(400).json({ error: 'invalid_request' })
+      else if (e instanceof Rejected) res.status(409).json({ error: e.message })
+      else if (e instanceof ComputerFailed) res.status(503).json({ error: 'computer_unavailable' })
+      else {
+        console.error(JSON.stringify({ event: 'league_failed', reason: e instanceof Error ? e.name : 'unknown' }))
+        res.status(503).json({ error: 'unavailable' })
+      }
+    }
+  }
+  const player = z.string().regex(ACCOUNT)
+
+  // What the page shows: the tiers and their fees, the Legend board, and for an account its coins, standing and table.
+  router.post('/state', run(async (body) => {
+    const who = z.object({ player: player.nullable() }).strict().parse(body).player
+    const board = await legendBoard(store, who)
+    if (!who) return { fees: FEES, board, me: null }
+    const s = await standingOf(store.pool, who)
+    const me: LeagueMe = { coins: s.coins, tier: s.tier, points: s.points, today: s.checkin_day === dayOf(Date.now()), table: await tableOf(store, who) }
+    return { fees: FEES, board, me }
+  }))
+
+  // The day's check-in: the first open of SkatGo on a Berlin day gives CHECKIN_COINS, once (the human: 「不打开游戏就不给，打开了
+  // 就能积累」).
+  router.post('/checkin', run(async (body) => {
+    const who = z.object({ player }).strict().parse(body).player
+    const day = dayOf(Date.now())
+    const { rows } = await store.pool.query(
+      `INSERT INTO league_players (player, coins, checkin_day, updated_at) VALUES ($1, $2, $3, $4)
+       ON CONFLICT (player) DO UPDATE SET coins = league_players.coins + $2, checkin_day = $3
+         WHERE league_players.checkin_day IS DISTINCT FROM $3
+       RETURNING coins`, [who, CHECKIN_COINS, day, Date.now()])
+    if (rows[0]) return { coins: rows[0].coins as number, added: CHECKIN_COINS }
+    return { coins: (await standingOf(store.pool, who)).coins, added: 0 }
+  }))
+
+  // A round: the account's table if it is at one; otherwise it waits up to MATCH_WAIT_MS for others of its tier, then the
+  // table is made and the fee taken. Answers the room's number once seated.
+  const groups = new Map<number, Group>()
+  const waiting = new Map<string, Promise<Matched>>()
+  async function form(g: Group) {
+    groups.delete(g.tier)
+    clearTimeout(g.timer)
+    const answer = (p: string, m: Matched) => g.waiters.filter((w) => w.player === p).forEach((w) => w.done(m))
+    try {
+      const p = pool()
+      if (!p) throw new Rejected('not_ready')
+      const now = Date.now()
+      const made = await store.transaction(async (c) => {
+        const seated: string[] = []
+        for (const w of g.waiters) {
+          const s = await standingOf(c, w.player, true)
+          if (s.tier !== g.tier) answer(w.player, { error: 'tier_changed' })
+          else if (s.coins < FEES[g.tier]) answer(w.player, { error: 'not_enough_coins' })
+          else if (await store.roomOf(w.player, null, c)) answer(w.player, { error: 'already_in_room' })
+          else seated.push(w.player)
+        }
+        if (!seated.length) return null
+        const others = await opponents(c, g.tier, 3 - seated.length, now)
+        const seats: Slot[] = [
+          ...await Promise.all(seated.map(async (account) => ({
+            account, nickname: await nameOf(c, account, now), session: null,
+            // Away until they come in: if they never do, the grace runs out and a computer plays for them.
+            disconnectedAt: now, autopilot: false, joinsAt: null,
+          }))),
+          ...others.map((o) => ({ account: null, nickname: o.nickname, session: null, disconnectedAt: null, autopilot: true, joinsAt: null, persona: o.id })),
+        ]
+        for (let i = seats.length - 1; i > 0; i--) {
+          const j = randomInt(i + 1)
+          ;[seats[i], seats[j]] = [seats[j], seats[i]]
+        }
+        const match = randomBytes(9).toString('base64url')
+        let s: Snapshot | null = null
+        for (let i = 0; i < 20 && !s; i++) {
+          const draft: Snapshot = {
+            schema: 3, id: String(randomInt(100_000, 1_000_000)), revision: 0, played: 0, host: null, seats, game: null, plans: null,
+            deals: 0, scored: 0, scores: [0, 0, 0], expiresAt: now + TTL_MS, nextActionAt: now + 1500,
+            league: { match, tier: g.tier, current: null },
+          }
+          // Each deals once: the first dealer drawn, then round the table.
+          dealNext(draft, poolDealOf(p, randomInt(3) as Seat))
+          if (await store.insert(c, draft)) s = draft
+        }
+        if (!s) throw new Rejected('room_capacity')
+        for (const account of seated) await c.query('UPDATE league_players SET coins = coins - $2, updated_at = $3 WHERE player = $1', [account, FEES[g.tier], now])
+        await c.query('INSERT INTO league_matches (id, room, tier, seats, created_at) VALUES ($1, $2, $3, $4, $5)',
+          [match, s.id, g.tier, JSON.stringify(s.seats.map((x) => x.account ?? x.persona)), now])
+        return { room: s.id, seated }
+      })
+      if (!made) return
+      await host(made.room)
+      for (const account of made.seated) answer(account, { room: made.room })
+    } catch (e) {
+      const error = e instanceof Rejected ? e.message : 'unavailable'
+      if (!(e instanceof Rejected)) console.error(JSON.stringify({ event: 'league_match_failed', reason: e instanceof Error ? e.name : 'unknown' }))
+      for (const w of g.waiters) w.done({ error })
+    }
+  }
+  function enqueue(who: string, tier: number): Promise<Matched> {
+    const known = waiting.get(who)
+    if (known) return known
+    const asked = new Promise<Matched>((done) => {
+      let g = groups.get(tier)
+      if (!g) {
+        const fresh: Group = { tier, waiters: [], timer: setTimeout(() => void form(fresh), MATCH_WAIT_MS) }
+        groups.set(tier, (g = fresh))
+      }
+      g.waiters.push({ player: who, done })
+      if (g.waiters.length >= 3) void form(g)
+    }).finally(() => waiting.delete(who))
+    waiting.set(who, asked)
+    return asked
+  }
+  router.post('/play', run(async (body) => {
+    const who = z.object({ player }).strict().parse(body).player
+    const table = await tableOf(store, who)
+    if (table) return { room: table }
+    if (await store.roomOf(who)) throw new Rejected('already_in_room')
+    const s = await standingOf(store.pool, who)
+    if (s.coins < FEES[s.tier]) throw new Rejected('not_enough_coins')
+    const m = await enqueue(who, s.tier)
+    if ('error' in m) throw new Rejected(m.error)
+    return m
+  }))
+
+  // A deal of a round reviewed for one of its people (SKATGO-204): their seat turned to seat 0 — the same cards dealt by the
+  // dealer as they saw them — so free play's review, the AI's own game from their seat and their record (XP) are free play's.
+  const reviewInput = z.object({ player, match: z.string().regex(/^[A-Za-z0-9_-]{12}$/), deal: z.number().int().min(0).max(ROUND_DEALS - 1) }).strict()
+  router.post('/review', run(async (body) => {
+    const i = reviewInput.parse(body)
+    const p = pool()
+    const base = policy()
+    if (!p || !base) throw new Rejected('not_ready')
+    const { rows: matches } = await store.pool.query('SELECT seats FROM league_matches WHERE id = $1', [i.match])
+    const seat = (matches[0]?.seats as (string | null)[] | undefined)?.indexOf(i.player) ?? -1
+    if (seat < 0) throw new Rejected('no_such_deal')
+    const { rows } = await store.pool.query('SELECT pool, pool_id, dealer, log FROM league_deals WHERE match = $1 AND deal = $2', [i.match, i.deal])
+    const d = rows[0]
+    if (!d) throw new Rejected('not_finished')
+    if (d.pool !== p.version) throw new Rejected('no_such_deal')
+    const spec = p.deals[d.pool_id]
+    const deck = deckOf(spec.deck)
+    const dealer = viewSeat(d.dealer, seat)
+    const log = (d.log as Logged[]).map((l) => ({ ...l, seat: viewSeat(l.seat, seat) }))
+    const end = replayLog(dealer, deck, log)
+    if (end.phase !== 'done' && end.phase !== 'passedIn') throw new Rejected('not_finished')
+    const plans = ([0, 1, 2] as Seat[]).map((v) => plan(spec.computers[String(roomSeat(v, seat)) as '0' | '1' | '2']))
+    const ai = await advance(deal(dealer, deck), [], (g) => computerTurn(g, actor(g)!, plans[actor(g)!], base), undefined, true)
+    if (ai.phase !== 'done' && ai.phase !== 'passedIn') throw new ComputerFailed('ai_unfinished')
+    const now = Date.now()
+    await recordFreeDeal(store, {
+      player: i.player, game: `league:${d.pool}:${d.pool_id}:${seat}:${i.match}:${i.deal}`, day: dayOf(now), at: now,
+      mine: played(summarize(end)), ai: played(summarize(ai)),
+    })
+    return reviewOf(end, await judgePlays(base, playsOf(dealer, deck, log)), { ai: summarize(ai), aiAuction: auctionOf(ai) })
+  }))
+
+  router.use((_err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    res.status(400).json({ error: 'invalid_request' })
+  })
+  return router
+}

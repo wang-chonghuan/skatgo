@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 
 import { LegalFooter } from '~/components/skat/legal-footer'
 import { LandingHeader, useFrame, useSection } from '~/components/skat/frame'
+import { useCheckIn } from '~/lib/checkin'
 import { primeSounds } from '~/lib/skat/sounds'
 import { bp } from './theme/breakpoints.stylex'
 import { color } from './theme/color.stylex'
@@ -18,6 +19,8 @@ import { typography } from './theme/type'
 export function SkatLayout() {
   // The cards' sounds are fetched on any page and woken by the first touch, so the first deal is heard (SKATGO-106).
   useEffect(primeSounds, [])
+  // A signed-in account's first open of the day counts for the League's coins (SKATGO-204).
+  useCheckIn()
   const frame = useFrame()
   const section = useSection()
   if (frame === 'landing') {

@@ -1,6 +1,6 @@
 ---
 name: skatgo-personas
-description: Load when developing SkatGo simulated players, their playing styles, online sessions, thinking times, interruptions, daily and XP board activity, or participation in existing private-room computer seats. Triggers include "拟人角色", "模拟玩家", "拟人服务", "调整角色牌力" and "skatgo-personas". Not for UX persona research, arenas, public matchmaking or replacing Lina/Noah.
+description: Load when developing SkatGo simulated players, their playing styles, online sessions, thinking times, interruptions, daily and XP board activity, participation in existing private-room computer seats, or the League's empty seats (SKATGO-204). Triggers include "拟人角色", "模拟玩家", "拟人服务", "调整角色牌力" and "skatgo-personas". Not for UX persona research, arenas, matchmaking other than the League's, or replacing Lina/Noah.
 ---
 
 # SkatGo Personas
@@ -15,10 +15,12 @@ Do not call a language model to choose game actions or manufacture scores.
 ## Scope
 
 Support simulated entrants in the daily one- and six-deal competitions, free-play
-activity and cumulative XP, plus personas in computer seats of existing private
-rooms when room integration is explicitly included in the live ticket.
-Do not add an arena, public lobby, matchmaking, anonymous room discovery, a new
-chat system or a replacement for the course and its existing characters.
+activity and cumulative XP, personas in computer seats of existing private
+rooms when room integration is explicitly included in the live ticket, and the
+League's empty seats (SKATGO-204: `multiplayer/src/league.ts`, a tier's personas
+from its strength band). Do not add an arena, public lobby, other matchmaking,
+anonymous room discovery, a new chat system or a replacement for the course and
+its existing characters.
 
 For a skill-only request, change these instructions only. New runtime contracts
 below do not authorize code, roster, schema, infrastructure or production changes.
@@ -37,7 +39,7 @@ Choose the requested task:
 - Implement or change the service, gameplay or storage: read
   [runtime.md](references/runtime.md), [calibration.md](references/calibration.md)
   and [sessions.md](references/sessions.md).
-- Integrate existing rooms: also read [rooms.md](references/rooms.md).
+- Integrate existing rooms or the League's seats: also read [rooms.md](references/rooms.md).
 - Validate or operate: read [validation.md](references/validation.md).
 
 The authored starter roster is `multiplayer/src/personas/roster.json`; its schema,

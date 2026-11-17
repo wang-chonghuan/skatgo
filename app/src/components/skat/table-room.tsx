@@ -162,21 +162,33 @@ export function RoomCards() {
 }
 
 /** Why a room let this page go (SKATGO-163). */
-type Gone = 'kicked' | 'left' | 'elsewhere' | 'closed'
+export type Gone = 'kicked' | 'left' | 'elsewhere' | 'closed'
 /** `again`: the room kept trying to come back and gave up; the person may try once more. */
-type Stage =
+export type Stage<E extends string> =
   | { kind: 'connecting' }
   | { kind: 'signIn' }
-  | { kind: 'error'; error: TableError; again?: boolean }
+  | { kind: 'error'; error: E; again?: boolean }
   | { kind: 'gone'; why: Gone }
   | { kind: 'seated' }
 
-/** A private room by its number: the account's own seat, or a new one — a signed-out visitor signs in first. */
-export function PrivateTable() {
-  const { id } = useParams({ from: '/table/$id' })
-  const navigate = useNavigate()
-  const account = useAccount()
-  const [stage, setStage] = useState<Stage>({ kind: 'connecting' })
+/**
+ * A seat at a room, kept: coming in with `enter`, the room's states put on the table at the table's beat, this seat's
+ * moves sent, and a lost connection coming back by itself — the SDK's reconnection first, then `enter` again for two
+ * minutes. A private room (SKATGO-61/163) and a League round (SKATGO-204) sit the same way. `here` says whether the
+ * browser is still on the room's page; `refused` hears a refusal that does not pass by itself, before it is shown;
+ * `dismissed` hears the room letting the seat go and may take over (true), as leaving a private room goes to the
+ * friends page. Starts once `active` is true, and again for another `key` (another room's number).
+ */
+export function useSeat<E extends string>({ enter, passing, here, active, key = '', refused, dismissed }: {
+  enter: () => Promise<Room | E>
+  key?: string
+  passing: ReadonlySet<E>
+  here: () => boolean
+  active: boolean
+  refused?: (e: E) => Promise<void>
+  dismissed?: (why: Gone) => boolean
+}) {
+  const [stage, setStage] = useState<Stage<E>>({ kind: 'connecting' })
   const [shown, setShown] = useState<TableState | null>(null)
   const [queue, setQueue] = useState<TableState[]>([])
   /** The player has tapped the finished trick away (SKATGO-72) — perhaps before its state arrived, the
@@ -186,15 +198,12 @@ export function PrivateTable() {
   const [sending, setSending] = useState(false)
   /** The connection dropped and the SDK is getting it back: the table stays, with a line over it. */
   const [dropped, setDropped] = useState(false)
-  /** The room the account is in instead, when this one could not be entered for it. */
-  const [elsewhere, setElsewhere] = useState<string | null>(null)
   const latest = useRef<TableState | null>(null)
   const room = useRef<Room | null>(null)
   const leaving = useRef(false)
   /** The way back's tries so far, while it keeps trying. */
   const back = useRef<{ since: number; tries: number; timer?: ReturnType<typeof setTimeout> } | null>(null)
   const trying = useRef(false)
-  const told = useRef(false)
   /** The revision this seat's move made, until the state carrying it arrives (SKATGO-164). */
   const awaiting = useRef<number | null>(null)
   /** When the last change to the game was put on the table, for the next one's beat. */
@@ -227,12 +236,12 @@ export function PrivateTable() {
     // Taken out by the host, left, opened on another device, or the room closed: this page lets the room go.
     r.onMessage('dismissed', (d: { why?: Gone }) => {
       leaving.current = true
-      if (d?.why === 'left') return void navigate({ to: '/with-friends' })
-      setStage({ kind: 'gone', why: d?.why ?? 'closed' })
+      const why = d?.why ?? 'closed'
+      if (dismissed?.(why)) return
+      setStage({ kind: 'gone', why })
     })
     // A lost connection: the SDK's own reconnection first, with the table kept on screen; when that gives up, the
-    // account comes back to its seat by the room's number (a computer has kept it warm meanwhile), trying again until
-    // the service is back.
+    // account comes back to its seat (a computer has kept it warm meanwhile), trying again until the service is back.
     r.onDrop(() => setDropped(true))
     r.onReconnect(() => {
       setDropped(false)
@@ -251,27 +260,24 @@ export function PrivateTable() {
   }
 
   /** The next try at coming back, later each time; after RETRY_FOR the person is told and may try again. */
-  function later(error: TableError = 'unreachable') {
+  function later(error?: E) {
     const b = back.current ?? (back.current = { since: Date.now(), tries: 0 })
     if (Date.now() - b.since >= RETRY_FOR) {
       back.current = null
-      return setStage({ kind: 'error', error, again: true })
+      return setStage({ kind: 'error', error: error ?? ('unreachable' as E), again: true })
     }
     clearTimeout(b.timer)
     b.timer = setTimeout(() => void comeIn(), WAITS[b.tries] ?? 10_000)
     b.tries++
   }
 
-  /** Whether the browser is still at this room's address: on the way to another page the router may draw this one once
-   *  more, and it must not take a seat again on its way out (after leaving, it would put the person straight back). */
-  const here = () => window.location.pathname.endsWith(`/${id}`)
-
   async function comeIn() {
+    // On the way to another page the router may draw this one once more: it must not take a seat again on its way out.
     if (trying.current || !here()) return
     trying.current = true
     leaving.current = false
     clearTimeout(back.current?.timer)
-    const r = await enterRoom(id)
+    const r = await enter()
     trying.current = false
     if (leaving.current) {
       if (typeof r !== 'string') void r.leave(true)
@@ -281,19 +287,14 @@ export function PrivateTable() {
       back.current = null
       return attach(r)
     }
-    if (PASSING.has(r)) return later(r)
+    if (passing.has(r)) return later(r)
     back.current = null
-    if (r === 'already_in_room') {
-      const other = await myRoom()
-      setElsewhere(typeof other === 'string' && ROOM_CODE.test(other) ? other : null)
-    }
+    await refused?.(r)
     setStage({ kind: 'error', error: r })
   }
 
   useEffect(() => {
-    if (account === undefined) return
-    if (account === null) return setStage({ kind: 'signIn' })
-    if (!ROOM_CODE.test(id)) return setStage({ kind: 'error', error: 'room_not_found' })
+    if (!active) return
     setStage({ kind: 'connecting' })
     void comeIn()
     // A phone back in front, or the network back: the next try is now rather than after its wait.
@@ -311,15 +312,7 @@ export function PrivateTable() {
     }
     // Once, for this room and account.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, account])
-
-  // A newcomer who signed up to come in here: whose room it was is recorded (SKATGO-117); whether the account is
-  // new enough to count, and not the host, is the service's to decide.
-  useEffect(() => {
-    if (told.current || stage.kind !== 'seated' || !shown) return
-    told.current = true
-    if (!shown.pub.seats[shown.mine.seat].host) sayBrought(id)
-  }, [stage.kind, shown, id])
+  }, [active, key])
 
   // States arrive as they happen, and go on the table as free play shows its steps (SKATGO-164, the human: 「我希望体验和free
   // play一样，有顺序，有节奏，的出牌」): a change to the game a beat (BOT_DELAY) after the one before, and the answer to this
@@ -352,6 +345,69 @@ export function PrivateTable() {
     setSending(true)
     sendAction(r, at.pub.revision, action)
   }
+  /** Tries again now: after the way back gave up, or after being let go. */
+  const again = () => {
+    setStage({ kind: 'connecting' })
+    void comeIn()
+  }
+  /** Lets this room go and comes in again — to another room `enter` now leads to (a League's next round, SKATGO-204). */
+  const reseat = async () => {
+    leaving.current = true
+    const r = room.current
+    room.current = null
+    latest.current = null
+    setShown(null)
+    setQueue([])
+    await r?.leave(true).catch(() => {})
+    again()
+  }
+  // While the connection comes back — the SDK's own reconnection, or the tries after it — the table stays on screen
+  // under one line, and takes no moves.
+  const away = dropped || stage.kind !== 'seated'
+  return { stage, setStage, shown, send, again, reseat, away, busy: sending || away || queue.length > 0, sending, collect: () => setRelease(true) }
+}
+
+/** A private room by its number: the account's own seat, or a new one — a signed-out visitor signs in first. */
+export function PrivateTable() {
+  const { id } = useParams({ from: '/table/$id' })
+  const navigate = useNavigate()
+  const account = useAccount()
+  /** The room the account is in instead, when this one could not be entered for it. */
+  const [elsewhere, setElsewhere] = useState<string | null>(null)
+  const told = useRef(false)
+  const seat = useSeat<TableError>({
+    enter: () => enterRoom(id),
+    passing: PASSING,
+    // Whether the browser is still at this room's address: after leaving, it would put the person straight back.
+    here: () => window.location.pathname.endsWith(`/${id}`),
+    active: !!account && ROOM_CODE.test(id),
+    key: id,
+    refused: async (r) => {
+      if (r !== 'already_in_room') return
+      const other = await myRoom()
+      setElsewhere(typeof other === 'string' && ROOM_CODE.test(other) ? other : null)
+    },
+    dismissed: (why) => {
+      if (why !== 'left') return false
+      void navigate({ to: '/with-friends' })
+      return true
+    },
+  })
+  const { stage, shown, send, away } = seat
+
+  useEffect(() => {
+    if (account === null) seat.setStage({ kind: 'signIn' })
+    else if (account && !ROOM_CODE.test(id)) seat.setStage({ kind: 'error', error: 'room_not_found' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account, id])
+
+  // A newcomer who signed up to come in here: whose room it was is recorded (SKATGO-117); whether the account is
+  // new enough to count, and not the host, is the service's to decide.
+  useEffect(() => {
+    if (told.current || stage.kind !== 'seated' || !shown) return
+    told.current = true
+    if (!shown.pub.seats[shown.mine.seat].host) sayBrought(id)
+  }, [stage.kind, shown, id])
 
   if (stage.kind === 'signIn') {
     return (
@@ -370,44 +426,22 @@ export function PrivateTable() {
     return (
       <Notice
         text={text}
-        onAgain={stage.why === 'kicked' || stage.why === 'elsewhere' ? () => {
-          setStage({ kind: 'connecting' })
-          void comeIn()
-        } : undefined}
+        onAgain={stage.why === 'kicked' || stage.why === 'elsewhere' ? seat.again : undefined}
         again={stage.why === 'kicked' ? m.room_come_back() : undefined}
       />
     )
   }
   if (stage.kind === 'error') {
-    return (
-      <Notice
-        text={errorText(stage.error)}
-        back={elsewhere}
-        onAgain={stage.again ? () => {
-          setStage({ kind: 'connecting' })
-          void comeIn()
-        } : undefined}
-      />
-    )
+    return <Notice text={errorText(stage.error)} back={elsewhere} onAgain={stage.again ? seat.again : undefined} />
   }
   if (!shown) return <Notice text={m.loading()} quiet />
-  if (shown.pub.deals === 0) return <Waiting state={shown} busy={sending || dropped || stage.kind !== 'seated'} send={send} />
-  // While the connection comes back — the SDK's own reconnection, or the tries after it — the table stays on screen
-  // under one line, and takes no moves. A newcomer is told when they start.
-  const away = dropped || stage.kind !== 'seated'
+  if (shown.pub.deals === 0) return <Waiting state={shown} busy={seat.sending || away} send={send} />
+  // A newcomer is told when they start.
   const waiting = shown.pub.seats[shown.mine.seat].joining
   const notice = away
     ? <span data-testid="table-reconnecting"><Pill tone="dark">{m.table_reconnecting()}</Pill></span>
     : waiting ? <span data-testid="table-joining"><Pill tone="dark">{m.room_joining()}</Pill></span> : null
-  return (
-    <Playing
-      state={shown}
-      busy={sending || away || queue.length > 0}
-      send={send}
-      collect={() => setRelease(true)}
-      notice={notice}
-    />
-  )
+  return <Playing state={shown} busy={seat.busy} send={send} collect={seat.collect} notice={notice} />
 }
 
 /** A room seat's own name: a person's nickname (the viewer is "you"), Lina or Noah for a computer's seat — the first
@@ -477,7 +511,7 @@ function Waiting({ state, busy, send }: { state: TableState; busy: boolean; send
 }
 
 /** A seat's name at the table: its own name, marked when a computer plays it, for good or for someone away. */
-function seatNames(state: TableState): [string, string, string] {
+export function seatNames(state: TableState): [string, string, string] {
   const me = state.mine.seat
   return [0, 1, 2].map((view) => {
     const s = state.pub.seats[roomSeat(view, me)]
@@ -577,7 +611,7 @@ function Stats({ state }: { state: TableState }) {
   )
 }
 
-function Shell({ children }: { children: ReactNode }) {
+export function Shell({ children }: { children: ReactNode }) {
   return (
     <div {...stylex.props(styles.page)}>
       <div {...stylex.props(styles.column)}>

@@ -168,6 +168,21 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/tisch/:id'],
       ],
     },
+    // The League (SKATGO-204): a "Liga" in German, its round's table "spielen" as free play's.
+    {
+      pattern: '/league',
+      localized: [
+        ['en', '/en/league'],
+        ['de', '/de/liga'],
+      ],
+    },
+    {
+      pattern: '/league/play',
+      localized: [
+        ['en', '/en/league/play'],
+        ['de', '/de/liga/spielen'],
+      ],
+    },
     // Deleting an account (SKATGO-185): the page the settings and Google Play point to.
     {
       pattern: '/delete-account',

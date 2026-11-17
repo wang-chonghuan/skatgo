@@ -19,6 +19,8 @@ export const DailyEntry = lazy(() => pages().then((mod) => ({ default: mod.Daily
 export const DealOfDay = lazy(() => pages().then((mod) => ({ default: mod.DealOfDay })))
 export const RoomCards = lazy(() => pages().then((mod) => ({ default: mod.RoomCards })))
 export const PrivateTable = lazy(() => pages().then((mod) => ({ default: mod.PrivateTable })))
+export const LeagueHome = lazy(() => pages().then((mod) => ({ default: mod.LeagueHome })))
+export const LeagueTable = lazy(() => pages().then((mod) => ({ default: mod.LeagueTable })))
 
 /** Renders `children` in the browser only; `fallback` (or "dealing the cards…") until then. */
 export function ClientPart({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {

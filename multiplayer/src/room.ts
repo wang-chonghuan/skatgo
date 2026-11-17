@@ -6,9 +6,10 @@ import { actor, collectTrick, type Seat } from '../../app/src/lib/skat/game'
 import { TICKET_MAX, ticketClaims } from '../../app/src/lib/room-ticket'
 import { computerTurn, decided, type Logged } from './computers'
 import { nameOf } from './daily'
-import { deckOf, plan, poolDealIndex, type Pool } from './free'
+import { plan, poolDealOf, type Pool } from './free'
+import { personaTurnPolicy, settleLeague } from './league'
 import {
-  applyAction, applySeatMove, claimSeat, commandSchema, dealIfReady, emptyRoom, GRACE_MS, hash, newRoom, privateView, publicView,
+  applyAction, applySeatMove, claimSeat, commandSchema, dealIfReady, emptyRoom, GRACE_MS, hash, logMove, newRoom, nextDue, privateView, publicView,
   Rejected, roomOnly, scoreEnded, secretEquals, TTL_MS, type PoolDeal, type Snapshot,
 } from './model'
 import type { Policy } from './skatzero/policy'
@@ -18,6 +19,9 @@ import { Store } from './store'
 export const RESTORE = Symbol('trusted-restore')
 /** Whether anyone is at the table now. */
 const online = (s: Snapshot) => s.seats.some(p => p.session !== null)
+/** Whether the computers play on: with someone at the table — or always at a League round (SKATGO-204), which must end
+ *  to be scored, a computer playing for whoever is away. */
+const playsOn = (s: Snapshot) => online(s) || !!s.league
 /** Who may come in: a trusted integration client with the admission key, naming the account it plays for, or a
  *  browser with a ticket the web server signed with it (SKATGO-61), which names the account (SKATGO-163). A seat is an
  *  account's: the same account comes back to it from any device. A browser opens a room only with an `open` ticket,
@@ -43,8 +47,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
   const pick = (dealer: Seat): PoolDeal => {
     const p = pool()
     if (!p) throw new Rejected('not_ready')
-    const d = p.deals[poolDealIndex(p, dealer)]
-    return { dealer: d.dealer, deck: deckOf(d.deck), plans: d.computers }
+    return poolDealOf(p, dealer)
   }
   return class SkatRoom extends Room<{ state: InstanceType<typeof MatchState> }> {
     state = new MatchState()
@@ -124,6 +127,8 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             p.autopilot = p.joinsAt !== null
             s.expiresAt = Date.now() + TTL_MS
           } else {
+            // A League round's seats are its own people's (SKATGO-204): nobody else comes in.
+            if (s.league) throw new Rejected('room_full')
             if (await store.roomOf(by.account, s.id, c)) throw new Rejected('already_in_room')
             seat = claimSeat(s, by.account, await nameOf(c, by.account, Date.now()), client.sessionId)
             claimed = true
@@ -228,7 +233,9 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         if (!room && (cmd.revision < (s.played ?? s.revision) || cmd.revision > s.revision)) throw new Rejected('stale_revision')
         const sessions = s.seats.map(x => x.session)
         const before = s.game
+        const scored = s.scored
         applyAction(s, seat, cmd.action, pick)
+        await settleLeague(s, c, scored)
         s.seats.forEach((x, i) => { if (sessions[i] && x.session !== sessions[i]) gone.push(sessions[i]!) })
         // A change to the game itself: a move, a deal — not asking for the next deal while others have not (SKATGO-165).
         if (s.game !== before) s.played = s.revision + 1
@@ -271,7 +278,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
       for (const p of s.seats) {
         if (p.disconnectedAt !== null && !p.autopilot) deadlines.push(p.disconnectedAt + GRACE_MS)
       }
-      if (s.game && online(s) && this.computerDue(s)) deadlines.push(s.nextActionAt)
+      if (s.game && playsOn(s) && this.computerDue(s)) deadlines.push(s.nextActionAt)
       this.timer = setTimeout(() => {
         this.enqueue(() => this.advance()).catch(e => {
           if (e instanceof Rejected && e.message === 'room_expired') void this.expire()
@@ -296,17 +303,24 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
     private async advance() {
       if (!ready()) { this.retry(); return }
       await this.flushDrops()
-      const result = await store.change(this.roomId, async s => {
+      const result = await store.change(this.roomId, async (s, c) => {
         let changed = false
         const now = Date.now()
+        const scored = s.scored
         for (const p of s.seats) {
           if (!p.session && p.disconnectedAt !== null && !p.autopilot && now >= p.disconnectedAt + GRACE_MS) {
             p.autopilot = true
             changed = true
           }
         }
-        // Nobody online, nothing played (SKATGO-163): the computers do not go on by themselves.
-        if (s.game && online(s) && now >= s.nextActionAt && this.computerDue(s)) {
+        // Nobody online, nothing played (SKATGO-163): the computers do not go on by themselves — but at a League round,
+        // which deals its next deal by itself once nobody here is left to ask for it (SKATGO-204).
+        if (s.league && now >= s.nextActionAt && dealIfReady(s, pick)) {
+          s.nextActionAt = now + aiDelay
+          s.expiresAt = now + TTL_MS
+          s.played = s.revision + 1
+          changed = true
+        } else if (s.game && playsOn(s) && now >= s.nextActionAt && this.computerDue(s)) {
           // The computers' moves (SKATGO-61): the trick collected, a decided deal ended, or SkatZero's
           // turn for a computer's seat — from the deal's prepared plan, or a person's seat while a
           // computer stands in for them.
@@ -318,11 +332,19 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             const turn = actor(g)
             if (early) moves = [early]
             // One move a beat (SKATGO-164): a skat step — pick up, put away, the game — shows as free play shows it, one
-            // after another; the next beat decides the rest again from the same cards.
-            else if (turn !== null && s.plans) moves = (await computerTurn(g, turn, plan(s.plans[String(turn) as '0' | '1' | '2']), policy()!)).slice(0, 1)
-            for (const l of moves) s.game = applySeatMove(s.game, l.seat, l.move)
+            // after another; the next beat decides the rest again from the same cards. A League round's persona plays its
+            // seat with its own slips (SKATGO-204).
+            else if (turn !== null && s.plans) {
+              const by = personaTurnPolicy(policy()!, s, turn) ?? policy()!
+              moves = (await computerTurn(g, turn, plan(s.plans[String(turn) as '0' | '1' | '2']), by)).slice(0, 1)
+            }
+            for (const l of moves) {
+              s.game = applySeatMove(s.game, l.seat, l.move)
+              logMove(s, l)
+            }
           }
           scoreEnded(s)
+          await settleLeague(s, c, scored)
           s.nextActionAt = now + aiDelay
           s.expiresAt = now + TTL_MS
           s.played = s.revision + 1
@@ -338,6 +360,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
     private computerDue(s: Snapshot): boolean {
       const g = s.game
       if (!g) return false
+      if (s.league && nextDue(s)) return true
       if (g.phase === 'trickEnd') return true
       if (decided(g, seat => s.seats[seat].autopilot)) return true
       const turn = actor(g)

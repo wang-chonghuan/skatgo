@@ -7,6 +7,7 @@ import type { Card } from './cards'
 import type { Bidding, Game, Phase, Played, Seat } from './game'
 import type { DealSummary } from './tournament'
 import type { Declaration } from './value'
+import type { LeagueResult } from './league'
 
 export type RoomSeat = {
   seat: number
@@ -61,6 +62,9 @@ export type RoomPublic = {
   /** The skat, once the deal is over. */
   skat: Card[] | null
   early: Game['early'] | null
+  /** A League round (SKATGO-204): its tier, how many deals it has, its id (a deal's review names it), and once the last is
+   *  over its result. */
+  league?: { tier: number; of: number; match: string; result: LeagueResult | null }
 }
 
 export type RoomPrivate = { seat: number; hand: Card[]; buried: Card[] }

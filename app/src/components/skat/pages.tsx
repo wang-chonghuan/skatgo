@@ -5,6 +5,7 @@ import { DailyEntry as Entry, DailyTable as Daily } from './daily-table'
 import { DealOfDay as OfDay } from './deal-of-day'
 import { FreeTable as Table } from './free-table'
 import { LessonPlayer as Player } from './lesson-player'
+import { LeagueHome as Home, LeagueTable as League } from './league'
 import { PrivateTable as Private, RoomCards as Cards } from './table-room'
 
 // The browser-only parts of the course, behind one module so the pages load them as a single lazy chunk:
@@ -42,5 +43,14 @@ export const RoomCards = Cards
 export const PrivateTable = () => (
   <MotionConfig reducedMotion="user">
     <Private />
+  </MotionConfig>
+)
+
+// The League (SKATGO-204): its page's own part, and a round's table.
+export const LeagueHome = Home
+
+export const LeagueTable = () => (
+  <MotionConfig reducedMotion="user">
+    <League />
   </MotionConfig>
 )

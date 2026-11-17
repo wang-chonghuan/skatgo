@@ -7,7 +7,9 @@ import {
 } from '../../app/src/lib/skat/game'
 import { declarationAdvice } from '../../app/src/lib/skat/ai'
 import { seegerFabian, summarize } from '../../app/src/lib/skat/tournament'
+import { ROUND_DEALS, type LeagueResult } from '../../app/src/lib/skat/league'
 import type { RoomDeal, RoomPrivate, RoomPublic } from '../../app/src/lib/skat/room-view'
+import type { Logged } from './computers'
 
 export const GRACE_MS = 30_000
 export const TTL_MS = 24 * 60 * 60 * 1000
@@ -66,11 +68,25 @@ export type Slot = {
   autopilot: boolean
   /** The deal a newcomer plays from (SKATGO-163): who sits down while a deal is played starts with the next. */
   joinsAt: number | null
+  /** A League round's persona in this seat (SKATGO-204): its `sim:` id; it plays the seat as a computer does, under
+   *  `nickname`, and is never an account. */
+  persona?: string
 }
 /** A seat's SkatZero bidding for one deal, as free play's pool stores it (SKATGO-40). */
 export type Plan = { maxBid: number; decisions: string }
-/** A deal as a private table takes it from the pool: deck and dealer, and every seat's bidding. */
-export type PoolDeal = { dealer: Seat; deck: Card[]; plans: Record<'0' | '1' | '2', Plan> }
+/** A deal as a private table takes it from the pool: deck and dealer, and every seat's bidding; which deal of which pool
+ *  it is, for a League round's reviews (SKATGO-204). */
+export type PoolDeal = { dealer: Seat; deck: Card[]; plans: Record<'0' | '1' | '2', Plan>; pool?: string; id?: number }
+/** A League round (SKATGO-204): its own id and tier, three deals at a table nobody comes into, each deal's pool deal and
+ *  moves kept for the reviews; scored once when the third ends, then `finished`, its room going soon after. */
+export type LeagueRoom = {
+  match: string
+  tier: number
+  /** The deal on the table: which pool deal, and every move so far. */
+  current: { pool: string; id: number; dealer: Seat; log: Logged[] } | null
+  finished?: boolean
+  result?: LeagueResult
+}
 /** A private room (SKATGO-61, a room since SKATGO-163): its number is its id. It waits first, with no deal (`deals` 0):
  *  people come in with the number, the host gives the seats nobody takes to computers and starts. Then one deal after
  *  another, the dealer moving on, each seat's Seeger-Fabian score running across them; a person who comes in later takes
@@ -98,6 +114,8 @@ export type Snapshot = {
   history?: RoomDeal[]
   /** The seats whose person asked for the next deal since the last was dealt (SKATGO-165). */
   nextBy?: number[]
+  /** A League round instead of a private room (SKATGO-204). */
+  league?: LeagueRoom
   expiresAt: number
   nextActionAt: number
 }
@@ -188,14 +206,22 @@ export const emptyRoom = (s: Snapshot) => s.seats.every(p => p.account === null)
 
 /** The next deal, once every person here has asked for it (SKATGO-165, the human: 「需要所有非ai玩家点了next deal后，才能进入
  *  next deal」): a person online who has not holds it; one away, whom a computer plays for, or gone, does not. With
- *  nobody online nothing is dealt. Whether it was dealt. */
+ *  nobody online nothing is dealt but at a League round (`nextDue`). Whether it was dealt. */
 export function dealIfReady(s: Snapshot, pick: (dealer: Seat) => PoolDeal): boolean {
-  if (!s.game || !ended(s.game)) return false
-  const here = s.seats.flatMap((p, i) => (p.account && p.session ? [i] : []))
-  const asked = s.nextBy ?? []
-  if (here.length === 0 || asked.length === 0 || here.some(i => !asked.includes(i))) return false
+  if (!s.game || !nextDue(s)) return false
   dealNext(s, pick(next(s.game.dealer)))
   return true
+}
+
+/** Whether the deal on the table is over and the next may be dealt: every person online has asked for it. A League round
+ *  (SKATGO-204) goes on with nobody online — its seats played for them — and ends after its third deal. */
+export function nextDue(s: Snapshot): boolean {
+  if (!s.game || !ended(s.game)) return false
+  if (s.league && s.deals >= ROUND_DEALS) return false
+  const here = s.seats.flatMap((p, i) => (p.account && p.session ? [i] : []))
+  const asked = s.nextBy ?? []
+  if (s.league && here.length === 0) return true
+  return here.length > 0 && asked.length > 0 && here.every(i => asked.includes(i))
 }
 
 /** A seat's action in a room. While it waits, the host's `computer` (an empty seat to a computer, or back) and `start`
@@ -204,6 +230,8 @@ export function dealIfReady(s: Snapshot, pick: (dealer: Seat) => PoolDeal): bool
  *  `leave`: one's own. Everything else is a move through the engine. `pick` draws a deal from the pool with the given
  *  dealer. */
 export function applyAction(s: Snapshot, seat: Seat, action: Command['action'], pick: (dealer: Seat) => PoolDeal) {
+  // A League round has no host and nobody leaves it: its seat stays the player's, played for them while they are away.
+  if (s.league && roomOnly(action)) throw new Rejected('illegal_action')
   const host = !!s.host && s.seats[seat].account === s.host
   if (action.type === 'computer') {
     const p = s.seats[action.seat]
@@ -238,13 +266,19 @@ export function applyAction(s: Snapshot, seat: Seat, action: Command['action'], 
   if (!s.game) throw new Rejected('not_your_turn')
   refuseUnlawful(s.game, action)
   s.game = applySeatMove(s.game, seat, action)
+  logMove(s, { seat, move: action })
   scoreEnded(s)
 }
-function dealNext(s: Snapshot, d: PoolDeal) {
+/** A League round keeps each move of the deal on the table (SKATGO-204). */
+export function logMove(s: Snapshot, l: Logged) {
+  s.league?.current?.log.push(l)
+}
+export function dealNext(s: Snapshot, d: PoolDeal) {
   s.game = deal(d.dealer, d.deck)
   s.plans = d.plans
   s.deals++
   s.nextBy = []
+  if (s.league) s.league.current = { pool: d.pool!, id: d.id!, dealer: d.dealer, log: [] }
   // Who waited for this deal plays it, from 0; someone away by now is stood in for by a computer.
   s.seats.forEach((p, i) => {
     if (p.joinsAt === null || p.joinsAt > s.deals) return
@@ -261,7 +295,7 @@ export function scoreEnded(s: Snapshot) {
   const add = seegerFabian(s.game)
   s.scores = s.scores.map((n, i) => n + add[i]) as Snapshot['scores']
   s.scored = s.deals
-  s.history = [...(s.history ?? []), { summary: summarize(s.game), names: s.seats.map(p => (p.account && p.joinsAt === null ? p.nickname : null)) }]
+  s.history = [...(s.history ?? []), { summary: summarize(s.game), names: s.seats.map(p => ((p.account || p.persona) && p.joinsAt === null ? p.nickname : null)) }]
 }
 /** A person's new move: a declaration the rules do not allow is refused (ISkO 3.4.2–3.4.4, SKATGO-98). Only
  *  new moves are checked; a game recorded before replays as it was played. */
@@ -296,13 +330,14 @@ export function publicView(s: Snapshot): RoomPublic {
   return {
     roomId: s.id, revision: s.revision, played: s.played ?? s.revision, expiresAt: s.expiresAt, deals: s.deals, scores: s.scores,
     history: s.history ?? [],
+    // A League round's persona sits as a player (SKATGO-204): its name, at the table, never waited for.
     seats: s.seats.map((p, i) => ({
-      seat: i, kind: p.account ? 'human' : isEmpty(p) ? 'empty' : 'ai',
+      seat: i, kind: p.account || p.persona ? 'human' : isEmpty(p) ? 'empty' : 'ai',
       nickname: p.nickname,
       host: p.account !== null && p.account === s.host,
-      connected: !!p.session,
-      ready: (s.nextBy ?? []).includes(i),
-      control: !p.account || p.autopilot ? 'ai' : 'human',
+      connected: !!p.session || !!p.persona,
+      ready: (s.nextBy ?? []).includes(i) || !!p.persona,
+      control: p.persona ? 'human' : !p.account || p.autopilot ? 'ai' : 'human',
       joining: p.joinsAt !== null,
       reconnectUntil: p.disconnectedAt === null ? null : p.disconnectedAt + GRACE_MS,
       cardCount: g?.hands[i].length ?? 0,
@@ -315,6 +350,7 @@ export function publicView(s: Snapshot): RoomPublic {
     // The skat is shown once the deal is over, as at a real table and in free play.
     skat: g?.phase === 'done' ? g.skat : null,
     early: g?.early ?? null,
+    ...(s.league ? { league: { tier: s.league.tier, of: ROUND_DEALS, match: s.league.match, result: s.league.result ?? null } } : {}),
   }
 }
 /** A seat's own cards — none for a newcomer waiting for their first deal, whose seat a computer still plays. */

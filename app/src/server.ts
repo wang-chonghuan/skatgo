@@ -7,6 +7,7 @@ import { handleCard, handleDaily } from './lib/daily-handler'
 import { UNAVAILABLE } from './lib/forum-api'
 import { forumSitemap, handleForum } from './lib/forum-handler'
 import { handleFree } from './lib/free-handler'
+import { handleLeague } from './lib/league-handler'
 import { handleRoom } from './lib/room-handler'
 import { handleTricks } from './lib/tricks-handler'
 import { chooseLocale, rootLocale } from './lib/locale'
@@ -44,7 +45,7 @@ defineCustomServerStrategy('custom-skatgo', {
 // routes, not pages — no language prefix, no redirect, and nothing that reads the page route tree has to know
 // about them. The daily tournament's endpoints (SKATGO-35,
 // lib/daily-handler.ts), free play's (SKATGO-40, lib/free-handler.ts) and a private table's admission
-// and its referral (SKATGO-61, SKATGO-117, lib/room-handler.ts), the ladder's record (SKATGO-109, lib/tricks-handler.ts),
+// and its referral (SKATGO-61, SKATGO-117, lib/room-handler.ts), the League (SKATGO-204, lib/league-handler.ts), the ladder's record (SKATGO-109, lib/tricks-handler.ts),
 // the forum (SKATGO-118, lib/forum-handler.ts) and an account's deletion (SKATGO-185, lib/account-handler.ts). The assistant's /api/ask is gone (SKATGO-130). Product analytics
 // reaches PostHog through /hx (SKATGO-152, lib/analytics-relay.ts).
 export default {
@@ -53,6 +54,7 @@ export default {
     if (url.pathname.startsWith('/api/daily/')) return handleDaily(req)
     if (url.pathname.startsWith('/api/free/')) return handleFree(req)
     if (url.pathname.startsWith('/api/room/')) return handleRoom(req)
+    if (url.pathname.startsWith('/api/league/')) return handleLeague(req)
     if (url.pathname.startsWith('/api/tricks/')) return handleTricks(req)
     if (url.pathname.startsWith('/api/forum/')) return handleForum(req)
     if (url.pathname.startsWith('/api/card/')) return handleCard(req)

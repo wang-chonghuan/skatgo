@@ -7,6 +7,7 @@ import { forumRoutes } from './forum'
 import { translateForum } from './translate'
 import { freeRoutes, loadPool } from './free'
 import { ladderRoutes } from './ladder'
+import { leagueRoutes } from './league'
 import { biddingRoutes } from './bidding'
 import { loadPolicy, type Policy } from './skatzero/policy'
 import { roomRoutes } from './referral'
@@ -67,6 +68,9 @@ app.use('/bidding', biddingRoutes(store, key, () => ready && !stopping))
 app.use('/rooms', roomRoutes(store, key, () => ready && !stopping))
 app.use('/forum', forumRoutes(store, key, () => ready && !stopping))
 app.use('/share', shareRoutes(store, key, () => ready && !stopping, () => policy))
+// The League (SKATGO-204): a round's room is made here and hosted like a restored one.
+app.use('/league', leagueRoutes(store, key, () => ready && !stopping, () => pool,
+  async (id) => { await matchMaker.createRoom('skat', { restore: RESTORE, id }) }, () => policy))
 const httpServer = createServer(app)
 const server = new Server({
   transport: new WebSocketTransport({ server: httpServer, maxPayload: 16 * 1024, pingInterval: 5000, pingMaxRetries: 2 }),

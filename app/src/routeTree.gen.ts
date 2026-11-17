@@ -15,6 +15,7 @@ import { Route as BiddingPracticeRouteImport } from './routes/bidding-practice'
 import { Route as DailyRouteImport } from './routes/daily'
 import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as ForumRouteImport } from './routes/forum'
+import { Route as LeagueRouteImport } from './routes/league'
 import { Route as OfflineRouteImport } from './routes/offline'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -31,6 +32,7 @@ import { Route as DCodeRouteImport } from './routes/d.$code'
 import { Route as DailyPlayRouteImport } from './routes/daily_.play'
 import { Route as DailyReplayRouteImport } from './routes/daily_.replay'
 import { Route as ForumPostRouteImport } from './routes/forum_.$post'
+import { Route as LeaguePlayRouteImport } from './routes/league_.play'
 import { Route as RulesBiddingTableRouteImport } from './routes/rules_.bidding-table'
 import { Route as RulesPrintableRouteImport } from './routes/rules_.printable'
 import { Route as RulesScoreSheetRouteImport } from './routes/rules_.score-sheet'
@@ -66,6 +68,11 @@ const DeleteAccountRoute = DeleteAccountRouteImport.update({
 const ForumRoute = ForumRouteImport.update({
   id: '/forum',
   path: '/forum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeagueRoute = LeagueRouteImport.update({
+  id: '/league',
+  path: '/league',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OfflineRoute = OfflineRouteImport.update({
@@ -148,6 +155,11 @@ const ForumPostRoute = ForumPostRouteImport.update({
   path: '/forum/$post',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeaguePlayRoute = LeaguePlayRouteImport.update({
+  id: '/league_/play',
+  path: '/league/play',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RulesBiddingTableRoute = RulesBiddingTableRouteImport.update({
   id: '/rules_/bidding-table',
   path: '/rules/bidding-table',
@@ -186,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/daily': typeof DailyRoute
   '/delete-account': typeof DeleteAccountRoute
   '/forum': typeof ForumRoute
+  '/league': typeof LeagueRoute
   '/offline': typeof OfflineRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
@@ -201,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/daily/play': typeof DailyPlayRoute
   '/daily/replay': typeof DailyReplayRoute
   '/forum/$post': typeof ForumPostRoute
+  '/league/play': typeof LeaguePlayRoute
   '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/rules/printable': typeof RulesPrintableRoute
   '/rules/score-sheet': typeof RulesScoreSheetRoute
@@ -216,6 +230,7 @@ export interface FileRoutesByTo {
   '/daily': typeof DailyRoute
   '/delete-account': typeof DeleteAccountRoute
   '/forum': typeof ForumRoute
+  '/league': typeof LeagueRoute
   '/offline': typeof OfflineRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
@@ -231,6 +246,7 @@ export interface FileRoutesByTo {
   '/daily/play': typeof DailyPlayRoute
   '/daily/replay': typeof DailyReplayRoute
   '/forum/$post': typeof ForumPostRoute
+  '/league/play': typeof LeaguePlayRoute
   '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/rules/printable': typeof RulesPrintableRoute
   '/rules/score-sheet': typeof RulesScoreSheetRoute
@@ -247,6 +263,7 @@ export interface FileRoutesById {
   '/daily': typeof DailyRoute
   '/delete-account': typeof DeleteAccountRoute
   '/forum': typeof ForumRoute
+  '/league': typeof LeagueRoute
   '/offline': typeof OfflineRoute
   '/play': typeof PlayRoute
   '/privacy': typeof PrivacyRoute
@@ -262,6 +279,7 @@ export interface FileRoutesById {
   '/daily_/play': typeof DailyPlayRoute
   '/daily_/replay': typeof DailyReplayRoute
   '/forum_/$post': typeof ForumPostRoute
+  '/league_/play': typeof LeaguePlayRoute
   '/rules_/bidding-table': typeof RulesBiddingTableRoute
   '/rules_/printable': typeof RulesPrintableRoute
   '/rules_/score-sheet': typeof RulesScoreSheetRoute
@@ -279,6 +297,7 @@ export interface FileRouteTypes {
     | '/daily'
     | '/delete-account'
     | '/forum'
+    | '/league'
     | '/offline'
     | '/play'
     | '/privacy'
@@ -294,6 +313,7 @@ export interface FileRouteTypes {
     | '/daily/play'
     | '/daily/replay'
     | '/forum/$post'
+    | '/league/play'
     | '/rules/bidding-table'
     | '/rules/printable'
     | '/rules/score-sheet'
@@ -309,6 +329,7 @@ export interface FileRouteTypes {
     | '/daily'
     | '/delete-account'
     | '/forum'
+    | '/league'
     | '/offline'
     | '/play'
     | '/privacy'
@@ -324,6 +345,7 @@ export interface FileRouteTypes {
     | '/daily/play'
     | '/daily/replay'
     | '/forum/$post'
+    | '/league/play'
     | '/rules/bidding-table'
     | '/rules/printable'
     | '/rules/score-sheet'
@@ -339,6 +361,7 @@ export interface FileRouteTypes {
     | '/daily'
     | '/delete-account'
     | '/forum'
+    | '/league'
     | '/offline'
     | '/play'
     | '/privacy'
@@ -354,6 +377,7 @@ export interface FileRouteTypes {
     | '/daily_/play'
     | '/daily_/replay'
     | '/forum_/$post'
+    | '/league_/play'
     | '/rules_/bidding-table'
     | '/rules_/printable'
     | '/rules_/score-sheet'
@@ -370,6 +394,7 @@ export interface RootRouteChildren {
   DailyRoute: typeof DailyRoute
   DeleteAccountRoute: typeof DeleteAccountRoute
   ForumRoute: typeof ForumRoute
+  LeagueRoute: typeof LeagueRoute
   OfflineRoute: typeof OfflineRoute
   PlayRoute: typeof PlayRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -385,6 +410,7 @@ export interface RootRouteChildren {
   DailyPlayRoute: typeof DailyPlayRoute
   DailyReplayRoute: typeof DailyReplayRoute
   ForumPostRoute: typeof ForumPostRoute
+  LeaguePlayRoute: typeof LeaguePlayRoute
   RulesBiddingTableRoute: typeof RulesBiddingTableRoute
   RulesPrintableRoute: typeof RulesPrintableRoute
   RulesScoreSheetRoute: typeof RulesScoreSheetRoute
@@ -436,6 +462,13 @@ declare module '@tanstack/react-router' {
       path: '/forum'
       fullPath: '/forum'
       preLoaderRoute: typeof ForumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/league': {
+      id: '/league'
+      path: '/league'
+      fullPath: '/league'
+      preLoaderRoute: typeof LeagueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/offline': {
@@ -550,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForumPostRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/league_/play': {
+      id: '/league_/play'
+      path: '/league/play'
+      fullPath: '/league/play'
+      preLoaderRoute: typeof LeaguePlayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rules_/bidding-table': {
       id: '/rules_/bidding-table'
       path: '/rules/bidding-table'
@@ -602,6 +642,7 @@ const rootRouteChildren: RootRouteChildren = {
   DailyRoute: DailyRoute,
   DeleteAccountRoute: DeleteAccountRoute,
   ForumRoute: ForumRoute,
+  LeagueRoute: LeagueRoute,
   OfflineRoute: OfflineRoute,
   PlayRoute: PlayRoute,
   PrivacyRoute: PrivacyRoute,
@@ -617,6 +658,7 @@ const rootRouteChildren: RootRouteChildren = {
   DailyPlayRoute: DailyPlayRoute,
   DailyReplayRoute: DailyReplayRoute,
   ForumPostRoute: ForumPostRoute,
+  LeaguePlayRoute: LeaguePlayRoute,
   RulesBiddingTableRoute: RulesBiddingTableRoute,
   RulesPrintableRoute: RulesPrintableRoute,
   RulesScoreSheetRoute: RulesScoreSheetRoute,

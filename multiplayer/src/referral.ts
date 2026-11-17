@@ -36,6 +36,8 @@ export async function recordReferral(store: Store, account: string, roomId: stri
 export async function roomStatus(store: Store, code: string, account: string): Promise<'member' | 'open' | 'full'> {
   const s = await store.read(code)
   if (s.seats.some(p => p.account === account)) return 'member'
+  // A League round (SKATGO-204) is no private room: nobody comes into it by its number.
+  if (s.league) throw new Rejected('room_not_found')
   return freeSeat(s) >= 0 ? 'open' : 'full'
 }
 
@@ -52,7 +54,10 @@ export function roomRoutes(store: Store, key: string, ready: () => boolean) {
     const account = String(req.query.account ?? '')
     if (!ACCOUNT.test(account)) return void res.status(400).json({ error: 'invalid_request' })
     try {
-      res.set('cache-control', 'no-store').json({ room: await store.roomOf(account) })
+      // The private room the account is in, for "Back to room": a League round is the League page's (SKATGO-204).
+      const room = await store.roomOf(account)
+      const league = room ? !!(await store.read(room).catch(() => null))?.league : false
+      res.set('cache-control', 'no-store').json({ room: league ? null : room })
     } catch {
       res.status(503).json({ error: 'storage_unavailable' })
     }

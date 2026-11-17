@@ -1,0 +1,14 @@
+rounds per tier: 400; card errors kept by tier: 1, 0.8, 0.6, 0.4, 0.2, 0; bands by weakness: bronze 1.275–1.467, silver 1.095–1.274, gold 1.066–1.095, platinum 0.972–1.066, diamond 0.927–0.972, legend 0.900–0.926
+ai   bronze    1st/2nd/3rd 60% / 31% / 10%   League points a round 1.90
+ai   silver    1st/2nd/3rd 55% / 36% / 10%   League points a round 1.81
+ai   gold      1st/2nd/3rd 47% / 36% / 17%   League points a round 1.43
+ai   platinum  1st/2nd/3rd 42% / 34% / 24%   League points a round 1.12
+ai   diamond   1st/2nd/3rd 44% / 32% / 24%   League points a round 1.15
+ai   legend    1st/2nd/3rd 37% / 38% / 26%   League points a round 0.97
+fixed player p50: Robert46 (weakness 1.066), all its own errors
+p50  bronze    1st/2nd/3rd 40% / 35% / 25%   League points a round 1.06
+p50  silver    1st/2nd/3rd 35% / 33% / 32%   League points a round 0.74
+p50  gold      1st/2nd/3rd 25% / 36% / 39%   League points a round 0.32
+p50  platinum  1st/2nd/3rd 17% / 37% / 46%   League points a round -0.04
+p50  diamond   1st/2nd/3rd 14% / 31% / 55%   League points a round -0.38
+p50  legend    1st/2nd/3rd 13% / 28% / 59%   League points a round -0.51

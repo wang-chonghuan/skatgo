@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { actor, deal, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, raw, replayLog, reviewOf } from './computers'
-import { actionSchema, applySeatMove, cardSchema, refuseUnlawful, Rejected, secretEquals, roomOnly } from './model'
+import { actionSchema, applySeatMove, cardSchema, refuseUnlawful, Rejected, secretEquals, roomOnly, type PoolDeal } from './model'
 import { BIDS, type HandMode, pickupChances } from './skatzero/bidding'
 import { type Policy, viewOf } from './skatzero/policy'
 import { lineFor, momentOf, TALK_KINDS, verdictOf } from './talk'
@@ -112,6 +112,14 @@ export function poolDealIndex(p: Pool, dealer?: Seat): number {
   if (dealer === undefined) return randomInt(p.deals.length)
   const ids = p.deals.flatMap((d, i) => (d.dealer === dealer ? [i] : []))
   return ids[randomInt(ids.length)]
+}
+
+/** A deal of the pool with this dealer as a table takes it (SKATGO-61): deck, dealer, every seat's bidding, and which deal
+ *  of which pool it is (SKATGO-204). */
+export function poolDealOf(p: Pool, dealer: Seat): PoolDeal {
+  const id = poolDealIndex(p, dealer)
+  const d = p.deals[id]
+  return { dealer: d.dealer, deck: deckOf(d.deck), plans: d.computers, pool: p.version, id }
 }
 
 /** The computers' moves until it is the player's turn: SkatZero's prepared plans for the auction and the

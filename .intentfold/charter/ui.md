@@ -90,7 +90,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | **Page** | every sub-page's background; the front page's is white | `color.page` (front page `color.surface`) | `color.text`, titles `color.navy`, secondary `color.slate` |
 | **Header** | the public site's white bar over every page but the tables | `color.surface`, `elev.landingHeader` | `color.navy`, links `color.slate` |
 | **Option card** | a white card on the page: a lesson, the course's progress, the tournament's board and results, a panel | `color.surface`, `radii.option`, `elev.option` (the featured one `elev.optionFeatured`) | `color.navy` / `color.slate` |
-| **Colour tile** | a section on the front page: ♣ the course (`tileOrange`), ♠ free play (`tileGreen`), the bidding practice (`tileNavy`, SKATGO-149), a private table (`tileRed`) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
+| **Colour tile** | a section on the front page: ♣ the course (`tileOrange`), ♠ free play (`tileGreen`), the League (`tileNavy`, SKATGO-204; the bidding practice's, SKATGO-149, before), a private table (`tileRed`) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
 | **Felt** | where cards lie: the table, a drill's hand | `fill.felt` (`feltInner` → `feltOuter`, with a fine grain) | `color.onColor`; highlights `color.gold` / `color.amber` |
 | **Board and plates** | the table's info board, the seat plates, dark pills | `color.board` with `color.boardLine`; `color.plate` | `color.onColor`, quieter `color.onColorSoft`; the player's own numbers — their score, their side's card points — in `color.amber` (SKATGO-79) |
 | **Footer** | the legal links under every header page (SKATGO-46), the Skat-Tricks and the forum (SKATGO-118), then About SkatGo and the rules (SKATGO-134) | `color.surface` with a `hairline` rule | links in `color.info` |
@@ -104,7 +104,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | `go` | the one call to action, and the current state — the public site's landing buttons too (SKATGO-97, the human: 「改成我们按钮的标准绿色」); `goLanding` and `elev.btnGoLanding`, its former own green, are no longer used |
 | `info` | links in text, the hint button, the focus ring, and the "AI" tag wherever the AI is named — a score sheet, a deal's bidding and trick, the leaderboard (SKATGO-79, SKATGO-80, the human: 「AI标志都用app里那个蓝色的Ai标志」) |
 | `stop` | leaving the table, and the yes to a deletion (a forum post's, an account's, SKATGO-185) |
-| `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the bidding practice, a private table |
+| `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the League (the bidding practice before SKATGO-204), a private table |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); a deal's result box (SKATGO-145, SKATGO-166), `goodSoft` when the player's side won and `badSoft` when it lost. `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson |
 | `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
@@ -277,9 +277,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     corner under its colour, rising on hover — "1 Spiel heute" (`tileGreen`, `CalendarDays`, to `/daily`; the same words
     once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, lucide's `Swords`, crossed — the human: 「不要用机器人」, then 「用两个交错的剑吧，x形的」 — to
     `/play`), "Lernen" (`tileOrange`,
-    `GraduationCap`, the course) and "Reizen" (`tileNavy`, lucide's `Gavel`, an auction's hammer, to `/bidding-practice`; one line since SKATGO-151, the page
-    keeping "Reizen üben"; SKATGO-149, the
-    human: 「practice卡片的位置，做成一个叫牌练习的东西」 — the exercises' "Üben" with its `Puzzle` stood there before); on the right two long white cards, each
+    `GraduationCap`, the course) and "Liga" (`tileNavy`, lucide's `Trophy`, its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:
+    「你看看那个practice是不是没人点，打算把liga放那里如何」 then 「同意」 — the bidding practice's "Reizen" with `Gavel` stood there since
+    SKATGO-149, and the exercises' "Üben" with its `Puzzle` before it); on the right two long white cards, each
     a row tall — the XP board on top, then the progress (SKATGO-172, 「你建议？」): "Verlauf & Analyse" (SKATGO-182, 「卡片名称 my progress改为my history and analyse」; until then "Mein Fortschritt") (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
     over the latest 30 deals, fewer while there are fewer (`standingOf`, SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」),
     the win rate and the average per deal against the AI (`homeCardTitle`, each over a `meta` label), beside the curve and
@@ -318,8 +318,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (`forum-card.webp`, cropped to the card's shape, no icon; 「论坛的卡片图片用这个图片，剪裁成合适的，不要加图标」) and "News
     and articles about Skat." (SKATGO-186) to `/forum`, then "Üben" with cover B of three drawn for it (`practice-card.webp`, a grandfather
     and a girl over cards, a puzzle piece above, in the forum picture's flat style; SKATGO-149, the human: 「把practice放到forum下面」, 「选B」) and "Endspiel-Rätsel und
-    Aufgaben für alle, die die Regeln schon kennen." to `/skat-tricks` — on PC in the wide third column at `dims.half`, so as wide as a
-    colour card, under `bp.cards` the next free place. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
+    Aufgaben für alle, die die Regeln schon kennen." to `/skat-tricks`, and "Reizen" (its tile's one line, SKATGO-151) with its own picture in the same flat style
+    (`bidding-card.webp`, two people bidding, "18?" in a bubble; SKATGO-204, the human: 「同意」 to 「叫牌练习移到下面图片卡的空位」) and
+    "Zehn Karten, zwei Fragen: Was spielst du, und wie hoch darfst du reizen?" to `/bidding-practice` — the two on PC side by side in
+    the wide third column (`homeWaysNarrow`), each about as wide as a colour card, under `bp.cards` the next free places. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
     The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,
     `homePicture`, `icon.tile`, `progressCurve` (SKATGO-136) and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
@@ -532,7 +534,23 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   actions, in the order written, with no way to reply to one, and the comment box under them (a `TextArea`, the
   "@Name" hint, "Kommentieren" `go`), or for a guest the invitation with the `go` sign-in. Dates are the day in
   UTC, the same on the server and in the browser.
-- **The tables** (`/play`, `/daily/play`, a private table, and an open-card endgame's page since SKATGO-111):
+- **The League** (`league-page.tsx`, `league.tsx`, `/league`, SKATGO-204): a sub-page on the grey page in the reading column,
+  noindex: its H1 "Liga", then white cards — for an account, its League ("Gold-Liga", `optionTitle`) with a circled question
+  mark (`info`) opening how the League works in a `Modal` (a round and its points, moving up and down, the coins); "Ligapunkte
+  +5" (`appBtnStrong`) and, in slate, how far to promotion and to relegation — each only where there is one, none up from
+  Legend and none down from Bronze; its coins (`appBtnStrong`) with "+100 heute" in slate once today's check-in counted; then
+  the one `go`, "Spielen · 15 Münzen" — "Suche Mitspieler …" on it while it waits, disabled with one slate line when the coins
+  are too few ("Zu wenig Münzen – morgen gibt es 100 dazu.") — or "Zurück an deinen Tisch" while a round runs. A guest's card
+  is one line and the `go` "Anmelden". Under it "Ligen": the six, Legend first, each with its fee at the right
+  (`appBtnStrong`), over `hairline` rules, the player's own on `goodSoft` with the "You" tag; then, once anyone is in Legend,
+  "Rangliste der Legenden" as the XP board's rows — rank, name, points — the player's own row marked. A round's table (`/league/play`) is a full-screen table as a private one,
+  its board "Spiel n von 3", its top right button the way out back to the League, no Lina and Noah faces (the seats are
+  people's); each deal's result is free play's, with the XP line and the AI's game; the third's foot, "Ergebnis der Runde",
+  opens the round's result in a white panel on the felt: the place ("Platz 1", `dialogTitle`), the three totals in place
+  order as the board's rows with the player's on `goodSoft`, then one line: the League points it brought (`appBtnStrong`) and
+  "Aufstieg in die Gold-Liga!", "Abstieg in die Silber-Liga." or how far to promotion; then "Nochmal · 15 Münzen" (`go`) and
+  "Zur Liga" (`quiet`).
+- **The tables** (`/play`, `/daily/play`, a private table, a League round's since SKATGO-204, and an open-card endgame's page since SKATGO-111):
   the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a
   standard web-app table. Free play's search entry is the front page.

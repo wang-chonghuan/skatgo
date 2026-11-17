@@ -6,13 +6,15 @@ import { once } from 'node:events'
 import { Client, type Room } from '@colyseus/sdk'
 import pg from 'pg'
 import { legalPlays } from '../../app/src/lib/skat/cards'
-import { FEES, ROUND_DEALS } from '../../app/src/lib/skat/league'
+import { DEAL_POINTS, FEES, dealOutcome } from '../../app/src/lib/skat/league'
 import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS } from '../src/model'
+import { Store } from '../src/store'
 
-// The League (SKATGO-204) against a real service and a database of its own: the day's check-in, the fee, a round found in
-// five seconds with personas in the empty seats or with another person of the tier, three deals each dealt by another
-// seat, a person away played for after the grace and back in their seat, the round scored once, nobody else at the
-// table, and a deal's review counted once for the person's record.
+// The League (SKATGO-204, a deal at a time since SKATGO-205) against a real service and a database of its own: the day's
+// check-in, the fee per deal, a table found in five seconds with personas in the empty seats or with another person of the
+// tier, nobody else at it, deals one after another each scored once for each person, leaving (the deal counts, no further
+// fee, the sitting ends with nobody left), a person away played for after the grace and back in their seat, one who cannot
+// pay taken off at the next deal, a deal's review counted once for the person's record, and the one-time points reset.
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 async function until<T>(fn: () => T | Promise<T>, timeout = 20_000): Promise<NonNullable<T>> {
@@ -26,7 +28,7 @@ async function until<T>(fn: () => T | Promise<T>, timeout = 20_000): Promise<Non
 }
 type Peer = { room: Room<any, any>; seat: number; receipts: Map<string, any>; public: PublicView; private: PrivateView }
 
-test('League: check-in, matching, a round of three, the grace, scoring once, reviews', { timeout: 400_000 }, async () => {
+test('League: check-in, matching, deals scored one by one, leaving, the grace, the fee per deal, reviews, the reset', { timeout: 400_000 }, async () => {
   const base = new URL(process.env.DATABASE_URL || '')
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname), 'Acceptance refuses external databases')
   const admin = new pg.Pool({ connectionString: base.href })
@@ -124,42 +126,59 @@ test('League: check-in, matching, a round of three, the grace, scoring once, rev
     /** This seat's move when it is its turn: pass the auction, the first legal card in play, the next deal once over. */
     async function step(p: Peer) {
       const v = p.public
-      if ((v.phase === 'done' || v.phase === 'passedIn') && !v.seats[p.seat].ready && v.deals < ROUND_DEALS) return send(p, { type: 'next' })
+      if ((v.phase === 'done' || v.phase === 'passedIn') && !v.seats[p.seat].ready) return send(p, { type: 'next' })
       if (v.actor !== p.seat) return
       if (v.phase === 'bidding') return send(p, { type: 'bid', value: 'pass' })
       if (v.phase === 'play') return send(p, { type: 'play', card: legalPlays(p.private.hand, v.trick.map(x => x.card), v.declaration!.contract)[0] })
     }
 
-    // The person at the table plays their seat through the round; each deal dealt by another seat.
+    // The person at the table plays deal after deal — no round ends after three — each scored for them as it ends, each new
+    // deal taking the fee; each deal dealt by the seat after the last.
     const a = await attach(await new Client(endpoint).joinById(alone.body.room, { admissionKey, account: 'user:a' }))
-    assert.equal(a.public.league!.of, ROUND_DEALS)
     const dealers = new Set<number>()
     await until(async () => {
       if (a.public.phase === 'bidding') dealers.add(a.public.dealer)
+      if (a.public.deals >= 4) return true
       await step(a)
-      return a.public.league!.result
-    }, 240_000)
-    assert.equal(a.public.deals, ROUND_DEALS)
+      return false
+    }, 300_000)
     assert.equal(dealers.size, 3)
-    const result = a.public.league!.result!
-    const mine = result.seats[a.seat]
-    assert.equal(mine.person, true)
-    assert.equal(mine.points, [3, 1, -2][mine.place])
-    const after = (await call('state', { player: 'user:a' })).body.me
-    assert.deepEqual({ tier: after.tier, points: after.points }, mine.standing)
-    assert.equal(after.table, null)
-    // Scored once: the room's finished round answers nothing more.
-    assert.equal((await sql.query('SELECT count(*)::int AS n FROM league_matches WHERE finished_at IS NOT NULL AND room = $1', [alone.body.room])).rows[0].n, 1)
+    const match = a.public.league!.match
+    const { rows: scored } = await sql.query('SELECT deal, points FROM league_deals WHERE match = $1 ORDER BY deal', [match])
+    assert.equal(scored.length, 3)
+    const last = a.public.league!.last!
+    const mine = last.seats[a.seat]!
+    assert.equal(last.deal, 2)
+    assert.equal(mine.points, DEAL_POINTS[mine.outcome])
+    assert.equal(scored[2].points[a.seat], mine.points)
+    assert(last.seats.every((x, i) => (i === a.seat) === (x !== null)), 'only the person is scored')
+    const sum = scored.reduce((n, r) => n + r.points[a.seat], 0)
+    const standing = (await call('state', { player: 'user:a' })).body.me
+    assert.deepEqual({ tier: standing.tier, points: standing.points }, { tier: 0, points: sum })
+    assert.equal(standing.coins, 140 - 4 * FEES[0])
+
+    // Leaving during the fourth deal: a computer plays it out, it counts, no further fee, and with nobody left the sitting
+    // ends.
+    assert((await send(a, { type: 'leave' })).ok)
+    await until(() => a.public.seats[a.seat].control === 'ai')
+    await until(async () => (await sql.query('SELECT 1 FROM league_matches WHERE id = $1 AND finished_at IS NOT NULL', [match])).rowCount, 120_000)
+    const { rows: fourth } = await sql.query('SELECT points FROM league_deals WHERE match = $1 AND deal = 3', [match])
+    assert.equal(fourth.length, 1)
+    assert([3, -3, -1, 0].includes(fourth[0].points[a.seat]))
+    const gone = (await call('state', { player: 'user:a' })).body.me
+    assert.equal(gone.coins, 140 - 4 * FEES[0])
+    assert.equal(gone.table, null)
 
     // Each deal's review for its person, their seat turned to seat 0, counted once for their record.
-    const match = a.public.league!.match
-    for (let deal = 0; deal < ROUND_DEALS; deal++) {
+    for (let deal = 0; deal < 4; deal++) {
       const r = await call('review', { player: 'user:a', match, deal })
       assert.equal(r.status, 200)
       assert(r.body.mine && r.body.ai, 'the review has both games')
+      const outcome = dealOutcome(r.body.mine.declarer, !!r.body.mine.won, 0)
+      assert.equal(DEAL_POINTS[outcome], (deal < 3 ? scored[deal] : fourth[0]).points[a.seat])
     }
     await call('review', { player: 'user:a', match, deal: 0 })
-    assert.equal((await sql.query("SELECT count(*)::int AS n FROM play_deals WHERE player = 'user:a' AND game LIKE 'league:%'")).rows[0].n, ROUND_DEALS)
+    assert.equal((await sql.query("SELECT count(*)::int AS n FROM play_deals WHERE player = 'user:a' AND game LIKE 'league:%'")).rows[0].n, 4)
     assert.equal((await call('review', { player: 'user:c', match, deal: 0 })).status, 409)
 
     // Away at the shared table: a computer plays the seat after the grace; back with a new connection, the seat is theirs
@@ -173,6 +192,34 @@ test('League: check-in, matching, a round of three, the grace, scoring once, rev
     assert.equal(back.seat, pc.seat)
     await until(() => pd.public.seats[pc.seat].control === 'human')
     assert.equal(await coins('user:c'), before)
+
+    // One who cannot pay the next deal gets up when it is dealt: a persona in the seat, no fee; the other pays and stays.
+    await sql.query("UPDATE league_players SET coins = 0 WHERE player = 'user:c'")
+    const dCoins = await coins('user:d')
+    const dealt = pd.public.deals
+    await until(async () => {
+      if (pd.public.deals > dealt) return true
+      await Promise.all([step(back), step(pd)].map(p => p.catch(() => null)))
+      return false
+    }, 300_000)
+    const after = await snapshot(c.body.room)
+    assert.equal(after.seats[back.seat].account, null)
+    assert(after.seats[back.seat].persona?.startsWith('sim:'))
+    assert.equal(after.seats[pd.seat].account, 'user:d')
+    assert.equal(await coins('user:c'), 0)
+    assert.equal(await coins('user:d'), dCoins - FEES[0])
+
+    // The points' new scale (SKATGO-205): a row on the old one starts again from 0, once; tier and coins stay.
+    await sql.query("UPDATE league_players SET scale = 1, points = 7, tier = 2 WHERE player = 'user:d'")
+    const migrating = new Store(base.href)
+    await migrating.migrate()
+    const reset = (await sql.query("SELECT tier, points, coins, scale FROM league_players WHERE player = 'user:d'")).rows[0]
+    assert.deepEqual([reset.tier, reset.points, reset.scale], [2, 0, 2])
+    assert.equal(reset.coins, dCoins - FEES[0])
+    await sql.query("UPDATE league_players SET points = 5 WHERE player = 'user:d'")
+    await migrating.migrate()
+    assert.equal((await sql.query("SELECT points FROM league_players WHERE player = 'user:d'")).rows[0].points, 5)
+    await migrating.close()
   } catch (e) {
     console.error(logs.slice(-4000))
     throw e

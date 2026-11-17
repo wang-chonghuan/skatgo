@@ -550,14 +550,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `dims.tierCard` wide (the next one showing at the edge) in `homeCard`'s shape, `radii.tile`, `elev.option`, its own
   flat picture edge to edge (`public/league/<tier>.webp`: a medal, a cup, a shield, a diamond, a crown, each on its own deep
   colour), the tier's name (`homeCardTitle`) and its fee (`appText`, `onColorSoft`) white at its bottom left; then, once
-  anyone is in Legend, "Rangliste der Legenden" as the XP board's rows — rank, name, points — the player's own row marked. A round's table (`/league/play`) is a full-screen table as a private one,
-  its board "Spiel n von 3", its top right button the way out back to the League, no Lina and Noah faces (the seats are
-  people's); each deal's result is free play's, with the XP line and the AI's game; the third's foot, "Ergebnis der Runde",
-  opens the round's result in a white panel on the felt: the place ("Platz 1", `dialogTitle`), the three totals in place
-  order as the board's rows with the player's on `goodSoft`, then one line: the League points it brought (`appBtnStrong`) and
-  "Aufstieg in die Gold-Liga!", "Abstieg in die Silber-Liga." or how far to promotion; then "Nochmal · 15 Münzen" (`go`) and
-  "Zur Liga" (`quiet`).
-- **The tables** (`/play`, `/daily/play`, a private table, a League round's since SKATGO-204, and an open-card endgame's page since SKATGO-111):
+  anyone is in Legend, "Rangliste der Legenden" as the XP board's rows — rank, name, points — the player's own row marked. A League table (`/league/play`) is a full-screen table as a private one,
+  its board "Spiel n", its top right button the way out, whose "Tisch verlassen" leaves the table (the deal on it played out
+  for the seat), no Lina and Noah faces (the seats are people's); each deal's result is free play's, its first line the
+  deal's League points (SKATGO-205: "Ligapunkte +3" in `appBtnStrong`, then why — "Dein Spiel gewonnen", "Den Alleinspieler
+  geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Alle haben gepasst" — and, when it moved the player,
+  "Aufstieg in die Gold-Liga!" / "Abstieg in die Silber-Liga.", or when the coins are too few for the next, the coins line),
+  then the XP line and the AI's game; its foot the next deal, or "Zur Liga" when the player moved or cannot pay. The League
+  card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from −20 to +30.
+- **The tables** (`/play`, `/daily/play`, a private table, a League table since SKATGO-204, and an open-card endgame's page since SKATGO-111):
   the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a
   standard web-app table. Free play's search entry is the front page.

@@ -15,7 +15,7 @@ host under the ticket's approved behavior. Do not search invitation numbers,
 auto-join private rooms as a stranger, create persona-only public tables or
 introduce matchmaking. Keep actual guests/friends and their admission unchanged.
 
-The League (SKATGO-204) is the one matchmaking: the service seats the round's
+The League (SKATGO-204/205) is the one matchmaking: the service seats the table's
 people and gives each empty seat to a persona of the tier's band, as
 `Slot.persona` (its `sim:` id) with its board nickname, never an account. Such a
 seat bids on the pool's plan and plays its cards with its own strength policy,

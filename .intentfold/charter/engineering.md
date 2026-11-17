@@ -94,20 +94,23 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   Terms omit participant-composition claims rather than asserting presence, absence, possibility or
   human-only participation.
 - **The League** (SKATGO-204) runs in `multiplayer/src/league.ts` under `/league` behind the admission key; the rules both
-  sides share — tiers, fees, places, promotion and relegation — are `app/src/lib/skat/league.ts`, held to the ticket by
-  `league.test.ts`. `league_players` holds an account's coins (the day's check-in: `checkin_day` by `dayOf`), tier and
-  points; `league_matches` a round (its own id, its room, tier, who sat where, its result once); `league_deals` each finished
-  deal's pool deal and moves. A round is a room of `room.ts` with `Snapshot.league`: made by the service, never by a browser
+  sides share — tiers, fees per deal, a deal's points (`dealOutcome`, `DEAL_POINTS`, SKATGO-205), promotion and relegation —
+  are `app/src/lib/skat/league.ts`, held to the tickets by `league.test.ts`. `league_players` holds an account's coins (the
+  day's check-in: `checkin_day` by `dayOf`), tier and points (`scale` 2 since SKATGO-205's reset, run once by the migration);
+  `league_matches` a sitting (its own id, its room, tier, who sat down where, when it ended); `league_deals` each finished
+  deal's pool deal, moves and each seat's points. A sitting is a room of `room.ts` with `Snapshot.league`: made by the service, never by a browser
   — `/league/play` waits in the leader's memory up to `MATCH_WAIT_MS` for other accounts of the tier, then fills the seats
   with personas of that tier's band (`population(500)` weakest to strongest by their card-error rates, six equal bands; none
   already at a League table, none with a board activity due within 30 minutes, none under a name a person holds), takes the
-  fees and stores room and round in one transaction, and hosts the room as a restored one. Persona seats bid on the
+  first deal's fees and stores room and sitting in one transaction, and hosts the room as a restored one. Persona seats bid on the
   pool's plan and play their cards with their own strength policy, its card errors kept by tier (`TIER_ERRORS`, Legend
-  none: SkatZero's cards; measured in the ticket's `calibration.txt`), and publish as players; nobody comes in by number; the computers play on with nobody
-  online and deal the next deal themselves, so a round always ends; its three deals scored, `settleLeague` moves each
-  account's standing once, in the transaction that ended the third, and the room stops counting for `roomOf`, expiring ten
-  minutes later. `/league/review` turns the asking account's seat to seat 0 (`viewSeat`, same deck) and answers free play's
-  review, recording the deal in `play_deals` as `league:<pool>:<deal>:<seat>:<round>:<n>` — so it counts for XP and the
+  none: SkatZero's cards; measured in the tickets' `calibration.txt`), and publish as players; nobody comes in by number.
+  Each deal is scored in the transaction that ended it (`settleLeague`: each person's standing once, their points stored with
+  the deal, whether they can sit on in `league.last`); the next deal is the sitting's own step (`leagueDeal`, when `nextDue`):
+  a person who left (`leave`: a computer plays their deal out, which counts), is away, moved tier or cannot pay is replaced
+  by a persona and dismissed, the others pay; with nobody left — the computers play on with nobody online, and the step waits
+  out the grace of whoever is away — the sitting ends, stops counting for `roomOf`, and expires ten minutes later. `/league/review` turns the asking account's seat to seat 0 (`viewSeat`, same deck) and answers free play's
+  review, recording the deal in `play_deals` as `league:<pool>:<deal>:<seat>:<sitting>:<n>` — so it counts for XP and the
   record of play, not to be played again. The web's `lib/league-handler.ts` names the account and signs the room's join
   ticket; the frame checks in once per page load (`lib/checkin.ts`). Tested by `multiplayer/test/league.test.ts`.
 - **A player's record of play** (SKATGO-128) is read on request by `POST /daily/profile` (`multiplayer/src/profile.ts`),

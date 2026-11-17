@@ -222,34 +222,34 @@ function Board({ state }: { state: LeagueState }) {
 const tablePath = () => localizeHref('/league/play', { locale: getLocale() })
 
 /**
- * A League round's table (SKATGO-204): the account's own round, its seat kept and come back to as a private table's is;
- * three deals, each with its result against the AI and its XP, as free play's; after the third, the round's result.
+ * A League sitting's table (SKATGO-204, a deal at a time since SKATGO-205): the account's own seat, kept and come back to as
+ * a private table's is; deal after deal, each with its League points first in its result, then its XP and the AI's game as
+ * free play's. Leaving is the menu's: the deal on the table is played out for the seat and counts, and no other is dealt to
+ * it. A player who moved to another tier or cannot pay the next deal goes back to the League from the result.
  */
 export function LeagueTable() {
   const account = useAccount()
   const navigate = useNavigate()
-  const [result, setResult] = useState(false)
-  const [again, setAgain] = useState<{ busy: number | null; error: string | null }>({ busy: null, error: null })
   const seat = useSeat<LeagueError>({
     enter: enterLeague,
     passing: PASSING_LEAGUE,
     here: () => window.location.pathname === tablePath(),
     active: !!account,
+    // Let go of the table — having left, or the seat taken at the next deal: back to the League page.
+    dismissed: (why) => {
+      if (why !== 'left') return false
+      void navigate({ to: '/league' })
+      return true
+    },
   })
   const { stage, shown } = seat
   useEffect(() => {
     if (account === null) seat.setStage({ kind: 'signIn' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account])
-
-  /** Another round in the same tier, from the round's result. */
-  async function playAgain() {
-    setAgain({ busy: Date.now(), error: null })
-    const r = await playLeague()
-    if (typeof r === 'string') return setAgain({ busy: null, error: errorText(r) })
-    setAgain({ busy: null, error: null })
-    setResult(false)
-    await seat.reseat()
+  const leave = () => {
+    seat.send({ type: 'leave' })
+    void navigate({ to: '/league' })
   }
 
   if (stage.kind === 'signIn') {
@@ -270,16 +270,12 @@ export function LeagueTable() {
     )
   }
   if (!shown || !shown.pub.league) return <Notice text={m.loading()} />
-  const league = shown.pub.league
-  if (result && league.result) {
-    return <RoundResult state={shown} result={league.result} again={again} onAgain={() => void playAgain()} onLeave={() => void navigate({ to: '/league' })} />
-  }
   const notice = seat.away ? <span data-testid="table-reconnecting"><Pill tone="dark">{m.table_reconnecting()}</Pill></span> : null
-  return <LeaguePlaying state={shown} busy={seat.busy} send={seat.send} collect={seat.collect} notice={notice} onResult={() => setResult(true)} />
+  return <LeaguePlaying state={shown} busy={seat.busy} send={seat.send} collect={seat.collect} notice={notice} leave={leave} />
 }
 
-function LeaguePlaying({ state, busy, send, collect, notice, onResult }: {
-  state: TableState; busy: boolean; send: ReturnType<typeof useSeat>['send']; collect: () => void; notice: ReactNode; onResult: () => void
+function LeaguePlaying({ state, busy, send, collect, notice, leave }: {
+  state: TableState; busy: boolean; send: ReturnType<typeof useSeat>['send']; collect: () => void; notice: ReactNode; leave: () => void
 }) {
   const game = useMemo(() => roomGame(state.pub, state.mine), [state])
   const me = state.mine.seat
@@ -292,18 +288,20 @@ function LeaguePlaying({ state, busy, send, collect, notice, onResult }: {
   const ended = game.phase === 'done' || game.phase === 'passedIn'
   const others = state.pub.seats.filter((s) => s.kind === 'human' && s.connected && !s.ready && s.seat !== me)
   const waiting = ended && state.pub.seats[me].ready && others.length > 0 ? m.room_next_wait({ names: others.map((s) => s.nickname ?? '').join(', ') }) : null
-  const last = deal >= league.of && !!league.result
+  // This deal's own result, once it is scored: the last result is this deal's.
+  const mine = ended && league.last && league.last.deal === deal - 1 ? league.last.seats[me] : null
+  const sitsOn = !mine || mine.canPay
   return (
     <div data-testid="league-table" data-room={state.pub.roomId} data-match={league.match} data-seat={me} data-deals={deal} data-dealer={state.pub.dealer} data-phase={state.pub.phase} data-controls={state.pub.seats.map((x) => x.control).join(',')} data-kinds={state.pub.seats.map((x) => x.kind).join(',')} {...stylex.props(styles.play)}>
       <GameTable
         fullScreen
         room={{
           game, busy, send: (move) => send(move), collect, next: () => send({ type: 'next' }), names: seatNames(state), totals, notice, deal,
-          stats: null, waiting, code: state.pub.roomId, leave: () => {}, people: [], kick: () => {},
+          stats: null, waiting, code: state.pub.roomId, leave, people: [], kick: () => {},
           league: {
-            of: league.of,
             review,
-            done: last ? <Btn testId="league-round-result" shape="block" size="lg" grow onClick={onResult}>{m.league_round_result()}</Btn> : undefined,
+            line: mine ? <DealLine result={mine} declared={state.pub.declarer === me} /> : undefined,
+            done: sitsOn ? undefined : <Btn testId="league-to-league" shape="block" size="lg" grow onClick={leave}>{m.league_to_page()}</Btn>,
           },
         }}
       />
@@ -311,47 +309,25 @@ function LeaguePlaying({ state, busy, send, collect, notice, onResult }: {
   )
 }
 
-/** The round's result over the felt: the place, the three totals in place order with the player's row marked, the points
- *  it brought and where they stand now — up, down or on — then another round, or back to the League. */
-function RoundResult({ state, result, again, onAgain, onLeave }: {
-  state: TableState; result: LeagueResult; again: { busy: number | null; error: string | null }; onAgain: () => void; onLeave: () => void
-}) {
-  const me = state.mine.seat
-  const mine = result.seats[me]
-  const placeText = [m.league_place_1, m.league_place_2, m.league_place_3][mine.place]()
-  const order = [0, 1, 2].sort((a, b) => result.seats[a].place - result.seats[b].place || a - b)
-  const standing = mine.standing
+/** A deal's League points (SKATGO-205), the result's first line: the points and why — the player's own game won or lost,
+ *  the declarer beaten or not, all passed — and when it moved them, the new League; when they cannot pay the next deal
+ *  here, the line says so. */
+function DealLine({ result, declared }: { result: NonNullable<LeagueResult['seats'][number]>; declared: boolean }) {
+  const why = {
+    won: declared ? m.league_deal_won() : m.league_deal_beat(),
+    lost: m.league_deal_lost(),
+    defended: m.league_deal_defended(),
+    passed: m.league_deal_passed(),
+  }[result.outcome]
+  const then = result.moved === 1 ? m.league_result_up({ league: leagueName(result.standing.tier) })
+    : result.moved === -1 ? m.league_result_down({ league: leagueName(result.standing.tier) })
+      : !result.canPay ? m.league_poor() : null
   return (
-    <Shell>
-      <section data-testid="league-result" data-place={mine.place + 1} data-points={mine.points} data-moved={mine.moved} {...stylex.props(styles.card)}>
-        <h1 {...stylex.props(typography.dialogTitle, styles.ink)}>{placeText}</h1>
-        <ol {...stylex.props(styles.rows)}>
-          {order.map((seat) => (
-            <li key={seat} data-testid="league-result-row" data-place={result.seats[seat].place + 1} {...stylex.props(typography.appText, styles.boardRow, seat === me && styles.own)}>
-              <span {...stylex.props(styles.slate, styles.rank)}>{result.seats[seat].place + 1}</span>
-              <span {...stylex.props(styles.name)}>
-                {seat === me ? m.name_you() : result.seats[seat].name}
-              </span>
-              <span {...stylex.props(typography.appBtnStrong, styles.number)}>{signed(result.seats[seat].total)}</span>
-            </li>
-          ))}
-        </ol>
-        {/* What the place brought, and where it leaves the player — up, down, or how far from moving up — in one line. */}
-        {mine.points !== undefined && standing ? (
-          <p data-testid="league-result-standing" {...stylex.props(typography.appText, styles.ink)}>
-            <span {...stylex.props(typography.appBtnStrong)}>{m.league_points({ points: signed(mine.points) })}</span>
-            {mine.moved === 1 ? ` · ${m.league_result_up({ league: leagueName(standing.tier) })}`
-              : mine.moved === -1 ? ` · ${m.league_result_down({ league: leagueName(standing.tier) })}`
-                : standing.tier < LEGEND ? ` · ${m.league_to_up({ n: PROMOTE_AT - standing.points })}` : null}
-          </p>
-        ) : null}
-        <div {...stylex.props(styles.row)}>
-          <Btn testId="league-again" size="lg" disabled={again.busy !== null} onClick={onAgain}>{again.busy !== null ? <Finding since={again.busy} /> : m.league_again({ fee: FEES[standing?.tier ?? result.tier] })}</Btn>
-          <Btn testId="league-leave" tone="quiet" size="lg" onClick={onLeave}>{m.league_to_page()}</Btn>
-        </div>
-        {again.error ? <p role="alert" data-testid="league-again-error" {...stylex.props(typography.appText, styles.bad)}>{again.error}</p> : null}
-      </section>
-    </Shell>
+    <p data-testid="league-deal-line" data-points={result.points} data-outcome={result.outcome} data-moved={result.moved} {...stylex.props(typography.appText, styles.ink)}>
+      <span {...stylex.props(typography.appBtnStrong)}>{m.league_points({ points: signed(result.points) })}</span>
+      {` · ${why}`}
+      {then ? ` · ${then}` : null}
+    </p>
   )
 }
 

@@ -62,9 +62,8 @@ export type RoomPublic = {
   /** The skat, once the deal is over. */
   skat: Card[] | null
   early: Game['early'] | null
-  /** A League round (SKATGO-204): its tier, how many deals it has, its id (a deal's review names it), and once the last is
-   *  over its result. */
-  league?: { tier: number; of: number; match: string; result: LeagueResult | null }
+  /** A League sitting (SKATGO-204/205): its tier, its id (a deal's review names it), and the last finished deal's result. */
+  league?: { tier: number; match: string; last: LeagueResult | null }
 }
 
 export type RoomPrivate = { seat: number; hand: Card[]; buried: Card[] }

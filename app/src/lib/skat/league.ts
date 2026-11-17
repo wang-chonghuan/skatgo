@@ -1,61 +1,67 @@
-// The League (SKATGO-204, the human: 「分场天梯先做，而且人机匹配，有人则匹配人，没人则匹配AI」, 「就按sf分，玩家就会希望下次来一手
-// 好牌」): a signed-in player checks in once a day for coins, pays a tier's entry fee for a round of three deals at a table
-// of three, and moves up or down the six tiers by their place at the table — the three deals' Seeger-Fabian totals, never
-// the difference to the AI. Pure: the multiplayer service scores a round with it, and the pages state the same numbers.
+// The League (SKATGO-204, the human: 「分场天梯先做，而且人机匹配，有人则匹配人，没人则匹配AI」): a signed-in player checks in once a
+// day for coins, sits down at a table of three in their tier and pays for each deal; each deal scores League points by how
+// their own side came out of it (SKATGO-205, the human: 「能否不管round，就从一个deal里，用简单直观的方法，让玩家觉得打一个deal就有
+// 一个获得感」, 「庄赢+3，防赢+3，庄输-3」, 「我建议就1」), never the difference to the AI; the points move them up or down the
+// six tiers. Pure: the multiplayer service scores with it, and the pages state the same numbers.
 
 /** The tiers, lowest first (the human: 「参考多邻国的，不要用方块红心」, 「最高级的钻石改为传奇」); a new player starts in the first. */
 export const TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend'] as const
 export type Tier = (typeof TIERS)[number]
 export const LEGEND = TIERS.length - 1
 
-/** Coins a round costs in each tier, taken when it starts and kept if the player leaves. */
-export const FEES: readonly number[] = [10, 12, 15, 20, 25, 30]
+/** Coins a deal costs in each tier, taken when it is dealt and kept if the player leaves during it — about a third of
+ *  SKATGO-204's round of three, so a day's coins buy as many deals as before. */
+export const FEES: readonly number[] = [3, 4, 5, 7, 8, 10]
 
 /** Coins a day's check-in gives: the first time a signed-in player opens SkatGo that day (the human: 「不打开游戏就不给，打开了
  *  就能积累」). They add up with no limit and cannot be bought or exchanged. */
 export const CHECKIN_COINS = 100
 
-/** A round: three deals, so each player deals once. */
-export const ROUND_DEALS = 3
+/** League points of a deal for one seat (SKATGO-205): its side won — its own game, or the declarer beaten — +3; its own
+ *  game lost −3; the declarer's game made against it −1, the common case, so a player only rises where they play well
+ *  enough (the human: 「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」); all passed 0. Whole numbers only (「我不太
+ *  喜欢这里引入小数」). */
+export const DEAL_POINTS = { won: 3, lost: -3, defended: -1, passed: 0 } as const
+export type DealOutcome = keyof typeof DEAL_POINTS
 
-/** League points for first, second and third place at the table. */
-export const PLACE_POINTS: readonly [number, number, number] = [3, 1, -2]
+/** How a deal came out for `seat`: who declared (null when all passed) and whether the declarer won. */
+export function dealOutcome(declarer: number | null, won: boolean, seat: number): DealOutcome {
+  if (declarer === null) return 'passed'
+  if (declarer === seat) return won ? 'won' : 'lost'
+  return won ? 'defended' : 'won'
+}
 
-/** League points that move a player up a tier, or down one. */
-export const PROMOTE_AT = 12
-export const RELEGATE_AT = -8
+/** League points that move a player up a tier, or down one (SKATGO-205: at about the pace of SKATGO-204's +12 / −8 in
+ *  rounds, measured in the ticket's calibration). */
+export const PROMOTE_AT = 30
+export const RELEGATE_AT = -20
 
 /** How long the League waits for other people of the same tier before personas take the empty seats. */
 export const MATCH_WAIT_MS = 5_000
 
-/** Each seat's place from the round's Seeger-Fabian totals, 0 the first: equal totals share the better place. */
-export function placesOf(totals: readonly number[]): number[] {
-  return totals.map((t) => totals.filter((o) => o > t).length)
-}
-
 /** A player's standing: their tier (an index of `TIERS`) and their league points in it. */
 export type Standing = { tier: number; points: number }
 
-/** What a place does to a standing: its points added; at `PROMOTE_AT` up a tier, at `RELEGATE_AT` down one, starting again
- *  from 0 there. Bronze never goes down, its points stopping at `RELEGATE_AT`, so a beginner is never further than that
- *  from the climb; Legend never goes up, its points running on — its board ranks them. */
-export function standingAfter(s: Standing, place: number): Standing & { moved: -1 | 0 | 1 } {
-  const points = s.points + PLACE_POINTS[place]
+/** What a deal's points do to a standing: added; at `PROMOTE_AT` up a tier, at `RELEGATE_AT` down one, starting again from 0
+ *  there. Bronze never goes down, its points stopping at `RELEGATE_AT`, so a beginner is never further than that from the
+ *  climb; Legend never goes up, its points running on — its board ranks them. */
+export function standingAfter(s: Standing, delta: number): Standing & { moved: -1 | 0 | 1 } {
+  const points = s.points + delta
   if (points >= PROMOTE_AT && s.tier < LEGEND) return { tier: s.tier + 1, points: 0, moved: 1 }
   if (points <= RELEGATE_AT && s.tier > 0) return { tier: s.tier - 1, points: 0, moved: -1 }
   return { tier: s.tier, points: Math.max(points, RELEGATE_AT), moved: 0 }
 }
 
 /** One player's League as the service answers it. `coins` the balance; `today` whether today's check-in counted;
- *  `table` the round they are seated at, while it runs. */
+ *  `table` the table they are seated at, while they sit there. */
 export type LeagueMe = Standing & { coins: number; today: boolean; table: string | null }
 
 /** The Legend board: the accounts in Legend by their points there, the most first; `you` on the asker's row. Names only. */
 export type LegendBoard = { rows: { rank: number; nickname: string; points: number; you?: true }[] }
 
-/** A finished round as the table shows it: by room seat, each seat's name, total, place, and for a person the points it
- *  brought and where it left them. */
+/** The last finished deal as the table shows it, by room seat: for a person how it came out, the points it brought, where
+ *  it left them, and whether they can pay the next deal; nothing for a persona's seat. */
 export type LeagueResult = {
-  tier: number
-  seats: { name: string; total: number; place: number; person: boolean; points?: number; standing?: Standing; moved?: -1 | 0 | 1 }[]
+  deal: number
+  seats: ({ outcome: DealOutcome; points: number; standing: Standing; moved: -1 | 0 | 1; canPay: boolean } | null)[]
 }

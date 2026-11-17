@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-205",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-205",
+  "branch": "SKATGO-205-league-per-deal",
+  "base": "9aaf6c9",
+  "ports": {
+    "web": 55205,
+    "multiplayer": 56205,
+    "database": 57205
+  }
+}

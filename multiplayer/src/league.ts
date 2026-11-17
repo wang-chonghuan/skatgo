@@ -2,9 +2,9 @@ import { randomBytes, randomInt } from 'node:crypto'
 import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
-import { actor, deal, type Seat } from '../../app/src/lib/skat/game'
+import { actor, deal, next, type Seat } from '../../app/src/lib/skat/game'
 import {
-  CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PLACE_POINTS, ROUND_DEALS, TIERS, placesOf, standingAfter,
+  CHECKIN_COINS, DEAL_POINTS, FEES, LEGEND, MATCH_WAIT_MS, TIERS, dealOutcome, standingAfter,
   type LeagueMe, type LeagueResult, type LegendBoard,
 } from '../../app/src/lib/skat/league'
 import { roomSeat, viewSeat } from '../../app/src/lib/skat/room-view'
@@ -12,7 +12,7 @@ import { auctionOf, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, advance, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
 import { dayOf, nameOf } from './daily'
 import { deckOf, plan, poolDealOf, type Pool } from './free'
-import { Rejected, TTL_MS, dealNext, secretEquals, type Slot, type Snapshot } from './model'
+import { Rejected, TTL_MS, dealNext, secretEquals, type PoolDeal, type Slot, type Snapshot } from './model'
 import { MAX_POPULATION, population, type Persona } from './personas/config'
 import { strengthDecisions } from './personas/decisions'
 import { personaPolicy } from './personas/play'
@@ -21,13 +21,14 @@ import type { Policy } from './skatzero/policy'
 import type { Store } from './store'
 
 // The League (SKATGO-204, the human: 「分场天梯先做，而且人机匹配，有人则匹配人，没人则匹配AI」): a signed-in player's coins from a
-// daily check-in, their tier and league points, and the round of three deals they pay a tier's fee for. A round is a room
-// as a private table is (SKATGO-61/163: the same engine, the 30-second grace and the computer standing in, restored after a
-// restart), started by the service: it waits MATCH_WAIT_MS for other people of the tier, then gives the empty seats to
-// personas of that tier's strength (SKATGO-180's Synthetic players, the weakest sixth in Bronze up to the strongest in
-// Legend). Each deal's moves are kept, so each person's review of it — their seat turned to seat 0, free play's review —
-// can be worked out after the room is gone, and counts for their XP and record as a free deal does. When the third deal
-// ends the places at the table move each person's standing, once. The web's /api/league/* is the only client, behind the
+// daily check-in, their tier and league points, and the table they sit at, paying their tier's fee for each deal. A sitting
+// is a room as a private table is (SKATGO-61/163: the same engine, the 30-second grace and the computer standing in,
+// restored after a restart), laid by the service: it waits MATCH_WAIT_MS for other people of the tier, then gives the empty
+// seats to personas of that tier's strength (SKATGO-180's Synthetic players, the weakest sixth in Bronze up to the strongest
+// in Legend). Each deal's moves are kept, so each person's review of it — their seat turned to seat 0, free play's review —
+// can be worked out after the room is gone, and counts for their XP and record as a free deal does. Each finished deal
+// moves each person's standing by how their side came out of it (SKATGO-205), once; the next deal is dealt to those who
+// stay and can pay, the others' seats going to personas, and with nobody left the sitting ends. The web's /api/league/* is the only client, behind the
 // admission key.
 
 const ACCOUNT = /^user:[A-Za-z0-9_]{1,64}$/
@@ -80,14 +81,14 @@ export function personaTurnPolicy(base: Policy, s: Snapshot, seat: Seat): Policy
 
 /** Two (or however many are asked) personas of the tier free now: at no live League table, with no board activity due
  *  close by, and under a name no person holds. */
-async function opponents(c: pg.PoolClient, tier: number, count: number, now: number): Promise<{ id: string; nickname: string }[]> {
+async function opponents(c: pg.PoolClient, tier: number, count: number, now: number, besides: string[] = []): Promise<{ id: string; nickname: string }[]> {
   if (count === 0) return []
   const { rows: seated } = await c.query(
     `SELECT DISTINCT s->>'persona' AS id FROM multiplayer_rooms, jsonb_array_elements(snapshot->'seats') s
       WHERE expires_at > $1 AND snapshot ? 'league' AND s ? 'persona'`, [now])
   const { rows: due } = await c.query(
     'SELECT DISTINCT player AS id FROM persona_jobs WHERE result IS NULL AND due BETWEEN $1 AND $2', [now - BUSY_MS, now + BUSY_MS])
-  const busy = new Set([...seated, ...due].map((r) => r.id as string))
+  const busy = new Set([...seated, ...due].map((r) => r.id as string).concat(besides))
   const free = bandOf(tier).filter((p) => !busy.has(`sim:${p.id}`))
   const { rows: held } = await c.query('SELECT lower(nickname) AS n FROM daily_players WHERE lower(nickname) = ANY($1)',
     [free.map((p) => p.nickname.toLowerCase())])
@@ -131,33 +132,66 @@ async function legendBoard(store: Store, who: string | null): Promise<LegendBoar
   return { rows: board }
 }
 
-/** A finished deal of a round (SKATGO-204), kept for its reviews; and once the third has ended, the round scored: each
- *  person's place at the table moves their standing, once, and the room is done. Called in the transaction of the change
- *  that may have ended a deal; `scoredBefore` is the room's count of scored deals before it. */
+/** A finished deal of a sitting (SKATGO-204), kept for its reviews, and scored (SKATGO-205): each person's side won +3, their
+ *  own game lost −3, the declarer's game made against them −1, all passed 0 — their standing moved once, in the transaction
+ *  of the change that ended the deal; `scoredBefore` is the room's count of scored deals before it. Whether each can pay
+ *  the next deal at this table travels with the result. */
 export async function settleLeague(s: Snapshot, c: pg.PoolClient, scoredBefore: number, now = Date.now()) {
   const l = s.league
-  if (!l || s.scored <= scoredBefore || !l.current) return
-  await c.query('INSERT INTO league_deals (match, deal, pool, pool_id, dealer, log) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING',
-    [l.match, s.scored - 1, l.current.pool, l.current.id, l.current.dealer, JSON.stringify(l.current.log)])
-  if (s.scored < ROUND_DEALS || l.finished) return
-  const places = placesOf(s.scores)
-  const result: LeagueResult = { tier: l.tier, seats: [] }
+  if (!l || s.scored <= scoredBefore || !l.current || !s.game) return
+  const end = summarize(s.game)
+  const result: LeagueResult = { deal: s.scored - 1, seats: [] }
   for (let seat = 0; seat < 3; seat++) {
     const p = s.seats[seat]
-    const row: LeagueResult['seats'][number] = { name: p.nickname ?? '', total: s.scores[seat], place: places[seat], person: !!p.account }
-    if (p.account) {
-      const before = await standingOf(c, p.account, true)
-      const after = standingAfter({ tier: before.tier, points: before.points }, places[seat])
-      await c.query('UPDATE league_players SET tier = $2, points = $3, updated_at = $4 WHERE player = $1', [p.account, after.tier, after.points, now])
-      // What the place brought, and where it left them — from 0 after a move up or down.
-      Object.assign(row, { points: PLACE_POINTS[places[seat]], standing: { tier: after.tier, points: after.points }, moved: after.moved })
+    if (!p.account) {
+      result.seats.push(null)
+      continue
     }
-    result.seats.push(row)
+    const outcome = dealOutcome(end.declarer, !!end.won, seat)
+    const before = await standingOf(c, p.account, true)
+    const after = standingAfter({ tier: before.tier, points: before.points }, DEAL_POINTS[outcome])
+    await c.query('UPDATE league_players SET tier = $2, points = $3, updated_at = $4 WHERE player = $1', [p.account, after.tier, after.points, now])
+    result.seats.push({
+      outcome, points: DEAL_POINTS[outcome], standing: { tier: after.tier, points: after.points }, moved: after.moved,
+      // The next deal here is this tier's: someone moved up or down sits down again in their new tier.
+      canPay: after.tier === l.tier && before.coins >= FEES[l.tier],
+    })
   }
-  await c.query('UPDATE league_matches SET finished_at = $2, result = $3 WHERE id = $1 AND finished_at IS NULL', [l.match, now, JSON.stringify(result)])
-  l.finished = true
-  l.result = result
-  s.expiresAt = now + FINISHED_MS
+  await c.query('INSERT INTO league_deals (match, deal, pool, pool_id, dealer, log, points) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING',
+    [l.match, s.scored - 1, l.current.pool, l.current.id, l.current.dealer, JSON.stringify(l.current.log),
+      JSON.stringify(result.seats.map((x) => x?.points ?? null))])
+  l.last = result
+}
+
+/** The sitting's next deal (SKATGO-205), once it is due (`nextDue`): a person who left, is away, moved to another tier or
+ *  cannot pay gets up — their seat a persona of the tier — and those who stay pay the tier's fee. With nobody left the
+ *  sitting ends: finished, its room going in FINISHED_MS. Called in the transaction of the change that made it due. */
+export async function leagueDeal(s: Snapshot, c: pg.PoolClient, pick: (dealer: Seat) => PoolDeal, now = Date.now()) {
+  const l = s.league
+  if (!l || !s.game || l.finished) return
+  const fee = FEES[l.tier]
+  const staying: string[] = []
+  for (let seat = 0; seat < 3; seat++) {
+    const p = s.seats[seat]
+    if (!p.account) continue
+    const standing = await standingOf(c, p.account, true)
+    const stays = !p.leaving && !!p.session && !p.autopilot && standing.tier === l.tier && standing.coins >= fee
+    if (stays) {
+      staying.push(p.account)
+      continue
+    }
+    const [o] = await opponents(c, l.tier, 1, now, s.seats.flatMap((x) => (x.persona ? [x.persona] : [])))
+    s.seats[seat] = { account: null, nickname: o.nickname, session: null, disconnectedAt: null, autopilot: true, joinsAt: null, persona: o.id }
+  }
+  s.nextBy = []
+  if (!staying.length) {
+    await c.query('UPDATE league_matches SET finished_at = $2 WHERE id = $1 AND finished_at IS NULL', [l.match, now])
+    l.finished = true
+    s.expiresAt = now + FINISHED_MS
+    return
+  }
+  for (const account of staying) await c.query('UPDATE league_players SET coins = coins - $2, updated_at = $3 WHERE player = $1', [account, fee, now])
+  dealNext(s, pick(next(s.game.dealer)))
 }
 
 type Matched = { room: string } | { error: string }
@@ -303,7 +337,7 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
 
   // A deal of a round reviewed for one of its people (SKATGO-204): their seat turned to seat 0 — the same cards dealt by the
   // dealer as they saw them — so free play's review, the AI's own game from their seat and their record (XP) are free play's.
-  const reviewInput = z.object({ player, match: z.string().regex(/^[A-Za-z0-9_-]{12}$/), deal: z.number().int().min(0).max(ROUND_DEALS - 1) }).strict()
+  const reviewInput = z.object({ player, match: z.string().regex(/^[A-Za-z0-9_-]{12}$/), deal: z.number().int().min(0).max(100_000) }).strict()
   router.post('/review', run(async (body) => {
     const i = reviewInput.parse(body)
     const p = pool()

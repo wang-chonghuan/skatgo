@@ -194,6 +194,13 @@ export class Store {
           match text NOT NULL, deal smallint NOT NULL, pool text NOT NULL, pool_id integer NOT NULL, dealer smallint NOT NULL,
           log jsonb NOT NULL, PRIMARY KEY (match, deal)
         );
+        -- SKATGO-205 scores each deal: the League points it brought each seat (null for a persona's).
+        ALTER TABLE league_deals ADD COLUMN IF NOT EXISTS points jsonb;
+        -- SKATGO-205 changed the points' scale (a deal at a time, +30 up and −20 down, not places in rounds): the points
+        -- earned before start again from 0, tier and coins kept — once, the rows on the old scale (1) moving to the new (2).
+        ALTER TABLE league_players ADD COLUMN IF NOT EXISTS scale smallint NOT NULL DEFAULT 1;
+        UPDATE league_players SET points = 0, scale = 2 WHERE scale = 1;
+        ALTER TABLE league_players ALTER COLUMN scale SET DEFAULT 2;
         -- SKATGO-163 made tables rooms with a number, every seat an account's: the tables of before (schema 2, seats
         -- held by browser tokens) end here; the deploy backs them up first.
         DELETE FROM multiplayer_rooms WHERE snapshot->>'schema' = '2';

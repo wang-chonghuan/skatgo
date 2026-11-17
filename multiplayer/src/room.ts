@@ -7,7 +7,7 @@ import { TICKET_MAX, ticketClaims } from '../../app/src/lib/room-ticket'
 import { computerTurn, decided, type Logged } from './computers'
 import { nameOf } from './daily'
 import { plan, poolDealOf, type Pool } from './free'
-import { personaTurnPolicy, settleLeague } from './league'
+import { leagueDeal, personaTurnPolicy, settleLeague } from './league'
 import {
   applyAction, applySeatMove, claimSeat, commandSchema, dealIfReady, emptyRoom, GRACE_MS, hash, logMove, newRoom, nextDue, privateView, publicView,
   Rejected, roomOnly, scoreEnded, secretEquals, TTL_MS, type PoolDeal, type Snapshot,
@@ -125,6 +125,8 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             p.session = client.sessionId
             p.disconnectedAt = null
             p.autopilot = p.joinsAt !== null
+            // Back at a League table they had left, before the next deal took their seat: they stay (SKATGO-205).
+            delete p.leaving
             s.expiresAt = Date.now() + TTL_MS
           } else {
             // A League round's seats are its own people's (SKATGO-204): nobody else comes in.
@@ -236,11 +238,13 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         const scored = s.scored
         applyAction(s, seat, cmd.action, pick)
         await settleLeague(s, c, scored)
+        // A League sitting's next deal, its fees and seats (SKATGO-205), once this made it due.
+        if (s.league && nextDue(s)) await leagueDeal(s, c, pick)
         s.seats.forEach((x, i) => { if (sessions[i] && x.session !== sessions[i]) gone.push(sessions[i]!) })
         // A change to the game itself: a move, a deal — not asking for the next deal while others have not (SKATGO-165).
         if (s.game !== before) s.played = s.revision + 1
         s.nextActionAt = Date.now() + aiDelay
-        s.expiresAt = Date.now() + TTL_MS
+        if (!s.league?.finished) s.expiresAt = Date.now() + TTL_MS
         const receipt = { id: cmd.id, ok: true, revision: s.revision + 1 }
         await c.query('INSERT INTO multiplayer_commands VALUES ($1,$2,$3,$4,$5)',
           [s.id, seat, cmd.id, fingerprint, receipt])
@@ -303,21 +307,26 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
     private async advance() {
       if (!ready()) { this.retry(); return }
       await this.flushDrops()
+      /** Sessions whose seat went to a persona with this beat (a League sitting's next deal, SKATGO-205). */
+      const gone: string[] = []
       const result = await store.change(this.roomId, async (s, c) => {
         let changed = false
         const now = Date.now()
         const scored = s.scored
+        const sessions = s.seats.map(x => x.session)
         for (const p of s.seats) {
           if (!p.session && p.disconnectedAt !== null && !p.autopilot && now >= p.disconnectedAt + GRACE_MS) {
             p.autopilot = true
             changed = true
           }
         }
-        // Nobody online, nothing played (SKATGO-163): the computers do not go on by themselves — but at a League round,
-        // which deals its next deal by itself once nobody here is left to ask for it (SKATGO-204).
-        if (s.league && now >= s.nextActionAt && dealIfReady(s, pick)) {
+        // Nobody online, nothing played (SKATGO-163): the computers do not go on by themselves — but at a League sitting, whose
+        // next step comes by itself once nobody here is left to ask for it: the next deal, or the sitting's end (SKATGO-205).
+        if (s.league && now >= s.nextActionAt && nextDue(s, now)) {
+          await leagueDeal(s, c, pick, now)
+          s.seats.forEach((x, i) => { if (sessions[i] && x.session !== sessions[i]) gone.push(sessions[i]!) })
           s.nextActionAt = now + aiDelay
-          s.expiresAt = now + TTL_MS
+          if (!s.league.finished) s.expiresAt = now + TTL_MS
           s.played = s.revision + 1
           changed = true
         } else if (s.game && playsOn(s) && now >= s.nextActionAt && this.computerDue(s)) {
@@ -353,6 +362,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         return { changed, value: null }
       })
       this.failures = 0
+      for (const session of gone) this.dismiss(session, 'left')
       this.publish(result.snapshot)
     }
     /** Whether the table waits for the computers: a trick to collect, a deal already decided, or a

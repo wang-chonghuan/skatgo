@@ -93,12 +93,12 @@ export function LeagueHome() {
               </SignInButton>
             </div>
             <p data-testid="league-opponents" {...stylex.props(typography.appText, styles.slate)}>{m.league_opponents()}</p>
+            <About />
           </section>
         </Panel>
       ) : me ? (
         <MeCard me={me} fee={fee} busy={busy} error={error} onPlay={() => void play()} />
       ) : null}
-      {account !== undefined ? <About /> : null}
       <Tiers mine={me ? me.tier : null} />
       {/* The Legend board once anyone is on it. */}
       {state?.board.rows.length ? <Board state={state} /> : null}
@@ -163,31 +163,32 @@ function MeCard({ me, fee, busy, error, onPlay }: { me: LeagueMe; fee: number; b
         <p data-testid="league-opponents" {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_opponents()}</p>
         {busy === null && !me.table && me.coins < fee ? <p data-testid="league-poor" {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_poor()}</p> : null}
         {error ? <p role="alert" data-testid="league-error" {...stylex.props(typography.appText, styles.onColor)}>{error}</p> : null}
+        <About onNavy />
       </section>
     </div>
   )
 }
 
-/** What the League is and how it works, a card closed until opened (the human: 「改成一个折叠卡片，默认折叠，标题是，什么是
- *  League以及它为什么好玩……必须精简，要考虑到大部分玩家没耐心。可以用bullets」): the tiers, each deal's points, moving up
- *  and down, the coins — four short lines. */
-function About() {
+/** What the League is and how it works (the human: 「改成一个折叠卡片，默认折叠，标题是，什么是League以及它为什么好玩……必须
+ *  精简，要考虑到大部分玩家没耐心。可以用bullets」, then 「放到第一个卡片的底部，用蓝色链接字就行，不用单独做大卡片」, 「你来决定
+ *  最好的ui」): a link line at the bottom of the first card, closed until tapped, its chevron after it, then four short
+ *  lines — the tiers, each deal's points, up and down, the coins. On the navy card the link is white and underlined, as
+ *  `info` blue does not read on navy; on the guest's white card it is the site's blue. */
+function About({ onNavy = false }: { onNavy?: boolean }) {
   const [open, setOpen] = useState(false)
   const Chevron = open ? ChevronUp : ChevronDown
   return (
-    <Panel>
-      <details data-testid="league-about" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
-        <summary data-testid="league-about-head" {...stylex.props(styles.aboutHead)}>
-          <h2 {...stylex.props(typography.optionTitle, styles.ink)}>{m.league_about()}</h2>
-          <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.chevron)} />
-        </summary>
-        <ul data-testid="league-about-text" {...stylex.props(styles.bullets)}>
-          {[m.league_about_tiers(), m.league_about_deal(), m.league_about_move(), m.league_about_coins()].map((t) => (
-            <li key={t} {...stylex.props(typography.appText, styles.ink)}>{t}</li>
-          ))}
-        </ul>
-      </details>
-    </Panel>
+    <details data-testid="league-about" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary data-testid="league-about-head" {...stylex.props(typography.appLink, styles.aboutLink, onNavy ? styles.aboutOnNavy : styles.aboutOnWhite)}>
+        <span {...stylex.props(styles.aboutText)}>{m.league_about()}</span>
+        <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.chevron)} />
+      </summary>
+      <ul data-testid="league-about-text" {...stylex.props(styles.bullets)}>
+        {[m.league_about_tiers(), m.league_about_deal(), m.league_about_move(), m.league_about_coins()].map((t) => (
+          <li key={t} {...stylex.props(typography.appText, onNavy ? styles.onColorSoft : styles.ink)}>{t}</li>
+        ))}
+      </ul>
+    </details>
   )
 }
 
@@ -355,22 +356,23 @@ const styles = stylex.create({
   ink: { margin: 0, color: color.navy },
   slate: { margin: 0, color: color.slate },
   bad: { margin: 0, color: color.bad },
-  // The About card's line to tap, as the result's play record's (daily-comparison.tsx): the title, the chevron at the right.
-  aboutHead: {
-    display: 'flex',
+  // The About link (a details' summary): its words underlined, the chevron after them, no marker.
+  aboutLink: {
+    display: 'inline-flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: space.x12,
+    gap: space.x4,
     cursor: 'pointer',
     listStyleType: 'none',
     '::-webkit-details-marker': { display: 'none' },
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focus,
-    outlineColor: color.info,
     outlineOffset: border.focusOffset,
     borderRadius: radii.column,
   },
-  chevron: { flexShrink: 0, color: color.navy },
+  aboutText: { textDecoration: 'underline' },
+  aboutOnWhite: { color: color.info, outlineColor: color.info },
+  aboutOnNavy: { color: color.onColor, outlineColor: color.onColor },
+  chevron: { flexShrink: 0 },
   // The space above the bullets is theirs, so the closed card is only its title line.
   bullets: { display: 'flex', flexDirection: 'column', gap: space.x6, marginBlock: 0, marginTop: space.x12, paddingInlineStart: space.x20, listStyleType: 'disc' },
   rows: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },

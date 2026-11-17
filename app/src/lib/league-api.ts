@@ -1,4 +1,4 @@
-// The League from the browser (SKATGO-204): the page's state, a round asked for and the way into its room, and a finished
+// The League from the browser (SKATGO-204): the page's state, a table asked for and the way into its room, and a finished
 // deal's review (the day's check-in is lib/checkin.ts) — all through /api/league/* (lib/league-handler.ts). Browser-only.
 
 import { Client, type Room } from '@colyseus/sdk'
@@ -30,10 +30,10 @@ async function post<T>(op: string, body: object = {}): Promise<T | LeagueError> 
 
 export const leagueState = () => post<LeagueState>('state')
 
-/** A round in the account's tier: answers its room's number once seated — at once when a round is already running. */
+/** A table in the account's tier: answers its room's number once seated — at once when the account's table is already running. */
 export const playLeague = () => post<{ room: string }>('play')
 
-/** Comes into the account's own round: its seat, from any device, after any drop. */
+/** Comes into the account's own table: its seat, from any device, after any drop. */
 export async function enterLeague(): Promise<Room | LeagueError> {
   const t = await post<{ endpoint: string; room: string; ticket: string }>('ticket')
   if (typeof t === 'string') return t
@@ -45,7 +45,7 @@ export async function enterLeague(): Promise<Room | LeagueError> {
   }
 }
 
-/** A finished deal of the round reviewed for this account: its result, the AI's game from the same seat, the trick most
+/** A finished deal of the account's table reviewed for this account: its result, the AI's game from the same seat, the trick most
  *  worth another look — and its XP, which counting it gives. */
 export async function leagueReview(match: string, deal: number): Promise<DealReview | { error: string }> {
   const r = await post<DealReview>('review', { match, deal })

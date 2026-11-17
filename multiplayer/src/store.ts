@@ -182,13 +182,13 @@ export class Store {
           checkin_day text, updated_at bigint NOT NULL
         );
         CREATE INDEX IF NOT EXISTS league_players_tier ON league_players (tier, points DESC);
-        -- A League round, its own id (a room's number comes free again): its room, its tier, who sat where (an account, or
-        -- a persona), and once its third deal ended its result, written once with the standings it moved.
+        -- A League sitting, its own id (a room's number comes free again): its room, its tier, who sat where first (an
+        -- account, or a persona), and when it ended; its result column held SKATGO-204's round result.
         CREATE TABLE IF NOT EXISTS league_matches (
           id text PRIMARY KEY, room text NOT NULL, tier smallint NOT NULL, seats jsonb NOT NULL, created_at bigint NOT NULL,
           finished_at bigint, result jsonb
         );
-        -- Each finished deal of a round: the pool deal it was and its every move, so a player's review of it can be
+        -- Each finished deal of a sitting: the pool deal it was and its every move, so a player's review of it can be
         -- worked out after the room is gone.
         CREATE TABLE IF NOT EXISTS league_deals (
           match text NOT NULL, deal smallint NOT NULL, pool text NOT NULL, pool_id integer NOT NULL, dealer smallint NOT NULL,
@@ -268,7 +268,7 @@ export class Store {
   async create(s: Snapshot): Promise<boolean> {
     return this.transaction(c => this.insert(c, s))
   }
-  /** A new room inside the caller's transaction — a League round stores its room with the fees it takes (SKATGO-204). */
+  /** A new room inside the caller's transaction — a League table stores its room with the fees it takes (SKATGO-204). */
   async insert(c: pg.PoolClient, s: Snapshot): Promise<boolean> {
     await c.query('SELECT pg_advisory_xact_lock($1)', [LOCK + 2])
     await c.query('DELETE FROM multiplayer_rooms WHERE expires_at <= $1', [Date.now()])
@@ -277,7 +277,7 @@ export class Store {
     const { rowCount } = await c.query('INSERT INTO multiplayer_rooms VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING', [s.id, s, s.expiresAt])
     return rowCount === 1
   }
-  /** The live room an account has a seat in (SKATGO-163: one at a time), but `except`; null if none. A League round
+  /** The live room an account has a seat in (SKATGO-163: one at a time), but `except`; null if none. A League table
    *  that has ended holds nobody (SKATGO-204). */
   async roomOf(account: string, except: string | null = null, c: pg.Pool | pg.PoolClient = this.pool): Promise<string | null> {
     const { rows } = await c.query(

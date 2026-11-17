@@ -258,10 +258,11 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   const [scores, setScores] = useState<[number, number, number]>([0, 0, 0])
   // The running Seeger-Fabian totals, the board's and the result's alike (SKATGO-166): the tournament's and a room's as
   // the server keeps them; free play's round and lesson 11's one game from the deals before and the one just finished.
-  // Only the course's own table counts the game value alone, in `scores`.
+  // Only the course's own table counts the game value alone, in `scores`. A League table counts each deal on its own
+  // (SKATGO-205, the human: 「不管round，就从一个deal里」): its board shows the deal's scores, as the daily deal's does.
   const before = server ? (server.round?.totals ?? [0, 0, 0]) : null
   const totals: [number, number, number] | null =
-    tournament?.totals ?? room?.totals ?? (before ? (server?.replaying ? (before as [number, number, number]) : (seegerFabian(game).map((v, i) => v + before[i]) as [number, number, number])) : null)
+    tournament?.totals ?? (room?.league ? (seegerFabian(game) as [number, number, number]) : room?.totals) ?? (before ? (server?.replaying ? (before as [number, number, number]) : (seegerFabian(game).map((v, i) => v + before[i]) as [number, number, number])) : null)
   const [picked, setPicked] = useState<Card[]>([])
   // The trick's cards that have landed (SKATGO-41). A card flies in on a layer of its own under a
   // will-change hint, and such a layer keeps the scale it was drawn at during the flight: a card at rest

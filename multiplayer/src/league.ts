@@ -32,7 +32,7 @@ import type { Store } from './store'
 // admission key.
 
 const ACCOUNT = /^user:[A-Za-z0-9_]{1,64}$/
-/** How long a finished round's room stays for its last result. */
+/** How long a finished sitting's room stays for its last result. */
 const FINISHED_MS = 10 * 60 * 1000
 /** A persona with a board activity planned this close to now is busy (one timeline per persona, the personas skill). */
 const BUSY_MS = 30 * 60 * 1000
@@ -42,8 +42,8 @@ const BUSY_MS = 30 * 60 * 1000
 export const weakness = (p: Persona) => (p.play.strength ? p.play.strength.declarerError + p.play.strength.defenderError : p.play.mistake)
 /** How much of its own card errors a persona keeps at each tier's table: all in Bronze, none in Legend, where it plays
  *  SkatZero's cards (the human: 「档位越高对手越强」, the ticket: 传奇档接近 SkatZero 的水平). Measured with the ticket's
- *  calibrate.mts, 300 rounds a tier: SkatZero in a seat earns +1.98 League points a round in Bronze and +0.90 in Legend,
- *  near parity; the median persona +1.25 in Bronze down to −0.45 in Legend. */
+ *  calibrate.mts (SKATGO-205, 1200 deals a tier): SkatZero in a seat earns +131 League points per 100 deals in Bronze and
+ *  +50 in Legend; the median persona +73 in Bronze down to −44 in Legend. */
 export const TIER_ERRORS: readonly number[] = [1, 0.8, 0.6, 0.4, 0.2, 0]
 
 /** The personas weakest first, in six bands of equal size: a tier's opponents come from its band. */
@@ -71,7 +71,7 @@ export function leaguePolicy(base: Policy, p: Persona, tier: number, seed: strin
   const f = TIER_ERRORS[tier]
   return strengthDecisions(base, { ...p, play: { ...p.play, strength: { ...s, declarerError: s.declarerError * f, defenderError: s.defenderError * f } } }, seed, []).policy
 }
-/** How a persona plays its seat's card now, seeded by the round, the deal and the moment so a retried turn chooses the
+/** How a persona plays its seat's card now, seeded by the sitting, the deal and the moment so a retried turn chooses the
  *  same. */
 export function personaTurnPolicy(base: Policy, s: Snapshot, seat: Seat): Policy | null {
   const id = s.seats[seat].persona
@@ -110,7 +110,7 @@ async function standingOf(c: pg.Pool | pg.PoolClient, player: string, lock = fal
   return rows[0] as { coins: number; tier: number; points: number; checkin_day: string | null }
 }
 
-/** The League round the account is seated at while it runs, by its room's number; null if none. */
+/** The League table the account is seated at while it runs, by its room's number; null if none. */
 async function tableOf(store: Store, player: string): Promise<string | null> {
   const { rows } = await store.pool.query(
     `SELECT id FROM multiplayer_rooms WHERE expires_at > $1 AND snapshot ? 'league'
@@ -246,7 +246,7 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
     return { coins: (await standingOf(store.pool, who)).coins, added: 0 }
   }))
 
-  // A round: the account's table if it is at one; otherwise it waits up to MATCH_WAIT_MS for others of its tier, then the
+  // A seat: the account's table if it is at one; otherwise it waits up to MATCH_WAIT_MS for others of its tier, then the
   // table is made and the fee taken. Answers the room's number once seated.
   const groups = new Map<number, Group>()
   const waiting = new Map<string, Promise<Matched>>()
@@ -335,7 +335,7 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
     return m
   }))
 
-  // A deal of a round reviewed for one of its people (SKATGO-204): their seat turned to seat 0 — the same cards dealt by the
+  // A deal of a sitting reviewed for one of its people (SKATGO-204): their seat turned to seat 0 — the same cards dealt by the
   // dealer as they saw them — so free play's review, the AI's own game from their seat and their record (XP) are free play's.
   const reviewInput = z.object({ player, match: z.string().regex(/^[A-Za-z0-9_-]{12}$/), deal: z.number().int().min(0).max(100_000) }).strict()
   router.post('/review', run(async (body) => {

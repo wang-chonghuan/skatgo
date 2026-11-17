@@ -95,8 +95,11 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.equal(c.body.room, d.body.room)
     const both = await snapshot(c.body.room)
     assert.deepEqual(both.seats.filter(p => p.account).map(p => p.account).sort(), ['user:c', 'user:d'])
+    // Both sit down now: a person not at the table when the next deal comes is taken off it.
+    const pc = await attach(await new Client(endpoint).joinById(c.body.room, { admissionKey, account: 'user:c' }))
+    const pd = await attach(await new Client(endpoint).joinById(c.body.room, { admissionKey, account: 'user:d' }))
 
-    // Nobody else comes into a League round, not even by its number.
+    // Nobody else comes into a League table, not even by its number.
     await call('checkin', { player: 'user:e' })
     await assert.rejects(new Client(endpoint).joinById(alone.body.room, { admissionKey, account: 'user:e' }))
 
@@ -157,11 +160,14 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.deepEqual({ tier: standing.tier, points: standing.points }, { tier: 0, points: sum })
     assert.equal(standing.coins, 140 - 4 * FEES[0])
 
-    // Leaving during the fourth deal: a computer plays it out, it counts, no further fee, and with nobody left the sitting
-    // ends.
+    // Leaving during the fourth deal: the connection goes, the seat waits the grace as for one away, then a computer plays
+    // the deal out; it counts, no further fee, and with nobody left the sitting ends.
+    const left = Date.now()
     assert((await send(a, { type: 'leave' })).ok)
-    await until(() => a.public.seats[a.seat].control === 'ai')
-    await until(async () => (await sql.query('SELECT 1 FROM league_matches WHERE id = $1 AND finished_at IS NOT NULL', [match])).rowCount, 120_000)
+    const held = (await snapshot(alone.body.room)).seats[a.seat]
+    assert(held.leaving && held.session === null && !held.autopilot, 'the seat waits the grace')
+    await until(async () => (await sql.query('SELECT 1 FROM league_matches WHERE id = $1 AND finished_at IS NOT NULL', [match])).rowCount, GRACE_MS + 120_000)
+    assert(Date.now() - left >= GRACE_MS, 'not before the grace')
     const { rows: fourth } = await sql.query('SELECT points FROM league_deals WHERE match = $1 AND deal = 3', [match])
     assert.equal(fourth.length, 1)
     assert([3, -3, -1, 0].includes(fourth[0].points[a.seat]))
@@ -183,8 +189,6 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
 
     // Away at the shared table: a computer plays the seat after the grace; back with a new connection, the seat is theirs
     // again and no fee comes back.
-    const pc = await attach(await new Client(endpoint).joinById(c.body.room, { admissionKey, account: 'user:c' }))
-    const pd = await attach(await new Client(endpoint).joinById(c.body.room, { admissionKey, account: 'user:d' }))
     const before = await coins('user:c')
     pc.room.connection.close()
     await until(() => pd.public.seats[pc.seat].control === 'ai', GRACE_MS + 10_000)

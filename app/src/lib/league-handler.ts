@@ -1,11 +1,11 @@
 // POST /api/league/state, /checkin, /play, /ticket and /review — the League's way in from the browser (SKATGO-204). The
-// League runs in the multiplayer service (its coins, tiers, rounds and their rooms); this handler says which account
+// League runs in the multiplayer service (its coins, tiers, tables and their rooms); this handler says which account
 // asks and passes the request on with the service's key. Everything but looking needs an account: a guest sees the tiers,
 // their fees and the Legend board, and is told to sign in.
 //
 // `/play` waits while the service looks for other people of the account's tier (up to five seconds) and answers the
-// round's room; `/ticket` signs the two-minute admission ticket to that room (lib/room-ticket.ts) for the account seated
-// there — at the start, and to come back after a lost connection. `/review` is a finished deal of the account's round,
+// table's room; `/ticket` signs the two-minute admission ticket to that room (lib/room-ticket.ts) for the account seated
+// there — at the start, and to come back after a lost connection. `/review` is a finished deal at the account's table,
 // worked out for its seat, as free play's review is.
 //
 // Wired in src/server.ts before the page router, like /api/room.
@@ -75,7 +75,7 @@ export async function handleLeague(request: Request): Promise<Response> {
     const r = await call(endpoint, key, 'review', { player, match: input.match, deal: input.deal }, 30_000)
     return r ? json(r.status, r.data) : json(503, { error: 'unavailable' })
   }
-  // The ticket to the account's own round, while it runs.
+  // The ticket to the account's own table, while it runs.
   const r = await call(endpoint, key, 'state', { player })
   if (!r || r.status !== 200) return json(503, { error: 'not_ready' })
   const room = (r.data.me as { table?: unknown } | null)?.table

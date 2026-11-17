@@ -19,7 +19,7 @@ import { Store } from './store'
 export const RESTORE = Symbol('trusted-restore')
 /** Whether anyone is at the table now. */
 const online = (s: Snapshot) => s.seats.some(p => p.session !== null)
-/** Whether the computers play on: with someone at the table — or always at a League round (SKATGO-204), which must end
+/** Whether the computers play on: with someone at the table — or always at a League table (SKATGO-204), whose deal must end
  *  to be scored, a computer playing for whoever is away. */
 const playsOn = (s: Snapshot) => online(s) || !!s.league
 /** Who may come in: a trusted integration client with the admission key, naming the account it plays for, or a
@@ -129,7 +129,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             delete p.leaving
             s.expiresAt = Date.now() + TTL_MS
           } else {
-            // A League round's seats are its own people's (SKATGO-204): nobody else comes in.
+            // A League table's seats are its own people's (SKATGO-204): nobody else comes in.
             if (s.league) throw new Rejected('room_full')
             if (await store.roomOf(by.account, s.id, c)) throw new Rejected('already_in_room')
             seat = claimSeat(s, by.account, await nameOf(c, by.account, Date.now()), client.sessionId)
@@ -341,7 +341,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             const turn = actor(g)
             if (early) moves = [early]
             // One move a beat (SKATGO-164): a skat step — pick up, put away, the game — shows as free play shows it, one
-            // after another; the next beat decides the rest again from the same cards. A League round's persona plays its
+            // after another; the next beat decides the rest again from the same cards. A League table's persona plays its
             // seat with its own slips (SKATGO-204).
             else if (turn !== null && s.plans) {
               const by = personaTurnPolicy(policy()!, s, turn) ?? policy()!

@@ -28,7 +28,7 @@ export function LeaguePage() {
   )
 }
 
-/** A League round's table (SKATGO-204): the full-screen table, its title for screen readers only. */
+/** A League table (SKATGO-204): the full-screen table, its title for screen readers only. */
 export function LeaguePlayPage() {
   return (
     <div {...stylex.props(styles.play)}>

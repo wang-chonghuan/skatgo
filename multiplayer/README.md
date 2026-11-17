@@ -397,10 +397,11 @@ client and names the account (`user:<Clerk id>`), never a guest for anything but
 The sitting is an ordinary room (`Snapshot.league`): the browser joins it with a `join` ticket the web signs for the room
 `state` names; nobody else is admitted. It deals at once and goes on deal after deal (SKATGO-205). Each finished deal is
 scored for each account in the transaction that ends it (+3 its side won, −3 its own game lost, −1 the declarer's game made
-against it, 0 all passed). The next deal comes when every person online asked for it: whoever sent `leave` (a computer
-plays their deal out, which counts), is away, moved tier or cannot pay is replaced by a persona and dismissed (`left`), the
-others pay the fee. Personas and a person away past the grace are played by the computers even with nobody online; with
-nobody left the sitting ends and the room expires ten minutes later. Tests:
+against it, 0 all passed). The next deal comes when every person online asked for it: whoever sent `leave` (dismissed at
+once with `left`; the seat waits the grace as for one away, then a computer plays the deal out, which counts), is away,
+moved tier or cannot pay is replaced by a persona and dismissed (`left`), the others pay the fee. Personas and a person
+away past the grace are played by the computers even with nobody online; with nobody left the sitting ends and the room
+expires ten minutes later. Tests:
 `test/league.test.ts`, against a database of its own.
 
 ## The ladder's record (SKATGO-109)

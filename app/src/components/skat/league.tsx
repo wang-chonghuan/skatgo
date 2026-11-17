@@ -27,9 +27,9 @@ import type { TableState } from '~/lib/room-client'
 import type { LeagueMe } from '~/lib/skat/league'
 
 // The League in the browser (SKATGO-204): the League page's own part — the player's tier, points and coins with the one
-// way to play, the tiers, the Legend board — and the round's table. A round is asked for on the League page, which waits
+// way to play, the tiers, the Legend board — and the League table. A seat is asked for on the League page, which waits
 // there while players are found (up to five seconds), then goes to the table; the table only ever comes back to the
-// account's own round, so a reload never starts another one.
+// account's own table, so a reload never starts another one.
 
 const errorText = (e: LeagueError) =>
   ({
@@ -52,7 +52,7 @@ export function LeagueHome() {
   const account = useAccount()
   const navigate = useNavigate()
   const [state, setState] = useState<LeagueState | null>(null)
-  /** When the wait for a round began; null while not waiting. */
+  /** When the wait for a table began; null while not waiting. */
   const [busy, setBusy] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [how, setHow] = useState(false)
@@ -182,7 +182,7 @@ function MeCard({ me, fee, busy, error, onHelp, onPlay }: { me: LeagueMe; fee: n
   )
 }
 
-/** How the League goes, in the site's dialog: a round and its points, moving up and down, the coins. */
+/** How the League goes, in the site's dialog: each deal's points, moving up and down, the coins. */
 function LeagueHow({ onClose }: { onClose: () => void }) {
   return (
     <Modal title={m.league_how()} onClose={onClose} testId="league-how-text">
@@ -309,9 +309,9 @@ function LeaguePlaying({ state, busy, send, collect, notice, leave }: {
   )
 }
 
-/** A deal's League points (SKATGO-205), the result's first line: the points and why — the player's own game won or lost,
- *  the declarer beaten or not, all passed — and when it moved them, the new League; when they cannot pay the next deal
- *  here, the line says so. */
+/** A deal's League points (SKATGO-205), the result's first line: the points as a pill, as the XP's under it — green won,
+ *  red lost — and why beside it: the player's own game won or lost, the declarer beaten or not, all passed; when it moved
+ *  them, the new League; when they cannot pay the next deal here, that (the human: 「让玩家觉得打一个deal就有一个获得感」). */
 function DealLine({ result, declared }: { result: NonNullable<LeagueResult['seats'][number]>; declared: boolean }) {
   const why = {
     won: declared ? m.league_deal_won() : m.league_deal_beat(),
@@ -323,11 +323,12 @@ function DealLine({ result, declared }: { result: NonNullable<LeagueResult['seat
     : result.moved === -1 ? m.league_result_down({ league: leagueName(result.standing.tier) })
       : !result.canPay ? m.league_poor() : null
   return (
-    <p data-testid="league-deal-line" data-points={result.points} data-outcome={result.outcome} data-moved={result.moved} {...stylex.props(typography.appText, styles.ink)}>
-      <span {...stylex.props(typography.appBtnStrong)}>{m.league_points({ points: signed(result.points) })}</span>
-      {` · ${why}`}
-      {then ? ` · ${then}` : null}
-    </p>
+    <div data-testid="league-deal-line" data-points={result.points} data-outcome={result.outcome} data-moved={result.moved} {...stylex.props(styles.dealLine)}>
+      <span {...stylex.props(typography.appBtnStrong, styles.dealPill, result.points > 0 ? styles.dealPlus : result.points < 0 ? styles.dealMinus : styles.dealNone)}>
+        {m.league_points({ points: signed(result.points) })}
+      </span>
+      <span {...stylex.props(typography.appText, styles.dealWhy)}>{then ? `${why} · ${then}` : why}</span>
+    </div>
   )
 }
 
@@ -345,6 +346,13 @@ function Notice({ text, alert = false, children }: { text: string; alert?: boole
 }
 
 const styles = stylex.create({
+  // The deal's League points as the XP line under it is laid out (xp-earned.tsx): the pill at the left, why beside it.
+  dealLine: { display: 'flex', alignItems: 'center', gap: space.x10 },
+  dealPill: { flexShrink: 0, paddingBlock: space.x2, paddingInline: space.x10, borderRadius: radii.pill, whiteSpace: 'nowrap' },
+  dealPlus: { color: color.go, backgroundColor: color.goodSoft },
+  dealMinus: { color: color.bad, backgroundColor: color.badSoft },
+  dealNone: { color: color.slate, backgroundColor: color.page },
+  dealWhy: { flexGrow: 1, minWidth: 0, color: color.navy },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x16 },
   card: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   head: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12 },

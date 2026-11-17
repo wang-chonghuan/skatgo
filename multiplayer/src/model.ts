@@ -68,7 +68,7 @@ export type Slot = {
   autopilot: boolean
   /** The deal a newcomer plays from (SKATGO-163): who sits down while a deal is played starts with the next. */
   joinsAt: number | null
-  /** A League round's persona in this seat (SKATGO-204): its `sim:` id; it plays the seat as a computer does, under
+  /** A League table's persona in this seat (SKATGO-204): its `sim:` id; it plays the seat as a computer does, under
    *  `nickname`, and is never an account. */
   persona?: string
   /** A League sitting's person who left (SKATGO-205): a computer finishes the deal on the table for them, which counts,
@@ -78,7 +78,7 @@ export type Slot = {
 /** A seat's SkatZero bidding for one deal, as free play's pool stores it (SKATGO-40). */
 export type Plan = { maxBid: number; decisions: string }
 /** A deal as a private table takes it from the pool: deck and dealer, and every seat's bidding; which deal of which pool
- *  it is, for a League round's reviews (SKATGO-204). */
+ *  it is, for a League table's reviews (SKATGO-204). */
 export type PoolDeal = { dealer: Seat; deck: Card[]; plans: Record<'0' | '1' | '2', Plan>; pool?: string; id?: number }
 /** A League sitting (SKATGO-204, a deal at a time since SKATGO-205): its own id and tier, a table nobody comes into once
  *  it is laid; each deal's pool deal and moves kept for the reviews and scored when it ends; the last deal's result for the
@@ -119,7 +119,7 @@ export type Snapshot = {
   history?: RoomDeal[]
   /** The seats whose person asked for the next deal since the last was dealt (SKATGO-165). */
   nextBy?: number[]
-  /** A League round instead of a private room (SKATGO-204). */
+  /** A League table instead of a private room (SKATGO-204). */
   league?: LeagueRoom
   expiresAt: number
   nextActionAt: number
@@ -239,11 +239,14 @@ export function nextDue(s: Snapshot, now = Date.now()): boolean {
  *  `leave`: one's own. Everything else is a move through the engine. `pick` draws a deal from the pool with the given
  *  dealer. */
 export function applyAction(s: Snapshot, seat: Seat, action: Command['action'], pick: (dealer: Seat) => PoolDeal) {
-  // A League sitting has no host. Leaving it (SKATGO-205): a computer plays the seat's deal to its end, which counts, and the
-  // seat goes at the next deal (`leagueDeal`).
+  // A League sitting has no host. Leaving it (SKATGO-205, the ticket: 离开或断线时，当前这副 30 秒后由 AI 代打完，照常计分): the
+  // connection goes and the seat waits as for one away — a computer plays the deal out after the grace, and it counts — and
+  // the seat goes at the next deal (`leagueDeal`). Back before then, they stay.
   if (s.league && action.type === 'leave') {
-    s.seats[seat].leaving = true
-    s.seats[seat].autopilot = true
+    const p = s.seats[seat]
+    p.leaving = true
+    p.session = null
+    p.disconnectedAt = Date.now()
     s.nextBy = (s.nextBy ?? []).filter(i => i !== seat)
     return
   }
@@ -285,7 +288,7 @@ export function applyAction(s: Snapshot, seat: Seat, action: Command['action'], 
   logMove(s, { seat, move: action })
   scoreEnded(s)
 }
-/** A League round keeps each move of the deal on the table (SKATGO-204). */
+/** A League table keeps each move of the deal on the table (SKATGO-204). */
 export function logMove(s: Snapshot, l: Logged) {
   s.league?.current?.log.push(l)
 }
@@ -346,7 +349,7 @@ export function publicView(s: Snapshot): RoomPublic {
   return {
     roomId: s.id, revision: s.revision, played: s.played ?? s.revision, expiresAt: s.expiresAt, deals: s.deals, scores: s.scores,
     history: s.history ?? [],
-    // A League round's persona sits as a player (SKATGO-204): its name, at the table, never waited for.
+    // A League table's persona sits as a player (SKATGO-204): its name, at the table, never waited for.
     seats: s.seats.map((p, i) => ({
       seat: i, kind: p.account || p.persona ? 'human' : isEmpty(p) ? 'empty' : 'ai',
       nickname: p.nickname,

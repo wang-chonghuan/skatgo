@@ -107,8 +107,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   none: SkatZero's cards; measured in the tickets' `calibration.txt`), and publish as players; nobody comes in by number.
   Each deal is scored in the transaction that ended it (`settleLeague`: each person's standing once, their points stored with
   the deal, whether they can sit on in `league.last`); the next deal is the sitting's own step (`leagueDeal`, when `nextDue`):
-  a person who left (`leave`: a computer plays their deal out, which counts), is away, moved tier or cannot pay is replaced
-  by a persona and dismissed, the others pay; with nobody left — the computers play on with nobody online, and the step waits
+  a person who left (`leave`: dismissed at once, the seat waits the grace as for one away, then a computer plays the deal
+  out, which counts), is away, moved tier or cannot pay is replaced by a persona and dismissed, the others pay; with nobody left — the computers play on with nobody online, and the step waits
   out the grace of whoever is away — the sitting ends, stops counting for `roomOf`, and expires ten minutes later. `/league/review` turns the asking account's seat to seat 0 (`viewSeat`, same deck) and answers free play's
   review, recording the deal in `play_deals` as `league:<pool>:<deal>:<seat>:<sitting>:<n>` — so it counts for XP and the
   record of play, not to be played again. The web's `lib/league-handler.ts` names the account and signs the room's join

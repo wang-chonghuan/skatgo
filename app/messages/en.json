@@ -983,5 +983,6 @@
   "league_coins_label": "coins",
   "league_points_label": "League points",
   "league_progress": "From relegation to promotion",
-  "league_finding_in": "Finding players … {s}"
+  "league_finding_in": "Finding players … {s}",
+  "league_opponents": "No player in your tier within 5 seconds? AIs of different strength and style take the seats."
 }

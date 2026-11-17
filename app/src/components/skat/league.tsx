@@ -101,6 +101,7 @@ export function LeagueHome() {
                 <Btn testId="league-sign-in" size="lg">{m.auth_sign_in()}</Btn>
               </SignInButton>
             </div>
+            <p data-testid="league-opponents" {...stylex.props(typography.appText, styles.slate)}>{m.league_opponents()}</p>
           </section>
         </Panel>
       ) : me ? (
@@ -173,6 +174,7 @@ function MeCard({ me, fee, busy, error, onHelp, onPlay }: { me: LeagueMe; fee: n
             <Btn testId="league-play" size="lg" disabled={busy !== null || me.coins < fee} onClick={onPlay}>{busy !== null ? <Finding since={busy} /> : m.league_play({ fee })}</Btn>
           )}
         </div>
+        <p data-testid="league-opponents" {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_opponents()}</p>
         {busy === null && !me.table && me.coins < fee ? <p data-testid="league-poor" {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_poor()}</p> : null}
         {error ? <p role="alert" data-testid="league-error" {...stylex.props(typography.appText, styles.onColor)}>{error}</p> : null}
       </section>

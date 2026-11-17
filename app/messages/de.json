@@ -983,5 +983,6 @@
   "league_coins_label": "Münzen",
   "league_points_label": "Ligapunkte",
   "league_progress": "Vom Abstieg bis zum Aufstieg",
-  "league_finding_in": "Suche Mitspieler … {s}"
+  "league_finding_in": "Suche Mitspieler … {s}",
+  "league_opponents": "Kein Spieler deiner Liga in 5 Sekunden? Dann spielen KIs mit unterschiedlicher Stärke und eigenem Stil."
 }

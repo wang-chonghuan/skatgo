@@ -1,8 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import { SignInButton } from '@clerk/tanstack-react-start'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { ChevronDown, ChevronUp, Coins, Trophy } from 'lucide-react'
-import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { checkInOnce } from '~/lib/checkin'
 import { type LeagueError, type LeagueState, PASSING_LEAGUE, enterLeague, leagueReview, leagueState, playLeague } from '~/lib/league-api'
@@ -76,6 +76,7 @@ export function LeagueHome() {
       void leagueState().then((s) => { if (typeof s !== 'string') setState(s) })
       return
     }
+    fromLeague = true
     void navigate({ to: '/league/play' })
   }
 
@@ -156,7 +157,7 @@ function MeCard({ me, fee, busy, error, onPlay }: { me: LeagueMe; fee: number; b
         {progress !== null ? <ProgressBar value={progress} label={m.league_progress()} /> : null}
         <div {...stylex.props(styles.row)}>
           {me.table ? (
-            <Link to="/league/play" data-testid="league-back" {...linkLook('go', 'lg')}>{m.league_back()}</Link>
+            <Link to="/league/play" data-testid="league-back" onClick={() => { fromLeague = true }} {...linkLook('go', 'lg')}>{m.league_back()}</Link>
           ) : (
             // While players are found, the button says so (up to five seconds).
             <Btn testId="league-play" size="lg" disabled={busy !== null || me.coins < fee} onClick={onPlay}>{busy !== null ? <Finding since={busy} /> : m.league_play({ fee })}</Btn>
@@ -229,6 +230,9 @@ function BoardLine({ row: r }: { row: BoardRow }) {
   )
 }
 
+/** The table was opened from the League page in this visit, so the entry before it in the browser's history is that page. */
+let fromLeague = false
+
 /** The League page's address in this page's language, to tell whether the browser is still on the table. */
 const tablePath = () => localizeHref('/league/play', { locale: getLocale() })
 
@@ -241,15 +245,27 @@ const tablePath = () => localizeHref('/league/play', { locale: getLocale() })
 export function LeagueTable() {
   const account = useAccount()
   const navigate = useNavigate()
+  const router = useRouter()
+  // Back to the League page without the table staying in the browser's history (SKATGO-209, the human: 「点返回按钮，跳到 this
+  // table has closed. 页面……特别影响体验」): the way back when the table was opened from it, else in the table's place.
+  const went = useRef(false)
+  const toLeague = () => {
+    // Once: leaving is followed by the room's own word that the seat was let go.
+    if (went.current) return
+    went.current = true
+    if (fromLeague) router.history.back()
+    else void navigate({ to: '/league', replace: true })
+    fromLeague = false
+  }
+  useEffect(() => () => { fromLeague = false }, [])
   const seat = useSeat<LeagueError>({
     enter: enterLeague,
     passing: PASSING_LEAGUE,
     here: () => window.location.pathname === tablePath(),
     active: !!account,
-    // Let go of the table — having left, or the seat taken at the next deal: back to the League page.
-    dismissed: (why) => {
-      if (why !== 'left') return false
-      void navigate({ to: '/league' })
+    // Let go of the table — having left, the sitting over, or the seat opened on another device: back to the League page.
+    dismissed: () => {
+      toLeague()
       return true
     },
   })
@@ -258,9 +274,16 @@ export function LeagueTable() {
     if (account === null) seat.setStage({ kind: 'signIn' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account])
+  // No table to come to — it closed, or the browser came to its address again after leaving it: the League page, with no
+  // "table closed" page.
+  const none = stage.kind === 'gone' || (stage.kind === 'error' && stage.error === 'no_table')
+  useEffect(() => {
+    if (none) toLeague()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [none])
   const leave = () => {
     seat.send({ type: 'leave' })
-    void navigate({ to: '/league' })
+    toLeague()
   }
 
   if (stage.kind === 'signIn') {
@@ -272,11 +295,12 @@ export function LeagueTable() {
       </Notice>
     )
   }
-  if (stage.kind === 'error' || stage.kind === 'gone') {
-    const text = stage.kind === 'error' ? errorText(stage.error) : m.league_err_over()
+  if (none) return <Notice text={m.loading()} />
+  if (stage.kind === 'error') {
+    const text = errorText(stage.error)
     return (
       <Notice text={text} alert>
-        {stage.kind === 'error' && stage.again ? <Btn testId="table-again" onClick={seat.again}>{m.table_again()}</Btn> : null}
+        {stage.again ? <Btn testId="table-again" onClick={seat.again}>{m.table_again()}</Btn> : null}
       </Notice>
     )
   }
@@ -353,7 +377,7 @@ function Notice({ text, alert = false, children }: { text: string; alert?: boole
       <p role={alert ? 'alert' : undefined} data-testid="table-notice" {...stylex.props(typography.appText, alert ? styles.bad : styles.ink)}>{text}</p>
       <div {...stylex.props(styles.row)}>
         {children}
-        <Link to="/league" data-testid="league-to-page" {...linkLook('quiet', 'md')}>{m.league_to_page()}</Link>
+        <Link to="/league" replace data-testid="league-to-page" {...linkLook('quiet', 'md')}>{m.league_to_page()}</Link>
       </div>
     </Shell>
   )

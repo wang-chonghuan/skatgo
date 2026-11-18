@@ -569,7 +569,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   "Aufstieg in die Gold-Liga!" / "Abstieg in die Silber-Liga.", or when the coins are too few for the next, the coins line),
   then the XP line and the AI's game; its foot the next deal and under it "Tisch verlassen" (`quiet`, SKATGO-208, the human:
   「联盟打牌结算界面，下一局下面要有个退出按钮。然后右上角的圆形，在结算时就不要显示了」), or "Zur Liga" when the player moved or
-  cannot pay; while the result shows, the top right button is not there. The League
+  cannot pay; while the result shows, the top right button is not there. Leaving the table, by any of these, puts the League
+  page in the table's place in the browser's history, and a table address with no table to come to — closed, left, or
+  opened on another device — goes straight to the League page the same way, with no "table closed" page (SKATGO-209, the
+  human: 「点返回按钮，跳到 this table has closed. 页面……特别影响体验」). The League
   card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from −20 to +30, in Bronze from 0 (SKATGO-207).
 - **The tables** (`/play`, `/daily/play`, a private table, a League table since SKATGO-204, and an open-card endgame's page since SKATGO-111):
   the felt fills the screen and never scrolls;

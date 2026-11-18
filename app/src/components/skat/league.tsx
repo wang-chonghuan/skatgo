@@ -6,7 +6,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { checkInOnce } from '~/lib/checkin'
 import { type LeagueError, type LeagueState, PASSING_LEAGUE, enterLeague, leagueReview, leagueState, playLeague } from '~/lib/league-api'
-import { CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, TIERS, type BoardRow, type LeagueBoard, type LeagueResult } from '~/lib/skat/league'
+import { BRONZE_FLOOR, CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, TIERS, type BoardRow, type LeagueBoard, type LeagueResult } from '~/lib/skat/league'
 import { roomGame, roomSeat } from '~/lib/skat/room-view'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
@@ -122,8 +122,10 @@ function Finding({ since }: { since: number }) {
  *  look, 「我选A」): the League with its cup, then the coins and the League points large — the coins first, the human: 「没显示
  *  该玩家的总金币数」 — how far to promotion and to relegation, the bar between the two lines, and the one way to play. */
 function MeCard({ me, fee, busy, error, onPlay }: { me: LeagueMe; fee: number; busy: number | null; error: string | null; onPlay: () => void }) {
-  // From the relegation line to the promotion line; Legend has no promotion, so no bar.
-  const progress = me.tier < LEGEND ? (me.points - RELEGATE_AT) / (PROMOTE_AT - RELEGATE_AT) : null
+  // From the tier's floor — the relegation line, in Bronze 0 (SKATGO-207) — to the promotion line; Legend has no promotion,
+  // so no bar.
+  const floor = me.tier === 0 ? BRONZE_FLOOR : RELEGATE_AT
+  const progress = me.tier < LEGEND ? (me.points - floor) / (PROMOTE_AT - floor) : null
   // How far to move up and down, where there is a move: none up from Legend, none down from Bronze.
   const moves = [
     me.tier < LEGEND ? m.league_to_up({ n: PROMOTE_AT - me.points }) : null,

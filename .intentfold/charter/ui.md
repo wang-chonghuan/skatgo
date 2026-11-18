@@ -568,7 +568,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (a deal not seen to its end, SKATGO-206) — and, when it moved the player,
   "Aufstieg in die Gold-Liga!" / "Abstieg in die Silber-Liga.", or when the coins are too few for the next, the coins line),
   then the XP line and the AI's game; its foot the next deal, or "Zur Liga" when the player moved or cannot pay. The League
-  card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from −20 to +30.
+  card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from −20 to +30, in Bronze from 0 (SKATGO-207).
 - **The tables** (`/play`, `/daily/play`, a private table, a League table since SKATGO-204, and an open-card endgame's page since SKATGO-111):
   the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a

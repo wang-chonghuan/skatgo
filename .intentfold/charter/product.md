@@ -199,7 +199,7 @@ AI (SKATGO-205, the human: 「庄赢+3，防赢+3，庄输-3」, then 「我建�
 beaten — +3, their own game lost −3, the declarer's game made against them −1, all passed 0; whole numbers only (「我不太
 喜欢这里引入小数」). The −1 is what keeps the ladder honest: a player rises only while they play well enough for the tier,
 and settles where they belong (「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」). +30 moves the player up a tier and
-−20 down, from 0 again; Bronze has no relegation (its points stop at −20) and Legend no promotion, its points running on; a player who moves gets up and sits down again in their new tier. The points earned before
+−20 down, from 0 again; Bronze has no relegation and its points stop at 0 (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」) and Legend no promotion, its points running on; a player who moves gets up and sits down again in their new tier. The points earned before
 SKATGO-205 started again from 0, tiers and coins kept. Standings
 never start again — no week, no season. Each deal ends in free play's result with the AI's game, under its League points, and earns XP as any
 deal against the AI does. A deal counts only when the player sees it to its result (SKATGO-206, the human: 「没进入结算页面就不算

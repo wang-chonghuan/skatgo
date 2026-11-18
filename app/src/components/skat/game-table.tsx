@@ -2290,7 +2290,8 @@ const styles = stylex.create({
   },
   panelTitle: { margin: 0, color: color.navy, textAlign: 'center' },
   auction: { display: 'grid', gridTemplateColumns: dims.auctionColumns, gap: space.x8 },
-  auctionCol: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6 },
+  // minWidth 0: a long name ends in an ellipsis in its third of the panel instead of widening the column (SKATGO-208).
+  auctionCol: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: space.x6, minWidth: 0 },
   auctionHead: { color: color.auctionHead, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' },
   auctionRole: { color: color.slate, textTransform: 'capitalize', whiteSpace: 'nowrap' },
   // A column of bids is as wide as its bids (SKATGO-29), never narrower than one.

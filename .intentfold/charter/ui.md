@@ -553,7 +553,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `dims.tierCard` wide (the next one showing at the edge) in `homeCard`'s shape, `radii.tile`, `elev.option`, its own
   flat picture edge to edge (`public/league/<tier>.webp`: a medal, a cup, a shield, a diamond, a crown, each on its own deep
   colour), the tier's name (`homeCardTitle`) and its fee (`appText`, `onColorSoft`) white at its bottom left; then, once
-  anyone is in Legend, "Rangliste der Legenden" as the XP board's rows — rank, name, points — the player's own row marked. A League table (`/league/play`) is a full-screen table as a private one,
+  anyone has played, "Liga-Rangliste" (SKATGO-206, the human: 「这个榜单就放在liga页面下方，每个人名旁边都要有一个联赛的logo，
+  最右边是分数。最左边是总排名」) as the XP board's rows — the rank at the left, the tier's badge (`public/league/badge/<tier>.webp`,
+  its picture's emblem cut square on its colour, `dims.badge`, `radii.tag`) by the name, the points at the right — the
+  player's own row marked; the first 100, and the player's own row after a "…" when it is further down. A League table (`/league/play`) is a full-screen table as a private one,
   its board "Spiel n", its top right button the way out, whose "Tisch verlassen" leaves the table (the deal on it played out
   for the seat), no Lina and Noah faces (the seats are people's); each deal's result is free play's, its first line the
   deal's League points (SKATGO-205: "Ligapunkte +3" as the XP line's pill — `go` on `goodSoft` won, `bad` on `badSoft` lost,

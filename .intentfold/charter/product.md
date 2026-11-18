@@ -199,13 +199,13 @@ AI (SKATGO-205, the human: 「庄赢+3，防赢+3，庄输-3」, then 「我建�
 beaten — +3, their own game lost −3, the declarer's game made against them −1, all passed 0; whole numbers only (「我不太
 喜欢这里引入小数」). The −1 is what keeps the ladder honest: a player rises only while they play well enough for the tier,
 and settles where they belong (「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」). +30 moves the player up a tier and
-−20 down, from 0 again; Bronze has no relegation (its points stop at −20) and Legend no promotion, its points ranking the
-accounts in it on its board; a player who moves gets up and sits down again in their new tier. The points earned before
+−20 down, from 0 again; Bronze has no relegation (its points stop at −20) and Legend no promotion, its points running on; a player who moves gets up and sits down again in their new tier. The points earned before
 SKATGO-205 started again from 0, tiers and coins kept. Standings
 never start again — no week, no season. Each deal ends in free play's result with the AI's game, under its League points, and earns XP as any
 deal against the AI does; a deal the AI finished for a player away earns it when its result is opened. Its page shows the
-player's tier, points and how far from moving, the coins, the fees and the Legend board; a guest sees the tiers and signs
-in. The front page's colour card that was the bidding practice's is the League's; the bidding practice is the fourth
+player's tier, points and how far from moving, the coins, the fees and, at its bottom, the League's board (SKATGO-206, the
+human: 「只要打了一局的就要上榜」, 「按照档次和档次的分数排名」): every account that has played a League deal, by tier, then
+its points in it; a guest sees the tiers and the board and signs in. The front page's colour card that was the bidding practice's is the League's; the bidding practice is the fourth
 picture card (the human: 「同意」).
 
 Private tables at `/with-friends` (SKATGO-61) are rooms since SKATGO-163 (the human: 「一个人开一个房间，可以打2个ai。另一个人

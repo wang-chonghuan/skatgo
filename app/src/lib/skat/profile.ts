@@ -34,12 +34,15 @@ export type ProfileDeal = {
   ai: Played | null
 }
 
-/** A record deal's key read (SKATGO-182): a free deal, as the service names it, or a tournament's deal by its day, its
- *  tournament's size and its number in it. */
+/** A record deal's key read (SKATGO-182): a free deal, as the service names it — a League deal too, played again from
+ *  the seat the player sat in (SKATGO-206) — or a tournament's deal by its day, its tournament's size and its number in it. */
 export type DealKey = { kind: 'free'; game: string } | { kind: 'daily'; day: string; size: number; deal: number }
 
+/** A League deal in the record (SKATGO-206): `league:<pool>:<deal>:<seat>:<sitting>:<n>`. */
+export const LEAGUE_KEY = /^league:[^:\s]{1,100}:\d{1,7}:[0-2]:[A-Za-z0-9_-]{12}:\d{1,6}$/
+
 export function dealKeyOf(key: string): DealKey | null {
-  if (/^free:[^:\s]{1,100}:\d{1,7}:\d{1,15}$/.test(key)) return { kind: 'free', game: key }
+  if (/^free:[^:\s]{1,100}:\d{1,7}:\d{1,15}$/.test(key) || LEAGUE_KEY.test(key)) return { kind: 'free', game: key }
   const d = /^daily:(\d{4}-\d{2}-\d{2}):(\d{1,2}):(\d{1,2})$/.exec(key)
   return d ? { kind: 'daily', day: d[1], size: Number(d[2]), deal: Number(d[3]) } : null
 }

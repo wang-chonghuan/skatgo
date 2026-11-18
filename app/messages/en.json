@@ -933,6 +933,7 @@
   "offline_text": "SkatGo needs the internet to deal and play. Check your connection and try again.",
   "offline_retry": "Try again",
   "home_league": "League",
+  "home_league_new": "New",
   "home_bidding_text": "Ten cards, two questions: what do you play, and how high can you bid?",
   "league_meta_title": "Skat League – climb from Bronze to Legend | SkatGo",
   "league_meta_description": "Play Skat in six League tiers, from Bronze to Legend. Every deal wins or loses League points that move you up or down. Free coins every day.",
@@ -958,7 +959,7 @@
   "league_poor": "Not enough coins – you get 100 more tomorrow.",
   "league_back": "Back to your table",
   "league_tiers": "Tiers",
-  "league_board": "Legend board",
+  "league_board": "League ranking",
   "league_guest": "Sign in and get 100 coins every day you open SkatGo.",
   "league_about": "What is the League, and why is it fun?",
   "league_about_tiers": "Six tiers, Bronze to Legend: the higher the tier, the stronger your opponents. Climb as high as your Skat takes you.",
@@ -985,5 +986,6 @@
   "league_deal_beat": "You beat the declarer",
   "league_deal_lost": "You lost your game",
   "league_deal_defended": "The declarer made it",
-  "league_deal_passed": "All passed"
+  "league_deal_passed": "All passed",
+  "league_deal_left": "You left the table"
 }

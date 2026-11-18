@@ -7,9 +7,10 @@ import { TICKET_MAX, ticketClaims } from '../../app/src/lib/room-ticket'
 import { computerTurn, decided, type Logged } from './computers'
 import { nameOf } from './daily'
 import { plan, poolDealOf, type Pool } from './free'
-import { leagueDeal, personaTurnPolicy, settleLeague } from './league'
+import { AWAY_MS, leftOutcome } from '../../app/src/lib/skat/league'
+import { leagueDeal, personaTurnPolicy, settleLeague, settlePending } from './league'
 import {
-  applyAction, applySeatMove, claimSeat, commandSchema, dealIfReady, emptyRoom, GRACE_MS, hash, logMove, newRoom, nextDue, privateView, publicView,
+  applyAction, applySeatMove, claimSeat, commandSchema, dealIfReady, emptyRoom, GRACE_MS, hash, logMove, newRoom, nextDue, playingLeague, privateView, publicView,
   Rejected, roomOnly, scoreEnded, secretEquals, TTL_MS, type PoolDeal, type Snapshot,
 } from './model'
 import type { Policy } from './skatzero/policy'
@@ -22,6 +23,14 @@ const online = (s: Snapshot) => s.seats.some(p => p.session !== null)
 /** Whether the computers play on: with someone at the table — or always at a League table (SKATGO-204), whose deal must end
  *  to be scored, a computer playing for whoever is away. */
 const playsOn = (s: Snapshot) => online(s) || !!s.league
+/** A person back at their League seat (SKATGO-206): back before the deal on the table is lost for them, it costs nothing
+ *  more; back to the result of a deal that ended while they were away, it counts as it came out. */
+async function backAtLeague(s: Snapshot, c: Parameters<typeof settlePending>[1], seat: number) {
+  if (!s.league) return
+  const p = s.seats[seat]
+  if (!p.forfeit) delete p.stake
+  await settlePending(s, c, seat, true)
+}
 /** Who may come in: a trusted integration client with the admission key, naming the account it plays for, or a
  *  browser with a ticket the web server signed with it (SKATGO-61), which names the account (SKATGO-163). A seat is an
  *  account's: the same account comes back to it from any device. A browser opens a room only with an `open` ticket,
@@ -127,6 +136,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             p.autopilot = p.joinsAt !== null
             // Back at a League table they had left, before the next deal took their seat: they stay (SKATGO-205).
             delete p.leaving
+            await backAtLeague(s, c, seat)
             s.expiresAt = Date.now() + TTL_MS
           } else {
             // A League table's seats are its own people's (SKATGO-204): nobody else comes in.
@@ -162,13 +172,14 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
     }
     onReconnect(client: Client) {
       return this.enqueue(async () => {
-        const result = await store.change(this.roomId, s => {
+        const result = await store.change(this.roomId, async (s, c) => {
           const seat = client.userData?.seat
           const p = s.seats[seat]
           if (!p || (p.session && p.session !== client.sessionId)) throw new Rejected('seat_already_connected')
           p.session = client.sessionId
           p.disconnectedAt = null
           p.autopilot = p.joinsAt !== null
+          await backAtLeague(s, c, seat)
           s.expiresAt = Date.now() + TTL_MS
           return { changed: true, value: null }
         })
@@ -195,6 +206,8 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           p.session = null
           p.disconnectedAt = drop.at
           p.autopilot = p.joinsAt !== null
+          // Gone from a League table during a deal: what it costs them if they do not see it out (SKATGO-206).
+          if (playingLeague(s)) p.stake ??= leftOutcome(s.game!.declarer, drop.seat)
           // Someone gone no longer holds the next deal the others asked for (SKATGO-165).
           if (dealIfReady(s, pick)) {
             s.played = s.revision + 1
@@ -281,6 +294,8 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
       const deadlines = [s.expiresAt]
       for (const p of s.seats) {
         if (p.disconnectedAt !== null && !p.autopilot) deadlines.push(p.disconnectedAt + GRACE_MS)
+        // Away from a League table a minute: it counts as leaving (SKATGO-206).
+        if (s.league && p.account && !p.session && !p.leaving && p.disconnectedAt !== null) deadlines.push(p.disconnectedAt + AWAY_MS)
       }
       if (s.game && playsOn(s) && this.computerDue(s)) deadlines.push(s.nextActionAt)
       this.timer = setTimeout(() => {
@@ -319,6 +334,19 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             p.autopilot = true
             changed = true
           }
+        }
+        // Away from a League table `AWAY_MS` (SKATGO-206, the human: 「离桌多久应该算输，比如1分钟？」): it counts as leaving —
+        // the deal on the table is lost for them, and so is the last one if they never came back to its result.
+        for (let i = 0; i < 3; i++) {
+          const p = s.seats[i]
+          if (!s.league || !p.account || p.session || p.leaving || p.disconnectedAt === null || now < p.disconnectedAt + AWAY_MS) continue
+          p.leaving = true
+          if (playingLeague(s)) {
+            p.stake ??= leftOutcome(s.game!.declarer, i)
+            p.forfeit = true
+          }
+          await settlePending(s, c, i, false, now)
+          changed = true
         }
         // Nobody online, nothing played (SKATGO-163): the computers do not go on by themselves — but at a League sitting, whose
         // next step comes by itself once nobody here is left to ask for it: the next deal, or the sitting's end (SKATGO-205).

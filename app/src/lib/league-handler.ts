@@ -1,7 +1,7 @@
 // POST /api/league/state, /checkin, /play, /ticket and /review — the League's way in from the browser (SKATGO-204). The
 // League runs in the multiplayer service (its coins, tiers, tables and their rooms); this handler says which account
 // asks and passes the request on with the service's key. Everything but looking needs an account: a guest sees the tiers,
-// their fees and the Legend board, and is told to sign in.
+// their fees and the League's board, and is told to sign in.
 //
 // `/play` waits while the service looks for other people of the account's tier (up to five seconds) and answers the
 // table's room; `/ticket` signs the two-minute admission ticket to that room (lib/room-ticket.ts) for the account seated

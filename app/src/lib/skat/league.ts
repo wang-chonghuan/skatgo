@@ -21,8 +21,16 @@ export const CHECKIN_COINS = 100
  *  game lost −3; the declarer's game made against it −1, the common case, so a player only rises where they play well
  *  enough (the human: 「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」); all passed 0. Whole numbers only (「我不太
  *  喜欢这里引入小数」). */
-export const DEAL_POINTS = { won: 3, lost: -3, defended: -1, passed: 0 } as const
+export const DEAL_POINTS = { won: 3, lost: -3, defended: -1, passed: 0, leftDeclaring: -3, left: -1 } as const
 export type DealOutcome = keyof typeof DEAL_POINTS
+/** A deal a person did not see to its end (SKATGO-206, the human: 「没进入结算页面就不算打完，就不进历史。离桌多久应该算输，比如
+ *  1分钟？如果是庄家就-3，如果是防家就-1」): they left the table during it, or were away `AWAY_MS`, or the deal ended while they
+ *  were away and they did not come back to its result within `AWAY_MS` — lost, −3 if they were the declarer when they went,
+ *  else −1; it goes into no record and earns no XP. */
+export type LeftOutcome = 'leftDeclaring' | 'left'
+export const leftOutcome = (declarer: number | null, seat: number): LeftOutcome => (declarer === seat ? 'leftDeclaring' : 'left')
+/** How long a person may be away from a League table — the connection gone — before it counts as leaving it (SKATGO-206). */
+export const AWAY_MS = 60_000
 
 /** How a deal came out for `seat`: who declared (null when all passed) and whether the declarer won. */
 export function dealOutcome(declarer: number | null, won: boolean, seat: number): DealOutcome {
@@ -44,7 +52,7 @@ export type Standing = { tier: number; points: number }
 
 /** What a deal's points do to a standing: added; at `PROMOTE_AT` up a tier, at `RELEGATE_AT` down one, starting again from 0
  *  there. Bronze never goes down, its points stopping at `RELEGATE_AT`, so a beginner is never further than that from the
- *  climb; Legend never goes up, its points running on — its board ranks them. */
+ *  climb; Legend never goes up, its points running on, ranking its accounts at the head of the League's board. */
 export function standingAfter(s: Standing, delta: number): Standing & { moved: -1 | 0 | 1 } {
   const points = s.points + delta
   if (points >= PROMOTE_AT && s.tier < LEGEND) return { tier: s.tier + 1, points: 0, moved: 1 }
@@ -56,8 +64,15 @@ export function standingAfter(s: Standing, delta: number): Standing & { moved: -
  *  `table` the table they are seated at, while they sit there. */
 export type LeagueMe = Standing & { coins: number; today: boolean; table: string | null }
 
-/** The Legend board: the accounts in Legend by their points there, the most first; `you` on the asker's row. Names only. */
-export type LegendBoard = { rows: { rank: number; nickname: string; points: number; you?: true }[] }
+/** How many of the League's board are shown; the asker further down gets their own row after them. */
+export const BOARD_SIZE = 100
+
+/** A row of the League's board: the place, the name, the tier and the points in it; `you` on the asker's. Names only. */
+export type BoardRow = { rank: number; nickname: string; tier: number; points: number; you?: true }
+/** The League's board (SKATGO-206, the human: 「只要打了一局的就要上榜」, 「按照档次和档次的分数排名」): every account that has
+ *  played a League deal, by tier, then points in it, equal tier and points sharing a place; the first `BOARD_SIZE`, and as
+ *  `me` the asker's own row when it is further down. */
+export type LeagueBoard = { rows: BoardRow[]; me?: BoardRow }
 
 /** The last finished deal as the table shows it, by room seat: for a person how it came out, the points it brought, where
  *  it left them, and whether they can pay the next deal; nothing for a persona's seat. */

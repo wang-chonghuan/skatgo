@@ -103,7 +103,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | `text`, `navy`, `slate`, `slateDeep`, `slateStrong`, `onColor` | body text, titles and links, secondary text, a darker slate that stays day and night (the slate button, the quieter line on a contract's tint), a darker slate as text on a surface (the side panel's tabs, a card row's caption), text on colour or felt |
 | `go` | the one call to action, and the current state — the public site's landing buttons too (SKATGO-97, the human: 「改成我们按钮的标准绿色」); `goLanding` and `elev.btnGoLanding`, its former own green, are no longer used |
 | `info` | links in text, the hint button, the focus ring, and the "AI" tag wherever the AI is named — a score sheet, a deal's bidding and trick, the leaderboard (SKATGO-79, SKATGO-80, the human: 「AI标志都用app里那个蓝色的Ai标志」) |
-| `stop` | leaving the table, and the yes to a deletion (a forum post's, an account's, SKATGO-185) |
+| `stop` | leaving the table, and the yes to a deletion (a forum post's, an account's, SKATGO-185); the "Neu" ribbon on the front page's League tile (SKATGO-206) |
 | `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the League (the bidding practice before SKATGO-204), a private table |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); a deal's result box (SKATGO-145, SKATGO-166), `goodSoft` when the player's side won and `badSoft` when it lost. `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson |
@@ -279,7 +279,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `/play`), "Lernen" (`tileOrange`,
     `GraduationCap`, the course) and "Liga" (`tileNavy`, lucide's `Trophy`, its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:
     「你看看那个practice是不是没人点，打算把liga放那里如何」 then 「同意」 — the bidding practice's "Reizen" with `Gavel` stood there since
-    SKATGO-149, and the exercises' "Üben" with its `Puzzle` before it); on the right two long white cards, each
+    SKATGO-149, and the exercises' "Üben" with its `Puzzle` before it; a red "Neu" ribbon across its top right corner — `badge`
+    type, white on `stop`, `dims.ribbonWidth` long, turned `pose.ribbon` (45°) and standing `dims.ribbonRight` past the
+    tile's edge, so the tile cuts off both its ends (SKATGO-206, the human: 「home的联赛卡片上面加个红色的斜着的小tag，New，
+    吸引人登录」, then 「不好看，应该像彩带一样斜着，在右上角」); on the right two long white cards, each
     a row tall — the XP board on top, then the progress (SKATGO-172, 「你建议？」): "Verlauf & Analyse" (SKATGO-182, 「卡片名称 my progress改为my history and analyse」; until then "Mein Fortschritt") (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
     over the latest 30 deals, fewer while there are fewer (`standingOf`, SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」),
     the win rate and the average per deal against the AI (`homeCardTitle`, each over a `meta` label), beside the curve and
@@ -553,12 +556,16 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `dims.tierCard` wide (the next one showing at the edge) in `homeCard`'s shape, `radii.tile`, `elev.option`, its own
   flat picture edge to edge (`public/league/<tier>.webp`: a medal, a cup, a shield, a diamond, a crown, each on its own deep
   colour), the tier's name (`homeCardTitle`) and its fee (`appText`, `onColorSoft`) white at its bottom left; then, once
-  anyone is in Legend, "Rangliste der Legenden" as the XP board's rows — rank, name, points — the player's own row marked. A League table (`/league/play`) is a full-screen table as a private one,
+  anyone has played, "Liga-Rangliste" (SKATGO-206, the human: 「这个榜单就放在liga页面下方，每个人名旁边都要有一个联赛的logo，
+  最右边是分数。最左边是总排名」) as the XP board's rows — the rank at the left, the tier's badge (`public/league/badge/<tier>.webp`,
+  its picture's emblem cut square on its colour, `dims.badge`, `radii.tag`) by the name, the points at the right — the
+  player's own row marked; the first 100, and the player's own row after a "…" when it is further down. A League table (`/league/play`) is a full-screen table as a private one,
   its board "Spiel n", its top right button the way out, whose "Tisch verlassen" leaves the table (the deal on it played out
-  for the seat), no Lina and Noah faces (the seats are people's); each deal's result is free play's, its first line the
+  for the seat, and lost for the player, SKATGO-206), no Lina and Noah faces (the seats are people's); each deal's result is free play's, its first line the
   deal's League points (SKATGO-205: "Ligapunkte +3" as the XP line's pill — `go` on `goodSoft` won, `bad` on `badSoft` lost,
   `slate` on `page` at 0 — then why — "Dein Spiel gewonnen", "Den Alleinspieler
-  geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Alle haben gepasst" — and, when it moved the player,
+  geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Alle haben gepasst", "Du hast den Tisch verlassen"
+  (a deal not seen to its end, SKATGO-206) — and, when it moved the player,
   "Aufstieg in die Gold-Liga!" / "Abstieg in die Silber-Liga.", or when the coins are too few for the next, the coins line),
   then the XP line and the AI's game; its foot the next deal, or "Zur Liga" when the player moved or cannot pay. The League
   card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from −20 to +30.

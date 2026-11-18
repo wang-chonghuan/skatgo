@@ -4,11 +4,11 @@
 import { Client, type Room } from '@colyseus/sdk'
 
 import { jsonHeaders } from './session-token'
-import type { LeagueMe, LegendBoard } from './skat/league'
+import type { LeagueBoard, LeagueMe } from './skat/league'
 import type { DealReview } from './skat/tournament'
 
-/** What the League page shows: the fees by tier, the Legend board, and the account's own League (null for a guest). */
-export type LeagueState = { fees: number[]; board: LegendBoard; me: LeagueMe | null }
+/** What the League page shows: the fees by tier, the League's board, and the account's own League (null for a guest). */
+export type LeagueState = { fees: number[]; board: LeagueBoard; me: LeagueMe | null }
 /** Why the League refused, as the page names it. */
 export type LeagueError =
   | 'sign_in_required' | 'not_enough_coins' | 'already_in_room' | 'no_table' | 'no_opponents' | 'room_capacity' | 'room_full'

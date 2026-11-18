@@ -12,7 +12,7 @@ import { TableLoading } from './table-loading'
 
 /**
  * The League (SKATGO-204): a sub-page on the grey page — its H1, then in the browser the player's own League (tier,
- * points, coins and the one way to play), the six tiers with their fees and the Legend board; until the browser has it,
+ * points, coins and the one way to play), the six tiers with their fees and the League's board; until the browser has it,
  * the tiers. Personal, never indexed (lib/indexability.ts).
  */
 export function LeaguePage() {

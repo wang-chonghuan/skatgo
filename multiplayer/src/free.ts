@@ -5,6 +5,8 @@ import express from 'express'
 import { z } from 'zod'
 import { actor, deal, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
+import { LEAGUE_KEY } from '../../app/src/lib/skat/profile'
+import { roomSeat, viewSeat } from '../../app/src/lib/skat/room-view'
 import { ComputerFailed, type Logged, POSITION, type SeatPlan, advance, card, computerTurn, judgePlays, playsOf, raw, replayLog, reviewOf } from './computers'
 import { actionSchema, applySeatMove, cardSchema, refuseUnlawful, Rejected, secretEquals, roomOnly, type PoolDeal } from './model'
 import { BIDS, type HandMode, pickupChances } from './skatzero/bidding'
@@ -78,7 +80,7 @@ export function plan(p: { maxBid: number; decisions: string }): SeatPlan {
 
 /** `replay`: the same deal played again for the player's own reflection (SKATGO-170): sealed in the token, so no page can
  *  have it counted, and its finished deal goes into no record. */
-type Token = { v: 1; pool: string; id: number; t: number; log: Logged[]; replay?: true }
+type Token = { v: 1; pool: string; id: number; t: number; log: Logged[]; replay?: true; seat?: Seat }
 
 /** The key a token is sealed with, derived from the admission key; another `label` for another kind of token. */
 export function tokenKey(admissionKey: string, label = TOKEN_LABEL): Buffer {
@@ -122,6 +124,16 @@ export function poolDealOf(p: Pool, dealer: Seat): PoolDeal {
   return { dealer: d.dealer, deck: deckOf(d.deck), plans: d.computers, pool: p.version, id }
 }
 
+/** A deal of the pool as the player gets it (SKATGO-206): free play's from seat 0, as the pool keeps it; a League deal of
+ *  the record played again from the seat the player sat in — its dealer and every seat's bidding turned so that seat is
+ *  seat 0, as the League's review turns it. */
+export function seenDeal(p: Pool, id: number, seat: Seat = 0) {
+  const d = p.deals[id]
+  if (!seat) return d
+  const plan = (v: number) => d.computers[String(roomSeat(v, seat)) as '0' | '1' | '2']
+  return { ...d, dealer: viewSeat(d.dealer, seat), computers: { '0': plan(0), '1': plan(1), '2': plan(2) } }
+}
+
 /** The computers' moves until it is the player's turn: SkatZero's prepared plans for the auction and the
  *  skat, its cards from the models. */
 function turn(policy: Policy, plans: Record<'1' | '2', SeatPlan>) {
@@ -141,11 +153,11 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     nextHandler()
   })
 
-  async function reply(p: Pool, id: number, t: number, log: Logged[], g: Game, steps: Game[], replay?: true) {
-    const d = p.deals[id]
+  async function reply(p: Pool, id: number, t: number, log: Logged[], g: Game, steps: Game[], replay?: true, seat?: Seat) {
+    const d = seenDeal(p, id, seat)
     const plans = { '1': plan(d.computers['1']), '2': plan(d.computers['2']) }
     await advance(g, log, turn(policy()!, plans), steps)
-    return { token: seal(key, { v: 1, pool: p.version, id, t, log, ...(replay ? { replay } : {}) }), steps: steps.map(seatView), revision: log.length, computer: p.version }
+    return { token: seal(key, { v: 1, pool: p.version, id, t, log, ...(replay ? { replay } : {}), ...(seat ? { seat } : {}) }), steps: steps.map(seatView), revision: log.length, computer: p.version }
   }
 
   const run = (work: (body: unknown) => Promise<unknown>) => async (req: express.Request, res: express.Response) => {
@@ -189,13 +201,13 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
     if (roomOnly(i.action)) throw new Rejected('illegal_action')
     const { p, t } = opened(i.token)
     if (i.revision !== t.log.length) throw new Rejected('stale_revision')
-    const d = p.deals[t.id]
+    const d = seenDeal(p, t.id, t.seat)
     let g = replayLog(d.dealer, deckOf(d.deck), t.log)
     if (actor(g) !== PLAYER) throw new Rejected('not_your_turn')
     refuseUnlawful(g, i.action as Move)
     g = applySeatMove(g, PLAYER, i.action as Move)
     t.log.push({ seat: PLAYER, move: i.action as Move })
-    return reply(p, t.id, t.t, t.log, g, [g], t.replay)
+    return reply(p, t.id, t.t, t.log, g, [g], t.replay, t.seat)
   }))
 
   const tokenInput = z.object({ token: z.string().max(20_000) }).strict()
@@ -204,7 +216,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
   router.post('/resume', run(async (body) => {
     const i = tokenInput.parse(body)
     const { p, t } = opened(i.token)
-    const d = p.deals[t.id]
+    const d = seenDeal(p, t.id, t.seat)
     const g = replayLog(d.dealer, deckOf(d.deck), t.log)
     return { token: i.token, steps: [seatView(g)], revision: t.log.length, computer: p.version }
   }))
@@ -213,27 +225,29 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
   router.post('/replay', run(async (body) => {
     const i = tokenInput.parse(body)
     const { p, t } = opened(i.token)
-    const d = p.deals[t.id]
+    const d = seenDeal(p, t.id, t.seat)
     const deck = deckOf(d.deck)
     const end = replayLog(d.dealer, deck, t.log)
     if (end.phase !== 'done' && end.phase !== 'passedIn') throw new Rejected('not_finished')
     const g = deal(d.dealer, deck)
-    return reply(p, t.id, Date.now(), [], g, [g], true)
+    return reply(p, t.id, Date.now(), [], g, [g], true, t.seat)
   }))
   // A deal of the player's record of play once more (SKATGO-182, the human: 「可以replay……就如同正规的free play的replay，不计入
   // 任何分。但是呢，想点此处的复牌，必须登录」): an account's own recorded free deal, dealt anew from the pool under a token that
   // says it is played again, so nothing of it is counted. A deal of another pool, or not in the record, is no deal.
-  const againInput = z.object({ player: z.string().regex(/^user:[A-Za-z0-9_]{1,64}$/), game: z.string().regex(/^free:[^:\s]{1,100}:\d{1,7}:\d{1,15}$/) }).strict()
+  const againInput = z.object({ player: z.string().regex(/^user:[A-Za-z0-9_]{1,64}$/), game: z.union([z.string().regex(/^free:[^:\s]{1,100}:\d{1,7}:\d{1,15}$/), z.string().regex(LEAGUE_KEY)]) }).strict()
   router.post('/again', run(async (body) => {
     const i = againInput.parse(body)
     const p = pool()!
-    const [, version, index] = i.game.split(':')
+    // A League deal of the record (SKATGO-206) is played again from the seat the player sat in.
+    const [kind, version, index, at] = i.game.split(':')
     const id = Number(index)
+    const seat = (kind === 'league' ? Number(at) : 0) as Seat
     const { rowCount } = await store.pool.query('SELECT 1 FROM play_deals WHERE player = ANY($1) AND game = $2', [await idsOf(store, i.player), i.game])
     if (!rowCount || version !== p.version || !(id < p.deals.length)) throw new Rejected('no_such_deal')
-    const d = p.deals[id]
+    const d = seenDeal(p, id, seat)
     const g = deal(d.dealer, deckOf(d.deck))
-    return reply(p, id, Date.now(), [], g, [g], true)
+    return reply(p, id, Date.now(), [], g, [g], true, seat)
   }))
   // A finished game's replay and where SkatZero would have played another card (SKATGO-79), and the same
   // deal played by SkatZero in all three seats from the pool's plans — the AI in the player's seat
@@ -245,7 +259,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
   router.post('/review', run(async (body) => {
     const i = reviewInput.parse(body)
     const { p, t } = opened(i.token)
-    const d = p.deals[t.id]
+    const d = seenDeal(p, t.id, t.seat)
     const deck = deckOf(d.deck)
     const end = replayLog(d.dealer, deck, t.log)
     if (end.phase !== 'done' && end.phase !== 'passedIn') throw new Rejected('not_finished')
@@ -271,7 +285,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
   router.post('/odds', run(async (body) => {
     const i = oddsInput.parse(body)
     const { p, t } = opened(i.token)
-    const d = p.deals[t.id]
+    const d = seenDeal(p, t.id, t.seat)
     const g = replayLog(d.dealer, deckOf(d.deck), t.log)
     if ((g.phase === 'skat' || g.phase === 'declare') && g.declarer === PLAYER && g.pickedUp) {
       const twelve = [...g.hands[PLAYER], ...g.skat].map(raw)
@@ -283,6 +297,8 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
       return { bids: BIDS, made: Object.fromEntries(ODDS_MODES.map((m) => [m, made[m].map((x) => Math.round(x * 100))])) }
     }
     if (!p.odds) throw new ComputerFailed('odds_missing')
+    // Prepared for seat 0 only: a League deal played again from another seat has none before the skat (SKATGO-206).
+    if (t.seat) throw new Rejected('no_odds')
     const row = p.odds[t.id]
     return { bids: BIDS, made: Object.fromEntries(ODDS_MODES.map((m, k) => [m, row[k]])) }
   }))
@@ -298,7 +314,7 @@ export function freeRoutes(store: Store, admissionKey: string, ready: () => bool
   router.post('/talk', run(async (body) => {
     const i = talkInput.parse(body)
     const { p, t } = opened(i.token)
-    const d = p.deals[t.id]
+    const d = seenDeal(p, t.id, t.seat)
     const limit = { atMost: d.computers['0'].maxBid, atLeast: d.computers['0'].maxBid }
     const moment = await momentOf(d.dealer, deckOf(d.deck), t.log, i.said as never, limit,
       async (before, card) => verdictOf(await policy()!.ranked(viewOf(before, PLAYER)), card))

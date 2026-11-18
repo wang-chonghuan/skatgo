@@ -933,6 +933,7 @@
   "offline_text": "SkatGo braucht Internet, um zu geben und zu spielen. Prüf deine Verbindung und versuch es noch einmal.",
   "offline_retry": "Noch einmal versuchen",
   "home_league": "Liga",
+  "home_league_new": "Neu",
   "home_bidding_text": "Zehn Karten, zwei Fragen: Was spielst du, und wie hoch darfst du reizen?",
   "league_meta_title": "Skat-Liga – von Bronze bis Legende | SkatGo",
   "league_meta_description": "Skat in sechs Ligen von Bronze bis Legende. Jedes Spiel bringt oder kostet Ligapunkte, die dich auf- oder abwärts bringen. Jeden Tag Münzen gratis.",
@@ -958,7 +959,7 @@
   "league_poor": "Zu wenig Münzen – morgen gibt es 100 dazu.",
   "league_back": "Zurück an deinen Tisch",
   "league_tiers": "Ligen",
-  "league_board": "Rangliste der Legenden",
+  "league_board": "Liga-Rangliste",
   "league_guest": "Melde dich an: Jeden Tag, an dem du SkatGo öffnest, gibt es 100 Münzen.",
   "league_about": "Was ist die Liga – und warum macht sie Spaß?",
   "league_about_tiers": "Sechs Ligen, von Bronze bis Legende: Je höher die Liga, desto stärker die Gegner. Steig auf, so weit dein Skat dich trägt.",
@@ -985,5 +986,6 @@
   "league_deal_beat": "Den Alleinspieler geschlagen",
   "league_deal_lost": "Dein Spiel verloren",
   "league_deal_defended": "Der Alleinspieler hat gewonnen",
-  "league_deal_passed": "Alle haben gepasst"
+  "league_deal_passed": "Alle haben gepasst",
+  "league_deal_left": "Du hast den Tisch verlassen"
 }

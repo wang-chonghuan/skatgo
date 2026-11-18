@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-206",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-206",
+  "branch": "SKATGO-206-league-total-board",
+  "base": "6801e1615b71971c56806bb4c53bac7914b9d71c",
+  "ports": {
+    "web": 55206,
+    "multiplayer": 56206,
+    "database": 57206
+  }
+}

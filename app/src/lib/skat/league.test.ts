@@ -1,16 +1,18 @@
 import { describe, expect, it } from 'vitest'
 
-import { DEAL_POINTS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, TIERS, dealOutcome, standingAfter } from './league'
+import { AWAY_MS, DEAL_POINTS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, TIERS, dealOutcome, leftOutcome, standingAfter } from './league'
 
 // The League's numbers as SKATGO-205 sets them: six tiers and their fees per deal; per deal +3 when one's side won, −3 for
 // one's own game lost, −1 for the declarer's game made against one, 0 when all passed; +30 up and −20 down from 0 again,
-// no relegation from Bronze, no promotion from Legend.
+// no relegation from Bronze, no promotion from Legend. A deal not seen to its end (SKATGO-206) is lost: −3 declaring, else
+// −1; away a minute counts as leaving.
 
 describe('the League', () => {
   it('has six tiers, Bronze to Legend, and their fees per deal', () => {
     expect(TIERS).toEqual(['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend'])
     expect(FEES).toEqual([3, 4, 5, 7, 8, 10])
-    expect(DEAL_POINTS).toEqual({ won: 3, lost: -3, defended: -1, passed: 0 })
+    expect(DEAL_POINTS).toEqual({ won: 3, lost: -3, defended: -1, passed: 0, leftDeclaring: -3, left: -1 })
+    expect(AWAY_MS).toBe(60_000)
     expect([PROMOTE_AT, RELEGATE_AT]).toEqual([30, -20])
   })
 
@@ -20,6 +22,12 @@ describe('the League', () => {
     expect(dealOutcome(1, true, 0)).toBe('defended')
     expect(dealOutcome(1, false, 2)).toBe('won')
     expect(dealOutcome(null, false, 0)).toBe('passed')
+  })
+
+  it('loses a deal left before its end by one’s part in it when going', () => {
+    expect(leftOutcome(1, 1)).toBe('leftDeclaring')
+    expect(leftOutcome(1, 0)).toBe('left')
+    expect(leftOutcome(null, 2)).toBe('left')
   })
 
   it('adds a deal’s points', () => {

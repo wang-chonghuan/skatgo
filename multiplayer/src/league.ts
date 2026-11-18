@@ -4,8 +4,8 @@ import type pg from 'pg'
 import { z } from 'zod'
 import { actor, deal, next, type Seat } from '../../app/src/lib/skat/game'
 import {
-  CHECKIN_COINS, DEAL_POINTS, FEES, LEGEND, MATCH_WAIT_MS, TIERS, dealOutcome, standingAfter,
-  type LeagueMe, type LeagueResult, type LegendBoard,
+  BOARD_SIZE, CHECKIN_COINS, DEAL_POINTS, FEES, MATCH_WAIT_MS, TIERS, dealOutcome, leftOutcome, standingAfter,
+  type BoardRow, type DealOutcome, type LeagueBoard, type LeagueMe, type LeagueResult,
 } from '../../app/src/lib/skat/league'
 import { roomSeat, viewSeat } from '../../app/src/lib/skat/room-view'
 import { auctionOf, summarize } from '../../app/src/lib/skat/tournament'
@@ -119,48 +119,89 @@ async function tableOf(store: Store, player: string): Promise<string | null> {
   return (rows[0]?.id as string | undefined) ?? null
 }
 
-/** The Legend board: every account in Legend by its points there, then who got there first. */
-async function legendBoard(store: Store, who: string | null): Promise<LegendBoard> {
+/** The League's board (SKATGO-206): every account that has played a League deal — seated at a sitting with a deal it saw to
+ *  its end (not lost by leaving, not waiting for them; a deal before SKATGO-205 scored none, and counts); people never join
+ *  a sitting midway, so its seats are where they sat — by tier, then points in it, equal ones sharing a place. Under its name: an account deleted since (SKATGO-185) has none and is not on it. The first `BOARD_SIZE`, and the
+ *  asker's own row as `me` when it is further down. */
+async function leagueBoard(store: Store, who: string | null): Promise<LeagueBoard> {
   const { rows } = await store.pool.query(
-    `SELECT l.player, l.points, p.nickname FROM league_players l LEFT JOIN daily_players p ON p.player = l.player
-      WHERE l.tier = $1 ORDER BY l.points DESC, l.updated_at ASC LIMIT 100`, [LEGEND])
-  const board: LegendBoard['rows'] = []
-  rows.forEach((r, i) => {
-    const rank = i > 0 && rows[i - 1].points === r.points ? board[i - 1].rank : i + 1
-    board.push({ rank, nickname: (r.nickname as string | null) ?? '', points: r.points, ...(r.player === who ? { you: true as const } : {}) })
-  })
-  return { rows: board }
+    `WITH played AS (
+       SELECT DISTINCT seat AS player FROM league_matches m, jsonb_array_elements_text(m.seats) WITH ORDINALITY AS t(seat, n)
+        WHERE seat LIKE 'user:%' AND EXISTS (SELECT 1 FROM league_deals d WHERE d.match = m.id AND (d.points IS NULL
+          OR (d.points->>(n::int - 1) IS NOT NULL AND NOT coalesce(d.forfeits @> to_jsonb(n::int - 1), false))))),
+     ranked AS (
+       SELECT l.player, l.tier, l.points, p.nickname,
+              rank() OVER (ORDER BY l.tier DESC, l.points DESC) AS rank,
+              row_number() OVER (ORDER BY l.tier DESC, l.points DESC, l.player) AS n
+         FROM league_players l JOIN played USING (player) JOIN daily_players p ON p.player = l.player)
+     SELECT player, tier, points, nickname, rank::int AS rank, n::int AS n FROM ranked WHERE n <= $1 OR player = $2 ORDER BY n`,
+    [BOARD_SIZE, who])
+  const row = (r: (typeof rows)[number]): BoardRow =>
+    ({ rank: r.rank, nickname: r.nickname, tier: r.tier, points: r.points, ...(r.player === who ? { you: true as const } : {}) })
+  const top = rows.filter((r) => r.n <= BOARD_SIZE).map(row)
+  const me = rows.find((r) => r.n > BOARD_SIZE)
+  return me ? { rows: top, me: row(me) } : { rows: top }
+}
+
+/** One person's League points for a deal, their standing moved once, in the transaction of the change that decided it. */
+async function scoreSeat(s: Snapshot, c: pg.PoolClient, account: string, outcome: DealOutcome, now: number) {
+  const l = s.league!
+  const before = await standingOf(c, account, true)
+  const after = standingAfter({ tier: before.tier, points: before.points }, DEAL_POINTS[outcome])
+  await c.query('UPDATE league_players SET tier = $2, points = $3, updated_at = $4 WHERE player = $1', [account, after.tier, after.points, now])
+  return {
+    outcome, points: DEAL_POINTS[outcome], standing: { tier: after.tier, points: after.points }, moved: after.moved,
+    // The next deal here is this tier's: someone moved up or down sits down again in their new tier.
+    canPay: after.tier === l.tier && before.coins >= FEES[l.tier],
+  }
 }
 
 /** A finished deal of a sitting (SKATGO-204), kept for its reviews, and scored (SKATGO-205): each person's side won +3, their
  *  own game lost −3, the declarer's game made against them −1, all passed 0 — their standing moved once, in the transaction
  *  of the change that ended the deal; `scoredBefore` is the room's count of scored deals before it. Whether each can pay
- *  the next deal at this table travels with the result. */
+ *  the next deal at this table travels with the result. Only a deal seen to its end counts so (SKATGO-206): one who left
+ *  during it loses it (`forfeits`, no review, no record); one away when it ends is scored when they come back to its result
+ *  (`pending`, `settlePending`). */
 export async function settleLeague(s: Snapshot, c: pg.PoolClient, scoredBefore: number, now = Date.now()) {
   const l = s.league
   if (!l || s.scored <= scoredBefore || !l.current || !s.game) return
   const end = summarize(s.game)
   const result: LeagueResult = { deal: s.scored - 1, seats: [] }
+  const forfeits: number[] = []
+  l.pending = []
   for (let seat = 0; seat < 3; seat++) {
     const p = s.seats[seat]
-    if (!p.account) {
+    if (!p.account) result.seats.push(null)
+    else if (p.forfeit) {
+      result.seats.push(await scoreSeat(s, c, p.account, p.stake ?? 'left', now))
+      forfeits.push(seat)
+    } else if (!p.session) {
       result.seats.push(null)
-      continue
-    }
-    const outcome = dealOutcome(end.declarer, !!end.won, seat)
-    const before = await standingOf(c, p.account, true)
-    const after = standingAfter({ tier: before.tier, points: before.points }, DEAL_POINTS[outcome])
-    await c.query('UPDATE league_players SET tier = $2, points = $3, updated_at = $4 WHERE player = $1', [p.account, after.tier, after.points, now])
-    result.seats.push({
-      outcome, points: DEAL_POINTS[outcome], standing: { tier: after.tier, points: after.points }, moved: after.moved,
-      // The next deal here is this tier's: someone moved up or down sits down again in their new tier.
-      canPay: after.tier === l.tier && before.coins >= FEES[l.tier],
-    })
+      l.pending.push(seat)
+    } else result.seats.push(await scoreSeat(s, c, p.account, dealOutcome(end.declarer, !!end.won, seat), now))
   }
-  await c.query('INSERT INTO league_deals (match, deal, pool, pool_id, dealer, log, points) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING',
+  await c.query('INSERT INTO league_deals (match, deal, pool, pool_id, dealer, log, points, forfeits) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING',
     [l.match, s.scored - 1, l.current.pool, l.current.id, l.current.dealer, JSON.stringify(l.current.log),
-      JSON.stringify(result.seats.map((x) => x?.points ?? null))])
+      JSON.stringify(result.seats.map((x) => x?.points ?? null)), JSON.stringify(forfeits)])
   l.last = result
+}
+
+/** The last deal for a person who was away when it ended (SKATGO-206): back to its result, it counts as it came out;
+ *  not back within `AWAY_MS` of going, or their seat going to the next deal first, it is lost (−3 if they were declaring when
+ *  they went, else −1). */
+export async function settlePending(s: Snapshot, c: pg.PoolClient, seat: number, seen: boolean, now = Date.now()) {
+  const l = s.league
+  const p = s.seats[seat]
+  if (!l?.pending?.includes(seat) || !l.last || !s.game || !p.account) return
+  l.pending = l.pending.filter((x) => x !== seat)
+  const end = summarize(s.game)
+  const outcome = seen ? dealOutcome(end.declarer, !!end.won, seat) : (p.stake ?? leftOutcome(end.declarer, seat))
+  const entry = await scoreSeat(s, c, p.account, outcome, now)
+  l.last.seats[seat] = entry
+  await c.query(
+    `UPDATE league_deals SET points = jsonb_set(points, ARRAY[$3::text], to_jsonb($4::int)),
+            forfeits = CASE WHEN $5::boolean THEN coalesce(forfeits, '[]'::jsonb) || to_jsonb($6::int) ELSE forfeits END
+      WHERE match = $1 AND deal = $2`, [l.match, l.last.deal, String(seat), entry.points, !seen, seat])
 }
 
 /** The sitting's next deal (SKATGO-205), once it is due (`nextDue`): a person who left, is away, moved to another tier or
@@ -174,9 +215,13 @@ export async function leagueDeal(s: Snapshot, c: pg.PoolClient, pick: (dealer: S
   for (let seat = 0; seat < 3; seat++) {
     const p = s.seats[seat]
     if (!p.account) continue
+    // Away when the last deal ended and not back to its result before the next: lost (SKATGO-206).
+    await settlePending(s, c, seat, false, now)
     const standing = await standingOf(c, p.account, true)
     const stays = !p.leaving && !!p.session && !p.autopilot && standing.tier === l.tier && standing.coins >= fee
     if (stays) {
+      delete p.stake
+      delete p.forfeit
       staying.push(p.account)
       continue
     }
@@ -222,10 +267,10 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
   }
   const player = z.string().regex(ACCOUNT)
 
-  // What the page shows: the tiers and their fees, the Legend board, and for an account its coins, standing and table.
+  // What the page shows: the tiers and their fees, the League's board, and for an account its coins, standing and table.
   router.post('/state', run(async (body) => {
     const who = z.object({ player: player.nullable() }).strict().parse(body).player
-    const board = await legendBoard(store, who)
+    const board = await leagueBoard(store, who)
     if (!who) return { fees: FEES, board, me: null }
     const s = await standingOf(store.pool, who)
     const me: LeagueMe = { coins: s.coins, tier: s.tier, points: s.points, today: s.checkin_day === dayOf(Date.now()), table: await tableOf(store, who) }
@@ -346,9 +391,12 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
     const { rows: matches } = await store.pool.query('SELECT seats FROM league_matches WHERE id = $1', [i.match])
     const seat = (matches[0]?.seats as (string | null)[] | undefined)?.indexOf(i.player) ?? -1
     if (seat < 0) throw new Rejected('no_such_deal')
-    const { rows } = await store.pool.query('SELECT pool, pool_id, dealer, log FROM league_deals WHERE match = $1 AND deal = $2', [i.match, i.deal])
+    const { rows } = await store.pool.query('SELECT pool, pool_id, dealer, log, points, forfeits FROM league_deals WHERE match = $1 AND deal = $2', [i.match, i.deal])
     const d = rows[0]
     if (!d) throw new Rejected('not_finished')
+    // A deal not seen to its end is no deal of theirs (SKATGO-206): lost, or not counted yet while they are away.
+    if ((d.forfeits as number[] | null)?.includes(seat)) throw new Rejected('no_such_deal')
+    if (d.points && (d.points as (number | null)[])[seat] === null) throw new Rejected('not_finished')
     if (d.pool !== p.version) throw new Rejected('no_such_deal')
     const spec = p.deals[d.pool_id]
     const deck = deckOf(spec.deck)

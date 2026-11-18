@@ -6,7 +6,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { checkInOnce } from '~/lib/checkin'
 import { type LeagueError, type LeagueState, PASSING_LEAGUE, enterLeague, leagueReview, leagueState, playLeague } from '~/lib/league-api'
-import { CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, type LeagueResult } from '~/lib/skat/league'
+import { CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, TIERS, type BoardRow, type LeagueBoard, type LeagueResult } from '~/lib/skat/league'
 import { roomGame, roomSeat } from '~/lib/skat/room-view'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
@@ -16,18 +16,18 @@ import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
 import { elev } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
-import { radii } from '../../theme/shape.stylex'
+import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Who, signed } from './daily-comparison'
 import { GameTable } from './game-table'
-import { Tiers, leagueName } from './league-tiers'
+import { Tiers, leagueName, tierName } from './league-tiers'
 import { Shell, seatNames, useSeat } from './table-room'
 import { Btn, Panel, Pill, ProgressBar, linkLook } from './ui'
 import type { TableState } from '~/lib/room-client'
 import type { LeagueMe } from '~/lib/skat/league'
 
 // The League in the browser (SKATGO-204): the League page's own part — the player's tier, points and coins with the one
-// way to play, the tiers, the Legend board — and the League table. A seat is asked for on the League page, which waits
+// way to play, the tiers, the League's board — and the League table. A seat is asked for on the League page, which waits
 // there while players are found (up to five seconds), then goes to the table; the table only ever comes back to the
 // account's own table, so a reload never starts another one.
 
@@ -46,7 +46,7 @@ const errorText = (e: LeagueError) =>
     unreachable: m.table_err_unreachable,
   })[e]()
 
-/** The League page's own part: for an account its card, the tiers with its own marked and the Legend board; for a guest
+/** The League page's own part: for an account its card, the tiers with its own marked and the League's board; for a guest
  *  the tiers, the board and the way to sign in. */
 export function LeagueHome() {
   const account = useAccount()
@@ -100,8 +100,8 @@ export function LeagueHome() {
         <MeCard me={me} fee={fee} busy={busy} error={error} onPlay={() => void play()} />
       ) : null}
       <Tiers mine={me ? me.tier : null} />
-      {/* The Legend board once anyone is on it. */}
-      {state?.board.rows.length ? <Board state={state} /> : null}
+      {/* The League's board once anyone has played. */}
+      {state?.board.rows.length ? <Board board={state.board} /> : null}
     </div>
   )
 }
@@ -190,26 +190,40 @@ function About() {
   )
 }
 
-/** The Legend board: the accounts in Legend by their points there, the player's own row marked. */
-function Board({ state }: { state: LeagueState }) {
+/** The League's board (SKATGO-206, the human: 「这个榜单就放在liga页面下方，每个人名旁边都要有一个联赛的logo，最右边是分数。最左边是
+ *  总排名」): everyone who played a deal, by tier, then points; the player's own row marked, and after a "…" when it is
+ *  further down than the board shows. */
+function Board({ board }: { board: LeagueBoard }) {
   return (
     <Panel>
       <section data-testid="league-board" aria-labelledby="league-board-title" {...stylex.props(styles.card)}>
         <h2 id="league-board-title" {...stylex.props(typography.optionTitle, styles.ink)}>{m.league_board()}</h2>
         <ol {...stylex.props(styles.rows)}>
-          {state.board.rows.map((r, i) => (
-            <li key={i} data-testid="league-board-row" data-rank={r.rank} data-points={r.points} data-you={r.you ? 'true' : undefined} {...stylex.props(typography.appText, styles.boardRow, r.you && styles.own)}>
-              <span {...stylex.props(styles.slate, styles.rank)}>{r.rank}</span>
-              <span {...stylex.props(styles.name)}>
-                {r.nickname}
-                {r.you ? <span {...stylex.props(styles.tag)}><Who side="you" /></span> : null}
-              </span>
-              <span {...stylex.props(typography.appBtnStrong, styles.number)}>{signed(r.points)}</span>
-            </li>
-          ))}
+          {board.rows.map((r, i) => <BoardLine key={i} row={r} />)}
+          {board.me ? (
+            <>
+              <li aria-hidden="true" data-testid="league-board-gap" {...stylex.props(typography.appText, styles.slate, styles.gap)}>…</li>
+              <BoardLine row={board.me} />
+            </>
+          ) : null}
         </ol>
       </section>
     </Panel>
+  )
+}
+
+/** A row of the board: the rank, the tier's badge (its picture's emblem) by the name, the points at the right. */
+function BoardLine({ row: r }: { row: BoardRow }) {
+  return (
+    <li data-testid="league-board-row" data-rank={r.rank} data-tier={TIERS[r.tier]} data-points={r.points} data-you={r.you ? 'true' : undefined} {...stylex.props(typography.appText, styles.boardRow, r.you && styles.own)}>
+      <span {...stylex.props(styles.slate, styles.rank)}>{r.rank}</span>
+      <img data-testid="league-board-badge" src={`/league/badge/${TIERS[r.tier]}.webp`} alt={tierName(r.tier)} loading="lazy" {...stylex.props(styles.badge)} />
+      <span {...stylex.props(styles.name)}>
+        {r.nickname}
+        {r.you ? <span {...stylex.props(styles.tag)}><Who side="you" /></span> : null}
+      </span>
+      <span {...stylex.props(typography.appBtnStrong, styles.number)}>{signed(r.points)}</span>
+    </li>
   )
 }
 
@@ -376,7 +390,7 @@ const styles = stylex.create({
   rows: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
   boardRow: {
     display: 'flex',
-    alignItems: 'baseline',
+    alignItems: 'center',
     gap: space.x12,
     paddingBlock: space.x6,
     paddingInline: space.x8,
@@ -387,6 +401,10 @@ const styles = stylex.create({
   },
   own: { backgroundColor: color.goodSoft },
   rank: { minWidth: space.x24 },
+  // The tier's badge, square, its corners a tag's.
+  badge: { display: 'block', flexShrink: 0, width: dims.badge, height: dims.badge, borderRadius: radii.tag },
+  // The "…" before the player's own row when it is further down than the board.
+  gap: { paddingBlock: space.x6, paddingInline: space.x8 },
   name: { flexGrow: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   tag: { marginInlineStart: space.x6 },
   number: { flexShrink: 0, textAlign: 'end', fontVariantNumeric: 'tabular-nums' },

@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-206",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-206",
   "branch": "SKATGO-206-league-total-board",

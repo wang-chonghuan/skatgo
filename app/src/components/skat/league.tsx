@@ -400,7 +400,8 @@ const styles = stylex.create({
     color: color.navy,
   },
   own: { backgroundColor: color.goodSoft },
-  rank: { minWidth: space.x24 },
+  // Wide enough for three figures, so the badges and names stay in one column past the hundredth.
+  rank: { flexShrink: 0, minWidth: space.x32, fontVariantNumeric: 'tabular-nums' },
   // The tier's badge, square, its corners a tag's.
   badge: { display: 'block', flexShrink: 0, width: dims.badge, height: dims.badge, borderRadius: radii.tag },
   // The "…" before the player's own row when it is further down than the board.

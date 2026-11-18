@@ -40,8 +40,9 @@ export function EntryPage() {
         <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
         <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
         {/* The League (SKATGO-204, the human: 「你看看那个practice是不是没人点，打算把liga放那里如何」, then 「同意」): in the bidding
-            practice's tile, its colour kept; a cup. */}
-        <Way to="/league" section="league" tone="league" Icon={Trophy} art={LEAGUE_ART} title={m.home_league()} />
+            practice's tile, its colour kept; a cup. A red "New" on it, slanted (SKATGO-206, the human: 「home的联赛卡片上面加个红色的
+            斜着的小tag，New，吸引人登录」). */}
+        <Way to="/league" section="league" tone="league" Icon={Trophy} art={LEAGUE_ART} title={m.home_league()} badge={m.home_league_new()} />
         {/* The XP board first, the player's progress under it (SKATGO-172, the human asked which goes on top: 「你建议？」). */}
         <div data-testid="entry-card" data-section="xp" {...stylex.props(styles.long, styles.board)}>
           {xp ? (
@@ -101,8 +102,9 @@ export function EntryPage() {
 /** The hero's ways in as they are counted (SKATGO-29; renamed by SKATGO-74's tracking plan): the deal of the day, free play. */
 const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
 
-/** A colour card: its icon at the top, its title at the bottom, three of skatgo's cards in the corner under its colour. */
-function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | '/play' | '/course' | '/league'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon; art: Card[]; title: string; onClick?: () => void }) {
+/** A colour card: its icon at the top, its title at the bottom, three of skatgo's cards in the corner under its colour;
+ *  `badge` a small red tag in the top right corner, slanted as the cards are. */
+function Way({ to, section, tone, Icon, art, title, badge, onClick }: { to: '/daily' | '/play' | '/course' | '/league'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon; art: Card[]; title: string; badge?: string; onClick?: () => void }) {
   return (
     <Link to={to} data-testid="entry-card" data-section={section} onClick={onClick} {...stylex.props(styles.tile, styles.lift, tileTones[tone])}>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
@@ -117,6 +119,7 @@ function Way({ to, section, tone, Icon, art, title, onClick }: { to: '/daily' | 
         <Icon aria-hidden="true" size={icon.tile} strokeWidth={icon.outline} />
         <h2 {...stylex.props(typography.homeTileTitle, styles.tileTitle)}>{title}</h2>
       </span>
+      {badge ? <span data-testid="entry-badge" {...stylex.props(typography.badge, styles.badge)}>{badge}</span> : null}
     </Link>
   )
 }
@@ -301,6 +304,19 @@ const styles = stylex.create({
   // The icon at the top, the title at the bottom.
   body: { position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1 },
   tileTitle: { margin: 0, color: color.onColor },
+  // The "New" tag: in the top right corner, as far in as the icon is, red with white words, slanted as the cards are.
+  badge: {
+    position: 'absolute',
+    top: { default: space.x24, [bp.phone]: space.x16 },
+    right: { default: space.x24, [bp.phone]: space.x16 },
+    paddingInline: space.x8,
+    paddingBlock: space.x2,
+    borderRadius: radii.tag,
+    backgroundColor: color.stop,
+    color: color.onColor,
+    transform: pose.tileArt,
+    pointerEvents: 'none',
+  },
   // A long card: on PC in the third column, one row tall; under `bp.cards` the whole width.
   long: { gridColumn: { default: dims.homeLongColumn, [bp.cards]: dims.homeFullWidth }, minWidth: 0, minHeight: 0 },
   progress: { gridRow: { default: dims.homeRowSecond, [bp.cards]: dims.homeRowAuto } },

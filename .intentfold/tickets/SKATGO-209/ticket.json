@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-209",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-209",
+  "branch": "SKATGO-209-league-back-no-closed-page",
+  "base": "ee678858ab254ca929f3b5f1769dfa5e7e23aa13",
+  "ports": {
+    "web": 55209,
+    "multiplayer": 56209,
+    "database": 57209
+  }
+}

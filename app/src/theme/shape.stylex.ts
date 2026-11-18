@@ -58,6 +58,10 @@ export const dims = stylex.defineVars({
   // The front page's tiles and hero picture
   tileArtRight: '-18px',
   tileArtBottom: '-38px',
+  /** The "New" ribbon across a tile's top right corner (SKATGO-206): its length, and how far its box stands out past
+   *  the tile's right edge, so that it crosses the corner and both its ends are cut off by the tile. */
+  ribbonWidth: '112px',
+  ribbonRight: '-30px',
 
   /** The share card shown under the result's share buttons (SKATGO-132): the link preview's own 1200×630, at most
    *  half its size. */

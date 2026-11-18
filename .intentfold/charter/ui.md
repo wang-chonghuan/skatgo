@@ -103,7 +103,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | `text`, `navy`, `slate`, `slateDeep`, `slateStrong`, `onColor` | body text, titles and links, secondary text, a darker slate that stays day and night (the slate button, the quieter line on a contract's tint), a darker slate as text on a surface (the side panel's tabs, a card row's caption), text on colour or felt |
 | `go` | the one call to action, and the current state — the public site's landing buttons too (SKATGO-97, the human: 「改成我们按钮的标准绿色」); `goLanding` and `elev.btnGoLanding`, its former own green, are no longer used |
 | `info` | links in text, the hint button, the focus ring, and the "AI" tag wherever the AI is named — a score sheet, a deal's bidding and trick, the leaderboard (SKATGO-79, SKATGO-80, the human: 「AI标志都用app里那个蓝色的Ai标志」) |
-| `stop` | leaving the table, and the yes to a deletion (a forum post's, an account's, SKATGO-185); the "Neu" tag on the front page's League tile (SKATGO-206) |
+| `stop` | leaving the table, and the yes to a deletion (a forum post's, an account's, SKATGO-185); the "Neu" ribbon on the front page's League tile (SKATGO-206) |
 | `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the League (the bidding practice before SKATGO-204), a private table |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); a deal's result box (SKATGO-145, SKATGO-166), `goodSoft` when the player's side won and `badSoft` when it lost. `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson |
@@ -279,9 +279,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `/play`), "Lernen" (`tileOrange`,
     `GraduationCap`, the course) and "Liga" (`tileNavy`, lucide's `Trophy`, its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:
     「你看看那个practice是不是没人点，打算把liga放那里如何」 then 「同意」 — the bidding practice's "Reizen" with `Gavel` stood there since
-    SKATGO-149, and the exercises' "Üben" with its `Puzzle` before it; a small red "Neu" tag in its top right corner — `badge`
-    type, white on `stop`, `radii.tag`, slanted as the tiles' cards (`pose.tileArt`), SKATGO-206, the human: 「home的联赛卡片
-    上面加个红色的斜着的小tag，New，吸引人登录」); on the right two long white cards, each
+    SKATGO-149, and the exercises' "Üben" with its `Puzzle` before it; a red "Neu" ribbon across its top right corner — `badge`
+    type, white on `stop`, `dims.ribbonWidth` long, turned `pose.ribbon` (45°) and standing `dims.ribbonRight` past the
+    tile's edge, so the tile cuts off both its ends (SKATGO-206, the human: 「home的联赛卡片上面加个红色的斜着的小tag，New，
+    吸引人登录」, then 「不好看，应该像彩带一样斜着，在右上角」); on the right two long white cards, each
     a row tall — the XP board on top, then the progress (SKATGO-172, 「你建议？」): "Verlauf & Analyse" (SKATGO-182, 「卡片名称 my progress改为my history and analyse」; until then "Mein Fortschritt") (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
     over the latest 30 deals, fewer while there are fewer (`standingOf`, SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」),
     the win rate and the average per deal against the AI (`homeCardTitle`, each over a `meta` label), beside the curve and

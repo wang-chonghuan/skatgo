@@ -51,6 +51,8 @@ export const pose = stylex.defineVars({
   fanRight: 'rotate(12deg) translate(4px, 8px)',
   fanFarRight: 'rotate(24deg) translate(8px, 26px)',
   tileArt: 'rotate(-8deg)',
+  /** The "New" ribbon across a tile's top right corner (SKATGO-206, the human: 「应该像彩带一样斜着，在右上角」). */
+  ribbon: 'rotate(45deg)',
   lift: 'translateY(-3px)',
   rest: 'translateY(0)',
   /** An opponent's card, turned on its side inside its landscape slot. */

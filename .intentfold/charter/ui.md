@@ -543,12 +543,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   Bronze; the `ProgressBar` from the relegation line to the promotion line (none in Legend); then the one `go`, "Spielen · 15
   Münzen" — "Suche Mitspieler … 5" on it while it waits, counting the five seconds down (the human: 「等待时要有个倒计时」), the number gone once they are up, disabled with one line when the coins are too few ("Zu wenig Münzen –
   morgen gibt es 100 dazu.") — or "Zurück an deinen Tisch" while its table runs. A guest's card is one line and the `go`
-  "Anmelden". At the bottom of either card, "Was ist die Liga – und warum macht sie Spaß?" as an underlined link line
-  (`appLink`, lucide's chevron after it) closed until tapped (the human: 「改成一个折叠卡片，默认折叠……必须精简，要考虑到大部分
-  玩家没耐心。可以用bullets」, then 「放到第一个卡片的底部，用蓝色链接字就行，不用单独做大卡片」) — `info` on the guest's white card,
-  `onColor` on the navy one, where `info` does not read (「你来决定最好的ui」) — opening four short bullets (`appText`, `navy`
-  or `onColorSoft`): the tiers, each deal's points, up and down, the coins. Under the card "Ligen" (`optionTitle`, on the
-  page): the six as a row of picture cards that scrolls sideways
+  "Anmelden". Above the card, right under the H1, "Was ist die Liga – und warum macht sie Spaß?" as an underlined `info`
+  link line (`appLink`, lucide's chevron after it) closed until tapped (the human: 「改成一个折叠卡片，默认折叠……必须精简，要
+  考虑到大部分玩家没耐心。可以用bullets」, 「用蓝色链接字就行，不用单独做大卡片」, then 「放到页面标题的下面得了，别放那个卡片里
+  了」), opening four short bullets (`appText`, `navy`): the tiers, each deal's points, up and down, the coins. Under the
+  card "Ligen" (`optionTitle`, on the page): the six as a row of picture cards that scrolls sideways
   (the human: 「tiers最好做成横向滚动的carousel，然后玩家当前位于的段位在最左侧。要用彩色卡片，背景是档位的图片」) — Bronze to
   Legend, each card snapping to the left edge, the player's own scrolled there on opening and tagged "You"; a card is
   `dims.tierCard` wide (the next one showing at the edge) in `homeCard`'s shape, `radii.tile`, `elev.option`, its own

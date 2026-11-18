@@ -561,10 +561,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   its picture's emblem cut square on its colour, `dims.badge`, `radii.tag`) by the name, the points at the right — the
   player's own row marked; the first 100, and the player's own row after a "…" when it is further down. A League table (`/league/play`) is a full-screen table as a private one,
   its board "Spiel n", its top right button the way out, whose "Tisch verlassen" leaves the table (the deal on it played out
-  for the seat), no Lina and Noah faces (the seats are people's); each deal's result is free play's, its first line the
+  for the seat, and lost for the player, SKATGO-206), no Lina and Noah faces (the seats are people's); each deal's result is free play's, its first line the
   deal's League points (SKATGO-205: "Ligapunkte +3" as the XP line's pill — `go` on `goodSoft` won, `bad` on `badSoft` lost,
   `slate` on `page` at 0 — then why — "Dein Spiel gewonnen", "Den Alleinspieler
-  geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Alle haben gepasst" — and, when it moved the player,
+  geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Alle haben gepasst", "Du hast den Tisch verlassen"
+  (a deal not seen to its end, SKATGO-206) — and, when it moved the player,
   "Aufstieg in die Gold-Liga!" / "Abstieg in die Silber-Liga.", or when the coins are too few for the next, the coins line),
   then the XP line and the AI's game; its foot the next deal, or "Zur Liga" when the player moved or cannot pay. The League
   card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from −20 to +30.

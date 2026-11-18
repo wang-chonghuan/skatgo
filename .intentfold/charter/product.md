@@ -202,7 +202,11 @@ and settles where they belong (「主要是要让厉害的玩家能爬上去，�
 −20 down, from 0 again; Bronze has no relegation (its points stop at −20) and Legend no promotion, its points running on; a player who moves gets up and sits down again in their new tier. The points earned before
 SKATGO-205 started again from 0, tiers and coins kept. Standings
 never start again — no week, no season. Each deal ends in free play's result with the AI's game, under its League points, and earns XP as any
-deal against the AI does; a deal the AI finished for a player away earns it when its result is opened. Its page shows the
+deal against the AI does. A deal counts only when the player sees it to its result (SKATGO-206, the human: 「没进入结算页面就不算
+打完，就不进历史。离桌多久应该算输，比如1分钟？如果是庄家就-3，如果是防家就-1」): left during it — the button, or away a minute,
+which counts as leaving — it is lost, −3 if they were the declarer when they went, else −1, the AI playing their seat out for
+the others; it goes into no record of play and earns no XP. A deal that ended while they were away counts as it came out
+once they come back to its result within the minute, and is lost otherwise. Its page shows the
 player's tier, points and how far from moving, the coins, the fees and, at its bottom, the League's board (SKATGO-206, the
 human: 「只要打了一局的就要上榜」, 「按照档次和档次的分数排名」): every account that has played a League deal, by tier, then
 its points in it; a guest sees the tiers and the board and signs in. The front page's colour card that was the bidding practice's is the League's; the bidding practice is the fourth

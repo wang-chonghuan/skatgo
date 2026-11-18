@@ -196,6 +196,9 @@ export class Store {
         );
         -- SKATGO-205 scores each deal: the League points it brought each seat (null for a persona's).
         ALTER TABLE league_deals ADD COLUMN IF NOT EXISTS points jsonb;
+        -- SKATGO-206: the seats whose person did not see the deal to its end and lost it (left, or away a minute); a seat
+        -- still null in points is one whose person was away when it ended, not counted yet.
+        ALTER TABLE league_deals ADD COLUMN IF NOT EXISTS forfeits jsonb;
         -- SKATGO-205 changed the points' scale (a deal at a time, +30 up and −20 down, not places in rounds): the points
         -- earned before start again from 0, tier and coins kept — once, the rows on the old scale (1) moving to the new (2).
         ALTER TABLE league_players ADD COLUMN IF NOT EXISTS scale smallint NOT NULL DEFAULT 1;

@@ -986,5 +986,6 @@
   "league_deal_beat": "You beat the declarer",
   "league_deal_lost": "You lost your game",
   "league_deal_defended": "The declarer made it",
-  "league_deal_passed": "All passed"
+  "league_deal_passed": "All passed",
+  "league_deal_left": "You left the table"
 }

@@ -7,7 +7,7 @@ import {
 } from '../../app/src/lib/skat/game'
 import { declarationAdvice } from '../../app/src/lib/skat/ai'
 import { seegerFabian, summarize } from '../../app/src/lib/skat/tournament'
-import type { LeagueResult } from '../../app/src/lib/skat/league'
+import { AWAY_MS, leftOutcome, type LeagueResult, type LeftOutcome } from '../../app/src/lib/skat/league'
 import type { RoomDeal, RoomPrivate, RoomPublic } from '../../app/src/lib/skat/room-view'
 import type { Logged } from './computers'
 
@@ -71,9 +71,14 @@ export type Slot = {
   /** A League table's persona in this seat (SKATGO-204): its `sim:` id; it plays the seat as a computer does, under
    *  `nickname`, and is never an account. */
   persona?: string
-  /** A League sitting's person who left (SKATGO-205): a computer finishes the deal on the table for them, which counts,
-   *  and the seat goes to a persona when the next is dealt. */
+  /** A League sitting's person who left (SKATGO-205): a computer finishes the deal on the table for them, and the seat goes
+   *  to a persona when the next is dealt. Away `AWAY_MS` counts as leaving (SKATGO-206). */
   leaving?: boolean
+  /** What the deal on the table costs this person if they do not see it to its end (SKATGO-206): their part in it when they
+   *  went from the table during it — leaving, or the connection gone. Gone again when they come back, unless forfeited. */
+  stake?: LeftOutcome
+  /** The deal on the table is lost for this person (SKATGO-206): they left the table during it, or were away `AWAY_MS`. */
+  forfeit?: true
 }
 /** A seat's SkatZero bidding for one deal, as free play's pool stores it (SKATGO-40). */
 export type Plan = { maxBid: number; decisions: string }
@@ -91,6 +96,9 @@ export type LeagueRoom = {
   current: { pool: string; id: number; dealer: Seat; log: Logged[] } | null
   finished?: boolean
   last?: LeagueResult
+  /** Seats whose person was away when the last deal ended (SKATGO-206): it counts for them once they come back to its
+   *  result, or is lost if they are not back within `AWAY_MS` of going, or their seat goes to the next deal first. */
+  pending?: number[]
 }
 /** A private room (SKATGO-61, a room since SKATGO-163): its number is its id. It waits first, with no deal (`deals` 0):
  *  people come in with the number, the host gives the seats nobody takes to computers and starts. Then one deal after
@@ -142,6 +150,8 @@ export function secureDeck(): Card[] {
   return deck
 }
 const ended = (g: Game) => g.phase === 'done' || g.phase === 'passedIn'
+/** A League sitting's deal is on the table and not over yet. */
+export const playingLeague = (s: Snapshot) => !!s.league && !!s.game && !ended(s.game)
 
 /** A computer's seat. */
 export const computerSeat = (): Slot => ({ account: null, nickname: null, session: null, disconnectedAt: null, autopilot: true, joinsAt: null })
@@ -227,8 +237,10 @@ export function nextDue(s: Snapshot, now = Date.now()): boolean {
   if (s.league?.finished) return false
   const here = s.seats.flatMap((p, i) => (p.account && p.session && !p.leaving ? [i] : []))
   const asked = s.nextBy ?? []
+  // Nobody here at a League sitting: the step once everyone has left, or been away `AWAY_MS`, so whoever is away can still
+  // come back to the deal's result (SKATGO-206).
   if (s.league && here.length === 0) {
-    return s.seats.every(p => !p.account || p.leaving || p.autopilot || (p.disconnectedAt !== null && now >= p.disconnectedAt + GRACE_MS))
+    return s.seats.every(p => !p.account || p.leaving || (p.disconnectedAt !== null && now >= p.disconnectedAt + AWAY_MS))
   }
   return here.length > 0 && asked.length > 0 && here.every(i => asked.includes(i))
 }
@@ -239,14 +251,18 @@ export function nextDue(s: Snapshot, now = Date.now()): boolean {
  *  `leave`: one's own. Everything else is a move through the engine. `pick` draws a deal from the pool with the given
  *  dealer. */
 export function applyAction(s: Snapshot, seat: Seat, action: Command['action'], pick: (dealer: Seat) => PoolDeal) {
-  // A League sitting has no host. Leaving it (SKATGO-205, the ticket: 离开或断线时，当前这副 30 秒后由 AI 代打完，照常计分): the
-  // connection goes and the seat waits as for one away — a computer plays the deal out after the grace, and it counts — and
-  // the seat goes at the next deal (`leagueDeal`). Back before then, they stay.
+  // A League sitting has no host. Leaving it (SKATGO-205): the connection goes and the seat waits as for one away — a computer
+  // plays the deal out after the grace — and the seat goes at the next deal (`leagueDeal`). Back before then, they stay.
+  // Left during a deal, the deal is lost for them (SKATGO-206): −3 if they were declaring, else −1; after it, it stands.
   if (s.league && action.type === 'leave') {
     const p = s.seats[seat]
     p.leaving = true
     p.session = null
     p.disconnectedAt = Date.now()
+    if (playingLeague(s)) {
+      p.stake ??= leftOutcome(s.game!.declarer, seat)
+      p.forfeit = true
+    }
     s.nextBy = (s.nextBy ?? []).filter(i => i !== seat)
     return
   }

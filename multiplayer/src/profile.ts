@@ -1,4 +1,5 @@
 import { deal } from '../../app/src/lib/skat/game'
+import { viewSeat } from '../../app/src/lib/skat/room-view'
 import type { Card } from '../../app/src/lib/skat/cards'
 import type { DealSummary } from '../../app/src/lib/skat/tournament'
 import { card } from './computers'
@@ -78,10 +79,12 @@ export async function playProfile(store: Store, who: string, pool: PoolDecks | n
   }
   const { rows: free } = await store.pool.query('SELECT game, day, at, mine, ai FROM play_deals WHERE player = ANY($1)', [players])
   for (const f of free) {
-    // A deal of this pool is dealt again from it: `free:<pool>:<deal>:<start>`.
-    const [, version, id] = (f.game as string).split(':')
+    // A deal of this pool is dealt again from it: `free:<pool>:<deal>:<start>`, or a League deal
+    // `league:<pool>:<deal>:<seat>:<sitting>:<n>` (SKATGO-206): its hand the one of the seat the player sat in.
+    const [kind, version, id, seat] = (f.game as string).split(':')
     const d = pool && version === pool.version ? pool.deals[Number(id)] : undefined
-    deals.push({ day: f.day, source: 'free', key: f.game, at: Number(f.at), ...(d ? { hand: handOf(d.dealer, d.deck.split(' ').map(card)) } : {}), mine: f.mine, ai: f.ai })
+    const dealer = d ? (kind === 'league' ? viewSeat(d.dealer, Number(seat)) : d.dealer) : 0
+    deals.push({ day: f.day, source: 'free', key: f.game, at: Number(f.at), ...(d ? { hand: handOf(dealer, d.deck.split(' ').map(card)) } : {}), mine: f.mine, ai: f.ai })
   }
   deals.sort((a, b) => a.day.localeCompare(b.day) || a.at - b.at)
   // The weeks' analyses written for this person, under any of their ids (SKATGO-128); none for a guest device.

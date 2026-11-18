@@ -394,16 +394,23 @@ client and names the account (`user:<Clerk id>`), never a guest for anything but
   first deal's fees are taken and the room and `league_matches` row stored in one transaction; answers `{ room }`, or 409
   `not_enough_coins` / `already_in_room`.
 - `review` (`{ player, match, deal }`): a finished deal of the account's sitting, its seat turned to seat 0, as `/free/review`
-  answers it, recorded once in `play_deals`.
+  answers it, recorded once in `play_deals` (`league:<pool>:<deal>:<seat>:<sitting>:<n>`, which `/free/again` deals again
+  from that seat, SKATGO-206); none for a deal the account lost by leaving (409 `no_such_deal`) or not counted yet
+  (`not_finished`).
 
 The sitting is an ordinary room (`Snapshot.league`): the browser joins it with a `join` ticket the web signs for the room
 `state` names; nobody else is admitted. It deals at once and goes on deal after deal (SKATGO-205). Each finished deal is
 scored for each account in the transaction that ends it (+3 its side won, −3 its own game lost, −1 the declarer's game made
-against it, 0 all passed). The next deal comes when every person online asked for it: whoever sent `leave` (dismissed at
-once with `left`; the seat waits the grace as for one away, then a computer plays the deal out, which counts), is away,
-moved tier or cannot pay is replaced by a persona and dismissed (`left`), the others pay the fee. Personas and a person
-away past the grace are played by the computers even with nobody online; with nobody left the sitting ends and the room
-expires ten minutes later. Tests:
+against it, 0 all passed) — only for one who sees it to its end (SKATGO-206). Whoever sends `leave` during a deal (dismissed
+at once with `left`; the seat waits the grace as for one away, then a computer plays the deal out) loses it: `Slot.stake`,
+their part when they went (`leftDeclaring` −3, else `left` −1), and `Slot.forfeit`; `league_deals.forfeits` lists such seats.
+A connection gone during a deal sets the stake too; away `AWAY_MS` (a minute) counts as leaving. A person away when a deal
+ends is `LeagueRoom.pending`, their `points` entry null: back within the minute they are scored as it came out
+(`settlePending`), otherwise — or when their seat goes to the next deal first — they lose it. The next deal comes when every
+person online asked for it: whoever left, is away, moved tier or cannot pay is replaced by a persona and dismissed
+(`left`), the others pay the fee. Personas and a person away past the grace are played by the computers even with nobody
+online; with nobody online the sitting ends once everyone has left or been away a minute, and the room expires ten minutes
+later. Tests:
 `test/league.test.ts`, against a database of its own.
 
 ## The ladder's record (SKATGO-109)

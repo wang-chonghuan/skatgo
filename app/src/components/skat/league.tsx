@@ -327,6 +327,9 @@ function DealLine({ result, declared }: { result: NonNullable<LeagueResult['seat
     lost: m.league_deal_lost(),
     defended: m.league_deal_defended(),
     passed: m.league_deal_passed(),
+    // Left during it, or away a minute (SKATGO-206): the deal lost.
+    leftDeclaring: m.league_deal_left(),
+    left: m.league_deal_left(),
   }[result.outcome]
   const then = result.moved === 1 ? m.league_result_up({ league: leagueName(result.standing.tier) })
     : result.moved === -1 ? m.league_result_down({ league: leagueName(result.standing.tier) })

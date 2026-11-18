@@ -986,5 +986,6 @@
   "league_deal_beat": "Den Alleinspieler geschlagen",
   "league_deal_lost": "Dein Spiel verloren",
   "league_deal_defended": "Der Alleinspieler hat gewonnen",
-  "league_deal_passed": "Alle haben gepasst"
+  "league_deal_passed": "Alle haben gepasst",
+  "league_deal_left": "Du hast den Tisch verlassen"
 }

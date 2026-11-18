@@ -21,8 +21,16 @@ export const CHECKIN_COINS = 100
  *  game lost −3; the declarer's game made against it −1, the common case, so a player only rises where they play well
  *  enough (the human: 「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」); all passed 0. Whole numbers only (「我不太
  *  喜欢这里引入小数」). */
-export const DEAL_POINTS = { won: 3, lost: -3, defended: -1, passed: 0 } as const
+export const DEAL_POINTS = { won: 3, lost: -3, defended: -1, passed: 0, leftDeclaring: -3, left: -1 } as const
 export type DealOutcome = keyof typeof DEAL_POINTS
+/** A deal a person did not see to its end (SKATGO-206, the human: 「没进入结算页面就不算打完，就不进历史。离桌多久应该算输，比如
+ *  1分钟？如果是庄家就-3，如果是防家就-1」): they left the table during it, or were away `AWAY_MS`, or the deal ended while they
+ *  were away and they did not come back to its result within `AWAY_MS` — lost, −3 if they were the declarer when they went,
+ *  else −1; it goes into no record and earns no XP. */
+export type LeftOutcome = 'leftDeclaring' | 'left'
+export const leftOutcome = (declarer: number | null, seat: number): LeftOutcome => (declarer === seat ? 'leftDeclaring' : 'left')
+/** How long a person may be away from a League table — the connection gone — before it counts as leaving it (SKATGO-206). */
+export const AWAY_MS = 60_000
 
 /** How a deal came out for `seat`: who declared (null when all passed) and whether the declarer won. */
 export function dealOutcome(declarer: number | null, won: boolean, seat: number): DealOutcome {

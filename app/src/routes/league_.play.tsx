@@ -4,7 +4,7 @@ import { clientPage } from '~/components/skat/client-page'
 import { pageHead, samePath } from '~/lib/head'
 import { m } from '~/paraglide/messages'
 
-// A League round's table (SKATGO-204): one person's page, never indexed (lib/indexability.ts).
+// A League table (SKATGO-204): one person's page, never indexed (lib/indexability.ts).
 export const Route = createFileRoute('/league_/play')({
   head: () =>
     pageHead({

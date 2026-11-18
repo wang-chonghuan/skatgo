@@ -51,7 +51,7 @@ export function Tiers({ mine }: { mine: number | null }) {
             {mine === i ? <span {...stylex.props(styles.you)}><Who side="you" /></span> : null}
             <span {...stylex.props(styles.words)}>
               <span {...stylex.props(typography.homeCardTitle, styles.onColor)}>{tierName(i)}</span>
-              <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_coins({ coins: FEES[i] })}</span>
+              <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_fee_deal({ coins: FEES[i] })}</span>
             </span>
           </li>
         ))}

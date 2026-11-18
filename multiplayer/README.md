@@ -385,19 +385,23 @@ name — never edit a recorded day.
 client and names the account (`user:<Clerk id>`), never a guest for anything but `state`.
 
 - `state` (`{ player | null }`): the fees, the Legend board, and for an account its coins, tier, points, whether today's
-  check-in counted and the round it is seated at.
+  check-in counted and the table it is seated at.
 - `checkin` (`{ player }`): `CHECKIN_COINS` on the account's first call of a Berlin day (`dayOf`), else nothing.
-- `play` (`{ player }`): the account's running round, or a new one in its tier: the request waits up to `MATCH_WAIT_MS`
+- `play` (`{ player }`): the account's table, or a new one in its tier: the request waits up to `MATCH_WAIT_MS`
   for other accounts of the tier (in the leader's memory), then the seats left go to personas of the tier's band, the
-  fees are taken and the room and `league_matches` row stored in one transaction; answers `{ room }`, or 409
+  first deal's fees are taken and the room and `league_matches` row stored in one transaction; answers `{ room }`, or 409
   `not_enough_coins` / `already_in_room`.
-- `review` (`{ player, match, deal }`): a finished deal of the account's round, its seat turned to seat 0, as `/free/review`
+- `review` (`{ player, match, deal }`): a finished deal of the account's sitting, its seat turned to seat 0, as `/free/review`
   answers it, recorded once in `play_deals`.
 
-The round is an ordinary room (`Snapshot.league`): the browser joins it with a `join` ticket the web signs for the room
-`state` names; nobody else is admitted. It deals at once, three deals each dealt by another seat; personas and a person
-away past the grace are played by the computers even with nobody online, so the round ends; when the third deal ends the
-places move each account's standing in the same transaction, once, and the room expires ten minutes later. Tests:
+The sitting is an ordinary room (`Snapshot.league`): the browser joins it with a `join` ticket the web signs for the room
+`state` names; nobody else is admitted. It deals at once and goes on deal after deal (SKATGO-205). Each finished deal is
+scored for each account in the transaction that ends it (+3 its side won, −3 its own game lost, −1 the declarer's game made
+against it, 0 all passed). The next deal comes when every person online asked for it: whoever sent `leave` (dismissed at
+once with `left`; the seat waits the grace as for one away, then a computer plays the deal out, which counts), is away,
+moved tier or cannot pay is replaced by a persona and dismissed (`left`), the others pay the fee. Personas and a person
+away past the grace are played by the computers even with nobody online; with nobody left the sitting ends and the room
+expires ten minutes later. Tests:
 `test/league.test.ts`, against a database of its own.
 
 ## The ladder's record (SKATGO-109)

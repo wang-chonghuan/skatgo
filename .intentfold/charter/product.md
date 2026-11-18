@@ -186,17 +186,24 @@ The League at `/league` (SKATGO-204, the human: 「分场天梯先做，而且�
 手段」): six tiers named as Duolingo and Chess.com name theirs, never by card suits (「不要用方块红心，否则会让用户困惑混淆」) —
 Bronze, Silver, Gold, Platinum, Diamond and Legend, German Bronze, Silber, Gold, Platin, Diamant, Legende ("Gold-Liga",
 "Legenden-Liga"; the top one Legend, 「最高级的钻石改为传奇」; Platinum and Diamond as a European ranks them, under Legend) —
-each round of three deals, every player dealing once, for an entry fee of 10, 12, 15, 20, 25 or 30 coins, taken when it
-starts and kept if the player leaves. Coins come only from checking in: a signed-in player's first open of SkatGo on a
+played a deal at a time at a table of three (SKATGO-205, the human: 「能否不管round，就从一个deal里，用简单直观的方法，让
+玩家觉得打一个deal就有一个获得感」), each deal costing 3, 4, 5, 7, 8 or 10 coins, taken when it is dealt and kept if the player
+leaves during it; the player leaves the table whenever they like. Coins come only from checking in: a signed-in player's first open of SkatGo on a
 day gives 100 (「不打开游戏就不给，打开了就能积累」), the day the daily tournament's; they add up with no limit, cannot be
 bought for now (「暂时不开放购买」) and are never exchanged for money or goods (「金币只要不能换实物就行」). Too few coins
-stops the League only. A round waits five seconds for other people of the same tier (「就等5秒」), then personas of that
-tier's strength take the empty seats, the higher the tier the stronger, Legend's near the AI's. Its place at the table
-by the three deals' Seeger-Fabian totals, never the difference to the AI (「就按sf分」), brings +3, +1 or −2 League
-points, equal totals sharing the better place; +12 moves the player up a tier and −8 down, from 0 again; Bronze has no
-relegation (its points stop at −8) and Legend no promotion, its points ranking the accounts in it on its board. Standings
-never start again — no week, no season. Each deal ends in free play's result with the AI's game and earns XP as any deal
-against the AI does; a deal the AI finished for a player away earns it when its result is opened. Its page shows the
+stops the League only: the player gets up after the deal they are in. A table waits five seconds for other people of the
+same tier (「就等5秒」), then personas of that tier's strength take the empty seats, the higher the tier the stronger,
+Legend's near the AI's; a person who leaves or is away when the next deal comes is replaced by one, and with nobody left
+the table ends. Each deal brings League points by how the player's own side came out of it, never the difference to the
+AI (SKATGO-205, the human: 「庄赢+3，防赢+3，庄输-3」, then 「我建议就1」): their side won — their own game, or the declarer
+beaten — +3, their own game lost −3, the declarer's game made against them −1, all passed 0; whole numbers only (「我不太
+喜欢这里引入小数」). The −1 is what keeps the ladder honest: a player rises only while they play well enough for the tier,
+and settles where they belong (「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」). +30 moves the player up a tier and
+−20 down, from 0 again; Bronze has no relegation (its points stop at −20) and Legend no promotion, its points ranking the
+accounts in it on its board; a player who moves gets up and sits down again in their new tier. The points earned before
+SKATGO-205 started again from 0, tiers and coins kept. Standings
+never start again — no week, no season. Each deal ends in free play's result with the AI's game, under its League points, and earns XP as any
+deal against the AI does; a deal the AI finished for a player away earns it when its result is opened. Its page shows the
 player's tier, points and how far from moving, the coins, the fees and the Legend board; a guest sees the tiers and signs
 in. The front page's colour card that was the bidding practice's is the League's; the bidding practice is the fourth
 picture card (the human: 「同意」).

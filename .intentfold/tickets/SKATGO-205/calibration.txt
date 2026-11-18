@@ -1,0 +1,8 @@
+deals per tier: 1200; card errors kept by tier: 1, 0.8, 0.6, 0.4, 0.2, 0; points {"won":3,"lost":-3,"defended":-1,"passed":0}
+ai   per 100 deals: bronze +131   silver +96   gold +89   platinum +76   diamond +60   legend +50
+fixed player p80: lars_85 (weakness 0.932)
+p80  per 100 deals: bronze +79   silver +47   gold +30   platinum +12   diamond -4   legend -22
+fixed player p50: Robert46 (weakness 1.066)
+p50  per 100 deals: bronze +73   silver +41   gold +21   platinum -7   diamond -22   legend -44
+fixed player p20: kai_17 (weakness 1.253)
+p20  per 100 deals: bronze +53   silver +29   gold +3   platinum -19   diamond -31   legend -41

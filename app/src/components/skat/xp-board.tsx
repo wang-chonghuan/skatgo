@@ -11,7 +11,6 @@ import { icon } from '../../theme/constants'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { Who } from './daily-comparison'
 import { Panel } from './ui'
 import { XpHow } from './xp-earned'
 
@@ -75,7 +74,6 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
                   <span {...stylex.props(styles.muted, styles.rank)}>{r.rank}</span>
                   <span data-testid="xp-board-name" {...stylex.props(styles.what)}>
                     {r.nickname}
-                    {r.you ? <span {...stylex.props(styles.tag)}><Who side="you" /></span> : null}
                   </span>
                   <span data-testid="xp-board-win" title={m.profile_vs_win()} {...stylex.props(styles.win)}>
                     {r.winRate === null ? '–' : `${r.winRate}%`}
@@ -134,7 +132,6 @@ const styles = stylex.create({
   // The player's own row, as the daily board marks it.
   own: { backgroundColor: color.goodSoft },
   rank: { minWidth: space.x24 },
-  tag: { marginInlineStart: space.x6 },
   what: { flexGrow: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   // The win rate and the XP each in a column of their own width, right-aligned on even digits, so every row's figures
   // stand under each other (SKATGO-178, the human: 「胜率列有点没对齐，要垂直对齐」).

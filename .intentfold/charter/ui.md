@@ -308,7 +308,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     「steak也要放上去吧」, SKATGO-178); every account with XP, over all their deals from 2 November 2026 on —
     rank, name, the win rate in `slate` (a whole percent, "–" while no deal had a declarer; SKATGO-178, in place of
     the days in a row: 「不连续登录了有内疚感。可以把胜率放上去，替换steak那个列」), the XP
-    (`appBtnStrong`) — the player's own row on `goodSoft` with the "You" tag, close rows at `appText`, one column, the list
+    (`appBtnStrong`) — the player's own row on `goodSoft`, no "You" tag (SKATGO-208, the human: 「XP & win rate 榜单上，那个You这个标签不要显示了」), close rows at `appText`, one column, the list
     scrolling inside the card, which is never taller than the cards beside it — it takes the row's height and never
     sets it (SKATGO-144, the human: 「高度不能超过它相邻卡片的高度，所以可以滚动，要一致」); wherever the page is one column
     (`bp.cards`, phones and narrow screens alike) the list itself, the first five rows (`dims.xpListNarrow`) and the

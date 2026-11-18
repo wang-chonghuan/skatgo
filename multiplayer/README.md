@@ -384,8 +384,10 @@ name — never edit a recorded day.
 `POST /league/<op>` behind the admission key; the web's `/api/league/*` (`app/src/lib/league-handler.ts`) is its one
 client and names the account (`user:<Clerk id>`), never a guest for anything but `state`.
 
-- `state` (`{ player | null }`): the fees, the Legend board, and for an account its coins, tier, points, whether today's
-  check-in counted and the table it is seated at.
+- `state` (`{ player | null }`): the fees, the League's board (SKATGO-206: every account seated at a sitting with a finished
+  deal and still named, by tier, then points, equal ones sharing a rank; the first `BOARD_SIZE`, and the asker's own row
+  as `me` when further down), and for an account its coins, tier, points, whether today's check-in counted and the table
+  it is seated at.
 - `checkin` (`{ player }`): `CHECKIN_COINS` on the account's first call of a Berlin day (`dayOf`), else nothing.
 - `play` (`{ player }`): the account's table, or a new one in its tier: the request waits up to `MATCH_WAIT_MS`
   for other accounts of the tier (in the leader's memory), then the seats left go to personas of the tier's band, the

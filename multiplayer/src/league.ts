@@ -4,8 +4,8 @@ import type pg from 'pg'
 import { z } from 'zod'
 import { actor, deal, next, type Seat } from '../../app/src/lib/skat/game'
 import {
-  CHECKIN_COINS, DEAL_POINTS, FEES, LEGEND, MATCH_WAIT_MS, TIERS, dealOutcome, standingAfter,
-  type LeagueMe, type LeagueResult, type LegendBoard,
+  BOARD_SIZE, CHECKIN_COINS, DEAL_POINTS, FEES, MATCH_WAIT_MS, TIERS, dealOutcome, standingAfter,
+  type BoardRow, type LeagueBoard, type LeagueMe, type LeagueResult,
 } from '../../app/src/lib/skat/league'
 import { roomSeat, viewSeat } from '../../app/src/lib/skat/room-view'
 import { auctionOf, summarize } from '../../app/src/lib/skat/tournament'
@@ -119,17 +119,27 @@ async function tableOf(store: Store, player: string): Promise<string | null> {
   return (rows[0]?.id as string | undefined) ?? null
 }
 
-/** The Legend board: every account in Legend by its points there, then who got there first. */
-async function legendBoard(store: Store, who: string | null): Promise<LegendBoard> {
+/** The League's board (SKATGO-206): every account that has played a League deal — seated at a sitting with a finished deal;
+ *  people never join one midway, so its first seats played its first deal — by tier, then points in it, equal ones sharing
+ *  a place. Under its name: an account deleted since (SKATGO-185) has none and is not on it. The first `BOARD_SIZE`, and the
+ *  asker's own row as `me` when it is further down. */
+async function leagueBoard(store: Store, who: string | null): Promise<LeagueBoard> {
   const { rows } = await store.pool.query(
-    `SELECT l.player, l.points, p.nickname FROM league_players l LEFT JOIN daily_players p ON p.player = l.player
-      WHERE l.tier = $1 ORDER BY l.points DESC, l.updated_at ASC LIMIT 100`, [LEGEND])
-  const board: LegendBoard['rows'] = []
-  rows.forEach((r, i) => {
-    const rank = i > 0 && rows[i - 1].points === r.points ? board[i - 1].rank : i + 1
-    board.push({ rank, nickname: (r.nickname as string | null) ?? '', points: r.points, ...(r.player === who ? { you: true as const } : {}) })
-  })
-  return { rows: board }
+    `WITH played AS (
+       SELECT DISTINCT seat AS player FROM league_matches m, jsonb_array_elements_text(m.seats) AS seat
+        WHERE seat LIKE 'user:%' AND EXISTS (SELECT 1 FROM league_deals d WHERE d.match = m.id)),
+     ranked AS (
+       SELECT l.player, l.tier, l.points, p.nickname,
+              rank() OVER (ORDER BY l.tier DESC, l.points DESC) AS rank,
+              row_number() OVER (ORDER BY l.tier DESC, l.points DESC, l.player) AS n
+         FROM league_players l JOIN played USING (player) JOIN daily_players p ON p.player = l.player)
+     SELECT player, tier, points, nickname, rank::int AS rank, n::int AS n FROM ranked WHERE n <= $1 OR player = $2 ORDER BY n`,
+    [BOARD_SIZE, who])
+  const row = (r: (typeof rows)[number]): BoardRow =>
+    ({ rank: r.rank, nickname: r.nickname, tier: r.tier, points: r.points, ...(r.player === who ? { you: true as const } : {}) })
+  const top = rows.filter((r) => r.n <= BOARD_SIZE).map(row)
+  const me = rows.find((r) => r.n > BOARD_SIZE)
+  return me ? { rows: top, me: row(me) } : { rows: top }
 }
 
 /** A finished deal of a sitting (SKATGO-204), kept for its reviews, and scored (SKATGO-205): each person's side won +3, their
@@ -222,10 +232,10 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
   }
   const player = z.string().regex(ACCOUNT)
 
-  // What the page shows: the tiers and their fees, the Legend board, and for an account its coins, standing and table.
+  // What the page shows: the tiers and their fees, the League's board, and for an account its coins, standing and table.
   router.post('/state', run(async (body) => {
     const who = z.object({ player: player.nullable() }).strict().parse(body).player
-    const board = await legendBoard(store, who)
+    const board = await leagueBoard(store, who)
     if (!who) return { fees: FEES, board, me: null }
     const s = await standingOf(store.pool, who)
     const me: LeagueMe = { coins: s.coins, tier: s.tier, points: s.points, today: s.checkin_day === dayOf(Date.now()), table: await tableOf(store, who) }

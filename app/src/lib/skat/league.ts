@@ -44,7 +44,7 @@ export type Standing = { tier: number; points: number }
 
 /** What a deal's points do to a standing: added; at `PROMOTE_AT` up a tier, at `RELEGATE_AT` down one, starting again from 0
  *  there. Bronze never goes down, its points stopping at `RELEGATE_AT`, so a beginner is never further than that from the
- *  climb; Legend never goes up, its points running on — its board ranks them. */
+ *  climb; Legend never goes up, its points running on, ranking its accounts at the head of the League's board. */
 export function standingAfter(s: Standing, delta: number): Standing & { moved: -1 | 0 | 1 } {
   const points = s.points + delta
   if (points >= PROMOTE_AT && s.tier < LEGEND) return { tier: s.tier + 1, points: 0, moved: 1 }
@@ -56,8 +56,15 @@ export function standingAfter(s: Standing, delta: number): Standing & { moved: -
  *  `table` the table they are seated at, while they sit there. */
 export type LeagueMe = Standing & { coins: number; today: boolean; table: string | null }
 
-/** The Legend board: the accounts in Legend by their points there, the most first; `you` on the asker's row. Names only. */
-export type LegendBoard = { rows: { rank: number; nickname: string; points: number; you?: true }[] }
+/** How many of the League's board are shown; the asker further down gets their own row after them. */
+export const BOARD_SIZE = 100
+
+/** A row of the League's board: the place, the name, the tier and the points in it; `you` on the asker's. Names only. */
+export type BoardRow = { rank: number; nickname: string; tier: number; points: number; you?: true }
+/** The League's board (SKATGO-206, the human: 「只要打了一局的就要上榜」, 「按照档次和档次的分数排名」): every account that has
+ *  played a League deal, by tier, then points in it, equal tier and points sharing a place; the first `BOARD_SIZE`, and as
+ *  `me` the asker's own row when it is further down. */
+export type LeagueBoard = { rows: BoardRow[]; me?: BoardRow }
 
 /** The last finished deal as the table shows it, by room seat: for a person how it came out, the points it brought, where
  *  it left them, and whether they can pay the next deal; nothing for a persona's seat. */

@@ -224,6 +224,40 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     await migrating.migrate()
     assert.equal((await sql.query("SELECT points FROM league_players WHERE player = 'user:d'")).rows[0].points, 5)
     await migrating.close()
+
+    // The League's board (SKATGO-206): everyone who played a deal, by tier, then points; not one who never sat down.
+    const { rows: standings } = await sql.query(
+      `SELECT l.player, l.tier, l.points, p.nickname FROM league_players l JOIN daily_players p USING (player)
+        WHERE l.player = ANY($1) ORDER BY l.tier DESC, l.points DESC`, [['user:a', 'user:c', 'user:d']])
+    assert.equal(standings.length, 3)
+    const board = (await call('state', { player: 'user:c' })).body.board
+    assert.deepEqual(board.rows.map((r: any) => [r.nickname, r.tier, r.points]), standings.map(r => [r.nickname, r.tier, r.points]))
+    assert.deepEqual(board.rows.filter((r: any) => r.you).map((r: any) => r.nickname), standings.filter(r => r.player === 'user:c').map(r => r.nickname))
+    assert.equal(board.me, undefined)
+    board.rows.forEach((r: any, i: number) => {
+      const prev = board.rows[i - 1]
+      assert.equal(r.rank, prev && prev.tier === r.tier && prev.points === r.points ? prev.rank : i + 1)
+    })
+    const guest = (await call('state', { player: null })).body.board
+    assert.deepEqual(guest.rows.map((r: any) => r.nickname), board.rows.map((r: any) => r.nickname))
+    assert(guest.rows.every((r: any) => !r.you))
+
+    // A hundred and one in Legend ahead: the board shows the first hundred, and the asker's own row after them.
+    const many = Array.from({ length: 101 }, (_, i) => `user:board${i}`)
+    for (const [i, p] of many.entries()) {
+      await sql.query('INSERT INTO league_players (player, tier, points, updated_at) VALUES ($1, 5, $2, 0)', [p, 1000 - i])
+      await sql.query('INSERT INTO daily_players (player, nickname, created_at) VALUES ($1, $2, 0)', [p, `Board ${i}`])
+    }
+    await sql.query(`INSERT INTO league_matches (id, room, tier, seats, created_at) VALUES ('board', '000000', 5, $1, 0)`, [JSON.stringify(many)])
+    await sql.query(`INSERT INTO league_deals (match, deal, pool, pool_id, dealer, log) VALUES ('board', 0, 'free', 0, 0, '[]')`)
+    const crowded = (await call('state', { player: 'user:a' })).body.board
+    assert.equal(crowded.rows.length, 100)
+    assert.deepEqual([crowded.rows[0].nickname, crowded.rows[99].nickname], ['Board 0', 'Board 99'])
+    assert(crowded.rows.every((r: any) => !r.you))
+    const own = standings.findIndex(r => r.player === 'user:a')
+    assert.equal(crowded.me.you, true)
+    assert.equal(crowded.me.nickname, standings[own].nickname)
+    assert(crowded.me.rank > 101, 'after the hundred and one in Legend')
   } catch (e) {
     console.error(logs.slice(-4000))
     throw e

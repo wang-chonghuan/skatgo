@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-208",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-208",
+  "branch": "SKATGO-208-auction-name-ellipsis",
+  "base": "aa7152132e7460450367992e5f27c3d7ced02be0",
+  "ports": {
+    "web": 55208,
+    "multiplayer": 56208,
+    "database": 57208
+  }
+}

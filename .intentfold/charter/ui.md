@@ -567,7 +567,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Alle haben gepasst", "Du hast den Tisch verlassen"
   (a deal not seen to its end, SKATGO-206) — and, when it moved the player,
   "Aufstieg in die Gold-Liga!" / "Abstieg in die Silber-Liga.", or when the coins are too few for the next, the coins line),
-  then the XP line and the AI's game; its foot the next deal, or "Zur Liga" when the player moved or cannot pay. The League
+  then the XP line and the AI's game; its foot the next deal and under it "Tisch verlassen" (`quiet`, SKATGO-208, the human:
+  「联盟打牌结算界面，下一局下面要有个退出按钮。然后右上角的圆形，在结算时就不要显示了」), or "Zur Liga" when the player moved or
+  cannot pay; while the result shows, the top right button is not there. The League
   card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from −20 to +30, in Bronze from 0 (SKATGO-207).
 - **The tables** (`/play`, `/daily/play`, a private table, a League table since SKATGO-204, and an open-card endgame's page since SKATGO-111):
   the felt fills the screen and never scrolls;
@@ -643,7 +645,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   dialog's four levels (SKATGO-146).
 - **The way out of a table** (SKATGO-96, the human: 「退出按钮……放到打牌界面上」): a white round button in the
   felt's top right corner, the size the assistant's launcher had (`dims.launcher`; the assistant is gone, SKATGO-130),
-  on every full-screen table. It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"
+  on every full-screen table (not over a League deal's result, which has its own, SKATGO-208). It opens a small white menu under it: "Weiterspielen" (`go`), on free play "Neue Runde"
   (`quiet`, which asks once more: "Ja, neue Runde" `stop`, "Nein, weiterspielen" `quiet`), and "Tisch
   verlassen" (`stop`). The side panel has no way out of its own. The button stays over the table's dialogs,
   which start below it, and keeps to the felt beside a pinned panel; an open drawer covers it (SKATGO-100).

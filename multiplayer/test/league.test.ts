@@ -6,7 +6,7 @@ import { once } from 'node:events'
 import { Client, type Room } from '@colyseus/sdk'
 import pg from 'pg'
 import { legalPlays } from '../../app/src/lib/skat/cards'
-import { AWAY_MS, DEAL_POINTS, FEES, dealOutcome } from '../../app/src/lib/skat/league'
+import { AWAY_MS, DEAL_POINTS, FEES, dealOutcome, standingAfter } from '../../app/src/lib/skat/league'
 import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS } from '../src/model'
 import { Store } from '../src/store'
 
@@ -155,9 +155,11 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.equal(mine.points, DEAL_POINTS[mine.outcome])
     assert.equal(scored[2].points[a.seat], mine.points)
     assert(last.seats.every((x, i) => (i === a.seat) === (x !== null)), 'only the person is scored')
-    const sum = scored.reduce((n, r) => n + r.points[a.seat], 0)
+    // The standing is the deals' points taken one by one (Bronze stops at 0, SKATGO-207).
+    const fold = (start: { tier: number; points: number }, points: number[]) => points.reduce((s, x) => { const n = standingAfter(s, x); return { tier: n.tier, points: n.points } }, start)
+    const sum = fold({ tier: 0, points: 0 }, scored.map(r => r.points[a.seat]))
     const standing = (await call('state', { player: 'user:a' })).body.me
-    assert.deepEqual({ tier: standing.tier, points: standing.points }, { tier: 0, points: sum })
+    assert.deepEqual({ tier: standing.tier, points: standing.points }, sum)
     assert.equal(standing.coins, 140 - 4 * FEES[0])
 
     // Leaving during the fourth deal: the connection goes, the seat waits the grace as for one away, then a computer plays
@@ -178,7 +180,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     const gone = (await call('state', { player: 'user:a' })).body.me
     assert.equal(gone.coins, 140 - 4 * FEES[0])
     assert.equal(gone.table, null)
-    assert.equal(gone.points, sum + (declaring ? -3 : -1))
+    assert.equal(gone.points, fold(sum, [declaring ? -3 : -1]).points)
 
     // Each deal seen to its end has its review for its person, their seat turned to seat 0, counted once for their record;
     // the deal they left has none and goes into no record (SKATGO-206).
@@ -235,7 +237,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     // The League's board (SKATGO-206): everyone who played a deal, by tier, then points; not one who never sat down.
     const { rows: standings } = await sql.query(
       `SELECT l.player, l.tier, l.points, p.nickname FROM league_players l JOIN daily_players p USING (player)
-        WHERE l.player = ANY($1) ORDER BY l.tier DESC, l.points DESC`, [['user:a', 'user:c', 'user:d']])
+        WHERE l.player = ANY($1) ORDER BY l.tier DESC, l.points DESC, l.player`, [['user:a', 'user:c', 'user:d']])
     assert.equal(standings.length, 3)
     const board = (await call('state', { player: 'user:c' })).body.board
     assert.deepEqual(board.rows.map((r: any) => [r.nickname, r.tier, r.points]), standings.map(r => [r.nickname, r.tier, r.points]))

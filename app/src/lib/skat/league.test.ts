@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { AWAY_MS, DEAL_POINTS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, TIERS, dealOutcome, leftOutcome, standingAfter } from './league'
+import { AWAY_MS, BRONZE_FLOOR, DEAL_POINTS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, TIERS, dealOutcome, leftOutcome, standingAfter } from './league'
 
 // The League's numbers as SKATGO-205 sets them: six tiers and their fees per deal; per deal +3 when one's side won, −3 for
 // one's own game lost, −1 for the declarer's game made against one, 0 when all passed; +30 up and −20 down from 0 again,
@@ -44,8 +44,12 @@ describe('the League', () => {
   })
 
   it('never relegates from Bronze, never promotes from Legend', () => {
-    expect(standingAfter({ tier: 0, points: -19 }, -3)).toEqual({ tier: 0, points: RELEGATE_AT, moved: 0 })
-    expect(standingAfter({ tier: 0, points: RELEGATE_AT }, -1)).toEqual({ tier: 0, points: RELEGATE_AT, moved: 0 })
+    // Bronze stops at 0 (SKATGO-207).
+    expect(BRONZE_FLOOR).toBe(0)
+    expect(standingAfter({ tier: 0, points: 2 }, -3)).toEqual({ tier: 0, points: 0, moved: 0 })
+    expect(standingAfter({ tier: 0, points: 0 }, -1)).toEqual({ tier: 0, points: 0, moved: 0 })
+    expect(standingAfter({ tier: 1, points: -18 }, -3)).toEqual({ tier: 0, points: 0, moved: -1 })
+    expect(standingAfter({ tier: 1, points: -10 }, -3)).toEqual({ tier: 1, points: -13, moved: 0 })
     expect(standingAfter({ tier: LEGEND, points: 29 }, 3)).toEqual({ tier: LEGEND, points: 32, moved: 0 })
     expect(standingAfter({ tier: LEGEND, points: -19 }, -1)).toEqual({ tier: LEGEND - 1, points: 0, moved: -1 })
   })

@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-207",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-207",
+  "branch": "SKATGO-207-bronze-floor-zero",
+  "base": "04fadd41e55041067b0417b23b0b14da208d568e",
+  "ports": {
+    "web": 55207,
+    "multiplayer": 56207,
+    "database": 57207
+  }
+}

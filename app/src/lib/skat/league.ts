@@ -19,9 +19,10 @@ export const CHECKIN_COINS = 100
 
 /** League points of a deal for one seat (SKATGO-205): its side won — its own game, or the declarer beaten — +3; its own
  *  game lost −3; the declarer's game made against it −1, the common case, so a player only rises where they play well
- *  enough (the human: 「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」); all passed 0. Whole numbers only (「我不太
- *  喜欢这里引入小数」). */
-export const DEAL_POINTS = { won: 3, lost: -3, defended: -1, passed: 0, leftDeclaring: -3, left: -1 } as const
+ *  enough (the human: 「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」) — but 0 when the defenders still took
+ *  `SAVE_AT` card points, the declarer short of Schneider (`saved`, SKATGO-210, the human: 「防家拿到31就不扣分」), so a bad
+ *  hand defended well is not a point lost; all passed 0. Whole numbers only (「我不太喜欢这里引入小数」). */
+export const DEAL_POINTS = { won: 3, lost: -3, defended: -1, saved: 0, passed: 0, leftDeclaring: -3, left: -1 } as const
 export type DealOutcome = keyof typeof DEAL_POINTS
 /** A deal a person did not see to its end (SKATGO-206, the human: 「没进入结算页面就不算打完，就不进历史。离桌多久应该算输，比如
  *  1分钟？如果是庄家就-3，如果是防家就-1」): they left the table during it, or were away `AWAY_MS`, or the deal ended while they
@@ -32,11 +33,16 @@ export const leftOutcome = (declarer: number | null, seat: number): LeftOutcome 
 /** How long a person may be away from a League table — the connection gone — before it counts as leaving it (SKATGO-206). */
 export const AWAY_MS = 60_000
 
-/** How a deal came out for `seat`: who declared (null when all passed) and whether the declarer won. */
-export function dealOutcome(declarer: number | null, won: boolean, seat: number): DealOutcome {
+/** The defenders' card points that keep a lost defence at 0 (SKATGO-210): the declarer short of Schneider. */
+export const SAVE_AT = 31
+
+/** How a deal came out for `seat`: who declared (null when all passed), whether the declarer won, and the defenders' card
+ *  points — null where they count nothing, a Null game. */
+export function dealOutcome(declarer: number | null, won: boolean, seat: number, defenders: number | null = null): DealOutcome {
   if (declarer === null) return 'passed'
   if (declarer === seat) return won ? 'won' : 'lost'
-  return won ? 'defended' : 'won'
+  if (!won) return 'won'
+  return defenders !== null && defenders >= SAVE_AT ? 'saved' : 'defended'
 }
 
 /** League points that move a player up a tier, or down one (SKATGO-205: at about the pace of SKATGO-204's +12 / −8 in

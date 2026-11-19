@@ -352,6 +352,8 @@ function DealLine({ result, declared }: { result: NonNullable<LeagueResult['seat
     won: declared ? m.league_deal_won() : m.league_deal_beat(),
     lost: m.league_deal_lost(),
     defended: m.league_deal_defended(),
+    // The declarer made it, the defenders 31 or more (SKATGO-210): 0.
+    saved: m.league_deal_saved(),
     passed: m.league_deal_passed(),
     // Left during it, or away a minute (SKATGO-206): the deal lost.
     leftDeclaring: m.league_deal_left(),

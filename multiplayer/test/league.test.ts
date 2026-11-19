@@ -188,7 +188,9 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
       const r = await call('review', { player: 'user:a', match, deal })
       assert.equal(r.status, 200)
       assert(r.body.mine && r.body.ai, 'the review has both games')
-      const outcome = dealOutcome(r.body.mine.declarer, !!r.body.mine.won, 0)
+      // The defenders' card points (SKATGO-210: 31 or more keeps a lost defence at 0); a Null game counts none.
+      const mine = r.body.mine as { declarer: number | null; won: boolean; game?: string; points?: [number, number] }
+      const outcome = dealOutcome(mine.declarer, !!mine.won, 0, mine.game?.startsWith('null') ? null : (mine.points?.[1] ?? null))
       assert.equal(DEAL_POINTS[outcome], scored[deal].points[a.seat])
     }
     assert.deepEqual(await call('review', { player: 'user:a', match, deal: 3 }), { status: 409, body: { error: 'no_such_deal' } })

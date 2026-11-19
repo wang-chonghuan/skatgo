@@ -148,6 +148,10 @@ async function leagueBoard(store: Store, who: string | null): Promise<LeagueBoar
   return me ? { rows: top, me: row(me) } : { rows: top }
 }
 
+/** The defenders' card points of a finished deal, for the League's `saved` (SKATGO-210); null in a Null game, which counts none. */
+const defendersOf = (end: ReturnType<typeof summarize>) =>
+  end.declaration?.contract.kind === 'null' ? null : (end.detail?.defenderPoints ?? null)
+
 /** One person's League points for a deal, their standing moved once, in the transaction of the change that decided it. */
 async function scoreSeat(s: Snapshot, c: pg.PoolClient, account: string, outcome: DealOutcome, now: number) {
   const l = s.league!
@@ -183,7 +187,7 @@ export async function settleLeague(s: Snapshot, c: pg.PoolClient, scoredBefore: 
     } else if (!p.session) {
       result.seats.push(null)
       l.pending.push(seat)
-    } else result.seats.push(await scoreSeat(s, c, p.account, dealOutcome(end.declarer, !!end.won, seat), now))
+    } else result.seats.push(await scoreSeat(s, c, p.account, dealOutcome(end.declarer, !!end.won, seat, defendersOf(end)), now))
   }
   await c.query('INSERT INTO league_deals (match, deal, pool, pool_id, dealer, log, points, forfeits) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING',
     [l.match, s.scored - 1, l.current.pool, l.current.id, l.current.dealer, JSON.stringify(l.current.log),
@@ -200,7 +204,7 @@ export async function settlePending(s: Snapshot, c: pg.PoolClient, seat: number,
   if (!l?.pending?.includes(seat) || !l.last || !s.game || !p.account) return
   l.pending = l.pending.filter((x) => x !== seat)
   const end = summarize(s.game)
-  const outcome = seen ? dealOutcome(end.declarer, !!end.won, seat) : (p.stake ?? leftOutcome(end.declarer, seat))
+  const outcome = seen ? dealOutcome(end.declarer, !!end.won, seat, defendersOf(end)) : (p.stake ?? leftOutcome(end.declarer, seat))
   const entry = await scoreSeat(s, c, p.account, outcome, now)
   l.last.seats[seat] = entry
   await c.query(

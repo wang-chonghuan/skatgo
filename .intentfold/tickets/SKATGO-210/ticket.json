@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-210",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-210",
+  "branch": "SKATGO-210-ranked-match-tier-badges",
+  "base": "5a60848cf31e1d9a6c3d8968e4fe0930be48ee9f",
+  "ports": {
+    "web": 55210,
+    "multiplayer": 56210,
+    "database": 57210
+  }
+}

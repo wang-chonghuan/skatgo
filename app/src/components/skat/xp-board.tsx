@@ -3,6 +3,7 @@ import { CircleHelp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { XpBoard as Board } from '~/lib/skat/xp'
+import { TIERS } from '~/lib/skat/league'
 import { readXpBoard } from '~/lib/xp-api'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
@@ -11,6 +12,7 @@ import { icon } from '../../theme/constants'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
+import { tierName } from './league-tiers'
 import { Panel } from './ui'
 import { XpHow } from './xp-earned'
 
@@ -72,6 +74,9 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
               {board.rows.map((r) => (
                 <li key={`${r.rank}-${r.nickname}`} data-testid="xp-board-row" data-rank={r.rank} data-xp={r.xp} data-you={r.you ? 'true' : undefined} {...stylex.props(typography.appText, styles.row, r.you && styles.own)}>
                   <span {...stylex.props(styles.muted, styles.rank)}>{r.rank}</span>
+                  {/* The League tier's badge by the name (SKATGO-210, the human: 「home上的每个人名字旁边加一个标记，就是他的liga的那个tier的图标」),
+                      as the League's board shows it. */}
+                  <img data-testid="xp-board-badge" data-tier={TIERS[r.tier]} src={`/league/badge/${TIERS[r.tier]}.webp`} alt={tierName(r.tier)} loading="lazy" {...stylex.props(styles.badge)} />
                   <span data-testid="xp-board-name" {...stylex.props(styles.what)}>
                     {r.nickname}
                   </span>
@@ -132,6 +137,8 @@ const styles = stylex.create({
   // The player's own row, as the daily board marks it.
   own: { backgroundColor: color.goodSoft },
   rank: { minWidth: space.x24 },
+  // The League board's badge (league.tsx), centred on the row's line rather than on its baseline.
+  badge: { display: 'block', flexShrink: 0, alignSelf: 'center', width: dims.badge, height: dims.badge, borderRadius: radii.tag },
   what: { flexGrow: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   // The win rate and the XP each in a column of their own width, right-aligned on even digits, so every row's figures
   // stand under each other (SKATGO-178, the human: 「胜率列有点没对齐，要垂直对齐」).

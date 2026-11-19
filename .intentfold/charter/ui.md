@@ -277,7 +277,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     corner under its colour, rising on hover — "1 Spiel heute" (`tileGreen`, `CalendarDays`, to `/daily`; the same words
     once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, lucide's `Swords`, crossed — the human: 「不要用机器人」, then 「用两个交错的剑吧，x形的」 — to
     `/play`), "Lernen" (`tileOrange`,
-    `GraduationCap`, the course) and "Liga" (`tileNavy`, lucide's `Trophy`, its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:
+    `GraduationCap`, the course) and "Ranglistenspiel" / "Ranked match" (SKATGO-210, the human: 「这个liga的卡片名字不能叫league，没人来点，你现在改这个名字为 ranked match」; "Liga" before) (`tileNavy`, lucide's `Trophy`, its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:
     「你看看那个practice是不是没人点，打算把liga放那里如何」 then 「同意」 — the bidding practice's "Reizen" with `Gavel` stood there since
     SKATGO-149, and the exercises' "Üben" with its `Puzzle` before it; a red "Neu" ribbon across its top right corner — `badge`
     type, white on `stop`, `dims.ribbonWidth` long, turned `pose.ribbon` (45°) and standing `dims.ribbonRight` past the
@@ -306,7 +306,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     tiers in a table, one line on the own game's +2, one line on the win rate); the title "XP & win rate" / "XP & Gewinnquote", naming
     both (SKATGO-179, the human: 「把weekly去掉，不要每周刷新一次」; until then "Weekly XP & win rate"), and no line under it (「Every deal earns XP · starts again in 3 days 这句去掉」, 「用weekly XP 是否更好，哪个更短，德语呢」,
     「steak也要放上去吧」, SKATGO-178); every account with XP, over all their deals from 2 November 2026 on —
-    rank, name, the win rate in `slate` (a whole percent, "–" while no deal had a declarer; SKATGO-178, in place of
+    rank, the League tier's badge (the League board's, SKATGO-210: an account's own tier, Bronze before it has one; a
+    persona's, the tier of its band) by the name, the win rate in `slate` (a whole percent, "–" while no deal had a declarer; SKATGO-178, in place of
     the days in a row: 「不连续登录了有内疚感。可以把胜率放上去，替换steak那个列」), the XP
     (`appBtnStrong`) — the player's own row on `goodSoft`, no "You" tag (SKATGO-208, the human: 「XP & win rate 榜单上，那个You这个标签不要显示了」), close rows at `appText`, one column, the list
     scrolling inside the card, which is never taller than the cards beside it — it takes the row's height and never

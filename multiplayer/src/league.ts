@@ -63,6 +63,11 @@ export function personaOf(id: string): Persona {
   if (!p) throw new ComputerFailed('persona_unknown')
   return p
 }
+/** The tier whose band a persona plays in (SKATGO-210: its badge on the XP board); Bronze for one not in the population. */
+export function personaTier(id: string): number {
+  for (let tier = 0; tier < TIERS.length; tier++) if (bandOf(tier).some((p) => `sim:${p.id}` === id)) return tier
+  return 0
+}
 /** How a persona plays its cards at a tier's table: its own strength policy, its card errors scaled by the tier
  *  (`TIER_ERRORS`); a persona without one, the legacy slips. Its bidding is the pool's plan, SkatZero's, as every seat's. */
 export function leaguePolicy(base: Policy, p: Persona, tier: number, seed: string): Policy {

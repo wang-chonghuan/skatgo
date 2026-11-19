@@ -14,8 +14,10 @@ export const LEGEND = TIERS.length - 1
 export const FEES: readonly number[] = [3, 4, 5, 7, 8, 10]
 
 /** Coins a day's check-in gives: the first time a signed-in player opens SkatGo that day (the human: 「不打开游戏就不给，打开了
- *  就能积累」). They add up with no limit and cannot be bought or exchanged. */
-export const CHECKIN_COINS = 100
+ *  就能积累」) — 30 since SKATGO-210 (「每天自动给的金币太多了，没意思」, 「100个太多，而且必须每周金币清零」): they add up through
+ *  a week, Monday to Sunday in Berlin, and the week's first check-in starts again from 30, what was left gone. They cannot be
+ *  bought or exchanged. */
+export const CHECKIN_COINS = 30
 
 /** League points of a deal for one seat (SKATGO-205): its side won — its own game, or the declarer beaten — +3; its own
  *  game lost −3; the declarer's game made against it −1, the common case, so a player only rises where they play well

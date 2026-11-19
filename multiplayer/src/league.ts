@@ -287,13 +287,15 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
   }))
 
   // The day's check-in: the first open of SkatGo on a Berlin day gives CHECKIN_COINS, once (the human: 「不打开游戏就不给，打开了
-  // 就能积累」).
+  // 就能积累」); the first of a new week (Monday on) gives them in place of what was left (SKATGO-210: 「必须每周金币清零」).
   router.post('/checkin', run(async (body) => {
     const who = z.object({ player }).strict().parse(body).player
     const day = dayOf(Date.now())
     const { rows } = await store.pool.query(
       `INSERT INTO league_players (player, coins, checkin_day, updated_at) VALUES ($1, $2, $3, $4)
-       ON CONFLICT (player) DO UPDATE SET coins = league_players.coins + $2, checkin_day = $3
+       ON CONFLICT (player) DO UPDATE SET checkin_day = $3,
+         coins = CASE WHEN date_trunc('week', league_players.checkin_day::date) = date_trunc('week', $3::date)
+                      THEN league_players.coins + $2 ELSE $2 END
          WHERE league_players.checkin_day IS DISTINCT FROM $3
        RETURNING coins`, [who, CHECKIN_COINS, day, Date.now()])
     if (rows[0]) return { coins: rows[0].coins as number, added: CHECKIN_COINS }

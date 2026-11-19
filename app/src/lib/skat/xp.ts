@@ -35,4 +35,5 @@ export const xpOf = (diff: number | null, declared = false) => XP[xpTier(diff)] 
 /** The board as the service answers it: every account with XP, the most first, equal XP sharing a rank; its win rate
  *  over all its deals from `XP_SINCE` as the record of play counts it (`recordOf`, SKATGO-178), a whole percent, null when no deal had
  *  a declarer; `you` on the asker's own row. Names only, never a player id. */
-export type XpBoard = { rows: { rank: number; nickname: string; xp: number; winRate: number | null; you?: true }[] }
+/** `tier`: the person's League tier (SKATGO-210), shown as its badge by the name — Bronze for an account that has not played it. */
+export type XpBoard = { rows: { rank: number; nickname: string; xp: number; winRate: number | null; tier: number; you?: true }[] }

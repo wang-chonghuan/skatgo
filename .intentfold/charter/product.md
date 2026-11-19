@@ -187,16 +187,20 @@ The League at `/league` (SKATGO-204, the human: 「分场天梯先做，而且�
 Bronze, Silver, Gold, Platinum, Diamond and Legend, German Bronze, Silber, Gold, Platin, Diamant, Legende ("Gold-Liga",
 "Legenden-Liga"; the top one Legend, 「最高级的钻石改为传奇」; Platinum and Diamond as a European ranks them, under Legend) —
 played a deal at a time at a table of three (SKATGO-205, the human: 「能否不管round，就从一个deal里，用简单直观的方法，让
-玩家觉得打一个deal就有一个获得感」), each deal costing 3, 4, 5, 7, 8 or 10 coins, taken when it is dealt and kept if the player
+玩家觉得打一个deal就有一个获得感」), each deal costing 3, 4, 5, 6, 10 or 12 coins (3, 4, 5, 7, 8, 10 until SKATGO-210: 「每个tier的扣分是：3，4，5，6，10，12」), taken when it is dealt and kept if the player
 leaves during it; the player leaves the table whenever they like. Coins come only from checking in: a signed-in player's first open of SkatGo on a
-day gives 100 (「不打开游戏就不给，打开了就能积累」), the day the daily tournament's; they add up with no limit, cannot be
+day gives 60 (「不打开游戏就不给，打开了就能积累」; 100 until SKATGO-210: 「每天自动给的金币太多了，没意思」, then 「60」), the day the daily
+tournament's; they add up through a week, Monday to Sunday, and the first check-in of a new week starts again from 60, what
+was left gone (「必须每周金币清零」); they cannot be
 bought for now (「暂时不开放购买」) and are never exchanged for money or goods (「金币只要不能换实物就行」). Too few coins
 stops the League only: the player gets up after the deal they are in. A table waits five seconds for other people of the
 same tier (「就等5秒」), then personas of that tier's strength take the empty seats, the higher the tier the stronger,
 Legend's near the AI's; a person who leaves or is away when the next deal comes is replaced by one, and with nobody left
 the table ends. Each deal brings League points by how the player's own side came out of it, never the difference to the
 AI (SKATGO-205, the human: 「庄赢+3，防赢+3，庄输-3」, then 「我建议就1」): their side won — their own game, or the declarer
-beaten — +3, their own game lost −3, the declarer's game made against them −1, all passed 0; whole numbers only (「我不太
+beaten — +3, their own game lost −3, the declarer's game made against them −1 — 0 when the defenders still took 31 card
+points or more, the declarer short of Schneider (SKATGO-210, the human: 「防家拿到31就不扣分」; a Null game has no card points
+and stays −1) — all passed 0; whole numbers only (「我不太
 喜欢这里引入小数」). The −1 is what keeps the ladder honest: a player rises only while they play well enough for the tier,
 and settles where they belong (「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」). +30 moves the player up a tier and
 −20 down, from 0 again; Bronze has no relegation and its points stop at 0 (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」) and Legend no promotion, its points running on; a player who moves gets up and sits down again in their new tier. The points earned before

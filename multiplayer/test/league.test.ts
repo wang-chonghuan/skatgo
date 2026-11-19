@@ -6,7 +6,8 @@ import { once } from 'node:events'
 import { Client, type Room } from '@colyseus/sdk'
 import pg from 'pg'
 import { legalPlays } from '../../app/src/lib/skat/cards'
-import { AWAY_MS, DEAL_POINTS, FEES, dealOutcome, standingAfter } from '../../app/src/lib/skat/league'
+import { AWAY_MS, CHECKIN_COINS, DEAL_POINTS, FEES, dealOutcome, standingAfter } from '../../app/src/lib/skat/league'
+import { dayOf } from '../src/daily'
 import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS } from '../src/model'
 import { Store } from '../src/store'
 
@@ -59,11 +60,20 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     const coins = async (player: string) => (await call('state', { player })).body.me.coins as number
     const snapshot = async (id: string): Promise<Snapshot> => (await sql.query('SELECT snapshot FROM multiplayer_rooms WHERE id=$1', [id])).rows[0].snapshot
 
-    // The day's check-in: 100 on the first open, nothing on the next; a day later on top of what is left.
-    assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: 100, added: 100 })
-    assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: 100, added: 0 })
+    // The day's check-in: CHECKIN_COINS on the first open, nothing on the next; a later day of the same week on top of what
+    // is left; the first of a new week from CHECKIN_COINS again, what was left gone (SKATGO-210).
+    const C = CHECKIN_COINS
+    assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: C, added: C })
+    assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: C, added: 0 })
+    const today = dayOf(Date.now())
+    const midnight = new Date(`${today}T00:00:00Z`)
+    const monday = new Date(midnight.getTime() - ((midnight.getUTCDay() + 6) % 7) * 86_400_000).toISOString().slice(0, 10)
+    if (monday !== today) {
+      await sql.query('UPDATE league_players SET coins = 40, checkin_day = $1 WHERE player = $2', [monday, 'user:a'])
+      assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: 40 + C, added: C })
+    }
     await sql.query("UPDATE league_players SET coins = 40, checkin_day = '2000-01-01' WHERE player = 'user:a'")
-    assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: 140, added: 100 })
+    assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: C, added: C })
     assert.equal((await call('checkin', { player: 'sim:x' })).status, 400)
 
     // A new account: Bronze, 0 points; too few coins for the fee is refused.
@@ -80,14 +90,14 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     const waited = Date.now() - started
     assert.equal(alone.status, 200)
     assert(waited >= 4_900 && waited <= 6_500, `waited ${waited} ms`)
-    assert.equal(await coins('user:a'), 140 - FEES[0])
+    assert.equal(await coins('user:a'), C - FEES[0])
     const s = await snapshot(alone.body.room)
     assert.equal(s.seats.filter(p => p.account === 'user:a').length, 1)
     assert.equal(s.seats.filter(p => p.persona?.startsWith('sim:') && p.account === null && p.nickname).length, 2)
     assert.equal(s.deals, 1)
     // Asked again while seated, the same table and no second fee.
     assert.deepEqual((await call('play', { player: 'user:a' })).body, { room: alone.body.room })
-    assert.equal(await coins('user:a'), 140 - FEES[0])
+    assert.equal(await coins('user:a'), C - FEES[0])
 
     // Two people of a tier within five seconds: one table.
     for (const p of ['user:c', 'user:d']) await call('checkin', { player: p })
@@ -160,7 +170,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     const sum = fold({ tier: 0, points: 0 }, scored.map(r => r.points[a.seat]))
     const standing = (await call('state', { player: 'user:a' })).body.me
     assert.deepEqual({ tier: standing.tier, points: standing.points }, sum)
-    assert.equal(standing.coins, 140 - 4 * FEES[0])
+    assert.equal(standing.coins, C - 4 * FEES[0])
 
     // Leaving during the fourth deal: the connection goes, the seat waits the grace as for one away, then a computer plays
     // the deal out; it is lost for them (SKATGO-206: −3 declaring, else −1), no further fee, and with nobody left the
@@ -178,7 +188,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.equal(fourth[0].points[a.seat], declaring ? -3 : -1)
     assert.deepEqual(fourth[0].forfeits, [a.seat])
     const gone = (await call('state', { player: 'user:a' })).body.me
-    assert.equal(gone.coins, 140 - 4 * FEES[0])
+    assert.equal(gone.coins, C - 4 * FEES[0])
     assert.equal(gone.table, null)
     assert.equal(gone.points, fold(sum, [declaring ? -3 : -1]).points)
 
@@ -188,7 +198,9 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
       const r = await call('review', { player: 'user:a', match, deal })
       assert.equal(r.status, 200)
       assert(r.body.mine && r.body.ai, 'the review has both games')
-      const outcome = dealOutcome(r.body.mine.declarer, !!r.body.mine.won, 0)
+      // The defenders' card points (SKATGO-210: 31 or more keeps a lost defence at 0); a Null game counts none.
+      const mine = r.body.mine as { declarer: number | null; won: boolean; declaration: { contract: { kind: string } } | null; detail: { defenderPoints: number } | null }
+      const outcome = dealOutcome(mine.declarer, !!mine.won, 0, mine.declaration?.contract.kind === 'null' ? null : (mine.detail?.defenderPoints ?? null))
       assert.equal(DEAL_POINTS[outcome], scored[deal].points[a.seat])
     }
     assert.deepEqual(await call('review', { player: 'user:a', match, deal: 3 }), { status: 409, body: { error: 'no_such_deal' } })

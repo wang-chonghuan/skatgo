@@ -9,7 +9,7 @@ import { xpBoard } from '../src/xp'
 
 // The XP board (SKATGO-172) against a database of its own: every deal of every account from XP_SINCE (Monday 2 November)
 // on summed by their tier against the AI, later weeks' too and none before (SKATGO-179: no weekly reset), a guest's own deals off the board, the ids one person plays under counted
-// as one, each person's win rate over all their deals (SKATGO-178), and the asker's row marked.
+// as one, each person's win rate over all their deals (SKATGO-178), each person's League tier (SKATGO-210), and the asker's row marked.
 
 // The player declared when their own score is a game's (not 0 or a defender's 40).
 const declarerOf = (scores: [number, number, number]): 0 | null => (scores[0] !== 0 && scores[0] !== 40 ? 0 : null)
@@ -57,12 +57,14 @@ test('xp: every deal since the start by tier, aliases as one person, guests off 
   // Dora: one deal on Monday, all passed — on the board with no win rate.
   await recordFreeDeal(store, { player: 'user:dora', game: 'free:p:3:1', day: '2026-11-02', at: 1, mine: played([0, 0, 0]), ai: played([0, 0, 0]) })
   await store.pool.query("INSERT INTO daily_players (player, nickname, created_at) VALUES ('user:anna', 'Anna', 1), ('user:ben', 'Ben', 1), ('user:dora', 'Dora', 1), ('user:carl', 'Carl', 1)")
+  // Each row's League tier (SKATGO-210): Ben plays in Platinum; Anna and Dora have not played it, so Bronze.
+  await store.pool.query("INSERT INTO league_players (player, coins, tier, points, updated_at) VALUES ('user:ben', 10, 3, 0, 1)")
 
   assert.deepEqual(await xpBoard(store, 'anon:guest'), {
     rows: [
-      { rank: 1, nickname: 'Anna', xp: 60, winRate: 67, you: true },
-      { rank: 2, nickname: 'Ben', xp: 18, winRate: 50 },
-      { rank: 3, nickname: 'Dora', xp: 10, winRate: null },
+      { rank: 1, nickname: 'Anna', xp: 60, winRate: 67, tier: 0, you: true },
+      { rank: 2, nickname: 'Ben', xp: 18, winRate: 50, tier: 3 },
+      { rank: 3, nickname: 'Dora', xp: 10, winRate: null, tier: 0 },
     ],
   })
   // A later week's deal adds to the same board; asked as nobody, no row is marked.

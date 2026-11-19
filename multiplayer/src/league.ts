@@ -63,6 +63,11 @@ export function personaOf(id: string): Persona {
   if (!p) throw new ComputerFailed('persona_unknown')
   return p
 }
+/** The tier whose band a persona plays in (SKATGO-210: its badge on the XP board); Bronze for one not in the population. */
+export function personaTier(id: string): number {
+  for (let tier = 0; tier < TIERS.length; tier++) if (bandOf(tier).some((p) => `sim:${p.id}` === id)) return tier
+  return 0
+}
 /** How a persona plays its cards at a tier's table: its own strength policy, its card errors scaled by the tier
  *  (`TIER_ERRORS`); a persona without one, the legacy slips. Its bidding is the pool's plan, SkatZero's, as every seat's. */
 export function leaguePolicy(base: Policy, p: Persona, tier: number, seed: string): Policy {
@@ -143,6 +148,10 @@ async function leagueBoard(store: Store, who: string | null): Promise<LeagueBoar
   return me ? { rows: top, me: row(me) } : { rows: top }
 }
 
+/** The defenders' card points of a finished deal, for the League's `saved` (SKATGO-210); null in a Null game, which counts none. */
+const defendersOf = (end: ReturnType<typeof summarize>) =>
+  end.declaration?.contract.kind === 'null' ? null : (end.detail?.defenderPoints ?? null)
+
 /** One person's League points for a deal, their standing moved once, in the transaction of the change that decided it. */
 async function scoreSeat(s: Snapshot, c: pg.PoolClient, account: string, outcome: DealOutcome, now: number) {
   const l = s.league!
@@ -178,7 +187,7 @@ export async function settleLeague(s: Snapshot, c: pg.PoolClient, scoredBefore: 
     } else if (!p.session) {
       result.seats.push(null)
       l.pending.push(seat)
-    } else result.seats.push(await scoreSeat(s, c, p.account, dealOutcome(end.declarer, !!end.won, seat), now))
+    } else result.seats.push(await scoreSeat(s, c, p.account, dealOutcome(end.declarer, !!end.won, seat, defendersOf(end)), now))
   }
   await c.query('INSERT INTO league_deals (match, deal, pool, pool_id, dealer, log, points, forfeits) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING',
     [l.match, s.scored - 1, l.current.pool, l.current.id, l.current.dealer, JSON.stringify(l.current.log),
@@ -195,7 +204,7 @@ export async function settlePending(s: Snapshot, c: pg.PoolClient, seat: number,
   if (!l?.pending?.includes(seat) || !l.last || !s.game || !p.account) return
   l.pending = l.pending.filter((x) => x !== seat)
   const end = summarize(s.game)
-  const outcome = seen ? dealOutcome(end.declarer, !!end.won, seat) : (p.stake ?? leftOutcome(end.declarer, seat))
+  const outcome = seen ? dealOutcome(end.declarer, !!end.won, seat, defendersOf(end)) : (p.stake ?? leftOutcome(end.declarer, seat))
   const entry = await scoreSeat(s, c, p.account, outcome, now)
   l.last.seats[seat] = entry
   await c.query(
@@ -278,13 +287,15 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
   }))
 
   // The day's check-in: the first open of SkatGo on a Berlin day gives CHECKIN_COINS, once (the human: 「不打开游戏就不给，打开了
-  // 就能积累」).
+  // 就能积累」); the first of a new week (Monday on) gives them in place of what was left (SKATGO-210: 「必须每周金币清零」).
   router.post('/checkin', run(async (body) => {
     const who = z.object({ player }).strict().parse(body).player
     const day = dayOf(Date.now())
     const { rows } = await store.pool.query(
       `INSERT INTO league_players (player, coins, checkin_day, updated_at) VALUES ($1, $2, $3, $4)
-       ON CONFLICT (player) DO UPDATE SET coins = league_players.coins + $2, checkin_day = $3
+       ON CONFLICT (player) DO UPDATE SET checkin_day = $3,
+         coins = CASE WHEN date_trunc('week', league_players.checkin_day::date) = date_trunc('week', $3::date)
+                      THEN league_players.coins + $2 ELSE $2 END
          WHERE league_players.checkin_day IS DISTINCT FROM $3
        RETURNING coins`, [who, CHECKIN_COINS, day, Date.now()])
     if (rows[0]) return { coins: rows[0].coins as number, added: CHECKIN_COINS }

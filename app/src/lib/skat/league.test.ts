@@ -10,8 +10,8 @@ import { AWAY_MS, BRONZE_FLOOR, DEAL_POINTS, FEES, LEGEND, PROMOTE_AT, RELEGATE_
 describe('the League', () => {
   it('has six tiers, Bronze to Legend, and their fees per deal', () => {
     expect(TIERS).toEqual(['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend'])
-    expect(FEES).toEqual([3, 4, 5, 7, 8, 10])
-    expect(DEAL_POINTS).toEqual({ won: 3, lost: -3, defended: -1, passed: 0, leftDeclaring: -3, left: -1 })
+    expect(FEES).toEqual([3, 4, 5, 6, 10, 12])
+    expect(DEAL_POINTS).toEqual({ won: 3, lost: -3, defended: -1, saved: 0, passed: 0, leftDeclaring: -3, left: -1 })
     expect(AWAY_MS).toBe(60_000)
     expect([PROMOTE_AT, RELEGATE_AT]).toEqual([30, -20])
   })
@@ -22,6 +22,18 @@ describe('the League', () => {
     expect(dealOutcome(1, true, 0)).toBe('defended')
     expect(dealOutcome(1, false, 2)).toBe('won')
     expect(dealOutcome(null, false, 0)).toBe('passed')
+  })
+
+  it('keeps a lost defence at 0 when the defenders took 31 card points (SKATGO-210)', () => {
+    expect(dealOutcome(1, true, 0, 30)).toBe('defended')
+    expect(dealOutcome(1, true, 0, 31)).toBe('saved')
+    expect(dealOutcome(1, true, 0, 59)).toBe('saved')
+    // A Null game counts no card points: still −1.
+    expect(dealOutcome(1, true, 0, null)).toBe('defended')
+    // The declarer's own side and a beaten declarer are as before.
+    expect(dealOutcome(1, true, 1, 40)).toBe('won')
+    expect(dealOutcome(1, false, 0, 70)).toBe('won')
+    expect([DEAL_POINTS.saved, DEAL_POINTS.defended]).toEqual([0, -1])
   })
 
   it('loses a deal left before its end by one’s part in it when going', () => {

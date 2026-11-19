@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-211",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-211",
+  "branch": "SKATGO-211-xp-tier-bronze-without-league",
+  "base": "e6e30421f89ca43e94b0bace883d6de49898745e",
+  "ports": {
+    "web": 55211,
+    "multiplayer": 56211,
+    "database": 57211
+  }
+}

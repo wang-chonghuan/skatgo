@@ -307,8 +307,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     tiers in a table, one line on the own game's +2, one line on the win rate); the title "XP & win rate" / "XP & Gewinnquote", naming
     both (SKATGO-179, the human: 「把weekly去掉，不要每周刷新一次」; until then "Weekly XP & win rate"), and no line under it (「Every deal earns XP · starts again in 3 days 这句去掉」, 「用weekly XP 是否更好，哪个更短，德语呢」,
     「steak也要放上去吧」, SKATGO-178); every account with XP, over all their deals from 2 November 2026 on —
-    rank, the League tier's badge (the League board's, SKATGO-210: an account's own tier, Bronze before it has one; a
-    persona's, the tier of its band) by the name, the win rate in `slate` (a whole percent, "–" while no deal had a declarer; SKATGO-178, in place of
+    rank, the League tier's badge (the League board's, SKATGO-210: the person's own League tier, Bronze without one — SKATGO-211,
+    the human: 「那些人都没玩，应该都是铜吧」) by the name, the win rate in `slate` (a whole percent, "–" while no deal had a declarer; SKATGO-178, in place of
     the days in a row: 「不连续登录了有内疚感。可以把胜率放上去，替换steak那个列」), the XP
     (`appBtnStrong`) — the player's own row on `goodSoft`, no "You" tag (SKATGO-208, the human: 「XP & win rate 榜单上，那个You这个标签不要显示了」), close rows at `appText`, one column, the list
     scrolling inside the card, which is never taller than the cards beside it — it takes the row's height and never

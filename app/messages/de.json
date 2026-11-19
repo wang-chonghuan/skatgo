@@ -963,7 +963,7 @@
   "league_guest": "Melde dich an: Jeden Tag, an dem du SkatGo öffnest, gibt es 60 Münzen.",
   "league_about": "Was ist die Liga – und warum macht sie Spaß?",
   "league_about_tiers": "Sechs Ligen, von Bronze bis Legende: Je höher die Liga, desto stärker die Gegner. Steig auf, so weit dein Skat dich trägt.",
-  "league_about_deal": "Jedes Spiel: gewonnen +3, egal in welcher Rolle; als Alleinspieler verloren −3; als Gegenspieler verloren −1, mit 31 Augen oder mehr 0; sonst 0.",
+  "league_about_deal": "Jedes Spiel: gewonnen +3, egal in welcher Rolle; als Alleinspieler verloren −3; als Gegenspieler verloren −1, mit 40 Augen oder mehr 0; sonst 0.",
   "league_about_move": "+30 Punkte: eine Liga höher. −20: eine tiefer, wieder bei 0. In Bronze geht es nie unter 0.",
   "league_about_coins": "Jedes Spiel kostet ein paar Münzen. 60 gibt es gratis an jedem Tag, an dem du SkatGo angemeldet öffnest; montags beginnt es wieder bei 60.",
   "league_play_meta_title": "Liga-Tisch | SkatGo",
@@ -986,7 +986,7 @@
   "league_deal_beat": "Den Alleinspieler geschlagen",
   "league_deal_lost": "Dein Spiel verloren",
   "league_deal_defended": "Der Alleinspieler hat gewonnen",
-  "league_deal_saved": "Der Alleinspieler hat gewonnen – Schneider abgewehrt",
+  "league_deal_saved": "Der Alleinspieler hat gewonnen – höchstens 80 Augen",
   "league_deal_passed": "Alle haben gepasst",
   "league_deal_left": "Du hast den Tisch verlassen"
 }

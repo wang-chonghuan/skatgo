@@ -198,9 +198,9 @@ same tier (「就等5秒」), then personas of that tier's strength take the emp
 Legend's near the AI's; a person who leaves or is away when the next deal comes is replaced by one, and with nobody left
 the table ends. Each deal brings League points by how the player's own side came out of it, never the difference to the
 AI (SKATGO-205, the human: 「庄赢+3，防赢+3，庄输-3」, then 「我建议就1」): their side won — their own game, or the declarer
-beaten — +3, their own game lost −3, the declarer's game made against them −1 — 0 when the defenders still took 31 card
-points or more, the declarer short of Schneider (SKATGO-210, the human: 「防家拿到31就不扣分」; a Null game has no card points
-and stays −1) — all passed 0; whole numbers only (「我不太
+beaten — +3, their own game lost −3, the declarer's game made against them −1 — 0 when the defenders still took 40 card
+points or more, the declarer held to 80 (SKATGO-210 at 31, the human: 「防家拿到31就不扣分」; SKATGO-214 at 40: 「防守的到31分及其以上，
+好像挺容易的」, after 31, 40 and 45 were compared, 「开工单改成40」; a Null game has no card points and stays −1) — all passed 0; whole numbers only (「我不太
 喜欢这里引入小数」). The −1 is what keeps the ladder honest: a player rises only while they play well enough for the tier,
 and settles where they belong (「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」). +30 moves the player up a tier and
 −20 down, from 0 again; Bronze has no relegation and its points stop at 0 (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」) and Legend no promotion, its points running on; a player who moves gets up and sits down again in their new tier. The points earned before

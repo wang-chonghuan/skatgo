@@ -572,7 +572,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   for the seat, and lost for the player, SKATGO-206), no Lina and Noah faces (the seats are people's); each deal's result is free play's, its first line the
   deal's League points (SKATGO-205: "Ligapunkte +3" as the XP line's pill — `go` on `goodSoft` won, `bad` on `badSoft` lost,
   `slate` on `page` at 0 — then why — "Dein Spiel gewonnen", "Den Alleinspieler
-  geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Der Alleinspieler hat gewonnen – Schneider abgewehrt" (0, SKATGO-210), "Alle haben gepasst", "Du hast den Tisch verlassen"
+  geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Der Alleinspieler hat gewonnen – höchstens 80 Augen" (0, SKATGO-210, since SKATGO-214 at 40), "Alle haben gepasst", "Du hast den Tisch verlassen"
   (a deal not seen to its end, SKATGO-206) — and, when it moved the player,
   "Aufstieg in die Gold-Liga!" / "Abstieg in die Silber-Liga.", or when the coins are too few for the next, the coins line),
   then the XP line and the AI's game; its foot the next deal and under it "Tisch verlassen" (`quiet`, SKATGO-208, the human:

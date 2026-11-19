@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-214",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-214",
+  "branch": "SKATGO-214-defence-at-40",
+  "base": "acffc72a9adc7e6e5e4b3561efcf7a1894ee9502",
+  "ports": { "web": 55214, "multiplayer": 56214, "database": 57214 }
+}

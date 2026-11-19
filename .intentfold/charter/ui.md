@@ -277,7 +277,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     corner under its colour, rising on hover — "1 Spiel heute" (`tileGreen`, `CalendarDays`, to `/daily`; the same words
     once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, lucide's `Swords`, crossed — the human: 「不要用机器人」, then 「用两个交错的剑吧，x形的」 — to
     `/play`), "Lernen" (`tileOrange`,
-    `GraduationCap`, the course) and "Ranglistenspiel" / "Ranked match" (SKATGO-210, the human: 「这个liga的卡片名字不能叫league，没人来点，你现在改这个名字为 ranked match」; "Liga" before) (`tileNavy`, lucide's `Trophy`, its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:
+    `GraduationCap`, the course) and "Ranglistenspiel" / "Ranked match" (SKATGO-210, broken at the line's end with a hyphen as German is — soft hyphens
+    at its syllables, "Ranglis-tenspiel" on a phone, "Ranglisten-spiel" on PC, the human: 「标准做法是行末加连字符断开。同意」; the human: 「这个liga的卡片名字不能叫league，没人来点，你现在改这个名字为 ranked match」; "Liga" before) (`tileNavy`, lucide's `Trophy`, its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:
     「你看看那个practice是不是没人点，打算把liga放那里如何」 then 「同意」 — the bidding practice's "Reizen" with `Gavel` stood there since
     SKATGO-149, and the exercises' "Üben" with its `Puzzle` before it; a red "Neu" ribbon across its top right corner — `badge`
     type, white on `stop`, `dims.ribbonWidth` long, turned `pose.ribbon` (45°) and standing `dims.ribbonRight` past the

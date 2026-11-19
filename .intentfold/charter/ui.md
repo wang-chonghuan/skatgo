@@ -556,10 +556,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (the human: 「tiers最好做成横向滚动的carousel，然后玩家当前位于的段位在最左侧。要用彩色卡片，背景是档位的图片」) — Bronze to
   Legend, each card snapping to the left edge, the player's own scrolled there on opening and tagged "You"; a card is
   `dims.tierCard` wide (the next one showing at the edge) in `homeCard`'s shape, `radii.tile`, `elev.option`, its own
-  flat picture edge to edge (`public/league/<tier>.webp`: a medal, a cup, a shield, a diamond, a crown, each on its own deep
-  colour), the tier's name (`homeCardTitle`) and its fee (`appText`, `onColorSoft`) white at its bottom left; then, once
+  flat picture edge to edge (`public/league/v2/<tier>.webp`, its sparkles and its own deep colour, and the same emblem as
+  the tier's badge — SKATGO-213, the human: 「tiers的卡片上的图标你忘了改了」: the medal three times, the teal shield, the darker
+  diamond, the glowing orange cup), the tier's name (`homeCardTitle`) and its fee (`appText`, `onColorSoft`) white at its bottom left; then, once
   anyone has played, "Liga-Rangliste" (SKATGO-206, the human: 「这个榜单就放在liga页面下方，每个人名旁边都要有一个联赛的logo，
-  最右边是分数。最左边是总排名」) as the XP board's rows — the rank at the left, the tier's badge (`public/league/badge/<tier>.webp`,
+  最右边是分数。最左边是总排名」) as the XP board's rows — the rank at the left, the tier's badge (`public/league/v2/badge/<tier>.webp` — a changed picture goes into a new folder, since the
+  service worker shows a device's kept copy first, SKATGO-213 —
   `dims.badge`: the emblem alone, off its colour and without the sparkles, no corners — SKATGO-212, the human: 「金银铜都要铜牌的那个样式，
   就是颜色变了，然后传奇用奖杯，钻石稍微深一点颜色」: Bronze, Silver and Gold the bronze picture's ribboned star medal in its own
   metal, Platinum the shield in the tier's own teal with a white star (「铂金不好看，和银色也重叠了」), Diamond the diamond a shade darker, Legend the gold picture's cup in orange with a shine on its bowl and a soft orange glow

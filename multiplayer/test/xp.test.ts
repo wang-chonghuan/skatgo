@@ -5,6 +5,8 @@ import pg from 'pg'
 import { DAILY_DEALS, DEAL_OF_DAY } from '../../app/src/lib/skat/tournament'
 import { recordFreeDeal } from '../src/profile'
 import { Store } from '../src/store'
+import { LEGEND } from '../../app/src/lib/skat/league'
+import { bandOf } from '../src/league'
 import { xpBoard } from '../src/xp'
 
 // The XP board (SKATGO-172) against a database of its own: every deal of every account from XP_SINCE (Monday 2 November)
@@ -67,6 +69,14 @@ test('xp: every deal since the start by tier, aliases as one person, guests off 
       { rank: 3, nickname: 'Dora', xp: 10, winRate: null, tier: 0 },
     ],
   })
+  // A persona on the board has no League standing: Bronze, whatever tier its strength would play at (SKATGO-211).
+  // One of the strongest, who would play at a Legend table.
+  const strong = `sim:${bandOf(LEGEND)[0].id}`
+  await store.pool.query("INSERT INTO persona_players (player, nickname, created_at) VALUES ($1, 'Pia', 1)", [strong])
+  await store.pool.query(
+    `INSERT INTO persona_jobs (player, day, slot, size, due, snapshot, result, completed_at) VALUES ($1, '2026-11-05', 'x', 1, 0, '{}', $2, 1)`,
+    [strong, JSON.stringify({ games: [{ mine: played([60, 0, 0]), ai: played([20, 0, 0]) }] })])
+  assert.equal((await xpBoard(store, null)).rows.find((r) => r.nickname === 'Pia')?.tier, 0)
   // A later week's deal adds to the same board; asked as nobody, no row is marked.
   await recordFreeDeal(store, { player: 'user:dora', game: 'free:p:3:2', day: '2026-11-10', at: 2, mine: played([0, 0, 0]), ai: played([0, 0, 0]) })
   assert.equal((await xpBoard(store, null)).rows.find((r) => r.nickname === 'Dora')?.xp, 20)

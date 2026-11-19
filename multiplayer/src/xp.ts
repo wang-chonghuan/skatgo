@@ -1,6 +1,5 @@
 import { type Played, recordOf } from '../../app/src/lib/skat/profile'
 import { type XpBoard, XP_SINCE, xpOf } from '../../app/src/lib/skat/xp'
-import { personaTier } from './league'
 import type { Store } from './store'
 
 // The experience points (SKATGO-172, replacing the tournament's Elo of SKATGO-123): every deal an account
@@ -55,8 +54,9 @@ export async function xpBoard(store: Store, who: string | null): Promise<XpBoard
     ? await store.pool.query('SELECT coalesce((SELECT same_as FROM player_aliases WHERE player = $1), $1) AS id', [who])
     : { rows: [] }
   const mine = (me[0]?.id as string | undefined) ?? null
-  // Each person's League tier (SKATGO-210): an account's own, under the id the board counts it as; a persona's, the tier
-  // whose band it plays in; none yet, Bronze, where everyone starts.
+  // Each person's League tier (SKATGO-210): an account's own, under the id the board counts it as; anyone without a League
+  // standing — an account that has not played it, a persona — Bronze, where everyone starts (SKATGO-211, the human: 「那些人
+  // 都没玩，应该都是铜吧」).
   const { rows: tiers } = await store.pool.query(
     `SELECT coalesce(a.same_as, l.player) AS person, max(l.tier)::int AS tier
        FROM league_players l LEFT JOIN player_aliases a ON a.player = l.player GROUP BY 1`)
@@ -66,7 +66,7 @@ export async function xpBoard(store: Store, who: string | null): Promise<XpBoard
     return {
       rank: i === 0 || people[i - 1][1] !== n ? i + 1 : 0,
       nickname: nameOf.get(p) ?? '', xp: n, winRate: r.played ? Math.round((100 * r.won) / r.played) : null,
-      tier: p.startsWith('sim:') ? personaTier(p) : (tierOf.get(p) ?? 0),
+      tier: tierOf.get(p) ?? 0,
       ...(p === mine ? { you: true as const } : {}),
     }
   })

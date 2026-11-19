@@ -198,7 +198,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
       const r = await call('review', { player: 'user:a', match, deal })
       assert.equal(r.status, 200)
       assert(r.body.mine && r.body.ai, 'the review has both games')
-      // The defenders' card points (SKATGO-210: 31 or more keeps a lost defence at 0); a Null game counts none.
+      // The defenders' card points (SKATGO-214: 40 or more keeps a lost defence at 0); a Null game counts none.
       const mine = r.body.mine as { declarer: number | null; won: boolean; declaration: { contract: { kind: string } } | null; detail: { defenderPoints: number } | null }
       const outcome = dealOutcome(mine.declarer, !!mine.won, 0, mine.declaration?.contract.kind === 'null' ? null : (mine.detail?.defenderPoints ?? null))
       assert.equal(DEAL_POINTS[outcome], scored[deal].points[a.seat])

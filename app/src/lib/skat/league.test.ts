@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { AWAY_MS, BRONZE_FLOOR, DEAL_POINTS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, TIERS, dealOutcome, leftOutcome, standingAfter } from './league'
+import { AWAY_MS, BRONZE_FLOOR, DEAL_POINTS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, SAVE_AT, TIERS, dealOutcome, leftOutcome, standingAfter } from './league'
 
 // The League's numbers as SKATGO-205 sets them: six tiers and their fees per deal; per deal +3 when one's side won, −3 for
 // one's own game lost, −1 for the declarer's game made against one, 0 when all passed; +30 up and −20 down from 0 again,
@@ -24,9 +24,11 @@ describe('the League', () => {
     expect(dealOutcome(null, false, 0)).toBe('passed')
   })
 
-  it('keeps a lost defence at 0 when the defenders took 31 card points (SKATGO-210)', () => {
-    expect(dealOutcome(1, true, 0, 30)).toBe('defended')
-    expect(dealOutcome(1, true, 0, 31)).toBe('saved')
+  it('keeps a lost defence at 0 when the defenders took 40 card points (SKATGO-214)', () => {
+    expect(SAVE_AT).toBe(40)
+    expect(dealOutcome(1, true, 0, 31)).toBe('defended')
+    expect(dealOutcome(1, true, 0, 39)).toBe('defended')
+    expect(dealOutcome(1, true, 0, 40)).toBe('saved')
     expect(dealOutcome(1, true, 0, 59)).toBe('saved')
     // A Null game counts no card points: still −1.
     expect(dealOutcome(1, true, 0, null)).toBe('defended')

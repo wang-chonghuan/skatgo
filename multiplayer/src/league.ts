@@ -143,7 +143,7 @@ async function leagueBoard(store: Store, who: string | null): Promise<LeagueBoar
   return me ? { rows: top, me: row(me) } : { rows: top }
 }
 
-/** The defenders' card points of a finished deal, for the League's `saved` (SKATGO-210); null in a Null game, which counts none. */
+/** The defenders' card points of a finished deal, for the League's `saved` (SKATGO-210, at 40 since SKATGO-214); null in a Null game, which counts none. */
 const defendersOf = (end: ReturnType<typeof summarize>) =>
   end.declaration?.contract.kind === 'null' ? null : (end.detail?.defenderPoints ?? null)
 

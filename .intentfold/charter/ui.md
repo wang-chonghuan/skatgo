@@ -557,7 +557,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   Legend, each card snapping to the left edge, the player's own scrolled there on opening and tagged "You"; a card is
   `dims.tierCard` wide (the next one showing at the edge) in `homeCard`'s shape, `radii.tile`, `elev.option`, its own
   flat picture edge to edge (`public/league/v2/<tier>.webp`, its sparkles and its own deep colour, and the same emblem as
-  the tier's badge — SKATGO-213, the human: 「tiers的卡片上的图标你忘了改了」: the medal three times, the teal shield, the darker
+  the tier's badge — SKATGO-213, the human: 「tiers的卡片上的图标你忘了改了」: the medal three times — Gold's ribbon a deep crimson, both on the card and on its badge, since the red
+  vanished on the orange card (「gold的不行，那个红色带子在橙色背景上看不清」) — the teal shield, the darker
   diamond, the glowing orange cup), the tier's name (`homeCardTitle`) and its fee (`appText`, `onColorSoft`) white at its bottom left; then, once
   anyone has played, "Liga-Rangliste" (SKATGO-206, the human: 「这个榜单就放在liga页面下方，每个人名旁边都要有一个联赛的logo，
   最右边是分数。最左边是总排名」) as the XP board's rows — the rank at the left, the tier's badge (`public/league/v2/badge/<tier>.webp` — a changed picture goes into a new folder, since the

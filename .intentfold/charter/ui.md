@@ -560,7 +560,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   colour), the tier's name (`homeCardTitle`) and its fee (`appText`, `onColorSoft`) white at its bottom left; then, once
   anyone has played, "Liga-Rangliste" (SKATGO-206, the human: 「这个榜单就放在liga页面下方，每个人名旁边都要有一个联赛的logo，
   最右边是分数。最左边是总排名」) as the XP board's rows — the rank at the left, the tier's badge (`public/league/badge/<tier>.webp`,
-  its picture's emblem cut square on its colour, `dims.badge`, `radii.tag`) by the name, the points at the right — the
+  `dims.badge`: the emblem alone, off its colour and without the sparkles, no corners — SKATGO-212, the human: 「金银铜都要铜牌的那个样式，
+  就是颜色变了，然后传奇用奖杯，钻石稍微深一点颜色」: Bronze, Silver and Gold the bronze picture's ribboned star medal in its own
+  metal, Platinum the shield in the tier's own teal with a white star (「铂金不好看，和银色也重叠了」), Diamond the diamond a shade darker, Legend the gold picture's cup in orange with a shine on its bowl and a soft orange glow
+  behind it, the cup at 90% to leave the glow room (「奖杯能换颜色吗，比如橙色带光的效果的？」, then 「b，稍微大点」)) by the name, the points at the right — the
   player's own row marked; the first 100, and the player's own row after a "…" when it is further down. A League table (`/league/play`) is a full-screen table as a private one,
   its board "Spiel n", its top right button the way out, whose "Tisch verlassen" leaves the table (the deal on it played out
   for the seat, and lost for the player, SKATGO-206), no Lina and Noah faces (the seats are people's); each deal's result is free play's, its first line the

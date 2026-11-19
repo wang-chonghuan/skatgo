@@ -215,7 +215,7 @@ function Board({ board }: { board: LeagueBoard }) {
   )
 }
 
-/** A row of the board: the rank, the tier's badge (its picture's emblem) by the name, the points at the right. */
+/** A row of the board: the rank, the tier's badge by the name, the points at the right. */
 function BoardLine({ row: r }: { row: BoardRow }) {
   return (
     <li data-testid="league-board-row" data-rank={r.rank} data-tier={TIERS[r.tier]} data-points={r.points} data-you={r.you ? 'true' : undefined} {...stylex.props(typography.appText, styles.boardRow, r.you && styles.own)}>
@@ -433,8 +433,8 @@ const styles = stylex.create({
   own: { backgroundColor: color.goodSoft },
   // Wide enough for three figures, so the badges and names stay in one column past the hundredth.
   rank: { flexShrink: 0, minWidth: space.x32, fontVariantNumeric: 'tabular-nums' },
-  // The tier's badge, square, its corners a tag's.
-  badge: { display: 'block', flexShrink: 0, width: dims.badge, height: dims.badge, borderRadius: radii.tag },
+  // The tier's badge: the emblem alone, no ground and so no corners (SKATGO-212).
+  badge: { display: 'block', flexShrink: 0, width: dims.badge, height: dims.badge },
   // The "…" before the player's own row when it is further down than the board.
   gap: { paddingBlock: space.x6, paddingInline: space.x8 },
   name: { flexGrow: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },

@@ -54,9 +54,8 @@ export async function xpBoard(store: Store, who: string | null): Promise<XpBoard
     ? await store.pool.query('SELECT coalesce((SELECT same_as FROM player_aliases WHERE player = $1), $1) AS id', [who])
     : { rows: [] }
   const mine = (me[0]?.id as string | undefined) ?? null
-  // Each person's League tier (SKATGO-210): an account's own, under the id the board counts it as; anyone without a League
-  // standing — an account that has not played it, a persona — Bronze, where everyone starts (SKATGO-211, the human: 「那些人
-  // 都没玩，应该都是铜吧」).
+  // Each person's League tier (SKATGO-210), under the id the board counts them as; Bronze without one, where everyone starts
+  // (SKATGO-211, the human: 「那些人都没玩，应该都是铜吧」).
   const { rows: tiers } = await store.pool.query(
     `SELECT coalesce(a.same_as, l.player) AS person, max(l.tier)::int AS tier
        FROM league_players l LEFT JOIN player_aliases a ON a.player = l.player GROUP BY 1`)

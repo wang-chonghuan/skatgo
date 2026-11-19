@@ -187,10 +187,10 @@ The League at `/league` (SKATGO-204, the human: 「分场天梯先做，而且�
 Bronze, Silver, Gold, Platinum, Diamond and Legend, German Bronze, Silber, Gold, Platin, Diamant, Legende ("Gold-Liga",
 "Legenden-Liga"; the top one Legend, 「最高级的钻石改为传奇」; Platinum and Diamond as a European ranks them, under Legend) —
 played a deal at a time at a table of three (SKATGO-205, the human: 「能否不管round，就从一个deal里，用简单直观的方法，让
-玩家觉得打一个deal就有一个获得感」), each deal costing 3, 4, 5, 7, 8 or 10 coins, taken when it is dealt and kept if the player
+玩家觉得打一个deal就有一个获得感」), each deal costing 3, 4, 5, 6, 10 or 12 coins (3, 4, 5, 7, 8, 10 until SKATGO-210: 「每个tier的扣分是：3，4，5，6，10，12」), taken when it is dealt and kept if the player
 leaves during it; the player leaves the table whenever they like. Coins come only from checking in: a signed-in player's first open of SkatGo on a
-day gives 30 (「不打开游戏就不给，打开了就能积累」; 100 until SKATGO-210: 「每天自动给的金币太多了，没意思」), the day the daily
-tournament's; they add up through a week, Monday to Sunday, and the first check-in of a new week starts again from 30, what
+day gives 60 (「不打开游戏就不给，打开了就能积累」; 100 until SKATGO-210: 「每天自动给的金币太多了，没意思」, then 「60」), the day the daily
+tournament's; they add up through a week, Monday to Sunday, and the first check-in of a new week starts again from 60, what
 was left gone (「必须每周金币清零」); they cannot be
 bought for now (「暂时不开放购买」) and are never exchanged for money or goods (「金币只要不能换实物就行」). Too few coins
 stops the League only: the player gets up after the deal they are in. A table waits five seconds for other people of the

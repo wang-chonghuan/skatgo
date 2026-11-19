@@ -10,7 +10,7 @@ import { AWAY_MS, BRONZE_FLOOR, DEAL_POINTS, FEES, LEGEND, PROMOTE_AT, RELEGATE_
 describe('the League', () => {
   it('has six tiers, Bronze to Legend, and their fees per deal', () => {
     expect(TIERS).toEqual(['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend'])
-    expect(FEES).toEqual([3, 4, 5, 7, 8, 10])
+    expect(FEES).toEqual([3, 4, 5, 6, 10, 12])
     expect(DEAL_POINTS).toEqual({ won: 3, lost: -3, defended: -1, saved: 0, passed: 0, leftDeclaring: -3, left: -1 })
     expect(AWAY_MS).toBe(60_000)
     expect([PROMOTE_AT, RELEGATE_AT]).toEqual([30, -20])

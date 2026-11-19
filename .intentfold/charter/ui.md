@@ -542,7 +542,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   noindex: its H1 "Ranglistenspiel" / "Ranked match" and its tab title "Skat-Ranglistenspiel – von Bronze bis Legende" (SKATGO-210, the human: 「页面标题也不要用league了」; "Liga" before), then for an account its League as the front page's League tile is (the human chose it from two:
   「我选A」) — `tileNavy`, `radii.tile`, `elev.tileNavy`, white words: lucide's `Trophy` at `icon.tile` and "Gold-Liga"
   (`homeTileTitle`); then two large numbers (`homeCardTitle`), the coins first with lucide's `Coins` (the human: 「没显示该玩家
-  的总金币数」), "Münzen" and "+30 heute" under it, and the League points, "Ligapunkte" and how far to promotion and to
+  的总金币数」), "Münzen" and "+60 heute" under it, and the League points, "Ligapunkte" and how far to promotion and to
   relegation under them (`appText`, `onColorSoft`) — each only where there is one, none up from Legend and none down from
   Bronze; the `ProgressBar` from the relegation line to the promotion line (none in Legend); then the one `go`, "Spielen · 15
   Münzen" — "Suche Mitspieler … 5" on it while it waits, counting the five seconds down (the human: 「等待时要有个倒计时」), the number gone once they are up, disabled with one line when the coins are too few ("Zu wenig Münzen –

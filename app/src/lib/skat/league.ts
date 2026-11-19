@@ -9,15 +9,15 @@ export const TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend
 export type Tier = (typeof TIERS)[number]
 export const LEGEND = TIERS.length - 1
 
-/** Coins a deal costs in each tier, taken when it is dealt and kept if the player leaves during it — about a third of
- *  SKATGO-204's round of three, so a day's coins buy as many deals as before. */
-export const FEES: readonly number[] = [3, 4, 5, 7, 8, 10]
+/** Coins a deal costs in each tier, taken when it is dealt and kept if the player leaves during it (SKATGO-210, the human:
+ *  「每个tier的扣分是：3，4，5，6，10，12」): a day's coins buy 20 deals in Bronze, 6 in Diamond, 5 in Legend. */
+export const FEES: readonly number[] = [3, 4, 5, 6, 10, 12]
 
 /** Coins a day's check-in gives: the first time a signed-in player opens SkatGo that day (the human: 「不打开游戏就不给，打开了
- *  就能积累」) — 30 since SKATGO-210 (「每天自动给的金币太多了，没意思」, 「100个太多，而且必须每周金币清零」): they add up through
- *  a week, Monday to Sunday in Berlin, and the week's first check-in starts again from 30, what was left gone. They cannot be
- *  bought or exchanged. */
-export const CHECKIN_COINS = 30
+ *  就能积累」) — 60 since SKATGO-210 (「每天自动给的金币太多了，没意思」, 「100个太多，而且必须每周金币清零」, then 「每天30个我觉得
+ *  太少」, 「60」): they add up through a week, Monday to Sunday in Berlin, and the week's first check-in starts again from 60, what
+ *  was left gone. They cannot be bought or exchanged. */
+export const CHECKIN_COINS = 60
 
 /** League points of a deal for one seat (SKATGO-205): its side won — its own game, or the declarer beaten — +3; its own
  *  game lost −3; the declarer's game made against it −1, the common case, so a player only rises where they play well

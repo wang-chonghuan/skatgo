@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-212",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-212",
+  "branch": "SKATGO-212-badge-emblems",
+  "base": "ea6ce765468323f265a8cc9558c150ae9757519d",
+  "ports": { "web": 55212, "multiplayer": 56212, "database": 57212 }
+}

@@ -8,8 +8,9 @@ ticket database only (six accounts, one per League tier).
    no blue ribbon; bronze's card is the one shipped. Screenshot of the six cards.
 2. **Platinum, Diamond, Legend.** Platinum's card has teal shield pixels and a white star; Diamond's diamond is darker
    than the shipped card's; Legend's card has the orange cup and its glow, and none of the crown's laurel green.
-3. **Unchanged around them.** Each card's ground and sparkles: outside the old and new emblem squares, the picture equals
-   the shipped one (no pixel off by more than WebP noise). The cards' size and words: EN and DE, 375 and 1280 — six
+3. **Unchanged around them.** Each card's ground: outside where the emblems stand, the picture equals the shipped one (no
+   pixel off by more than WebP noise). Its sparkles: as many as on the shipped card, none under the new emblem (one the
+   emblem would cover moves clear of it). The cards' size and words: EN and DE, 375 and 1280 — six
    cards, the picture filling each card, the name and fee inside it, each card's size and each line count the same as
    on the base build (German fees already wrap to two lines on a phone there).
 4. **A device that kept the old pictures.** One browser profile opens the League page and the home page on the base

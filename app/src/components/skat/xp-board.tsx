@@ -138,7 +138,7 @@ const styles = stylex.create({
   own: { backgroundColor: color.goodSoft },
   rank: { minWidth: space.x24 },
   // The League board's badge (league.tsx), centred on the row's line rather than on its baseline.
-  badge: { display: 'block', flexShrink: 0, alignSelf: 'center', width: dims.badge, height: dims.badge, borderRadius: radii.tag },
+  badge: { display: 'block', flexShrink: 0, alignSelf: 'center', width: dims.badge, height: dims.badge },
   what: { flexGrow: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   // The win rate and the XP each in a column of their own width, right-aligned on even digits, so every row's figures
   // stand under each other (SKATGO-178, the human: 「胜率列有点没对齐，要垂直对齐」).

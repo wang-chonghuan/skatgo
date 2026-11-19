@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-213",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-213",
+  "branch": "SKATGO-213-tier-card-emblems",
+  "base": "919ea8dc5e06daec28ff8eed11eaca2bffa5bf39",
+  "ports": { "web": 55213, "multiplayer": 56213, "database": 57213 }
+}

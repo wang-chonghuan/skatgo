@@ -23,12 +23,20 @@ const FULL: Record<Tier, () => string> = {
   bronze: m.league_name_bronze, silver: m.league_name_silver, gold: m.league_name_gold,
   platinum: m.league_name_platinum, diamond: m.league_name_diamond, legend: m.league_name_legend,
 }
+/** The League's pictures — each tier's card and its badge — live in one folder. A changed picture goes into a new folder
+ *  rather than over the old file: the service worker shows a picture from the device first, so one replaced under the
+ *  same address stays old on every device that had it (SKATGO-213, after SKATGO-212's badges: 「线上没变啊，还有那个丑陋的背景」). */
+const ART = '/league/v2'
+/** A tier's card picture, edge to edge on its card. */
+export const tierPicture = (tier: number) => `${ART}/${TIERS[tier]}.webp`
+/** A tier's badge, by a name on the boards. */
+export const tierBadge = (tier: number) => `${ART}/badge/${TIERS[tier]}.webp`
 /** A tier's own name, "Gold". */
 export const tierName = (tier: number) => SHORT[TIERS[tier]]()
 /** A tier's League, "Gold League" / "Gold-Liga". */
 export const leagueName = (tier: number) => FULL[TIERS[tier]]()
 
-/** The six tiers, Bronze to Legend, each a card on its own picture (`public/league/<tier>.webp`, flat, its colour edge
+/** The six tiers, Bronze to Legend, each a card on its own picture (`tierPicture`, flat, its colour edge
  *  to edge) with its name and entry fee; the player's own tagged and, once the browser has the row, at its left edge. */
 export function Tiers({ mine }: { mine: number | null }) {
   const row = useRef<HTMLOListElement>(null)
@@ -47,7 +55,7 @@ export function Tiers({ mine }: { mine: number | null }) {
       <ol ref={row} {...stylex.props(styles.row)}>
         {TIERS.map((t, i) => (
           <li key={t} data-testid="league-tier" data-tier={t} data-fee={FEES[i]} data-you={mine === i ? 'true' : undefined} {...stylex.props(styles.card)}>
-            <img src={`/league/${t}.webp`} alt="" loading="lazy" {...stylex.props(styles.picture)} />
+            <img src={tierPicture(i)} alt="" loading="lazy" {...stylex.props(styles.picture)} />
             {mine === i ? <span {...stylex.props(styles.you)}><Who side="you" /></span> : null}
             <span {...stylex.props(styles.words)}>
               <span {...stylex.props(typography.homeCardTitle, styles.onColor)}>{tierName(i)}</span>

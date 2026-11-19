@@ -12,7 +12,7 @@ import { icon } from '../../theme/constants'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
-import { tierName } from './league-tiers'
+import { tierBadge, tierName } from './league-tiers'
 import { Panel } from './ui'
 import { XpHow } from './xp-earned'
 
@@ -76,7 +76,7 @@ export function XpBoard({ board: first, fill = false }: { board: Board; fill?: b
                   <span {...stylex.props(styles.muted, styles.rank)}>{r.rank}</span>
                   {/* The League tier's badge by the name (SKATGO-210, the human: 「home上的每个人名字旁边加一个标记，就是他的liga的那个tier的图标」),
                       as the League's board shows it. */}
-                  <img data-testid="xp-board-badge" data-tier={TIERS[r.tier]} src={`/league/badge/${TIERS[r.tier]}.webp`} alt={tierName(r.tier)} loading="lazy" {...stylex.props(styles.badge)} />
+                  <img data-testid="xp-board-badge" data-tier={TIERS[r.tier]} src={tierBadge(r.tier)} alt={tierName(r.tier)} loading="lazy" {...stylex.props(styles.badge)} />
                   <span data-testid="xp-board-name" {...stylex.props(styles.what)}>
                     {r.nickname}
                   </span>

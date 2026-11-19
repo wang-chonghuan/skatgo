@@ -20,7 +20,7 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { Who, signed } from './daily-comparison'
 import { GameTable } from './game-table'
-import { Tiers, leagueName, tierName } from './league-tiers'
+import { Tiers, leagueName, tierBadge, tierName } from './league-tiers'
 import { Shell, seatNames, useSeat } from './table-room'
 import { Btn, Panel, Pill, ProgressBar, linkLook } from './ui'
 import type { TableState } from '~/lib/room-client'
@@ -220,7 +220,7 @@ function BoardLine({ row: r }: { row: BoardRow }) {
   return (
     <li data-testid="league-board-row" data-rank={r.rank} data-tier={TIERS[r.tier]} data-points={r.points} data-you={r.you ? 'true' : undefined} {...stylex.props(typography.appText, styles.boardRow, r.you && styles.own)}>
       <span {...stylex.props(styles.slate, styles.rank)}>{r.rank}</span>
-      <img data-testid="league-board-badge" src={`/league/badge/${TIERS[r.tier]}.webp`} alt={tierName(r.tier)} loading="lazy" {...stylex.props(styles.badge)} />
+      <img data-testid="league-board-badge" src={tierBadge(r.tier)} alt={tierName(r.tier)} loading="lazy" {...stylex.props(styles.badge)} />
       <span {...stylex.props(styles.name)}>
         {r.nickname}
         {r.you ? <span {...stylex.props(styles.tag)}><Who side="you" /></span> : null}

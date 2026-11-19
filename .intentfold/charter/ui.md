@@ -539,7 +539,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   "@Name" hint, "Kommentieren" `go`), or for a guest the invitation with the `go` sign-in. Dates are the day in
   UTC, the same on the server and in the browser.
 - **The League** (`league-page.tsx`, `league.tsx`, `/league`, SKATGO-204): a sub-page on the grey page in the reading column,
-  noindex: its H1 "Liga", then for an account its League as the front page's League tile is (the human chose it from two:
+  noindex: its H1 "Ranglistenspiel" / "Ranked match" and its tab title "Skat-Ranglistenspiel – von Bronze bis Legende" (SKATGO-210, the human: 「页面标题也不要用league了」; "Liga" before), then for an account its League as the front page's League tile is (the human chose it from two:
   「我选A」) — `tileNavy`, `radii.tile`, `elev.tileNavy`, white words: lucide's `Trophy` at `icon.tile` and "Gold-Liga"
   (`homeTileTitle`); then two large numbers (`homeCardTitle`), the coins first with lucide's `Coins` (the human: 「没显示该玩家
   的总金币数」), "Münzen" and "+30 heute" under it, and the League points, "Ligapunkte" and how far to promotion and to

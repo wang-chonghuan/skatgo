@@ -9,7 +9,7 @@ import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortH
 import { type Face, faceOf, faceSrc } from '~/lib/skat/face'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { playSound } from '~/lib/skat/sounds'
-import { useAvatar, useBoardTricks, useFaces, useSettings, useTapToCollect } from '~/lib/skat/settings'
+import { useAvatar, useBoardPoints, useBoardTricks, useFaces, useSettings, useTapToCollect } from '~/lib/skat/settings'
 import { calcLine, cardLabel, contractName, ledName, resultReason, roleName, settleReason, settlementFormula } from '~/lib/skat/i18n'
 import {
   type Game,
@@ -39,7 +39,7 @@ import { BID_LADDER, type Declaration, baseValue, expectedValue, highestValue, n
 import { m } from '~/paraglide/messages'
 import { getLocale, localizeHref } from '~/paraglide/runtime'
 import { Link } from '@tanstack/react-router'
-import { BookOpen, ChevronLeft, ChevronRight, Lightbulb, LogOut, Settings, Spade, Users, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Eye, EyeOff, Lightbulb, LogOut, Settings, Spade, Users, X } from 'lucide-react'
 
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -1059,6 +1059,10 @@ function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: bo
  *  deal of how many this is, not which trick (SKATGO-93, the human: 「当前是第几墩，没必要，应该改为显示，当前是第几个deal」). */
 function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number }; tricks: boolean; deal: { n: number; of?: number } | null }) {
   const setTricks = useSettings((s) => s.setBoardTricks)
+  const setShown = useSettings((s) => s.setBoardPoints)
+  const shown = useBoardPoints()
+  // Only the card points hide; the tricks taken are on the table for anyone to count.
+  const hidden = !tricks && !shown
   const nameOf = useNameOf()
   const contract = game.declaration?.contract ?? null
   const playing = game.phase === 'play' || game.phase === 'trickEnd'
@@ -1082,33 +1086,53 @@ function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores:
         <span {...stylex.props(typography.infoSub, styles.boardSub)}>{game.declarer === null ? '' : m.info_bid() + ' ' + game.bid}</span>
       </div>
       {/* A tap switches it between the card points and the tricks each side has taken, and it stays so (SKATGO-127,
-          the human: 「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」). */}
-      <button
-        type="button"
-        data-testid="skat-info-points"
-        data-shows={tricks ? 'tricks' : 'points'}
-        aria-pressed={tricks}
-        title={tricks ? m.info_show_points() : m.info_show_tricks()}
-        onClick={() => setTricks(!tricks)}
-        {...stylex.props(styles.boardCell, styles.boardSwitch)}
-      >
+          the human: 「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」). The card points are hidden until the
+          player opens the eye in the cell's corner, and stay as they left them (SKATGO-218, the human: 「放一个眼睛的图标……每个
+          用户默认隐藏，这样他打牌时需要自己算分。然后如果他点了显示，则记住，以后都显示」); tricks are never hidden. */}
+      <div data-testid="skat-info-points" data-shows={tricks ? 'tricks' : 'points'} data-hidden={String(hidden)} {...stylex.props(styles.boardCell, styles.boardSlot)}>
+        {/* The switch covers the whole cell, under the eye: a tap anywhere else in it switches. */}
+        <button
+          type="button"
+          data-testid="skat-info-switch"
+          aria-pressed={tricks}
+          aria-label={tricks ? m.info_show_points() : m.info_show_tricks()}
+          title={tricks ? m.info_show_points() : m.info_show_tricks()}
+          onClick={() => setTricks(!tricks)}
+          {...stylex.props(styles.boardSwitch)}
+        />
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{tricks ? m.info_tricks() : m.info_points()}</span>
         {/* The player's side's card points in the board's amber, as the player's total is beside them —
             the declarer's when they declare, the defenders' when they defend — so which number is theirs
-            reads at a glance (SKATGO-79, the human: 「我是庄家，则庄家的分显示橙色，我是防家，则防家的分显示橙色」). */}
-        <span {...stylex.props(typography.infoNumber, styles.boardNumber)}>
-          {playing ? (
-            <>
-              <span data-testid="skat-info-points-declarer" {...stylex.props(game.declarer === ME && styles.boardMine)}>{points.declarer}</span>
-              {' : '}
-              <span data-testid="skat-info-points-defenders" {...stylex.props(game.declarer !== ME && styles.boardMine)}>{points.defenders}</span>
-            </>
-          ) : (
-            '—'
+            reads at a glance (SKATGO-79, the human: 「我是庄家，则庄家的分显示橙色，我是防家，则防家的分显示橙色」).
+            The eye beside them, as a password field has it. */}
+        <span {...stylex.props(styles.boardValueRow)}>
+          <span {...stylex.props(typography.infoNumber, styles.boardNumber)}>
+            {playing ? (
+              <>
+                <span data-testid="skat-info-points-declarer" {...stylex.props(game.declarer === ME && styles.boardMine)}>{hidden ? '?' : points.declarer}</span>
+                {' : '}
+                <span data-testid="skat-info-points-defenders" {...stylex.props(game.declarer !== ME && styles.boardMine)}>{hidden ? '?' : points.defenders}</span>
+              </>
+            ) : (
+              '—'
+            )}
+          </span>
+          {tricks ? null : (
+            <button
+              type="button"
+              data-testid="skat-info-eye"
+              aria-pressed={shown}
+              aria-label={shown ? m.info_hide_card_points() : m.info_show_card_points()}
+              title={shown ? m.info_hide_card_points() : m.info_show_card_points()}
+              onClick={() => setShown(!shown)}
+              {...stylex.props(styles.boardEye)}
+            >
+              {shown ? <Eye size={icon.inline} strokeWidth={icon.outline} /> : <EyeOff size={icon.inline} strokeWidth={icon.outline} />}
+            </button>
           )}
         </span>
         <span data-testid="skat-info-deal" {...stylex.props(typography.infoSub, styles.boardSub)}>{deal ? (deal.of ? m.info_deal({ n: deal.n, of: deal.of }) : m.info_deal_n({ n: deal.n })) : ''}</span>
-      </button>
+      </div>
       <div data-testid="skat-info-totals" {...stylex.props(styles.boardCell)}>
         <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_totals()}</span>
         <div {...stylex.props(styles.totals)}>
@@ -2088,20 +2112,36 @@ const styles = stylex.create({
     backgroundColor: color.board,
     color: color.onColor,
   },
-  // The card points' cell as a button: the cell's look, nothing of a button's own, the focus ring when focused.
+  // The card points' switch (SKATGO-127): laid over the whole cell, nothing of a button's own, the focus ring when focused.
   boardSwitch: {
+    position: 'absolute',
+    inset: 0,
     margin: 0,
+    padding: 0,
+    borderWidth: 0,
     backgroundColor: 'transparent',
-    font: 'inherit',
-    color: 'inherit',
     cursor: 'pointer',
-    // The cell's own rules are its left and top ones; a button's right and bottom borders go.
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focus,
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
+  },
+  // The card points' cell (SKATGO-218): the switch laid over all of it, the eye beside the numbers over the switch — later
+  // in the cell, so painted above it.
+  boardSlot: { position: 'relative' },
+  boardValueRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: space.x2, maxWidth: '100%' },
+  boardEye: {
+    position: 'relative',
+    display: 'flex',
+    padding: space.x2,
+    margin: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: color.onColorSoft,
+    cursor: 'pointer',
+    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
+    outlineWidth: border.focus,
+    outlineColor: color.info,
   },
   boardCell: {
     display: 'flex',

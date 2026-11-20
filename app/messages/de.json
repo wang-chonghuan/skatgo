@@ -436,6 +436,8 @@
   "info_tricks": "Stiche",
   "info_show_tricks": "Stiche statt Augen zeigen",
   "info_show_points": "Augen statt Stiche zeigen",
+  "info_show_card_points": "Augen zeigen",
+  "info_hide_card_points": "Augen verbergen",
   "info_deal": "Spiel {n} von {of}",
   "info_deal_n": "Spiel {n}",
   "info_totals": "Gesamt",

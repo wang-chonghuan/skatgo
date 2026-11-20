@@ -665,14 +665,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   removed SKATGO-26's strip of pills there, the human: 「顶部四个方块里已经有的信息，谁又在抽屉里加了一遍？」, 「在本工单里全部删掉」). A cell's content never runs past its padding. Hand and Ouvert stand on
   the small line under the contract; a long name wraps, a small line ends in an ellipsis; the three running
   totals share the cell in equal columns, smaller on a phone (`infoTotal`) and smaller again once one has four
-  digits (`infoTotalLong`). The "Augen" cell is a button with nothing of a button's look: a tap switches it to
-  "Stiche", the tricks each side has taken, and back, and the choice stays in this browser (SKATGO-127, the human:
-  「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」). Its heading reads "Points" in English ("Augen" in
-  German), and the card points are hidden until the player opens the eye on that heading's line — the heading centred as every
-  cell's is, the eye against the cell's right edge; lucide's `EyeOff` / `Eye` at `icon.inline`, `onColorSoft`, its own
-  button over the switch, the heading's line keeping its height (the human: 「标题要换成points，然后眼睛图标放在points旁边」,
-  then 「应该有对齐，不该直接跟着points」) — "? : ?" standing for them meanwhile, and the choice stays in this browser; tricks never hide, and with them the eye is gone
-  (SKATGO-218, the human: 「放一个眼睛的图标……每个用户默认隐藏，这样他打牌时需要自己算分。然后如果他点了显示，则记住，以后都显示」).
+  digits (`infoTotalLong`). The points cell shows the deal's card points only (SKATGO-127's switch to the tricks taken is gone,
+  the human: 「不要数墩模式了，要么是points，要么显示个横线 - : -」). Its heading reads "Points" in English ("Augen" in German),
+  and the card points are hidden until the player opens the eye on that heading's line — the heading centred as every
+  cell's is, the eye against the cell's right edge, always there; lucide's `EyeOff` / `Eye` at `icon.inline`,
+  `onColorSoft`, the heading's line keeping its height — a single "—" standing for them meanwhile (「就一个横线就行」), and
+  the choice stays in this browser (SKATGO-218, the human: 「放一个眼睛的图标……每个用户默认隐藏，这样他打牌时需要自己算分。然后如果他点了显示，则记住，
+  以后都显示」, then 「标题要换成points，然后眼睛图标放在points旁边」, 「应该有对齐，不该直接跟着points」, 「这个图标要始终显示」).
 - **A deal's result** (SKATGO-166, the human: 「以常玩的用户的视角，重要的在前面。信息不重复。不要用超过4种层级的字体。一个信息只出现在一个
   地方……红框和绿框里的东西不要塞太多」) is one dialog at a private table and at every table against the AI — the tournament,
   free play, lesson 11 — the course's own table keeping its teaching settlement. It is four parts, each its heading

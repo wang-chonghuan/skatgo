@@ -9,7 +9,7 @@ import { type Card, type Contract, SUITS, cardId, effectiveSuit, sameCard, sortH
 import { type Face, faceOf, faceSrc } from '~/lib/skat/face'
 import { bidHint, declareHint, discardHint, playHint, skatHint } from '~/lib/skat/hints'
 import { playSound } from '~/lib/skat/sounds'
-import { useAvatar, useBoardPoints, useBoardTricks, useFaces, useSettings, useTapToCollect } from '~/lib/skat/settings'
+import { useAvatar, useBoardPoints, useFaces, useSettings, useTapToCollect } from '~/lib/skat/settings'
 import { calcLine, cardLabel, contractName, ledName, resultReason, roleName, settleReason, settlementFormula } from '~/lib/skat/i18n'
 import {
   type Game,
@@ -31,7 +31,6 @@ import {
   normalise,
   roleOf,
   runningPoints,
-  runningTricks,
   trickWinner,
 } from '~/lib/skat/game'
 import { DAILY_DEALS, DEAL_OF_DAY, type DailySize, type DealSummary, seegerFabian, summarize } from '~/lib/skat/tournament'
@@ -384,8 +383,6 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   const myHand = useMemo(() => sortHand(game.hands[ME], contract ?? draft?.contract ?? null), [game.hands, contract, draft])
   const legal = game.phase === 'play' && myTurn ? legalFor(game, ME) : undefined
   const points = runningPoints(game)
-  const tricksTaken = runningTricks(game)
-  const boardTricks = useBoardTricks()
   const winner = trickWinner(game)
 
   function onCard(card: Card) {
@@ -506,7 +503,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             learner asked for, or why a card was refused, each until it is closed. The stage keeps this
             band clear (SKATGO-34): nothing on the table reaches into it. */}
         <div data-testid="skat-top" {...stylex.props(styles.top, (hint !== null || refusal !== null) && styles.topTip)}>
-          {exercise?.top ?? <InfoBoard game={game} scores={totals ?? scores} points={boardTricks ? tricksTaken : points} tricks={boardTricks} deal={dealOf} />}
+          {exercise?.top ?? <InfoBoard game={game} scores={totals ?? scores} points={points} deal={dealOf} />}
           {!acting && !waiting && !dialog ? (
             <div data-testid="skat-words" {...stylex.props(styles.wordsLine)}>
               {game.phase === 'trickEnd' && winner !== null ? (
@@ -1057,12 +1054,11 @@ function Plate({ seat, game, mine, active }: { seat: Seat; game: Game; mine?: bo
 /** The info board across the top of the felt: what is being played, by whom, how the hand stands, and
  *  the running totals — each a small label over its value, divided by fine rules. Under the points, which
  *  deal of how many this is, not which trick (SKATGO-93, the human: 「当前是第几墩，没必要，应该改为显示，当前是第几个deal」). */
-function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number }; tricks: boolean; deal: { n: number; of?: number } | null }) {
-  const setTricks = useSettings((s) => s.setBoardTricks)
+function InfoBoard({ game, scores, points, deal }: { game: Game; scores: [number, number, number]; points: { declarer: number; defenders: number }; deal: { n: number; of?: number } | null }) {
   const setShown = useSettings((s) => s.setBoardPoints)
   const shown = useBoardPoints()
-  // Only the card points hide; the tricks taken are on the table for anyone to count.
-  const hidden = !tricks && !shown
+  const hidden = !shown
+  const eyeLabel = shown ? m.info_hide_card_points() : m.info_show_card_points()
   const nameOf = useNameOf()
   const contract = game.declaration?.contract ?? null
   const playing = game.phase === 'play' || game.phase === 'trickEnd'
@@ -1085,49 +1081,37 @@ function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores:
         <span {...stylex.props(typography.infoValue, styles.boardValue)}>{game.declarer === null ? '—' : nameOf(game.declarer)}</span>
         <span {...stylex.props(typography.infoSub, styles.boardSub)}>{game.declarer === null ? '' : m.info_bid() + ' ' + game.bid}</span>
       </div>
-      {/* A tap switches it between the card points and the tricks each side has taken, and it stays so (SKATGO-127,
-          the human: 「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」). The card points are hidden until the
-          player opens the eye beside the heading, and stay as they left them (SKATGO-218, the human: 「放一个眼睛的图标……每个
-          用户默认隐藏，这样他打牌时需要自己算分。然后如果他点了显示，则记住，以后都显示」); tricks are never hidden. */}
-      <div data-testid="skat-info-points" data-shows={tricks ? 'tricks' : 'points'} data-hidden={String(hidden)} {...stylex.props(styles.boardCell, styles.boardSlot)}>
-        {/* The switch covers the whole cell, under the eye: a tap anywhere else in it switches. */}
-        <button
-          type="button"
-          data-testid="skat-info-switch"
-          aria-pressed={tricks}
-          aria-label={tricks ? m.info_show_points() : m.info_show_tricks()}
-          title={tricks ? m.info_show_points() : m.info_show_tricks()}
-          onClick={() => setTricks(!tricks)}
-          {...stylex.props(styles.boardSwitch)}
-        />
+      {/* The deal's card points, hidden — a single dash, 「就一个横线就行」 — until the player opens the eye on the heading's line, and kept as they left them
+          (SKATGO-218, the human: 「放一个眼睛的图标……每个用户默认隐藏，这样他打牌时需要自己算分。然后如果他点了显示，则记住，以后都
+          显示」, then 「这个图标要始终显示」 and 「不要数墩模式了，要么是points，要么显示个横线 - : -」: SKATGO-127's switch to the
+          tricks taken is gone). */}
+      <div data-testid="skat-info-points" data-hidden={String(hidden)} {...stylex.props(styles.boardCell)}>
         {/* The eye beside the heading (rework: 「标题要换成points，然后眼睛图标放在points旁边」), then 「应该有对齐，不该直接跟着
             points」: the heading centred like the others, the eye against the cell's right edge; the line keeps its height. */}
         <span {...stylex.props(styles.boardLabelRow)}>
           <span aria-hidden="true" {...stylex.props(styles.boardEyePlace)} />
-          <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{tricks ? m.info_tricks() : m.info_points()}</span>
-          {tricks ? <span aria-hidden="true" {...stylex.props(styles.boardEyePlace)} /> : (
-            <button
-              type="button"
-              data-testid="skat-info-eye"
-              aria-pressed={shown}
-              aria-label={shown ? m.info_hide_card_points() : m.info_show_card_points()}
-              title={shown ? m.info_hide_card_points() : m.info_show_card_points()}
-              onClick={() => setShown(!shown)}
-              {...stylex.props(styles.boardEye)}
-            >
-              {shown ? <Eye size={icon.inline} strokeWidth={icon.outline} /> : <EyeOff size={icon.inline} strokeWidth={icon.outline} />}
-            </button>
-          )}
+          <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_points()}</span>
+          <button
+            type="button"
+            data-testid="skat-info-eye"
+            aria-pressed={shown}
+            aria-label={eyeLabel}
+            title={eyeLabel}
+            onClick={() => setShown(!shown)}
+            {...stylex.props(styles.boardEye)}
+          >
+            {shown ? <Eye size={icon.inline} strokeWidth={icon.outline} /> : <EyeOff size={icon.inline} strokeWidth={icon.outline} />}
+          </button>
         </span>
         {/* The player's side's card points in the board's amber, as the player's total is beside them —
             the declarer's when they declare, the defenders' when they defend — so which number is theirs
             reads at a glance (SKATGO-79, the human: 「我是庄家，则庄家的分显示橙色，我是防家，则防家的分显示橙色」). */}
         <span {...stylex.props(typography.infoNumber, styles.boardNumber)}>
-          {playing ? (
+          {playing && !hidden ? (
             <>
-              <span data-testid="skat-info-points-declarer" {...stylex.props(game.declarer === ME && styles.boardMine)}>{hidden ? '?' : points.declarer}</span>
+              <span data-testid="skat-info-points-declarer" {...stylex.props(game.declarer === ME && styles.boardMine)}>{points.declarer}</span>
               {' : '}
-              <span data-testid="skat-info-points-defenders" {...stylex.props(game.declarer !== ME && styles.boardMine)}>{hidden ? '?' : points.defenders}</span>
+              <span data-testid="skat-info-points-defenders" {...stylex.props(game.declarer !== ME && styles.boardMine)}>{points.defenders}</span>
             </>
           ) : (
             '—'
@@ -2114,29 +2098,12 @@ const styles = stylex.create({
     backgroundColor: color.board,
     color: color.onColor,
   },
-  // The card points' switch (SKATGO-127): laid over the whole cell, nothing of a button's own, the focus ring when focused.
-  boardSwitch: {
-    position: 'absolute',
-    inset: 0,
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    cursor: 'pointer',
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-    outlineColor: color.info,
-    outlineOffset: border.focusOffset,
-  },
-  // The card points' cell (SKATGO-218): the switch laid over all of it, the eye beside the heading over the switch — later
-  // in the cell, so painted above it.
-  boardSlot: { position: 'relative' },
+  // The card points' cell (SKATGO-218): the eye on the heading's line.
   // The heading centred as every cell's is, the eye against the cell's right edge, an empty place of its size at the left.
   boardLabelRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x2, width: '100%' },
   boardEyePlace: { width: space.x20, flexShrink: 0 },
   // No taller than the heading's line, which keeps its height: the icon stands out a little above and below it.
   boardEye: {
-    position: 'relative',
     width: space.x20,
     height: space.x14,
     flexShrink: 0,

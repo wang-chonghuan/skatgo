@@ -3,15 +3,15 @@ import { describe, expect, it } from 'vitest'
 import { AWAY_MS, BRONZE_FLOOR, DEAL_POINTS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, SAVE_AT, TIERS, dealOutcome, leftOutcome, standingAfter } from './league'
 
 // The League's numbers as SKATGO-205 sets them: six tiers and their fees per deal; per deal +3 when one's side won, −3 for
-// one's own game lost, −1 for the declarer's game made against one, 0 when all passed; +30 up and −20 down from 0 again,
+// one's own game lost, −2 for the declarer's game made against one (−1 until SKATGO-215), 0 when all passed; +30 up and −20 down from 0 again,
 // no relegation from Bronze, no promotion from Legend. A deal not seen to its end (SKATGO-206) is lost: −3 declaring, else
-// −1; away a minute counts as leaving.
+// −2; away a minute counts as leaving.
 
 describe('the League', () => {
   it('has six tiers, Bronze to Legend, and their fees per deal', () => {
     expect(TIERS).toEqual(['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend'])
     expect(FEES).toEqual([3, 4, 5, 6, 10, 12])
-    expect(DEAL_POINTS).toEqual({ won: 3, lost: -3, defended: -1, saved: 0, passed: 0, leftDeclaring: -3, left: -1 })
+    expect(DEAL_POINTS).toEqual({ won: 3, lost: -3, defended: -2, saved: 0, passed: 0, leftDeclaring: -3, left: -2 })
     expect(AWAY_MS).toBe(60_000)
     expect([PROMOTE_AT, RELEGATE_AT]).toEqual([30, -20])
   })
@@ -30,12 +30,12 @@ describe('the League', () => {
     expect(dealOutcome(1, true, 0, 39)).toBe('defended')
     expect(dealOutcome(1, true, 0, 40)).toBe('saved')
     expect(dealOutcome(1, true, 0, 59)).toBe('saved')
-    // A Null game counts no card points: still −1.
+    // A Null game counts no card points: a lost defence, −2.
     expect(dealOutcome(1, true, 0, null)).toBe('defended')
     // The declarer's own side and a beaten declarer are as before.
     expect(dealOutcome(1, true, 1, 40)).toBe('won')
     expect(dealOutcome(1, false, 0, 70)).toBe('won')
-    expect([DEAL_POINTS.saved, DEAL_POINTS.defended]).toEqual([0, -1])
+    expect([DEAL_POINTS.saved, DEAL_POINTS.defended]).toEqual([0, -2])
   })
 
   it('loses a deal left before its end by one’s part in it when going', () => {

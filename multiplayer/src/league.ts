@@ -161,7 +161,7 @@ async function scoreSeat(s: Snapshot, c: pg.PoolClient, account: string, outcome
 }
 
 /** A finished deal of a sitting (SKATGO-204), kept for its reviews, and scored (SKATGO-205): each person's side won +3, their
- *  own game lost −3, the declarer's game made against them −1, all passed 0 — their standing moved once, in the transaction
+ *  own game lost −3, the declarer's game made against them −2 (0 with 40 card points), all passed 0 — their standing moved once, in the transaction
  *  of the change that ended the deal; `scoredBefore` is the room's count of scored deals before it. Whether each can pay
  *  the next deal at this table travels with the result. Only a deal seen to its end counts so (SKATGO-206): one who left
  *  during it loses it (`forfeits`, no review, no record); one away when it ends is scored when they come back to its result
@@ -192,7 +192,7 @@ export async function settleLeague(s: Snapshot, c: pg.PoolClient, scoredBefore: 
 
 /** The last deal for a person who was away when it ended (SKATGO-206): back to its result, it counts as it came out;
  *  not back within `AWAY_MS` of going, or their seat going to the next deal first, it is lost (−3 if they were declaring when
- *  they went, else −1). */
+ *  they went, else −2). */
 export async function settlePending(s: Snapshot, c: pg.PoolClient, seat: number, seen: boolean, now = Date.now()) {
   const l = s.league
   const p = s.seats[seat]

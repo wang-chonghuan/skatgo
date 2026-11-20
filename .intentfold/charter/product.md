@@ -198,17 +198,19 @@ same tier (「就等5秒」), then personas of that tier's strength take the emp
 Legend's near the AI's; a person who leaves or is away when the next deal comes is replaced by one, and with nobody left
 the table ends. Each deal brings League points by how the player's own side came out of it, never the difference to the
 AI (SKATGO-205, the human: 「庄赢+3，防赢+3，庄输-3」, then 「我建议就1」): their side won — their own game, or the declarer
-beaten — +3, their own game lost −3, the declarer's game made against them −1 — 0 when the defenders still took 40 card
+beaten — +3, their own game lost −3, the declarer's game made against them −2 — 0 when the defenders still took 40 card
 points or more, the declarer held to 80 (SKATGO-210 at 31, the human: 「防家拿到31就不扣分」; SKATGO-214 at 40: 「防守的到31分及其以上，
-好像挺容易的」, after 31, 40 and 45 were compared, 「开工单改成40」; a Null game has no card points and stays −1) — all passed 0; whole numbers only (「我不太
-喜欢这里引入小数」). The −1 is what keeps the ladder honest: a player rises only while they play well enough for the tier,
-and settles where they belong (「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」). +30 moves the player up a tier and
+好像挺容易的」, after 31, 40 and 45 were compared, 「开工单改成40」; a Null game has no card points and costs the −2) — all passed 0; whole numbers only (「我不太
+喜欢这里引入小数」). The −2 is what keeps the ladder honest: a player rises only while they play well enough for the tier,
+and settles where they belong (「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」). It was −1 until SKATGO-215 (the human:
+「升分和降分如何分配，才更有意思，如果40，会不会升分太多了？」, then 「开工单改成防守输-2」): at −1 three equal players gained about two
+points a deal between them, so anyone climbed by playing more; at −2 about half that. +30 moves the player up a tier and
 −20 down, from 0 again; Bronze has no relegation and its points stop at 0 (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」) and Legend no promotion, its points running on; a player who moves gets up and sits down again in their new tier. The points earned before
 SKATGO-205 started again from 0, tiers and coins kept. Standings
 never start again — no week, no season. Each deal ends in free play's result with the AI's game, under its League points, and earns XP as any
 deal against the AI does. A deal counts only when the player sees it to its result (SKATGO-206, the human: 「没进入结算页面就不算
 打完，就不进历史。离桌多久应该算输，比如1分钟？如果是庄家就-3，如果是防家就-1」): left during it — the button, or away a minute,
-which counts as leaving — it is lost, −3 if they were the declarer when they went, else −1, the AI playing their seat out for
+which counts as leaving — it is lost, −3 if they were the declarer when they went, else −2 as a lost defence (−1 until SKATGO-215, so that leaving never costs less than playing it out), the AI playing their seat out for
 the others; it goes into no record of play and earns no XP. A deal that ended while they were away counts as it came out
 once they come back to its result within the minute, and is lost otherwise. Its page shows the
 player's tier, points and how far from moving, the coins, the fees and, at its bottom, the League's board (SKATGO-206, the

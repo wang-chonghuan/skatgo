@@ -1090,7 +1090,7 @@ function InfoBoard({ game, scores, points, deal }: { game: Game; scores: [number
             points」: the heading centred like the others, the eye against the cell's right edge; the line keeps its height. */}
         <span {...stylex.props(styles.boardLabelRow)}>
           <span aria-hidden="true" {...stylex.props(styles.boardEyePlace)} />
-          <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{m.info_points()}</span>
+          <span {...stylex.props(typography.infoLabel, styles.boardLabel, styles.boardLabelInRow)}>{m.info_points()}</span>
           <button
             type="button"
             data-testid="skat-info-eye"
@@ -2100,7 +2100,9 @@ const styles = stylex.create({
   },
   // The card points' cell (SKATGO-218): the eye on the heading's line.
   // The heading centred as every cell's is, the eye against the cell's right edge, an empty place of its size at the left.
-  boardLabelRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x2, width: '100%' },
+  // The heading's 2 under it go under the whole line, so the eye centres on the heading itself, not 1 below it.
+  boardLabelRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x2, width: '100%', marginBottom: space.x2 },
+  boardLabelInRow: { marginBottom: 0 },
   boardEyePlace: { width: space.x20, flexShrink: 0 },
   // No taller than the heading's line, which keeps its height: the icon stands out a little above and below it.
   boardEye: {

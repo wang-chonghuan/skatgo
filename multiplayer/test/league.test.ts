@@ -6,7 +6,7 @@ import { once } from 'node:events'
 import { Client, type Room } from '@colyseus/sdk'
 import pg from 'pg'
 import { legalPlays } from '../../app/src/lib/skat/cards'
-import { AWAY_MS, CHECKIN_COINS, FEES, dealPoints, forfeitPoints, standingAfter } from '../../app/src/lib/skat/league'
+import { AWAY_MS, CHECKIN_COINS, FEES, START_AT, dealPoints, forfeitPoints, standingAfter } from '../../app/src/lib/skat/league'
 import { summarize } from '../../app/src/lib/skat/tournament'
 import { dayOf } from '../src/daily'
 import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS } from '../src/model'
@@ -16,7 +16,7 @@ import { Store } from '../src/store'
 // check-in, the fee per deal, a table found in five seconds with personas in the empty seats or with another person of the
 // tier, nobody else at it, deals one after another each scored once for each person, leaving (the deal counts, no further
 // fee, the sitting ends with nobody left), a person away played for after the grace and back in their seat, one who cannot
-// pay taken off at the next deal, a deal's review counted once for the person's record, and the one-time points reset.
+// pay taken off at the next deal, a deal's review counted once for the person's record, and the one-time points resets.
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 async function until<T>(fn: () => T | Promise<T>, timeout = 20_000): Promise<NonNullable<T>> {
@@ -77,12 +77,12 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: C, added: C })
     assert.equal((await call('checkin', { player: 'sim:x' })).status, 400)
 
-    // A new account: Bronze, 0 points; too few coins for the fee is refused.
+    // A new account: Bronze, 1000 points (SKATGO-217); too few coins for the fee is refused.
     await call('checkin', { player: 'user:poor' })
     await sql.query("UPDATE league_players SET coins = $1 WHERE player = 'user:poor'", [FEES[0] - 1])
     const poor = await call('state', { player: 'user:poor' })
     assert.equal(poor.body.me.tier, 0)
-    assert.equal(poor.body.me.points, 0)
+    assert.equal(poor.body.me.points, START_AT)
     assert.deepEqual((await call('play', { player: 'user:poor' })), { status: 409, body: { error: 'not_enough_coins' } })
 
     // Alone: seated within five seconds and a little, two personas beside, the fee taken.
@@ -167,7 +167,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert(last.seats.every((x, i) => (i === a.seat) === (x !== null)), 'only the person is scored')
     // The standing is the deals' points taken one by one (Bronze stops at 0, SKATGO-207).
     const fold = (start: { tier: number; points: number }, points: number[]) => points.reduce((s, x) => { const n = standingAfter(s, x); return { tier: n.tier, points: n.points } }, start)
-    const sum = fold({ tier: 0, points: 0 }, scored.map(r => r.points[a.seat]))
+    const sum = fold({ tier: 0, points: START_AT }, scored.map(r => r.points[a.seat]))
     const standing = (await call('state', { player: 'user:a' })).body.me
     assert.deepEqual({ tier: standing.tier, points: standing.points }, sum)
     assert.equal(standing.coins, C - 4 * FEES[0])
@@ -235,16 +235,22 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.equal(await coins('user:c'), 0)
     assert.equal(await coins('user:d'), dCoins - FEES[0])
 
-    // The points' new scale (SKATGO-205, again SKATGO-216): a row on an old one starts again from 0, once; tier and coins stay.
+    // The points' new scales: a row on an old one (SKATGO-205, again SKATGO-216) starts again from 0, then 1000 from
+    // SKATGO-217 on; a row on SKATGO-216's (3) keeps its distance to the lines, 1000 added — once; tier and coins stay.
     await sql.query("UPDATE league_players SET scale = 1, points = 7, tier = 2 WHERE player = 'user:d'")
+    await sql.query("INSERT INTO league_players (player, coins, tier, points, scale, updated_at) VALUES ('user:m', 9, 1, 250, 3, 0)")
     const migrating = new Store(base.href)
     await migrating.migrate()
     const reset = (await sql.query("SELECT tier, points, coins, scale FROM league_players WHERE player = 'user:d'")).rows[0]
-    assert.deepEqual([reset.tier, reset.points, reset.scale], [2, 0, 3])
+    assert.deepEqual([reset.tier, reset.points, reset.scale], [2, START_AT, 4])
     assert.equal(reset.coins, dCoins - FEES[0])
-    await sql.query("UPDATE league_players SET points = 5 WHERE player = 'user:d'")
+    const kept = (await sql.query("SELECT tier, points, coins, scale FROM league_players WHERE player = 'user:m'")).rows[0]
+    assert.deepEqual([kept.tier, kept.points, kept.coins, kept.scale], [1, 1250, 9, 4])
+    await sql.query("UPDATE league_players SET points = 1500 WHERE player = 'user:d'")
     await migrating.migrate()
-    assert.equal((await sql.query("SELECT points FROM league_players WHERE player = 'user:d'")).rows[0].points, 5)
+    assert.equal((await sql.query("SELECT points FROM league_players WHERE player = 'user:d'")).rows[0].points, 1500)
+    assert.equal((await sql.query("SELECT points FROM league_players WHERE player = 'user:m'")).rows[0].points, 1250)
+    await sql.query("DELETE FROM league_players WHERE player = 'user:m'")
     await migrating.close()
 
     // The League's board (SKATGO-206): everyone who played a deal, by tier, then points; not one who never sat down.
@@ -304,7 +310,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
 
     // Away a minute during a deal: it counts as leaving — the deal lost for them, no review — and with nobody left the
     // sitting ends. (The scale's reset above left d in Gold: back to this table's tier, so the next deal is theirs.)
-    await sql.query("UPDATE league_players SET tier = 0, points = 0 WHERE player = 'user:d'")
+    await sql.query("UPDATE league_players SET tier = 0, points = 1000 WHERE player = 'user:d'")
     await until(async () => {
       if (pd2.public.deals > playing + 1) return true
       await step(pd2).catch(() => null)

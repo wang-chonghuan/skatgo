@@ -67,15 +67,18 @@ export function dealOutcome(declarer: number | null, won: boolean, seat: number)
   return won ? 'defended' : 'won'
 }
 
-/** League points that move a player up a tier, or down one (SKATGO-216, the human: 「+1000/-1000」): even, as the points of
- *  a table add up to 0 — a player as good as the tier's table goes up or down as often; one clearly better (about 10 a
- *  deal) goes up nine times in ten, in about 70 deals, measured on 2870 free-play deals' Seeger-Fabian swings. Before, +30
- *  and −20 (SKATGO-205). */
-export const PROMOTE_AT = 1000
-export const RELEGATE_AT = -1000
-/** The lowest League points in Bronze, which has no relegation (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么
- *  负，没动力爬了」): a beginner never sees a minus and is never more than `PROMOTE_AT` from the climb. */
-export const BRONZE_FLOOR = 0
+/** League points a player has on coming into a tier — a new account in Bronze, and anyone moved up or down — and the two
+ *  lines from there (SKATGO-217, the human: 「每个档次，初始给1000分。达到2000了晋级，达到0了降级。这样好理解吧？」): 2000 moves
+ *  them up a tier, 0 down one. Even, as the points of a table add up to 0 — a player as good as the tier's table goes up
+ *  or down as often; one clearly better (about 10 a deal) goes up nine times in ten, in about 70 deals, measured on 2870
+ *  free-play deals' Seeger-Fabian swings. The page states the two lines, never the distance to them (「你不用给分差，只用
+ *  说明这个0和2000就行了」), and the points are never below 0. Before, from 0 to +1000 and −1000 (SKATGO-216), +30 and
+ *  −20 (SKATGO-205). */
+export const START_AT = 1000
+export const PROMOTE_AT = 2000
+/** The relegation line, and Bronze's floor: Bronze has no relegation and its points stop here (SKATGO-207, the human:
+ *  「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」). */
+export const RELEGATE_AT = 0
 
 /** How long the League waits for other people of the same tier before personas take the empty seats. */
 export const MATCH_WAIT_MS = 5_000
@@ -83,14 +86,14 @@ export const MATCH_WAIT_MS = 5_000
 /** A player's standing: their tier (an index of `TIERS`) and their league points in it. */
 export type Standing = { tier: number; points: number }
 
-/** What a deal's points do to a standing: added; at `PROMOTE_AT` up a tier, at `RELEGATE_AT` down one, starting again from 0
- *  there. Bronze never goes down, its points stopping at `BRONZE_FLOOR`, so a beginner is never further than that from the
- *  climb; Legend never goes up, its points running on, ranking its accounts at the head of the League's board. */
+/** What a deal's points do to a standing: added; at `PROMOTE_AT` up a tier, at `RELEGATE_AT` down one, starting again from
+ *  `START_AT` there. Bronze never goes down, its points stopping at `RELEGATE_AT`; Legend never goes up, its points running
+ *  on past `PROMOTE_AT`, ranking its accounts at the head of the League's board. */
 export function standingAfter(s: Standing, delta: number): Standing & { moved: -1 | 0 | 1 } {
   const points = s.points + delta
-  if (points >= PROMOTE_AT && s.tier < LEGEND) return { tier: s.tier + 1, points: 0, moved: 1 }
-  if (points <= RELEGATE_AT && s.tier > 0) return { tier: s.tier - 1, points: 0, moved: -1 }
-  return { tier: s.tier, points: s.tier === 0 ? Math.max(points, BRONZE_FLOOR) : points, moved: 0 }
+  if (points >= PROMOTE_AT && s.tier < LEGEND) return { tier: s.tier + 1, points: START_AT, moved: 1 }
+  if (points <= RELEGATE_AT && s.tier > 0) return { tier: s.tier - 1, points: START_AT, moved: -1 }
+  return { tier: s.tier, points: Math.max(points, RELEGATE_AT), moved: 0 }
 }
 
 /** One player's League as the service answers it. `coins` the balance; `today` whether today's check-in counted;

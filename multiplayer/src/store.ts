@@ -204,6 +204,10 @@ export class Store {
         ALTER TABLE league_players ADD COLUMN IF NOT EXISTS scale smallint NOT NULL DEFAULT 1;
         UPDATE league_players SET points = 0, scale = 2 WHERE scale = 1;
         ALTER TABLE league_players ALTER COLUMN scale SET DEFAULT 2;
+        -- SKATGO-216 scores a deal by Seeger-Fabian against the table (+1000 up, −1000 down): the points on the old scale (2)
+        -- start again from 0 on the new (3), tier and coins kept — once.
+        UPDATE league_players SET points = 0, scale = 3 WHERE scale = 2;
+        ALTER TABLE league_players ALTER COLUMN scale SET DEFAULT 3;
         -- SKATGO-207: Bronze stops at 0, not at −20; a Bronze row below it comes up to 0 (once; none is left after).
         UPDATE league_players SET points = 0 WHERE tier = 0 AND points < 0;
         -- SKATGO-163 made tables rooms with a number, every seat an account's: the tables of before (schema 2, seats

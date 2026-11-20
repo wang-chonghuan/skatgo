@@ -4,7 +4,7 @@ import type pg from 'pg'
 import { z } from 'zod'
 import { actor, deal, next, type Seat } from '../../app/src/lib/skat/game'
 import {
-  BOARD_SIZE, CHECKIN_COINS, DEAL_POINTS, FEES, MATCH_WAIT_MS, TIERS, dealOutcome, leftOutcome, standingAfter,
+  BOARD_SIZE, CHECKIN_COINS, FEES, MATCH_WAIT_MS, TIERS, dealOutcome, dealPoints, forfeitPoints, leftOutcome, standingAfter,
   type BoardRow, type DealOutcome, type LeagueBoard, type LeagueMe, type LeagueResult,
 } from '../../app/src/lib/skat/league'
 import { roomSeat, viewSeat } from '../../app/src/lib/skat/room-view'
@@ -143,25 +143,28 @@ async function leagueBoard(store: Store, who: string | null): Promise<LeagueBoar
   return me ? { rows: top, me: row(me) } : { rows: top }
 }
 
-/** The defenders' card points of a finished deal, for the League's `saved` (SKATGO-210, at 40 since SKATGO-214); null in a Null game, which counts none. */
-const defendersOf = (end: ReturnType<typeof summarize>) =>
-  end.declaration?.contract.kind === 'null' ? null : (end.detail?.defenderPoints ?? null)
+/** How a finished deal came out for a seat and its League points (SKATGO-216): as it was played, or lost when its person did
+ *  not see it to its end (`stake`, SKATGO-206). */
+function seatResult(end: ReturnType<typeof summarize>, seat: number, stake?: DealOutcome): { outcome: DealOutcome; points: number } {
+  if (stake) return { outcome: stake, points: forfeitPoints(end.declarer, end.detail?.value ?? 0, seat) }
+  return { outcome: dealOutcome(end.declarer, !!end.won, seat), points: dealPoints(end.scores, seat) }
+}
 
 /** One person's League points for a deal, their standing moved once, in the transaction of the change that decided it. */
-async function scoreSeat(s: Snapshot, c: pg.PoolClient, account: string, outcome: DealOutcome, now: number) {
+async function scoreSeat(s: Snapshot, c: pg.PoolClient, account: string, { outcome, points }: { outcome: DealOutcome; points: number }, now: number) {
   const l = s.league!
   const before = await standingOf(c, account, true)
-  const after = standingAfter({ tier: before.tier, points: before.points }, DEAL_POINTS[outcome])
+  const after = standingAfter({ tier: before.tier, points: before.points }, points)
   await c.query('UPDATE league_players SET tier = $2, points = $3, updated_at = $4 WHERE player = $1', [account, after.tier, after.points, now])
   return {
-    outcome, points: DEAL_POINTS[outcome], standing: { tier: after.tier, points: after.points }, moved: after.moved,
+    outcome, points, standing: { tier: after.tier, points: after.points }, moved: after.moved,
     // The next deal here is this tier's: someone moved up or down sits down again in their new tier.
     canPay: after.tier === l.tier && before.coins >= FEES[l.tier],
   }
 }
 
-/** A finished deal of a sitting (SKATGO-204), kept for its reviews, and scored (SKATGO-205): each person's side won +3, their
- *  own game lost −3, the declarer's game made against them −2 (0 with 40 card points), all passed 0 — their standing moved once, in the transaction
+/** A finished deal of a sitting (SKATGO-204), kept for its reviews, and scored (SKATGO-205): each person's
+ *  Seeger-Fabian score minus the average of the other two seats' (SKATGO-216) — their standing moved once, in the transaction
  *  of the change that ended the deal; `scoredBefore` is the room's count of scored deals before it. Whether each can pay
  *  the next deal at this table travels with the result. Only a deal seen to its end counts so (SKATGO-206): one who left
  *  during it loses it (`forfeits`, no review, no record); one away when it ends is scored when they come back to its result
@@ -177,12 +180,12 @@ export async function settleLeague(s: Snapshot, c: pg.PoolClient, scoredBefore: 
     const p = s.seats[seat]
     if (!p.account) result.seats.push(null)
     else if (p.forfeit) {
-      result.seats.push(await scoreSeat(s, c, p.account, p.stake ?? 'left', now))
+      result.seats.push(await scoreSeat(s, c, p.account, seatResult(end, seat, p.stake ?? 'left'), now))
       forfeits.push(seat)
     } else if (!p.session) {
       result.seats.push(null)
       l.pending.push(seat)
-    } else result.seats.push(await scoreSeat(s, c, p.account, dealOutcome(end.declarer, !!end.won, seat, defendersOf(end)), now))
+    } else result.seats.push(await scoreSeat(s, c, p.account, seatResult(end, seat), now))
   }
   await c.query('INSERT INTO league_deals (match, deal, pool, pool_id, dealer, log, points, forfeits) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING',
     [l.match, s.scored - 1, l.current.pool, l.current.id, l.current.dealer, JSON.stringify(l.current.log),
@@ -192,15 +195,14 @@ export async function settleLeague(s: Snapshot, c: pg.PoolClient, scoredBefore: 
 
 /** The last deal for a person who was away when it ended (SKATGO-206): back to its result, it counts as it came out;
  *  not back within `AWAY_MS` of going, or their seat going to the next deal first, it is lost (−3 if they were declaring when
- *  they went, else −2). */
+ *  they went, else as a defender: `forfeitPoints`). */
 export async function settlePending(s: Snapshot, c: pg.PoolClient, seat: number, seen: boolean, now = Date.now()) {
   const l = s.league
   const p = s.seats[seat]
   if (!l?.pending?.includes(seat) || !l.last || !s.game || !p.account) return
   l.pending = l.pending.filter((x) => x !== seat)
   const end = summarize(s.game)
-  const outcome = seen ? dealOutcome(end.declarer, !!end.won, seat, defendersOf(end)) : (p.stake ?? leftOutcome(end.declarer, seat))
-  const entry = await scoreSeat(s, c, p.account, outcome, now)
+  const entry = await scoreSeat(s, c, p.account, seatResult(end, seat, seen ? undefined : (p.stake ?? leftOutcome(end.declarer, seat))), now)
   l.last.seats[seat] = entry
   await c.query(
     `UPDATE league_deals SET points = jsonb_set(points, ARRAY[$3::text], to_jsonb($4::int)),

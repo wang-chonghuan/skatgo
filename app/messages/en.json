@@ -963,8 +963,8 @@
   "league_guest": "Sign in and get 60 coins every day you open SkatGo.",
   "league_about": "What is the League, and why is it fun?",
   "league_about_tiers": "Six tiers, Bronze to Legend: the higher the tier, the stronger your opponents. Climb as high as your Skat takes you.",
-  "league_about_deal": "Each deal: win +3, in any role; lose as declarer −3; lose as a defender −2, or 0 with 40 card points or more; otherwise 0.",
-  "league_about_move": "+30 points: up a tier. −20: down one, back to 0. In Bronze you never go below 0.",
+  "league_about_deal": "Each deal: your Seeger-Fabian score minus the average of the other two players’. A game worth 36 won as declarer: +86 for you, −43 for each defender.",
+  "league_about_move": "+1000 points: up a tier. −1000: down one, back to 0. In Bronze you never go below 0.",
   "league_about_coins": "Each deal costs a few coins. You get 60 free every day you open SkatGo signed in; on Monday the week's coins start again from 60.",
   "league_play_meta_title": "League table | SkatGo",
   "league_play_meta_description": "A League table on SkatGo.",
@@ -986,7 +986,6 @@
   "league_deal_beat": "You beat the declarer",
   "league_deal_lost": "You lost your game",
   "league_deal_defended": "The declarer made it",
-  "league_deal_saved": "The declarer made it – 80 card points at most",
   "league_deal_passed": "All passed",
   "league_deal_left": "You left the table"
 }

@@ -6,7 +6,8 @@ import { once } from 'node:events'
 import { Client, type Room } from '@colyseus/sdk'
 import pg from 'pg'
 import { legalPlays } from '../../app/src/lib/skat/cards'
-import { AWAY_MS, CHECKIN_COINS, DEAL_POINTS, FEES, dealOutcome, standingAfter } from '../../app/src/lib/skat/league'
+import { AWAY_MS, CHECKIN_COINS, FEES, dealPoints, forfeitPoints, standingAfter } from '../../app/src/lib/skat/league'
+import { summarize } from '../../app/src/lib/skat/tournament'
 import { dayOf } from '../src/daily'
 import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS } from '../src/model'
 import { Store } from '../src/store'
@@ -162,7 +163,6 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     const last = a.public.league!.last!
     const mine = last.seats[a.seat]!
     assert.equal(last.deal, 2)
-    assert.equal(mine.points, DEAL_POINTS[mine.outcome])
     assert.equal(scored[2].points[a.seat], mine.points)
     assert(last.seats.every((x, i) => (i === a.seat) === (x !== null)), 'only the person is scored')
     // The standing is the deals' points taken one by one (Bronze stops at 0, SKATGO-207).
@@ -173,8 +173,8 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.equal(standing.coins, C - 4 * FEES[0])
 
     // Leaving during the fourth deal: the connection goes, the seat waits the grace as for one away, then a computer plays
-    // the deal out; it is lost for them (SKATGO-206: −3 declaring, else −2 since SKATGO-215), no further fee, and with nobody left the
-    // sitting ends.
+    // the deal out; it is lost for them (SKATGO-206; their side's loss of the game played, SKATGO-216), no further fee, and with
+    // nobody left the sitting ends.
     const left = Date.now()
     const declaring = a.public.declarer === a.seat
     assert((await send(a, { type: 'leave' })).ok)
@@ -185,12 +185,15 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert(Date.now() - left >= GRACE_MS, 'not before the grace')
     const { rows: fourth } = await sql.query('SELECT points, forfeits FROM league_deals WHERE match = $1 AND deal = 3', [match])
     assert.equal(fourth.length, 1)
-    assert.equal(fourth[0].points[a.seat], declaring ? -3 : -2)
+    const forfeit = summarize((await snapshot(alone.body.room)).game!)
+    const lostPoints = forfeitPoints(forfeit.declarer, forfeit.detail?.value ?? 0, a.seat)
+    assert.equal(fourth[0].points[a.seat], lostPoints)
+    if (forfeit.declarer !== null) assert(lostPoints < 0, 'leaving never pays')
     assert.deepEqual(fourth[0].forfeits, [a.seat])
     const gone = (await call('state', { player: 'user:a' })).body.me
     assert.equal(gone.coins, C - 4 * FEES[0])
     assert.equal(gone.table, null)
-    assert.equal(gone.points, fold(sum, [declaring ? -3 : -2]).points)
+    assert.equal(gone.points, fold(sum, [lostPoints]).points)
 
     // Each deal seen to its end has its review for its person, their seat turned to seat 0, counted once for their record;
     // the deal they left has none and goes into no record (SKATGO-206).
@@ -198,10 +201,8 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
       const r = await call('review', { player: 'user:a', match, deal })
       assert.equal(r.status, 200)
       assert(r.body.mine && r.body.ai, 'the review has both games')
-      // The defenders' card points (SKATGO-214: 40 or more keeps a lost defence at 0); a Null game counts none.
-      const mine = r.body.mine as { declarer: number | null; won: boolean; declaration: { contract: { kind: string } } | null; detail: { defenderPoints: number } | null }
-      const outcome = dealOutcome(mine.declarer, !!mine.won, 0, mine.declaration?.contract.kind === 'null' ? null : (mine.detail?.defenderPoints ?? null))
-      assert.equal(DEAL_POINTS[outcome], scored[deal].points[a.seat])
+      // Their Seeger-Fabian score minus the other two's average (SKATGO-216), the review's seat 0 theirs.
+      assert.equal(dealPoints(r.body.mine.scores, 0), scored[deal].points[a.seat])
     }
     assert.deepEqual(await call('review', { player: 'user:a', match, deal: 3 }), { status: 409, body: { error: 'no_such_deal' } })
     await call('review', { player: 'user:a', match, deal: 0 })
@@ -234,12 +235,12 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.equal(await coins('user:c'), 0)
     assert.equal(await coins('user:d'), dCoins - FEES[0])
 
-    // The points' new scale (SKATGO-205): a row on the old one starts again from 0, once; tier and coins stay.
+    // The points' new scale (SKATGO-205, again SKATGO-216): a row on an old one starts again from 0, once; tier and coins stay.
     await sql.query("UPDATE league_players SET scale = 1, points = 7, tier = 2 WHERE player = 'user:d'")
     const migrating = new Store(base.href)
     await migrating.migrate()
     const reset = (await sql.query("SELECT tier, points, coins, scale FROM league_players WHERE player = 'user:d'")).rows[0]
-    assert.deepEqual([reset.tier, reset.points, reset.scale], [2, 0, 2])
+    assert.deepEqual([reset.tier, reset.points, reset.scale], [2, 0, 3])
     assert.equal(reset.coins, dCoins - FEES[0])
     await sql.query("UPDATE league_players SET points = 5 WHERE player = 'user:d'")
     await migrating.migrate()
@@ -295,10 +296,11 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     const dBefore = (await call('state', { player: 'user:d' })).body.me.points
     const pd2 = await attach(await new Client(endpoint).joinById(c.body.room, { admissionKey, account: 'user:d' }))
     const seen = await row(playing)
-    assert([3, -3, -2, 0].includes(seen.points[pd2.seat]), 'counted as it came out')
+    const seenReview = await call('review', { player: 'user:d', match: shared, deal: playing })
+    assert.equal(seen.points[pd2.seat], dealPoints(seenReview.body.mine.scores, 0), 'counted as it came out')
     assert(!seen.forfeits?.includes(pd2.seat))
     assert.equal((await call('state', { player: 'user:d' })).body.me.points - dBefore, seen.points[pd2.seat])
-    assert.equal((await call('review', { player: 'user:d', match: shared, deal: playing })).status, 200)
+    assert.equal(seenReview.status, 200)
 
     // Away a minute during a deal: it counts as leaving — the deal lost for them, no review — and with nobody left the
     // sitting ends. (The scale's reset above left d in Gold: back to this table's tier, so the next deal is theirs.)
@@ -309,13 +311,13 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
       return false
     }, 60_000)
     const next = pd2.public.deals - 1
-    const dDeclaring = pd2.public.declarer === pd2.seat
     const away = Date.now()
     pd2.room.connection.close()
     await until(async () => (await sql.query('SELECT 1 FROM league_matches WHERE id = $1 AND finished_at IS NOT NULL', [shared])).rowCount, AWAY_MS + 120_000)
     assert(Date.now() - away >= AWAY_MS, 'not before the minute')
     const lost = await row(next)
-    assert.equal(lost.points[pd2.seat], dDeclaring ? -3 : -2)
+    const away2 = summarize((await snapshot(c.body.room)).game!)
+    assert.equal(lost.points[pd2.seat], forfeitPoints(away2.declarer, away2.detail?.value ?? 0, pd2.seat))
     assert.deepEqual(lost.forfeits, [pd2.seat])
     assert.deepEqual(await call('review', { player: 'user:d', match: shared, deal: next }), { status: 409, body: { error: 'no_such_deal' } })
   } catch (e) {

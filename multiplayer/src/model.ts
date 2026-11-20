@@ -253,7 +253,7 @@ export function nextDue(s: Snapshot, now = Date.now()): boolean {
 export function applyAction(s: Snapshot, seat: Seat, action: Command['action'], pick: (dealer: Seat) => PoolDeal) {
   // A League sitting has no host. Leaving it (SKATGO-205): the connection goes and the seat waits as for one away — a computer
   // plays the deal out after the grace — and the seat goes at the next deal (`leagueDeal`). Back before then, they stay.
-  // Left during a deal, the deal is lost for them (SKATGO-206): −3 if they were declaring, else −2 (SKATGO-215); after it, it stands.
+  // Left during a deal, the deal is lost for them (SKATGO-206): their side's loss (`forfeitPoints`, SKATGO-216); after it, it stands.
   if (s.league && action.type === 'leave') {
     const p = s.seats[seat]
     p.leaving = true

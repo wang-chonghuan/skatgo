@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-216",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-216",
+  "branch": "SKATGO-216-league-seeger-fabian",
+  "base": "0b9a353dcb50d5a988a2c931bd3acd01bc58b783",
+  "ports": { "web": 55216, "multiplayer": 56216, "database": 57216 }
+}

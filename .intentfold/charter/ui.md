@@ -570,9 +570,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   player's own row marked; the first 100, and the player's own row after a "…" when it is further down. A League table (`/league/play`) is a full-screen table as a private one,
   its board "Spiel n", its top right button the way out, whose "Tisch verlassen" leaves the table (the deal on it played out
   for the seat, and lost for the player, SKATGO-206), no Lina and Noah faces (the seats are people's); each deal's result is free play's, its first line the
-  deal's League points (SKATGO-205: "Ligapunkte +3" as the XP line's pill — `go` on `goodSoft` won, `bad` on `badSoft` lost,
+  deal's League points (SKATGO-205: "Ligapunkte +86" as the XP line's pill, Seeger-Fabian against the table since SKATGO-216 — `go` on `goodSoft` won, `bad` on `badSoft` lost,
   `slate` on `page` at 0 — then why — "Dein Spiel gewonnen", "Den Alleinspieler
-  geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Der Alleinspieler hat gewonnen – höchstens 80 Augen" (0, SKATGO-210, since SKATGO-214 at 40), "Alle haben gepasst", "Du hast den Tisch verlassen"
+  geschlagen", "Dein Spiel verloren", "Der Alleinspieler hat gewonnen", "Alle haben gepasst", "Du hast den Tisch verlassen"
   (a deal not seen to its end, SKATGO-206) — and, when it moved the player,
   "Aufstieg in die Gold-Liga!" / "Abstieg in die Silber-Liga.", or when the coins are too few for the next, the coins line),
   then the XP line and the AI's game; its foot the next deal and under it "Tisch verlassen" (`quiet`, SKATGO-208, the human:
@@ -581,7 +581,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   page in the table's place in the browser's history, and a table address with no table to come to — closed, left, or
   opened on another device — goes straight to the League page the same way, with no "table closed" page (SKATGO-209, the
   human: 「点返回按钮，跳到 this table has closed. 页面……特别影响体验」). The League
-  card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from −20 to +30, in Bronze from 0 (SKATGO-207).
+  card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from −1000 to +1000 (SKATGO-216; −20 to +30 before), in Bronze from 0 (SKATGO-207).
 - **The tables** (`/play`, `/daily/play`, a private table, a League table since SKATGO-204, and an open-card endgame's page since SKATGO-111):
   the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a

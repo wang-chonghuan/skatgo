@@ -1102,10 +1102,10 @@ function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores:
         />
         {/* The eye beside the heading (rework: 「标题要换成points，然后眼睛图标放在points旁边」), then 「应该有对齐，不该直接跟着
             points」: the heading centred like the others, the eye against the cell's right edge; the line keeps its height. */}
-        <span {...stylex.props(!tricks && styles.boardLabelRow)}>
-          {tricks ? null : <span aria-hidden="true" {...stylex.props(styles.boardEyePlace)} />}
+        <span {...stylex.props(styles.boardLabelRow)}>
+          <span aria-hidden="true" {...stylex.props(styles.boardEyePlace)} />
           <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{tricks ? m.info_tricks() : m.info_points()}</span>
-          {tricks ? null : (
+          {tricks ? <span aria-hidden="true" {...stylex.props(styles.boardEyePlace)} /> : (
             <button
               type="button"
               data-testid="skat-info-eye"

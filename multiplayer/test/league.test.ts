@@ -173,7 +173,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.equal(standing.coins, C - 4 * FEES[0])
 
     // Leaving during the fourth deal: the connection goes, the seat waits the grace as for one away, then a computer plays
-    // the deal out; it is lost for them (SKATGO-206: −3 declaring, else −1), no further fee, and with nobody left the
+    // the deal out; it is lost for them (SKATGO-206: −3 declaring, else −2 since SKATGO-215), no further fee, and with nobody left the
     // sitting ends.
     const left = Date.now()
     const declaring = a.public.declarer === a.seat
@@ -185,12 +185,12 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert(Date.now() - left >= GRACE_MS, 'not before the grace')
     const { rows: fourth } = await sql.query('SELECT points, forfeits FROM league_deals WHERE match = $1 AND deal = 3', [match])
     assert.equal(fourth.length, 1)
-    assert.equal(fourth[0].points[a.seat], declaring ? -3 : -1)
+    assert.equal(fourth[0].points[a.seat], declaring ? -3 : -2)
     assert.deepEqual(fourth[0].forfeits, [a.seat])
     const gone = (await call('state', { player: 'user:a' })).body.me
     assert.equal(gone.coins, C - 4 * FEES[0])
     assert.equal(gone.table, null)
-    assert.equal(gone.points, fold(sum, [declaring ? -3 : -1]).points)
+    assert.equal(gone.points, fold(sum, [declaring ? -3 : -2]).points)
 
     // Each deal seen to its end has its review for its person, their seat turned to seat 0, counted once for their record;
     // the deal they left has none and goes into no record (SKATGO-206).
@@ -295,7 +295,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     const dBefore = (await call('state', { player: 'user:d' })).body.me.points
     const pd2 = await attach(await new Client(endpoint).joinById(c.body.room, { admissionKey, account: 'user:d' }))
     const seen = await row(playing)
-    assert([3, -3, -1, 0].includes(seen.points[pd2.seat]), 'counted as it came out')
+    assert([3, -3, -2, 0].includes(seen.points[pd2.seat]), 'counted as it came out')
     assert(!seen.forfeits?.includes(pd2.seat))
     assert.equal((await call('state', { player: 'user:d' })).body.me.points - dBefore, seen.points[pd2.seat])
     assert.equal((await call('review', { player: 'user:d', match: shared, deal: playing })).status, 200)
@@ -315,7 +315,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     await until(async () => (await sql.query('SELECT 1 FROM league_matches WHERE id = $1 AND finished_at IS NOT NULL', [shared])).rowCount, AWAY_MS + 120_000)
     assert(Date.now() - away >= AWAY_MS, 'not before the minute')
     const lost = await row(next)
-    assert.equal(lost.points[pd2.seat], dDeclaring ? -3 : -1)
+    assert.equal(lost.points[pd2.seat], dDeclaring ? -3 : -2)
     assert.deepEqual(lost.forfeits, [pd2.seat])
     assert.deepEqual(await call('review', { player: 'user:d', match: shared, deal: next }), { status: 409, body: { error: 'no_such_deal' } })
   } catch (e) {

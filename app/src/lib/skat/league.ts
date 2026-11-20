@@ -20,16 +20,20 @@ export const FEES: readonly number[] = [3, 4, 5, 6, 10, 12]
 export const CHECKIN_COINS = 60
 
 /** League points of a deal for one seat (SKATGO-205): its side won — its own game, or the declarer beaten — +3; its own
- *  game lost −3; the declarer's game made against it −1, the common case, so a player only rises where they play well
+ *  game lost −3; the declarer's game made against it −2, the common case, so a player only rises where they play well
  *  enough (the human: 「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」) — but 0 when the defenders still took
  *  `SAVE_AT` card points, the declarer held to 80 (`saved`, SKATGO-210 at 31, the human: 「防家拿到31就不扣分」; SKATGO-214
- *  at 40, 「开工单改成40」), so a bad hand defended well is not a point lost; all passed 0. Whole numbers only (「我不太喜欢这里引入小数」). */
-export const DEAL_POINTS = { won: 3, lost: -3, defended: -1, saved: 0, passed: 0, leftDeclaring: -3, left: -1 } as const
+ *  at 40, 「开工单改成40」), so a bad hand defended well is not a point lost; all passed 0. Whole numbers only (「我不太喜欢这里引入小数」).
+ *  −2, not SKATGO-205's −1 (SKATGO-215, the human: 「升分和降分如何分配，才更有意思，如果40，会不会升分太多了？」, then
+ *  「开工单改成防守输-2」): at −1 a table of three equal players gained about 2 points a deal between them, so everyone
+ *  climbed by playing more; at −2 about half that, and an ordinary player settles in their tier. Leaving as a defender
+ *  follows at −2 — leaving counts as losing (SKATGO-206), and must never cost less than playing a lost defence out. */
+export const DEAL_POINTS = { won: 3, lost: -3, defended: -2, saved: 0, passed: 0, leftDeclaring: -3, left: -2 } as const
 export type DealOutcome = keyof typeof DEAL_POINTS
 /** A deal a person did not see to its end (SKATGO-206, the human: 「没进入结算页面就不算打完，就不进历史。离桌多久应该算输，比如
  *  1分钟？如果是庄家就-3，如果是防家就-1」): they left the table during it, or were away `AWAY_MS`, or the deal ended while they
  *  were away and they did not come back to its result within `AWAY_MS` — lost, −3 if they were the declarer when they went,
- *  else −1; it goes into no record and earns no XP. */
+ *  else a defender's loss, −2 since SKATGO-215; it goes into no record and earns no XP. */
 export type LeftOutcome = 'leftDeclaring' | 'left'
 export const leftOutcome = (declarer: number | null, seat: number): LeftOutcome => (declarer === seat ? 'leftDeclaring' : 'left')
 /** How long a person may be away from a League table — the connection gone — before it counts as leaving it (SKATGO-206). */

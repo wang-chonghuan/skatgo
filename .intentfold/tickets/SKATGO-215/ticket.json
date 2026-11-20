@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-215",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-215",
+  "branch": "SKATGO-215-defence-minus-two",
+  "base": "de39b5834bcda8acbd7aab76f936385d137b3a42",
+  "ports": { "web": 55215, "multiplayer": 56215, "database": 57215 }
+}

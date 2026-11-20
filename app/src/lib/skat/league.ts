@@ -1,8 +1,10 @@
 // The League (SKATGO-204, the human: 「分场天梯先做，而且人机匹配，有人则匹配人，没人则匹配AI」): a signed-in player checks in once a
-// day for coins, sits down at a table of three in their tier and pays for each deal; each deal scores League points by how
-// their own side came out of it (SKATGO-205, the human: 「能否不管round，就从一个deal里，用简单直观的方法，让玩家觉得打一个deal就有
-// 一个获得感」, 「庄赢+3，防赢+3，庄输-3」, 「我建议就1」), never the difference to the AI; the points move them up or down the
-// six tiers. Pure: the multiplayer service scores with it, and the pages state the same numbers.
+// day for coins, sits down at a table of three in their tier and pays for each deal; each deal scores League points
+// (SKATGO-205, the human: 「能否不管round，就从一个deal里，用简单直观的方法，让玩家觉得打一个deal就有一个获得感」) — their
+// Seeger-Fabian score against the table's since SKATGO-216 — never the difference to the AI; the points move them up or down
+// the six tiers. Pure: the multiplayer service scores with it, and the pages state the same numbers.
+
+import { SEEGER_FABIAN } from './tournament'
 
 /** The tiers, lowest first (the human: 「参考多邻国的，不要用方块红心」, 「最高级的钻石改为传奇」); a new player starts in the first. */
 export const TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend'] as const
@@ -19,44 +21,58 @@ export const FEES: readonly number[] = [3, 4, 5, 6, 10, 12]
  *  was left gone. They cannot be bought or exchanged. */
 export const CHECKIN_COINS = 60
 
-/** League points of a deal for one seat (SKATGO-205): its side won — its own game, or the declarer beaten — +3; its own
- *  game lost −3; the declarer's game made against it −2, the common case, so a player only rises where they play well
- *  enough (the human: 「主要是要让厉害的玩家能爬上去，一般的玩家落到他自己的档次」) — but 0 when the defenders still took
- *  `SAVE_AT` card points, the declarer held to 80 (`saved`, SKATGO-210 at 31, the human: 「防家拿到31就不扣分」; SKATGO-214
- *  at 40, 「开工单改成40」), so a bad hand defended well is not a point lost; all passed 0. Whole numbers only (「我不太喜欢这里引入小数」).
- *  −2, not SKATGO-205's −1 (SKATGO-215, the human: 「升分和降分如何分配，才更有意思，如果40，会不会升分太多了？」, then
- *  「开工单改成防守输-2」): at −1 a table of three equal players gained about 2 points a deal between them, so everyone
- *  climbed by playing more; at −2 about half that, and an ordinary player settles in their tier. Leaving as a defender
- *  follows at −2 — leaving counts as losing (SKATGO-206), and must never cost less than playing a lost defence out. */
-export const DEAL_POINTS = { won: 3, lost: -3, defended: -2, saved: 0, passed: 0, leftDeclaring: -3, left: -2 } as const
-export type DealOutcome = keyof typeof DEAL_POINTS
+/** League points of a deal for one seat (SKATGO-216, the human: 「我们搞这么复杂，你思考一下，用sf是不是更好？…巧用一下它们的
+ *  算分系统」, then 「开工单改成SF减两家平均」): the seat's Seeger-Fabian score minus the average of the other two seats' — the
+ *  declarer who wins a game worth 36 +86, each defender −43; lost, the declarer −162 and each defender +81; all passed 0.
+ *  A table's points add up to 0 (a half rounds to the nearest whole number, whole numbers only: 「我不太喜欢这里引入小数」), so
+ *  equal players neither rise nor fall and a player climbs only by playing better than the table (「主要是要让厉害的玩家能爬
+ *  上去，一般的玩家落到他自己的档次」). It replaces SKATGO-205's +3 / −3 / −1, SKATGO-210's and 214's line of card points and
+ *  SKATGO-215's −2, which let everyone climb by playing more. The average, not 「我-A+我-B」 (the record of play's against
+ *  the table, twice this): the declarer's points are then their score on the result, and the scale does not grow with the
+ *  table. */
+export function dealPoints(scores: readonly [number, number, number], seat: number): number {
+  const others = scores.reduce((sum, x, i) => (i === seat ? sum : sum + x), 0)
+  return Math.round(scores[seat] - others / 2)
+}
+
+/** How a deal came out for `seat`, said beside its points: its own game won or lost, the declarer beaten or not, all passed. */
+export type DealOutcome = 'won' | 'lost' | 'defended' | 'passed' | LeftOutcome
+
 /** A deal a person did not see to its end (SKATGO-206, the human: 「没进入结算页面就不算打完，就不进历史。离桌多久应该算输，比如
  *  1分钟？如果是庄家就-3，如果是防家就-1」): they left the table during it, or were away `AWAY_MS`, or the deal ended while they
- *  were away and they did not come back to its result within `AWAY_MS` — lost, −3 if they were the declarer when they went,
- *  else a defender's loss, −2 since SKATGO-215; it goes into no record and earns no XP. */
+ *  were away and they did not come back to its result within `AWAY_MS` — lost: `forfeitPoints`; it goes into no record and
+ *  earns no XP. */
 export type LeftOutcome = 'leftDeclaring' | 'left'
 export const leftOutcome = (declarer: number | null, seat: number): LeftOutcome => (declarer === seat ? 'leftDeclaring' : 'left')
 /** How long a person may be away from a League table — the connection gone — before it counts as leaving it (SKATGO-206). */
 export const AWAY_MS = 60_000
 
-/** The defenders' card points that keep a lost defence at 0 — the declarer held to 80 (SKATGO-214, the human: 「防守的到31
- *  分及其以上，好像挺容易的」, then 「开工单改成40」). At 31, the Schneider line, two lost defences in three cost nothing and
- *  defending earned points by itself; 40 is about half of them, so a lost defence is won or lost by how it was played. */
-export const SAVE_AT = 40
-
-/** How a deal came out for `seat`: who declared (null when all passed), whether the declarer won, and the defenders' card
- *  points — null where they count nothing, a Null game. */
-export function dealOutcome(declarer: number | null, won: boolean, seat: number, defenders: number | null = null): DealOutcome {
-  if (declarer === null) return 'passed'
-  if (declarer === seat) return won ? 'won' : 'lost'
-  if (!won) return 'won'
-  return defenders !== null && defenders >= SAVE_AT ? 'saved' : 'defended'
+/** A deal left before its end, lost for the one who left (SKATGO-216): their side loses the game played out — their own game
+ *  lost at its value when their seat declared, the declarer's game made when another did — scored as `dealPoints`; nothing
+ *  when all passed. Never better than playing it out to a loss. */
+export function forfeitPoints(declarer: number | null, value: number, seat: number): number {
+  if (declarer === null) return 0
+  const scores: [number, number, number] = [0, 0, 0]
+  if (declarer === seat) {
+    scores[declarer] = -2 * value - SEEGER_FABIAN.lost
+    for (const s of [0, 1, 2]) if (s !== declarer) scores[s] = SEEGER_FABIAN.defender
+  } else scores[declarer] = value + SEEGER_FABIAN.won
+  return dealPoints(scores, seat)
 }
 
-/** League points that move a player up a tier, or down one (SKATGO-205: at about the pace of SKATGO-204's +12 / −8 in
- *  rounds, measured in the ticket's calibration). */
-export const PROMOTE_AT = 30
-export const RELEGATE_AT = -20
+/** How a deal came out for `seat`: who declared (null when all passed) and whether the declarer won. */
+export function dealOutcome(declarer: number | null, won: boolean, seat: number): DealOutcome {
+  if (declarer === null) return 'passed'
+  if (declarer === seat) return won ? 'won' : 'lost'
+  return won ? 'defended' : 'won'
+}
+
+/** League points that move a player up a tier, or down one (SKATGO-216, the human: 「+1000/-1000」): even, as the points of
+ *  a table add up to 0 — a player as good as the tier's table goes up or down as often; one clearly better (about 10 a
+ *  deal) goes up nine times in ten, in about 70 deals, measured on 2870 free-play deals' Seeger-Fabian swings. Before, +30
+ *  and −20 (SKATGO-205). */
+export const PROMOTE_AT = 1000
+export const RELEGATE_AT = -1000
 /** The lowest League points in Bronze, which has no relegation (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么
  *  负，没动力爬了」): a beginner never sees a minus and is never more than `PROMOTE_AT` from the climb. */
 export const BRONZE_FLOOR = 0

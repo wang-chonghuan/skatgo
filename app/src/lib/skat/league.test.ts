@@ -1,22 +1,46 @@
 import { describe, expect, it } from 'vitest'
 
-import { AWAY_MS, BRONZE_FLOOR, DEAL_POINTS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, SAVE_AT, TIERS, dealOutcome, leftOutcome, standingAfter } from './league'
+import { AWAY_MS, BRONZE_FLOOR, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, TIERS, dealOutcome, dealPoints, forfeitPoints, leftOutcome, standingAfter } from './league'
+import { seegerFabian } from './tournament'
 
-// The League's numbers as SKATGO-205 sets them: six tiers and their fees per deal; per deal +3 when one's side won, −3 for
-// one's own game lost, −2 for the declarer's game made against one (−1 until SKATGO-215), 0 when all passed; +30 up and −20 down from 0 again,
-// no relegation from Bronze, no promotion from Legend. A deal not seen to its end (SKATGO-206) is lost: −3 declaring, else
-// −2; away a minute counts as leaving.
+// The League's numbers: six tiers and their fees per deal; per deal the seat's Seeger-Fabian score minus the average of the
+// other two seats' (SKATGO-216), adding up to 0 at a table; +1000 up and −1000 down from 0 again, no relegation from Bronze,
+// no promotion from Legend. A deal not seen to its end (SKATGO-206) is lost for the one who left; away a minute counts as
+// leaving.
+
+/** Seeger-Fabian of a deal at a three-player table, as a finished game gives it. */
+const sf = (declarer: 0 | 1 | 2, won: boolean, value: number) =>
+  seegerFabian({ phase: 'done', declarer, result: { won, value } as never })
 
 describe('the League', () => {
   it('has six tiers, Bronze to Legend, and their fees per deal', () => {
     expect(TIERS).toEqual(['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend'])
     expect(FEES).toEqual([3, 4, 5, 6, 10, 12])
-    expect(DEAL_POINTS).toEqual({ won: 3, lost: -3, defended: -2, saved: 0, passed: 0, leftDeclaring: -3, left: -2 })
     expect(AWAY_MS).toBe(60_000)
-    expect([PROMOTE_AT, RELEGATE_AT]).toEqual([30, -20])
+    expect([PROMOTE_AT, RELEGATE_AT]).toEqual([1000, -1000])
   })
 
-  it('scores a deal by how one’s own side came out of it', () => {
+  it('scores a deal as the seat’s Seeger-Fabian minus the other two’s average (SKATGO-216)', () => {
+    // A game worth 36 won: the declarer 86, the defenders 0.
+    const won = sf(1, true, 36)
+    expect(won).toEqual([0, 86, 0])
+    expect([0, 1, 2].map((s) => dealPoints(won, s))).toEqual([-43, 86, -43])
+    // The same game lost: the declarer −122, each defender 40.
+    const lost = sf(1, false, 36)
+    expect(lost).toEqual([40, -122, 40])
+    expect([0, 1, 2].map((s) => dealPoints(lost, s))).toEqual([81, -162, 81])
+    // All passed: nothing.
+    expect([0, 1, 2].map((s) => dealPoints([0, 0, 0], s))).toEqual([0, 0, 0])
+    // A table adds up to 0; a half (an odd game value won) rounds to a whole number.
+    for (const [d, w, v] of [[0, true, 18], [2, false, 120], [1, true, 23], [0, false, 59]] as const) {
+      const pts = [0, 1, 2].map((s) => dealPoints(sf(d, w, v), s))
+      expect(pts.every(Number.isInteger)).toBe(true)
+      expect(Math.abs(pts.reduce((a, b) => a + b, 0))).toBeLessThanOrEqual(1)
+    }
+    expect(dealPoints(sf(0, true, 27), 1)).toBe(-38)
+  })
+
+  it('says how a deal came out for a seat', () => {
     expect(dealOutcome(1, true, 1)).toBe('won')
     expect(dealOutcome(1, false, 1)).toBe('lost')
     expect(dealOutcome(1, true, 0)).toBe('defended')
@@ -24,47 +48,42 @@ describe('the League', () => {
     expect(dealOutcome(null, false, 0)).toBe('passed')
   })
 
-  it('keeps a lost defence at 0 when the defenders took 40 card points (SKATGO-214)', () => {
-    expect(SAVE_AT).toBe(40)
-    expect(dealOutcome(1, true, 0, 31)).toBe('defended')
-    expect(dealOutcome(1, true, 0, 39)).toBe('defended')
-    expect(dealOutcome(1, true, 0, 40)).toBe('saved')
-    expect(dealOutcome(1, true, 0, 59)).toBe('saved')
-    // A Null game counts no card points: a lost defence, −2.
-    expect(dealOutcome(1, true, 0, null)).toBe('defended')
-    // The declarer's own side and a beaten declarer are as before.
-    expect(dealOutcome(1, true, 1, 40)).toBe('won')
-    expect(dealOutcome(1, false, 0, 70)).toBe('won')
-    expect([DEAL_POINTS.saved, DEAL_POINTS.defended]).toEqual([0, -2])
-  })
-
-  it('loses a deal left before its end by one’s part in it when going', () => {
+  it('loses a deal left before its end for the one who left (SKATGO-206, SKATGO-216)', () => {
     expect(leftOutcome(1, 1)).toBe('leftDeclaring')
     expect(leftOutcome(1, 0)).toBe('left')
     expect(leftOutcome(null, 2)).toBe('left')
+    // Their own game lost at its value; the declarer's game made against them; nothing when all passed.
+    expect(forfeitPoints(1, 36, 1)).toBe(dealPoints(sf(1, false, 36), 1))
+    expect(forfeitPoints(1, 36, 0)).toBe(dealPoints(sf(1, true, 36), 0))
+    expect(forfeitPoints(null, 0, 2)).toBe(0)
+    // Never better than playing it out to a loss, and worse than any win.
+    for (const v of [18, 24, 59, 120]) {
+      expect(forfeitPoints(0, v, 0)).toBe(-2 * v - 90)
+      expect(forfeitPoints(0, v, 2)).toBeLessThan(0)
+    }
   })
 
   it('adds a deal’s points', () => {
-    expect(standingAfter({ tier: 2, points: 4 }, 3)).toEqual({ tier: 2, points: 7, moved: 0 })
-    expect(standingAfter({ tier: 2, points: 4 }, -1)).toEqual({ tier: 2, points: 3, moved: 0 })
-    expect(standingAfter({ tier: 2, points: 4 }, 0)).toEqual({ tier: 2, points: 4, moved: 0 })
+    expect(standingAfter({ tier: 2, points: 400 }, 86)).toEqual({ tier: 2, points: 486, moved: 0 })
+    expect(standingAfter({ tier: 2, points: 400 }, -43)).toEqual({ tier: 2, points: 357, moved: 0 })
+    expect(standingAfter({ tier: 2, points: 400 }, 0)).toEqual({ tier: 2, points: 400, moved: 0 })
   })
 
-  it('moves up at +30 and down at −20, starting again from 0', () => {
-    expect(standingAfter({ tier: 1, points: 27 }, 3)).toEqual({ tier: 2, points: 0, moved: 1 })
-    expect(standingAfter({ tier: 3, points: -19 }, -1)).toEqual({ tier: 2, points: 0, moved: -1 })
-    expect(standingAfter({ tier: 3, points: -17 }, -3)).toEqual({ tier: 2, points: 0, moved: -1 })
-    expect(standingAfter({ tier: 3, points: 26 }, 3)).toEqual({ tier: 3, points: 29, moved: 0 })
+  it('moves up at +1000 and down at −1000, starting again from 0', () => {
+    expect(standingAfter({ tier: 1, points: 950 }, 86)).toEqual({ tier: 2, points: 0, moved: 1 })
+    expect(standingAfter({ tier: 3, points: -900 }, -162)).toEqual({ tier: 2, points: 0, moved: -1 })
+    expect(standingAfter({ tier: 3, points: 913 }, 86)).toEqual({ tier: 3, points: 999, moved: 0 })
+    expect(standingAfter({ tier: 3, points: -957 }, -43)).toEqual({ tier: 2, points: 0, moved: -1 })
   })
 
   it('never relegates from Bronze, never promotes from Legend', () => {
     // Bronze stops at 0 (SKATGO-207).
     expect(BRONZE_FLOOR).toBe(0)
-    expect(standingAfter({ tier: 0, points: 2 }, -3)).toEqual({ tier: 0, points: 0, moved: 0 })
-    expect(standingAfter({ tier: 0, points: 0 }, -1)).toEqual({ tier: 0, points: 0, moved: 0 })
-    expect(standingAfter({ tier: 1, points: -18 }, -3)).toEqual({ tier: 0, points: 0, moved: -1 })
-    expect(standingAfter({ tier: 1, points: -10 }, -3)).toEqual({ tier: 1, points: -13, moved: 0 })
-    expect(standingAfter({ tier: LEGEND, points: 29 }, 3)).toEqual({ tier: LEGEND, points: 32, moved: 0 })
-    expect(standingAfter({ tier: LEGEND, points: -19 }, -1)).toEqual({ tier: LEGEND - 1, points: 0, moved: -1 })
+    expect(standingAfter({ tier: 0, points: 20 }, -43)).toEqual({ tier: 0, points: 0, moved: 0 })
+    expect(standingAfter({ tier: 0, points: 0 }, -162)).toEqual({ tier: 0, points: 0, moved: 0 })
+    expect(standingAfter({ tier: 1, points: -900 }, -162)).toEqual({ tier: 0, points: 0, moved: -1 })
+    expect(standingAfter({ tier: 1, points: -500 }, -162)).toEqual({ tier: 1, points: -662, moved: 0 })
+    expect(standingAfter({ tier: LEGEND, points: 990 }, 86)).toEqual({ tier: LEGEND, points: 1076, moved: 0 })
+    expect(standingAfter({ tier: LEGEND, points: -990 }, -43)).toEqual({ tier: LEGEND - 1, points: 0, moved: -1 })
   })
 })

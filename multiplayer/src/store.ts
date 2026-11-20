@@ -210,6 +210,11 @@ export class Store {
         ALTER TABLE league_players ALTER COLUMN scale SET DEFAULT 3;
         -- SKATGO-207: Bronze stops at 0, not at −20; a Bronze row below it comes up to 0 (once; none is left after).
         UPDATE league_players SET points = 0 WHERE tier = 0 AND points < 0;
+        -- SKATGO-217 starts each tier at 1000, 2000 up and 0 down (it was 0, +1000 and −1000): a row on scale 3 keeps its
+        -- distance to the lines, 1000 added, tier and coins kept — once; a new account starts at 1000.
+        UPDATE league_players SET points = points + 1000, scale = 4 WHERE scale = 3;
+        ALTER TABLE league_players ALTER COLUMN scale SET DEFAULT 4;
+        ALTER TABLE league_players ALTER COLUMN points SET DEFAULT 1000;
         -- SKATGO-163 made tables rooms with a number, every seat an account's: the tables of before (schema 2, seats
         -- held by browser tokens) end here; the deploy backs them up first.
         DELETE FROM multiplayer_rooms WHERE snapshot->>'schema' = '2';

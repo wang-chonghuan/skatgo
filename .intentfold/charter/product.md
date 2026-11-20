@@ -205,10 +205,14 @@ a half rounds to the nearest whole number (「我不太喜欢这里引入小数�
 nor fall, and a player rises only while they play better than the tier's table, settling where they belong (「主要是要让厉害的
 玩家能爬上去，一般的玩家落到他自己的档次」). Before it: SKATGO-205's +3 for their side won, −3 for their own game lost and −1 for a
 lost defence (「庄赢+3，防赢+3，庄输-3」, 「我建议就1」), with SKATGO-210's and 214's 0 for a defence that took 31, then 40 card
-points, and SKATGO-215's −2 — rules that let everyone climb by playing more (「这样太无聊了，不刺激了」). +1000 moves the player
-up a tier and −1000 down, from 0 again — even, as the table adds up to 0: one as good as the tier goes up as often as down,
-one clearly better up nine times in ten, in about 70 deals; Bronze has no relegation and its points stop at 0 (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」) and Legend no promotion, its points running on; a player who moves gets up and sits down again in their new tier. The points earned before
-SKATGO-205, and again before SKATGO-216, started again from 0, tiers and coins kept. Standings
+points, and SKATGO-215's −2 — rules that let everyone climb by playing more (「这样太无聊了，不刺激了」). Each tier starts
+the player at 1000 points; 2000 moves them up a tier and 0 down one, at 1000 again there (SKATGO-217, the human: 「每个档次，
+初始给1000分。达到2000了晋级，达到0了降级。这样好理解吧？」; from 0, +1000 up and −1000 down before) — even, as the table adds up
+to 0: one as good as the tier goes up as often as down, one clearly better up nine times in ten, in about 70 deals. The page
+states the two lines, never the distance to them (「你不用给分差，只用说明这个0和2000就行了。易于理解。」), and the points are
+never below 0. Bronze has no relegation and its points stop at 0 (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」) and Legend no promotion, its points running on past 2000; a player who moves gets up and sits down again in their new tier. The points earned before
+SKATGO-205, and again before SKATGO-216, started again from 0, tiers and coins kept; SKATGO-217 added 1000 to every
+player's, keeping their distance to the lines. Standings
 never start again — no week, no season. Each deal ends in free play's result with the AI's game, under its League points, and earns XP as any
 deal against the AI does. A deal counts only when the player sees it to its result (SKATGO-206, the human: 「没进入结算页面就不算
 打完，就不进历史。离桌多久应该算输，比如1分钟？如果是庄家就-3，如果是防家就-1」): left during it — the button, or away a minute,

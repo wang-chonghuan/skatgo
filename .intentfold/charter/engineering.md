@@ -94,9 +94,9 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   Terms omit participant-composition claims rather than asserting presence, absence, possibility or
   human-only participation.
 - **The League** (SKATGO-204) runs in `multiplayer/src/league.ts` under `/league` behind the admission key; the rules both
-  sides share — tiers, fees per deal, a deal's points (`dealOutcome`, `DEAL_POINTS`, SKATGO-205), promotion and relegation —
+  sides share — tiers, fees per deal, a deal's points (`dealPoints`, SKATGO-216), promotion and relegation (`START_AT`, `PROMOTE_AT`, `RELEGATE_AT`, SKATGO-217) —
   are `app/src/lib/skat/league.ts`, held to the tickets by `league.test.ts`. `league_players` holds an account's coins (the
-  day's check-in: `checkin_day` by `dayOf`), tier and points (`scale` 2 since SKATGO-205's reset, run once by the migration);
+  day's check-in: `checkin_day` by `dayOf`), tier and points (`scale` 4 since SKATGO-217's move to 1000, each change of scale run once by the migration);
   `league_matches` a sitting (its own id, its room, tier, who sat down where, when it ended); `league_deals` each finished
   deal's pool deal, moves and each seat's points. A sitting is a room of `room.ts` with `Snapshot.league`: made by the service, never by a browser
   — `/league/play` waits in the leader's memory up to `MATCH_WAIT_MS` for other accounts of the tier, then fills the seats

@@ -6,7 +6,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { checkInOnce } from '~/lib/checkin'
 import { type LeagueError, type LeagueState, PASSING_LEAGUE, enterLeague, leagueReview, leagueState, playLeague } from '~/lib/league-api'
-import { BRONZE_FLOOR, CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, TIERS, type BoardRow, type LeagueBoard, type LeagueResult } from '~/lib/skat/league'
+import { CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, TIERS, type BoardRow, type LeagueBoard, type LeagueResult } from '~/lib/skat/league'
 import { roomGame, roomSeat } from '~/lib/skat/room-view'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
@@ -121,16 +121,15 @@ function Finding({ since }: { since: number }) {
 
 /** The player's own League (SKATGO-204) as the front page's League tile is, navy with white words (the human chose this
  *  look, 「我选A」): the League with its cup, then the coins and the League points large — the coins first, the human: 「没显示
- *  该玩家的总金币数」 — how far to promotion and to relegation, the bar between the two lines, and the one way to play. */
+ *  该玩家的总金币数」 — the lines of promotion and relegation (SKATGO-217: the lines, never the distance), the bar between the
+ *  two, and the one way to play. */
 function MeCard({ me, fee, busy, error, onPlay }: { me: LeagueMe; fee: number; busy: number | null; error: string | null; onPlay: () => void }) {
-  // From the tier's floor — the relegation line, in Bronze 0 (SKATGO-207) — to the promotion line; Legend has no promotion,
-  // so no bar.
-  const floor = me.tier === 0 ? BRONZE_FLOOR : RELEGATE_AT
-  const progress = me.tier < LEGEND ? (me.points - floor) / (PROMOTE_AT - floor) : null
-  // How far to move up and down, where there is a move: none up from Legend, none down from Bronze.
-  const moves = [
-    me.tier < LEGEND ? m.league_to_up({ n: PROMOTE_AT - me.points }) : null,
-    me.tier > 0 ? m.league_to_down({ n: me.points - RELEGATE_AT }) : null,
+  // From the relegation line (Bronze's floor, SKATGO-207) to the promotion line; Legend has no promotion, so no bar.
+  const progress = me.tier < LEGEND ? (me.points - RELEGATE_AT) / (PROMOTE_AT - RELEGATE_AT) : null
+  // The lines where there is a move: none up from Legend, none down from Bronze.
+  const lines = [
+    me.tier < LEGEND ? m.league_up_at({ n: PROMOTE_AT }) : null,
+    me.tier > 0 ? m.league_down_at({ n: RELEGATE_AT }) : null,
   ].filter(Boolean).join(' · ')
   return (
     <div {...stylex.props(styles.hero)}>
@@ -149,9 +148,9 @@ function MeCard({ me, fee, busy, error, onPlay }: { me: LeagueMe; fee: number; b
             {me.today ? <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_today({ n: CHECKIN_COINS })}</span> : null}
           </div>
           <div data-testid="league-points" {...stylex.props(styles.stat)}>
-            <span {...stylex.props(typography.homeCardTitle, styles.onColor)}>{signed(me.points)}</span>
+            <span {...stylex.props(typography.homeCardTitle, styles.onColor)}>{me.points}</span>
             <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_points_label()}</span>
-            {moves ? <span {...stylex.props(typography.appText, styles.onColorSoft)}>{moves}</span> : null}
+            {lines ? <span {...stylex.props(typography.appText, styles.onColorSoft)}>{lines}</span> : null}
           </div>
         </div>
         {progress !== null ? <ProgressBar value={progress} label={m.league_progress()} /> : null}
@@ -225,7 +224,7 @@ function BoardLine({ row: r }: { row: BoardRow }) {
         {r.nickname}
         {r.you ? <span {...stylex.props(styles.tag)}><Who side="you" /></span> : null}
       </span>
-      <span {...stylex.props(typography.appBtnStrong, styles.number)}>{signed(r.points)}</span>
+      <span {...stylex.props(typography.appBtnStrong, styles.number)}>{r.points}</span>
     </li>
   )
 }

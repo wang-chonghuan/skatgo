@@ -1100,9 +1100,10 @@ function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores:
           onClick={() => setTricks(!tricks)}
           {...stylex.props(styles.boardSwitch)}
         />
-        {/* The eye beside the heading (rework: 「标题要换成points，然后眼睛图标放在points旁边」), the two centred together; the
-            line keeps its height. */}
-        <span {...stylex.props(styles.boardLabelRow)}>
+        {/* The eye beside the heading (rework: 「标题要换成points，然后眼睛图标放在points旁边」), then 「应该有对齐，不该直接跟着
+            points」: the heading centred like the others, the eye against the cell's right edge; the line keeps its height. */}
+        <span {...stylex.props(!tricks && styles.boardLabelRow)}>
+          {tricks ? null : <span aria-hidden="true" {...stylex.props(styles.boardEyePlace)} />}
           <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{tricks ? m.info_tricks() : m.info_points()}</span>
           {tricks ? null : (
             <button
@@ -2130,13 +2131,18 @@ const styles = stylex.create({
   // The card points' cell (SKATGO-218): the switch laid over all of it, the eye beside the heading over the switch — later
   // in the cell, so painted above it.
   boardSlot: { position: 'relative' },
-  boardLabelRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: space.x2, maxWidth: '100%' },
+  // The heading centred as every cell's is, the eye against the cell's right edge, an empty place of its size at the left.
+  boardLabelRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x2, width: '100%' },
+  boardEyePlace: { width: space.x20, flexShrink: 0 },
   // No taller than the heading's line, which keeps its height: the icon stands out a little above and below it.
   boardEye: {
     position: 'relative',
+    width: space.x20,
     height: space.x14,
+    flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
     padding: 0,
     margin: 0,
     borderWidth: 0,

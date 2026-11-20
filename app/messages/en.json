@@ -432,7 +432,7 @@
   "info_contract": "Contract",
   "info_bid": "Current bid",
   "info_declarer": "Declarer",
-  "info_points": "Card points",
+  "info_points": "Points",
   "info_tricks": "Tricks",
   "info_show_tricks": "Show tricks instead of card points",
   "info_show_points": "Show card points instead of tricks",

@@ -1087,7 +1087,7 @@ function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores:
       </div>
       {/* A tap switches it between the card points and the tricks each side has taken, and it stays so (SKATGO-127,
           the human: 「用户可以选择，最好是在这个格子上，用户点一下，就能切换，而且记住」). The card points are hidden until the
-          player opens the eye in the cell's corner, and stay as they left them (SKATGO-218, the human: 「放一个眼睛的图标……每个
+          player opens the eye beside the heading, and stay as they left them (SKATGO-218, the human: 「放一个眼睛的图标……每个
           用户默认隐藏，这样他打牌时需要自己算分。然后如果他点了显示，则记住，以后都显示」); tricks are never hidden. */}
       <div data-testid="skat-info-points" data-shows={tricks ? 'tricks' : 'points'} data-hidden={String(hidden)} {...stylex.props(styles.boardCell, styles.boardSlot)}>
         {/* The switch covers the whole cell, under the eye: a tap anywhere else in it switches. */}
@@ -1100,23 +1100,10 @@ function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores:
           onClick={() => setTricks(!tricks)}
           {...stylex.props(styles.boardSwitch)}
         />
-        <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{tricks ? m.info_tricks() : m.info_points()}</span>
-        {/* The player's side's card points in the board's amber, as the player's total is beside them —
-            the declarer's when they declare, the defenders' when they defend — so which number is theirs
-            reads at a glance (SKATGO-79, the human: 「我是庄家，则庄家的分显示橙色，我是防家，则防家的分显示橙色」).
-            The eye beside them, as a password field has it. */}
-        <span {...stylex.props(styles.boardValueRow)}>
-          <span {...stylex.props(typography.infoNumber, styles.boardNumber)}>
-            {playing ? (
-              <>
-                <span data-testid="skat-info-points-declarer" {...stylex.props(game.declarer === ME && styles.boardMine)}>{hidden ? '?' : points.declarer}</span>
-                {' : '}
-                <span data-testid="skat-info-points-defenders" {...stylex.props(game.declarer !== ME && styles.boardMine)}>{hidden ? '?' : points.defenders}</span>
-              </>
-            ) : (
-              '—'
-            )}
-          </span>
+        {/* The eye beside the heading (rework: 「标题要换成points，然后眼睛图标放在points旁边」), the two centred together; the
+            line keeps its height. */}
+        <span {...stylex.props(styles.boardLabelRow)}>
+          <span {...stylex.props(typography.infoLabel, styles.boardLabel)}>{tricks ? m.info_tricks() : m.info_points()}</span>
           {tricks ? null : (
             <button
               type="button"
@@ -1129,6 +1116,20 @@ function InfoBoard({ game, scores, points, tricks, deal }: { game: Game; scores:
             >
               {shown ? <Eye size={icon.inline} strokeWidth={icon.outline} /> : <EyeOff size={icon.inline} strokeWidth={icon.outline} />}
             </button>
+          )}
+        </span>
+        {/* The player's side's card points in the board's amber, as the player's total is beside them —
+            the declarer's when they declare, the defenders' when they defend — so which number is theirs
+            reads at a glance (SKATGO-79, the human: 「我是庄家，则庄家的分显示橙色，我是防家，则防家的分显示橙色」). */}
+        <span {...stylex.props(typography.infoNumber, styles.boardNumber)}>
+          {playing ? (
+            <>
+              <span data-testid="skat-info-points-declarer" {...stylex.props(game.declarer === ME && styles.boardMine)}>{hidden ? '?' : points.declarer}</span>
+              {' : '}
+              <span data-testid="skat-info-points-defenders" {...stylex.props(game.declarer !== ME && styles.boardMine)}>{hidden ? '?' : points.defenders}</span>
+            </>
+          ) : (
+            '—'
           )}
         </span>
         <span data-testid="skat-info-deal" {...stylex.props(typography.infoSub, styles.boardSub)}>{deal ? (deal.of ? m.info_deal({ n: deal.n, of: deal.of }) : m.info_deal_n({ n: deal.n })) : ''}</span>
@@ -2126,14 +2127,17 @@ const styles = stylex.create({
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
-  // The card points' cell (SKATGO-218): the switch laid over all of it, the eye beside the numbers over the switch — later
+  // The card points' cell (SKATGO-218): the switch laid over all of it, the eye beside the heading over the switch — later
   // in the cell, so painted above it.
   boardSlot: { position: 'relative' },
-  boardValueRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: space.x2, maxWidth: '100%' },
+  boardLabelRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: space.x2, maxWidth: '100%' },
+  // No taller than the heading's line, which keeps its height: the icon stands out a little above and below it.
   boardEye: {
     position: 'relative',
+    height: space.x14,
     display: 'flex',
-    padding: space.x2,
+    alignItems: 'center',
+    padding: 0,
     margin: 0,
     borderWidth: 0,
     backgroundColor: 'transparent',

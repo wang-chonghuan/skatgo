@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-218",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-218",
+  "branch": "SKATGO-218-hide-card-points",
+  "base": "2814d45cc653101530838e7b9ad52c4462dbb0ae",
+  "ports": { "web": 55218, "multiplayer": 56218, "database": 57218 }
+}

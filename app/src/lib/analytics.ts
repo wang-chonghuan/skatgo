@@ -44,9 +44,11 @@ export function isPublishedSite(hostname: string): boolean {
  * what differs between occasions goes in the properties, not the name.
  */
 export type ProductEvents = {
-  /** A button of the front page's hero was pressed: the deal of the day's, or free play's beside it (SKATGO-131; the
-   *  tournament's and the forum's until then). */
-  home_cta_clicked: { button: 'primary' | 'free' }
+  /** A colour card of the front page was pressed (SKATGO-227, the human: 「点击统计加了吗？」, then 「Yes, add and deploy」):
+   *  which card, and its place in reading order, 1 to 4, so the cards' places can be judged. The deal of the day's and free
+   *  play's keep the `button` they were counted by since SKATGO-131 (the tournament's and the forum's before), so the
+   *  reports from before stay comparable; the course and the League sent nothing until SKATGO-227. */
+  home_cta_clicked: { card: HomeCard; position: number; button?: 'primary' | 'free' }
   /** A lesson was opened, by its number. */
   lesson_started: { lesson: number }
   /** A lesson's last step was done. */
@@ -92,6 +94,9 @@ export type ProductEvents = {
   /** The private table's first deal was started, with this many people seated. */
 }
 export type GameMode = 'free' | 'lesson'
+/** The front page's four colour cards, by the section each opens (SKATGO-227). */
+export type HomeCard = 'daily' | 'play' | 'course' | 'league'
+
 export type SignInAt = 'header' | 'home' | 'daily' | 'profile' | 'tricks' | 'bidding' | 'forum_post' | 'forum_comment' | 'table_open' | 'table_sign_up' | 'xp' | 'history_replay'
 type Empty = Record<string, never>
 

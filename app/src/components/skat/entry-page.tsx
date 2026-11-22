@@ -4,7 +4,7 @@ import * as stylex from '@stylexjs/stylex'
 import { CalendarDays, ChartLine, GraduationCap, Swords, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { track } from '~/lib/analytics'
+import { type HomeCard, track } from '~/lib/analytics'
 import { type HomeHistory, fetchGames } from '~/lib/history-api'
 import type { Card } from '~/lib/skat/cards'
 import type { ProfileDeal } from '~/lib/skat/profile'
@@ -40,8 +40,8 @@ export function EntryPage() {
             最初的布局吧，也不用变了，就是1deal，free play，lesson，锦标赛。颜色也和最初的一样。都别改了」, after SKATGO-221 and SKATGO-222 had
             put the League first): the deal of the day first, which a guest may play. It stays "1 deal today" once played
             (SKATGO-135, the human: 「这个按钮文字不变」). */}
-        <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
-        <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
+        <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} button="primary" />
+        <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} button="free" />
         <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
         {/* The League last, bottom right (SKATGO-204, the human: 「你看看那个practice是不是没人点，打算把liga放那里如何」, then 「同意」;
             first in SKATGO-221 and SKATGO-222, back here in SKATGO-224), in the bidding practice's tile, its colour kept. A red ribbon across its top right corner (SKATGO-206, the human:
@@ -105,15 +105,21 @@ export function EntryPage() {
   )
 }
 
-/** The hero's ways in as they are counted (SKATGO-29; renamed by SKATGO-74's tracking plan): the deal of the day, free play. */
-const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
+/** The colour cards in the order they stand above, which is what a click reports as its place (SKATGO-227): change both
+ *  together. */
+const CARD_ORDER: readonly HomeCard[] = ['daily', 'play', 'course', 'league']
 
 /** A colour card: its icon at the top (a lucide outline, or the League's gold cup), its title at the bottom, three of
  *  skatgo's cards in the corner under its colour; `badge` a red ribbon across its top right corner. The icon is
- *  `icon.tile` unless `iconSize` says otherwise (the gold cup, a step larger). */
-function Way({ to, section, tone, Icon, iconSize = icon.tile, art, title, badge, onClick }: { to: '/daily' | '/play' | '/course' | '/league'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon | typeof GoldTrophy; iconSize?: number; art: Card[]; title: string; badge?: string; onClick?: () => void }) {
+ *  `icon.tile` unless `iconSize` says otherwise (the gold cup, a step larger). A press is counted (SKATGO-227): the card,
+ *  its place in `CARD_ORDER`, and `button` where it has the name it was counted by before (SKATGO-131). */
+function Way({ to, section, tone, Icon, iconSize = icon.tile, art, title, badge, button }: { to: '/daily' | '/play' | '/course' | '/league'; section: HomeCard; tone: keyof typeof tileTones; Icon: LucideIcon | typeof GoldTrophy; iconSize?: number; art: Card[]; title: string; badge?: string; button?: 'primary' | 'free' }) {
+  const counted = () => {
+    const position = CARD_ORDER.indexOf(section) + 1
+    track('home_cta_clicked', button ? { card: section, position, button } : { card: section, position })
+  }
   return (
-    <Link to={to} data-testid="entry-card" data-section={section} onClick={onClick} {...stylex.props(styles.tile, styles.lift, tileTones[tone])}>
+    <Link to={to} data-testid="entry-card" data-section={section} onClick={counted} {...stylex.props(styles.tile, styles.lift, tileTones[tone])}>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
         {art.map((c, i) => (
           <span key={i} {...stylex.props(styles.artCard, fanPose[FAN[i + 1]])}>

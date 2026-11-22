@@ -340,7 +340,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `homePicture`, `icon.tile`, `progressCurve` (SKATGO-136) and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
   the short rules, the daily tournament, the Skat-Tricks' page and their article, the bidding practice, a private table's page, About SkatGo,
-  the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
+  SkatGo as an alternative to Skat Palast, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
   tournament's page has no lead under its title (SKATGO-132, the human: 「你显示着一坨垃圾干什么啊」), then the forum's
@@ -469,6 +469,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`smallBold`) under a heavier line, and "Weiterspielen" (`go`, full width) at its foot. The
   board's deal line reads "Spiel 3", where free play reads "Spiel 3 von 6". At a deal's
   end, the way on, once pressed, reads "Warten auf <Namen>" and takes no tap. Nothing of the room stands on the felt. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
+- **SkatGo as an alternative to Skat Palast** (`palast-page.tsx`, `/skat-palast-alternative`, SKATGO-226): About SkatGo's
+  reading column — the H1 and a lead; "Der Unterschied auf einen Blick", one row per topic with the topic in bold over two
+  `color.surface` boxes with a `hairline` outline side by side, SkatGo's then Skat Palast's, each its name in bold `navy` over one line, one under the
+  other on a phone; what SkatGo offers as a list; "Was passt zu dir?" with one `go` button to free play and an `info` link to
+  the course; last the trademark note in `note`, `slate`. No picture of Skat Palast. About SkatGo's questions end in an
+  `info` link to it.
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
   FAQPage), each question bold over its answer; "Tägliches Skat", how the deal of the day and the six deals are played,
@@ -804,8 +810,8 @@ learner will hear at a real table.
 
 - A game page says at most one sentence per state; what a button can say is not written as a sentence.
 - A thing is said once, at the moment it is needed — "the six deals need an account" when a guest reaches for them.
-- Selling points — free, no sign-up, the same cards for everyone — go only in a page's title, its search description
-  and About SkatGo; the slogan is the exception.
+- Selling points — free, no sign-up, the same cards for everyone — go only in a page's title, its search description,
+  About SkatGo and the Skat Palast comparison (SKATGO-226); the slogan is the exception.
 - What explains the rules belongs to the course's tables and the content pages.
 
 ## Redlines

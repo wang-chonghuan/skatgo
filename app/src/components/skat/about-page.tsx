@@ -34,6 +34,10 @@ export function AboutPage() {
               </div>
             ))}
           </dl>
+          {/* SKATGO-226: the one way in to the page on SkatGo as an alternative to Skat Palast. */}
+          <nav aria-label={m.about_palast_link()} {...stylex.props(styles.links)}>
+            <Link to="/skat-palast-alternative" data-testid="about-palast" {...stylex.props(typography.link, styles.link)}>{m.about_palast_link()}</Link>
+          </nav>
         </section>
 
         <section data-testid="about-daily" aria-labelledby="about-daily-title" {...stylex.props(styles.section)}>

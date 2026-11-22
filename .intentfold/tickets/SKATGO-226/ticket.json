@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-226",
   "mode": "autonomous",
-  "stage": "developing",
+  "stage": "handoff-ready",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-226",
   "branch": "SKATGO-226-computer-palast-page",

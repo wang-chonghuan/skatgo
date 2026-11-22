@@ -26,7 +26,7 @@ import { Btn } from './ui'
 
 // The front page (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后显示下面的四个卡片……长卡片做两个，
 // 一个是my progress……一个是 elo ranking」): the slogan, then the ways in — four colour cards two by two, each a link
-// with its icon over its title (the League — top left since SKATGO-221 —, the deal of the day, the course, free play — SKATGO-222), and beside them two long
+// with its icon over its title (the deal of the day, free play, the course, the League — SKATGO-224, as before SKATGO-221), and beside them two long
 // white cards: the XP board (SKATGO-172, where SKATGO-123's Elo board stood, on top since), and the player's
 // progress — the player's games, each its cards and the difference to the AI (SKATGO-182) — leading to the record of play. Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
 // hero buttons, no lead, no link row: the cards are the page. Rendered on the server, the games streamed in behind it (SKATGO-193).
@@ -36,19 +36,19 @@ export function EntryPage() {
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.entry_title()}</h1>
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
-        {/* The League first, top left, since SKATGO-221 (the human: 「让锦标赛卡片位于1，1，然后1 deal today位于2，2这个位置，
-            就是换位」); before, fourth (SKATGO-204, the human: 「你看看那个practice是不是没人点，打算把liga放那里如何」, then 「同意」),
-            in the bidding practice's tile, its colour kept. A red ribbon across its top right corner (SKATGO-206, the human:
+        {/* The four in their first order and colours again, the same for everyone (SKATGO-224, the human: 「我觉得目前太复杂了要不然还是
+            最初的布局吧，也不用变了，就是1deal，free play，lesson，锦标赛。颜色也和最初的一样。都别改了」, after SKATGO-221 and SKATGO-222 had
+            put the League first): the deal of the day first, which a guest may play. It stays "1 deal today" once played
+            (SKATGO-135, the human: 「这个按钮文字不变」). */}
+        <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
+        <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
+        <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
+        {/* The League last, bottom right (SKATGO-204, the human: 「你看看那个practice是不是没人点，打算把liga放那里如何」, then 「同意」;
+            first in SKATGO-221 and SKATGO-222, back here in SKATGO-224), in the bidding practice's tile, its colour kept. A red ribbon across its top right corner (SKATGO-206, the human:
             「home的联赛卡片上面加个红色的斜着的小tag，New，吸引人登录」, then 「应该像彩带一样斜着，在右上角」), "Hot" since SKATGO-221,
             and a gold cup that shines in place of the outline one (the human: 「把首页卡片的ranked match的new横幅改成Hot，然后奖杯
             改成金色带高光的还会闪的」). */}
         <Way to="/league" section="league" tone="league" Icon={GoldTrophy} iconSize={goldTrophy.size} art={LEAGUE_ART} title={m.home_league()} badge={m.home_league_hot()} />
-        {/* The deal of the day second, top right, and free play fourth, each in the other's colour, since SKATGO-222 (the human:
-            「其实我认为， 1 deal today和free play应该换位置。然后颜色也应该换。换卡片颜色就行了」): the places keep their colours. It stays
-            "1 deal today" once played (SKATGO-135, the human: 「这个按钮文字不变」). */}
-        <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
-        <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
-        <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
         {/* The XP board first, the player's progress under it (SKATGO-172, the human asked which goes on top: 「你建议？」). */}
         <div data-testid="entry-card" data-section="xp" {...stylex.props(styles.long, styles.board)}>
           {xp ? (
@@ -242,13 +242,12 @@ const fanPose = stylex.create({
   fanFarRight: { transform: pose.fanFarRight },
 })
 
-// The colours stay with the places, warm and cool across the diagonals: the League navy top left (the bidding practice's
-// tile before it, SKATGO-204), the deal of the day red beside it, the course orange under it, free play green last. The
-// deal of the day and free play swapped colours with their places in SKATGO-222 (the human: 「换卡片颜色就行了」); the deal
-// of the day's hearts lie on its red, free play's spades on a green like the felt.
+// The deal of the day green, the site's colour of what to do now; free play red, now that the friends' tile is gone;
+// the course orange; the League navy, the bidding practice's tile before it (SKATGO-204) — warm and cool across the
+// diagonals. SKATGO-222 had swapped the first two; SKATGO-224 brought them back (the human: 「颜色也和最初的一样」).
 const tileTones = stylex.create({
-  daily: { backgroundColor: color.tileRed, boxShadow: elev.tileRed },
-  play: { backgroundColor: color.tileGreen, boxShadow: elev.tileGreen },
+  daily: { backgroundColor: color.tileGreen, boxShadow: elev.tileGreen },
+  play: { backgroundColor: color.tileRed, boxShadow: elev.tileRed },
   course: { backgroundColor: color.tileOrange, boxShadow: elev.tileOrange },
   league: { backgroundColor: color.tileNavy, boxShadow: elev.tileNavy },
 })

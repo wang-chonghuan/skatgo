@@ -12,14 +12,16 @@ export type Tier = (typeof TIERS)[number]
 export const LEGEND = TIERS.length - 1
 
 /** Coins a deal costs in each tier, taken when it is dealt and kept if the player leaves during it (SKATGO-210, the human:
- *  「每个tier的扣分是：3，4，5，6，10，12」): a day's coins buy 20 deals in Bronze, 6 in Diamond, 5 in Legend. */
+ *  「每个tier的扣分是：3，4，5，6，10，12」): a day's coins buy 33 deals in Bronze, 10 in Diamond, 8 in Legend. */
 export const FEES: readonly number[] = [3, 4, 5, 6, 10, 12]
 
 /** Coins a day's check-in gives: the first time a signed-in player opens SkatGo that day (the human: 「不打开游戏就不给，打开了
- *  就能积累」) — 60 since SKATGO-210 (「每天自动给的金币太多了，没意思」, 「100个太多，而且必须每周金币清零」, then 「每天30个我觉得
- *  太少」, 「60」): they add up through a week, Monday to Sunday in Berlin, and the week's first check-in starts again from 60, what
- *  was left gone. They cannot be bought or exchanged. */
-export const CHECKIN_COINS = 60
+ *  就能积累」) — 100 since SKATGO-219, with the lines half as far again (the human: 「增加每天的金币量，然后增加升级要的局数，
+ *  让玩家有更多的时间玩，但是要在过瘾和厌倦中找到平衡」); 60 from SKATGO-210 (「每天自动给的金币太多了，没意思」, 「100个太多，
+ *  而且必须每周金币清零」, then 「每天30个我觉得太少」, 「60」), when a tier took a third fewer deals. They add up through a
+ *  week, Monday to Sunday in Berlin, and the week's first check-in starts again from 100, what was left gone. They cannot
+ *  be bought or exchanged. */
+export const CHECKIN_COINS = 100
 
 /** League points of a deal for one seat (SKATGO-216, the human: 「我们搞这么复杂，你思考一下，用sf是不是更好？…巧用一下它们的
  *  算分系统」, then 「开工单改成SF减两家平均」): the seat's Seeger-Fabian score minus the average of the other two seats' — the
@@ -68,14 +70,15 @@ export function dealOutcome(declarer: number | null, won: boolean, seat: number)
 }
 
 /** League points a player has on coming into a tier — a new account in Bronze, and anyone moved up or down — and the two
- *  lines from there (SKATGO-217, the human: 「每个档次，初始给1000分。达到2000了晋级，达到0了降级。这样好理解吧？」): 2000 moves
- *  them up a tier, 0 down one. Even, as the points of a table add up to 0 — a player as good as the tier's table goes up
- *  or down as often; one clearly better (about 10 a deal) goes up nine times in ten, in about 70 deals, measured on 2870
- *  free-play deals' Seeger-Fabian swings. The page states the two lines, never the distance to them (「你不用给分差，只用
- *  说明这个0和2000就行了」), and the points are never below 0. Before, from 0 to +1000 and −1000 (SKATGO-216), +30 and
- *  −20 (SKATGO-205). */
-export const START_AT = 1000
-export const PROMOTE_AT = 2000
+ *  lines from there, the same in every tier (SKATGO-219, the human: 「每个tier的升级分数都要一样，别乱搞」): 3000 moves them up
+ *  a tier, 0 down one. Even, as the points of a table add up to 0 — a player as good as the tier's table goes up or down
+ *  as often, reaching a line in about 300 deals; one better by about 10 a deal goes up 49 times in 50, in about 145 deals
+ *  (a deal's League points swing by about 87, measured on the League's first 304 deals). The page states the two lines,
+ *  never the distance to them (SKATGO-217: 「你不用给分差，只用说明这个0和2000就行了」), and the points are never below 0.
+ *  Before, 1000 to start, 2000 up and 0 down (SKATGO-217), from 0 to +1000 and −1000 (SKATGO-216), +30 and −20
+ *  (SKATGO-205). */
+export const START_AT = 1500
+export const PROMOTE_AT = 3000
 /** The relegation line, and Bronze's floor: Bronze has no relegation and its points stop here (SKATGO-207, the human:
  *  「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」). */
 export const RELEGATE_AT = 0

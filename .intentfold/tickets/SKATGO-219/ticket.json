@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-219",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-219",
+  "branch": "SKATGO-219-league-coins-3000",
+  "base": "2520eb3c2a6c53113c6b1323461d06c709f03db0",
+  "ports": { "web": 55219, "multiplayer": 56219, "database": 57219 }
+}

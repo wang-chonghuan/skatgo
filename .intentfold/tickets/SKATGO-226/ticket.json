@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-226",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-226",
+  "branch": "SKATGO-226-computer-palast-page",
+  "base": "906fabb8fc953adf61acf534b335aadc08b3980c",
+  "ports": { "web": 55226, "multiplayer": 56226, "database": 57226 }
+}

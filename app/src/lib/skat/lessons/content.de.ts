@@ -529,7 +529,7 @@ export const LESSONS_DE: Lesson[] = [
   {
     id: '11',
     title: 'Abschlussspiel: an den Tisch!',
-    promise: 'Eine komplette Partie gegen zwei KI-Gegner spielen. Danach kannst du Skat.',
+    promise: 'Eine komplette Partie gegen zwei Computer-Gegner spielen. Danach kannst du Skat.',
     learned: 'eine ganze Partie Skat spielen, vom ersten Reizwert bis zur Abrechnung.',
     minutes: 3,
     steps: [

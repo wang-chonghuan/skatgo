@@ -90,7 +90,7 @@ export const GUIDE_DE: Record<string, LessonGuide> = {
     question: 'Skat üben: eine ganze Partie zum Abschluss',
     h1: 'Skat üben im Abschlussspiel: eine ganze Partie',
     description:
-      'Skat üben in einer kompletten Partie gegen zwei KI-Gegner: Reizen, Skat, Ansagen, zehn Stiche und Abrechnung, mit Tipps, wann immer du willst.',
+      'Skat üben in einer kompletten Partie gegen zwei Computer-Gegner: Reizen, Skat, Ansagen, zehn Stiche und Abrechnung, mit Tipps, wann immer du willst.',
     rule: 'scoring',
   },
 }

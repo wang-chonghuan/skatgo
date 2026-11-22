@@ -139,17 +139,22 @@ function MeCard({ me, fee, busy, error, onPlay }: { me: LeagueMe; fee: number; b
           <h2 {...stylex.props(typography.homeTileTitle, styles.onColor)}>{leagueName(me.tier)}</h2>
         </span>
         <div {...stylex.props(styles.stats)}>
+          {/* The figure and its words on one line, wrapping only where the card is too narrow (SKATGO-220). */}
           <div data-testid="league-coins" {...stylex.props(styles.stat)}>
-            <span {...stylex.props(styles.statValue)}>
-              <Coins aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.onColor)} />
-              <span {...stylex.props(typography.homeCardTitle, styles.onColor)}>{me.coins}</span>
+            <span {...stylex.props(styles.statLine)}>
+              <span {...stylex.props(styles.statValue)}>
+                <Coins aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.onColor, styles.statIcon)} />
+                <span {...stylex.props(typography.homeCardTitle, styles.onColor)}>{me.coins}</span>
+              </span>
+              <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_coins_label()}</span>
+              {me.today ? <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_today({ n: CHECKIN_COINS })}</span> : null}
             </span>
-            <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_coins_label()}</span>
-            {me.today ? <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_today({ n: CHECKIN_COINS })}</span> : null}
           </div>
           <div data-testid="league-points" {...stylex.props(styles.stat)}>
-            <span {...stylex.props(typography.homeCardTitle, styles.onColor)}>{me.points}</span>
-            <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_points_label()}</span>
+            <span {...stylex.props(styles.statLine)}>
+              <span {...stylex.props(typography.homeCardTitle, styles.onColor)}>{me.points}</span>
+              <span {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_points_label()}</span>
+            </span>
             {lines ? <span {...stylex.props(typography.appText, styles.onColorSoft)}>{lines}</span> : null}
           </div>
         </div>
@@ -449,7 +454,11 @@ const styles = stylex.create({
   titleRow: { display: 'flex', alignItems: 'center', gap: space.x10, minWidth: 0 },
   stats: { display: 'flex', flexWrap: 'wrap', gap: { default: space.x32, [bp.phone]: space.x24 } },
   stat: { display: 'flex', flexDirection: 'column', gap: space.x2 },
-  statValue: { display: 'flex', alignItems: 'center', gap: space.x6 },
+  // A figure and its words side by side on their baselines; an item moves down only when the line is full.
+  statLine: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: space.x8, rowGap: space.x2 },
+  statValue: { display: 'flex', alignItems: 'baseline', gap: space.x6 },
+  // The coin sits centred on its number, which alone gives the line its baseline.
+  statIcon: { alignSelf: 'center', flexShrink: 0 },
   onColor: { margin: 0, color: color.onColor },
   onColorSoft: { margin: 0, color: color.onColorSoft },
 })

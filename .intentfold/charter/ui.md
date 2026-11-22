@@ -543,8 +543,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   noindex: its H1 "Ranglistenspiel" / "Ranked match" and its tab title "Skat-Ranglistenspiel – von Bronze bis Legende" (SKATGO-210, the human: 「页面标题也不要用league了」; "Liga" before), then for an account its League as the front page's League tile is (the human chose it from two:
   「我选A」) — `tileNavy`, `radii.tile`, `elev.tileNavy`, white words: lucide's `Trophy` at `icon.tile` and "Gold-Liga"
   (`homeTileTitle`); then two large numbers (`homeCardTitle`), the coins first with lucide's `Coins` (the human: 「没显示该玩家
-  的总金币数」), "Münzen" and "+100 heute" under it, and the League points without a sign, "Ligapunkte" and the two lines
-  under them, "Aufstieg bei 3000 · Abstieg bei 0" (`appText`, `onColorSoft`; SKATGO-219's lines; SKATGO-217, the human: 「你不用给分差，只用说明这个0和
+  的总金币数」), "Münzen" and "+100 heute" beside it on the same line, and the League points without a sign with
+  "Ligapunkte" beside them on theirs (SKATGO-220, the human: 「全部放在同一行……只有屏幕窄到实际放不下时才允许换行，不要横向溢出」;
+  under the numbers before), and the two lines under them, "Aufstieg bei 3000 · Abstieg bei 0" (`appText`, `onColorSoft`; SKATGO-219's lines; SKATGO-217, the human: 「你不用给分差，只用说明这个0和
   2000就行了」 — the lines, never the distance to them) — each only where there is one, none up from Legend and none down from
   Bronze; the `ProgressBar` from the relegation line to the promotion line (none in Legend); then the one `go`, "Spielen · 15
   Münzen" — "Suche Mitspieler … 5" on it while it waits, counting the five seconds down (the human: 「等待时要有个倒计时」), the number gone once they are up, disabled with one line when the coins are too few ("Zu wenig Münzen –

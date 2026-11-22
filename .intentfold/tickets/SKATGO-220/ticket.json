@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-220",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-220",
+  "branch": "SKATGO-220-league-card-rows",
+  "base": "c977bd36b000b93d4dedaa96e4ca9f2eb96a117d",
+  "ports": {
+    "web": 55220,
+    "multiplayer": 56220,
+    "database": 57220
+  }
+}

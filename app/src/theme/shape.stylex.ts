@@ -58,7 +58,7 @@ export const dims = stylex.defineVars({
   // The front page's tiles and hero picture
   tileArtRight: '-18px',
   tileArtBottom: '-38px',
-  /** The "New" ribbon across a tile's top right corner (SKATGO-206): its length, and how far its box stands out past
+  /** The "Hot" ribbon across a tile's top right corner (SKATGO-206; "New" until SKATGO-221): its length, and how far its box stands out past
    *  the tile's right edge, so that it crosses the corner and both its ends are cut off by the tile. */
   ribbonWidth: '112px',
   ribbonRight: '-30px',

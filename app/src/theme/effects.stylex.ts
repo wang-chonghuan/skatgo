@@ -27,6 +27,29 @@ export const timing = stylex.defineVars({
   /** One turn of the logo while a table loads (SKATGO-93), at an even pace. */
   spin: '2.4s',
   steady: 'linear',
+  /** The gold cup on the League tile (SKATGO-221, the human: 「还会闪的」): one pass of the light band — over the cup for
+   *  about a third of it, out of sight the rest — and one dim-to-lit swing of a sparkle beside it, the second sparkle
+   *  half a swing behind the first. */
+  shine: '3.2s',
+  twinkle: '1.6s',
+  twinkleBehind: '-0.8s',
+  easeInOut: 'ease-in-out',
+})
+
+/** The gold cup's light band (SKATGO-221): from left of the cup to far past its right, in the cup's own 24-unit drawing
+ *  (a CSS px is one of its units). The path is longer than the cup is wide, so an even pass crosses the cup for about a
+ *  third of `timing.shine` and rests out of sight the rest — a pause without keyframe stops. Clipped to the cup. */
+export const shine = stylex.defineConsts({
+  start: 'translateX(0)',
+  end: 'translateX(60px)',
+})
+
+/** A sparkle beside the gold cup, dim and small, then lit and whole (SKATGO-221). */
+export const twinkle = stylex.defineConsts({
+  dim: '0.25',
+  lit: '1',
+  small: 'scale(0.55)',
+  whole: 'scale(1)',
 })
 
 /** One whole turn, start to end: the logo while a table loads (SKATGO-93, the human: 「最好让它会旋转，因为本来就是个

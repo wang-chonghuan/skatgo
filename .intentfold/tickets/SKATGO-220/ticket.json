@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-220",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "auto-deploy",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-220",
   "branch": "SKATGO-220-league-card-rows",

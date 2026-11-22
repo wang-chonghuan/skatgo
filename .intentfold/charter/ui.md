@@ -90,7 +90,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | **Page** | every sub-page's background; the front page's is white | `color.page` (front page `color.surface`) | `color.text`, titles `color.navy`, secondary `color.slate` |
 | **Header** | the public site's white bar over every page but the tables | `color.surface`, `elev.landingHeader` | `color.navy`, links `color.slate` |
 | **Option card** | a white card on the page: a lesson, the course's progress, the tournament's board and results, a panel | `color.surface`, `radii.option`, `elev.option` (the featured one `elev.optionFeatured`) | `color.navy` / `color.slate` |
-| **Colour tile** | a section on the front page: ♣ the course (`tileOrange`), ♠ free play (`tileGreen`), the League (`tileNavy`, SKATGO-204; the bidding practice's, SKATGO-149, before), a private table (`tileRed`) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
+| **Colour tile** | a section on the front page: ♣ the course (`tileOrange`), ♠ free play (`tileGreen`), the League (`tileNavy`, SKATGO-204; the bidding practice's, SKATGO-149, before), the deal of the day (`tileRed`, SKATGO-222; a private table's before) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
 | **Felt** | where cards lie: the table, a drill's hand | `fill.felt` (`feltInner` → `feltOuter`, with a fine grain) | `color.onColor`; highlights `color.gold` / `color.amber` |
 | **Board and plates** | the table's info board, the seat plates, dark pills | `color.board` with `color.boardLine`; `color.plate` | `color.onColor`, quieter `color.onColorSoft`; the player's own numbers — their score, their side's card points — in `color.amber` (SKATGO-79) |
 | **Footer** | the legal links under every header page (SKATGO-46), the Skat-Tricks and the forum (SKATGO-118), then About SkatGo and the rules (SKATGO-134) | `color.surface` with a `hairline` rule | links in `color.info` |
@@ -104,7 +104,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | `go` | the one call to action, and the current state — the public site's landing buttons too (SKATGO-97, the human: 「改成我们按钮的标准绿色」); `goLanding` and `elev.btnGoLanding`, its former own green, are no longer used |
 | `info` | links in text, the hint button, the focus ring, and the "AI" tag wherever the AI is named — a score sheet, a deal's bidding and trick, the leaderboard (SKATGO-79, SKATGO-80, the human: 「AI标志都用app里那个蓝色的Ai标志」) |
 | `stop` | leaving the table, and the yes to a deletion (a forum post's, an account's, SKATGO-185); the "Hot" ribbon on the front page's League tile (SKATGO-206; "Neu" until SKATGO-221) |
-| `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the League (the bidding practice before SKATGO-204), a private table |
+| `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the League (the bidding practice before SKATGO-204), the deal of the day (SKATGO-222) |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); a deal's result box (SKATGO-145, SKATGO-166), `goodSoft` when the player's side won and `badSoft` when it lost. `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson |
 | `tintClubs` … `tintNull` | one tint per contract, from the reference's bid boxes |
@@ -277,10 +277,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (SKATGO-151, 「和左边的learn卡片，上下没对齐」) —
     a white icon at the top (`icon.tile`) and its title at the bottom (`homeTileTitle`, bold, 36px, 28px on a phone — the
     human: 「卡片上的字，应该用这种尺寸和粗的字」, then 「四个卡片上的字还是太小」; the other cards' titles `homeCardTitle`, bold, 28px), its card art cropped at the
-    corner under its colour, rising on hover. In reading order since SKATGO-221 "Ranglistenspiel" top left, "Freies
-    Spiel", "Lernen", "1 Spiel heute" bottom right (the human: 「让锦标赛卡片位于1，1，然后1 deal today位于2，2这个位置，就是换位」;
-    "1 Spiel heute" first and "Ranglistenspiel" last before) — "1 Spiel heute" (`tileGreen`, `CalendarDays`, to `/daily`; the same words
-    once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, lucide's `Swords`, crossed — the human: 「不要用机器人」, then 「用两个交错的剑吧，x形的」 — to
+    corner under its colour, rising on hover. In reading order since SKATGO-222 "Ranglistenspiel" top left (navy),
+    "1 Spiel heute" top right (red), "Lernen" (orange), "Freies Spiel" bottom right (green): each place keeps its colour, warm
+    and cool across the diagonals (the human: 「其实我认为， 1 deal today和free play应该换位置。然后颜色也应该换。换卡片颜色就行了」;
+    SKATGO-221 had "Freies Spiel" second and "1 Spiel heute" last, 「让锦标赛卡片位于1，1，然后1 deal today位于2，2这个位置，就是换位」;
+    before that "1 Spiel heute" first and "Ranglistenspiel" last) — "1 Spiel heute" (`tileRed` since SKATGO-222, `tileGreen` before,
+    `CalendarDays`, to `/daily`; the same words once played, 「这个按钮文字不变」), "Freies Spiel" (`tileGreen` since SKATGO-222,
+    `tileRed` before, lucide's `Swords`, crossed — the human: 「不要用机器人」, then 「用两个交错的剑吧，x形的」 — to
     `/play`), "Lernen" (`tileOrange`,
     `GraduationCap`, the course) and "Ranglistenspiel" / "Ranked match" (SKATGO-210, broken at the line's end with a hyphen as German is — soft hyphens
     at its syllables, "Ranglis-tenspiel" on a phone, "Ranglisten-spiel" on PC, the human: 「标准做法是行末加连字符断开。同意」; the human: 「这个liga的卡片名字不能叫league，没人来点，你现在改这个名字为 ranked match」; "Liga" before) (`tileNavy`, a gold cup in place of an outline icon — `GoldTrophy`, `goldTrophy` drawn in lucide's box at `goldTrophy.size` (44px, a step above the other tiles' 36px `icon.tile`), filled `trophyLight` → `trophyGold` → `trophyDeep` with a lit rim, an engraved star and a highlight down its left, glowing `fill.trophyGlow`, its light passing and its sparkles twinkling (SKATGO-221, the human: 「奖杯改成金色带高光的还会闪的，这个是提高留存的重要途径」; lucide's `Trophy` before) — its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:

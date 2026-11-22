@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-222",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-222",
+  "branch": "SKATGO-222-daily-play-swap",
+  "base": "c11b73e",
+  "ports": { "web": 55222 }
+}

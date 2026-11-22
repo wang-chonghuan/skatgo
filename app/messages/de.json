@@ -1044,5 +1044,11 @@
   "compare_guide_4_title": "Lernen und besser werden",
   "compare_guide_4_text": "Der Skat Palast, Euroskat und die Skatstube haben Skatschulen und Regelseiten. Die Skat-App von Isar Interactive bietet einen Strategie-Trainer. SkatGo setzt aufs Üben: elf Lektionen, in denen du die Karten selbst spielst, 150 Reizaufgaben mit Erklärung und 20 Endspiele mit offenen Karten.",
   "compare_fix": "Etwas falsch oder veraltet? Schreib uns über das Impressum, dann korrigieren wir es.",
-  "compare_col_special": "Besonderheit"
+  "compare_col_special": "Besonderheit",
+  "brand_back": "Alle Skat-Seiten im Vergleich",
+  "brand_offers_title": "Was {subject} bietet",
+  "brand_compare_title": "{subject} und SkatGo im Vergleich",
+  "brand_faq_title": "Häufige Fragen {about}",
+  "brand_note": "Stand 22.11.2026. Alle Angaben stammen von den Seiten des Anbieters. {name} ist eine Marke ihres jeweiligen Inhabers, und SkatGo steht damit in keiner Verbindung.",
+  "compare_more": "Mehr über {name}"
 }

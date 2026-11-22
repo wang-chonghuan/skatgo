@@ -1,7 +1,7 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import { Await, Link, useLoaderData, useNavigate } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
-import { CalendarDays, ChartLine, GraduationCap, Swords, Trophy, type LucideIcon } from 'lucide-react'
+import { CalendarDays, ChartLine, GraduationCap, Swords, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { track } from '~/lib/analytics'
@@ -12,20 +12,21 @@ import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { icon } from '../../theme/constants'
+import { goldTrophy, icon } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { DealLines } from './deal-history'
+import { GoldTrophy } from './gold-trophy'
 import { XpBoard } from './xp-board'
 import { PlayingCard } from './playing-card'
 import { Btn } from './ui'
 
 // The front page (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后显示下面的四个卡片……长卡片做两个，
 // 一个是my progress……一个是 elo ranking」): the slogan, then the ways in — four colour cards two by two, each a link
-// with its icon over its title (the deal of the day, free play, the course, the League since SKATGO-204), and beside them two long
+// with its icon over its title (the League — top left since SKATGO-221 —, free play, the course, the deal of the day), and beside them two long
 // white cards: the XP board (SKATGO-172, where SKATGO-123's Elo board stood, on top since), and the player's
 // progress — the player's games, each its cards and the difference to the AI (SKATGO-182) — leading to the record of play. Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
 // hero buttons, no lead, no link row: the cards are the page. Rendered on the server, the games streamed in behind it (SKATGO-193).
@@ -35,14 +36,18 @@ export function EntryPage() {
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.entry_title()}</h1>
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
-        {/* The deal of the day stays "1 deal today" once played (SKATGO-135, the human: 「这个按钮文字不变」). */}
-        <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
+        {/* The League first, top left, since SKATGO-221 (the human: 「让锦标赛卡片位于1，1，然后1 deal today位于2，2这个位置，
+            就是换位」); before, fourth (SKATGO-204, the human: 「你看看那个practice是不是没人点，打算把liga放那里如何」, then 「同意」),
+            in the bidding practice's tile, its colour kept. A red ribbon across its top right corner (SKATGO-206, the human:
+            「home的联赛卡片上面加个红色的斜着的小tag，New，吸引人登录」, then 「应该像彩带一样斜着，在右上角」), "Hot" since SKATGO-221,
+            and a gold cup that shines in place of the outline one (the human: 「把首页卡片的ranked match的new横幅改成Hot，然后奖杯
+            改成金色带高光的还会闪的」). */}
+        <Way to="/league" section="league" tone="league" Icon={GoldTrophy} iconSize={goldTrophy.size} art={LEAGUE_ART} title={m.home_league()} badge={m.home_league_hot()} />
         <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
         <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
-        {/* The League (SKATGO-204, the human: 「你看看那个practice是不是没人点，打算把liga放那里如何」, then 「同意」): in the bidding
-            practice's tile, its colour kept; a cup. A red "New" ribbon across its top right corner (SKATGO-206, the human:
-            「home的联赛卡片上面加个红色的斜着的小tag，New，吸引人登录」, then 「应该像彩带一样斜着，在右上角」). */}
-        <Way to="/league" section="league" tone="league" Icon={Trophy} art={LEAGUE_ART} title={m.home_league()} badge={m.home_league_new()} />
+        {/* The deal of the day, fourth since SKATGO-221 (first before, top left), stays "1 deal today" once played (SKATGO-135,
+            the human: 「这个按钮文字不变」). */}
+        <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
         {/* The XP board first, the player's progress under it (SKATGO-172, the human asked which goes on top: 「你建议？」). */}
         <div data-testid="entry-card" data-section="xp" {...stylex.props(styles.long, styles.board)}>
           {xp ? (
@@ -102,9 +107,10 @@ export function EntryPage() {
 /** The hero's ways in as they are counted (SKATGO-29; renamed by SKATGO-74's tracking plan): the deal of the day, free play. */
 const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
 
-/** A colour card: its icon at the top, its title at the bottom, three of skatgo's cards in the corner under its colour;
- *  `badge` a red ribbon across its top right corner. */
-function Way({ to, section, tone, Icon, art, title, badge, onClick }: { to: '/daily' | '/play' | '/course' | '/league'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon; art: Card[]; title: string; badge?: string; onClick?: () => void }) {
+/** A colour card: its icon at the top (a lucide outline, or the League's gold cup), its title at the bottom, three of
+ *  skatgo's cards in the corner under its colour; `badge` a red ribbon across its top right corner. The icon is
+ *  `icon.tile` unless `iconSize` says otherwise (the gold cup, a step larger). */
+function Way({ to, section, tone, Icon, iconSize = icon.tile, art, title, badge, onClick }: { to: '/daily' | '/play' | '/course' | '/league'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon | typeof GoldTrophy; iconSize?: number; art: Card[]; title: string; badge?: string; onClick?: () => void }) {
   return (
     <Link to={to} data-testid="entry-card" data-section={section} onClick={onClick} {...stylex.props(styles.tile, styles.lift, tileTones[tone])}>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
@@ -116,10 +122,10 @@ function Way({ to, section, tone, Icon, art, title, badge, onClick }: { to: '/da
       </span>
       <span aria-hidden="true" {...stylex.props(styles.veil)} />
       <span {...stylex.props(styles.body)}>
-        <Icon aria-hidden="true" size={icon.tile} strokeWidth={icon.outline} />
+        <Icon aria-hidden="true" size={iconSize} strokeWidth={icon.outline} />
         <h2 {...stylex.props(typography.homeTileTitle, styles.tileTitle)}>{title}</h2>
       </span>
-      {badge ? <span data-testid="entry-badge" {...stylex.props(typography.badge, styles.badge)}>{badge}</span> : null}
+      {badge ? <span data-testid="entry-badge" {...stylex.props(typography.ribbon, styles.badge)}>{badge}</span> : null}
     </Link>
   )
 }
@@ -304,7 +310,7 @@ const styles = stylex.create({
   // The icon at the top, the title at the bottom.
   body: { position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1 },
   tileTitle: { margin: 0, color: color.onColor },
-  // The "New" ribbon: a red band with white words across the top right corner, both its ends cut off by the tile.
+  // The "Hot" ribbon: a red band with white words across the top right corner, both its ends cut off by the tile.
   badge: {
     position: 'absolute',
     top: space.x16,

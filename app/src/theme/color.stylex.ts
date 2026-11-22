@@ -76,6 +76,13 @@ export const color = stylex.defineVars({
   auctionHead: '#639B3D',
   /** The active tab tile in the side panel (derived from the action green). */
   tabActive: '#6FDDA2',
+  /** The gold cup on the front page's League tile (SKATGO-221, the human: 「奖杯改成金色带高光的还会闪的」): its metal
+   *  from the lit side through gold to the shade, and the gold of its glow; the same day and night, as the tile under
+   *  it. Its highlight and the light that passes over it are `onColorSoft`. */
+  trophyLight: '#FFE7A0',
+  trophyGold: '#F7B61E',
+  trophyDeep: '#C27A0A',
+  trophyGlow: 'rgba(255, 196, 60, 0.6)',
 
   // Judging an answer — derived from the action green and red.
   good: { default: '#00A336', [NIGHT]: 'light-dark(#00A336, #1DB456)' },

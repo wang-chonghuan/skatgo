@@ -38,6 +38,8 @@ export const fill = stylex.defineVars({
   // White day and night (SKATGO-186, the human: 「dark模式下，那个旋转等待的logo，还应该是白色阴影」): `onColor`, not the surface.
   loaderGlow: `radial-gradient(circle closest-side, ${color.onColor} 0%, ${color.onColor} 66%, transparent 100%)`,
   dimmed: 'brightness(0.62) saturate(0.7)',
+  /** The gold cup's soft glow on the League tile (SKATGO-221). */
+  trophyGlow: `drop-shadow(0 0 6px ${color.trophyGlow})`,
   /** A coloured button under the pointer. */
   hoverBright: 'brightness(1.06)',
 })
@@ -51,7 +53,8 @@ export const pose = stylex.defineVars({
   fanRight: 'rotate(12deg) translate(4px, 8px)',
   fanFarRight: 'rotate(24deg) translate(8px, 26px)',
   tileArt: 'rotate(-8deg)',
-  /** The "New" ribbon across a tile's top right corner (SKATGO-206, the human: 「应该像彩带一样斜着，在右上角」). */
+  /** The "Hot" ribbon across a tile's top right corner (SKATGO-206, the human: 「应该像彩带一样斜着，在右上角」; "New"
+   *  until SKATGO-221). */
   ribbon: 'rotate(45deg)',
   lift: 'translateY(-3px)',
   rest: 'translateY(0)',

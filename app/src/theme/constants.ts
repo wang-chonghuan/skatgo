@@ -80,6 +80,35 @@ export const tapHint = {
   transition: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' as const },
 }
 
+/** The gold cup on the front page's League tile (SKATGO-221, the human: 「奖杯改成金色带高光的还会闪的」), drawn here in
+ *  lucide's 24-unit box so it stands where the outline `Trophy` stood, a step larger than the tiles' outline icons
+ *  (`icon.tile`) so its highlight, star and passing light read at a glance: a bowl under a lit rim, two handles, a foot
+ *  on a plate with an engraved line, a star engraved in the bowl and a highlight down its left; the light band that
+ *  passes over it (clipped to bowl and foot); and two four-pointed sparkles beside it, outside the box. */
+export const goldTrophy = {
+  view: '0 0 24 24',
+  /** Its size in px on the tile. */
+  size: 44,
+  /** Where the gold turns from light to gold to deep, along each shape's diagonal. */
+  stops: { light: 0, gold: 0.45, deep: 1 },
+  bowl: 'M6 3 H18 V8.5 C18 12.1 15.4 14.6 12 14.6 C8.6 14.6 6 12.1 6 8.5 Z',
+  rim: 'M5.2 2 H18.8 A0.8 0.8 0 0 1 18.8 3.6 H5.2 A0.8 0.8 0 0 1 5.2 2 Z',
+  foot: 'M10.7 14.4 H13.3 V16.9 L15 18.8 H17.2 A0.8 0.8 0 0 1 18 19.6 V21.2 A0.8 0.8 0 0 1 17.2 22 H6.8 A0.8 0.8 0 0 1 6 21.2 V19.6 A0.8 0.8 0 0 1 6.8 18.8 H9 L10.7 16.9 Z',
+  handles: ['M6 4.8 H4.6 A2.4 2.4 0 0 0 4.6 9.6 H6.4', 'M18 4.8 H19.4 A2.4 2.4 0 0 1 19.4 9.6 H17.6'],
+  handle: 1.6,
+  plaque: 'M8.6 20.4 H15.4',
+  plaqueLine: 0.8,
+  star: 'M12.5 5.9 L13.06 7.43 L14.69 7.49 L13.4 8.49 L13.85 10.06 L12.5 9.15 L11.15 10.06 L11.6 8.49 L10.31 7.49 L11.94 7.43 Z',
+  highlight: 'M8.3 4.8 C8.2 7.6 8.7 10 10.2 11.9',
+  highlightLine: 1.2,
+  /** The light band, slanted, standing left of the cup until it moves (`shine` in effects.stylex.ts). */
+  band: 'M-5 -2 H0 L-6 26 H-11 Z',
+  sparkles: [
+    'M22.6 -3 Q22.6 0.4 26 0.4 Q22.6 0.4 22.6 3.8 Q22.6 0.4 19.2 0.4 Q22.6 0.4 22.6 -3 Z',
+    'M1.4 11.6 Q1.4 14.2 4 14.2 Q1.4 14.2 1.4 16.8 Q1.4 14.2 -1.2 14.2 Q1.4 14.2 1.4 11.6 Z',
+  ],
+}
+
 /** The finish screen's emoji springing in. */
 export const finish = { spring: { type: 'spring', stiffness: 260, damping: 16 }, fromScale: 0.4 } as const
 

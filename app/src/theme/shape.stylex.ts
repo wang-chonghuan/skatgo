@@ -58,10 +58,12 @@ export const dims = stylex.defineVars({
   // The front page's tiles and hero picture
   tileArtRight: '-18px',
   tileArtBottom: '-38px',
-  /** The "New" ribbon across a tile's top right corner (SKATGO-206): its length, and how far its box stands out past
-   *  the tile's right edge, so that it crosses the corner and both its ends are cut off by the tile. */
-  ribbonWidth: '112px',
-  ribbonRight: '-30px',
+  /** The "Hot" ribbon across a tile's top right corner (SKATGO-206; "New" until SKATGO-221): its length, and how far its box stands out past
+   *  the tile's right edge, so that it crosses the corner and both its ends are cut off by the tile. Longer since
+   *  SKATGO-221's larger words made the band thicker (the human: 「彩带的上面漏出来一个直角，不行」): at 112px its cut end
+   *  stopped short of the tile's top edge; 148px, its middle where it was, carries both ends well past the edges. */
+  ribbonWidth: '148px',
+  ribbonRight: '-48px',
 
   /** The share card shown under the result's share buttons (SKATGO-132): the link preview's own 1200×630, at most
    *  half its size. */

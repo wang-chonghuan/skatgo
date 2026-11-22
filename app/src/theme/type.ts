@@ -39,6 +39,9 @@ export const typography = stylex.create({
   option: { fontFamily: 'inherit', fontSize: fontSize.f16, fontWeight: weight.ui, lineHeight: leading.control },
   toggle: { fontFamily: 'inherit', fontSize: fontSize.f13, fontWeight: weight.ui },
   badge: { fontSize: fontSize.f13, fontWeight: weight.bold },
+  /** The "Hot" ribbon across the League tile's corner: a badge's weight, a step larger (SKATGO-221, the human:
+   *  「彩带上的Hot字体稍微大一点」; the 13px `badge` until then). */
+  ribbon: { fontSize: fontSize.f16, fontWeight: weight.bold },
 
   // Glyphs sized as pictures
   stars: { fontSize: fontSize.f16, lineHeight: leading.glyph },

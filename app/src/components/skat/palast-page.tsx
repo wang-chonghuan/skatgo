@@ -103,7 +103,7 @@ const styles = stylex.create({
   // Side by side where there is room, one under the other on a phone.
   pair: {
     display: 'grid',
-    gridTemplateColumns: { default: '1fr 1fr', [bp.phone]: '1fr' },
+    gridTemplateColumns: { default: dims.twoColumns, [bp.phone]: dims.oneColumn },
     gap: { default: space.x16, [bp.phone]: space.x8 },
   },
   cell: {

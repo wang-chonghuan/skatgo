@@ -254,10 +254,10 @@ private table goes — what the game pages no longer explain (the human: 「我�
 
 The big online Skat sites side by side at `/skat-sites-compared` (SKATGO-228; German `/de/skat-online-vergleich`): a search
 entry for the people who look for Skat Palast, Skatstube, Euroskat and the others by name. It speaks well of every provider
-and leads to SkatGo (the human: 「可以比较，但是都说好话，主要是导流到skatgo首页」): a matrix of opponents, platforms, rules,
-competition and learning, SkatGo's own screens and strengths, a short guide, a portrait of each provider in our own words from
-what it says about itself, and questions people ask; a box at its top and its end says SkatGo is free with no sign-up and opens
-the front page. Nothing negative or sensitive about another provider is said — no ads, no money play — and none of their
+and leads to SkatGo (the human: 「可以比较，但是都说好话，主要是导流到skatgo首页」): a matrix of what stands out, opponents,
+platforms, rules, competition and learning, SkatGo's own screens and strengths, a short guide, a portrait of each provider in our own words from
+what it says about itself, and questions people ask; a box at its top, after SkatGo's part and at its end says SkatGo is free with
+no sign-up and opens the front page, and nothing links away to the other providers. Nothing negative or sensitive about another provider is said — no ads, no money play — and none of their
 pictures is shown; every statement about them comes from their own pages on the date the page names, and the human updates
 it by hand, never a scheduled crawl. Its one way in is the footer (「可以放到footerlink里……但是别在其他地方乱搞入口」).
 

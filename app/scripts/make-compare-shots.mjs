@@ -35,7 +35,8 @@ const SHOTS = [
     name: 'bidding',
     path: { de: '/de/bidding-practice', en: '/en/bidding-practice' },
     async ready(page) {
-      await page.getByTestId('bidding-practice-contract').getByRole('button').first().click()
+      // A new learner's first question is a pass; the picture shows its explanation after the right answer.
+      await page.getByTestId('bidding-practice-contract').getByRole('button', { name: /^(Passe|Pass)$/ }).click()
       await page.getByTestId('bidding-practice-result').waitFor()
       // The explanation, not the buttons, is what the picture is for.
       await page.getByTestId('bidding-practice-result').evaluate((el) => el.scrollIntoView({ block: 'center' }))

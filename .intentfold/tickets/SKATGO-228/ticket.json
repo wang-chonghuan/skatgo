@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-228",
   "mode": "autonomous",
-  "stage": "developing",
+  "stage": "handoff-ready",
   "finish": "auto-deploy",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-228",
   "branch": "SKATGO-228-skat-sites-compared",

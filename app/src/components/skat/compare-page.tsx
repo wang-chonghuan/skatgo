@@ -14,14 +14,16 @@ import { linkLook } from './ui'
 /**
  * The big online Skat sites side by side (SKATGO-228): a search entry for the people who look for them, apart from the
  * app — reached only from the footer (the human: 「可以放到footerlink里……但是别在其他地方乱搞入口」) — that speaks well of
- * every provider and leads to SkatGo's front page (「可以比较，但是都说好话，主要是导流到skatgo首页」): a box at its top
- * and its end says SkatGo is free with no sign-up and opens the front page. The facts are `lib/compare.ts`'s, each from the
+ * every provider and leads to SkatGo's front page (「可以比较，但是都说好话，主要是导流到skatgo首页」): a box at its top,
+ * after SkatGo's own section and at its end says SkatGo is free with no sign-up and opens the front page; nothing links away
+ * to the other providers. The facts are `lib/compare.ts`'s, each from the
  * provider's own pages; no other provider's picture is shown — the pictures are SkatGo's own screens
  * (`scripts/make-compare-shots.mjs`).
  */
 export function ComparePage() {
   const locale = getLocale()
   const columns: Record<Column, string> = {
+    special: m.compare_col_special(),
     opponents: m.compare_col_opponents(),
     platforms: m.compare_col_platforms(),
     rules: m.compare_col_rules(),
@@ -108,6 +110,8 @@ export function ComparePage() {
           </ul>
         </section>
 
+        {cta('compare-cta-mid')}
+
         <section data-testid="compare-guide" aria-labelledby="compare-guide-title" {...stylex.props(styles.section)}>
           <h2 id="compare-guide-title" {...stylex.props(typography.optionTitle, styles.title)}>{m.compare_guide_title()}</h2>
           <div {...stylex.props(styles.sites)}>
@@ -129,7 +133,7 @@ export function ComparePage() {
                 <p {...stylex.props(typography.bodySmall, styles.muted)}>{m.compare_operator()}: {site.operator} · {m.compare_suits()}: {site.suits[locale]}</p>
                 <p {...stylex.props(typography.body, styles.text)}>{site.about[locale]}</p>
                 <dl {...stylex.props(styles.details)}>
-                  {COLUMNS.map((c) => (
+                  {COLUMNS.filter((c) => site.cells[c].mark === 'yes').map((c) => (
                     <div key={c} {...stylex.props(styles.detail)}>
                       <dt {...stylex.props(typography.bodySmall, typography.emphasis, styles.title, styles.inline)}>{columns[c]}:</dt>{' '}
                       <dd {...stylex.props(typography.bodySmall, styles.text, styles.inline)}>{site.cells[c].text[locale]}</dd>
@@ -141,7 +145,6 @@ export function ComparePage() {
                     {site.highlights.map((h) => <li key={h.text.en} {...stylex.props(typography.bodySmall, styles.text)}>{h.text[locale]}</li>)}
                   </ul>
                 ) : null}
-                <a href={site.url} target="_blank" rel="nofollow noopener" {...stylex.props(typography.link, styles.link)}>{m.compare_visit()}: {site.name}</a>
               </article>
             ))}
           </div>

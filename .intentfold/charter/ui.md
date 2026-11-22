@@ -471,12 +471,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   end, the way on, once pressed, reads "Warten auf <Namen>" and takes no tap. Nothing of the room stands on the felt. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
 - **The big Skat sites side by side** (`compare-page.tsx`, `/skat-sites-compared`, SKATGO-228): a column as wide as the
   front page's (`dims.landingColumn`) — the H1 and a lead; a `color.surface` box with a `hairline` border, its title and line
-  beside one large `go` button to the front page (stacked on a phone), at the top and again near the end; the matrix, a
+  beside one large `go` button to the front page (stacked on a phone), at the top, after SkatGo's screens and near the end; the matrix, a
   `<table>` in a bordered box that slides sideways only on a phone, the provider's name column staying in view, SkatGo's row on
   `goodSoft`; SkatGo's four screens in a row of four (two on a phone) with a bold title and a line under each, then a list; a
   guide of four short parts and the providers' portraits, each in two columns (one on a phone), a portrait a bordered box with
-  its name, operator, a paragraph, each criterion as a line with its name in bold, a list, and a plain `info` link to the
-  provider; the questions; last two `note` lines in `slate`, the second ending in a link to the imprint. No other provider's
+  its name, operator, a paragraph, each criterion it states as a line with its name in bold, and a list — no link away to
+  the provider; the questions; last two `note` lines in `slate`, the second ending in a link to the imprint. No other provider's
   picture or logo.
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's

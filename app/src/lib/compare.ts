@@ -18,7 +18,7 @@ export type Mark = 'yes' | 'unknown'
 /** `short` is the matrix's few words, `text` the portrait's full line. */
 export type Cell = { mark: Mark; short: Text; text: Text; source?: string }
 
-export const COLUMNS = ['opponents', 'platforms', 'rules', 'compete', 'learn'] as const
+export const COLUMNS = ['special', 'opponents', 'platforms', 'rules', 'compete', 'learn'] as const
 export type Column = (typeof COLUMNS)[number]
 
 export type Site = {
@@ -65,8 +65,9 @@ export const SITES: Site[] = [
     about: { de: '', en: '' },
     aboutSource: '',
     cells: {
+      special: cell('Nach jedem Spiel der Vergleich mit dem Computer auf denselben Karten', 'After every game, a comparison with the computer on the same cards', 'Jedes Spiel mit dem Computer verglichen', 'Every game compared with the computer'),
       opponents: cell('Zwei Computer-Gegner, jederzeit bereit; in der Liga auch Menschen', 'Two computer opponents, ready any time; people too in the League', 'Computer; Liga: Menschen', 'Computer; League: people'),
-      platforms: cell('Im Browser auf Handy, Tablet und PC, ohne Download', 'In the browser on phone, tablet and PC, no download', 'Browser', 'Browser'),
+      platforms: cell('Im Browser auf Handy, Tablet und PC, ohne Download und ohne Konto', 'In the browser on phone, tablet and PC, no download', 'Browser, ohne Konto', 'Browser, no account'),
       rules: cell('Internationale Skatordnung', 'International Skat Order', 'ISkO', 'ISkO'),
       compete: cell('Jeden Tag ein Turnier mit denselben Karten für alle, dazu eine Liga mit sechs Stufen', 'A daily tournament with the same cards for everyone, and a League with six tiers', 'Tagesturnier, Liga', 'Daily tournament, League'),
       learn: cell('Kurs mit elf Lektionen, 150 Reizaufgaben, 20 Endspiele', 'A course of eleven lessons, 150 bidding exercises, 20 endgames', 'Kurs, 170 Aufgaben', 'Course, 170 exercises'),
@@ -78,13 +79,14 @@ export const SITES: Site[] = [
     name: 'Skat Palast',
     url: SP,
     operator: 'Spiele-Palast GmbH',
-    suits: { de: 'Live gegen Menschen, mit vielen Vereinen', en: 'Playing live against people, with many clubs' },
+    suits: { de: 'Live gegen Menschen und mit vielen Vereinen', en: 'Live play against people and many clubs' },
     about: {
       de: 'Der Skat Palast ist eine der bekanntesten Adressen für Live-Skat. Seit über zwölf Jahren treffen sich dort Spielerinnen und Spieler aus ganz Deutschland, laut Anbieter rund 100.000 im Monat. Gespielt wird am Standardtisch nach der Internationalen Skatordnung, und wer mag, wählt Sonderregeln wie Ramsch und Bock. Über 1.700 Vereine, eine Liga und Saisonturniere sorgen für Wettbewerb.',
       en: 'Skat Palast is one of the best-known places for live Skat. For over twelve years players from all over Germany have met there, by its own account around 100,000 a month. The standard table follows the International Skat Order, and anyone who likes can choose special rules such as Ramsch and Bock. Over 1,700 clubs, a league and seasonal tournaments keep it competitive.',
     },
     aboutSource: SP_PLAY,
     cells: {
+      special: cell('Rund 100.000 aktive Spieler im Monat und über 1.700 Vereine', 'Around 100,000 active players a month and over 1,700 clubs', '100.000 Spieler im Monat', '100,000 players a month', SP_PLAY),
       opponents: cell('Echte Spieler, live', 'Real players, live', 'Menschen, live', 'People, live', SP),
       platforms: cell('Browser, Windows, iOS, Android, Facebook, Amazon', 'Browser, Windows, iOS, Android, Facebook, Amazon', 'Browser, Windows, Apps', 'Browser, Windows, apps', SP),
       rules: cell('ISkO am Standardtisch; Kontra, Re, Ramsch, Bock wählbar', 'ISkO at the standard table; Kontra, Re, Ramsch, Bock optional', 'ISkO, Sonderregeln', 'ISkO, special rules', SP),
@@ -109,6 +111,7 @@ export const SITES: Site[] = [
     },
     aboutSource: SS,
     cells: {
+      special: cell('Die „Kneipe“ mit Kontra, Re und Ramsch', 'The "Kneipe" with Kontra, Re and Ramsch', 'Kneipe mit Ramsch', 'Pub room with Ramsch', SS_HELP),
       opponents: cell('Echte Spieler; in der iOS-App auch ein starker Computergegner', 'Real players; a strong computer opponent in the iOS app too', 'Menschen; iOS: Computer', 'People; iOS: computer', 'https://www.skatstube.de/skat-app'),
       platforms: cell('Browser, iPhone, iPad', 'Browser, iPhone, iPad', 'Browser, iOS', 'Browser, iOS', SS_HELP),
       rules: cell('ISkO; Kontra, Re und Ramsch in der „Kneipe“', 'ISkO; Kontra, Re and Ramsch in the "Kneipe"', 'ISkO, Kneipe', 'ISkO, pub room', SS_HELP),
@@ -116,9 +119,8 @@ export const SITES: Site[] = [
       learn: cell('Regelseiten und ein Reizassistent', 'Rules pages and a bidding assistant', 'Regeln, Reizhilfe', 'Rules, bidding aid', 'https://www.skatstube.de/skat-lernen'),
     },
     highlights: [
-      { text: { de: 'Setzt laut eigener Aussage nicht auf ablenkende Werbebanner.', en: 'By its own account avoids distracting ad banners.' }, source: SS_HELP },
+      { text: { de: 'Setzt nicht auf ablenkende Werbebanner.', en: 'Does without distracting ad banners.' }, source: SS_HELP },
       { text: { de: 'Offline-Trainingsmodus für iPhone und iPad.', en: 'Offline training mode for iPhone and iPad.' }, source: SS },
-      { text: { de: 'Tische nur für Freunde mit der Fördermitgliedschaft.', en: 'Friends-only tables with the supporting membership.' }, source: SS_HELP },
     ],
   },
   {
@@ -133,6 +135,7 @@ export const SITES: Site[] = [
     },
     aboutSource: ES,
     cells: {
+      special: cell('Offizielle Online-Wettbewerbe mit dem Deutschen Skatverband', 'Official online competitions with the German Skat association', 'DSkV-Online-Bundesliga', 'DSkV online Bundesliga', ES),
       opponents: cell('Echte Spieler; die KI „Robi“ springt ein, wenn jemand ausfällt', 'Real players; the AI "Robi" steps in when someone drops out', 'Menschen', 'People', 'https://www.euroskat.com/ki'),
       platforms: cell('Im Browser, auch auf dem Tablet, ohne Download', 'In the browser, tablets too, no download', 'Browser', 'Browser', ES),
       rules: cell('Internationale Skatordnung', 'International Skat Order', 'ISkO', 'ISkO', 'https://www.euroskat.com/agb'),
@@ -152,11 +155,12 @@ export const SITES: Site[] = [
     operator: 'GameDuell GmbH',
     suits: { de: 'Live-Skat auf dem Handy', en: 'Live Skat on a phone' },
     about: {
-      de: 'Skat Treff von GameDuell bringt Live-Skat aufs Handy: Gegner aus ganz Deutschland oder die eigene Runde aus der Kneipe. Gespielt wird nach Turnier- oder Kneipenregeln, mit altdeutschem, französischem oder Turnierblatt. Im Liga-Modus steigt man in der Rangliste auf, und laut Anbieter ist Skat Treff langjähriger Partner des Deutschen Skatverbands.',
-      en: 'GameDuell\'s Skat Treff brings live Skat to the phone: opponents from all over Germany or your own pub group. You play by tournament or pub rules, with an old German, French or tournament deck. In league mode you climb the ranking, and by its own account Skat Treff is a long-standing partner of the German Skat association.',
+      de: 'Skat Treff von GameDuell bringt Live-Skat aufs Handy: Gegner aus ganz Deutschland oder die eigene Runde aus der Kneipe. Gespielt wird nach Turnier- oder Kneipenregeln, mit altdeutschem, französischem oder Turnierblatt. Im Liga-Modus steigt man in der Rangliste auf, und Skat Treff ist langjähriger Partner des Deutschen Skatverbands.',
+      en: 'GameDuell\'s Skat Treff brings live Skat to the phone: opponents from all over Germany or your own pub group. You play by tournament or pub rules, with an old German, French or tournament deck. In league mode you climb the ranking, and Skat Treff is a long-standing partner of the German Skat association.',
     },
     aboutSource: ST_PLAY,
     cells: {
+      special: cell('Langjähriger Partner des Deutschen Skatverbands', 'Long-standing partner of the German Skat association', 'Partner des DSkV', 'DSkV partner', ST_PLAY),
       opponents: cell('Echte Spieler aus ganz Deutschland', 'Real players from all over Germany', 'Menschen', 'People', ST_PLAY),
       platforms: cell('iPhone, iPad und Android', 'iPhone, iPad and Android', 'Apps', 'Apps', ST_IOS),
       rules: cell('Turnier- oder Kneipenregeln', 'Tournament or pub rules', 'Turnier, Kneipe', 'Tournament, pub', ST_PLAY),
@@ -173,13 +177,14 @@ export const SITES: Site[] = [
     name: 'PlayOK (Kurnik)',
     url: PO,
     operator: 'PlayOK',
-    suits: { de: 'Schnell eine Partie im Browser, weltweit', en: 'A quick game in the browser, worldwide' },
+    suits: { de: 'Eine schnelle Partie gegen Gegner aus aller Welt', en: 'A quick game against players from all over the world' },
     about: {
       de: 'PlayOK, früher Kurnik, ist ein internationales Spieleportal mit Skat-Sälen, in denen Gegner aus aller Welt sitzen. Man spielt kostenlos im Browser, auch auf dem Handy, und kann als Gast vorbeischauen. Ranglisten, Statistiken und Profile zeigen, wie man sich schlägt.',
       en: 'PlayOK, formerly Kurnik, is an international games portal with Skat rooms full of opponents from all over the world. You play free in the browser, phones too, and can drop in as a guest. Rankings, statistics and profiles show how you are doing.',
     },
     aboutSource: PO,
     cells: {
+      special: cell('Skat-Säle in 36 Sprachen', 'Skat rooms in 36 languages', '36 Sprachen', '36 languages', PO),
       opponents: cell('Live-Gegner aus aller Welt', 'Live opponents from all over the world', 'Menschen, weltweit', 'People, worldwide', PO),
       platforms: cell('Im Browser, auch auf dem Handy', 'In the browser, phones too', 'Browser', 'Browser', PO),
       rules: unknown(),
@@ -203,6 +208,7 @@ export const SITES: Site[] = [
     },
     aboutSource: P123,
     cells: {
+      special: cell('Highscore-Liste mit Bronze-, Silber- und Gold-Marken', 'High-score table with bronze, silver and gold marks', 'Medaillen für Highscores', 'Medals for high scores', P123),
       opponents: unknown(),
       platforms: cell('Im Browser auf jedem Gerät', 'In the browser on any device', 'Browser', 'Browser', 'https://about.play123.com'),
       rules: unknown(),
@@ -225,6 +231,7 @@ export const SITES: Site[] = [
     },
     aboutSource: SO,
     cells: {
+      special: cell('Seit rund 20 Jahren die Plattform vieler Online-Clubs', 'For about 20 years the platform of many online clubs', 'Clubskat seit 20 Jahren', 'Club Skat for 20 years', SO),
       opponents: cell('Echte Spieler, viele Online-Clubs', 'Real players, many online clubs', 'Menschen', 'People', SO),
       platforms: cell('Programm für Windows, Linux und Mac', 'A program for Windows, Linux and Mac', 'Windows, Linux, Mac', 'Windows, Linux, Mac', SO),
       rules: cell('Streng nach der Internationalen Skatordnung', 'Strictly by the International Skat Order', 'Streng ISkO', 'Strict ISkO', 'https://www.skat-online.com/de/regeln-hilfe/faq.html'),
@@ -242,13 +249,14 @@ export const SITES: Site[] = [
     name: 'Skat (Isar Interactive)',
     url: IS,
     operator: 'Isar Interactive GmbH & Co. KG',
-    suits: { de: 'Skat-App für unterwegs, auch offline', en: 'A Skat app for on the go, offline too' },
+    suits: { de: 'Skat unterwegs und auch offline', en: 'Skat on the go and offline' },
     about: {
-      de: 'Das Skat von Isar Interactive ist eine der meistbewerteten Skat-Apps, mit über einer Million Downloads und 4,5 Sternen bei Google Play. Man spielt offline gegen starke Computergegner oder online an öffentlichen Tischen, nach DSkV-Regeln oder wie am Stammtisch mit Kontra, Re, Ramsch und Bock. Ein Strategie-Trainer von Skatmeister Daniel Schäfer und ein Analysemodus helfen beim Besserwerden.',
+      de: 'Die Skat-App von Isar Interactive ist eine der meistbewerteten Skat-Apps, mit über einer Million Downloads und 4,5 Sternen bei Google Play. Man spielt offline gegen starke Computergegner oder online an öffentlichen Tischen, nach DSkV-Regeln oder wie am Stammtisch mit Kontra, Re, Ramsch und Bock. Ein Strategie-Trainer von Skatmeister Daniel Schäfer und ein Analysemodus helfen beim Besserwerden.',
       en: 'Isar Interactive\'s Skat is one of the most-rated Skat apps, with over a million downloads and 4.5 stars on Google Play. You play offline against strong computer opponents or online at public tables, by DSkV rules or pub-style with Kontra, Re, Ramsch and Bock. A strategy trainer by Skat master Daniel Schäfer and an analysis mode help you improve.',
     },
     aboutSource: IS_PLAY,
     cells: {
+      special: cell('Strategie-Trainer von Skatmeister Daniel Schäfer', 'Strategy trainer by Skat master Daniel Schäfer', 'Trainer vom Skatmeister', 'Trainer by a Skat master', IS_PLAY),
       opponents: cell('Starke Computergegner und echte Mitspieler', 'Strong computer opponents and real players', 'Computer, Menschen', 'Computer, people', IS_PLAY),
       platforms: cell('Android, iPhone, iPad, Mac und Windows', 'Android, iPhone, iPad, Mac and Windows', 'Apps, Mac, Windows', 'Apps, Mac, Windows', IS),
       rules: cell('DSkV-Regeln oder Stammtisch mit Kontra, Re, Ramsch, Bock', 'DSkV rules or pub rules with Kontra, Re, Ramsch, Bock', 'DSkV, Stammtisch', 'DSkV, pub rules', IS_PLAY),

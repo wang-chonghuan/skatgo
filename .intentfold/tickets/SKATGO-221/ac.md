@@ -1,6 +1,8 @@
 # SKATGO-221 AC
 
-Checked on the ticket's web (port 55221), PC 1280×800 and phone 390×844, Playwright.
+Checked on the ticket's web (port 55221), PC 1280×820 and phone 375×812, Playwright. English at `/en`, German at `/`
+(paraglide's url patterns; `/de` is not the German front page), each with its browser locale; the tile's title proves the
+language.
 
 1. **"Hot" in both languages** — `/en` and `/de`: the League tile's ribbon (`entry-badge`) reads "Hot"; no tile on
    either page shows "New" or "Neu".

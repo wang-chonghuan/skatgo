@@ -30,7 +30,7 @@ export const timing = stylex.defineVars({
   /** The gold cup on the League tile (SKATGO-221, the human: 「还会闪的」): one pass of the light band — over the cup for
    *  about a third of it, out of sight the rest — and one dim-to-lit swing of a sparkle beside it, the second sparkle
    *  half a swing behind the first. */
-  shine: '3.2s',
+  shine: '2.8s',
   twinkle: '1.6s',
   twinkleBehind: '-0.8s',
   easeInOut: 'ease-in-out',
@@ -46,9 +46,9 @@ export const shine = stylex.defineConsts({
 
 /** A sparkle beside the gold cup, dim and small, then lit and whole (SKATGO-221). */
 export const twinkle = stylex.defineConsts({
-  dim: '0.25',
+  dim: '0.15',
   lit: '1',
-  small: 'scale(0.55)',
+  small: 'scale(0.4)',
   whole: 'scale(1)',
 })
 

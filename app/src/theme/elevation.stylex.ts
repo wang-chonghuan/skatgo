@@ -39,7 +39,7 @@ export const fill = stylex.defineVars({
   loaderGlow: `radial-gradient(circle closest-side, ${color.onColor} 0%, ${color.onColor} 66%, transparent 100%)`,
   dimmed: 'brightness(0.62) saturate(0.7)',
   /** The gold cup's soft glow on the League tile (SKATGO-221). */
-  trophyGlow: `drop-shadow(0 0 5px ${color.trophyGlow})`,
+  trophyGlow: `drop-shadow(0 0 6px ${color.trophyGlow})`,
   /** A coloured button under the pointer. */
   hoverBright: 'brightness(1.06)',
 })

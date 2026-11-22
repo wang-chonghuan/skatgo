@@ -81,11 +81,14 @@ export const tapHint = {
 }
 
 /** The gold cup on the front page's League tile (SKATGO-221, the human: 「奖杯改成金色带高光的还会闪的」), drawn here in
- *  lucide's 24-unit box so it stands where the outline `Trophy` stood, at `icon.tile`: a bowl under a lit rim, two
- *  handles, a foot on a plate with an engraved line, a star engraved in the bowl and a highlight down its left; the
- *  light band that passes over it (clipped to bowl and foot); and two four-pointed sparkles beside it, outside the box. */
+ *  lucide's 24-unit box so it stands where the outline `Trophy` stood, a step larger than the tiles' outline icons
+ *  (`icon.tile`) so its highlight, star and passing light read at a glance: a bowl under a lit rim, two handles, a foot
+ *  on a plate with an engraved line, a star engraved in the bowl and a highlight down its left; the light band that
+ *  passes over it (clipped to bowl and foot); and two four-pointed sparkles beside it, outside the box. */
 export const goldTrophy = {
   view: '0 0 24 24',
+  /** Its size in px on the tile. */
+  size: 44,
   /** Where the gold turns from light to gold to deep, along each shape's diagonal. */
   stops: { light: 0, gold: 0.45, deep: 1 },
   bowl: 'M6 3 H18 V8.5 C18 12.1 15.4 14.6 12 14.6 C8.6 14.6 6 12.1 6 8.5 Z',
@@ -99,10 +102,10 @@ export const goldTrophy = {
   highlight: 'M8.3 4.8 C8.2 7.6 8.7 10 10.2 11.9',
   highlightLine: 1.2,
   /** The light band, slanted, standing left of the cup until it moves (`shine` in effects.stylex.ts). */
-  band: 'M-4 -2 H0 L-6 26 H-10 Z',
+  band: 'M-5 -2 H0 L-6 26 H-11 Z',
   sparkles: [
-    'M21.6 -1 Q21.6 1.4 24 1.4 Q21.6 1.4 21.6 3.8 Q21.6 1.4 19.2 1.4 Q21.6 1.4 21.6 -1 Z',
-    'M2 13 Q2 14.8 3.8 14.8 Q2 14.8 2 16.6 Q2 14.8 0.2 14.8 Q2 14.8 2 13 Z',
+    'M22.6 -3 Q22.6 0.4 26 0.4 Q22.6 0.4 22.6 3.8 Q22.6 0.4 19.2 0.4 Q22.6 0.4 22.6 -3 Z',
+    'M1.4 11.6 Q1.4 14.2 4 14.2 Q1.4 14.2 1.4 16.8 Q1.4 14.2 -1.2 14.2 Q1.4 14.2 1.4 11.6 Z',
   ],
 }
 

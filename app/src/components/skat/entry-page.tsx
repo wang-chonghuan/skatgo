@@ -12,7 +12,7 @@ import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
-import { icon } from '../../theme/constants'
+import { goldTrophy, icon } from '../../theme/constants'
 import { timing } from '../../theme/effects.stylex'
 import { elev, pose, veil } from '../../theme/elevation.stylex'
 import { border, space } from '../../theme/scale.stylex'
@@ -45,7 +45,7 @@ export function EntryPage() {
             「home的联赛卡片上面加个红色的斜着的小tag，New，吸引人登录」, then 「应该像彩带一样斜着，在右上角」), "Hot" since SKATGO-221,
             and a gold cup that shines in place of the outline one (the human: 「把首页卡片的ranked match的new横幅改成Hot，然后奖杯
             改成金色带高光的还会闪的」). */}
-        <Way to="/league" section="league" tone="league" Icon={GoldTrophy} art={LEAGUE_ART} title={m.home_league()} badge={m.home_league_hot()} />
+        <Way to="/league" section="league" tone="league" Icon={GoldTrophy} iconSize={goldTrophy.size} art={LEAGUE_ART} title={m.home_league()} badge={m.home_league_hot()} />
         {/* The XP board first, the player's progress under it (SKATGO-172, the human asked which goes on top: 「你建议？」). */}
         <div data-testid="entry-card" data-section="xp" {...stylex.props(styles.long, styles.board)}>
           {xp ? (
@@ -106,8 +106,9 @@ export function EntryPage() {
 const heroClick = (button: 'primary' | 'free') => track('home_cta_clicked', { button })
 
 /** A colour card: its icon at the top (a lucide outline, or the League's gold cup), its title at the bottom, three of
- *  skatgo's cards in the corner under its colour; `badge` a red ribbon across its top right corner. */
-function Way({ to, section, tone, Icon, art, title, badge, onClick }: { to: '/daily' | '/play' | '/course' | '/league'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon | typeof GoldTrophy; art: Card[]; title: string; badge?: string; onClick?: () => void }) {
+ *  skatgo's cards in the corner under its colour; `badge` a red ribbon across its top right corner. The icon is
+ *  `icon.tile` unless `iconSize` says otherwise (the gold cup, a step larger). */
+function Way({ to, section, tone, Icon, iconSize = icon.tile, art, title, badge, onClick }: { to: '/daily' | '/play' | '/course' | '/league'; section: string; tone: keyof typeof tileTones; Icon: LucideIcon | typeof GoldTrophy; iconSize?: number; art: Card[]; title: string; badge?: string; onClick?: () => void }) {
   return (
     <Link to={to} data-testid="entry-card" data-section={section} onClick={onClick} {...stylex.props(styles.tile, styles.lift, tileTones[tone])}>
       <span aria-hidden="true" {...stylex.props(styles.art)}>
@@ -119,7 +120,7 @@ function Way({ to, section, tone, Icon, art, title, badge, onClick }: { to: '/da
       </span>
       <span aria-hidden="true" {...stylex.props(styles.veil)} />
       <span {...stylex.props(styles.body)}>
-        <Icon aria-hidden="true" size={icon.tile} strokeWidth={icon.outline} />
+        <Icon aria-hidden="true" size={iconSize} strokeWidth={icon.outline} />
         <h2 {...stylex.props(typography.homeTileTitle, styles.tileTitle)}>{title}</h2>
       </span>
       {badge ? <span data-testid="entry-badge" {...stylex.props(typography.ribbon, styles.badge)}>{badge}</span> : null}

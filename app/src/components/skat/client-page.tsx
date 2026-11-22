@@ -41,7 +41,6 @@ const PAGES = {
   league: lazyRouteComponent(() => import('./league-page'), 'LeaguePage'),
   leaguePlay: lazyRouteComponent(() => import('./league-page'), 'LeaguePlayPage'),
   about: lazyRouteComponent(() => import('./about-page'), 'AboutPage'),
-  palast: lazyRouteComponent(() => import('./palast-page'), 'PalastPage'),
   privacy: lazyRouteComponent(() => import('./legal-page'), 'PrivacyPage'),
   terms: lazyRouteComponent(() => import('./legal-page'), 'TermsPage'),
   deleteAccount: lazyRouteComponent(() => import('./delete-account-page'), 'DeleteAccountPage'),

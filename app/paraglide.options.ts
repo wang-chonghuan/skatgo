@@ -199,14 +199,6 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/offline'],
       ],
     },
-    // SkatGo as an alternative to Skat Palast (SKATGO-226): a search entry for that name, in both languages.
-    {
-      pattern: '/skat-palast-alternative',
-      localized: [
-        ['en', '/en/skat-palast-alternative'],
-        ['de', '/de/skat-palast-alternative'],
-      ],
-    },
     // About SkatGo (SKATGO-134): what the game pages no longer explain.
     {
       pattern: '/about',

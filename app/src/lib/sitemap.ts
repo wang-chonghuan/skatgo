@@ -8,7 +8,7 @@ import { isIndexable } from './indexability'
 // new language cannot leave it stale; sitemap.test.ts holds the page list to the route tree.
 
 /** The route paths of the pages that are the same in every language. */
-export const PAGES = ['/', '/daily', '/daily/play', '/daily/replay', '/course', '/course/quick-start', '/rules', '/rules/bidding-table', '/rules/score-sheet', '/rules/printable', '/skat-tricks', '/bidding-practice', '/forum', '/play', '/with-friends', '/league', '/league/play', '/profile', '/replay', '/about', '/skat-palast-alternative', '/privacy', '/terms', '/delete-account', '/offline']
+export const PAGES = ['/', '/daily', '/daily/play', '/daily/replay', '/course', '/course/quick-start', '/rules', '/rules/bidding-table', '/rules/score-sheet', '/rules/printable', '/skat-tricks', '/bidding-practice', '/forum', '/play', '/with-friends', '/league', '/league/play', '/profile', '/replay', '/about', '/privacy', '/terms', '/delete-account', '/offline']
 
 /** Every page as its path in each language. */
 export function sitemapPages(): Record<Locale, string>[] {

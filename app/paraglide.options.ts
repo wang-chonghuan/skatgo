@@ -199,6 +199,14 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/offline'],
       ],
     },
+    // The big online Skat sites side by side (SKATGO-228): a search entry, reached only from the footer.
+    {
+      pattern: '/skat-sites-compared',
+      localized: [
+        ['en', '/en/skat-sites-compared'],
+        ['de', '/de/skat-online-vergleich'],
+      ],
+    },
     // About SkatGo (SKATGO-134): what the game pages no longer explain.
     {
       pattern: '/about',

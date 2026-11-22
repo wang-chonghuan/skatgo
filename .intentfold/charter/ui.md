@@ -93,7 +93,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | **Colour tile** | a section on the front page: the deal of the day (`tileGreen`), free play (`tileRed`; a private table's before), ♣ the course (`tileOrange`), the League (`tileNavy`, SKATGO-204; the bidding practice's, SKATGO-149, before) | its `color.tile*`, `radii.tile`, its own `elev.tile*`, its card art under `veil.tile` | `color.onColor` |
 | **Felt** | where cards lie: the table, a drill's hand | `fill.felt` (`feltInner` → `feltOuter`, with a fine grain) | `color.onColor`; highlights `color.gold` / `color.amber` |
 | **Board and plates** | the table's info board, the seat plates, dark pills | `color.board` with `color.boardLine`; `color.plate` | `color.onColor`, quieter `color.onColorSoft`; the player's own numbers — their score, their side's card points — in `color.amber` (SKATGO-79) |
-| **Footer** | the legal links under every header page (SKATGO-46), the Skat-Tricks and the forum (SKATGO-118), then About SkatGo and the rules (SKATGO-134) | `color.surface` with a `hairline` rule | links in `color.info` |
+| **Footer** | the legal links under every header page (SKATGO-46), the Skat-Tricks and the forum (SKATGO-118), then About SkatGo and the rules (SKATGO-134), last the comparison of Skat sites (SKATGO-228) | `color.surface` with a `hairline` rule | links in `color.info` |
 
 **Colour roles** (`color`)
 
@@ -340,7 +340,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     `homePicture`, `icon.tile`, `progressCurve` (SKATGO-136) and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
   the short rules, the daily tournament, the Skat-Tricks' page and their article, the bidding practice, a private table's page, About SkatGo,
-  the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
+  the comparison of Skat sites, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
   tournament's page has no lead under its title (SKATGO-132, the human: 「你显示着一坨垃圾干什么啊」), then the forum's
@@ -469,6 +469,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`smallBold`) under a heavier line, and "Weiterspielen" (`go`, full width) at its foot. The
   board's deal line reads "Spiel 3", where free play reads "Spiel 3 von 6". At a deal's
   end, the way on, once pressed, reads "Warten auf <Namen>" and takes no tap. Nothing of the room stands on the felt. A newcomer waiting for their first deal reads one line over the felt: "Du spielst ab dem nächsten Spiel mit".
+- **The big Skat sites side by side** (`compare-page.tsx`, `/skat-sites-compared`, SKATGO-228): a column as wide as the
+  front page's (`dims.landingColumn`) — the H1 and a lead; a `color.surface` box with a `hairline` border, its title and line
+  beside one large `go` button to the front page (stacked on a phone), at the top, after SkatGo's screens and near the end; the matrix, a
+  `<table>` in a bordered box that slides sideways only on a phone, the provider's name column staying in view, SkatGo's row on
+  `goodSoft`; SkatGo's four screens in a row of four (two on a phone) with a bold title and a line under each, then a list; a
+  guide of four short parts and the providers' portraits, each in two columns (one on a phone), a portrait a bordered box with
+  its name, operator, a paragraph, each criterion it states as a line with its name in bold, and a list — no link away to
+  the provider; the questions; last two `note` lines in `slate`, the second ending in a link to the imprint. No other provider's
+  picture or logo.
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
   FAQPage), each question bold over its answer; "Tägliches Skat", how the deal of the day and the six deals are played,
@@ -804,8 +813,8 @@ learner will hear at a real table.
 
 - A game page says at most one sentence per state; what a button can say is not written as a sentence.
 - A thing is said once, at the moment it is needed — "the six deals need an account" when a guest reaches for them.
-- Selling points — free, no sign-up, the same cards for everyone — go only in a page's title, its search description
-  and About SkatGo; the slogan is the exception.
+- Selling points — free, no sign-up, the same cards for everyone — go only in a page's title, its search description,
+  About SkatGo and the comparison of Skat sites (SKATGO-228, the human: 「并介绍免费免登录玩」); the slogan is the exception.
 - What explains the rules belongs to the course's tables and the content pages.
 
 ## Redlines

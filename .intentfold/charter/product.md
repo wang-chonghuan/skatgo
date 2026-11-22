@@ -252,6 +252,15 @@ About SkatGo at `/about` (SKATGO-134): the questions people ask, how the daily S
 private table goes — what the game pages no longer explain (the human: 「我现在特别讨厌游戏页面里那么多垃圾的文字……所有seo的都专门
 做seo页面」). The game pages keep a title and a line; their search entry stays their own title and description.
 
+The big online Skat sites side by side at `/skat-sites-compared` (SKATGO-228; German `/de/skat-online-vergleich`): a search
+entry for the people who look for Skat Palast, Skatstube, Euroskat and the others by name. It speaks well of every provider
+and leads to SkatGo (the human: 「可以比较，但是都说好话，主要是导流到skatgo首页」): a matrix of what stands out, opponents,
+platforms, rules, competition and learning, SkatGo's own screens and strengths, a short guide, a portrait of each provider in our own words from
+what it says about itself, and questions people ask; a box at its top, after SkatGo's part and at its end says SkatGo is free with
+no sign-up and opens the front page, and nothing links away to the other providers. Nothing negative or sensitive about another provider is said — no ads, no money play — and none of their
+pictures is shown; every statement about them comes from their own pages on the date the page names, and the human updates
+it by hand, never a scheduled crawl. Its one way in is the footer (「可以放到footerlink里……但是别在其他地方乱搞入口」).
+
 A rules reference: the whole rules at `/rules`, with anchors for what people look up by name (Grand,
 Null ouvert, Ramsch); the bidding table; and two printables, a score sheet and a short version of the
 rules, each also as a PDF (SKATGO-29, SKATGO-50, SKATGO-53). Every number in them is the rules

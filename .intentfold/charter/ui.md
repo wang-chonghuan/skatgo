@@ -472,8 +472,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
 - **SkatGo as an alternative to Skat Palast** (`palast-page.tsx`, `/skat-palast-alternative`, SKATGO-226): About SkatGo's
   reading column — the H1 and a lead; "Der Unterschied auf einen Blick", one row per topic with the topic in bold over two
   `color.surface` boxes with a `hairline` outline side by side, SkatGo's then Skat Palast's, each its name in bold `navy` over one line, one under the
-  other on a phone; what SkatGo offers as a list; "Was passt zu dir?" with one `go` button to free play and an `info` link to
-  the course; last the trademark note in `note`, `slate`. No picture of Skat Palast. About SkatGo's questions end in an
+  other on a phone; "Was passt zu dir?" with one `go` button to free play and an `info` link to the daily tournament; last the trademark note in `note`, `slate`. No picture of Skat Palast. About SkatGo's questions end in an
   `info` link to it.
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's

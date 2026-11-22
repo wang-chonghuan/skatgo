@@ -23,7 +23,6 @@ export function PalastPage() {
     { topic: m.palast_row_learn(), us: m.palast_row_learn_us(), them: m.palast_row_learn_them() },
     { topic: m.palast_row_compete(), us: m.palast_row_compete_us(), them: m.palast_row_compete_them() },
   ]
-  const why = [m.palast_why_1(), m.palast_why_2(), m.palast_why_3(), m.palast_why_4()]
   return (
     <div data-testid="palast" {...stylex.props(styles.root)}>
       <article {...stylex.props(styles.column)}>
@@ -51,19 +50,12 @@ export function PalastPage() {
           </div>
         </section>
 
-        <section data-testid="palast-why" aria-labelledby="palast-why-title" {...stylex.props(styles.section)}>
-          <h2 id="palast-why-title" {...stylex.props(typography.optionTitle, styles.title)}>{m.palast_why_title()}</h2>
-          <ul {...stylex.props(styles.list)}>
-            {why.map((line) => <li key={line} {...stylex.props(typography.body, styles.text)}>{line}</li>)}
-          </ul>
-        </section>
-
         <section data-testid="palast-choose" aria-labelledby="palast-choose-title" {...stylex.props(styles.section)}>
           <h2 id="palast-choose-title" {...stylex.props(typography.optionTitle, styles.title)}>{m.palast_choose_title()}</h2>
           <p {...stylex.props(typography.body, styles.text)}>{m.palast_choose_text()}</p>
           <div {...stylex.props(styles.actions)}>
             <Link to="/play" data-testid="palast-play" {...linkLook('go', 'md')}>{m.palast_cta()}</Link>
-            <Link to="/course" {...stylex.props(typography.link, styles.link)}>{m.palast_course()}</Link>
+            <Link to="/daily" {...stylex.props(typography.link, styles.link)}>{m.palast_daily()}</Link>
           </div>
         </section>
 
@@ -118,7 +110,6 @@ const styles = stylex.create({
     backgroundColor: color.surface,
   },
   brand: { color: color.navy },
-  list: { display: 'flex', flexDirection: 'column', gap: space.x8, margin: 0, paddingInlineStart: space.x20, listStyleType: 'disc' },
   actions: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x16 },
   link: {
     color: color.info,

@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-221",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-221",
+  "branch": "SKATGO-221-hot-gold-trophy",
+  "base": "a2ba721",
+  "ports": { "web": 55221 }
+}

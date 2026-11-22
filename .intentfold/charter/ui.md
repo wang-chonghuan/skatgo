@@ -46,12 +46,12 @@ breakpoint of its own; `check-design-tokens.mjs` (Tools) fails the build otherwi
 | `breakpoints.stylex.ts` | `bp` | media-query keys (`defineConsts` — a media query cannot read a variable) |
 | `scale.stylex.ts` | `space`, `border`, `opacity`, `layer` | spacing, border widths, opacity, stacking |
 | `shape.stylex.ts` | `radii`, `dims` | corner radii; component dimensions and geometry |
-| `elevation.stylex.ts` | `elev`, `fill`, `pose`, `veil` | shadows, fills (the felt, filters), transforms of the card art and the table, a tile's veil |
-| `effects.stylex.ts` | `move`, `timing`, `layerHint` | where a thing rests, is pressed or rises; CSS transition timing; the compositing hint for things that move (SKATGO-41) |
+| `elevation.stylex.ts` | `elev`, `fill`, `pose`, `veil` | shadows, fills (the felt, filters — among them the gold cup's glow, `fill.trophyGlow`, SKATGO-221), transforms of the card art and the table, a tile's veil |
+| `effects.stylex.ts` | `move`, `timing`, `layerHint`, `shine`, `twinkle` | where a thing rests, is pressed or rises; CSS transition and animation timing; the compositing hint for things that move (SKATGO-41); the gold cup's passing light and its sparkles (SKATGO-221) |
 | `table.stylex.ts` | `tableBand`, `stageUnit`, `stage` | the card table's stage, measured in one unit that follows the felt's room (SKATGO-34), including the trick's steps (SKATGO-68) and Lina's and Noah's faces (`face`, `faceTop`, `faceInset`, SKATGO-147); the board's foot in portrait (`tableBand.boardFoot`, SKATGO-158) |
 | `type.stylex.ts` | `family`, `fontSize`, `weight`, `leading` | typography primitives — used only by `type.ts` |
 | `type.ts` | `typography` | the typography roles product code picks from |
-| `constants.ts` | `phoneQuery`, `pinnedQuery`, `themeColor`, `themeColorDark`, `icon`, `stepSlide`, `deal`, `cardIndex`, `playIn`, `trick`, `finish`, `shake`, `drawer`, `confettiBurst` | values for code that cannot read a CSS variable: `matchMedia`, the `theme-color` meta, lucide sizes, SVG attributes, `motion` and `canvas-confetti` |
+| `constants.ts` | `phoneQuery`, `pinnedQuery`, `themeColor`, `themeColorDark`, `icon`, `stepSlide`, `deal`, `cardIndex`, `playIn`, `trick`, `finish`, `shake`, `drawer`, `confettiBurst`, `goldTrophy` | values for code that cannot read a CSS variable: `matchMedia`, the `theme-color` meta, lucide sizes, SVG attributes, `motion` and `canvas-confetti` |
 | `flags.tsx`, `icons.tsx` | `FlagEN` (the United States and the United Kingdom halved on the diagonal, SKATGO-104), `FlagDE`; the Astryx icon registry | the language switch's flags; the icons the Astryx theme is built with |
 | `parrottoonTheme.ts` | the Astryx theme, compiled to `parrottoon.{css,js,d.ts}` | the reset and prose defaults underneath (the name is historical) |
 
@@ -103,7 +103,7 @@ sections as colour tiles; and the card table as a dark green felt at any hour.
 | `text`, `navy`, `slate`, `slateDeep`, `slateStrong`, `onColor` | body text, titles and links, secondary text, a darker slate that stays day and night (the slate button, the quieter line on a contract's tint), a darker slate as text on a surface (the side panel's tabs, a card row's caption), text on colour or felt |
 | `go` | the one call to action, and the current state — the public site's landing buttons too (SKATGO-97, the human: 「改成我们按钮的标准绿色」); `goLanding` and `elev.btnGoLanding`, its former own green, are no longer used |
 | `info` | links in text, the hint button, the focus ring, and the "AI" tag wherever the AI is named — a score sheet, a deal's bidding and trick, the leaderboard (SKATGO-79, SKATGO-80, the human: 「AI标志都用app里那个蓝色的Ai标志」) |
-| `stop` | leaving the table, and the yes to a deletion (a forum post's, an account's, SKATGO-185); the "Neu" ribbon on the front page's League tile (SKATGO-206) |
+| `stop` | leaving the table, and the yes to a deletion (a forum post's, an account's, SKATGO-185); the "Hot" ribbon on the front page's League tile (SKATGO-206; "Neu" until SKATGO-221) |
 | `tileGreen`, `tileOrange`, `tileNavy`, `tileRed` | the front page's section tiles: ♠ free play, ♣ the course, the League (the bidding practice before SKATGO-204), a private table |
 | `feltInner`, `feltOuter`, `gold`, `amber`, `plate`, `hintTab`, `board`, `boardLine`, `onColorSoft`, `roleTag`, `auctionHead`, `tabActive` | the card table |
 | `good` / `goodSoft`, `bad` / `badSoft` | right and wrong: an answer's border / fill and its verdict; a refusal or an error (`bad` text, `badSoft` behind a failed message); a deal's result box (SKATGO-145, SKATGO-166), `goodSoft` when the player's side won and `badSoft` when it lost. `goodSoft` is also the fill of what is chosen or one's own: a switch or pill that is on, the chosen deck, the player's own row on the leaderboard, a finished lesson |
@@ -147,7 +147,7 @@ sets one, leading. Colour is not part of a role — the surface decides it.
     `tileTitle`, `tileSub`, `dialogTitle`;
   - the course and its exercises: `prompt`, `body`, `bodySmall`, `note`, `context`, `loading`,
     `emphasis` (**bold** in course text), `link`, `small`, `meta`, `smallBold`, `label`, `micro`,
-    `badge`, `toggle`, `option`, `control`, `stars`, `verdictMark`;
+    `badge`, `ribbon` (the League tile's "Hot", SKATGO-221), `toggle`, `option`, `control`, `stars`, `verdictMark`;
   - the card table: `tabLabel` (the side panel's tabs), `plateName`, `roleTag`, `tricksLabel`,
     `auctionHead`, `panelLabel`, `bidChip`, `contractTile`, `infoLabel`, `infoValue`, `infoNumber`,
     `infoSub`;
@@ -192,6 +192,9 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
   `deal`; a drill's played card rises by `playIn`; a played card flies onto the table by `trick`; the
   side panel's drawer rises by `drawer`; the finish emoji springs in by `finish`; a wrong answer shakes
   by `shake`.
+- **The gold cup's shine** (SKATGO-221, CSS keyframes like the loading logo's turn): on the front page's League tile a band
+  of light crosses the cup once every `timing.shine` and two sparkles beside it twinkle by `timing.twinkle`, out of step;
+  under `bp.reducedMotion` neither moves.
 - **Celebration** (`confettiBurst`): on finishing a lesson and on winning a game — nowhere else.
 - Stacking: `layer.launcher` for the header and the table's round buttons, `layer.window` for menus and dialogs.
 
@@ -278,12 +281,13 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, lucide's `Swords`, crossed — the human: 「不要用机器人」, then 「用两个交错的剑吧，x形的」 — to
     `/play`), "Lernen" (`tileOrange`,
     `GraduationCap`, the course) and "Ranglistenspiel" / "Ranked match" (SKATGO-210, broken at the line's end with a hyphen as German is — soft hyphens
-    at its syllables, "Ranglis-tenspiel" on a phone, "Ranglisten-spiel" on PC, the human: 「标准做法是行末加连字符断开。同意」; the human: 「这个liga的卡片名字不能叫league，没人来点，你现在改这个名字为 ranked match」; "Liga" before) (`tileNavy`, lucide's `Trophy`, its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:
+    at its syllables, "Ranglis-tenspiel" on a phone, "Ranglisten-spiel" on PC, the human: 「标准做法是行末加连字符断开。同意」; the human: 「这个liga的卡片名字不能叫league，没人来点，你现在改这个名字为 ranked match」; "Liga" before) (`tileNavy`, a gold cup in place of an outline icon — `GoldTrophy`, `goldTrophy` drawn in lucide's box at `icon.tile`, filled `trophyLight` → `trophyGold` → `trophyDeep` with a lit rim, an engraved star and a highlight down its left, glowing `fill.trophyGlow`, its light passing and its sparkles twinkling (SKATGO-221, the human: 「奖杯改成金色带高光的还会闪的，这个是提高留存的重要途径」; lucide's `Trophy` before) — its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:
     「你看看那个practice是不是没人点，打算把liga放那里如何」 then 「同意」 — the bidding practice's "Reizen" with `Gavel` stood there since
-    SKATGO-149, and the exercises' "Üben" with its `Puzzle` before it; a red "Neu" ribbon across its top right corner — `badge`
-    type, white on `stop`, `dims.ribbonWidth` long, turned `pose.ribbon` (45°) and standing `dims.ribbonRight` past the
+    SKATGO-149, and the exercises' "Üben" with its `Puzzle` before it; a red "Hot" ribbon across its top right corner — `ribbon`
+    type (16px bold), white on `stop`, `dims.ribbonWidth` long, turned `pose.ribbon` (45°) and standing `dims.ribbonRight` past the
     tile's edge, so the tile cuts off both its ends (SKATGO-206, the human: 「home的联赛卡片上面加个红色的斜着的小tag，New，
-    吸引人登录」, then 「不好看，应该像彩带一样斜着，在右上角」); on the right two long white cards, each
+    吸引人登录」, then 「不好看，应该像彩带一样斜着，在右上角」; "Hot" since SKATGO-221, the human: 「把首页卡片的ranked match的new横幅改成Hot」,
+    then 「彩带上的Hot字体稍微大一点」 — "Neu" in `badge` type before, "Hot" in both languages); on the right two long white cards, each
     a row tall — the XP board on top, then the progress (SKATGO-172, 「你建议？」): "Verlauf & Analyse" (SKATGO-182, 「卡片名称 my progress改为my history and analyse」; until then "Mein Fortschritt") (`homeCardTitle` with lucide's `ChartLine` in `info`), for an account a link to the record of play:
     over the latest 30 deals, fewer while there are fewer (`standingOf`, SKATGO-169, the human: 「home页面上，显示胜率的曲线？或者更好的数值？」),
     the win rate and the average per deal against the AI (`homeCardTitle`, each over a `meta` label), beside the curve and

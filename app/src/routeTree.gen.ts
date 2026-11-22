@@ -37,6 +37,10 @@ import { Route as LeaguePlayRouteImport } from './routes/league_.play'
 import { Route as RulesBiddingTableRouteImport } from './routes/rules_.bidding-table'
 import { Route as RulesPrintableRouteImport } from './routes/rules_.printable'
 import { Route as RulesScoreSheetRouteImport } from './routes/rules_.score-sheet'
+import { Route as SkatSitesComparedEuroskatRouteImport } from './routes/skat-sites-compared_.euroskat'
+import { Route as SkatSitesComparedSkatOnlineRouteImport } from './routes/skat-sites-compared_.skat-online'
+import { Route as SkatSitesComparedSkatPalastRouteImport } from './routes/skat-sites-compared_.skat-palast'
+import { Route as SkatSitesComparedSkatstubeRouteImport } from './routes/skat-sites-compared_.skatstube'
 import { Route as SkatTricksExerciseRouteImport } from './routes/skat-tricks_.$exercise'
 import { Route as TableIdRouteImport } from './routes/table.$id'
 import { Route as DCodePlayRouteImport } from './routes/d_.$code.play'
@@ -181,6 +185,30 @@ const RulesScoreSheetRoute = RulesScoreSheetRouteImport.update({
   path: '/rules/score-sheet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SkatSitesComparedEuroskatRoute =
+  SkatSitesComparedEuroskatRouteImport.update({
+    id: '/skat-sites-compared_/euroskat',
+    path: '/skat-sites-compared/euroskat',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const SkatSitesComparedSkatOnlineRoute =
+  SkatSitesComparedSkatOnlineRouteImport.update({
+    id: '/skat-sites-compared_/skat-online',
+    path: '/skat-sites-compared/skat-online',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const SkatSitesComparedSkatPalastRoute =
+  SkatSitesComparedSkatPalastRouteImport.update({
+    id: '/skat-sites-compared_/skat-palast',
+    path: '/skat-sites-compared/skat-palast',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const SkatSitesComparedSkatstubeRoute =
+  SkatSitesComparedSkatstubeRouteImport.update({
+    id: '/skat-sites-compared_/skatstube',
+    path: '/skat-sites-compared/skatstube',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SkatTricksExerciseRoute = SkatTricksExerciseRouteImport.update({
   id: '/skat-tricks_/$exercise',
   path: '/skat-tricks/$exercise',
@@ -225,6 +253,10 @@ export interface FileRoutesByFullPath {
   '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/rules/printable': typeof RulesPrintableRoute
   '/rules/score-sheet': typeof RulesScoreSheetRoute
+  '/skat-sites-compared/euroskat': typeof SkatSitesComparedEuroskatRoute
+  '/skat-sites-compared/skat-online': typeof SkatSitesComparedSkatOnlineRoute
+  '/skat-sites-compared/skat-palast': typeof SkatSitesComparedSkatPalastRoute
+  '/skat-sites-compared/skatstube': typeof SkatSitesComparedSkatstubeRoute
   '/skat-tricks/$exercise': typeof SkatTricksExerciseRoute
   '/table/$id': typeof TableIdRoute
   '/course/': typeof CourseIndexRoute
@@ -258,6 +290,10 @@ export interface FileRoutesByTo {
   '/rules/bidding-table': typeof RulesBiddingTableRoute
   '/rules/printable': typeof RulesPrintableRoute
   '/rules/score-sheet': typeof RulesScoreSheetRoute
+  '/skat-sites-compared/euroskat': typeof SkatSitesComparedEuroskatRoute
+  '/skat-sites-compared/skat-online': typeof SkatSitesComparedSkatOnlineRoute
+  '/skat-sites-compared/skat-palast': typeof SkatSitesComparedSkatPalastRoute
+  '/skat-sites-compared/skatstube': typeof SkatSitesComparedSkatstubeRoute
   '/skat-tricks/$exercise': typeof SkatTricksExerciseRoute
   '/table/$id': typeof TableIdRoute
   '/course': typeof CourseIndexRoute
@@ -292,6 +328,10 @@ export interface FileRoutesById {
   '/rules_/bidding-table': typeof RulesBiddingTableRoute
   '/rules_/printable': typeof RulesPrintableRoute
   '/rules_/score-sheet': typeof RulesScoreSheetRoute
+  '/skat-sites-compared_/euroskat': typeof SkatSitesComparedEuroskatRoute
+  '/skat-sites-compared_/skat-online': typeof SkatSitesComparedSkatOnlineRoute
+  '/skat-sites-compared_/skat-palast': typeof SkatSitesComparedSkatPalastRoute
+  '/skat-sites-compared_/skatstube': typeof SkatSitesComparedSkatstubeRoute
   '/skat-tricks_/$exercise': typeof SkatTricksExerciseRoute
   '/table/$id': typeof TableIdRoute
   '/course/': typeof CourseIndexRoute
@@ -327,6 +367,10 @@ export interface FileRouteTypes {
     | '/rules/bidding-table'
     | '/rules/printable'
     | '/rules/score-sheet'
+    | '/skat-sites-compared/euroskat'
+    | '/skat-sites-compared/skat-online'
+    | '/skat-sites-compared/skat-palast'
+    | '/skat-sites-compared/skatstube'
     | '/skat-tricks/$exercise'
     | '/table/$id'
     | '/course/'
@@ -360,6 +404,10 @@ export interface FileRouteTypes {
     | '/rules/bidding-table'
     | '/rules/printable'
     | '/rules/score-sheet'
+    | '/skat-sites-compared/euroskat'
+    | '/skat-sites-compared/skat-online'
+    | '/skat-sites-compared/skat-palast'
+    | '/skat-sites-compared/skatstube'
     | '/skat-tricks/$exercise'
     | '/table/$id'
     | '/course'
@@ -393,6 +441,10 @@ export interface FileRouteTypes {
     | '/rules_/bidding-table'
     | '/rules_/printable'
     | '/rules_/score-sheet'
+    | '/skat-sites-compared_/euroskat'
+    | '/skat-sites-compared_/skat-online'
+    | '/skat-sites-compared_/skat-palast'
+    | '/skat-sites-compared_/skatstube'
     | '/skat-tricks_/$exercise'
     | '/table/$id'
     | '/course/'
@@ -427,6 +479,10 @@ export interface RootRouteChildren {
   RulesBiddingTableRoute: typeof RulesBiddingTableRoute
   RulesPrintableRoute: typeof RulesPrintableRoute
   RulesScoreSheetRoute: typeof RulesScoreSheetRoute
+  SkatSitesComparedEuroskatRoute: typeof SkatSitesComparedEuroskatRoute
+  SkatSitesComparedSkatOnlineRoute: typeof SkatSitesComparedSkatOnlineRoute
+  SkatSitesComparedSkatPalastRoute: typeof SkatSitesComparedSkatPalastRoute
+  SkatSitesComparedSkatstubeRoute: typeof SkatSitesComparedSkatstubeRoute
   SkatTricksExerciseRoute: typeof SkatTricksExerciseRoute
   TableIdRoute: typeof TableIdRoute
   CourseIndexRoute: typeof CourseIndexRoute
@@ -631,6 +687,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RulesScoreSheetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/skat-sites-compared_/euroskat': {
+      id: '/skat-sites-compared_/euroskat'
+      path: '/skat-sites-compared/euroskat'
+      fullPath: '/skat-sites-compared/euroskat'
+      preLoaderRoute: typeof SkatSitesComparedEuroskatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skat-sites-compared_/skat-online': {
+      id: '/skat-sites-compared_/skat-online'
+      path: '/skat-sites-compared/skat-online'
+      fullPath: '/skat-sites-compared/skat-online'
+      preLoaderRoute: typeof SkatSitesComparedSkatOnlineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skat-sites-compared_/skat-palast': {
+      id: '/skat-sites-compared_/skat-palast'
+      path: '/skat-sites-compared/skat-palast'
+      fullPath: '/skat-sites-compared/skat-palast'
+      preLoaderRoute: typeof SkatSitesComparedSkatPalastRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skat-sites-compared_/skatstube': {
+      id: '/skat-sites-compared_/skatstube'
+      path: '/skat-sites-compared/skatstube'
+      fullPath: '/skat-sites-compared/skatstube'
+      preLoaderRoute: typeof SkatSitesComparedSkatstubeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/skat-tricks_/$exercise': {
       id: '/skat-tricks_/$exercise'
       path: '/skat-tricks/$exercise'
@@ -683,6 +767,10 @@ const rootRouteChildren: RootRouteChildren = {
   RulesBiddingTableRoute: RulesBiddingTableRoute,
   RulesPrintableRoute: RulesPrintableRoute,
   RulesScoreSheetRoute: RulesScoreSheetRoute,
+  SkatSitesComparedEuroskatRoute: SkatSitesComparedEuroskatRoute,
+  SkatSitesComparedSkatOnlineRoute: SkatSitesComparedSkatOnlineRoute,
+  SkatSitesComparedSkatPalastRoute: SkatSitesComparedSkatPalastRoute,
+  SkatSitesComparedSkatstubeRoute: SkatSitesComparedSkatstubeRoute,
   SkatTricksExerciseRoute: SkatTricksExerciseRoute,
   TableIdRoute: TableIdRoute,
   CourseIndexRoute: CourseIndexRoute,

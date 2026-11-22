@@ -199,6 +199,35 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/offline'],
       ],
     },
+    // One page per big Skat brand under it (SKATGO-229), the brand's part of the address the same in both languages.
+    {
+      pattern: '/skat-sites-compared/skat-palast',
+      localized: [
+        ['en', '/en/skat-sites-compared/skat-palast'],
+        ['de', '/de/skat-online-vergleich/skat-palast'],
+      ],
+    },
+    {
+      pattern: '/skat-sites-compared/skatstube',
+      localized: [
+        ['en', '/en/skat-sites-compared/skatstube'],
+        ['de', '/de/skat-online-vergleich/skatstube'],
+      ],
+    },
+    {
+      pattern: '/skat-sites-compared/euroskat',
+      localized: [
+        ['en', '/en/skat-sites-compared/euroskat'],
+        ['de', '/de/skat-online-vergleich/euroskat'],
+      ],
+    },
+    {
+      pattern: '/skat-sites-compared/skat-online',
+      localized: [
+        ['en', '/en/skat-sites-compared/skat-online'],
+        ['de', '/de/skat-online-vergleich/skat-online'],
+      ],
+    },
     // The big online Skat sites side by side (SKATGO-228): a search entry, reached only from the footer.
     {
       pattern: '/skat-sites-compared',

@@ -478,6 +478,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   its name, operator, a paragraph, each criterion it states as a line with its name in bold, and a list — no link away to
   the provider; the questions; last two `note` lines in `slate`, the second ending in a link to the imprint. No other provider's
   picture or logo.
+- **A Skat brand's page** (`brand-page.tsx`, `/skat-sites-compared/<brand>`, SKATGO-229): the reading column — a plain `info`
+  link back to the comparison above the H1, the H1 and the brand in a paragraph; the comparison's box leading to the front page;
+  what the brand offers as bordered `color.surface` boxes, two to a row (one on a phone); a three-column `<table>` of the
+  criteria, the brand's column then SkatGo's on `goodSoft`; its questions; the box again, the link back, and the two `note`
+  lines. Each portrait on the comparison ends in an `info` link to its brand's page. No picture, no link away to the brand.
 - **About SkatGo** (`about-page.tsx`, `/about`, SKATGO-134, the human: 「所有seo的都专门做seo页面」): one reading column —
   the H1, then three sections under `optionTitle` headings: the questions people ask (`lib/faq.ts`, also the page's
   FAQPage), each question bold over its answer; "Tägliches Skat", how the deal of the day and the six deals are played,

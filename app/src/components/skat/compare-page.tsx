@@ -145,6 +145,9 @@ export function ComparePage() {
                     {site.highlights.map((h) => <li key={h.text.en} {...stylex.props(typography.bodySmall, styles.text)}>{h.text[locale]}</li>)}
                   </ul>
                 ) : null}
+                {BRAND_PAGES[site.id] ? (
+                  <Link to={BRAND_PAGES[site.id]} data-testid="compare-more" {...stylex.props(typography.link, styles.link)}>{m.compare_more({ name: site.name })}</Link>
+                ) : null}
               </article>
             ))}
           </div>
@@ -173,6 +176,14 @@ export function ComparePage() {
       </article>
     </div>
   )
+}
+
+/** The brands with a page of their own (SKATGO-229), reached from their portrait here. */
+const BRAND_PAGES: Record<string, '/skat-sites-compared/skat-palast' | '/skat-sites-compared/skatstube' | '/skat-sites-compared/euroskat' | '/skat-sites-compared/skat-online'> = {
+  'skat-palast': '/skat-sites-compared/skat-palast',
+  skatstube: '/skat-sites-compared/skatstube',
+  euroskat: '/skat-sites-compared/euroskat',
+  'skat-online': '/skat-sites-compared/skat-online',
 }
 
 const styles = stylex.create({

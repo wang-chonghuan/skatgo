@@ -260,6 +260,11 @@ what it says about itself, and questions people ask; a box at its top, after Ska
 no sign-up and opens the front page, and nothing links away to the other providers. Nothing negative or sensitive about another provider is said — no ads, no money play — and none of their
 pictures is shown; every statement about them comes from their own pages on the date the page names, and the human updates
 it by hand, never a scheduled crawl. Its one way in is the footer (「可以放到footerlink里……但是别在其他地方乱搞入口」).
+Under it, one page for each of the biggest brands people search by name — Skat Palast, Skatstube, Euroskat and Skat-Online
+(SKATGO-229, the human: 「好，按这个方案做」 to pages per brand rather than "alternative" or "vs" pages, which nobody searches): the
+brand in our own words, what it offers, it and SkatGo side by side, the questions asked about it, and the same boxes leading to
+SkatGo's front page. Each page's words are its brand's, never a template with the name swapped. They are reached only from the
+comparison, each portrait there linking its brand's page, and each leads back to it; the footer keeps its one link.
 
 A rules reference: the whole rules at `/rules`, with anchors for what people look up by name (Grand,
 Null ouvert, Ramsch); the bidding table; and two printables, a score sheet and a short version of the

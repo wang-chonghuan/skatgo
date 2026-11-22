@@ -215,6 +215,12 @@ export class Store {
         UPDATE league_players SET points = points + 1000, scale = 4 WHERE scale = 3;
         ALTER TABLE league_players ALTER COLUMN scale SET DEFAULT 4;
         ALTER TABLE league_players ALTER COLUMN points SET DEFAULT 1000;
+        -- SKATGO-219 starts each tier at 1500, 3000 up and 0 down (the human: 「现有玩家的分数，按照新的3000分，按比例换算一下
+        -- 覆盖到db里，不要给人家清零了」): a row on scale 4 is scaled by 1.5 to a whole number, keeping its place between the
+        -- lines, tier and coins kept — once; a new account starts at 1500.
+        UPDATE league_players SET points = round(points * 1.5), scale = 5 WHERE scale = 4;
+        ALTER TABLE league_players ALTER COLUMN scale SET DEFAULT 5;
+        ALTER TABLE league_players ALTER COLUMN points SET DEFAULT 1500;
         -- SKATGO-163 made tables rooms with a number, every seat an account's: the tables of before (schema 2, seats
         -- held by browser tokens) end here; the deploy backs them up first.
         DELETE FROM multiplayer_rooms WHERE snapshot->>'schema' = '2';

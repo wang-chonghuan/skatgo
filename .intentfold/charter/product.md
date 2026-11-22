@@ -189,8 +189,9 @@ Bronze, Silver, Gold, Platinum, Diamond and Legend, German Bronze, Silber, Gold,
 played a deal at a time at a table of three (SKATGO-205, the human: 「能否不管round，就从一个deal里，用简单直观的方法，让
 玩家觉得打一个deal就有一个获得感」), each deal costing 3, 4, 5, 6, 10 or 12 coins (3, 4, 5, 7, 8, 10 until SKATGO-210: 「每个tier的扣分是：3，4，5，6，10，12」), taken when it is dealt and kept if the player
 leaves during it; the player leaves the table whenever they like. Coins come only from checking in: a signed-in player's first open of SkatGo on a
-day gives 60 (「不打开游戏就不给，打开了就能积累」; 100 until SKATGO-210: 「每天自动给的金币太多了，没意思」, then 「60」), the day the daily
-tournament's; they add up through a week, Monday to Sunday, and the first check-in of a new week starts again from 60, what
+day gives 100 (「不打开游戏就不给，打开了就能积累」; SKATGO-219, with the lines half as far again: 「增加每天的金币量，然后增加升级要的局数，
+让玩家有更多的时间玩，但是要在过瘾和厌倦中找到平衡，不要给太多导致厌倦，也不要给的太少不过瘾」; 60 from SKATGO-210: 「每天自动给的金币太多了，没意思」, then 「60」; 100 before it), the day the daily
+tournament's; they add up through a week, Monday to Sunday, and the first check-in of a new week starts again from 100, what
 was left gone (「必须每周金币清零」); they cannot be
 bought for now (「暂时不开放购买」) and are never exchanged for money or goods (「金币只要不能换实物就行」). Too few coins
 stops the League only: the player gets up after the deal they are in. A table waits five seconds for other people of the
@@ -206,13 +207,15 @@ nor fall, and a player rises only while they play better than the tier's table, 
 玩家能爬上去，一般的玩家落到他自己的档次」). Before it: SKATGO-205's +3 for their side won, −3 for their own game lost and −1 for a
 lost defence (「庄赢+3，防赢+3，庄输-3」, 「我建议就1」), with SKATGO-210's and 214's 0 for a defence that took 31, then 40 card
 points, and SKATGO-215's −2 — rules that let everyone climb by playing more (「这样太无聊了，不刺激了」). Each tier starts
-the player at 1000 points; 2000 moves them up a tier and 0 down one, at 1000 again there (SKATGO-217, the human: 「每个档次，
-初始给1000分。达到2000了晋级，达到0了降级。这样好理解吧？」; from 0, +1000 up and −1000 down before) — even, as the table adds up
-to 0: one as good as the tier goes up as often as down, one clearly better up nine times in ten, in about 70 deals. The page
+the player at 1500 points; 3000 moves them up a tier and 0 down one, at 1500 again there, the same lines in every tier (SKATGO-219,
+the human: 「每个tier的升级分数都要一样，别乱搞」; 1000, 2000 and 0 from SKATGO-217: 「每个档次，初始给1000分。达到2000了晋级，达到0了降级。
+这样好理解吧？」; from 0, +1000 up and −1000 down before) — even, as the table adds up to 0: one as good as the tier goes up as
+often as down, one better by about 10 a deal up 49 times in 50, in about 145 deals. The page
 states the two lines, never the distance to them (「你不用给分差，只用说明这个0和2000就行了。易于理解。」), and the points are
-never below 0. Bronze has no relegation and its points stop at 0 (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」) and Legend no promotion, its points running on past 2000; a player who moves gets up and sits down again in their new tier. The points earned before
+never below 0. Bronze has no relegation and its points stop at 0 (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」) and Legend no promotion, its points running on past 3000; a player who moves gets up and sits down again in their new tier. The points earned before
 SKATGO-205, and again before SKATGO-216, started again from 0, tiers and coins kept; SKATGO-217 added 1000 to every
-player's, keeping their distance to the lines. Standings
+player's, keeping their distance to the lines; SKATGO-219 multiplied every player's by 1.5, to a whole number, keeping their
+place between the lines (the human: 「现有玩家的分数，按照新的3000分，按比例换算一下覆盖到db里，不要给人家清零了」). Standings
 never start again — no week, no season. Each deal ends in free play's result with the AI's game, under its League points, and earns XP as any
 deal against the AI does. A deal counts only when the player sees it to its result (SKATGO-206, the human: 「没进入结算页面就不算
 打完，就不进历史。离桌多久应该算输，比如1分钟？如果是庄家就-3，如果是防家就-1」): left during it — the button, or away a minute,

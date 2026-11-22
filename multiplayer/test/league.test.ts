@@ -77,7 +77,7 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: C, added: C })
     assert.equal((await call('checkin', { player: 'sim:x' })).status, 400)
 
-    // A new account: Bronze, 1000 points (SKATGO-217); too few coins for the fee is refused.
+    // A new account: Bronze, 1500 points (SKATGO-219); too few coins for the fee is refused.
     await call('checkin', { player: 'user:poor' })
     await sql.query("UPDATE league_players SET coins = $1 WHERE player = 'user:poor'", [FEES[0] - 1])
     const poor = await call('state', { player: 'user:poor' })
@@ -236,21 +236,27 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.equal(await coins('user:d'), dCoins - FEES[0])
 
     // The points' new scales: a row on an old one (SKATGO-205, again SKATGO-216) starts again from 0, then 1000 from
-    // SKATGO-217 on; a row on SKATGO-216's (3) keeps its distance to the lines, 1000 added — once; tier and coins stay.
+    // SKATGO-217 on, 1500 from SKATGO-219 on; a row on SKATGO-216's (3) keeps its distance to the lines, 1000 added, and a
+    // row on SKATGO-217's (4) is scaled by 1.5 to a whole number — each once; tier and coins stay.
     await sql.query("UPDATE league_players SET scale = 1, points = 7, tier = 2 WHERE player = 'user:d'")
     await sql.query("INSERT INTO league_players (player, coins, tier, points, scale, updated_at) VALUES ('user:m', 9, 1, 250, 3, 0)")
+    await sql.query("INSERT INTO league_players (player, coins, tier, points, scale, updated_at) VALUES ('user:n', 49, 1, 659, 4, 0), ('user:o', 7, 5, 2300, 4, 0), ('user:q', 3, 0, 0, 4, 0)")
     const migrating = new Store(base.href)
     await migrating.migrate()
     const reset = (await sql.query("SELECT tier, points, coins, scale FROM league_players WHERE player = 'user:d'")).rows[0]
-    assert.deepEqual([reset.tier, reset.points, reset.scale], [2, START_AT, 4])
+    assert.deepEqual([reset.tier, reset.points, reset.scale], [2, START_AT, 5])
     assert.equal(reset.coins, dCoins - FEES[0])
-    const kept = (await sql.query("SELECT tier, points, coins, scale FROM league_players WHERE player = 'user:m'")).rows[0]
-    assert.deepEqual([kept.tier, kept.points, kept.coins, kept.scale], [1, 1250, 9, 4])
-    await sql.query("UPDATE league_players SET points = 1500 WHERE player = 'user:d'")
+    const rowOf = async (p: string) => (await sql.query('SELECT tier, points, coins, scale FROM league_players WHERE player = $1', [p])).rows[0]
+    const kept = await rowOf('user:m')
+    assert.deepEqual([kept.tier, kept.points, kept.coins, kept.scale], [1, 1875, 9, 5])
+    const scaled = await Promise.all(['user:n', 'user:o', 'user:q'].map(rowOf))
+    assert.deepEqual(scaled.map(r => [r.tier, r.points, r.coins, r.scale]), [[1, 989, 49, 5], [5, 3450, 7, 5], [0, 0, 3, 5]])
+    await sql.query("UPDATE league_players SET points = 2250 WHERE player = 'user:d'")
     await migrating.migrate()
-    assert.equal((await sql.query("SELECT points FROM league_players WHERE player = 'user:d'")).rows[0].points, 1500)
-    assert.equal((await sql.query("SELECT points FROM league_players WHERE player = 'user:m'")).rows[0].points, 1250)
-    await sql.query("DELETE FROM league_players WHERE player = 'user:m'")
+    assert.equal((await rowOf('user:d')).points, 2250)
+    assert.equal((await rowOf('user:m')).points, 1875)
+    assert.equal((await rowOf('user:n')).points, 989)
+    await sql.query("DELETE FROM league_players WHERE player IN ('user:m', 'user:n', 'user:o', 'user:q')")
     await migrating.close()
 
     // The League's board (SKATGO-206): everyone who played a deal, by tier, then points; not one who never sat down.

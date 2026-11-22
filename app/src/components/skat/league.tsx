@@ -6,7 +6,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { checkInOnce } from '~/lib/checkin'
 import { type LeagueError, type LeagueState, PASSING_LEAGUE, enterLeague, leagueReview, leagueState, playLeague } from '~/lib/league-api'
-import { CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, TIERS, type BoardRow, type LeagueBoard, type LeagueResult } from '~/lib/skat/league'
+import { CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, START_AT, TIERS, type BoardRow, type LeagueBoard, type LeagueResult } from '~/lib/skat/league'
 import { roomGame, roomSeat } from '~/lib/skat/room-view'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
@@ -34,7 +34,7 @@ import type { LeagueMe } from '~/lib/skat/league'
 const errorText = (e: LeagueError) =>
   ({
     sign_in_required: m.room_sign_in,
-    not_enough_coins: m.league_poor,
+    not_enough_coins: () => m.league_poor({ n: CHECKIN_COINS }),
     already_in_room: m.league_err_busy,
     no_table: m.league_err_over,
     no_opponents: m.table_err_room_capacity,
@@ -88,7 +88,7 @@ export function LeagueHome() {
       {account === null ? (
         <Panel>
           <section data-testid="league-guest" {...stylex.props(styles.card)}>
-            <p {...stylex.props(typography.appText, styles.ink)}>{m.league_guest()}</p>
+            <p {...stylex.props(typography.appText, styles.ink)}>{m.league_guest({ n: CHECKIN_COINS })}</p>
             <div {...stylex.props(styles.row)}>
               <SignInButton mode="modal">
                 <Btn testId="league-sign-in" size="lg">{m.auth_sign_in()}</Btn>
@@ -163,7 +163,7 @@ function MeCard({ me, fee, busy, error, onPlay }: { me: LeagueMe; fee: number; b
           )}
         </div>
         <p data-testid="league-opponents" {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_opponents()}</p>
-        {busy === null && !me.table && me.coins < fee ? <p data-testid="league-poor" {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_poor()}</p> : null}
+        {busy === null && !me.table && me.coins < fee ? <p data-testid="league-poor" {...stylex.props(typography.appText, styles.onColorSoft)}>{m.league_poor({ n: CHECKIN_COINS })}</p> : null}
         {error ? <p role="alert" data-testid="league-error" {...stylex.props(typography.appText, styles.onColor)}>{error}</p> : null}
       </section>
     </div>
@@ -184,7 +184,7 @@ function About() {
         <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.chevron)} />
       </summary>
       <ul data-testid="league-about-text" {...stylex.props(styles.bullets)}>
-        {[m.league_about_tiers(), m.league_about_deal(), m.league_about_move(), m.league_about_coins()].map((t) => (
+        {[m.league_about_tiers(), m.league_about_deal(), m.league_about_move({ start: START_AT, up: PROMOTE_AT, down: RELEGATE_AT }), m.league_about_coins({ n: CHECKIN_COINS })].map((t) => (
           <li key={t} {...stylex.props(typography.appText, styles.ink)}>{t}</li>
         ))}
       </ul>
@@ -287,7 +287,7 @@ export function LeagueTable() {
 
   if (stage.kind === 'signIn') {
     return (
-      <Notice text={m.league_guest()}>
+      <Notice text={m.league_guest({ n: CHECKIN_COINS })}>
         <SignInButton mode="modal">
           <Btn testId="league-table-sign-in">{m.auth_sign_in()}</Btn>
         </SignInButton>
@@ -358,7 +358,7 @@ function DealLine({ result, declared }: { result: NonNullable<LeagueResult['seat
   }[result.outcome]
   const then = result.moved === 1 ? m.league_result_up({ league: leagueName(result.standing.tier) })
     : result.moved === -1 ? m.league_result_down({ league: leagueName(result.standing.tier) })
-      : !result.canPay ? m.league_poor() : null
+      : !result.canPay ? m.league_poor({ n: CHECKIN_COINS }) : null
   return (
     <div data-testid="league-deal-line" data-points={result.points} data-outcome={result.outcome} data-moved={result.moved} {...stylex.props(styles.dealLine)}>
       <span {...stylex.props(typography.appBtnStrong, styles.dealPill, result.points > 0 ? styles.dealPlus : result.points < 0 ? styles.dealMinus : styles.dealNone)}>

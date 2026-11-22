@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-227",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-227",
+  "branch": "SKATGO-227-card-clicks",
+  "base": "906fabb",
+  "ports": { "web": 55227 }
+}

@@ -277,14 +277,17 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (SKATGO-151, 「和左边的learn卡片，上下没对齐」) —
     a white icon at the top (`icon.tile`) and its title at the bottom (`homeTileTitle`, bold, 36px, 28px on a phone — the
     human: 「卡片上的字，应该用这种尺寸和粗的字」, then 「四个卡片上的字还是太小」; the other cards' titles `homeCardTitle`, bold, 28px), its card art cropped at the
-    corner under its colour, rising on hover — "1 Spiel heute" (`tileGreen`, `CalendarDays`, to `/daily`; the same words
+    corner under its colour, rising on hover. In reading order since SKATGO-221 "Ranglistenspiel" top left, "Freies
+    Spiel", "Lernen", "1 Spiel heute" bottom right (the human: 「让锦标赛卡片位于1，1，然后1 deal today位于2，2这个位置，就是换位」;
+    "1 Spiel heute" first and "Ranglistenspiel" last before) — "1 Spiel heute" (`tileGreen`, `CalendarDays`, to `/daily`; the same words
     once played, 「这个按钮文字不变」), "Freies Spiel" (`tileRed`, lucide's `Swords`, crossed — the human: 「不要用机器人」, then 「用两个交错的剑吧，x形的」 — to
     `/play`), "Lernen" (`tileOrange`,
     `GraduationCap`, the course) and "Ranglistenspiel" / "Ranked match" (SKATGO-210, broken at the line's end with a hyphen as German is — soft hyphens
     at its syllables, "Ranglis-tenspiel" on a phone, "Ranglisten-spiel" on PC, the human: 「标准做法是行末加连字符断开。同意」; the human: 「这个liga的卡片名字不能叫league，没人来点，你现在改这个名字为 ranked match」; "Liga" before) (`tileNavy`, a gold cup in place of an outline icon — `GoldTrophy`, `goldTrophy` drawn in lucide's box at `goldTrophy.size` (44px, a step above the other tiles' 36px `icon.tile`), filled `trophyLight` → `trophyGold` → `trophyDeep` with a lit rim, an engraved star and a highlight down its left, glowing `fill.trophyGlow`, its light passing and its sparkles twinkling (SKATGO-221, the human: 「奖杯改成金色带高光的还会闪的，这个是提高留存的重要途径」; lucide's `Trophy` before) — its art ♣A ♣10 ♣K, to `/league`; SKATGO-204, the human:
     「你看看那个practice是不是没人点，打算把liga放那里如何」 then 「同意」 — the bidding practice's "Reizen" with `Gavel` stood there since
     SKATGO-149, and the exercises' "Üben" with its `Puzzle` before it; a red "Hot" ribbon across its top right corner — `ribbon`
-    type (16px bold), white on `stop`, `dims.ribbonWidth` long, turned `pose.ribbon` (45°) and standing `dims.ribbonRight` past the
+    type (16px bold), white on `stop`, `dims.ribbonWidth` long (148px since SKATGO-221, so the band thickened by its larger words still
+    has both ends cut off — the human: 「彩带的上面漏出来一个直角，不行」), turned `pose.ribbon` (45°) and standing `dims.ribbonRight` past the
     tile's edge, so the tile cuts off both its ends (SKATGO-206, the human: 「home的联赛卡片上面加个红色的斜着的小tag，New，
     吸引人登录」, then 「不好看，应该像彩带一样斜着，在右上角」; "Hot" since SKATGO-221, the human: 「把首页卡片的ranked match的new横幅改成Hot」,
     then 「彩带上的Hot字体稍微大一点」 — "Neu" in `badge` type before, "Hot" in both languages); on the right two long white cards, each

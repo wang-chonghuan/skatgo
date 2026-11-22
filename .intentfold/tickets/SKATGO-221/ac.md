@@ -16,3 +16,7 @@ language.
    tile's title, at both viewports; screenshots EN and DE.
 6. **"Hot" a little larger** — the ribbon's computed font size is above the 13px it had and at most 18px, EN and DE,
    PC and phone; seen in the tile screenshots.
+7. **No corner shows** — the ribbon's untransformed box turned 45° about its middle: each of its four corners lies at
+   least 4px outside the tile, EN and DE, PC and phone; close-ups `tmp/corner-PC.png`, `tmp/corner-phone.png`.
+8. **League first, the deal of the day fourth** — the four colour cards in page order are league, play, course, daily,
+   EN and DE, PC and phone; screenshots of the front page.

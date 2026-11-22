@@ -26,7 +26,7 @@ import { Btn } from './ui'
 
 // The front page (SKATGO-135, after the human's two pictures: 「topbar下，先显示slogan，然后显示下面的四个卡片……长卡片做两个，
 // 一个是my progress……一个是 elo ranking」): the slogan, then the ways in — four colour cards two by two, each a link
-// with its icon over its title (the deal of the day, free play, the course, the League since SKATGO-204), and beside them two long
+// with its icon over its title (the League — top left since SKATGO-221 —, free play, the course, the deal of the day), and beside them two long
 // white cards: the XP board (SKATGO-172, where SKATGO-123's Elo board stood, on top since), and the player's
 // progress — the player's games, each its cards and the difference to the AI (SKATGO-182) — leading to the record of play. Under `bp.cards` the four stay two by two and the long cards follow, the whole width. No
 // hero buttons, no lead, no link row: the cards are the page. Rendered on the server, the games streamed in behind it (SKATGO-193).
@@ -36,16 +36,18 @@ export function EntryPage() {
     <div data-testid="entry" {...stylex.props(styles.root)}>
       <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.entry_title()}</h1>
       <div data-testid="entry-sections" {...stylex.props(styles.ways)}>
-        {/* The deal of the day stays "1 deal today" once played (SKATGO-135, the human: 「这个按钮文字不变」). */}
-        <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
-        <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
-        <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
-        {/* The League (SKATGO-204, the human: 「你看看那个practice是不是没人点，打算把liga放那里如何」, then 「同意」): in the bidding
-            practice's tile, its colour kept. A red ribbon across its top right corner (SKATGO-206, the human:
+        {/* The League first, top left, since SKATGO-221 (the human: 「让锦标赛卡片位于1，1，然后1 deal today位于2，2这个位置，
+            就是换位」); before, fourth (SKATGO-204, the human: 「你看看那个practice是不是没人点，打算把liga放那里如何」, then 「同意」),
+            in the bidding practice's tile, its colour kept. A red ribbon across its top right corner (SKATGO-206, the human:
             「home的联赛卡片上面加个红色的斜着的小tag，New，吸引人登录」, then 「应该像彩带一样斜着，在右上角」), "Hot" since SKATGO-221,
             and a gold cup that shines in place of the outline one (the human: 「把首页卡片的ranked match的new横幅改成Hot，然后奖杯
             改成金色带高光的还会闪的」). */}
         <Way to="/league" section="league" tone="league" Icon={GoldTrophy} iconSize={goldTrophy.size} art={LEAGUE_ART} title={m.home_league()} badge={m.home_league_hot()} />
+        <Way to="/play" section="play" tone="play" Icon={Swords} art={PLAY_ART} title={m.home_free()} onClick={() => heroClick('free')} />
+        <Way to="/course" section="course" tone="course" Icon={GraduationCap} art={COURSE_ART} title={m.home_learn()} />
+        {/* The deal of the day, fourth since SKATGO-221 (first before, top left), stays "1 deal today" once played (SKATGO-135,
+            the human: 「这个按钮文字不变」). */}
+        <Way to="/daily" section="daily" tone="daily" Icon={CalendarDays} art={DAILY_ART} title={m.home_daily()} onClick={() => heroClick('primary')} />
         {/* The XP board first, the player's progress under it (SKATGO-172, the human asked which goes on top: 「你建议？」). */}
         <div data-testid="entry-card" data-section="xp" {...stylex.props(styles.long, styles.board)}>
           {xp ? (

@@ -246,16 +246,16 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     const reset = (await sql.query("SELECT tier, points, coins, scale FROM league_players WHERE player = 'user:d'")).rows[0]
     assert.deepEqual([reset.tier, reset.points, reset.scale], [2, START_AT, 5])
     assert.equal(reset.coins, dCoins - FEES[0])
-    const after = async (p: string) => (await sql.query('SELECT tier, points, coins, scale FROM league_players WHERE player = $1', [p])).rows[0]
-    const kept = await after('user:m')
+    const rowOf = async (p: string) => (await sql.query('SELECT tier, points, coins, scale FROM league_players WHERE player = $1', [p])).rows[0]
+    const kept = await rowOf('user:m')
     assert.deepEqual([kept.tier, kept.points, kept.coins, kept.scale], [1, 1875, 9, 5])
-    const scaled = await Promise.all(['user:n', 'user:o', 'user:q'].map(after))
+    const scaled = await Promise.all(['user:n', 'user:o', 'user:q'].map(rowOf))
     assert.deepEqual(scaled.map(r => [r.tier, r.points, r.coins, r.scale]), [[1, 989, 49, 5], [5, 3450, 7, 5], [0, 0, 3, 5]])
     await sql.query("UPDATE league_players SET points = 2250 WHERE player = 'user:d'")
     await migrating.migrate()
-    assert.equal((await after('user:d')).points, 2250)
-    assert.equal((await after('user:m')).points, 1875)
-    assert.equal((await after('user:n')).points, 989)
+    assert.equal((await rowOf('user:d')).points, 2250)
+    assert.equal((await rowOf('user:m')).points, 1875)
+    assert.equal((await rowOf('user:n')).points, 989)
     await sql.query("DELETE FROM league_players WHERE player IN ('user:m', 'user:n', 'user:o', 'user:q')")
     await migrating.close()
 

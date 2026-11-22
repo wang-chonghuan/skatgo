@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-228",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-228",
+  "branch": "SKATGO-228-skat-sites-compared",
+  "base": "0b1ad461b9b3bf588ec2266c810832f6e127491a",
+  "ports": { "web": 55228, "multiplayer": 56228, "database": 57228 }
+}

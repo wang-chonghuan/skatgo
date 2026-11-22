@@ -22,6 +22,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReplayRouteImport } from './routes/replay'
 import { Route as RulesRouteImport } from './routes/rules'
+import { Route as SkatSitesComparedRouteImport } from './routes/skat-sites-compared'
 import { Route as SkatTricksRouteImport } from './routes/skat-tricks'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WithFriendsRouteImport } from './routes/with-friends'
@@ -103,6 +104,11 @@ const ReplayRoute = ReplayRouteImport.update({
 const RulesRoute = RulesRouteImport.update({
   id: '/rules',
   path: '/rules',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkatSitesComparedRoute = SkatSitesComparedRouteImport.update({
+  id: '/skat-sites-compared',
+  path: '/skat-sites-compared',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SkatTricksRoute = SkatTricksRouteImport.update({
@@ -205,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/replay': typeof ReplayRoute
   '/rules': typeof RulesRoute
+  '/skat-sites-compared': typeof SkatSitesComparedRoute
   '/skat-tricks': typeof SkatTricksRoute
   '/terms': typeof TermsRoute
   '/with-friends': typeof WithFriendsRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/replay': typeof ReplayRoute
   '/rules': typeof RulesRoute
+  '/skat-sites-compared': typeof SkatSitesComparedRoute
   '/skat-tricks': typeof SkatTricksRoute
   '/terms': typeof TermsRoute
   '/with-friends': typeof WithFriendsRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/replay': typeof ReplayRoute
   '/rules': typeof RulesRoute
+  '/skat-sites-compared': typeof SkatSitesComparedRoute
   '/skat-tricks': typeof SkatTricksRoute
   '/terms': typeof TermsRoute
   '/with-friends': typeof WithFriendsRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/replay'
     | '/rules'
+    | '/skat-sites-compared'
     | '/skat-tricks'
     | '/terms'
     | '/with-friends'
@@ -336,6 +346,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/replay'
     | '/rules'
+    | '/skat-sites-compared'
     | '/skat-tricks'
     | '/terms'
     | '/with-friends'
@@ -368,6 +379,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/replay'
     | '/rules'
+    | '/skat-sites-compared'
     | '/skat-tricks'
     | '/terms'
     | '/with-friends'
@@ -401,6 +413,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ReplayRoute: typeof ReplayRoute
   RulesRoute: typeof RulesRoute
+  SkatSitesComparedRoute: typeof SkatSitesComparedRoute
   SkatTricksRoute: typeof SkatTricksRoute
   TermsRoute: typeof TermsRoute
   WithFriendsRoute: typeof WithFriendsRoute
@@ -511,6 +524,13 @@ declare module '@tanstack/react-router' {
       path: '/rules'
       fullPath: '/rules'
       preLoaderRoute: typeof RulesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skat-sites-compared': {
+      id: '/skat-sites-compared'
+      path: '/skat-sites-compared'
+      fullPath: '/skat-sites-compared'
+      preLoaderRoute: typeof SkatSitesComparedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/skat-tricks': {
@@ -649,6 +669,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ReplayRoute: ReplayRoute,
   RulesRoute: RulesRoute,
+  SkatSitesComparedRoute: SkatSitesComparedRoute,
   SkatTricksRoute: SkatTricksRoute,
   TermsRoute: TermsRoute,
   WithFriendsRoute: WithFriendsRoute,

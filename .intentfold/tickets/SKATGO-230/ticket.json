@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-230",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-230",
+  "branch": "SKATGO-230-brand-shots",
+  "base": "e0389b30cfdde7582eab3d8face410c847ea565b",
+  "ports": { "web": 55230, "multiplayer": 56230, "database": 57230 }
+}

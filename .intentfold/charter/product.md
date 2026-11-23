@@ -257,13 +257,17 @@ entry for the people who look for Skat Palast, Skatstube, Euroskat and the other
 and leads to SkatGo (the human: 「可以比较，但是都说好话，主要是导流到skatgo首页」): a matrix of what stands out, opponents,
 platforms, rules, competition and learning, SkatGo's own screens and strengths, a short guide, a portrait of each provider in our own words from
 what it says about itself, and questions people ask; a box at its top, after SkatGo's part and at its end says SkatGo is free with
-no sign-up and opens the front page, and nothing links away to the other providers. Nothing negative or sensitive about another provider is said — no ads, no money play — and none of their
-pictures is shown; every statement about them comes from their own pages on the date the page names, and the human updates
+no sign-up and opens the front page, and nothing links away to the other providers. Nothing negative or sensitive about another provider is said — no ads, no money play — and on the comparison
+page none of their pictures is shown; every statement about them comes from their own pages on the date the page names, and the human updates
 it by hand, never a scheduled crawl. Its one way in is the footer (「可以放到footerlink里……但是别在其他地方乱搞入口」).
 Under it, one page for each of the biggest brands people search by name — Skat Palast, Skatstube, Euroskat and Skat-Online
 (SKATGO-229, the human: 「好，按这个方案做」 to pages per brand rather than "alternative" or "vs" pages, which nobody searches): the
 brand in our own words, what it offers, it and SkatGo side by side, the questions asked about it, and the same boxes leading to
-SkatGo's front page. Each page's words are its brand's, never a template with the name swapped. They are reached only from the
+SkatGo's front page. Each page's words are its brand's, never a template with the name swapped. Beside its intro stands a
+screenshot we took of the brand's public start page, with the site and the month it was taken (SKATGO-230, the human:
+「弄点人家的截图，有机的插进去」) — never the brand's own artwork — and under it SkatGo's strongest point, "open the page and
+play": SkatGo's table as it opens, three steps, no account, app or download (「突出免注册，打开网页就能玩」); the side-by-side
+table opens with playing without signing up. They are reached only from the
 comparison, each portrait there linking its brand's page, and each leads back to it; the footer keeps its one link.
 
 A rules reference: the whole rules at `/rules`, with anchors for what people look up by name (Grand,

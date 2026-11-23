@@ -991,8 +991,8 @@
   "compare_meta_description": "Skat Palast, Skatstube, Euroskat, Skat-Online, Skat Treff, PlayOK, Isar Interactive's Skat app and SkatGo at a glance: opponents, platforms, rules, tournaments and learning. As of 22 November 2026.",
   "compare_title": "Play Skat online: Skat Palast, Skatstube, Euroskat and more compared",
   "compare_lead": "You can play Skat online with many providers: live against people, in apps or right in the browser against the computer. Here we introduce the best known, from Skat Palast to Skatstube and Euroskat to Isar Interactive's Skat app. On SkatGo you start playing straight away and for free.",
-  "compare_cta_title": "On SkatGo you play straight away",
-  "compare_cta_text": "Free, with no sign-up and no download: you play in the browser against two computer opponents, and after every game you see how the computer would have played the same cards.",
+  "compare_cta_title": "Open the page and play straight away",
+  "compare_cta_text": "SkatGo needs no account, no app and no download. As soon as the page is open the cards are on the table, and after every game you see how the computer would have played the same cards.",
   "compare_cta": "Play free now",
   "compare_matrix_title": "All providers at a glance",
   "compare_matrix_note": "As of 22 November 2026. A dash means we found nothing about it on the provider's pages.",
@@ -1050,5 +1050,14 @@
   "brand_compare_title": "{subject} and SkatGo side by side",
   "brand_faq_title": "Questions {about}",
   "brand_note": "As of 22 November 2026. All details come from the provider's own pages. {name} is a trademark of its respective owner, and SkatGo has no connection with it.",
-  "compare_more": "More about {name}"
+  "compare_more": "More about {name}",
+  "brand_play_title": "On SkatGo: open the page and play",
+  "brand_play_1": "Open skatgo.com in the browser, on phone, tablet or PC.",
+  "brand_play_2": "Tap \"Free play\".",
+  "brand_play_3": "The cards are already dealt, and you bid against two computer opponents.",
+  "brand_play_note": "No account, no app, no download and no waiting for other players.",
+  "brand_play_alt": "SkatGo right after opening: the cards are dealt and the bidding starts.",
+  "brand_shot_caption": "{site} start page, screenshot from November 2026",
+  "brand_signup": "Playing without signing up",
+  "brand_signup_us": "Yes: open the page and the cards are on the table. No account, no app, no download."
 }

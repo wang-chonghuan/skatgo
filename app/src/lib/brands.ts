@@ -25,6 +25,11 @@ export type Brand = {
   heading: Text
   intro: Text
   introSource: string
+  /** A screenshot we took of the brand's public start page, shown beside its intro with its source (§51 UrhG): never the
+   *  brand's own artwork. `site` names the page in the caption. */
+  screenshot: { file: string; site: string }
+  /** How one starts to play there, in its own terms — the row that sets SkatGo's "open the page and play" beside it. */
+  signup: Sourced
   offers: Sourced[]
   faq: { q: Text; a: Text; source: string }[]
 }
@@ -69,6 +74,8 @@ export const BRANDS: Brand[] = [
       en: 'Spiele-Palast GmbH\'s Skat Palast has been a proven live platform for Skat for over twelve years. By its own account around 100,000 active players meet there every month, organised in over 1,700 clubs. You play in the browser, on Windows or in the apps for iPhone, iPad and Android, at the standard table by the International Skat Order or with special rules such as Ramsch and Bock.',
     },
     introSource: SP_PLAY,
+    screenshot: { file: '/compare/brands/skat-palast.webp', site: 'skat-palast.de' },
+    signup: s('In den Apps auf Mobilgeräten ohne Konto', 'In the mobile apps without an account', SP),
     offers: [
       s('Live-Skat gegen echte Gegner aus ganz Deutschland', 'Live Skat against real opponents from all over Germany', SP),
       s('Standardtisch nach der Internationalen Skatordnung des DSkV, dazu Sonderregeln wie Ramsch, Bock, Kontra und Re', 'A standard table by the DSkV\'s International Skat Order, plus special rules such as Ramsch, Bock, Kontra and Re', SP_PLAY),
@@ -110,6 +117,8 @@ export const BRANDS: Brand[] = [
       en: 'Skatstube is a Skat portal run by Skatstube GmbH in Berlin. By its own account 370,000 Skat players play there, so everyone finds the right partners. Signing up and playing are free, and you play in the browser or in the apps for iPhone and iPad. If you like it sociable, take a seat in the "Kneipe", where Kontra, Re and Ramsch belong.',
     },
     introSource: SS,
+    screenshot: { file: '/compare/brands/skatstube.webp', site: 'skatstube.de' },
+    signup: s('Mit kostenloser Anmeldung', 'With a free sign-up', SS),
     offers: [
       s('Kostenlose Anmeldung und kostenloses Spiel, so lange man mag', 'Free sign-up and free play for as long as you like', SS_HELP),
       s('Verschiedene Spielräume, darunter die „Kneipe“ mit Kontra, Re und Ramsch', 'Several rooms, among them the "Kneipe" with Kontra, Re and Ramsch', SS_HELP),
@@ -149,6 +158,8 @@ export const BRANDS: Brand[] = [
       en: 'Euroskat is run by Ver-Ma-Web GmbH in Elsfleth and has been a fixed address for online tournament Skat since 2007. With the German Skat association it hosts official competitions, among them the online Bundesliga, the women\'s cup and individual championships. You play right in the browser, and German-speaking moderators look after the games every day from morning until late at night.',
     },
     introSource: ES,
+    screenshot: { file: '/compare/brands/euroskat.webp', site: 'euroskat.com' },
+    signup: s('Mit einem kostenlosen Account', 'With a free account', ES),
     offers: [
       s('Zahlreiche Turniere täglich zwischen 8:15 und 23:55 Uhr', 'Many tournaments every day between 8:15 am and 11:55 pm', ES),
       s('Offizielle DSkV-Wettbewerbe: Online-Bundesliga, Damenpokal, Einzelmeisterschaften', 'Official DSkV competitions: online Bundesliga, women\'s cup, individual championships', ES),
@@ -188,6 +199,8 @@ export const BRANDS: Brand[] = [
       en: 'Skat-Online is a Skat platform run by MY Skat GmbH & Co. KG and, by its own account, has been online for 20 years, with over a million members and 30 million games a year. Many online clubs play their series here, and the rules are strictly the International Skat Order, just like in a club. You play with a small program that runs on Windows, Linux and Mac.',
     },
     introSource: SO,
+    screenshot: { file: '/compare/brands/skat-online.webp', site: 'skat-online.com' },
+    signup: s('Nach kostenloser Registrierung im Standardbereich', 'After a free sign-up to the standard area', 'https://www.skat-online.com/de/nutzungsordnung.html'),
     offers: [
       s('Streng nach der Internationalen Skatordnung, mit eigener Skat-Online-Skatordnung', 'Strictly by the International Skat Order, with its own Skat-Online rules', SO_FAQ),
       s('Die Plattform vieler Online-Clubs', 'The platform of many online clubs', SO),

@@ -991,8 +991,8 @@
   "compare_meta_description": "Skat Palast, Skatstube, Euroskat, Skat-Online, Skat Treff, PlayOK, die Skat-App von Isar Interactive und SkatGo im Überblick: Gegner, Plattformen, Regeln, Turniere und Lernen. Stand 22.11.2026.",
   "compare_title": "Skat online spielen: Skat Palast, Skatstube, Euroskat und mehr im Vergleich",
   "compare_lead": "Skat online spielen kannst du bei vielen Anbietern: live gegen Menschen, in Apps oder direkt im Browser gegen den Computer. Hier stellen wir die bekanntesten vor, vom Skat Palast über die Skatstube und Euroskat bis zur Skat-App von Isar Interactive. Bei SkatGo spielst du sofort und kostenlos los.",
-  "compare_cta_title": "Bei SkatGo spielst du sofort",
-  "compare_cta_text": "Kostenlos, ohne Anmeldung und ohne Download: Du spielst im Browser gegen zwei Computer-Gegner und siehst nach jedem Spiel, wie der Computer dieselben Karten gespielt hätte.",
+  "compare_cta_title": "Seite öffnen und sofort spielen",
+  "compare_cta_text": "Bei SkatGo brauchst du kein Konto, keine App und keinen Download. Sobald die Seite offen ist, liegen die Karten auf dem Tisch, und nach jedem Spiel siehst du, wie der Computer dieselben Karten gespielt hätte.",
   "compare_cta": "Jetzt kostenlos spielen",
   "compare_matrix_title": "Alle Anbieter auf einen Blick",
   "compare_matrix_note": "Stand 22.11.2026. Ein Strich heißt: Auf den Seiten des Anbieters haben wir dazu nichts gefunden.",
@@ -1050,5 +1050,14 @@
   "brand_compare_title": "{subject} und SkatGo im Vergleich",
   "brand_faq_title": "Häufige Fragen {about}",
   "brand_note": "Stand 22.11.2026. Alle Angaben stammen von den Seiten des Anbieters. {name} ist eine Marke ihres jeweiligen Inhabers, und SkatGo steht damit in keiner Verbindung.",
-  "compare_more": "Mehr über {name}"
+  "compare_more": "Mehr über {name}",
+  "brand_play_title": "Bei SkatGo: Seite öffnen und losspielen",
+  "brand_play_1": "skatgo.com im Browser öffnen, auf dem Handy, Tablet oder PC.",
+  "brand_play_2": "„Freies Spiel“ antippen.",
+  "brand_play_3": "Die Karten sind schon verteilt, und du reizt gegen zwei Computer-Gegner.",
+  "brand_play_note": "Kein Konto, keine App, kein Download und keine Wartezeit auf Mitspieler.",
+  "brand_play_alt": "SkatGo direkt nach dem Öffnen: Die Karten sind verteilt, das Reizen beginnt.",
+  "brand_shot_caption": "Startseite von {site}, Screenshot vom November 2026",
+  "brand_signup": "Spielen ohne Anmeldung",
+  "brand_signup_us": "Ja: Seite öffnen, und die Karten liegen auf dem Tisch. Kein Konto, keine App, kein Download."
 }

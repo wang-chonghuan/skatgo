@@ -484,6 +484,9 @@ the committed fixture (`test/fixtures/skatzero-parity.json`, produced by that dr
 - `app/public/compare/*-{de,en}.webp` — SkatGo's own screens on the comparison page (SKATGO-228), taken from a local
   build with web and multiplayer running by `node app/scripts/make-compare-shots.mjs http://localhost:<web-port>` (Playwright
   from app's devDependencies, `cwebp`; it refuses any non-local origin). Retake them when those screens change.
+- `app/public/compare/brands/*.webp` — each brand's public start page as we took it (SKATGO-230): `cloak-fetch --screenshot`
+  of the page, its top cut and scaled to 960 wide with `ffmpeg`, and `cwebp -q 78`; the cuts leave out anything about money
+  play. Retake them, never edit them; a brand page's caption names the site and the month.
 - `app/public/quick-start-table-{de,en}.webp` — the table on "Skat in 5 Minuten" (SKATGO-89), caught in a
   real free game by `node .intentfold/tickets/SKATGO-89/table-shot.mjs <running origin>` (web and
   multiplayer running, Playwright from app's devDependencies, `cwebp`). Redraw it when the table's look

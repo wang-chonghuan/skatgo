@@ -1,4 +1,4 @@
-// The SkatGo screenshots on the comparison page (SKATGO-228): phone-sized pictures of SkatGo's own screens, taken from a
+// The SkatGo screenshots on the comparison page (SKATGO-228) and the brand pages (SKATGO-230): phone-sized pictures of SkatGo's own screens, taken from a
 // running build of this checkout and written as WebP to app/public/compare/<name>-<locale>.webp. Regenerate them, never
 // edit them. Needs a local web server and its multiplayer service (free play deals on the server), and `cwebp` on the PATH.
 //
@@ -22,6 +22,17 @@ fs.mkdirSync(out, { recursive: true })
 
 /** Each screen: its address per language and what to do before the picture is taken. */
 const SHOTS = [
+  // Free play as it opens: the cards are already dealt, with no account (SKATGO-230, the human: 「突出免注册，打开网页就能玩」).
+  {
+    name: 'table',
+    path: { de: '/de/spielen', en: '/en/play' },
+    // Landscape, as a desktop browser shows it: the brand pages lay it out full width.
+    desktop: true,
+    async ready(page) {
+      await page.getByTestId('skat-table').waitFor({ timeout: 30000 })
+      await page.waitForTimeout(3000)
+    },
+  },
   {
     name: 'odds',
     path: { de: '/de/spielen', en: '/en/play' },
@@ -63,14 +74,15 @@ const SHOTS = [
 const browser = await chromium.launch()
 for (const locale of ['de', 'en']) {
   for (const shot of SHOTS) {
-    const context = await browser.newContext({ viewport: { width: 390, height: 780 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: locale === 'de' ? 'de-DE' : 'en-GB' })
+    const device = shot.desktop ? { viewport: { width: 1280, height: 760 }, deviceScaleFactor: 1 } : { viewport: { width: 390, height: 780 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }
+    const context = await browser.newContext({ ...device, locale: locale === 'de' ? 'de-DE' : 'en-GB' })
     const page = await context.newPage()
     await page.goto(origin + shot.path[locale], { waitUntil: 'load' })
     await shot.ready(page)
     const png = path.join(tmp, `${shot.name}-${locale}.png`)
     await page.screenshot({ path: png })
     const webp = path.join(out, `${shot.name}-${locale}.webp`)
-    // 780 × 1560 device pixels, drawn at most 390 wide: sharp on a phone, a few dozen KB each.
+    // 780 × 1560 device pixels, drawn at most 390 wide (the desktop one 1280 × 760): sharp, a few dozen KB each.
     execFileSync('cwebp', ['-quiet', '-q', '78', png, '-o', webp])
     console.log(`${path.relative(root, webp)} ${fs.statSync(webp).size} bytes`)
     await context.close()

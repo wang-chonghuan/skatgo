@@ -1,5 +1,5 @@
 import * as avataaars from '@dicebear/avataaars'
-import { createAvatar, type StyleOptions } from '@dicebear/core'
+import { createAvatar } from '@dicebear/core'
 import multiavatar from '@multiavatar/multiavatar/esm'
 
 import { AVATAR_SEED_MAX, AVATAR_STYLE, postPath } from '~/lib/forum'
@@ -47,32 +47,10 @@ export async function askForum(op: string, payload: object, request: Pick<Reques
   }
 }
 
-// The avatars (SKATGO-231): DiceBear's Avataaars (Pablo Stanley's design, free for personal and commercial use), kept to
-// grown-ups' looks for the forum's older players (the human: 「我觉得现在头像太年轻化，和中老年玩家的定位不符。稍微沉稳一点」, then
-// 「我觉得E比较好」): natural and grey hair without winter hats, flower crowns, dreadlocks or shaved sides; shirts, blazers
-// and sweaters in quiet colours; glasses and beards often; calm faces.
-const NATURAL_HAIR = ['2c1b18', '4a312c', '724133', 'a55728', 'b58143', 'd6b370', 'ecdcbf', 'e8e1e1']
-const QUIET_CLOTH = ['262e33', '25557c', '3c4f5c', '5199e4', '929598', 'e6e6e6']
-const GROWN_UP: Partial<avataaars.Options & StyleOptions<avataaars.Options>> = {
-  top: [
-    'hat', 'hijab', 'turban', 'bob', 'bun', 'curly', 'curvy', 'fro', 'longButNotTooLong', 'miaWallace', 'straight01', 'straight02',
-    'straightAndStrand', 'frizzle', 'shortCurly', 'shortFlat', 'shortRound', 'shortWaved', 'sides', 'theCaesar',
-    'theCaesarAndSidePart', 'bigHair',
-  ],
-  hairColor: NATURAL_HAIR,
-  facialHairColor: NATURAL_HAIR,
-  facialHairProbability: 45,
-  hatColor: QUIET_CLOTH,
-  clothing: ['blazerAndShirt', 'blazerAndSweater', 'collarAndSweater', 'shirtCrewNeck', 'shirtVNeck'],
-  clothesColor: QUIET_CLOTH,
-  accessories: ['prescription01', 'prescription02', 'round'],
-  accessoriesProbability: 40,
-  eyes: ['default', 'happy', 'side', 'squint'],
-  eyebrows: ['default', 'defaultNatural', 'flatNatural', 'raisedExcitedNatural'],
-  mouth: ['default', 'smile', 'serious', 'twinkle'],
-  backgroundColor: avatarGrounds,
-  radius: 50,
-}
+// The avatars (SKATGO-231): DiceBear's Avataaars (Pablo Stanley's design, free for personal and commercial use) in its
+// own standard looks (the human: 「我觉得E比较好」, then, after a quieter take: 「风格改的太沉稳了，你就用E的标准默认风格吧」), on a
+// round soft tint of the site's colours so each sits in its circle.
+const STANDARD = { backgroundColor: avatarGrounds, radius: 50 }
 
 /** The text an avatar address names, or null — for an avatar, only at the current style's address. */
 function seedOf(path: string, kind: 'avatar' | 'multiavatar'): string | null {
@@ -105,7 +83,7 @@ function avatar(request: Request, path: string): Response {
   const kind = path.startsWith(`${PREFIX}multiavatar/`) ? 'multiavatar' : 'avatar'
   const seed = seedOf(path, kind)
   if (!seed) return json(404, { error: 'not found' })
-  return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...GROWN_UP }).toString())
+  return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...STANDARD }).toString())
 }
 
 export async function handleForum(request: Request): Promise<Response> {

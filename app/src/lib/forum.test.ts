@@ -36,8 +36,8 @@ describe('who may post where', () => {
 
 describe('an avatar\'s address (SKATGO-231)', () => {
   it('names its text, encoded, and draws from at most the first 200 characters', () => {
-    expect(avatarPath('Hearts or Clubs?/x')).toBe('/api/forum/avatar/a1/Hearts%20or%20Clubs%3F%2Fx.svg')
-    expect(avatarPath('x'.repeat(300))).toBe(`/api/forum/avatar/a1/${'x'.repeat(200)}.svg`)
+    expect(avatarPath('Hearts or Clubs?/x')).toBe('/api/forum/avatar/a2/Hearts%20or%20Clubs%3F%2Fx.svg')
+    expect(avatarPath('x'.repeat(300))).toBe(`/api/forum/avatar/a2/${'x'.repeat(200)}.svg`)
   })
 })
 

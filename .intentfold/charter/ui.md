@@ -553,9 +553,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   colour, `tileNavy`, `tileGreen`, `tileOrange`, in a `dims.badge` square with `radii.tag` — the current one navy
   `appBtnStrong` and underlined in that colour (`border.frame`); then the search field (`TextField`) and, beside it,
   "Newest" and "Most active" as `toggleLook` pills; then the posts in one white `option` panel as lines under `hairline`s,
-  never cards of their own — the post's own picture (`dims.avatar`, round: DiceBear's Avataaars of its title as written, kept to
-  grown-ups' looks on soft tints of the site's colours, `avatarGrounds` in `constants.ts` — the human: 「每个帖子都根据标题自动生成一个
-  这样的图片」, 「稍微沉稳一点」, 「我觉得E比较好」; no logo, 「我发的帖子，都用skatgo的logo，不好看，太重复了」), the title
+  never cards of their own — the post's own picture (`dims.avatar`, round: DiceBear's Avataaars of its title as written, in its
+  standard looks on soft tints of the site's colours, `avatarGrounds` in `constants.ts` — the human: 「每个帖子都根据标题自动生成一个
+  这样的图片」, 「我觉得E比较好」, then 「风格改的太沉稳了，你就用E的标准默认风格吧」; no logo, 「我发的帖子，都用skatgo的logo，不好看，太重复了」), the title
   (`appBtnStrong`, navy, `info` under the pointer, the link covering the line), the author (navy, SkatGo in `go`) and day
   (`meta`, slate), one line of its text (`note`), and at the right the players who commented — up to three of their
   avatars, the same Avataaars of their names, `dims.badge`, each over the one before by `dims.avatarOverlap` in a

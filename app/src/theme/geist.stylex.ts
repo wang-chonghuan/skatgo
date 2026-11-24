@@ -44,30 +44,19 @@ export const geistShape = stylex.defineVars({
 })
 
 export const geistDims = stylex.defineVars({
-  /** The featured picture's shape. */
-  featuredRatio: '16 / 9',
-  /** A video card in the videos' row, and how far it reaches past the column so its text lines up with it. */
-  videoCard: '240px',
-  videoInset: '-16px',
-  /** An avatar in a row, on a post, and in a row's newest comment. */
-  avatar: '40px',
-  avatarPost: '24px',
-  avatarTiny: '16px',
+  /** The forum's one column. */
+  column: '840px',
+  /** An avatar beside a name on a post or a comment. */
+  avatar: '24px',
   /** An icon button and a button's height; a pill's height. */
   control: '32px',
   pill: '34px',
-  /** An excerpt's lines in a row. */
-  excerptLines: '2',
+  /** An excerpt's lines in a list's row. */
+  excerptLines: '1',
   /** The composer's text and a comment's, a few lines tall to start, growing with the text. */
   textPost: 'calc(6lh + 18px)',
   textComment: 'calc(3lh + 18px)',
-  /** A guide's picture in the guides' list. */
-  guideThumb: '120px',
-  // Grid templates: the navigation and the column; one column on a phone and a narrow screen; the featured block; the
-  // videos' row and grid; a guide's neighbours side by side.
-  layoutColumns: '200px minmax(0, 1000px)',
-  oneColumn: 'minmax(0, 1fr)',
-  featuredColumns: 'minmax(0, 1fr) 296px',
-  videoGrid: 'repeat(auto-fill, minmax(220px, 1fr))',
-  twoColumns: 'repeat(2, minmax(0, 1fr))',
+  /** The current tab's line under it, laid over the row's hairline. */
+  tabLine: '2px',
+  tabOverlap: '-1px',
 })

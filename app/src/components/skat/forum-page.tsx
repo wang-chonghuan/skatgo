@@ -1,13 +1,13 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useLoaderData, useNavigate, useRouter, useSearch } from '@tanstack/react-router'
-import { BookOpen, ChevronRight, CirclePlay, Eye, EyeOff, Flag, Layers, Megaphone, MessagesSquare, type LucideIcon, SquarePen, Trash2 } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useId, useState } from 'react'
+import { ChevronRight, Eye, EyeOff, Flag, MessageSquare, Reply, Search, SquarePen, Trash2 } from 'lucide-react'
+import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import {
-  COMMENT_MAX, DAILY_LIMITS, FORUM_SECTIONS, type ForumLang, POST_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumComment, type ForumHome,
-  type ForumNeighbour, type ForumPost, type ForumPostSummary, type ForumReport, type ForumSection, type ForumViewer, postParam,
-  forumImagePath, sectionsFor,
+  COMMENT_MAX, DAILY_LIMITS, FORUM_SECTIONS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumComment,
+  type ForumNeighbour, type ForumPost, type ForumPostSummary, type ForumReport, type ForumSection, type ForumSort,
+  type ForumViewer, postParam, sectionsFor,
 } from '~/lib/forum'
 import { track } from '~/lib/analytics'
 import { addComment, createPost, deleteOwn, moderate, readReports, report } from '~/lib/forum-api'
@@ -21,37 +21,35 @@ import { geist, geistDims, geistShape } from '../../theme/geist.stylex'
 import { border, space } from '../../theme/scale.stylex'
 import { typography } from '../../theme/type'
 import { ForumBody } from './forum-body'
-import { Avatar, GButton, GIconButton, GInput, GPill, GTextArea, gLinkLook, gPillLook } from './forum-ui'
+import { Avatar, GButton, GIconButton, GInput, GTextArea, gPillLook } from './forum-ui'
 
-// The forum (SKATGO-118), in the Vercel Community's design since SKATGO-231 (the human: 「论坛要仿照这个风格，最好严格用它的
-// 论坛设计系统……用vercel的设计，用我定的简洁结构」): Geist's kit (forum-ui.tsx) and the human's four sections — SkatGo's
-// announcements, the players' discussion, SkatGo's guides in order and SkatGo's videos on YouTube. Its home is the
-// newest announcements and guides, the videos and the discussion; a section's page lists that section; a post's page
-// has its comments, flat, in the order written. All rendered on the server from their routes' loaders; what changes
-// after a write is read again through the router.
+// The forum (SKATGO-118), since SKATGO-231 in the Vercel Community's design and as plain as it goes (the human:
+// 「我希望极简形式的。每个主题，都是一系列列表，然后可以检索和排序（时间， 互动量）。公告列表，讨论列表，高级课程列表。就这三个就行了。
+// 列表不要做成卡片。点进列表项后，是图文显示，下面可以评论，点回复时自动at即可」): three lists under one row of tabs, each
+// searchable and sorted by time or by comments, its posts as lines under hairlines; a post's page its text and
+// pictures, then its comments, flat, a reply writing "@Name" into the comment box. Rendered on the server from the
+// routes' loaders; what changes after a write is read again through the router.
 
 const SECTION_NAME: Record<ForumSection, () => string> = {
   news: m.forum_section_news,
   talk: m.forum_section_talk,
   guides: m.forum_section_guides,
-  videos: m.forum_section_videos,
 }
-
-const SECTION_ICON: Record<ForumSection, LucideIcon> = { news: Megaphone, talk: MessagesSquare, guides: BookOpen, videos: CirclePlay }
 
 const SECTION_EMPTY: Record<ForumSection, () => string> = {
   news: m.forum_empty_news,
   talk: m.forum_empty_talk,
   guides: m.forum_empty_guides,
-  videos: m.forum_empty_videos,
 }
+
+const SORT_NAME: Record<ForumSort, () => string> = { new: m.forum_sort_new, active: m.forum_sort_active }
 
 /** A date the same on the server and in the browser: the day, as UTC sees it. */
 const dateOf = (ms: number) => new Intl.DateTimeFormat(LANG_TAG[getLocale()], { dateStyle: 'medium', timeZone: 'UTC' }).format(ms)
 
-const commentsOf = (n: number) => (n === 1 ? m.forum_comment_one() : m.forum_comment_many({ n }))
-
 const nameOf = (of: { official: boolean; author: string }) => (of.official ? m.forum_official() : of.author || m.forum_deleted())
+
+const commentsOf = (n: number) => (n === 1 ? m.forum_comment_one() : m.forum_comment_many({ n }))
 
 function errorText(error: string, kind: 'posts' | 'comments' | 'reports' = 'posts'): string {
   if (error === 'limit_reached') return { posts: m.forum_error_limit_posts, comments: m.forum_error_limit_comments, reports: m.forum_error_limit_reports }[kind]({ n: DAILY_LIMITS[kind] })
@@ -69,216 +67,138 @@ function useViewerSync(viewer: ForumViewer | null) {
   }, [account, viewer, router])
 }
 
-/** The forum's frame: its navigation beside it, on a phone above it as a row of pills. */
-function Frame({ current, children }: { current: ForumSection | 'home'; children: ReactNode }) {
+/** The forum's frame: Geist's white, one column. */
+function Frame({ children }: { children: ReactNode }) {
   return (
     <div {...stylex.props(typography.forumFrame, styles.root)}>
-      <div {...stylex.props(styles.layout)}>
-        <nav aria-label={m.forum_sections()} data-testid="forum-sections" {...stylex.props(styles.nav)}>
-          <NavItem to={undefined} Icon={Layers} label={m.forum_title()} current={current === 'home'} />
-          {FORUM_SECTIONS.map((s) => <NavItem key={s} to={s} Icon={SECTION_ICON[s]} label={SECTION_NAME[s]()} current={current === s} />)}
-        </nav>
-        <div {...stylex.props(styles.main)}>{children}</div>
-      </div>
+      <div {...stylex.props(styles.column)}>{children}</div>
     </div>
   )
 }
 
-function NavItem({ to, Icon, label, current }: { to: ForumSection | undefined; Icon: LucideIcon; label: string; current: boolean }) {
-  return (
-    <Link
-      to="/forum"
-      search={to ? { section: to } : {}}
-      data-section={to ?? 'home'}
-      aria-current={current ? 'page' : undefined}
-      {...stylex.props(typography.forumText, styles.navItem, current && styles.navItemCurrent)}
-    >
-      <Icon size={icon.forum} aria-hidden {...stylex.props(styles.navIcon, current && styles.navIconCurrent)} />
-      {label}
-    </Link>
-  )
-}
+type View = { section?: ForumSection; q?: string; sort?: ForumSort; page?: number }
 
-/** The list: the forum's home, or one section (SKATGO-231). */
+/** A list (SKATGO-231): its tabs, its search and order, its posts. */
 export function ForumPage() {
   const answer = useLoaderData({ from: '/forum' })
-  const { section, page = 1 } = useSearch({ from: '/forum' })
+  const { section: chosen, page = 1, q, sort = 'new' } = useSearch({ from: '/forum' })
+  const section = chosen ?? FORUM_SECTIONS[0]
   const data = answer.ok ? answer.data : null
   const [writing, setWriting] = useState(false)
   useViewerSync(data?.viewer ?? null)
-  const shown: ForumSection = section ?? 'talk'
+  // Only what differs from a list's defaults stays in the address; a new view starts on its first page.
+  const view = (over: View) => {
+    const next: View = { section, q, sort, page: undefined, ...over }
+    return {
+      section: next.section === FORUM_SECTIONS[0] ? undefined : next.section,
+      q: next.q || undefined,
+      sort: next.sort === 'new' ? undefined : next.sort,
+      page: next.page && next.page > 1 ? next.page : undefined,
+    }
+  }
   return (
-    <Frame current={section ?? 'home'}>
-      <section data-testid="forum" {...stylex.props(styles.column)}>
+    <Frame>
+      <section data-testid="forum" data-section={section} {...stylex.props(styles.stack)}>
         {/* The way to write sits beside the title (the human: 「sign in放在 Forum 的旁边，放个按钮就行」). */}
         <div {...stylex.props(styles.head)}>
-          <h1 {...stylex.props(typography.forumDisplay, styles.text)}>{section ? SECTION_NAME[section]() : m.forum_title()}</h1>
+          <h1 {...stylex.props(typography.forumDisplay, styles.text)}>{m.forum_title()}</h1>
           {data && !writing ? <WriteButton viewer={data.viewer} onWrite={() => setWriting(true)} /> : null}
         </div>
+        <nav aria-label={m.forum_sections()} data-testid="forum-sections" {...stylex.props(styles.tabs)}>
+          {FORUM_SECTIONS.map((s) => (
+            <Link
+              key={s}
+              to="/forum"
+              search={view({ section: s, q: undefined })}
+              data-section={s}
+              aria-current={s === section ? 'page' : undefined}
+              {...stylex.props(typography.forumText, styles.tab, s === section && styles.tabCurrent)}
+            >
+              {SECTION_NAME[s]()}
+            </Link>
+          ))}
+        </nav>
         {data && writing ? <Composer official={data.viewer.official} initial={section} onCancel={() => setWriting(false)} /> : null}
         {data?.viewer.official ? <Reports /> : null}
+        <div {...stylex.props(styles.toolbar)}>
+          <SearchBox section={section} sort={sort} q={q} key={`${section}:${q ?? ''}`} />
+          <div role="group" aria-label={m.forum_sort()} {...stylex.props(styles.sorts)}>
+            {(['new', 'active'] as const).map((s) => (
+              <Link key={s} to="/forum" search={view({ sort: s })} data-sort={s} aria-current={s === sort ? 'true' : undefined} {...gPillLook(s === sort)}>
+                {SORT_NAME[s]()}
+              </Link>
+            ))}
+          </div>
+        </div>
         {!data ? (
           <p {...stylex.props(typography.forumText, styles.secondary)}>{m.forum_unavailable()}</p>
+        ) : data.posts.length === 0 ? (
+          <p data-testid="forum-empty" {...stylex.props(typography.forumText, styles.secondary)}>{q ? m.forum_no_results({ q }) : SECTION_EMPTY[section]()}</p>
         ) : (
-          <>
-            {data.home ? <Home home={data.home} /> : null}
-            {data.home ? <BlockHead title={SECTION_NAME.talk()} to="talk" /> : null}
-            {data.posts.length === 0 ? (
-              <p data-testid="forum-empty" {...stylex.props(typography.forumText, styles.secondary)}>{SECTION_EMPTY[shown]()}</p>
-            ) : shown === 'guides' ? (
-              <ol data-testid="forum-guides" {...stylex.props(styles.list)}>{data.posts.map((p) => <GuideRow key={p.id} post={p} />)}</ol>
-            ) : shown === 'videos' ? (
-              <ul data-testid="forum-videos" {...stylex.props(styles.videoGrid)}>{data.posts.map((p) => <VideoCard key={p.id} post={p} />)}</ul>
-            ) : (
-              <ul {...stylex.props(styles.list)}>{data.posts.map((p) => <PostRow key={p.id} post={p} />)}</ul>
-            )}
-          </>
+          <ol data-testid="forum-list" {...stylex.props(styles.list)}>{data.posts.map((p) => <PostRow key={p.id} post={p} />)}</ol>
         )}
         {data && (page > 1 || data.more) ? (
           <div {...stylex.props(styles.pages)}>
-            {page > 1 ? <Link to="/forum" search={{ section, page: page > 2 ? page - 1 : undefined }} {...stylex.props(typography.forumName, styles.textLink)}>{m.forum_newer()}</Link> : <span />}
-            {data.more ? <Link to="/forum" search={{ section, page: page + 1 }} {...stylex.props(typography.forumName, styles.textLink)}>{m.forum_older()}</Link> : null}
+            {page > 1 ? <Link to="/forum" search={view({ page: page - 1 })} {...stylex.props(typography.forumName, styles.textLink)}>{m.forum_newer()}</Link> : <span />}
+            {data.more ? <Link to="/forum" search={view({ page: page + 1 })} {...stylex.props(typography.forumName, styles.textLink)}>{m.forum_older()}</Link> : null}
           </div>
         ) : null}
-        {/* What the forum is for, in small print at the foot — not under the title (SKATGO-119, the human chose
-            「摘要+底部小字」). */}
+        {/* What the forum is for, in small print at the foot (SKATGO-119, the human chose 「摘要+底部小字」). */}
         <p data-testid="forum-about" {...stylex.props(typography.forumText, styles.secondary, styles.foot)}>{m.forum_about()}</p>
       </section>
     </Frame>
   )
 }
 
-/** A block's heading, with its way to the whole section at the right. */
-function BlockHead({ title, to }: { title: string; to: ForumSection }) {
+/** The list's search: a form a browser can send without the page's script — to the page's own address, in its
+ *  language — read on the server as any view. */
+function SearchBox({ section, sort, q }: { section: ForumSection; sort: ForumSort; q?: string }) {
+  const [words, setWords] = useState(q ?? '')
+  const navigate = useNavigate()
+  const id = useId()
   return (
-    <div {...stylex.props(styles.blockHead)}>
-      <h2 {...stylex.props(typography.forumHeading, styles.text)}>{title}</h2>
-      <Link to="/forum" search={{ section: to }} {...stylex.props(typography.forumText, styles.seeAll)}>{`${m.forum_see_all()} →`}</Link>
-    </div>
+    <form
+      role="search"
+      method="get"
+      data-testid="forum-search"
+      onSubmit={(e) => {
+        e.preventDefault()
+        const text = words.trim().slice(0, QUERY_MAX)
+        void navigate({
+          to: '/forum',
+          search: { section: section === FORUM_SECTIONS[0] ? undefined : section, q: text || undefined, sort: sort === 'new' ? undefined : sort },
+        })
+      }}
+      {...stylex.props(styles.search)}
+    >
+      {section === FORUM_SECTIONS[0] ? null : <input type="hidden" name="section" value={section} />}
+      {sort === 'new' ? null : <input type="hidden" name="sort" value={sort} />}
+      <Search size={icon.forumSmall} aria-hidden {...stylex.props(styles.searchIcon)} />
+      <GInput id={id} name="q" type="search" testId="forum-search-input" value={words} onChange={setWords} placeholder={m.forum_search()} label={m.forum_search()} indent />
+    </form>
   )
 }
 
-/** The home's top: the newest announcement or guide large at the left, the newest of both at the right under the
- *  tabs All / Announcements / Guides; then the videos (SKATGO-231, as the Vercel Community's home). */
-function Home({ home }: { home: ForumHome }) {
-  const [tab, setTab] = useState<'all' | 'news' | 'guides'>('all')
-  const shown = home.featured.filter((p) => tab === 'all' || p.section === tab)
-  // The large picture at the left is the newest one that has a picture; without one the list stands alone.
-  const lead = home.featured.find((p) => p.cover)
-  return (
-    <>
-      {home.featured.length ? (
-        <div data-testid="forum-featured" {...stylex.props(styles.featured, lead && styles.featuredWithLead)}>
-          {lead?.cover ? <Lead post={{ ...lead, cover: lead.cover }} /> : null}
-          <div {...stylex.props(styles.featuredSide)}>
-            <div role="group" aria-label={m.forum_sections()} {...stylex.props(styles.pills)}>
-              <GPill testId="forum-tab-all" chosen={tab === 'all'} onClick={() => setTab('all')}>{m.forum_all()}</GPill>
-              <GPill testId="forum-tab-news" chosen={tab === 'news'} onClick={() => setTab('news')}>{m.forum_section_news()}</GPill>
-              <GPill testId="forum-tab-guides" chosen={tab === 'guides'} onClick={() => setTab('guides')}>{m.forum_section_guides()}</GPill>
-            </div>
-            <ul {...stylex.props(styles.sideList)}>
-              {shown.map((p) => (
-                <li key={p.id} data-testid="forum-featured-item" data-section={p.section} {...stylex.props(styles.sideItem)}>
-                  <span {...stylex.props(typography.forumText, styles.sideMeta)}>
-                    <time {...stylex.props(styles.text)}>{dateOf(p.createdAt)}</time>
-                    <span {...stylex.props(styles.secondary)}>{SECTION_NAME[p.section]()}</span>
-                  </span>
-                  <Link to="/forum/$post" params={{ post: postParam(p) }} {...stylex.props(typography.forumCardTitle, styles.cardTitle)}>{p.translated?.title ?? p.title}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      ) : null}
-      <BlockHead title={SECTION_NAME.videos()} to="videos" />
-      {home.videos.length ? (
-        <ul data-testid="forum-videos" {...stylex.props(styles.videoRow)}>{home.videos.map((p) => <VideoCard key={p.id} post={p} />)}</ul>
-      ) : (
-        <p data-testid="forum-videos-empty" {...stylex.props(typography.forumText, styles.secondary)}>{m.forum_empty_videos()}</p>
-      )}
-    </>
-  )
-}
-
-/** The newest announcement or guide with a picture: the picture, and under it its section and title. */
-function Lead({ post }: { post: ForumPostSummary & { cover: string } }) {
-  return (
-    <Link to="/forum/$post" params={{ post: postParam(post) }} data-testid="forum-lead" {...stylex.props(styles.leadLink)}>
-      <span {...stylex.props(styles.lead)}>
-        <img src={forumImagePath(post.cover, getLocale() as ForumLang)} alt="" {...stylex.props(styles.leadPicture)} />
-      </span>
-      <span {...stylex.props(typography.forumText, styles.secondary)}>{SECTION_NAME[post.section]()}</span>
-      <span {...stylex.props(typography.forumCardTitle, styles.text)}>{post.translated?.title ?? post.title}</span>
-    </Link>
-  )
-}
-
-/** A post in a list: avatar, name and date, title, two lines of its text and its newest comment (SKATGO-231). The
- *  title's link covers the whole row (SKATGO-186, the human: 「手机上，论坛打不开comments」). */
+/** A post in a list, as a line: its title, then its author and day and a line of its text; its comments at the right.
+ *  The title's link covers the row (SKATGO-186, the human: 「手机上，论坛打不开comments」). */
 function PostRow({ post }: { post: ForumPostSummary }) {
   return (
-    <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} {...stylex.props(styles.row)}>
-      <Avatar name={post.author} official={post.official} />
+    <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} data-number={post.number ?? undefined} data-comments={post.comments} {...stylex.props(styles.row)}>
       <div {...stylex.props(styles.rowBody)}>
-        <div {...stylex.props(styles.rowTop)}>
-          <span data-testid={post.official ? 'forum-official' : 'forum-author'} {...stylex.props(typography.forumName, styles.text)}>{nameOf(post)}</span>
-          <span {...stylex.props(typography.forumText, styles.secondary)}>{`${dateOf(post.createdAt)} · ${commentsOf(post.comments)}`}</span>
-        </div>
-        <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.forumRowTitle, styles.rowTitle)}>{post.translated?.title ?? post.title}</Link>
+        <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.forumRowTitle, styles.rowTitle)}>
+          {post.number ? `${post.number}. ` : ''}{post.translated?.title ?? post.title}
+        </Link>
+        <p {...stylex.props(typography.forumText, styles.secondary, styles.meta)}>
+          <span data-testid={post.official ? 'forum-official' : 'forum-author'} {...stylex.props(styles.text)}>{nameOf(post)}</span>
+          <span>{dateOf(post.createdAt)}</span>
+        </p>
         {post.excerpt ? <p data-testid="forum-excerpt" {...stylex.props(typography.forumText, styles.secondary, styles.excerpt)}>{post.translated?.excerpt ?? post.excerpt}</p> : null}
-        {post.last ? (
-          <p data-testid="forum-last" {...stylex.props(typography.forumSmall, styles.secondary, styles.last)}>
-            <Avatar name={post.last.author} official={post.last.official} size="tiny" />
-            <span {...stylex.props(styles.lastText)}>
-              <span {...stylex.props(styles.text)}>{nameOf(post.last)}</span> {post.last.excerpt}
-            </span>
-          </p>
-        ) : null}
         {post.hidden !== null ? <p {...stylex.props(typography.forumText, styles.error)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
       </div>
-    </li>
-  )
-}
-
-/** A guide in the guides' list: its number, its picture when it has one, its title and two lines of it. */
-function GuideRow({ post }: { post: ForumPostSummary }) {
-  return (
-    <li data-testid="forum-guide" data-post-id={post.id} data-number={post.number ?? undefined} data-section={post.section} {...stylex.props(styles.row)}>
-      {post.cover ? (
-        <img src={forumImagePath(post.cover, getLocale() as ForumLang)} alt="" {...stylex.props(styles.guideThumb)} />
-      ) : (
-        <span aria-hidden {...stylex.props(typography.forumName, styles.guideNumber)}>{post.number}</span>
-      )}
-      <div {...stylex.props(styles.rowBody)}>
-        <span {...stylex.props(typography.forumText, styles.secondary)}>{`${m.forum_guide_number({ n: post.number ?? 0 })} · ${dateOf(post.createdAt)}`}</span>
-        <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.forumRowTitle, styles.rowTitle)}>{post.translated?.title ?? post.title}</Link>
-        {post.excerpt ? <p {...stylex.props(typography.forumText, styles.secondary, styles.excerpt)}>{post.translated?.excerpt ?? post.excerpt}</p> : null}
-      </div>
-    </li>
-  )
-}
-
-/** A video: its day and "YouTube", its title; it opens on YouTube (the human: 「要链接到youtube上」), or its post when
- *  its text has no YouTube link. */
-function VideoCard({ post }: { post: ForumPostSummary }) {
-  const title = post.translated?.title ?? post.title
-  const inner = (
-    <>
-      <span {...stylex.props(typography.forumText, styles.videoMeta)}>
-        <CirclePlay size={icon.forumSmall} aria-hidden />
-        <time {...stylex.props(styles.text)}>{dateOf(post.createdAt)}</time>
-        <span {...stylex.props(styles.secondary)}>{m.forum_youtube()}</span>
+      <span aria-label={commentsOf(post.comments)} {...stylex.props(typography.forumText, styles.count)}>
+        <MessageSquare size={icon.forumSmall} aria-hidden />
+        {post.comments}
       </span>
-      <span {...stylex.props(typography.forumCardTitle, styles.text)}>{title}</span>
-    </>
-  )
-  return (
-    <li data-testid="forum-video" data-post-id={post.id} data-section={post.section} {...stylex.props(styles.videoItem)}>
-      {post.video ? (
-        <a href={post.video} target="_blank" rel="noopener" {...stylex.props(styles.videoCard)}>{inner}</a>
-      ) : (
-        <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(styles.videoCard)}>{inner}</Link>
-      )}
     </li>
   )
 }
@@ -295,9 +215,9 @@ function WriteButton({ viewer, onWrite }: { viewer: ForumViewer; onWrite: () => 
   return <GButton testId="forum-new" Icon={SquarePen} onClick={onWrite}>{m.forum_new()}</GButton>
 }
 
-function Composer({ official, initial, onCancel }: { official: boolean; initial?: ForumSection; onCancel: () => void }) {
+function Composer({ official, initial, onCancel }: { official: boolean; initial: ForumSection; onCancel: () => void }) {
   const allowed = sectionsFor(official)
-  const [section, setSection] = useState<ForumSection>(initial && allowed.includes(initial) ? initial : official ? 'news' : 'talk')
+  const [section, setSection] = useState<ForumSection>(allowed.includes(initial) ? initial : allowed[0])
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -319,9 +239,11 @@ function Composer({ official, initial, onCancel }: { official: boolean; initial?
     <div data-testid="forum-composer" {...stylex.props(styles.panel, styles.form)}>
       <h2 {...stylex.props(typography.forumHeading, styles.text)}>{m.forum_new()}</h2>
       {allowed.length > 1 ? (
-        <div role="group" aria-label={m.forum_field_section()} {...stylex.props(styles.pills)}>
+        <div role="group" aria-label={m.forum_field_section()} {...stylex.props(styles.sorts)}>
           {allowed.map((s) => (
-            <GPill key={s} testId={`forum-section-${s}`} chosen={section === s} onClick={() => setSection(s)}>{SECTION_NAME[s]()}</GPill>
+            <button key={s} type="button" data-testid={`forum-section-${s}`} aria-pressed={section === s} onClick={() => setSection(s)} {...gPillLook(section === s)}>
+              {SECTION_NAME[s]()}
+            </button>
           ))}
         </div>
       ) : null}
@@ -394,8 +316,8 @@ export function ForumPostPage() {
   useViewerSync(data.viewer)
   if (!data.post || !data.viewer) {
     return (
-      <Frame current="home">
-        <section {...stylex.props(styles.column)}>
+      <Frame>
+        <section {...stylex.props(styles.stack)}>
           <h1 {...stylex.props(typography.forumDisplay, styles.text)}>{m.forum_title()}</h1>
           <p {...stylex.props(typography.forumText, styles.secondary)}>{m.forum_unavailable()}</p>
           <Link to="/forum" {...stylex.props(typography.forumName, styles.textLink)}>{`← ${m.forum_title()}`}</Link>
@@ -406,57 +328,49 @@ export function ForumPostPage() {
   return <Thread post={data.post} viewer={data.viewer} />
 }
 
+/** Who a reply is to: the name the comment box writes as "@Name", and a count, so the same name twice still writes. */
+type Mention = { name: string; n: number }
+
 /** A post and its comments, each in the reader's language when written in another (SKATGO-124), with the way to the
  *  text as written under it. */
 function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
   const [original, setOriginal] = useState(false)
+  const [mention, setMention] = useState<Mention | null>(null)
+  const replyTo = (name: string) => setMention((was) => ({ name, n: (was?.n ?? 0) + 1 }))
   const shown = post.translated && !original ? post.translated : null
   return (
-    <Frame current={post.section}>
-      <article data-testid="forum-thread" data-post-id={post.id} data-section={post.section} data-indexable={post.indexable} {...stylex.props(styles.column)}>
+    <Frame>
+      <article data-testid="forum-thread" data-post-id={post.id} data-section={post.section} data-indexable={post.indexable} {...stylex.props(styles.stack)}>
         <header {...stylex.props(styles.postHead)}>
           <nav aria-label={m.forum_title()} {...stylex.props(typography.forumText, styles.crumbs)}>
             <Link to="/forum" {...stylex.props(styles.crumb)}>{m.forum_title()}</Link>
             <ChevronRight size={icon.forumSmall} aria-hidden {...stylex.props(styles.secondary)} />
-            <Link to="/forum" search={{ section: post.section }} {...stylex.props(styles.crumb)}>{SECTION_NAME[post.section]()}</Link>
+            <Link to="/forum" search={post.section === FORUM_SECTIONS[0] ? {} : { section: post.section }} {...stylex.props(styles.crumb)}>{SECTION_NAME[post.section]()}</Link>
           </nav>
-          <h1 {...stylex.props(typography.forumTitle, styles.text)}>{shown?.title ?? post.title}</h1>
-          <p {...stylex.props(typography.forumText, styles.secondary)}>
-            {[post.number ? m.forum_guide_number({ n: post.number }) : null, dateOf(post.createdAt), commentsOf(post.comments)].filter(Boolean).join(' · ')}
-          </p>
+          <h1 {...stylex.props(typography.forumTitle, styles.text)}>{post.number ? `${post.number}. ` : ''}{shown?.title ?? post.title}</h1>
         </header>
-        {/* The post as each comment under it: its author's line, its text and what the viewer may do with it. */}
         <div data-testid="forum-post-card" {...stylex.props(styles.entry)}>
           <Byline of={post} />
           {/* Under the facts, where it is seen before a long text is read. */}
           {post.translated ? <Translated original={original} onSwitch={() => setOriginal(!original)} /> : null}
           {post.hidden !== null ? <p data-testid="forum-hidden" {...stylex.props(typography.forumText, styles.error)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
           <ForumBody text={shown?.body ?? post.body} official={post.official} geist />
-          {post.video ? (
-            <div {...stylex.props(styles.actionsRow)}>
-              <a href={post.video} target="_blank" rel="noopener" data-testid="forum-watch" {...gLinkLook()}>
-                <CirclePlay size={icon.forum} aria-hidden />
-                {m.forum_watch_youtube()}
-              </a>
-            </div>
-          ) : null}
-          <Actions viewer={viewer} post={post} />
+          <Actions viewer={viewer} post={post} onReply={replyTo} />
         </div>
         {post.prev || post.next ? (
-          <nav data-testid="forum-guide-nav" {...stylex.props(styles.guideNav)}>
-            {post.prev ? <Neighbour to={post.prev} label={m.forum_prev_guide()} testId="forum-prev" /> : <span />}
-            {post.next ? <Neighbour to={post.next} label={m.forum_next_guide()} testId="forum-next" end /> : null}
+          <nav data-testid="forum-lesson-nav" {...stylex.props(typography.forumText, styles.lessonNav)}>
+            {post.prev ? <Neighbour to={post.prev} testId="forum-prev" /> : <span />}
+            {post.next ? <Neighbour to={post.next} testId="forum-next" end /> : null}
           </nav>
         ) : null}
         <section aria-labelledby="forum-comments" {...stylex.props(styles.comments)}>
-          <h2 id="forum-comments" {...stylex.props(typography.forumHeading, styles.text)}>{m.forum_comments_title()}</h2>
-          {post.thread.length === 0 ? <p {...stylex.props(typography.forumText, styles.secondary)}>{m.forum_no_comments()}</p> : null}
+          <h2 id="forum-comments" {...stylex.props(typography.forumHeading, styles.text)}>{commentsOf(post.comments)}</h2>
           {post.thread.length ? (
             <ol {...stylex.props(styles.list)}>
-              {post.thread.map((c) => <CommentCard key={c.id} comment={c} post={post} viewer={viewer} />)}
+              {post.thread.map((c) => <CommentRow key={c.id} comment={c} post={post} viewer={viewer} onReply={replyTo} />)}
             </ol>
           ) : null}
-          <CommentBox viewer={viewer} post={post} />
+          <CommentBox viewer={viewer} post={post} mention={mention} />
         </section>
       </article>
     </Frame>
@@ -467,24 +381,24 @@ function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
 function Byline({ of }: { of: ForumPostSummary | ForumComment }) {
   return (
     <div {...stylex.props(styles.byline)}>
-      <Avatar name={of.author} official={of.official} size="post" />
+      <Avatar name={of.author} official={of.official} />
       <span data-testid={of.official ? 'forum-official' : 'forum-author'} {...stylex.props(typography.forumName, styles.text)}>{nameOf(of)}</span>
       <time {...stylex.props(typography.forumText, styles.secondary)}>{dateOf(of.createdAt)}</time>
     </div>
   )
 }
 
-function Neighbour({ to, label, testId, end }: { to: ForumNeighbour; label: string; testId: string; end?: boolean }) {
+/** A lesson before or after, as a line: "← 1. Title" / "3. Title →". */
+function Neighbour({ to, testId, end }: { to: ForumNeighbour; testId: string; end?: boolean }) {
   return (
     <Link to="/forum/$post" params={{ post: postParam(to) }} data-testid={testId} {...stylex.props(styles.neighbour, end && styles.neighbourEnd)}>
-      <span {...stylex.props(typography.forumText, styles.secondary)}>{`${label} · ${m.forum_guide_number({ n: to.number })}`}</span>
-      <span {...stylex.props(typography.forumRowTitle, styles.text)}>{to.title}</span>
+      {end ? `${to.number}. ${to.title} →` : `← ${to.number}. ${to.title}`}
     </Link>
   )
 }
 
 /** A comment, in the reader's language when written in another, the text as written one tap away. */
-function CommentCard({ comment: c, post, viewer }: { comment: ForumComment; post: ForumPost; viewer: ForumViewer }) {
+function CommentRow({ comment: c, post, viewer, onReply }: { comment: ForumComment; post: ForumPost; viewer: ForumViewer; onReply: (name: string) => void }) {
   const [original, setOriginal] = useState(false)
   return (
     <li data-testid="forum-comment" data-comment-id={c.id} {...stylex.props(styles.entry, styles.commentEntry)}>
@@ -492,7 +406,7 @@ function CommentCard({ comment: c, post, viewer }: { comment: ForumComment; post
       {c.hidden !== null ? <p {...stylex.props(typography.forumText, styles.error)}>{m.forum_hidden_note({ reason: c.hidden })}</p> : null}
       <ForumBody text={c.translated && !original ? c.translated.body : c.body} official={c.official} geist />
       {c.translated ? <Translated original={original} onSwitch={() => setOriginal(!original)} /> : null}
-      <Actions viewer={viewer} post={post} comment={c} />
+      <Actions viewer={viewer} post={post} comment={c} onReply={onReply} />
     </li>
   )
 }
@@ -510,10 +424,11 @@ function Translated({ original, onSwitch }: { original: boolean; onSwitch: () =>
   )
 }
 
-/** What the viewer may do with a post or a comment, as Geist's small icon buttons (SKATGO-231, the human: 「举报按钮一定要小，
- *  目前太大」): report someone else's, delete their own, and — the official — hide or show it again, and mark a
- *  player's post for search engines. A choice opens its reason or its question under them. */
-function Actions({ viewer, post, comment }: { viewer: ForumViewer; post: ForumPost; comment?: ForumComment }) {
+/** What the viewer may do with a post or a comment: reply — "@Name" in the comment box (the human: 「点回复时自动at即可」)
+ *  — and, as Geist's small icon buttons (the human: 「举报按钮一定要小，目前太大」), report someone else's, delete their
+ *  own, and — the official — hide or show it again, and mark a player's post for search engines. A choice opens its
+ *  reason or its question under them. */
+function Actions({ viewer, post, comment, onReply }: { viewer: ForumViewer; post: ForumPost; comment?: ForumComment; onReply: (name: string) => void }) {
   const item = comment ?? post
   const target = comment ? { comment: comment.id } : { post: post.id }
   const [mode, setMode] = useState<'idle' | 'report' | 'delete' | 'hide' | 'reported'>('idle')
@@ -535,9 +450,17 @@ function Actions({ viewer, post, comment }: { viewer: ForumViewer; post: ForumPo
   }
   const toggle = (next: typeof mode) => setMode(mode === next ? 'idle' : next)
   const markable = !comment && !post.official
+  // Whom a reply names: SkatGo, or the player's name; a deleted player's writing has none to name.
+  const replyName = item.official ? m.forum_official() : item.author
   return (
     <div {...stylex.props(styles.actions)}>
       <div {...stylex.props(styles.iconRow)}>
+        {!item.mine && replyName ? (
+          <button type="button" data-testid="forum-reply" onClick={() => onReply(replyName)} {...stylex.props(typography.forumName, styles.reply)}>
+            <Reply size={icon.forumSmall} aria-hidden />
+            {m.forum_reply()}
+          </button>
+        ) : null}
         {!item.mine ? <GIconButton Icon={Flag} label={m.forum_report()} testId="forum-report-open" pressed={mode === 'report'} onClick={() => toggle('report')} /> : null}
         {item.mine ? <GIconButton Icon={Trash2} label={m.forum_delete()} testId="forum-delete" pressed={mode === 'delete'} onClick={() => toggle('delete')} /> : null}
         {viewer.official && item.hidden === null ? <GIconButton Icon={EyeOff} label={m.forum_hide()} testId="forum-hide-open" pressed={mode === 'hide'} onClick={() => toggle('hide')} /> : null}
@@ -590,13 +513,30 @@ function Actions({ viewer, post, comment }: { viewer: ForumViewer; post: ForumPo
   )
 }
 
-/** The comment box under a post: flat, so no reply to a comment — "@Name" says whom one means. */
-function CommentBox({ viewer, post }: { viewer: ForumViewer; post: ForumPost }) {
+/** The comment box under a post: flat, so no reply to a comment — a reply writes "@Name" here and moves the cursor in. */
+function CommentBox({ viewer, post, mention }: { viewer: ForumViewer; post: ForumPost; mention: Mention | null }) {
   const [body, setBody] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const router = useRouter()
   const id = useId()
+  const box = useRef<HTMLTextAreaElement>(null)
+  const replied = useRef(0)
+  useEffect(() => {
+    if (!mention) return
+    const tag = `@${mention.name} `
+    setBody((was) => (was.trim() ? `${was.trimEnd()} ${tag}` : tag))
+    replied.current = mention.n
+  }, [mention])
+  useEffect(() => {
+    // After a reply wrote its name: the cursor in the box, after the name.
+    const area = box.current
+    if (!area || !mention || replied.current !== mention.n) return
+    replied.current = 0
+    area.focus()
+    area.setSelectionRange(area.value.length, area.value.length)
+    area.scrollIntoView({ block: 'center' })
+  }, [body, mention])
   if (!viewer.signedIn) {
     return (
       <div data-testid="forum-sign-in" {...stylex.props(styles.actionsRow)}>
@@ -621,8 +561,7 @@ function CommentBox({ viewer, post }: { viewer: ForumViewer; post: ForumPost }) 
   return (
     <div data-testid="forum-comment-box" {...stylex.props(styles.form)}>
       <label htmlFor={`${id}-comment`} {...stylex.props(typography.forumName, styles.text)}>{m.forum_comment_send()}</label>
-      <GTextArea id={`${id}-comment`} testId="forum-comment-body" size="comment" value={body} onChange={setBody} />
-      <p {...stylex.props(typography.forumSmall, styles.secondary)}>{m.forum_mention_hint()}</p>
+      <GTextArea id={`${id}-comment`} testId="forum-comment-body" size="comment" value={body} onChange={setBody} inputRef={box} />
       {error ? <p role="alert" {...stylex.props(typography.forumText, styles.error)}>{error}</p> : null}
       <div {...stylex.props(styles.actionsRow)}>
         <GButton testId="forum-comment-send" disabled={busy} onClick={() => void send()}>{m.forum_comment_send()}</GButton>
@@ -638,61 +577,44 @@ const focusRing = {
   outlineOffset: border.focusSm,
 } as const
 
+const hairlineTop = { borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: geist.hairline } as const
+
 const styles = stylex.create({
-  // The forum on Geist's white, its navigation beside its column (on a phone and a narrow screen above it).
+  // The forum on Geist's white, in one column.
   root: { display: 'flex', flexDirection: 'column', flexGrow: 1, color: geist.text, backgroundColor: geist.background },
-  layout: {
-    display: 'grid',
-    gridTemplateColumns: { default: geistDims.layoutColumns, [bp.cards]: geistDims.oneColumn },
-    justifyContent: 'center',
-    columnGap: space.x24,
+  column: {
     width: '100%',
+    maxWidth: geistDims.column,
+    marginInline: 'auto',
     boxSizing: 'border-box',
     paddingInline: { default: space.x24, [bp.phone]: space.x16 },
+    paddingTop: { default: space.x32, [bp.phone]: space.x16 },
+    paddingBottom: { default: space.x72, [bp.phone]: space.x36 },
   },
-  nav: {
-    display: 'flex',
-    flexDirection: { default: 'column', [bp.cards]: 'row' },
-    // On a phone and a narrow screen all five stay in sight, the row wrapping, never scrolling away (SKATGO-231).
-    flexWrap: { default: 'nowrap', [bp.cards]: 'wrap' },
-    gap: space.x2,
-    alignSelf: 'start',
-    position: { default: 'sticky', [bp.cards]: 'static' },
-    top: space.x16,
-    paddingBlock: { default: space.x32, [bp.cards]: space.x16 },
-  },
-  navItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: space.x8,
-    flexShrink: 0,
-    padding: space.x8,
-    borderRadius: geistShape.control,
+  stack: { display: 'flex', flexDirection: 'column', gap: space.x20 },
+  text: { margin: 0, color: geist.text },
+  secondary: { margin: 0, color: geist.secondary },
+  error: { margin: 0, color: geist.error },
+  foot: { paddingTop: space.x16, ...hairlineTop },
+  head: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: space.x16 },
+  // The three lists as tabs on one line, the current one underlined, a hairline under all (Geist's tabs).
+  tabs: { display: 'flex', gap: space.x24, borderBottomWidth: border.hair, borderBottomStyle: 'solid', borderBottomColor: geist.hairline },
+  tab: {
+    paddingBlock: space.x10,
+    marginBottom: geistDims.tabOverlap,
+    borderBottomWidth: geistDims.tabLine,
+    borderBottomStyle: 'solid',
+    borderBottomColor: 'transparent',
     color: { default: geist.secondary, ':hover': geist.text },
-    backgroundColor: { default: 'transparent', ':hover': geist.fill },
     textDecoration: 'none',
     whiteSpace: 'nowrap',
     ...focusRing,
   },
-  navItemCurrent: { color: geist.text, backgroundColor: geist.fill },
-  navIcon: { flexShrink: 0, color: geist.muted },
-  navIconCurrent: { color: geist.text },
-  main: { minWidth: 0 },
-  column: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x24,
-    width: '100%',
-    boxSizing: 'border-box',
-    paddingBlock: { default: space.x32, [bp.cards]: space.x8 },
-    paddingBottom: { default: space.x72, [bp.phone]: space.x36 },
-  },
-  text: { margin: 0, color: geist.text },
-  secondary: { margin: 0, color: geist.secondary },
-  error: { margin: 0, color: geist.error },
-  foot: { paddingTop: space.x16, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: geist.hairline },
-  head: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: space.x16 },
-  pills: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
+  tabCurrent: { color: geist.text, borderBottomColor: geist.text },
+  toolbar: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12 },
+  search: { position: 'relative', display: 'flex', alignItems: 'center', flexGrow: 1, minWidth: 0, margin: 0 },
+  searchIcon: { position: 'absolute', insetInlineStart: space.x12, color: geist.muted, pointerEvents: 'none' },
+  sorts: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
   form: { display: 'flex', flexDirection: 'column', gap: space.x12, minWidth: 0 },
   actionsRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
   panel: {
@@ -703,64 +625,12 @@ const styles = stylex.create({
     borderRadius: geistShape.card,
     backgroundColor: geist.backgroundSoft,
   },
-  report: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x12, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: geist.hairline },
+  report: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x12, ...hairlineTop },
   textLink: { color: geist.text, textDecoration: { default: 'none', ':hover': 'underline' }, borderRadius: geistShape.control, ...focusRing },
-  // The home's top block, as the Vercel Community's: the lead picture, and the newest beside it under its tabs.
-  featured: { display: 'grid', gridTemplateColumns: geistDims.oneColumn, gap: space.x32 },
-  featuredWithLead: { gridTemplateColumns: { default: geistDims.featuredColumns, [bp.cards]: geistDims.oneColumn } },
-  // SkatGo's pictures are drawings and charts with words in them: shown whole on white in a hairline frame, never cut.
-  lead: {
-    display: 'block',
-    aspectRatio: geistDims.featuredRatio,
-    overflow: 'hidden',
-    boxSizing: 'border-box',
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: geist.hairline,
-    borderRadius: geistShape.card,
-    backgroundColor: geist.background,
-  },
-  leadLink: { display: 'flex', flexDirection: 'column', gap: space.x8, minWidth: 0, textDecoration: 'none', borderRadius: geistShape.card, ...focusRing },
-  leadPicture: { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
-  featuredSide: { display: 'flex', flexDirection: 'column', gap: space.x20, minWidth: 0 },
-  sideList: { display: 'flex', flexDirection: 'column', gap: space.x20, margin: 0, padding: 0, listStyle: 'none' },
-  sideItem: { display: 'flex', flexDirection: 'column', gap: space.x4, minWidth: 0 },
-  sideMeta: { display: 'flex', gap: space.x8 },
-  cardTitle: { color: geist.text, textDecoration: { default: 'none', ':hover': 'underline' }, overflowWrap: 'anywhere', borderRadius: geistShape.control, ...focusRing },
-  blockHead: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: space.x16, paddingTop: space.x16 },
-  seeAll: { flexShrink: 0, color: { default: geist.secondary, ':hover': geist.text }, textDecoration: 'none', borderRadius: geistShape.control, ...focusRing },
-  // Videos: a row of text cards on the home, a grid on their section's page.
-  videoRow: {
-    display: 'grid',
-    gridAutoFlow: 'column',
-    gridAutoColumns: { default: geistDims.oneColumn, [bp.phone]: geistDims.videoCard },
-    gap: space.x16,
-    marginBlock: 0,
-    marginInline: geistDims.videoInset,
-    padding: 0,
-    listStyle: 'none',
-    overflowX: 'auto',
-  },
-  videoGrid: { display: 'grid', gridTemplateColumns: geistDims.videoGrid, gap: space.x16, marginBlock: 0, marginInline: geistDims.videoInset, padding: 0, listStyle: 'none' },
-  videoItem: { display: 'flex', minWidth: 0 },
-  videoCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x16,
-    flexGrow: 1,
-    padding: space.x16,
-    borderRadius: geistShape.card,
-    color: geist.text,
-    backgroundColor: { default: 'transparent', ':hover': geist.fill },
-    textDecoration: 'none',
-    ...focusRing,
-  },
-  videoMeta: { display: 'flex', alignItems: 'center', gap: space.x8, color: geist.text },
-  // A row of a list: the avatar (or a guide's number or picture) and the text beside it.
-  list: { display: 'flex', flexDirection: 'column', gap: space.x8, margin: 0, padding: 0, listStyle: 'none' },
-  row: { position: 'relative', display: 'flex', alignItems: 'flex-start', gap: space.x12, paddingBlock: space.x12 },
-  rowBody: { display: 'flex', flexDirection: 'column', gap: space.x4, flexGrow: 1, minWidth: 0 },
-  rowTop: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', columnGap: space.x12 },
+  // A list: lines under hairlines, nothing boxed (the human: 「列表不要做成卡片」).
+  list: { display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' },
+  row: { position: 'relative', display: 'flex', alignItems: 'flex-start', gap: space.x16, paddingBlock: space.x14, ...hairlineTop },
+  rowBody: { display: 'flex', flexDirection: 'column', gap: space.x2, flexGrow: 1, minWidth: 0 },
   rowTitle: {
     color: geist.text,
     textDecoration: { default: 'none', ':hover': 'underline' },
@@ -769,62 +639,34 @@ const styles = stylex.create({
     ...focusRing,
     '::after': { content: "''", position: 'absolute', inset: 0 },
   },
+  meta: { display: 'flex', flexWrap: 'wrap', columnGap: space.x8 },
   excerpt: { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: geistDims.excerptLines, overflow: 'hidden', overflowWrap: 'anywhere' },
-  last: { display: 'flex', alignItems: 'center', gap: space.x8, minWidth: 0, paddingTop: space.x4 },
-  lastText: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  guideNumber: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: geistDims.avatar,
-    height: geistDims.avatar,
-    borderRadius: geistShape.card,
-    color: geist.text,
-    backgroundColor: geist.fill,
-  },
-  guideThumb: {
-    flexShrink: 0,
-    boxSizing: 'border-box',
-    width: geistDims.guideThumb,
-    aspectRatio: geistDims.featuredRatio,
-    objectFit: 'contain',
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: geist.hairline,
-    borderRadius: geistShape.card,
-    backgroundColor: geist.background,
-  },
+  count: { display: 'inline-flex', alignItems: 'center', gap: space.x6, flexShrink: 0, paddingTop: space.x2, color: geist.secondary },
   // A post's page.
-  postHead: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x8,
-    paddingBottom: space.x20,
-    borderBottomWidth: border.hair,
-    borderBottomStyle: 'solid',
-    borderBottomColor: geist.hairline,
-  },
+  postHead: { display: 'flex', flexDirection: 'column', gap: space.x8 },
   crumbs: { display: 'flex', alignItems: 'center', gap: space.x8, color: geist.secondary },
   crumb: { color: { default: geist.secondary, ':hover': geist.text }, textDecoration: 'none', borderRadius: geistShape.control, ...focusRing },
   entry: { display: 'flex', flexDirection: 'column', gap: space.x12, minWidth: 0 },
-  commentEntry: { paddingBlock: space.x16, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: geist.hairline },
+  commentEntry: { paddingBlock: space.x16, ...hairlineTop },
   byline: { display: 'flex', alignItems: 'center', gap: space.x8 },
   actions: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   iconRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
-  guideNav: { display: 'grid', gridTemplateColumns: { default: geistDims.twoColumns, [bp.phone]: geistDims.oneColumn }, gap: space.x16 },
-  neighbour: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space.x4,
-    padding: space.x16,
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: { default: geist.hairline, ':hover': geist.muted },
-    borderRadius: geistShape.card,
-    textDecoration: 'none',
+  reply: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: space.x6,
+    height: geistDims.control,
+    margin: 0,
+    paddingInline: space.x8,
+    borderWidth: 0,
+    borderRadius: geistShape.control,
+    color: { default: geist.secondary, ':hover': geist.text },
+    backgroundColor: { default: 'transparent', ':hover': geist.fill },
+    cursor: 'pointer',
     ...focusRing,
   },
+  lessonNav: { display: 'flex', justifyContent: 'space-between', gap: space.x16, paddingTop: space.x16, ...hairlineTop },
+  neighbour: { minWidth: 0, color: { default: geist.secondary, ':hover': geist.text }, textDecoration: 'none', overflowWrap: 'anywhere', borderRadius: geistShape.control, ...focusRing },
   neighbourEnd: { textAlign: 'end' },
   comments: { display: 'flex', flexDirection: 'column', gap: space.x12, paddingTop: space.x8 },
   pages: { display: 'flex', justifyContent: 'space-between', gap: space.x16 },
@@ -841,4 +683,3 @@ const styles = stylex.create({
     ...focusRing,
   },
 })
-

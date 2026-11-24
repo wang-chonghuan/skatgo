@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import type { LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { ReactNode, Ref } from 'react'
 
 import { icon } from '../../theme/constants'
 import { geist, geistDims, geistShape } from '../../theme/geist.stylex'
@@ -56,27 +56,60 @@ export function GIconButton({ Icon, label, onClick, testId, pressed }: { Icon: L
   )
 }
 
-/** Someone's mark: SkatGo's logo for SkatGo, a player's initial on Geist's grey — the forum has no pictures of people. */
-export function Avatar({ name, official, size = 'row' }: { name: string; official: boolean; size?: 'row' | 'post' | 'tiny' }) {
-  const box = size === 'row' ? s.avatarRow : size === 'post' ? s.avatarPost : s.avatarTiny
-  if (official) return <img src="/logo-96.png" alt="" {...stylex.props(s.avatar, s.avatarLogo, box)} />
+/** Someone's mark beside their name on a post or a comment: SkatGo's logo for SkatGo, a player's initial on Geist's
+ *  grey — the forum has no pictures of people. */
+export function Avatar({ name, official }: { name: string; official: boolean }) {
+  if (official) return <img src="/logo-96.png" alt="" {...stylex.props(s.avatar, s.avatarLogo)} />
   const letter = Array.from(name.trim())[0]?.toUpperCase() ?? '?'
+  return <span aria-hidden {...stylex.props(typography.forumSmall, s.avatar, s.avatarLetter)}>{letter}</span>
+}
+
+/** One line of text; `name` and `type` for a form a browser can send without the page's script (a search). */
+export function GInput({ id, testId, value, onChange, name, type = 'text', placeholder, label, indent }: {
+  id: string
+  testId?: string
+  value: string
+  onChange: (value: string) => void
+  name?: string
+  type?: 'text' | 'search'
+  placeholder?: string
+  label?: string
+  /** Room at the start for an icon laid over the field (the search's). */
+  indent?: boolean
+}) {
   return (
-    <span aria-hidden {...stylex.props(size === 'row' ? typography.forumName : typography.forumSmall, s.avatar, s.avatarLetter, box)}>
-      {letter}
-    </span>
+    <input
+      id={id}
+      name={name}
+      data-testid={testId}
+      type={type}
+      value={value}
+      placeholder={placeholder}
+      aria-label={label}
+      onChange={(e) => onChange(e.target.value)}
+      {...stylex.props(typography.forumText, s.field, indent && s.indent)}
+    />
   )
 }
 
-/** One line of text. */
-export function GInput({ id, testId, value, onChange }: { id: string; testId?: string; value: string; onChange: (value: string) => void }) {
-  return <input id={id} data-testid={testId} type="text" value={value} onChange={(e) => onChange(e.target.value)} {...stylex.props(typography.forumText, s.field)} />
-}
-
 /** Several lines, starting a few lines tall and growing with the text. */
-export function GTextArea({ id, testId, value, onChange, size }: { id: string; testId?: string; value: string; onChange: (value: string) => void; size: 'post' | 'comment' }) {
+export function GTextArea({ id, testId, value, onChange, size, inputRef }: {
+  id: string
+  testId?: string
+  value: string
+  onChange: (value: string) => void
+  size: 'post' | 'comment'
+  inputRef?: Ref<HTMLTextAreaElement>
+}) {
   return (
-    <textarea id={id} data-testid={testId} value={value} onChange={(e) => onChange(e.target.value)} {...stylex.props(typography.forumText, s.field, s.area, size === 'post' ? s.areaPost : s.areaComment)} />
+    <textarea
+      ref={inputRef}
+      id={id}
+      data-testid={testId}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      {...stylex.props(typography.forumText, s.field, s.area, size === 'post' ? s.areaPost : s.areaComment)}
+    />
   )
 }
 
@@ -151,12 +184,18 @@ const s = stylex.create({
     cursor: 'pointer',
     ...focusRing,
   },
-  avatar: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: geistShape.round, overflow: 'hidden' },
+  avatar: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    width: geistDims.avatar,
+    height: geistDims.avatar,
+    borderRadius: geistShape.round,
+    overflow: 'hidden',
+  },
   avatarLogo: { boxSizing: 'border-box', objectFit: 'contain', backgroundColor: geist.background, borderWidth: border.hair, borderStyle: 'solid', borderColor: geist.hairline },
   avatarLetter: { color: geist.secondary, backgroundColor: geist.fill },
-  avatarRow: { width: geistDims.avatar, height: geistDims.avatar },
-  avatarPost: { width: geistDims.avatarPost, height: geistDims.avatarPost },
-  avatarTiny: { width: geistDims.avatarTiny, height: geistDims.avatarTiny },
   field: {
     boxSizing: 'border-box',
     width: '100%',
@@ -171,6 +210,7 @@ const s = stylex.create({
     backgroundColor: geist.background,
     ...focusRing,
   },
+  indent: { paddingInlineStart: space.x32 },
   area: { resize: 'vertical', fieldSizing: 'content' },
   areaPost: { minHeight: geistDims.textPost },
   areaComment: { minHeight: geistDims.textComment },

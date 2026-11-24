@@ -345,14 +345,16 @@ search entry.
 
 A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted
 「官方发公告，官方发一些技术的文章，用户可以评论，用户也可以发文章……就做一个简单版本的。以后既能用来seo又有个公告和用户交流，放文章的地方」.
-Four sections since SKATGO-231 (the human: 「我定的结构就是：公告，讨论，进阶教程体系，教学视频（要链接到youtube上未来）」,
-reversing SKATGO-186's two): announcements, guides and videos, which only SkatGo writes, and the discussion, where players
-write and SkatGo too. The guides are a series: numbered in the order they are published, each leading to the one before
-and after. A video opens on YouTube. The articles SkatGo wrote before stand in the discussion, at their addresses (the
-human: 「现有5篇seo文章不要放进来吧……你决定」). The forum's home is the newest announcements and guides, the videos and the
-discussion; each section has its own list, the guides in their order, the rest newest activity first, a post in the
-discussion showing its newest comment. Under every post, comments in the order written, flat — no reply to a comment; whom one
-means is "@Name" in the text (the human: 「评论不要搞嵌套，太麻烦，用户自己 @ 一个人就行，也不用通知」). Nothing in the forum
+Three lists since SKATGO-231 (the human: 「公告列表，讨论列表，高级课程列表。就这三个就行了」, reversing SKATGO-186's two): the
+announcements and the advanced course, which only SkatGo writes, and the discussion, where players write and SkatGo too.
+The advanced course is a series of lessons: numbered in the order they are published, each leading to the one before
+and after. The articles SkatGo wrote before stand in the discussion, at their addresses (the human: 「现有5篇seo文章不要放进
+来吧……你决定」). Each list is plain lines, never cards, searched by words in a post's title or text and sorted by time or
+by how many comments (the human: 「每个主题，都是一系列列表，然后可以检索和排序（时间， 互动量）……列表不要做成卡片」); the forum's own
+page is the announcements. A post shows its text and pictures, then its comments (「点进列表项后，是图文显示，下面可以评论」).
+Under every post, comments in the order written, flat — no reply to a comment; whom one
+means is "@Name" in the text (the human: 「评论不要搞嵌套，太麻烦，用户自己 @ 一个人就行，也不用通知」), which "Reply" writes into the
+comment box (SKATGO-231: 「点回复时自动at即可」). Nothing in the forum
 notifies anyone. Anyone reads; writing takes an account, and a player writes under their leaderboard name, never
 an email address; SkatGo writes as SkatGo. SkatGo's posts are for search engines; a player's post only once SkatGo
 marks it. The latest announcement also stands as one line on the front page and on `/daily`
@@ -366,7 +368,7 @@ and language and kept, saying so in a small line with the text as written one ta
 小按钮」); a text already in the reader's language, or saying it in both, stands as written. The Skat-Tricks' articles
 are SkatGo's posts in its discussion (SKATGO-120, SKATGO-231). Not in it, by the
 human's agreement (「都同意」): notifications, nested replies, pictures in players' posts (SkatGo's own posts may show the site's own pictures, one per
-language — SKATGO-129, the human: 「给论坛增加加图片的功能」), search, profiles, likes, blocking (with the
+language — SKATGO-129, the human: 「给论坛增加加图片的功能」), profiles, likes, blocking (with the
 apps later) and competitions (later, in the product itself).
 
 SkatGo for Android (SKATGO-185, the human: 「我打算做成google play app了……不要因为套web什么的被不许上架」): the site itself, opened

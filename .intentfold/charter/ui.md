@@ -545,34 +545,29 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   table is a full-screen table, and at its end a white card with the player's score and the shared one.
   The card picture (`multiplayer/src/card.ts`) is the same on white: the logo with "SkatGo.com" (「logo文字后面加上.com」), "1 deal today · 2 min" as the site's green button with the day beside it (「1 deal today 这个字应该强调……否则看到的人不知道能要打几副」), the score large, the three
   scores with the declarer's yellow badge, "Same cards – what will you score?" (German "Gleiche Karten – wie viele Punkte holst du?", the human: 「不要说can you beat me，应该说试试你能得几分」).
-- **The forum** (`forum-page.tsx`, SKATGO-118) wears the Vercel Community's design since SKATGO-231 (the human:
-  「论坛要仿照这个风格，最好严格用它的论坛设计系统……用vercel的设计，用我定的简洁结构」): Geist — its colours, its face, its sizes —
-  from `theme/geist.stylex.ts`, the roles `forum*` in `type.ts`, and its own small kit in `forum-ui.tsx` (`GButton`: the
-  main one Geist's dark fill, the others white with a hairline, 32px, radius 6; `GPill`: 34px, round, the chosen one dark;
-  `GIconButton`: 32×32 with a hairline; `Avatar`: SkatGo's logo for SkatGo, a player's initial on Geist's grey — 40px in a
-  list, 24 on a post, 16 beside a newest comment; `GInput`, `GTextArea`). Only the forum's content wears it: the site's
-  header and footer stay the lobby design. On Geist's white: the forum's navigation at the left, 200px — "Forum" and the
-  four sections, each with its lucide icon (`Layers`, `Megaphone`, `MessagesSquare`, `BookOpen`, `CirclePlay`), the
-  current one on Geist's grey — and the column beside it, at most 1000px; under `bp.cards` the navigation is a row above
-  the column that scrolls sideways. A page's h1 (`forumDisplay`, 32) with the one main button at its right: "Sign in"
-  for a guest, "New post" for a player, which opens the composer in a pale panel (the sections the author may use as
-  pills, the title, the text, "Publish" and "Cancel"); for the official, the open reports in the same panel. The home:
-  the newest announcements and guides — the newest one's picture large at the left when one has a picture, beside it
-  the pills All / Announcements / Guides over each one's day, section and title (`forumCardTitle`) — then "Videos" and
-  "Discussion" (`forumHeading`), each with "See all →" at its right: the videos a row of text cards (a play icon, the
-  day, "YouTube", the title) that open YouTube in a new tab, the discussion the list. A post in a list: its avatar, the
-  author (`forumName`) with the day and its comments at the right, its title (`forumRowTitle`, the link covering the
-  row), two lines of its text and, when it has comments, the newest one on a small line under a tiny avatar. A
-  section's page lists that section the same way; the guides each with its number in a grey square (or its picture),
-  "Guide 2 · day", title and text; the videos as a grid of their cards. At the foot, over a hairline, the line on what
-  the forum is for. A post: the way back as a breadcrumb ("Forum › Discussion"), the title (`forumTitle`, 24), its
-  guide number, day and comments, a hairline; then the author's line, the text (`ForumBody` in Geist: 14 on 20, links
-  underlined in the text's colour), for a video "Watch on YouTube", and the actions as small icon buttons — report
-  (`Flag`; the human: 「举报按钮一定要小，目前太大」), delete (`Trash2`), and the official's hide and show (`EyeOff`, `Eye`)
-  and "Let search engines index it" — a choice opening its reason or its question under them; a guide's previous and
-  next as two bordered cards; then "Comments", each a hairline over the same author line, text and actions, and the
-  comment box. The translation's small line and its "Show original" stay as SKATGO-124 has them. Dates are the day in
-  UTC, the same on the server and in the browser.
+- **The forum** (`forum-page.tsx`, SKATGO-118) wears the Vercel Community's design since SKATGO-231, as plain as it goes
+  (the human: 「我希望极简形式的……列表不要做成卡片」): Geist — its colours, its face, its sizes — from `theme/geist.stylex.ts`,
+  the roles `forum*` in `type.ts`, and its own small kit in `forum-ui.tsx` (`GButton`: the main one Geist's dark fill,
+  the others white with a hairline, 32px, radius 6; `gPillLook`: 34px, round, the chosen one dark; `GIconButton`: 32×32
+  with a hairline; `Avatar`: 24px, SkatGo's logo for SkatGo, a player's initial on Geist's grey; `GInput`,
+  `GTextArea`). Only the forum's content wears it, in one column of at most 840px on Geist's white; the site's header
+  and footer stay the lobby design. A list: the h1 "Forum" (`forumDisplay`) with the one main button at its right —
+  "Sign in" for a guest, "New post" for a player, which opens the composer in a pale panel (the official's sections as
+  pills, the title, the text, "Publish" and "Cancel"); for the official, the open reports in the same panel; then the
+  three lists as tabs on one line, "Announcements", "Discussion", "Advanced course", the current one underlined in the
+  text's colour over a hairline; then the search field with its magnifier and, beside it, "Newest" and "Most active" as
+  pills; then the posts as lines under hairlines, never boxed — the title (`forumRowTitle`, a lesson's number before it,
+  the link covering the line), the author and day, one line of its text in `secondary`, and at the right the comments'
+  count with lucide's `MessageSquare`; nothing found, one line; at the foot, over a hairline, the line on what the forum
+  is for. A post: the breadcrumb ("Forum › Discussion"), the title (`forumTitle`, 24); the author's line (avatar, name,
+  day), the text and pictures (`ForumBody` in Geist: 14 on 20, links underlined in the text's colour), and its actions:
+  "Reply" (lucide's `Reply`, a quiet text button) and the small icon buttons — report (`Flag`; the human:
+  「举报按钮一定要小，目前太大」), delete (`Trash2`), the official's hide and show (`EyeOff`, `Eye`) and "Let search engines
+  index it" — a choice opening its reason or question under them; a lesson's previous and next as one line of two quiet
+  links over a hairline; then the comments' count as the heading, each comment under a hairline with the same author
+  line, text and actions, and the comment box, into which "Reply" writes "@Name " and puts the cursor (the human:
+  「点回复时自动at即可」). The translation's small line and its "Show original" stay as SKATGO-124 has them. Dates are the day
+  in UTC, the same on the server and in the browser.
 - **The League** (`league-page.tsx`, `league.tsx`, `/league`, SKATGO-204): a sub-page on the grey page in the reading column,
   noindex: its H1 "Ranglistenspiel" / "Ranked match" and its tab title "Skat-Ranglistenspiel – von Bronze bis Legende" (SKATGO-210, the human: 「页面标题也不要用league了」; "Liga" before), then for an account its League as the front page's League tile is (the human chose it from two:
   「我选A」) — `tileNavy`, `radii.tile`, `elev.tileNavy`, white words: lucide's `Trophy` at `icon.tile` and "Gold-Liga"

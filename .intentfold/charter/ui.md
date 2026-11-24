@@ -505,7 +505,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   one `small` `bad` line under them, a new look after an upload the browser's own question first; under it the nickname
   as the settings had it (its `small` slate capitals label, the field and a `block` "Speichern", a refusal in `bad`);
   then, when there are any, "Erwähnungen" (`optionTitle`) and the latest twenty as lines under `hairline`s, each a
-  link to the comment (or post) it is in: the writer's avatar (`dims.badge`; SkatGo's logo for SkatGo), "Anna hat dich in
+  link to the comment (or post) it is in, `space.x12` in from both sides: the writer's avatar (`dims.badge`; SkatGo's logo for SkatGo), "Anna hat dich in
   „Titel“ erwähnt" (`smallBold`), one line of the text (`note`, slate) and the day and time (`meta`, slate), led by "Neu"
   (`smallBold`, `stop`) while unseen, each line cut with an ellipsis. Then, for a guest who has not played a `go` "Anmelden und Profil
   ansehen" opening Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to

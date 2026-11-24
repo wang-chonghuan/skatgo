@@ -193,6 +193,8 @@ const styles = stylex.create({
     alignItems: 'flex-start',
     gap: space.x12,
     paddingBlock: space.x12,
+    // Room on both sides, so the avatar and text keep off the edge of the hover ground.
+    paddingInline: space.x12,
     color: 'inherit',
     textDecoration: 'none',
     backgroundColor: { default: 'transparent', ':hover': color.page },

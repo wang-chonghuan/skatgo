@@ -48,12 +48,22 @@ export async function askForum(op: string, payload: object, request: Pick<Reques
   }
 }
 
-// The avatars (SKATGO-231): DiceBear's Avataaars (Pablo Stanley's design, free for personal and commercial use) in its
-// own standard looks (the human: 「我觉得E比较好」, then, after a quieter take: 「风格改的太沉稳了，你就用E的标准默认风格吧」), on a
-// round soft tint of the site's colours so each sits in its circle; its skin tones without the two darkest (the human:
-// 「能否设置不要黑人」).
-const SKIN = ['d08b5b', 'edb98a', 'ffdbb4', 'fd9841', 'f8d25c']
-const STANDARD = { backgroundColor: avatarGrounds, radius: 50, skinColor: SKIN }
+// The avatars (SKATGO-231): DiceBear's Avataaars (Pablo Stanley's design, free for personal and commercial use), on a
+// round soft tint of the site's colours so each sits in its circle. Since SKATGO-233 exactly as E on SKATGO-231's
+// comparison sheet (the human: 「截图里的这一版e不错。当线上的那一版e，完全不行，人是哭的，嘴里流绿水的……就用你现在给我看的图片的
+// 这一套，肤色也不限制，不禁止黑人，就跟你图上的参数一样」): its own hair colours, beards and glasses now and then, and only
+// calm mouths, eyes and brows — no tears, tongues or sick; every skin tone.
+const MATURE = {
+  backgroundColor: avatarGrounds,
+  radius: 50,
+  hairColor: ['e8e1e1', 'ecdcbf', '724133', '2c1b18', 'a55728'],
+  facialHairProbability: 45,
+  accessoriesProbability: 40,
+  accessories: ['prescription01', 'prescription02', 'round'],
+  mouth: ['default', 'smile', 'twinkle', 'serious'],
+  eyes: ['default', 'happy', 'side', 'squint'],
+  eyebrows: ['default', 'defaultNatural', 'raisedExcited', 'flatNatural'],
+} satisfies Partial<avataaars.Options & { backgroundColor: string[]; radius: number }>
 
 /** The text an avatar address names, or null — for an avatar, only at the current style's address. */
 function seedOf(path: string, kind: 'avatar' | 'multiavatar'): string | null {
@@ -86,7 +96,7 @@ function avatar(request: Request, path: string): Response {
   const kind = path.startsWith(`${PREFIX}multiavatar/`) ? 'multiavatar' : 'avatar'
   const seed = seedOf(path, kind)
   if (!seed) return json(404, { error: 'not found' })
-  return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...STANDARD }).toString())
+  return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...MATURE }).toString())
 }
 
 /** GET /api/forum/avatar/u/<id> — a picture a player uploaded (SKATGO-232), as the forum keeps it: a new id with each

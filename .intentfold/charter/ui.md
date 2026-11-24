@@ -560,8 +560,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   colour, `tileNavy`, `tileGreen`, `tileOrange`, in a `dims.badge` square with `radii.tag` — the current one navy
   `appBtnStrong` and underlined in that colour (`border.frame`); then the search field (`TextField`) and, beside it,
   "Newest" and "Most active" as `toggleLook` pills; then the posts in one white `option` panel as lines under `hairline`s,
-  never cards of their own — the post's own picture (`dims.avatar`, round: DiceBear's Avataaars of its title as written, in its
-  standard looks — without its two darkest skin tones (the human: 「能否设置不要黑人」) — on soft tints of the site's colours, `avatarGrounds` in `constants.ts` — the human: 「每个帖子都根据标题自动生成一个
+  never cards of their own — the post's own picture (`dims.avatar`, round: DiceBear's Avataaars of its title as written, as E
+  on SKATGO-231's comparison sheet — its hair colours, beards and glasses now and then, only calm mouths, eyes and brows,
+  every skin tone (SKATGO-233, the human: 「人是哭的，嘴里流绿水的……就用你现在给我看的图片的这一套，肤色也不限制」) — on soft tints of the site's colours, `avatarGrounds` in `constants.ts` — the human: 「每个帖子都根据标题自动生成一个
   这样的图片」, 「我觉得E比较好」, then 「风格改的太沉稳了，你就用E的标准默认风格吧」; no logo, 「我发的帖子，都用skatgo的logo，不好看，太重复了」), the title
   (`appBtnStrong`, navy, `info` under the pointer, the link covering the line), the author (navy, SkatGo in `go`) and day
   (`meta`, slate), one line of its text (`note`), and at the right the players who commented — up to three of their

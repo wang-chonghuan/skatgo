@@ -392,13 +392,15 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   「学习页面里，要有明显的按钮，5分钟快速入门开始打牌」) — not the front page. The Skat-Tricks' page (`tricks-page.tsx`,
   SKATGO-103) is its H1 — no lead under it (SKATGO-134) — then every kind of exercise as an option card, numbered, each a `<details>`
   closed at first (one named in the address, as `#offenes-endspiel` names the first, opens by
-  itself and stops under the header): first the open-card endgames (SKATGO-119, the human: 「这个要可折叠，像其他题
-  一样，它作为第一类练习题」), their count solved in the head, opening to levels (SKATGO-111) — a grid of numbered
+  itself and stops under the header): first the bidding practice (SKATGO-234, the human: 「bidding practice应该放到最高，然后
+  bidding和endgame应该高亮，用主题色系列来显示，因为它们内容最多最重要」), a card of the same look that opens its page, "Reizen
+  üben" and its one line, its head `tileNavy`; then the open-card endgames (SKATGO-119, the human: 「这个要可折叠，像其他题
+  一样，它作为第一类练习题」), their head `tileGreen` and the card ringed in it, their count solved in the head, opening to levels (SKATGO-111) — a grid of numbered
   square tiles, solved `good` with a check, gone wrong `bad` with a cross and the number of wrong answers in its
   corner, the next one ringed `go`, and for a guest a lock from the third, and under it one `go` button to the
   next ("Aufgabe n spielen"); then the other kinds of SKATGO-103, each opening to its exercises (hidden by
-  SKATGO-110, shown again by SKATGO-119); then, numbered after them, the bidding practice (SKATGO-234), a card of the same look
-  that opens its page, "Reizen üben" and its one line; under the cards, small `info` links to the rules. The bidding practice
+  SKATGO-110, shown again by SKATGO-119). The two coloured heads' words are `onColor`, their line and count `onColorSoft`, their
+  number white with the colour's digit. Under the cards, small `info` links to the rules. The bidding practice
   (`bidding-practice-page.tsx`, SKATGO-149) is a Skat-Tricks exercise's page without the way back: the H1 with the place
   in the run beside it, "1/600" in the same type in slate (SKATGO-150, 「上面那个单列进度的行不要」), and beside that the
   header's round white button with lucide's `LayoutGrid` (SKATGO-156) opening "All questions" in the cheat sheet's `Modal`:

@@ -21,8 +21,8 @@ import { Pill, linkLook } from './ui'
 
 /**
  * The Skat-Tricks section's page (SKATGO-103, before it the first article of SKATGO-82): the open-card endgames as
- * levels first, then the other kinds of exercise as option cards, each opening to its exercises, then the bidding
- * practice (SKATGO-234), and under them the way to the rules.
+ * levels, then the other kinds of exercise as option cards, each opening to its exercises, and under them the way to the
+ * rules. Since SKATGO-234 the bidding practice comes first, and it and the endgames stand out in the tile colours.
  * Each card is a native <details>: closed, its exercises are still in the page a search engine reads (the
  * human: 「题目页要收录……很好的引流材料」). A card named in the address (#druecken, from a trick of the
  * article) opens by itself.
@@ -56,6 +56,21 @@ export function TricksPage() {
           <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.tricks_hub_h1()}</h1>
         </header>
         <ol {...stylex.props(styles.list)}>
+          {/* The bidding practice, first since SKATGO-234 (the human: 「bidding融入practice，practive改名为skat tricks」, then
+              「bidding practice应该放到最高，然后bidding和endgame应该高亮，用主题色系列来显示，因为它们内容最多最重要」): a line like
+              the kinds', in the League's navy, opening its own page. */}
+          <li id="bidding" {...stylex.props(styles.item)}>
+            <Link to="/bidding-practice" data-testid="tricks-bidding" data-tone="navy" {...stylex.props(styles.card, styles.summary, styles.cardLink, styles.toneNavy)}>
+              <span aria-hidden="true" {...stylex.props(typography.smallBold, styles.number, styles.numberOnNavy)}>1</span>
+              <span {...stylex.props(styles.heading)}>
+                <span {...stylex.props(typography.optionTitle, styles.optionTitle, styles.onTone)}>{m.bidpractice_title()}</span>
+                <span {...stylex.props(typography.optionDesc, styles.optionDesc, styles.onToneSoft)}>{m.tricks_bidding_blurb()}</span>
+              </span>
+              <span {...stylex.props(styles.chevron, styles.onTone)}>
+                <ChevronRight aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+              </span>
+            </Link>
+          </li>
           {SHOWN_TYPES.map((type, i) => {
             const isOpen = open.has(type)
             const exercises = exercisesOf(type)
@@ -70,18 +85,19 @@ export function TricksPage() {
                   onToggle={(e) => toggle(type, e.currentTarget.open)}
                   data-testid="tricks-type"
                   data-type={type}
-                  {...stylex.props(styles.card, isOpen && styles.cardOpen, ladder && styles.cardFeatured)}
+                  {...stylex.props(styles.card, isOpen && styles.cardOpen, ladder && styles.cardFeatured, ladder && !isOpen && styles.toneGreen)}
                 >
-                  <summary data-testid="tricks-type-head" {...stylex.props(styles.summary)}>
-                    <span aria-hidden="true" {...stylex.props(typography.smallBold, styles.number)}>{i + 1}</span>
+                  {/* The open-card endgames' head in the action green (SKATGO-234: 「bidding和endgame应该高亮，用主题色系列来显示」). */}
+                  <summary data-testid="tricks-type-head" data-tone={ladder ? 'green' : undefined} {...stylex.props(styles.summary, ladder && styles.toneGreen)}>
+                    <span aria-hidden="true" {...stylex.props(typography.smallBold, styles.number, ladder && styles.numberOnGreen)}>{i + 2}</span>
                     <span {...stylex.props(styles.heading)}>
-                      <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{text.types[type].title}</span>
-                      <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{text.types[type].blurb}</span>
+                      <span {...stylex.props(typography.optionTitle, styles.optionTitle, ladder && styles.onTone)}>{text.types[type].title}</span>
+                      <span {...stylex.props(typography.optionDesc, styles.optionDesc, ladder && styles.onToneSoft)}>{text.types[type].blurb}</span>
                     </span>
-                    <span data-testid={ladder ? 'tricks-ladder-progress' : undefined} {...stylex.props(typography.meta, styles.count, ladder && styles.countShown)}>
+                    <span data-testid={ladder ? 'tricks-ladder-progress' : undefined} {...stylex.props(typography.meta, styles.count, ladder && styles.countShown, ladder && styles.onToneSoft)}>
                       {ladder ? m.tricks_ladder_progress({ n: exercises.filter((e) => steps[e.id]?.solved).length, count: exercises.length }) : m.tricks_hub_count({ n: exercises.length })}
                     </span>
-                    <span {...stylex.props(styles.chevron)}>
+                    <span {...stylex.props(styles.chevron, ladder && styles.onTone)}>
                       <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
                     </span>
                   </summary>
@@ -137,20 +153,6 @@ export function TricksPage() {
               </li>
             )
           })}
-          {/* The bidding practice, last in the list since SKATGO-234 (the human: 「bidding融入practice，practive改名为skat
-              tricks」): a line like the kinds', numbered after them, opening its own page. */}
-          <li id="bidding" {...stylex.props(styles.item)}>
-            <Link to="/bidding-practice" data-testid="tricks-bidding" {...stylex.props(styles.card, styles.summary, styles.cardLink)}>
-              <span aria-hidden="true" {...stylex.props(typography.smallBold, styles.number)}>{SHOWN_TYPES.length + 1}</span>
-              <span {...stylex.props(styles.heading)}>
-                <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{m.bidpractice_title()}</span>
-                <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{m.tricks_bidding_blurb()}</span>
-              </span>
-              <span {...stylex.props(styles.chevron)}>
-                <ChevronRight aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
-              </span>
-            </Link>
-          </li>
         </ol>
         {/* The rules and the bidding table to look a point or a value up in: small links under the cards. The 12
             tricks that were an article here (SKATGO-82) are a forum post since SKATGO-120. */}
@@ -265,8 +267,8 @@ const styles = stylex.create({
   },
   cardOpen: { borderColor: color.go },
   cardLink: { display: 'flex', textDecoration: 'none' },
-  // The ladder (SKATGO-108): the featured card's deeper shadow, ringed in the action green.
-  cardFeatured: { borderColor: color.go, boxShadow: elev.optionFeatured },
+  // The ladder (SKATGO-108): the featured card's deeper shadow, ringed in its head's green (SKATGO-234).
+  cardFeatured: { borderColor: color.tileGreen, boxShadow: elev.optionFeatured },
   summary: {
     display: 'flex',
     alignItems: 'center',
@@ -297,6 +299,14 @@ const styles = stylex.create({
   optionDesc: { margin: 0, color: color.slate },
   count: { flexShrink: 0, color: color.slate, whiteSpace: 'nowrap', display: { default: 'block', [bp.phone]: 'none' } },
   chevron: { display: 'flex', flexShrink: 0, color: color.slate },
+  // The two with the most in them, in the front page's tile colours (SKATGO-234): the bidding practice in the League's
+  // navy, the open-card endgames in the action green; their words white, their number white with the colour's digit.
+  toneNavy: { backgroundColor: color.tileNavy },
+  toneGreen: { backgroundColor: color.tileGreen },
+  onTone: { color: color.onColor },
+  onToneSoft: { color: color.onColorSoft },
+  numberOnNavy: { backgroundColor: color.surface, color: color.tileNavy },
+  numberOnGreen: { backgroundColor: color.surface, color: color.tileGreen },
   // The ladder's progress shows on a phone too.
   countShown: { display: 'block' },
   mark: { display: 'flex', flexShrink: 0 },

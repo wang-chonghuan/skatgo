@@ -9,8 +9,8 @@ import {
 } from '../src/forum'
 import { Store } from '../src/store'
 
-// The forum (SKATGO-118) against a database of its own: who may write where (three lists since SKATGO-231), search and
-// sort, the advanced course in order, what hidden content shows to whom, what search engines are offered, and the
+// The forum (SKATGO-118) against a database of its own: who may write where (two lists since SKATGO-234), search and
+// sort, what hidden content shows to whom, what search engines are offered, and the
 // daily limits.
 
 const DAY = 24 * 60 * 60 * 1000
@@ -39,21 +39,19 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   let clock = Date.now() - 60_000
   const tick = () => ++clock
 
-  // Only the official announces and writes the advanced course; a player writes in the discussion.
-  for (const section of ['news', 'guides'] as const) {
-    await assert.rejects(forumCreate(store, { ...anna, section, title: 'Neu hier', body: 'Hallo' }, tick()), { name: 'Error' })
-  }
+  // Only the official announces; a player writes in the discussion — two lists since SKATGO-234.
+  await assert.rejects(forumCreate(store, { ...anna, section: 'news', title: 'Neu hier', body: 'Hallo' }, tick()), { name: 'Error' })
+  const article = await forumCreate(store, { ...admin, section: 'news', title: 'Wann Grand?', body: '## Regel\n[♣B ♠B ♥A]' }, tick())
   const news = await forumCreate(store, { ...admin, section: 'news', title: 'Turnier am Sonntag', body: 'Alle sind eingeladen.' }, tick())
-  const article = await forumCreate(store, { ...admin, section: 'guides', title: 'Wann Grand?', body: '## Regel\n[♣B ♠B ♥A]' }, tick())
   const post = await forumCreate(store, { ...anna, section: 'talk', title: 'Frage zum Reizen', body: 'Wie weit reize ich?' }, tick())
   await forumCreate(store, { ...anna, section: 'talk', title: 'Fehler beim Tisch', body: 'Die Karte hing 100% fest.' }, tick())
   await forumCreate(store, { ...ben, section: 'talk', title: 'Hello', body: 'From Ohio' }, tick())
 
-  // Three lists, the announcements first when none is named, the newest first; one forum for every language; names,
+  // Two lists, the announcements first when none is named, the newest first; one forum for every language; names,
   // never ids.
   const list = await forumList(store, { ...guest, section: 'talk' })
   assert.deepEqual(list.posts.map((p) => p.title), ['Hello', 'Fehler beim Tisch', 'Frage zum Reizen'])
-  assert.deepEqual((await forumList(store, { ...guest })).posts.map((p) => p.id), [news.id])
+  assert.deepEqual((await forumList(store, { ...guest })).posts.map((p) => p.id), [news.id, article.id])
   assert.ok(list.posts.every((p) => p.author && !p.author.startsWith('user:') && !p.mine))
   assert.equal((await forumList(store, { ...anna, section: 'talk' })).posts.find((p) => p.id === post.id)?.mine, true)
 
@@ -79,18 +77,9 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   assert.equal((await forumList(store, { ...guest, section: 'talk', sort: 'active' })).posts[0].id, post.id)
   assert.equal((await forumList(store, { ...guest, section: 'talk', sort: 'new' })).posts[0].title, 'Hello')
 
-  // The advanced course's lessons numbered by publication, each with its neighbours.
-  const second = await forumCreate(store, { ...admin, section: 'guides', title: 'Wann Null?', body: 'Ohne Stich.' }, tick())
-  const third = await forumCreate(store, { ...admin, section: 'guides', title: 'Wann Hand?', body: 'Ohne Skat.' }, tick())
-  const guides = (await forumList(store, { ...guest, section: 'guides' })).posts
-  assert.deepEqual(guides.map((p) => [p.id, p.number]), [[third.id, 3], [second.id, 2], [article.id, 1]])
-  const middle = (await forumPost(store, { ...guest, id: second.id })).post
-  assert.deepEqual([middle.number, middle.prev, middle.next], [2, { id: article.id, title: 'Wann Grand?', number: 1 }, { id: third.id, title: 'Wann Hand?', number: 3 }])
-  assert.deepEqual([thread.prev, thread.next, thread.number], [null, null, null])
-
   // Search engines: the official's posts; a player's once marked.
   const indexed = async () => (await forumSitemap(store)).posts.map((p) => p.id).sort((a, b) => a - b)
-  const officials = [news.id, article.id, second.id, third.id]
+  const officials = [article.id, news.id]
   assert.deepEqual(await indexed(), officials)
   await forumModerate(store, { ...admin, action: 'index', post: post.id })
   assert.deepEqual(await indexed(), [...officials, post.id].sort((a, b) => a - b))
@@ -136,8 +125,13 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   const { rows } = await store.pool.query(
     `INSERT INTO forum_posts (section, author, official, title, body, created_at, last_activity) VALUES ('articles', 'user:admin', true, 'Alt', 'x', $1, $1) RETURNING id`,
     [tick()])
+  // So are the advanced course's lessons of SKATGO-231, which left the forum in SKATGO-234.
+  const { rows: lesson } = await store.pool.query(
+    `INSERT INTO forum_posts (section, author, official, title, body, created_at, last_activity) VALUES ('guides', 'user:admin', true, 'Lektion', 'x', $1, $1) RETURNING id`,
+    [tick()])
   await store.migrate()
   assert.equal((await forumPost(store, { ...guest, id: Number(rows[0].id) })).post.section, 'news')
+  assert.equal((await forumPost(store, { ...guest, id: Number(lesson[0].id) })).post.section, 'news')
 })
 
 test('forum: faces and mentions', { timeout: 60_000 }, async (t) => {

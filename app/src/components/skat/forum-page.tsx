@@ -1,7 +1,7 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useLoaderData, useNavigate, useRouter, useSearch } from '@tanstack/react-router'
-import { ChevronRight, Eye, EyeOff, Flag, type LucideIcon, Megaphone, MessageSquare, MessagesSquare, Reply, Search, Trash2, X } from 'lucide-react'
+import { ChevronRight, Eye, EyeOff, Flag, type LucideIcon, Megaphone, MessageSquare, MessagesSquare, Reply, Trash2 } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import {
@@ -107,11 +107,6 @@ export function ForumPage() {
   const section = chosen ?? FORUM_SECTIONS[0]
   const data = answer.ok ? answer.data : null
   const [writing, setWriting] = useState(false)
-  const navigate = useNavigate()
-  // The search folded behind its magnifier until wanted (SKATGO-234, the human: 「论坛里搜索框我觉得没啥用……点击了放大镜展开一条线的，
-  // 不要默认就占那么大空间」); open whenever the address carries words searched for.
-  const [searching, setSearching] = useState(Boolean(q))
-  useEffect(() => { if (q) setSearching(true) }, [q])
   useViewerSync(data?.viewer ?? null)
   // Only what differs from a list's defaults stays in the address; a new view starts on its first page.
   const view = (over: View) => {
@@ -149,6 +144,7 @@ export function ForumPage() {
         {data && writing ? <Composer official={data.viewer.official} initial={section} onCancel={() => setWriting(false)} /> : null}
         {data?.viewer.official ? <Reports /> : null}
         <div {...stylex.props(styles.toolbar)}>
+          <SearchBox section={section} sort={sort} q={q} key={`${section}:${q ?? ''}`} />
           <div role="group" aria-label={m.forum_sort()} {...stylex.props(styles.sorts)}>
             {(['new', 'active'] as const).map((s) => (
               <Link key={s} to="/forum" search={view({ sort: s })} data-sort={s} aria-current={s === sort ? 'true' : undefined} {...toggleLook(s === sort)}>
@@ -156,20 +152,7 @@ export function ForumPage() {
               </Link>
             ))}
           </div>
-          <IconButton Icon={Search} label={m.forum_search()} testId="forum-search-open" pressed={searching} onClick={() => setSearching(!searching)} />
         </div>
-        {searching ? (
-          <SearchBox
-            section={section}
-            sort={sort}
-            q={q}
-            key={`${section}:${q ?? ''}`}
-            onClose={() => {
-              setSearching(false)
-              if (q) void navigate({ to: '/forum', search: view({ q: undefined }) })
-            }}
-          />
-        ) : null}
         {!data ? (
           <p {...stylex.props(typography.appText, styles.slate)}>{m.forum_unavailable()}</p>
         ) : data.posts.length === 0 ? (
@@ -190,15 +173,12 @@ export function ForumPage() {
   )
 }
 
-/** The list's search, opened from its magnifier (SKATGO-234): one line the list's width, the field taking the cursor,
- *  and a small cross that folds it away and drops the words searched for. A form a browser can send without the page's
- *  script — to the page's own address, in its language — read on the server as any view. */
-function SearchBox({ section, sort, q, onClose }: { section: ForumSection; sort: ForumSort; q?: string; onClose: () => void }) {
+/** The list's search: a form a browser can send without the page's script — to the page's own address, in its
+ *  language — read on the server as any view. */
+function SearchBox({ section, sort, q }: { section: ForumSection; sort: ForumSort; q?: string }) {
   const [words, setWords] = useState(q ?? '')
   const navigate = useNavigate()
   const id = useId()
-  // Opened by a tap: the cursor goes into the field. Opened by an address with words in it: it stays where it is.
-  useEffect(() => { if (!q) document.getElementById(id)?.focus() }, [])
   return (
     <form
       role="search"
@@ -217,7 +197,6 @@ function SearchBox({ section, sort, q, onClose }: { section: ForumSection; sort:
       {section === FORUM_SECTIONS[0] ? null : <input type="hidden" name="section" value={section} />}
       {sort === 'new' ? null : <input type="hidden" name="sort" value={sort} />}
       <TextField id={id} name="q" search testId="forum-search-input" value={words} onChange={setWords} placeholder={m.forum_search()} label={m.forum_search()} />
-      <IconButton Icon={X} label={m.forum_search_close()} testId="forum-search-close" onClick={onClose} />
     </form>
   )
 }
@@ -665,9 +644,8 @@ const styles = stylex.create({
   mark: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: dims.badge, height: dims.badge, borderRadius: radii.tag, color: color.onColor },
   news: { backgroundColor: color.tileNavy },
   talk: { backgroundColor: color.tileGreen },
-  // The sorts at the left, the magnifier at the far right (SKATGO-234).
-  toolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space.x12 },
-  search: { display: 'flex', alignItems: 'center', gap: space.x8, minWidth: 0, margin: 0 },
+  toolbar: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12 },
+  search: { display: 'flex', flexGrow: 1, minWidth: 0, margin: 0 },
   sorts: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
   form: { display: 'flex', flexDirection: 'column', gap: space.x12, minWidth: 0 },
   actions: { display: 'flex', flexDirection: 'column', gap: space.x12 },

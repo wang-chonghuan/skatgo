@@ -568,10 +568,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   the same panel; then the lists as tabs over a `hairline`, "Announcements", "Discussion", each
   led by its mark — its lucide icon (`Megaphone`, `MessagesSquare`) white on its front-page tile's
   colour, `tileNavy`, `tileGreen`, in a `dims.badge` square with `radii.tag` — the current one navy
-  `appBtnStrong` and underlined in that colour (`border.frame`); then "Newest" and "Most active" as `toggleLook` pills
-  and, at the row's far right, a magnifier (`IconButton`, lucide's `Search`) that opens the search under them, one line the
-  list's width — the field (`TextField`) with the cursor in it and a small cross that folds it away and drops the words
-  (SKATGO-234, the human: 「点击了放大镜展开一条线的，不要默认就占那么大空间」); open by itself when the address has words; then the posts in one white `option` panel as lines under `hairline`s,
+  `appBtnStrong` and underlined in that colour (`border.frame`); then the search field (`TextField`) and, beside it,
+  "Newest" and "Most active" as `toggleLook` pills; then the posts in one white `option` panel as lines under `hairline`s,
   never cards of their own — the post's own picture (`dims.avatar`, round: DiceBear's Avataaars of its title as written, as E
   on SKATGO-231's comparison sheet — its hair colours, beards and glasses now and then, only calm mouths, eyes and brows,
   every skin tone (SKATGO-233, the human: 「人是哭的，嘴里流绿水的……就用你现在给我看的图片的这一套，肤色也不限制」) — on soft tints of the site's colours, `avatarGrounds` in `constants.ts` — the human: 「每个帖子都根据标题自动生成一个

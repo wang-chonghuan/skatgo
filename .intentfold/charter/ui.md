@@ -582,8 +582,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   post: the breadcrumb ("Forum › Discussion", `info`, the list's mark before its name); the post in a white card — the
   title (`landingHeading`), the author's line (a player's avatar — their uploaded picture, the look they drew, or else the picture of their name
   (SKATGO-232) — `dims.badge`, or for SkatGo its list's mark; name, day), the
-  text and pictures (`ForumBody`), and its actions: "Reply" (lucide's `Reply`, `info`) and small round icon buttons
-  (`dims.iconButtonSm`, a `hairline`) — report (`Flag`; the human: 「举报按钮一定要小，目前太大」), delete (`Trash2`), the
+  text and pictures (`ForumBody`), and its actions: "Reply" (lucide's `Reply`, `info`) and small bare icon buttons
+  (lucide's icon in `slate`, `navy` under the pointer, no circle or line, a `dims.iconButtonSm` hit area and a `page` ground
+  while what it opens is open; SKATGO-234, the human: 「举报和屏蔽的按钮太大了，很丑」) — report (`Flag`; the human: 「举报按钮一定要小，目前太大」), delete (`Trash2`), the
   official's hide and show (`EyeOff`, `Eye`) — and "Let search engines index it" (`quiet`), a choice opening its reason
   or question under them; then the comments' count (`optionTitle`) and
   one white card of the comments under `hairline`s, each with the same author line, text and actions, the comment box

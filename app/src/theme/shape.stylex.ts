@@ -34,10 +34,11 @@ export const dims = stylex.defineVars({
   control: '40px',
   iconButton: '44px',
   badge: '24px',
-  /** The forum's avatar in a list's row and a lesson's number there (SKATGO-231), and its small icon buttons — report,
-   *  delete, hide (the human: 「举报按钮一定要小，目前太大」). */
+  /** The forum's avatar in a list's row (SKATGO-231). */
   avatar: '32px',
-  iconButtonSm: '32px',
+  /** The forum's icon buttons — report, delete, hide — as bare icons, this their hit area (SKATGO-234, the human:
+   *  「举报和屏蔽的按钮太大了，很丑」; SKATGO-231's 32px circles before). */
+  iconButtonSm: '24px',
   /** How far each of a line's commenters' avatars lies over the one before (SKATGO-231). */
   avatarOverlap: '-8px',
   /** A player's own avatar at the top of /profile (SKATGO-232). */

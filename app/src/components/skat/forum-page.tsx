@@ -1,12 +1,12 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useLoaderData, useNavigate, useRouter, useSearch } from '@tanstack/react-router'
-import { ChevronRight, Eye, EyeOff, Flag, GraduationCap, type LucideIcon, Megaphone, MessageSquare, MessagesSquare, Reply, Trash2 } from 'lucide-react'
+import { ChevronRight, Eye, EyeOff, Flag, type LucideIcon, Megaphone, MessageSquare, MessagesSquare, Reply, Trash2 } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import {
   COMMENT_MAX, DAILY_LIMITS, FORUM_SECTIONS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumComment,
-  type ForumNeighbour, type ForumPost, type ForumPostSummary, type ForumReport, type ForumSection, type ForumSort,
+  type ForumPost, type ForumPostSummary, type ForumReport, type ForumSection, type ForumSort,
   type ForumViewer, type Face, avatarPath, facePath, postParam, sectionsFor,
 } from '~/lib/forum'
 import { track } from '~/lib/analytics'
@@ -28,25 +28,22 @@ import { Btn, TextArea, TextField, Toggle, toggleLook } from './ui'
 
 // The forum (SKATGO-118), since SKATGO-231 as plain as it goes and in SkatGo's own colours (the human: 「我希望极简形式的。
 // 每个主题，都是一系列列表，然后可以检索和排序（时间， 互动量）。公告列表，讨论列表，高级课程列表。就这三个就行了。列表不要做成卡片。点进列表项
-// 后，是图文显示，下面可以评论，点回复时自动at即可」, then 「颜色要丰富一下，还要用skatgo的设计系统」): three lists under one row of
-// tabs, each in its section tile's colour, each searchable and sorted by time or by comments, its posts as lines in one
+// 后，是图文显示，下面可以评论，点回复时自动at即可」, then 「颜色要丰富一下，还要用skatgo的设计系统」): its lists — two since SKATGO-234,
+// the announcements and the discussion — under one row of tabs, each in its section tile's colour, each searchable and sorted by time or by comments, its posts as lines in one
 // white panel; a post's page its text and pictures, then its comments, flat, a reply writing "@Name" into the comment
 // box. Rendered on the server from the routes' loaders; what changes after a write is read again through the router.
 
 const SECTION_NAME: Record<ForumSection, () => string> = {
   news: m.forum_section_news,
   talk: m.forum_section_talk,
-  guides: m.forum_section_guides,
 }
 
-/** Each list's mark: its icon on its colour — the front page's tiles: the announcements navy, the discussion green, the
- *  advanced course the course's orange. */
-const SECTION_ICON: Record<ForumSection, LucideIcon> = { news: Megaphone, talk: MessagesSquare, guides: GraduationCap }
+/** Each list's mark: its icon on its colour — the front page's tiles: the announcements navy, the discussion green. */
+const SECTION_ICON: Record<ForumSection, LucideIcon> = { news: Megaphone, talk: MessagesSquare }
 
 const SECTION_EMPTY: Record<ForumSection, () => string> = {
   news: m.forum_empty_news,
   talk: m.forum_empty_talk,
-  guides: m.forum_empty_guides,
 }
 
 const SORT_NAME: Record<ForumSort, () => string> = { new: m.forum_sort_new, active: m.forum_sort_active }
@@ -204,12 +201,12 @@ function SearchBox({ section, sort, q }: { section: ForumSection; sort: ForumSor
   )
 }
 
-/** A post in a list, as a line: its author's avatar (a lesson's number), its title, its author and day and a line of
+/** A post in a list, as a line: its picture, its title, its author and day and a line of
  *  its text; its comments at the right. The title's link covers the row (SKATGO-186, the human: 「手机上，论坛打不开
  *  comments」). */
 function PostRow({ post }: { post: ForumPostSummary }) {
   return (
-    <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} data-number={post.number ?? undefined} data-comments={post.comments} {...stylex.props(styles.row)}>
+    <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} data-comments={post.comments} {...stylex.props(styles.row)}>
       {/* Each post's own picture, from its title as written (the human: 「每个帖子都根据标题自动生成一个这样的图片」). */}
       <Avatar src={avatarPath(post.title)} />
       <div {...stylex.props(styles.rowBody)}>
@@ -390,12 +387,6 @@ function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
           <ForumBody text={shown?.body ?? post.body} official={post.official} />
           <Actions viewer={viewer} post={post} onReply={replyTo} />
         </div>
-        {post.prev || post.next ? (
-          <nav data-testid="forum-lesson-nav" {...stylex.props(typography.appLink, styles.lessonNav)}>
-            {post.prev ? <Neighbour to={post.prev} testId="forum-prev" /> : <span />}
-            {post.next ? <Neighbour to={post.next} testId="forum-next" end /> : null}
-          </nav>
-        ) : null}
         <section aria-labelledby="forum-comments" {...stylex.props(styles.comments)}>
           <h2 id="forum-comments" {...stylex.props(typography.optionTitle, styles.title)}>{commentsOf(post.comments)}</h2>
           <div {...stylex.props(styles.panel)}>
@@ -422,15 +413,6 @@ function Byline({ of, section }: { of: ForumPostSummary | ForumComment; section:
       <span data-testid={of.official ? 'forum-official' : 'forum-author'} {...stylex.props(typography.smallBold, of.official ? styles.official : styles.author)}>{nameOf(of)}</span>
       <time {...stylex.props(typography.meta, styles.slate)}>{dateOf(of.createdAt)}</time>
     </div>
-  )
-}
-
-/** A lesson before or after, as a link: "← 1. Title" / "3. Title →". */
-function Neighbour({ to, testId, end }: { to: ForumNeighbour; testId: string; end?: boolean }) {
-  return (
-    <Link to="/forum/$post" params={{ post: postParam(to) }} data-testid={testId} {...stylex.props(styles.link, styles.neighbour, end && styles.neighbourEnd)}>
-      {end ? `${to.number}. ${to.title} →` : `← ${to.number}. ${to.title}`}
-    </Link>
   )
 }
 
@@ -634,7 +616,7 @@ const styles = stylex.create({
   slate: { margin: 0, color: color.slate },
   bad: { margin: 0, color: color.bad },
   head: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: space.x16 },
-  // The three lists as tabs, each with its mark; the current one's line in its own colour.
+  // The lists as tabs, each with its mark; the current one's line in its own colour.
   tabs: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -659,11 +641,9 @@ const styles = stylex.create({
   tabCurrent: { color: color.navy },
   newsLine: { borderBottomColor: color.tileNavy },
   talkLine: { borderBottomColor: color.tileGreen },
-  guidesLine: { borderBottomColor: color.tileOrange },
   mark: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: dims.badge, height: dims.badge, borderRadius: radii.tag, color: color.onColor },
   news: { backgroundColor: color.tileNavy },
   talk: { backgroundColor: color.tileGreen },
-  guides: { backgroundColor: color.tileOrange },
   toolbar: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12 },
   search: { display: 'flex', flexGrow: 1, minWidth: 0, margin: 0 },
   sorts: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
@@ -721,9 +701,6 @@ const styles = stylex.create({
     cursor: 'pointer',
     ...focusRing,
   },
-  lessonNav: { display: 'flex', justifyContent: 'space-between', gap: space.x16 },
-  neighbour: { minWidth: 0, overflowWrap: 'anywhere' },
-  neighbourEnd: { textAlign: 'end' },
   comments: { display: 'flex', flexDirection: 'column', gap: space.x12, paddingTop: space.x8 },
   pages: { display: 'flex', justifyContent: 'space-between', gap: space.x16 },
   report: { display: 'flex', flexDirection: 'column', gap: space.x8, paddingTop: space.x12, borderTopWidth: border.hair, borderTopStyle: 'solid', borderTopColor: color.hairline },

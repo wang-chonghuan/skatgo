@@ -117,6 +117,8 @@ export class Store {
         -- Three lists since SKATGO-231: SkatGo's articles of before are announcements, at the same addresses, the
         -- discussion the players' own.
         UPDATE forum_posts SET section = 'news' WHERE section = 'articles';
+        -- Two lists since SKATGO-234: the advanced course left the forum; a lesson posted there is an announcement.
+        UPDATE forum_posts SET section = 'news' WHERE section = 'guides';
         -- A player's face (SKATGO-232): the seed of the look they drew, or the picture they uploaded (256×256 WebP or
         -- JPEG, its id new with each upload); no row is the picture of their name.
         CREATE TABLE IF NOT EXISTS player_avatars (

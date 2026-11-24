@@ -11,15 +11,15 @@ import { type Card, type Rank, type Suit } from './skat/cards'
 // language and kept (SKATGO-124, the human: 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版」), the text as written one
 // tap away.
 
-// Three lists since SKATGO-231 (the human: 「公告列表，讨论列表，高级课程列表。就这三个就行了」): SkatGo's announcements,
-// the players' discussion, and SkatGo's advanced course, its lessons in order. The articles of before are SkatGo's
-// announcements (the human, of the agent's advice: 「按建议改」), so the discussion is the players'. The first is the
-// forum's own page.
-export const FORUM_SECTIONS = ['news', 'talk', 'guides'] as const
+// Two lists since SKATGO-234 (the human: 「当前论坛有三个栏目，我觉得应该精简，应该还改成声明和讨论，讨论是用户自己可以开帖，
+// 声明是发布一些官方公告之类。高级课程不放这里了」): SkatGo's announcements and the players' discussion. SKATGO-231's third,
+// the advanced course, left the forum for a course of its own (`/advanced-course`). The articles of before are SkatGo's
+// announcements (SKATGO-231, the human, of the agent's advice: 「按建议改」). The first is the forum's own page.
+export const FORUM_SECTIONS = ['news', 'talk'] as const
 export type ForumSection = (typeof FORUM_SECTIONS)[number]
 
 /** Where only the official may start a post: everywhere but the discussion. */
-export const OFFICIAL_SECTIONS: readonly ForumSection[] = ['news', 'guides']
+export const OFFICIAL_SECTIONS: readonly ForumSection[] = ['news']
 
 /** How a list is sorted (SKATGO-231, the human: 「可以检索和排序（时间， 互动量）」): the newest first, or the most
  *  commented first. */
@@ -161,8 +161,6 @@ export type ForumPostSummary = {
   /** In the reader's language, when it was written in another (SKATGO-124): the language it was written in, the title
    *  and the excerpt translated, and on a post's own page its body. Null while the translation is being made. */
   translated: { from: string; title: string; excerpt: string; body?: string } | null
-  /** A lesson's place in the advanced course, by publication (SKATGO-231): 1 for the first. */
-  number: number | null
   /** The players who commented on it, newest first, at most `PARTICIPANTS`, by name and face — SkatGo's own comments and deleted
    *  players' not among them (SKATGO-231). */
   participants: { name: string; face: Face }[]
@@ -184,10 +182,7 @@ export type ForumComment = {
   face: Face
 }
 
-/** A lesson's neighbours in the advanced course, by publication. */
-export type ForumNeighbour = { id: number; title: string; number: number }
-
-export type ForumPost = ForumPostSummary & { body: string; thread: ForumComment[]; prev: ForumNeighbour | null; next: ForumNeighbour | null }
+export type ForumPost = ForumPostSummary & { body: string; thread: ForumComment[] }
 
 /** Who is looking: whether they may moderate, and whether they are signed in at all. */
 export type ForumViewer = { signedIn: boolean; official: boolean }

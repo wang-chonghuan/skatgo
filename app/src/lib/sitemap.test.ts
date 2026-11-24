@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { type Locale, locales } from '~/paraglide/runtime'
 import { LANG_TAG, SITE_URL, localizedUrl } from './site'
 import { GUIDES, lessonPath } from './skat/lessons/guide'
+import { ADVANCED_GUIDES, advancedPath } from './skat/lessons/advanced-guide'
 import { PAGES, buildSitemap } from './sitemap'
 import { isIndexable } from './indexability'
 import { pageHead, samePath } from './head'
@@ -33,10 +34,16 @@ describe('sitemap.xml', () => {
 
   it('lists every page and every lesson in every language, with all its alternates and x-default', () => {
     const lessons = Object.keys(GUIDES.en)
+    // The advanced course's lessons too (SKATGO-234).
+    const advanced = Object.keys(ADVANCED_GUIDES.en)
     const publicPages = PAGES.filter(isIndexable)
     expect(publicPages.length).toBeGreaterThan(0)
-    expect(entries).toHaveLength((publicPages.length + lessons.length) * locales.length)
-    const all: ((l: Locale) => string)[] = [...publicPages.map((p) => () => p), ...lessons.map((id) => (l: Locale) => lessonPath(id, l))]
+    expect(entries).toHaveLength((publicPages.length + lessons.length + advanced.length) * locales.length)
+    const all: ((l: Locale) => string)[] = [
+      ...publicPages.map((p) => () => p),
+      ...lessons.map((id) => (l: Locale) => lessonPath(id, l)),
+      ...advanced.map((id) => (l: Locale) => advancedPath(id, l)),
+    ]
     for (const pathIn of all) {
       for (const locale of locales) {
         const entry = entries.find((e) => e.includes(`<loc>${localizedUrl(pathIn(locale), locale)}</loc>`))

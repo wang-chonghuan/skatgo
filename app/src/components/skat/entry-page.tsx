@@ -63,8 +63,8 @@ export function EntryPage() {
       </div>
       {/* Under them the rest, as picture cards (SKATGO-135, the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」): a private
           table with the illustration the hero once had (SKATGO-33), and the forum with the human's picture of people at a
-          card table (`forum-card.webp`, cropped to the card), then the exercises (SKATGO-149) and the bidding practice
-          (SKATGO-204: in the row's free place, the fourth). */}
+          card table (`forum-card.webp`, cropped to the card), then the Skat Tricks (SKATGO-149; named so since SKATGO-234,
+          the bidding practice among them) and the advanced course (SKATGO-234, in the bidding practice's place). */}
       <div data-testid="entry-more" {...stylex.props(styles.more)}>
         <Link to="/with-friends" data-testid="entry-card" data-section="friends" {...stylex.props(styles.white, styles.picture, styles.lift)}>
           <span {...stylex.props(styles.pictureDim)}><img src="/hero-table.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage, styles.pictureMultiply)} /></span>
@@ -81,7 +81,8 @@ export function EntryPage() {
           </span>
         </Link>
         {/* The exercises after the forum (SKATGO-149, the human: 「把practice放到forum下面」, cover B of three drawn for it):
-            straight to them (SKATGO-105); the article is only for search engines. */}
+            straight to them (SKATGO-105). "Skat Tricks" since SKATGO-234 (the human: 「bidding融入practice，practive改名为skat
+            tricks？我记得这个有个高搜索的关键词」), the bidding practice inside them. */}
         <div {...stylex.props(styles.pair)}>
           <Link to="/skat-tricks" data-testid="entry-card" data-section="tricks" {...stylex.props(styles.white, styles.picture, styles.lift)}>
             <span {...stylex.props(styles.pictureDim)}><img src="/practice-card.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage, styles.pictureMultiply)} /></span>
@@ -90,13 +91,13 @@ export function EntryPage() {
               <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_practice_text()}</span>
             </span>
           </Link>
-          {/* The bidding practice (SKATGO-149), out of the colour tiles since SKATGO-204 (the human: 「同意」 to 「叫牌练习移到下面
-              图片卡的空位」): its own picture in the forum picture's flat style, its tile's one-line title (SKATGO-151). */}
-          <Link to="/bidding-practice" data-testid="entry-card" data-section="bidding" {...stylex.props(styles.white, styles.picture, styles.lift)}>
-            <span {...stylex.props(styles.pictureDim)}><img src="/bidding-card.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage, styles.pictureMultiply)} /></span>
+          {/* The advanced course (SKATGO-234, the human: 「去掉的卡片，新增一个进阶课程，或者高级课程之类的」), in the place the
+              bidding practice had: its own picture in the forum picture's flat style. */}
+          <Link to="/advanced-course" data-testid="entry-card" data-section="advanced" {...stylex.props(styles.white, styles.picture, styles.lift)}>
+            <span {...stylex.props(styles.pictureDim)}><img src="/advanced-card.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage, styles.pictureMultiply)} /></span>
             <span {...stylex.props(styles.pictureBody)}>
-              <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.home_bidding()}</h2>
-              <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_bidding_text()}</span>
+              <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.advanced_title()}</h2>
+              <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_advanced_text()}</span>
             </span>
           </Link>
         </div>

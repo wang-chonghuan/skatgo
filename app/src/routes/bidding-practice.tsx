@@ -12,7 +12,8 @@ export const Route = createFileRoute('/bidding-practice')({
       description: m.bidpractice_meta_description(),
       paths: samePath('/bidding-practice'),
       image: 'tricks-exercises',
-      jsonLd: [breadcrumbs([[m.bidpractice_title(), '/bidding-practice']])],
+      // Part of the Skat Tricks since SKATGO-234.
+      jsonLd: [breadcrumbs([[m.tricks_title(), '/skat-tricks'], [m.bidpractice_title(), '/bidding-practice']])],
     }),
   component: clientPage('biddingPractice'),
 })

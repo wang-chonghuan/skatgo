@@ -1,6 +1,7 @@
 import { Link, useParams } from '@tanstack/react-router'
 import * as stylex from '@stylexjs/stylex'
 
+import { ADVANCED_GUIDES, advancedById, advancedBySlug, advancedLessons } from '~/lib/skat/lessons/advanced'
 import { lessonById, lessons } from '~/lib/skat/lessons/content'
 import type { Lesson } from '~/lib/skat/lessons/types'
 import { GUIDES, lessonBySlug } from '~/lib/skat/lessons/guide'
@@ -64,6 +65,51 @@ export function LessonPage() {
         ) : null}
         <Link to="/course" data-testid="lesson-all" {...stylex.props(typography.appBtnStrong, styles.link)}>
           {m.lesson_all()}
+        </Link>
+      </nav>
+      <LessonText steps={lesson.steps} />
+    </>
+  )
+}
+
+/**
+ * The page behind /advanced-course/$slug (SKATGO-234): an advanced lesson as a course lesson is — its title and promise,
+ * the interactive lesson, the ways on (the next advanced lesson, the rules' section, the advanced course's list) and the
+ * whole lesson folded as text.
+ */
+export function AdvancedLessonPage() {
+  const { slug } = useParams({ from: '/advanced-course/$slug' })
+  const found = advancedBySlug(slug)
+  const lesson = found ? advancedById(found.id) : undefined
+  if (!lesson) return null
+  const locale = getLocale()
+  const guide = ADVANCED_GUIDES[locale][lesson.id]
+  const course = advancedLessons()
+  const following = course[course.findIndex((l) => l.id === lesson.id) + 1]
+  const section = RULES[locale].sections.find((s) => s.id === guide.rule)
+  return (
+    <>
+      <section data-testid="lesson-head" {...stylex.props(styles.intro)}>
+        <h1 {...stylex.props(typography.landingHeading, styles.title)}>{guide.h1}</h1>
+        <p {...stylex.props(typography.panelLabel, styles.kicker)}>{m.advanced_kicker({ minutes: lesson.minutes })}</p>
+        <p data-testid="lesson-promise" {...stylex.props(typography.appText, styles.promise)}>{lesson.promise}</p>
+      </section>
+      <ClientPart fallback={<FirstCard steps={lesson.steps} />}>
+        <LessonPlayer key={lesson.id} lesson={lesson} advanced />
+      </ClientPart>
+      <nav data-testid="lesson-links" {...stylex.props(styles.links)}>
+        {following ? (
+          <Link to="/advanced-course/$slug" params={{ slug: ADVANCED_GUIDES[locale][following.id].slug }} data-testid="lesson-next" {...stylex.props(typography.appBtnStrong, styles.link)}>
+            {m.lesson_next({ title: following.title })}
+          </Link>
+        ) : null}
+        {section ? (
+          <Link to="/rules" hash={section.anchor} data-testid="lesson-rules" {...stylex.props(typography.appBtnStrong, styles.link)}>
+            {m.lesson_rules_this()}
+          </Link>
+        ) : null}
+        <Link to="/advanced-course" data-testid="lesson-all" {...stylex.props(typography.appBtnStrong, styles.link)}>
+          {m.advanced_all()}
         </Link>
       </nav>
       <LessonText steps={lesson.steps} />

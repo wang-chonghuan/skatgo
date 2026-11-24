@@ -26,7 +26,7 @@ describe('forum addresses', () => {
 describe('who may post where', () => {
   it('keeps announcements and the advanced course to the official; a player writes in the discussion (SKATGO-231)', () => {
     expect(sectionsFor(false)).toEqual(['talk'])
-    expect(sectionsFor(true)).toEqual(['news', 'talk', 'guides'])
+    expect(sectionsFor(true)).toEqual(['news', 'talk'])
   })
   it('offers search engines the official posts and marked ones, never hidden ones', () => {
     const base = { section: 'talk' as const, official: false, indexed: false, hidden: null }

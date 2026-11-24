@@ -3,7 +3,6 @@ import type { LucideIcon } from 'lucide-react'
 
 import { color } from '../../theme/color.stylex'
 import { icon } from '../../theme/constants'
-import { elev } from '../../theme/elevation.stylex'
 import { border } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { type Face, facePath } from '~/lib/forum'
@@ -31,7 +30,8 @@ export function Participants({ people }: { people: { name: string; face: Face }[
   )
 }
 
-/** A small round button with one icon and its name for screen readers. */
+/** A small button with one icon and its name for screen readers: the bare icon, no circle or line (SKATGO-234), a soft
+ *  ground while what it opens is open. */
 export function IconButton({ Icon, label, onClick, testId, pressed }: { Icon: LucideIcon; label: string; onClick: () => void; testId?: string; pressed?: boolean }) {
   return (
     <button type="button" data-testid={testId} aria-label={label} title={label} aria-pressed={pressed} onClick={onClick} {...stylex.props(s.iconButton, pressed && s.iconPressed)}>
@@ -57,17 +57,15 @@ const s = stylex.create({
     height: dims.iconButtonSm,
     margin: 0,
     padding: 0,
-    borderWidth: border.hair,
-    borderStyle: 'solid',
-    borderColor: color.hairline,
-    borderRadius: radii.round,
+    borderWidth: 0,
+    borderRadius: radii.tag,
     color: { default: color.slate, ':hover': color.navy },
-    backgroundColor: color.surface,
+    backgroundColor: 'transparent',
     cursor: 'pointer',
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: border.focusSm,
     outlineColor: color.info,
     outlineOffset: border.focusOffset,
   },
-  iconPressed: { color: color.navy, boxShadow: elev.focus },
+  iconPressed: { color: color.navy, backgroundColor: color.page },
 })

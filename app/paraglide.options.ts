@@ -47,6 +47,22 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
         ['de', '/de/kurs/:slug'],
       ],
     },
+    // The advanced course (SKATGO-234), a German address in German as the course's is; a lesson's slug in its page's
+    // language (lib/skat/lessons/advanced.ts).
+    {
+      pattern: '/advanced-course',
+      localized: [
+        ['en', '/en/advanced-course'],
+        ['de', '/de/fortgeschrittenenkurs'],
+      ],
+    },
+    {
+      pattern: '/advanced-course/:slug',
+      localized: [
+        ['en', '/en/advanced-course/:slug'],
+        ['de', '/de/fortgeschrittenenkurs/:slug'],
+      ],
+    },
     {
       pattern: '/rules',
       localized: [

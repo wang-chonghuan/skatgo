@@ -6,7 +6,7 @@ import {
   ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_LANGS, FORUM_SECTIONS, FORUM_SORTS, IMAGE_BYTES, IMAGE_ID,
   MENTIONS_PER_TEXT, MENTIONS_SHOWN, OFFICIAL_SECTIONS, PAGE_SIZE, PARTICIPANTS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX,
   TITLE_MIN, type Face, type ForumAnnouncement, type ForumComment, type ForumList, type ForumMe, type ForumMention,
-  type ForumNeighbour, type ForumPost, type ForumLang, type ForumPostSummary, type ForumReport, type ForumSection,
+  type ForumPost, type ForumLang, type ForumPostSummary, type ForumReport, type ForumSection,
   type ForumThread, imageTypeOf, mentionCandidates, plainText, postIndexable,
 } from '../../app/src/lib/forum'
 import { nameOf } from './daily'
@@ -14,7 +14,7 @@ import { Rejected, secretEquals } from './model'
 import type { Store } from './store'
 import { type Translation, translateForAll, translationsOf } from './translate'
 
-// The forum (SKATGO-118): posts in three lists (SKATGO-231), in whatever language their authors write, flat comments, and the least moderation the law
+// The forum (SKATGO-118): posts in two lists (SKATGO-234), in whatever language their authors write, flat comments, and the least moderation the law
 // asks of a host — a report, the official hiding with a reason, authors deleting their own. The web service
 // calls these routes with the admission key and names the viewer: a signed-in account (`user:<Clerk id>`) or
 // nobody, and whether the account is the official's. Only names leave here, never a player id: whether
@@ -72,7 +72,7 @@ const num = (v: unknown) => Number(v)
 type PostRow = {
   id: string; section: string; author: string; official: boolean; title: string; body: string
   indexed: boolean; hidden_reason: string | null; created_at: string; last_activity: string; name: string | null; comments: string
-  number: string | null; participants: { name: string; seed: string | null; image: string | null }[] | null
+  participants: { name: string; seed: string | null; image: string | null }[] | null
   face_seed: string | null; face_image: string | null
 }
 
@@ -98,7 +98,7 @@ function summary(r: PostRow, who: string | null, known: Map<string, Translation>
     ? { from: (body ?? title)!.from, title: title?.text ?? r.title, excerpt: body ? plainText(body.text, 160) : p.excerpt }
     : null
   return {
-    ...p, indexable: postIndexable(p), translated, number: r.number === null ? null : num(r.number),
+    ...p, indexable: postIndexable(p), translated,
     participants: (r.participants ?? []).map((w) => ({ name: w.name, face: faceOf(w.seed, w.image) })), face: faceOf(r.face_seed, r.face_image),
   }
 }
@@ -107,7 +107,7 @@ function summary(r: PostRow, who: string | null, known: Map<string, Translation>
 const textsOf = (rows: PostRow[]) => rows.flatMap((r) => [r.title, r.body])
 
 // A post with its author's name, the count of comments everyone sees, the players who wrote them, newest first
-// (SKATGO-231), and a lesson's place among the lessons everyone sees, by publication. Hidden posts and comments are
+// (SKATGO-231). Hidden posts and comments are
 // seen only by their author and the official: `$1` is the viewer (or null), `$2` whether the viewer is official.
 const POSTS = `
   SELECT p.*, d.nickname AS name, a.seed AS face_seed, a.image_id AS face_image,
@@ -116,9 +116,7 @@ const POSTS = `
       SELECT cd.nickname, ca.seed, ca.image_id, max(c.created_at) AS last FROM forum_comments c
         JOIN daily_players cd ON cd.player = c.author LEFT JOIN player_avatars ca ON ca.player = c.author
        WHERE c.post_id = p.id AND c.hidden_reason IS NULL AND NOT c.official
-       GROUP BY cd.nickname, ca.seed, ca.image_id ORDER BY last DESC LIMIT ${PARTICIPANTS}) w) AS participants,
-    CASE WHEN p.section = 'guides' THEN (SELECT count(*) FROM forum_posts g WHERE g.section = 'guides' AND g.hidden_reason IS NULL
-      AND (g.created_at, g.id) <= (p.created_at, p.id)) END AS number
+       GROUP BY cd.nickname, ca.seed, ca.image_id ORDER BY last DESC LIMIT ${PARTICIPANTS}) w) AS participants
     FROM forum_posts p LEFT JOIN daily_players d ON d.player = p.author LEFT JOIN player_avatars a ON a.player = p.author`
 
 /** A text's key in the translations: its sha256, as translate.ts keys it. */
@@ -143,19 +141,6 @@ export async function forumList(store: Store, i: z.infer<typeof listInput>): Pro
   const known = i.lang ? await translationsOf(store, textsOf(rows), i.lang) : new Map<string, Translation>()
   const posts = rows.map((r: PostRow) => summary(r, i.player, known, i.lang))
   return { posts: posts.slice(0, PAGE_SIZE), more: posts.length > PAGE_SIZE, viewer: { signedIn: i.player !== null, official: i.official } }
-}
-
-/** A lesson's neighbours among the lessons everyone sees, by publication. */
-async function neighbours(store: Store, r: PostRow): Promise<{ prev: ForumNeighbour | null; next: ForumNeighbour | null }> {
-  if (r.section !== 'guides' || r.number === null) return { prev: null, next: null }
-  const n = num(r.number)
-  const near = async (dir: '<' | '>', order: string, number: number) => {
-    const { rows } = await store.pool.query(
-      `SELECT id, title FROM forum_posts WHERE section = 'guides' AND hidden_reason IS NULL AND (created_at, id) ${dir} ($1, $2)
-        ORDER BY ${order} LIMIT 1`, [r.created_at, r.id])
-    return rows[0] ? { id: num(rows[0].id), title: rows[0].title as string, number } : null
-  }
-  return { prev: await near('<', 'created_at DESC, id DESC', n - 1), next: await near('>', 'created_at, id', n + 1) }
 }
 
 /** A post and its comments, oldest first, flat. */
@@ -183,7 +168,6 @@ export async function forumPost(store: Store, i: z.infer<typeof postInput>): Pro
   const body = other(known, rows[0].body, i.lang)
   const post: ForumPost = {
     ...head, body: rows[0].body, thread, translated: head.translated && { ...head.translated, body: body?.text ?? rows[0].body },
-    ...(await neighbours(store, rows[0])),
   }
   return { post, viewer: { signedIn: i.player !== null, official: i.official } }
 }

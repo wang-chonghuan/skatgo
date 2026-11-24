@@ -1,6 +1,9 @@
+import * as avataaars from '@dicebear/avataaars'
+import { createAvatar, type StyleOptions } from '@dicebear/core'
 import multiavatar from '@multiavatar/multiavatar/esm'
 
 import { AVATAR_SEED_MAX, postPath } from '~/lib/forum'
+import { avatarGrounds } from '../theme/constants'
 import { samePath } from '~/lib/head'
 import { signedInUser } from '~/lib/session'
 import { sitemapXml } from '~/lib/sitemap'
@@ -44,20 +47,46 @@ export async function askForum(op: string, payload: object, request: Pick<Reques
   }
 }
 
-/** GET /api/forum/avatar/<text>.svg — Multiavatar's picture of a text (SKATGO-231, approved in the ticket): a post's
- *  title or a player's name. Drawn here, never by multiavatar.com, so no visitor's address leaves the site; the text
- *  itself is not in the picture. The same text is always the same picture, so a browser keeps it for a year. */
-function avatar(request: Request, path: string): Response {
-  if (request.method !== 'GET' && request.method !== 'HEAD') return json(405, { error: 'GET only' })
-  const match = /^\/api\/forum\/avatar\/([^/]+)\.svg$/.exec(path)
-  let seed: string | null = null
+// The avatars (SKATGO-231): DiceBear's Avataaars (Pablo Stanley's design, free for personal and commercial use), kept to
+// grown-ups' looks for the forum's older players (the human: 「我觉得现在头像太年轻化，和中老年玩家的定位不符。稍微沉稳一点」, then
+// 「我觉得E比较好」): natural and grey hair without winter hats, flower crowns, dreadlocks or shaved sides; shirts, blazers
+// and sweaters in quiet colours; glasses and beards often; calm faces.
+const NATURAL_HAIR = ['2c1b18', '4a312c', '724133', 'a55728', 'b58143', 'd6b370', 'ecdcbf', 'e8e1e1']
+const QUIET_CLOTH = ['262e33', '25557c', '3c4f5c', '5199e4', '929598', 'e6e6e6']
+const GROWN_UP: Partial<avataaars.Options & StyleOptions<avataaars.Options>> = {
+  top: [
+    'hat', 'hijab', 'turban', 'bob', 'bun', 'curly', 'curvy', 'fro', 'longButNotTooLong', 'miaWallace', 'straight01', 'straight02',
+    'straightAndStrand', 'frizzle', 'shortCurly', 'shortFlat', 'shortRound', 'shortWaved', 'sides', 'theCaesar',
+    'theCaesarAndSidePart', 'bigHair',
+  ],
+  hairColor: NATURAL_HAIR,
+  facialHairColor: NATURAL_HAIR,
+  facialHairProbability: 45,
+  hatColor: QUIET_CLOTH,
+  clothing: ['blazerAndShirt', 'blazerAndSweater', 'collarAndSweater', 'shirtCrewNeck', 'shirtVNeck'],
+  clothesColor: QUIET_CLOTH,
+  accessories: ['prescription01', 'prescription02', 'round'],
+  accessoriesProbability: 40,
+  eyes: ['default', 'happy', 'side', 'squint'],
+  eyebrows: ['default', 'defaultNatural', 'flatNatural', 'raisedExcitedNatural'],
+  mouth: ['default', 'smile', 'serious', 'twinkle'],
+  backgroundColor: avatarGrounds,
+  radius: 50,
+}
+
+/** The text an avatar address names, or null. */
+function seedOf(path: string, kind: 'avatar' | 'multiavatar'): string | null {
+  const match = new RegExp(`^\\/api\\/forum\\/${kind}\\/([^/]+)\\.svg$`).exec(path)
   try {
-    seed = match ? decodeURIComponent(match[1]) : null
+    const seed = match ? decodeURIComponent(match[1]) : null
+    return seed && seed.length <= AVATAR_SEED_MAX ? seed : null
   } catch {
-    seed = null
+    return null
   }
-  if (!seed || seed.length > AVATAR_SEED_MAX) return json(404, { error: 'not found' })
-  return new Response(multiavatar(seed), {
+}
+
+const svg = (body: string) =>
+  new Response(body, {
     headers: {
       'content-type': 'image/svg+xml; charset=utf-8',
       'cache-control': 'public, max-age=31536000, immutable',
@@ -65,11 +94,22 @@ function avatar(request: Request, path: string): Response {
       'x-content-type-options': 'nosniff',
     },
   })
+
+/** GET /api/forum/avatar/<text>.svg — the picture of a text, a post's title or a player's name: DiceBear's Avataaars,
+ *  drawn here, never by dicebear.com, so no visitor's address leaves the site; the text is not in the picture. The
+ *  same text is always the same picture, so a browser keeps it for a year. GET /api/forum/multiavatar/<text>.svg is
+ *  the first try's Multiavatar, kept for now (the human: 「老的集成暂时不用删」) and shown nowhere. */
+function avatar(request: Request, path: string): Response {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return json(405, { error: 'GET only' })
+  const kind = path.startsWith(`${PREFIX}multiavatar/`) ? 'multiavatar' : 'avatar'
+  const seed = seedOf(path, kind)
+  if (!seed) return json(404, { error: 'not found' })
+  return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...GROWN_UP }).toString())
 }
 
 export async function handleForum(request: Request): Promise<Response> {
   const path = new URL(request.url).pathname
-  if (path.startsWith(`${PREFIX}avatar/`)) return avatar(request, path)
+  if (path.startsWith(`${PREFIX}avatar/`) || path.startsWith(`${PREFIX}multiavatar/`)) return avatar(request, path)
   if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const op = path.startsWith(PREFIX) ? path.slice(PREFIX.length) : ''
   if (!READS.has(op) && !WRITES.has(op)) return json(404, { error: 'not found' })

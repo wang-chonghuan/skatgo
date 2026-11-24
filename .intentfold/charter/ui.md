@@ -553,11 +553,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   colour, `tileNavy`, `tileGreen`, `tileOrange`, in a `dims.badge` square with `radii.tag` — the current one navy
   `appBtnStrong` and underlined in that colour (`border.frame`); then the search field (`TextField`) and, beside it,
   "Newest" and "Most active" as `toggleLook` pills; then the posts in one white `option` panel as lines under `hairline`s,
-  never cards of their own — the post's own picture (`dims.avatar`, round: Multiavatar's picture of its title as written,
-  the human: 「每个帖子都根据标题自动生成一个这样的图片」; no logo, 「我发的帖子，都用skatgo的logo，不好看，太重复了」), the title
+  never cards of their own — the post's own picture (`dims.avatar`, round: DiceBear's Avataaars of its title as written, kept to
+  grown-ups' looks on soft tints of the site's colours, `avatarGrounds` in `constants.ts` — the human: 「每个帖子都根据标题自动生成一个
+  这样的图片」, 「稍微沉稳一点」, 「我觉得E比较好」; no logo, 「我发的帖子，都用skatgo的logo，不好看，太重复了」), the title
   (`appBtnStrong`, navy, `info` under the pointer, the link covering the line), the author (navy, SkatGo in `go`) and day
   (`meta`, slate), one line of its text (`note`), and at the right the players who commented — up to three of their
-  avatars, Multiavatar's pictures of their names, `dims.badge`, each over the one before by `dims.avatarOverlap` in a
+  avatars, the same Avataaars of their names, `dims.badge`, each over the one before by `dims.avatarOverlap` in a
   white ring — and the comments' count with
   lucide's `MessageSquare`, `info` once there are any; nothing found, one line; at the foot the line on what the forum is for (`note`, slate). A
   post: the breadcrumb ("Forum › Discussion", `info`, the list's mark before its name); the post in a white card — the

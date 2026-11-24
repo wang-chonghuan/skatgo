@@ -37,6 +37,10 @@ export const icon = {
   small: 16,
 }
 
+/** The forum's avatars' grounds (SKATGO-231), soft tints of the site's own colours — navy, green, orange, slate, sand —
+ *  as DiceBear takes them: hex without its "#", one per text by its seed. */
+export const avatarGrounds = ['dfe6f0', 'dcefe1', 'fbe6d2', 'e6e9ee', 'f1ebdf']
+
 /** A lesson step slides in from the right and out to the left. */
 export const stepSlide = { offset: 28, duration: 0.2 }
 

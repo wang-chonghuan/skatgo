@@ -200,11 +200,15 @@ function Home({ home }: { home: ForumHome }) {
   )
 }
 
-/** The newest announcement or guide with a picture, as that picture. */
+/** The newest announcement or guide with a picture: the picture, and under it its section and title. */
 function Lead({ post }: { post: ForumPostSummary & { cover: string } }) {
   return (
-    <Link to="/forum/$post" params={{ post: postParam(post) }} data-testid="forum-lead" aria-label={post.translated?.title ?? post.title} {...stylex.props(styles.lead)}>
-      <img src={forumImagePath(post.cover, getLocale() as ForumLang)} alt="" {...stylex.props(styles.leadPicture)} />
+    <Link to="/forum/$post" params={{ post: postParam(post) }} data-testid="forum-lead" {...stylex.props(styles.leadLink)}>
+      <span {...stylex.props(styles.lead)}>
+        <img src={forumImagePath(post.cover, getLocale() as ForumLang)} alt="" {...stylex.props(styles.leadPicture)} />
+      </span>
+      <span {...stylex.props(typography.forumText, styles.secondary)}>{SECTION_NAME[post.section]()}</span>
+      <span {...stylex.props(typography.forumCardTitle, styles.text)}>{post.translated?.title ?? post.title}</span>
     </Link>
   )
 }
@@ -649,13 +653,13 @@ const styles = stylex.create({
   nav: {
     display: 'flex',
     flexDirection: { default: 'column', [bp.cards]: 'row' },
+    // On a phone and a narrow screen all five stay in sight, the row wrapping, never scrolling away (SKATGO-231).
+    flexWrap: { default: 'nowrap', [bp.cards]: 'wrap' },
     gap: space.x2,
     alignSelf: 'start',
     position: { default: 'sticky', [bp.cards]: 'static' },
     top: space.x16,
     paddingBlock: { default: space.x32, [bp.cards]: space.x16 },
-    overflowX: { default: 'visible', [bp.cards]: 'auto' },
-    scrollbarWidth: 'none',
   },
   navItem: {
     display: 'flex',
@@ -715,9 +719,8 @@ const styles = stylex.create({
     borderColor: geist.hairline,
     borderRadius: geistShape.card,
     backgroundColor: geist.background,
-    textDecoration: 'none',
-    ...focusRing,
   },
+  leadLink: { display: 'flex', flexDirection: 'column', gap: space.x8, minWidth: 0, textDecoration: 'none', borderRadius: geistShape.card, ...focusRing },
   leadPicture: { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
   featuredSide: { display: 'flex', flexDirection: 'column', gap: space.x20, minWidth: 0 },
   sideList: { display: 'flex', flexDirection: 'column', gap: space.x20, margin: 0, padding: 0, listStyle: 'none' },

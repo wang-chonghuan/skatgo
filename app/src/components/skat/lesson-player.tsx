@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { track } from '~/lib/analytics'
+import { ADVANCED_GUIDES, advancedLessons } from '~/lib/skat/lessons/advanced'
 import { lessons } from '~/lib/skat/lessons/content'
 import { GUIDES } from '~/lib/skat/lessons/guide'
 import type { Lesson, Step } from '~/lib/skat/lessons/types'
@@ -33,7 +34,7 @@ type Concrete = Exclude<Step, { kind: 'generated' }>
  * In the lobby design (SKATGO-26) the lesson sits under its title and promise (lesson-page.tsx), in its frame
  * (lesson-frame.tsx). The lesson's last exercise is its final challenge (SKATGO-161), named over it.
  */
-export function LessonPlayer({ lesson }: { lesson: Lesson }) {
+export function LessonPlayer({ lesson, advanced = false }: { lesson: Lesson; advanced?: boolean }) {
   const steps = useMemo<Concrete[]>(() => lesson.steps.map((s) => (s.kind === 'generated' ? s.make() : s)), [lesson])
   const [index, setIndex] = useState(0)
   // Every step solved so far, not just the current one: a learner may step back to look again, and a
@@ -74,7 +75,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
     void confetti(confettiBurst.lesson)
   }, [record])
 
-  if (record) return <Finished lesson={lesson} record={record} />
+  if (record) return advanced ? <AdvancedFinished lesson={lesson} record={record} /> : <Finished lesson={lesson} record={record} />
 
   const challenge = isLast && step.kind !== 'teach' && step.kind !== 'game' ? m.lesson_challenge() : undefined
 
@@ -160,6 +161,31 @@ function Finished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) 
           </Link>
         )}
         <Link to="/course" data-testid="skat-back-home" {...linkLook('quiet', 'lg', 'block')}>{m.done_back()}</Link>
+      </div>
+    </div>
+  )
+}
+
+/** An advanced lesson's end (SKATGO-234): what was learned, the stars, and the way on — the next advanced lesson, or back
+ *  to the advanced course's list. */
+function AdvancedFinished({ lesson, record }: { lesson: Lesson; record: LessonRecord }) {
+  const course = advancedLessons()
+  const following = course[course.findIndex((l) => l.id === lesson.id) + 1]
+  return (
+    <div data-testid="skat-lesson-done" {...stylex.props(styles.done)}>
+      <h2 {...stylex.props(typography.optionTitle, styles.doneTitle)}>{m.advanced_done_title()}</h2>
+      <div {...stylex.props(styles.doneStars)}><Stars n={record.stars} /></div>
+      <p data-testid="skat-lesson-learned" {...stylex.props(typography.appText, styles.doneLearned)}>{m.done_learned({ learned: lesson.learned })}</p>
+      <p {...stylex.props(typography.appText, styles.doneNote)}>
+        {record.mistakes === 0 ? m.done_perfect() : m.done_mistakes({ n: record.mistakes })}
+      </p>
+      <div {...stylex.props(styles.doneActions)}>
+        {following ? (
+          <Link to="/advanced-course/$slug" params={{ slug: ADVANCED_GUIDES[getLocale()][following.id].slug }} data-testid="skat-next-lesson" {...linkLook('go', 'lg', 'block')}>
+            {m.done_next_lesson()}
+          </Link>
+        ) : null}
+        <Link to="/advanced-course" data-testid="skat-back-home" {...linkLook(following ? 'quiet' : 'go', 'lg', 'block')}>{m.advanced_done_back()}</Link>
       </div>
     </div>
   )

@@ -115,7 +115,11 @@ export function CourseHome() {
             )
           })}
         </ol>
-        {/* Past the lessons, the Skat-Tricks' exercises (SKATGO-82, SKATGO-105). */}
+        {/* Past the lessons, the advanced course (SKATGO-234) and the Skat-Tricks' exercises (SKATGO-82, SKATGO-105). */}
+        <Link to="/advanced-course" data-testid="advanced-course-card" {...stylex.props(styles.card)}>
+          <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{m.advanced_title()}</span>
+          <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{m.home_advanced_text()}</span>
+        </Link>
         <Link to="/skat-tricks" data-testid="skat-tricks-card" {...stylex.props(styles.card)}>
           <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{m.tricks_title()}</span>
           <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{m.tricks_course_text()}</span>

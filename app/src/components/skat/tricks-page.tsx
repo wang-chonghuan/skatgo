@@ -21,8 +21,8 @@ import { Pill, linkLook } from './ui'
 
 /**
  * The Skat-Tricks section's page (SKATGO-103, before it the first article of SKATGO-82): the open-card endgames as
- * levels first, then the other kinds of exercise as option cards, each opening to its exercises, and under them the
- * way to the article.
+ * levels first, then the other kinds of exercise as option cards, each opening to its exercises, then the bidding
+ * practice (SKATGO-234), and under them the way to the rules.
  * Each card is a native <details>: closed, its exercises are still in the page a search engine reads (the
  * human: 「题目页要收录……很好的引流材料」). A card named in the address (#druecken, from a trick of the
  * article) opens by itself.
@@ -137,6 +137,20 @@ export function TricksPage() {
               </li>
             )
           })}
+          {/* The bidding practice, last in the list since SKATGO-234 (the human: 「bidding融入practice，practive改名为skat
+              tricks」): a line like the kinds', numbered after them, opening its own page. */}
+          <li id="bidding" {...stylex.props(styles.item)}>
+            <Link to="/bidding-practice" data-testid="tricks-bidding" {...stylex.props(styles.card, styles.summary, styles.cardLink)}>
+              <span aria-hidden="true" {...stylex.props(typography.smallBold, styles.number)}>{SHOWN_TYPES.length + 1}</span>
+              <span {...stylex.props(styles.heading)}>
+                <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{m.bidpractice_title()}</span>
+                <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{m.tricks_bidding_blurb()}</span>
+              </span>
+              <span {...stylex.props(styles.chevron)}>
+                <ChevronRight aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
+              </span>
+            </Link>
+          </li>
         </ol>
         {/* The rules and the bidding table to look a point or a value up in: small links under the cards. The 12
             tricks that were an article here (SKATGO-82) are a forum post since SKATGO-120. */}
@@ -250,6 +264,7 @@ const styles = stylex.create({
     overflow: 'hidden',
   },
   cardOpen: { borderColor: color.go },
+  cardLink: { display: 'flex', textDecoration: 'none' },
   // The ladder (SKATGO-108): the featured card's deeper shadow, ringed in the action green.
   cardFeatured: { borderColor: color.go, boxShadow: elev.optionFeatured },
   summary: {

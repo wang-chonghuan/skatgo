@@ -1,4 +1,5 @@
 import { type Locale, locales } from '~/paraglide/runtime'
+import { ADVANCED_GUIDES, advancedPath } from './skat/lessons/advanced'
 import { GUIDES, lessonPath } from './skat/lessons/guide'
 import { LANG_TAG, localizedUrl } from './site'
 import { isIndexable } from './indexability'
@@ -8,13 +9,14 @@ import { isIndexable } from './indexability'
 // new language cannot leave it stale; sitemap.test.ts holds the page list to the route tree.
 
 /** The route paths of the pages that are the same in every language. */
-export const PAGES = ['/', '/daily', '/daily/play', '/daily/replay', '/course', '/course/quick-start', '/rules', '/rules/bidding-table', '/rules/score-sheet', '/rules/printable', '/skat-tricks', '/bidding-practice', '/forum', '/play', '/with-friends', '/league', '/league/play', '/profile', '/replay', '/about', '/skat-sites-compared', '/skat-sites-compared/skat-palast', '/skat-sites-compared/skatstube', '/skat-sites-compared/euroskat', '/skat-sites-compared/skat-online', '/privacy', '/terms', '/delete-account', '/offline']
+export const PAGES = ['/', '/daily', '/daily/play', '/daily/replay', '/course', '/course/quick-start', '/rules', '/rules/bidding-table', '/rules/score-sheet', '/rules/printable', '/skat-tricks', '/bidding-practice', '/advanced-course', '/forum', '/play', '/with-friends', '/league', '/league/play', '/profile', '/replay', '/about', '/skat-sites-compared', '/skat-sites-compared/skat-palast', '/skat-sites-compared/skatstube', '/skat-sites-compared/euroskat', '/skat-sites-compared/skat-online', '/privacy', '/terms', '/delete-account', '/offline']
 
 /** Every page as its path in each language. */
 export function sitemapPages(): Record<Locale, string>[] {
   const same = (path: string) => Object.fromEntries(locales.map((l) => [l, path])) as Record<Locale, string>
   const lessons = Object.keys(GUIDES.en).map((id) => Object.fromEntries(locales.map((l) => [l, lessonPath(id, l)])) as Record<Locale, string>)
-  return [...PAGES.filter(isIndexable).map(same), ...lessons]
+  const advanced = Object.keys(ADVANCED_GUIDES.en).map((id) => Object.fromEntries(locales.map((l) => [l, advancedPath(id, l)])) as Record<Locale, string>)
+  return [...PAGES.filter(isIndexable).map(same), ...lessons, ...advanced]
 }
 
 export function buildSitemap(): string {

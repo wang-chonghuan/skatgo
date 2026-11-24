@@ -26,6 +26,8 @@ import { Route as SkatSitesComparedRouteImport } from './routes/skat-sites-compa
 import { Route as SkatTricksRouteImport } from './routes/skat-tricks'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WithFriendsRouteImport } from './routes/with-friends'
+import { Route as AdvancedCourseIndexRouteImport } from './routes/advanced-course.index'
+import { Route as AdvancedCourseSlugRouteImport } from './routes/advanced-course.$slug'
 import { Route as CourseIndexRouteImport } from './routes/course.index'
 import { Route as CourseSlugRouteImport } from './routes/course.$slug'
 import { Route as CourseQuickStartRouteImport } from './routes/course.quick-start'
@@ -128,6 +130,16 @@ const TermsRoute = TermsRouteImport.update({
 const WithFriendsRoute = WithFriendsRouteImport.update({
   id: '/with-friends',
   path: '/with-friends',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdvancedCourseIndexRoute = AdvancedCourseIndexRouteImport.update({
+  id: '/advanced-course/',
+  path: '/advanced-course/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdvancedCourseSlugRoute = AdvancedCourseSlugRouteImport.update({
+  id: '/advanced-course/$slug',
+  path: '/advanced-course/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CourseIndexRoute = CourseIndexRouteImport.update({
@@ -243,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/skat-tricks': typeof SkatTricksRoute
   '/terms': typeof TermsRoute
   '/with-friends': typeof WithFriendsRoute
+  '/advanced-course/$slug': typeof AdvancedCourseSlugRoute
   '/course/$slug': typeof CourseSlugRoute
   '/course/quick-start': typeof CourseQuickStartRoute
   '/d/$code': typeof DCodeRoute
@@ -259,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/skat-sites-compared/skatstube': typeof SkatSitesComparedSkatstubeRoute
   '/skat-tricks/$exercise': typeof SkatTricksExerciseRoute
   '/table/$id': typeof TableIdRoute
+  '/advanced-course/': typeof AdvancedCourseIndexRoute
   '/course/': typeof CourseIndexRoute
   '/d/$code/play': typeof DCodePlayRoute
 }
@@ -280,6 +294,7 @@ export interface FileRoutesByTo {
   '/skat-tricks': typeof SkatTricksRoute
   '/terms': typeof TermsRoute
   '/with-friends': typeof WithFriendsRoute
+  '/advanced-course/$slug': typeof AdvancedCourseSlugRoute
   '/course/$slug': typeof CourseSlugRoute
   '/course/quick-start': typeof CourseQuickStartRoute
   '/d/$code': typeof DCodeRoute
@@ -296,6 +311,7 @@ export interface FileRoutesByTo {
   '/skat-sites-compared/skatstube': typeof SkatSitesComparedSkatstubeRoute
   '/skat-tricks/$exercise': typeof SkatTricksExerciseRoute
   '/table/$id': typeof TableIdRoute
+  '/advanced-course': typeof AdvancedCourseIndexRoute
   '/course': typeof CourseIndexRoute
   '/d/$code/play': typeof DCodePlayRoute
 }
@@ -318,6 +334,7 @@ export interface FileRoutesById {
   '/skat-tricks': typeof SkatTricksRoute
   '/terms': typeof TermsRoute
   '/with-friends': typeof WithFriendsRoute
+  '/advanced-course/$slug': typeof AdvancedCourseSlugRoute
   '/course/$slug': typeof CourseSlugRoute
   '/course/quick-start': typeof CourseQuickStartRoute
   '/d/$code': typeof DCodeRoute
@@ -334,6 +351,7 @@ export interface FileRoutesById {
   '/skat-sites-compared_/skatstube': typeof SkatSitesComparedSkatstubeRoute
   '/skat-tricks_/$exercise': typeof SkatTricksExerciseRoute
   '/table/$id': typeof TableIdRoute
+  '/advanced-course/': typeof AdvancedCourseIndexRoute
   '/course/': typeof CourseIndexRoute
   '/d_/$code/play': typeof DCodePlayRoute
 }
@@ -357,6 +375,7 @@ export interface FileRouteTypes {
     | '/skat-tricks'
     | '/terms'
     | '/with-friends'
+    | '/advanced-course/$slug'
     | '/course/$slug'
     | '/course/quick-start'
     | '/d/$code'
@@ -373,6 +392,7 @@ export interface FileRouteTypes {
     | '/skat-sites-compared/skatstube'
     | '/skat-tricks/$exercise'
     | '/table/$id'
+    | '/advanced-course/'
     | '/course/'
     | '/d/$code/play'
   fileRoutesByTo: FileRoutesByTo
@@ -394,6 +414,7 @@ export interface FileRouteTypes {
     | '/skat-tricks'
     | '/terms'
     | '/with-friends'
+    | '/advanced-course/$slug'
     | '/course/$slug'
     | '/course/quick-start'
     | '/d/$code'
@@ -410,6 +431,7 @@ export interface FileRouteTypes {
     | '/skat-sites-compared/skatstube'
     | '/skat-tricks/$exercise'
     | '/table/$id'
+    | '/advanced-course'
     | '/course'
     | '/d/$code/play'
   id:
@@ -431,6 +453,7 @@ export interface FileRouteTypes {
     | '/skat-tricks'
     | '/terms'
     | '/with-friends'
+    | '/advanced-course/$slug'
     | '/course/$slug'
     | '/course/quick-start'
     | '/d/$code'
@@ -447,6 +470,7 @@ export interface FileRouteTypes {
     | '/skat-sites-compared_/skatstube'
     | '/skat-tricks_/$exercise'
     | '/table/$id'
+    | '/advanced-course/'
     | '/course/'
     | '/d_/$code/play'
   fileRoutesById: FileRoutesById
@@ -469,6 +493,7 @@ export interface RootRouteChildren {
   SkatTricksRoute: typeof SkatTricksRoute
   TermsRoute: typeof TermsRoute
   WithFriendsRoute: typeof WithFriendsRoute
+  AdvancedCourseSlugRoute: typeof AdvancedCourseSlugRoute
   CourseSlugRoute: typeof CourseSlugRoute
   CourseQuickStartRoute: typeof CourseQuickStartRoute
   DCodeRoute: typeof DCodeRoute
@@ -485,6 +510,7 @@ export interface RootRouteChildren {
   SkatSitesComparedSkatstubeRoute: typeof SkatSitesComparedSkatstubeRoute
   SkatTricksExerciseRoute: typeof SkatTricksExerciseRoute
   TableIdRoute: typeof TableIdRoute
+  AdvancedCourseIndexRoute: typeof AdvancedCourseIndexRoute
   CourseIndexRoute: typeof CourseIndexRoute
   DCodePlayRoute: typeof DCodePlayRoute
 }
@@ -608,6 +634,20 @@ declare module '@tanstack/react-router' {
       path: '/with-friends'
       fullPath: '/with-friends'
       preLoaderRoute: typeof WithFriendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/advanced-course/': {
+      id: '/advanced-course/'
+      path: '/advanced-course'
+      fullPath: '/advanced-course/'
+      preLoaderRoute: typeof AdvancedCourseIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/advanced-course/$slug': {
+      id: '/advanced-course/$slug'
+      path: '/advanced-course/$slug'
+      fullPath: '/advanced-course/$slug'
+      preLoaderRoute: typeof AdvancedCourseSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/course/': {
@@ -757,6 +797,7 @@ const rootRouteChildren: RootRouteChildren = {
   SkatTricksRoute: SkatTricksRoute,
   TermsRoute: TermsRoute,
   WithFriendsRoute: WithFriendsRoute,
+  AdvancedCourseSlugRoute: AdvancedCourseSlugRoute,
   CourseSlugRoute: CourseSlugRoute,
   CourseQuickStartRoute: CourseQuickStartRoute,
   DCodeRoute: DCodeRoute,
@@ -773,6 +814,7 @@ const rootRouteChildren: RootRouteChildren = {
   SkatSitesComparedSkatstubeRoute: SkatSitesComparedSkatstubeRoute,
   SkatTricksExerciseRoute: SkatTricksExerciseRoute,
   TableIdRoute: TableIdRoute,
+  AdvancedCourseIndexRoute: AdvancedCourseIndexRoute,
   CourseIndexRoute: CourseIndexRoute,
   DCodePlayRoute: DCodePlayRoute,
 }

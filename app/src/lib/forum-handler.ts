@@ -1,4 +1,6 @@
-import { postPath } from '~/lib/forum'
+import multiavatar from '@multiavatar/multiavatar/esm'
+
+import { AVATAR_SEED_MAX, postPath } from '~/lib/forum'
 import { samePath } from '~/lib/head'
 import { signedInUser } from '~/lib/session'
 import { sitemapXml } from '~/lib/sitemap'
@@ -42,9 +44,33 @@ export async function askForum(op: string, payload: object, request: Pick<Reques
   }
 }
 
+/** GET /api/forum/avatar/<text>.svg — Multiavatar's picture of a text (SKATGO-231, approved in the ticket): a post's
+ *  title or a player's name. Drawn here, never by multiavatar.com, so no visitor's address leaves the site; the text
+ *  itself is not in the picture. The same text is always the same picture, so a browser keeps it for a year. */
+function avatar(request: Request, path: string): Response {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return json(405, { error: 'GET only' })
+  const match = /^\/api\/forum\/avatar\/([^/]+)\.svg$/.exec(path)
+  let seed: string | null = null
+  try {
+    seed = match ? decodeURIComponent(match[1]) : null
+  } catch {
+    seed = null
+  }
+  if (!seed || seed.length > AVATAR_SEED_MAX) return json(404, { error: 'not found' })
+  return new Response(multiavatar(seed), {
+    headers: {
+      'content-type': 'image/svg+xml; charset=utf-8',
+      'cache-control': 'public, max-age=31536000, immutable',
+      'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'",
+      'x-content-type-options': 'nosniff',
+    },
+  })
+}
+
 export async function handleForum(request: Request): Promise<Response> {
-  if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const path = new URL(request.url).pathname
+  if (path.startsWith(`${PREFIX}avatar/`)) return avatar(request, path)
+  if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const op = path.startsWith(PREFIX) ? path.slice(PREFIX.length) : ''
   if (!READS.has(op) && !WRITES.has(op)) return json(404, { error: 'not found' })
   let body: unknown

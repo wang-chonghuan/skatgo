@@ -32,6 +32,14 @@ export const QUERY_MAX = 100
 /** How many of a post's commenters a list's line shows. */
 export const PARTICIPANTS = 3
 
+/** The longest text an avatar is drawn from. */
+export const AVATAR_SEED_MAX = 200
+
+/** An avatar's address (SKATGO-231, the human: 「每个帖子都根据标题自动生成一个这样的图片」): Multiavatar's picture of a post's
+ *  title as written, or of a player's name, drawn by the web service (lib/forum-handler.ts), the same text always the same
+ *  picture. */
+export const avatarPath = (seed: string) => `/api/forum/avatar/${encodeURIComponent(seed.slice(0, AVATAR_SEED_MAX))}.svg`
+
 /** The sections an author may post in. */
 export const sectionsFor = (official: boolean): ForumSection[] => FORUM_SECTIONS.filter((s) => official || !OFFICIAL_SECTIONS.includes(s))
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { cardRow, forumImagePath, inlineParts, parseBody, plainText, postIdOf, postIndexable, postParam, sectionsFor, slugOf } from './forum'
+import { avatarPath, cardRow, forumImagePath, inlineParts, parseBody, plainText, postIdOf, postIndexable, postParam, sectionsFor, slugOf } from './forum'
 
 // The forum's shared rules (SKATGO-118): what an address, a post's text and its indexing come to.
 
@@ -31,6 +31,13 @@ describe('who may post where', () => {
     expect(postIndexable({ ...base, indexed: true })).toBe(true)
     expect(postIndexable({ ...base, official: true })).toBe(true)
     expect(postIndexable({ ...base, official: true, hidden: 'Spam' })).toBe(false)
+  })
+})
+
+describe('an avatar\'s address (SKATGO-231)', () => {
+  it('names its text, encoded, and draws from at most the first 200 characters', () => {
+    expect(avatarPath('Hearts or Clubs?/x')).toBe('/api/forum/avatar/Hearts%20or%20Clubs%3F%2Fx.svg')
+    expect(avatarPath('x'.repeat(300))).toBe(`/api/forum/avatar/${'x'.repeat(200)}.svg`)
   })
 })
 

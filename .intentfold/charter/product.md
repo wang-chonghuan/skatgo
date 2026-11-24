@@ -349,8 +349,9 @@ Three lists since SKATGO-231 (the human: 「公告列表，讨论列表，高级
 announcements and the advanced course, which only SkatGo writes, and the discussion, where players write and SkatGo too.
 The advanced course is a series of lessons: numbered in the order they are published, each leading to the one before
 and after. The articles SkatGo wrote before are announcements, at their addresses, so the discussion is the players' own (the
-human, of the agent's advice: 「按建议改」, after 「这类论坛一看就是只有老板在发帖的」). SkatGo's posts carry no logo, their list's
-mark instead, and a line shows the players who commented. Each list is plain lines, never cards, searched by words in a post's title or text and sorted by time or
+human, of the agent's advice: 「按建议改」, after 「这类论坛一看就是只有老板在发帖的」). No post carries the logo: each has a picture
+drawn from its title, each player one from their name (Multiavatar, the human: 「每个帖子都根据标题自动生成一个这样的图片」, then
+「同意」), and a line shows the players who commented. Each list is plain lines, never cards, searched by words in a post's title or text and sorted by time or
 by how many comments (the human: 「每个主题，都是一系列列表，然后可以检索和排序（时间， 互动量）……列表不要做成卡片」); the forum's own
 page is the announcements. A post shows its text and pictures, then its comments (「点进列表项后，是图文显示，下面可以评论」).
 Under every post, comments in the order written, flat — no reply to a comment; whom one

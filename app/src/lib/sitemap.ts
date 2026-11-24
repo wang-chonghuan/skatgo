@@ -1,5 +1,5 @@
 import { type Locale, locales } from '~/paraglide/runtime'
-import { ADVANCED_GUIDES, advancedPath } from './skat/lessons/advanced'
+import { ADVANCED_GUIDES, advancedPath } from './skat/lessons/advanced-guide'
 import { GUIDES, lessonPath } from './skat/lessons/guide'
 import { LANG_TAG, localizedUrl } from './site'
 import { isIndexable } from './indexability'

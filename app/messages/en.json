@@ -1076,5 +1076,8 @@
   "advanced_all": "All advanced lessons",
   "advanced_done_title": "Lesson complete!",
   "advanced_done_back": "Back to the advanced course",
-  "home_advanced_text": "Deeper lessons for players who know the rules, one topic each."
+  "home_advanced_text": "Deeper lessons for players who know the rules, one topic each.",
+  "advanced_intro": "Each lesson takes one topic of club play further than the rules go: when it pays, how to count it, and what the other side does about it. Every exercise is played on real cards, and its answer is the engine's.",
+  "advanced_to_course": "New to Skat? Start with the course",
+  "advanced_to_tricks": "Practise with the Skat Tricks"
 }

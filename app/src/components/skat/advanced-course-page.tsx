@@ -34,6 +34,7 @@ export function AdvancedCoursePage() {
       <div {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.advanced_title()}</h1>
         <p {...stylex.props(typography.appText, styles.lead)}>{m.advanced_lead()}</p>
+        <p {...stylex.props(typography.appText, styles.text)}>{m.advanced_intro()}</p>
         <ol {...stylex.props(styles.list)}>
           {advancedLessons().map((l) => {
             const record = done[l.id]
@@ -57,6 +58,11 @@ export function AdvancedCoursePage() {
             )
           })}
         </ol>
+        {/* The ways on: the course for who does not know the rules yet, the Skat Tricks to practise. */}
+        <nav {...stylex.props(styles.links)}>
+          <Link to="/course" data-testid="advanced-to-course" {...stylex.props(typography.appLink, styles.link)}>{m.advanced_to_course()}</Link>
+          <Link to="/skat-tricks" data-testid="advanced-to-tricks" {...stylex.props(typography.appLink, styles.link)}>{m.advanced_to_tricks()}</Link>
+        </nav>
       </div>
     </div>
   )
@@ -86,6 +92,9 @@ const styles = stylex.create({
   },
   title: { margin: 0, color: color.navy },
   lead: { margin: 0, color: color.slate },
+  text: { margin: 0, color: color.text },
+  links: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: space.x12 },
+  link: { color: color.info },
   optionTitle: { margin: 0, color: color.navy },
   optionDesc: { margin: 0, color: color.slate },
   list: {

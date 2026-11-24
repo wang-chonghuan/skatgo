@@ -331,16 +331,18 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     (`optionTitle`, navy) and one line (`optionDesc`, slate) — "Privater Tisch" with the illustration the hero once had
     (`hero-table.webp`, SKATGO-33) to `/with-friends`, and "Forum" with the human's picture of friends at a card table
     (`forum-card.webp`, cropped to the card's shape, no icon; 「论坛的卡片图片用这个图片，剪裁成合适的，不要加图标」) and "News
-    and articles about Skat." (SKATGO-186) to `/forum`, then "Üben" with cover B of three drawn for it (`practice-card.webp`, a grandfather
-    and a girl over cards, a puzzle piece above, in the forum picture's flat style; SKATGO-149, the human: 「把practice放到forum下面」, 「选B」) and "Endspiel-Rätsel und
-    Aufgaben für alle, die die Regeln schon kennen." to `/skat-tricks`, and "Reizen" (its tile's one line, SKATGO-151) with its own picture in the same flat style
-    (`bidding-card.webp`, two people bidding, "18?" in a bubble; SKATGO-204, the human: 「同意」 to 「叫牌练习移到下面图片卡的空位」) and
-    "Zehn Karten, zwei Fragen: Was spielst du, und wie hoch darfst du reizen?" to `/bidding-practice` — the two on PC side by side in
+    and articles about Skat." (SKATGO-186) to `/forum`, then "Skat Tricks" (in both languages, SKATGO-234; "Üben" before) with cover B of
+    three drawn for it (`practice-card.webp`, a grandfather and a girl over cards, a puzzle piece above, in the forum picture's flat style;
+    SKATGO-149, the human: 「把practice放到forum下面」, 「选B」) and "Endspiel-Rätsel, Reizen und mehr – für alle, die die Regeln schon kennen."
+    to `/skat-tricks`, and "Fortgeschrittenenkurs" (SKATGO-234, in the place of SKATGO-204's bidding card) with its own picture in the same
+    flat style (`advanced-card.webp`) and "Vertiefende Lektionen für alle, die die Regeln kennen – je ein Thema." to
+    `/advanced-course` — the two on PC side by side in
     the wide third column (`homeWaysNarrow`), each about as wide as a colour card, under `bp.cards` the next free places. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
     The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,
     `homePicture`, `icon.tile`, `progressCurve` (SKATGO-136) and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
 - **A sub-page** (the course, a lesson, Skat in 5 Minuten, the rules, the bidding table, the score sheet,
-  the short rules, the daily tournament, the Skat-Tricks' page and their article, the bidding practice, a private table's page, About SkatGo,
+  the short rules, the daily tournament, the Skat-Tricks' page and their article, the bidding practice, the advanced course and its lessons,
+  a private table's page, About SkatGo,
   the comparison of Skat sites, the legal pages; an open-card endgame is a table, below), on the grey page: its title is the column's first element, an
   `<h1>` in `landingHeading`, `color.navy`; then its content — white option cards where it offers
   choices (the course's lessons, the tournament's board), reading text and tables elsewhere. The daily
@@ -395,7 +397,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   square tiles, solved `good` with a check, gone wrong `bad` with a cross and the number of wrong answers in its
   corner, the next one ringed `go`, and for a guest a lock from the third, and under it one `go` button to the
   next ("Aufgabe n spielen"); then the other kinds of SKATGO-103, each opening to its exercises (hidden by
-  SKATGO-110, shown again by SKATGO-119); under the cards, small `info` links to the article and the rules. The bidding practice
+  SKATGO-110, shown again by SKATGO-119); then, numbered after them, the bidding practice (SKATGO-234), a card of the same look
+  that opens its page, "Reizen üben" and its one line; under the cards, small `info` links to the rules. The bidding practice
   (`bidding-practice-page.tsx`, SKATGO-149) is a Skat-Tricks exercise's page without the way back: the H1 with the place
   in the run beside it, "1/600" in the same type in slate (SKATGO-150, 「上面那个单列进度的行不要」), and beside that the
   header's round white button with lucide's `LayoutGrid` (SKATGO-156) opening "All questions" in the cheat sheet's `Modal`:
@@ -434,8 +437,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   with no lock (SKATGO-112). An
   article of the Skat-Tricks is a post in the forum's Articles and reads as any post: its headings, short
   paragraphs and links, each trick a numbered sub-heading, the ways into the daily tournament and to the
-  exercises as links; nothing outside the forum links it (SKATGO-120, the human: 「就放论坛里」). The course lists the exercises as
-  an option card under the lessons. The header and the footer link the Skat-Tricks' page, and the table's rules panel links it in a new tab, so a game is never left
+  exercises as links; nothing outside the forum links it (SKATGO-120, the human: 「就放论坛里」). The course lists the advanced course
+  and the exercises as option cards under the lessons (SKATGO-234). The advanced course's page (`advanced-course-page.tsx`) is the
+  course's in small: its H1, one line on whom it is for, and its lessons as the course's option cards (title, promise, minutes,
+  stars once done); an advanced lesson's page is a course lesson's (`lesson-page.tsx` `AdvancedLessonPage`): the H1, a kicker
+  "Fortgeschrittenenkurs, etwa 4 Min.", the promise, the player, the ways on ("Alle Lektionen des Fortgeschrittenenkurses") and
+  the folded whole text; its end screen leads to the next advanced lesson or back to the advanced course. The header and the footer link the Skat-Tricks' page, and the table's rules panel links it in a new tab, so a game is never left
   behind. A lesson starts playing at once: under its title only a
   one-line kicker and the lesson's promise, then the lesson, which keeps its "back / continue" bar
   sticky at the bottom of the screen; then its ways on: the next lesson, its section of the rules, and
@@ -550,14 +557,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   table is a full-screen table, and at its end a white card with the player's score and the shared one.
   The card picture (`multiplayer/src/card.ts`) is the same on white: the logo with "SkatGo.com" (「logo文字后面加上.com」), "1 deal today · 2 min" as the site's green button with the day beside it (「1 deal today 这个字应该强调……否则看到的人不知道能要打几副」), the score large, the three
   scores with the declarer's yellow badge, "Same cards – what will you score?" (German "Gleiche Karten – wie viele Punkte holst du?", the human: 「不要说can you beat me，应该说试试你能得几分」).
-- **The forum** (`forum-page.tsx`, SKATGO-118) is since SKATGO-231 three plain lists in the lobby design, in its colours
+- **The forum** (`forum-page.tsx`, SKATGO-118) is since SKATGO-231 plain lists — two since SKATGO-234 — in the lobby design, in its colours
   (the human: 「我希望极简形式的……列表不要做成卡片」, then 「颜色要丰富一下，还要用skatgo的设计系统……不够彩色和鲜艳」): a sub-page on the
   grey page in the reading column. A list: the h1 "Forum" (`landingHeading`, navy) with the one `go` button at its right —
   "Sign in" for a guest, "New post" for a player, which opens the composer in a white `option` panel (the official's
   sections as `Toggle`s, the title, the text, "Publish" `go` and "Cancel" `quiet`); for the official, the open reports in
-  the same panel; then the three lists as tabs over a `hairline`, "Announcements", "Discussion", "Advanced course", each
-  led by its mark — its lucide icon (`Megaphone`, `MessagesSquare`, `GraduationCap`) white on its front-page tile's
-  colour, `tileNavy`, `tileGreen`, `tileOrange`, in a `dims.badge` square with `radii.tag` — the current one navy
+  the same panel; then the lists as tabs over a `hairline`, "Announcements", "Discussion", each
+  led by its mark — its lucide icon (`Megaphone`, `MessagesSquare`) white on its front-page tile's
+  colour, `tileNavy`, `tileGreen`, in a `dims.badge` square with `radii.tag` — the current one navy
   `appBtnStrong` and underlined in that colour (`border.frame`); then the search field (`TextField`) and, beside it,
   "Newest" and "Most active" as `toggleLook` pills; then the posts in one white `option` panel as lines under `hairline`s,
   never cards of their own — the post's own picture (`dims.avatar`, round: DiceBear's Avataaars of its title as written, as E
@@ -570,12 +577,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   white ring — and the comments' count with
   lucide's `MessageSquare`, `info` once there are any; nothing found, one line; at the foot the line on what the forum is for (`note`, slate). A
   post: the breadcrumb ("Forum › Discussion", `info`, the list's mark before its name); the post in a white card — the
-  title (`landingHeading`; a lesson's without its number, the human: 「课程前面不要加1，2，3那个橙色的编号」), the author's line (a player's avatar — their uploaded picture, the look they drew, or else the picture of their name
+  title (`landingHeading`), the author's line (a player's avatar — their uploaded picture, the look they drew, or else the picture of their name
   (SKATGO-232) — `dims.badge`, or for SkatGo its list's mark; name, day), the
   text and pictures (`ForumBody`), and its actions: "Reply" (lucide's `Reply`, `info`) and small round icon buttons
   (`dims.iconButtonSm`, a `hairline`) — report (`Flag`; the human: 「举报按钮一定要小，目前太大」), delete (`Trash2`), the
   official's hide and show (`EyeOff`, `Eye`) — and "Let search engines index it" (`quiet`), a choice opening its reason
-  or question under them; a lesson's previous and next as two `info` links; then the comments' count (`optionTitle`) and
+  or question under them; then the comments' count (`optionTitle`) and
   one white card of the comments under `hairline`s, each with the same author line, text and actions, the comment box
   last, into which "Reply" writes "@Name " and puts the cursor (the human: 「点回复时自动at即可」). The translation's small
   line and its "Show original" stay as SKATGO-124 has them. Dates are the day in UTC, the same on the server and in the

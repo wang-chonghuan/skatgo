@@ -34,11 +34,12 @@ function constant(path, name) {
   return literal(constantNode(path, name))
 }
 
-function courseIds() {
-  const path = 'src/lib/skat/lessons/content.ts'
+/** The lesson ids of a course module's per-language constant: the course's `COURSES`, the advanced course's `ADVANCED`
+ *  (SKATGO-234). */
+function courseIds(path = 'src/lib/skat/lessons/content.ts', name = 'COURSES') {
   const imports = new Map(ast(path).program.body.filter((node) => node.type === 'ImportDeclaration').flatMap((node) =>
     node.specifiers.map((binding) => [binding.local.name, { source: node.source.value, exported: binding.imported?.name }])))
-  return Object.fromEntries(constantNode(path, 'COURSES').properties.map((property) => {
+  return Object.fromEntries(constantNode(path, name).properties.map((property) => {
     const binding = imports.get(property.value.name)
     assert.ok(binding?.exported, 'Course language data must have an authoritative imported source')
     const file = new URL(`${binding.source}.ts`, new URL(path, app))
@@ -92,8 +93,9 @@ async function sourceData() {
     },
   })
   try {
-    const [{ GUIDES, lessonPath }, { PRIVATE_PAGES, DATA_PAGES }, { paraglideOptions }, { EXERCISES }] = await Promise.all([
+    const [{ GUIDES, lessonPath }, { ADVANCED_GUIDES, advancedPath }, { PRIVATE_PAGES, DATA_PAGES }, { paraglideOptions }, { EXERCISES }] = await Promise.all([
       import('../src/lib/skat/lessons/guide.ts'),
+      import('../src/lib/skat/lessons/advanced-guide.ts'),
       import('../src/lib/indexability.ts'),
       import('../paraglide.options.ts'),
       import('../src/lib/skat/tricks/exercises/positions.ts'),
@@ -101,7 +103,11 @@ async function sourceData() {
     // A private route whose addresses come from the source (a Skat-Tricks exercise, SKATGO-103) is checked at
     // a real one: an unknown exercise is a missing page.
     const samples = { '/skat-tricks/$exercise': `/skat-tricks/${EXERCISES[0].id}` }
-    return { guides: GUIDES, lessonPath, privatePaths: [...PRIVATE_PAGES], dataPaths: [...DATA_PAGES], patterns: paraglideOptions.urlPatterns, samples }
+    // The advanced course's lessons (SKATGO-234) are lessons too, at their own addresses; their ids (101 on) never meet the
+    // course's.
+    const guides = Object.fromEntries(Object.keys(GUIDES).map((l) => [l, { ...GUIDES[l], ...ADVANCED_GUIDES[l] }]))
+    const pathOf = (id, locale) => (id in ADVANCED_GUIDES[locale] ? advancedPath(id, locale) : lessonPath(id, locale))
+    return { guides, lessonPath: pathOf, privatePaths: [...PRIVATE_PAGES], dataPaths: [...DATA_PAGES], patterns: paraglideOptions.urlPatterns, samples }
   } finally {
     hooks.deregister()
   }
@@ -178,7 +184,11 @@ export async function loadInventory() {
     ...await sourceData(),
     routes: routePaths(),
     pages: constant('src/lib/sitemap.ts', 'PAGES'),
-    courseIds: courseIds(),
+    courseIds: (() => {
+      const course = courseIds()
+      const advanced = courseIds('src/lib/skat/lessons/advanced.ts', 'ADVANCED')
+      return Object.fromEntries(Object.keys(course).map((l) => [l, [...course[l], ...(advanced[l] ?? [])]]))
+    })(),
     locales: JSON.parse(readFileSync(new URL('project.inlang/settings.json', app), 'utf8')).locales,
     tags: constant('src/lib/site.ts', 'LANG_TAG'),
     site: constant('src/lib/origin.ts', 'SITE_URL'),

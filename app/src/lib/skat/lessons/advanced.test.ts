@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { type Locale, locales } from '~/paraglide/runtime'
+import { locales } from '~/paraglide/runtime'
 import { type Card, type Contract, beats, cardId, cards, fullDeck, isTrump, legalPlays, pointsOf, sameCard, trickWinnerIndex } from '../cards'
 import { type Position, splits, sureOf } from '../tricks/exercises/solve'
 import { settle } from '../value'
@@ -49,7 +49,7 @@ describe('the advanced course', () => {
   })
 
   it('every best play is a legal card', () => {
-    for (const locale of locales as Locale[]) {
+    for (const locale of locales) {
       for (const l of ADVANCED[locale]) for (const s of l.steps) {
         if (s.kind !== 'play') continue
         const legal = legalPlays(s.hand, s.trick, s.contract)

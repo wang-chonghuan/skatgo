@@ -229,8 +229,8 @@ the others; it goes into no record of play and earns no XP. A deal that ended wh
 once they come back to its result within the minute, and is lost otherwise. Its page shows the
 player's tier, points and how far from moving, the coins, the fees and, at its bottom, the League's board (SKATGO-206, the
 human: 「只要打了一局的就要上榜」, 「按照档次和档次的分数排名」): every account that has played a League deal, by tier, then
-its points in it; a guest sees the tiers and the board and signs in. The front page's colour card that was the bidding practice's is the League's; the bidding practice is the fourth
-picture card (the human: 「同意」).
+its points in it; a guest sees the tiers and the board and signs in. The front page's colour card that was the bidding practice's is the League's; the bidding practice was the fourth
+picture card (the human: 「同意」), and is among the Skat Tricks since SKATGO-234.
 
 Private tables at `/with-friends` (SKATGO-61) are rooms since SKATGO-163 (the human: 「一个人开一个房间，可以打2个ai。另一个人
 可以加入进来，需要6位数字邀请码，是房间号。还能再加入一个人，替换掉ai。如果三人满了，输入房间号就不能再加人了」, 「用同类游戏的最常见的实践，
@@ -305,11 +305,13 @@ the German post deleted, SKATGO-125: 「你彻底删掉」), each trick linking 
 `/skat-tricks/12-tricks`, and the German post's lead to it. SkatGo's announcement is in English too, its German the
 translation, made ahead (「公告也保留英文版，德语用翻译的，但是提前做好」). A later article is another post,
 for its own search term. The articles are for search engines (the human, SKATGO-105: 「只用于seo」): the
-site's ways in — the front page's picture card (its colour tile since SKATGO-149 the bidding practice's), the course, the header — lead to the exercises. Every article leads to the daily tournament, where each trick can be tried and
+site's ways in — the front page's picture card "Skat Tricks" (named after the search term since SKATGO-234, the human:
+「practive改名为skat tricks？我记得这个有个高搜索的关键词」), the course, the header — lead to the exercises. Every article leads to the daily tournament, where each trick can be tried and
 compared with the AI. The articles' text is SkatGo's own: no book's passages, examples or order are copied,
 and the articles recommend no books.
 
-A bidding practice at `/bidding-practice` (SKATGO-149, the human: 「practice卡片的位置，做成一个叫牌练习的东西，只叫牌」):
+A bidding practice at `/bidding-practice` (SKATGO-149, the human: 「practice卡片的位置，做成一个叫牌练习的东西，只叫牌」), one of the
+Skat Tricks since SKATGO-234 (the human: 「bidding融入practice」) — the last entry of their page, its own front card gone:
 ten cards and the seat at the bidding; nothing is played or put away. Since SKATGO-151 it asks in the order a learner
 thinks (the human: 「我想的是我能打什么合约」, 「答题分两步吧，先点什么合约，再点最高叫到几点」): first what do you play — a suit,
 Grand, Null (「你还没说null呢」) or pass, every contract offered on every hand — then, unless the AI passes, how high you can
@@ -348,12 +350,22 @@ reached: the questions run in order from the first, any before can be done again
 选择后面的题，要从1题开始按顺序做，但是能回到之前的题」). There is no set of ten (「不要10题，你就自然，先不用这个复杂」). It is a
 search entry.
 
+An advanced course at `/advanced-course` (SKATGO-234, the human: 「去掉的卡片，新增一个进阶课程，或者高级课程之类的，用来放之前就规划的
+那个书上的专题等」), "Advanced course" / "Fortgeschrittenenkurs", from the front page's picture card in the bidding practice's
+place and from the course's page: one topic a lesson for players who know the rules, after SKATGO-225's plan — the topics
+and their order follow two Skat books' advanced chapters, the text is SkatGo's own, written anew and plainer than the books,
+never their passages, example hands or pictures (the human: 「你要参考他的结构和主题点，顺序，然后要参考原文，重写，不是改写，你重写的
+要比原文更加深入浅出」); each lesson's title and address name the topic people search for, never "lesson n". A lesson plays
+like the course's: teaching cards and exercises whose every answer the rules engine or the solver proves. The first is
+Schneider (the human chose it from three): the 90 and the 31, its worth, the silent Schneider, announcing one, and smearing
+out of one. More come one at a time (SKATGO-225), each seen by the human before it goes live.
+
 A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted
 「官方发公告，官方发一些技术的文章，用户可以评论，用户也可以发文章……就做一个简单版本的。以后既能用来seo又有个公告和用户交流，放文章的地方」.
-Three lists since SKATGO-231 (the human: 「公告列表，讨论列表，高级课程列表。就这三个就行了」, reversing SKATGO-186's two): the
-announcements and the advanced course, which only SkatGo writes, and the discussion, where players write and SkatGo too.
-The advanced course is a series of lessons: numbered in the order they are published, each leading to the one before
-and after. The articles SkatGo wrote before are announcements, at their addresses, so the discussion is the players' own (the
+Two lists since SKATGO-234 (the human: 「当前论坛有三个栏目，我觉得应该精简，应该还改成声明和讨论，讨论是用户自己可以开帖，声明是发布
+一些官方公告之类。高级课程不放这里了」): the announcements, which only SkatGo writes, and the discussion, where players start their
+own threads and SkatGo writes too. SKATGO-231's third list, the advanced course, left the forum for the advanced course
+below. The articles SkatGo wrote before are announcements, at their addresses, so the discussion is the players' own (the
 human, of the agent's advice: 「按建议改」, after 「这类论坛一看就是只有老板在发帖的」). No post carries the logo: each has a picture
 drawn from its title, each player one from their name (the human: 「每个帖子都根据标题自动生成一个这样的图片」, then 「我觉得E比较好」, and since
 SKATGO-233 exactly E as the comparison sheet drew it: 「截图里的这一版e不错……就跟你图上的参数一样」, every skin tone) — or, since SKATGO-232, the new look they drew or the picture they uploaded on `/profile` — and a line

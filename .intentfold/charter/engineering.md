@@ -128,8 +128,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   SKATGO-182 for all of `/api`, as `anon:<sha256>` at the service — set by the daily handler and by `/api/free/review`.
   A free deal a guest finishes goes into `play_deals` under it. At sign-in (`/daily/claim`, asked by the web on `state`,
   `board`, `xp` and `profile`) today's entries move as before, and `player_aliases` gets the device as one of the
-  account's ids — joined to the person the account already is; past boards keep their rows. The weeks' analyses are `profile_notes` (player, week's Monday, language, text in
-  the forum's marks), written by hand and loaded by `.intentfold/tickets/SKATGO-128/notes.mjs` from its `notes.json`.
+  account's ids — joined to the person the account already is; past boards keep their rows. The weeks' analyses (`profile_notes`, SKATGO-128) are gone since SKATGO-232: the
+  migration drops the table; its rows are backed up in the main checkout's `.intentfold/tmp/SKATGO-232/`.
 - **The deal of the day** (SKATGO-131) is the day's tournament of size 1 (`DEAL_OF_DAY`, `DAILY_SIZES` in
   `lib/skat/tournament.ts`): the same rows, routes and board, each request naming its `size` (6 when it names none);
   the XP board and the record of play read every size. `prepareDays` prepares it after the six: candidates dealt

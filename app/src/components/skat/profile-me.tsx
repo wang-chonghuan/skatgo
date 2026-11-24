@@ -3,7 +3,9 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 
 import { Avatar } from './forum-ui'
-import { Btn } from './ui'
+import { Btn, TextField } from './ui'
+import { setPerson, track } from '~/lib/analytics'
+import { dailyName, isError } from '~/lib/daily-api'
 import { squarePicture } from '~/lib/face-image'
 import { FILE_TYPES, type ForumMe, type ForumMention, facePath, postParam } from '~/lib/forum'
 import { drawNewLook, markSeen, readMe, uploadFace } from '~/lib/forum-api'
@@ -18,7 +20,8 @@ import { typography } from '../../theme/type'
  * The account's own at the top of /profile (SKATGO-232): its avatar, as the forum shows it, with a new look a tap away
  * and its own picture to upload (the human: 「每个用户打开profile页面，可以点击，刷新自己的头像。还能上传」, 「上传过还要能重复上传，
  * 还要能刷新。上传过的刷新，要有提示，会移除上传的头像」); under it, the latest times someone named the player with "@" in the
- * forum, each leading to where it was written (「profile里显示最新的at的消息，点了跳转到论坛相应位置」). Seeing them here is
+ * forum, each leading to where it was written (「profile里显示最新的at的消息，点了跳转到论坛相应位置」). Between them its nickname,
+ * moved here from the settings with the one profile (the human: 「内容就合并当前的profile和skat profile」). Seeing them here is
  * seeing them: the count on the header's picture goes.
  */
 export function ProfileMe() {
@@ -26,11 +29,15 @@ export function ProfileMe() {
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState<'refused' | 'failed' | null>(null)
   const file = useRef<HTMLInputElement>(null)
+  const [nick, setNick] = useState('')
+  const [nickProblem, setNickProblem] = useState<'refused' | 'taken' | null>(null)
+  const [saving, setSaving] = useState(false)
   useEffect(() => {
     let live = true
     void readMe().then((r) => {
       if (!live || !r.ok) return
       setMe(r.data)
+      setNick(r.data.name)
       if (r.data.unread > 0) void markSeen().then((s) => { if (s.ok) setUnread(0) })
       else setUnread(0)
     })
@@ -38,6 +45,20 @@ export function ProfileMe() {
   }, [])
   if (!me) return null
   const uploaded = me.face !== null && 'image' in me.face
+  const unchanged = nick.trim() === '' || nick.trim() === me.name
+
+  // The nickname every board, the XP board and the forum show (SKATGO-126), here since SKATGO-232.
+  async function saveNick() {
+    setSaving(true)
+    const r = await dailyName(nick)
+    setSaving(false)
+    if (isError(r)) return setNickProblem(r.error === 'nickname_taken' ? 'taken' : 'refused')
+    track('daily_nickname_set')
+    setPerson({ nickname: r.nickname })
+    setNickProblem(null)
+    setNick(r.nickname)
+    setMe((was) => was && { ...was, name: r.nickname })
+  }
 
   async function newLook() {
     if (uploaded && !window.confirm(m.profile_face_confirm())) return
@@ -69,7 +90,6 @@ export function ProfileMe() {
       <section data-testid="profile-me" {...stylex.props(styles.me)}>
         <Avatar src={facePath(me.face, me.name)} big testId="profile-avatar" />
         <div {...stylex.props(styles.stack)}>
-          <p data-testid="profile-name" {...stylex.props(typography.optionTitle, styles.title)}>{me.name}</p>
           <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_face_note()}</p>
           <div {...stylex.props(styles.actions)}>
             <Btn testId="profile-face-new" tone="quiet" size="md" disabled={busy} onClick={() => void newLook()}>{m.profile_face_new()}</Btn>
@@ -94,6 +114,26 @@ export function ProfileMe() {
             </p>
           ) : null}
         </div>
+      </section>
+      <section data-testid="profile-nickname" {...stylex.props(styles.stack)}>
+        <label htmlFor="profile-nickname" {...stylex.props(typography.small, styles.label)}>{m.settings_nickname()}</label>
+        <div {...stylex.props(styles.nickRow)}>
+          <TextField
+            id="profile-nickname"
+            testId="profile-nickname-field"
+            autoComplete="nickname"
+            value={nick}
+            invalid={nickProblem !== null}
+            onChange={(v) => { setNick(v); setNickProblem(null) }}
+            onEnter={() => { if (!saving && !unchanged) void saveNick() }}
+          />
+          <Btn testId="profile-nickname-save" shape="block" size="md" disabled={saving || unchanged} onClick={() => void saveNick()}>{m.daily_nick_save()}</Btn>
+        </div>
+        {nickProblem ? (
+          <p data-testid="profile-nickname-refused" data-problem={nickProblem} role="alert" {...stylex.props(typography.small, styles.bad)}>
+            {nickProblem === 'taken' ? m.daily_nick_taken() : m.daily_nick_refused()}
+          </p>
+        ) : null}
       </section>
       {me.mentions.length > 0 ? (
         <section data-testid="profile-mentions" {...stylex.props(styles.stack)}>
@@ -139,6 +179,8 @@ const styles = stylex.create({
   me: { display: 'flex', alignItems: 'center', gap: space.x16 },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x8, minWidth: 0 },
   actions: { display: 'flex', flexWrap: 'wrap', gap: space.x8 },
+  nickRow: { display: 'flex', alignItems: 'stretch', gap: space.x8 },
+  label: { margin: 0, color: color.slate, textTransform: 'uppercase' },
   title: { margin: 0, color: color.navy },
   text: { color: color.text },
   quiet: { margin: 0, color: color.slate },

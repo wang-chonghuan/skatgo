@@ -17,7 +17,7 @@ const device = (c: string) => `anon:${c.repeat(64)}`
 const played: Played = { scores: [60, 0, 0], declarer: 0, won: true }
 const USER_TABLES: [string, string][] = [
   ['daily_entries', 'player'], ['daily_players', 'player'], ['play_deals', 'player'], ['ladder_answers', 'player'],
-  ['bidding_answers', 'player'], ['profile_notes', 'player'], ['dod_shares', 'player'], ['account_referrals', 'account'],
+  ['bidding_answers', 'player'], ['dod_shares', 'player'], ['account_referrals', 'account'],
   ['account_referrals', 'referrer'], ['forum_reports', 'reporter'], ['forum_posts', 'author'], ['forum_comments', 'author'],
   ['player_aliases', 'player'], ['player_aliases', 'same_as'], ['player_avatars', 'player'], ['forum_mentions', 'player'],
 ]
@@ -57,7 +57,6 @@ test('forget: an account and its devices leave every table; its forum writing st
     await q('INSERT INTO daily_players (player, nickname, created_at) VALUES ($1, $2, 1)', [who, who === 'user:anna' ? 'Anna' : 'Ben'])
     await q("INSERT INTO ladder_answers (player, step, solved_at, updated_at) VALUES ($1, 's1', 1, 1)", [who])
     await q("INSERT INTO bidding_answers (player, question, first, answered_at, updated_at) VALUES ($1, 'v2-1-0', 18, 1, 1)", [who])
-    await q("INSERT INTO profile_notes (player, week, lang, body, created_at) VALUES ($1, '2026-11-02', 'en', 'x', 1)", [who])
     await q("INSERT INTO dod_shares (code, day, player, scores, created_at) VALUES ($1, '2026-11-09', $2, '[0,0,0]', 1)", [who.slice(5, 9).padEnd(8, 'x'), who])
   }
   await q("INSERT INTO account_referrals (account, referrer, room_id, created_at) VALUES ('user:anna', 'user:ben', 'r', 1), ('user:ben', 'user:anna', 'r', 1)")

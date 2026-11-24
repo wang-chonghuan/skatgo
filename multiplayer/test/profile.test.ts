@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'
 import pg from 'pg'
-import { againstAi, daysOf, trendOf, weeksOf } from '../../app/src/lib/skat/profile'
+import { againstAi, daysOf, trendOf } from '../../app/src/lib/skat/profile'
 import { DAILY_DEALS } from '../../app/src/lib/skat/tournament'
 import { played as playedGame, playProfile, recordFreeDeal } from '../src/profile'
 import { Store } from '../src/store'
@@ -75,11 +75,6 @@ test('profile: tournament and free deals, once each, the aliases as one person, 
   ])
   // One deal of +412 after three averaging +80 is still within the noise of single deals.
   assert.deepEqual(trendOf(deals), { last: 412, before: 80, verdict: 'same' })
-  // One week, Monday 19 October: four deals averaging +163 against the AI.
-  assert.deepEqual(weeksOf(deals), [{ week: '2026-10-19', deals: 4, perDeal: 163 }])
-  // The week's analyses written by hand, under any of the person's ids, in each language.
-  await store.pool.query('INSERT INTO profile_notes (player, week, lang, body, created_at) VALUES ($1, $2, $3, $4, $5)', ['anon:guestday', '2026-10-19', 'de', '- **Gut.**', 1])
-  assert.deepEqual((await playProfile(store, 'user:anna')).notes, [{ week: '2026-10-19', lang: 'de', body: '- **Gut.**' }])
   assert.deepEqual((await playProfile(store, 'user:nobody')).deals, [])
 })
 

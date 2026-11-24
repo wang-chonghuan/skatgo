@@ -218,39 +218,9 @@ export function trendOf(deals: ProfileDeal[]): { last: number; before: number; v
   }
 }
 
-/** A week's analysis, written by hand for the player in one language (SKATGO-128): the forum's marks — paragraphs,
- *  lists, **bold**. `week` is the week's Monday. */
-export type ProfileNote = { week: string; lang: string; body: string }
-
-export type ProfileWeek = {
-  /** The week's Monday. */
-  week: string
-  deals: number
-  /** The average per deal against the AI over the week's deals the AI played; null when none. */
-  perDeal: number | null
-}
-
 /** The Monday of a day's week, as a day. */
 export function weekOf(day: string): string {
   const d = new Date(`${day}T00:00:00Z`)
   d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7))
   return d.toISOString().slice(0, 10)
-}
-
-/** The weeks played, newest first: how many deals, and the average per deal against the AI. */
-export function weeksOf(deals: ProfileDeal[]): ProfileWeek[] {
-  const weeks = new Map<string, { deals: number; sum: number; judged: number }>()
-  for (const d of deals) {
-    const week = weeks.get(weekOf(d.day)) ?? { deals: 0, sum: 0, judged: 0 }
-    const diff = againstAi(d)
-    week.deals += 1
-    if (diff !== null) {
-      week.sum += diff
-      week.judged += 1
-    }
-    weeks.set(weekOf(d.day), week)
-  }
-  return [...weeks.entries()]
-    .sort(([a], [b]) => b.localeCompare(a))
-    .map(([week, w]) => ({ week, deals: w.deals, perDeal: w.judged ? Math.round(w.sum / w.judged) : null }))
 }

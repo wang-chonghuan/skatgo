@@ -31,7 +31,7 @@ leaderboard per day, which can be looked at for seven days, today's included (SK
 its board at once, with nothing to fill in (SKATGO-90, the human: 「让用户填名字，太麻烦了」), under the player's
 name: the one they set before, or a name of two friendly German words given at random — never the
 email address, never words of cards, a number only when every name without one is taken; the same
-device, or the same account, keeps its name. An account sets its nickname in the settings, to a name no other
+device, or the same account, keeps its name. An account sets its nickname on its profile (in the settings until SKATGO-232), to a name no other
 player holds, and it shows everywhere at once — on every day's board, earlier days' included, the XP board and the
 forum (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行榜就用这个昵称，改一次，整体都改」); the board
 itself offers no renaming (「禁止改名了」). The system never changes a player's name (the human's red line:
@@ -163,16 +163,16 @@ when the deal's comparison is worked out — counted per day. A deal is judged a
 same for the AI's game of the same cards from the same seat, so defence counts too. The curve is one point a day, the
 day's average per deal, so whether the player gets better shows from the first days, not after a fixed number of
 deals (「30副不行」); the last day stands against the days before, better or worse only beyond the noise of single
-deals, also under a finished tournament, as the reason to come back (「我主要想让这个做为一个留存点」). A week can have its
-analysis on the same page (「本周ai分析加上到档案页，每周一个」): only what mattered that week, as many points as there were,
-and a conclusion (「不一定是四条吧，为啥这么死板」). While players are few it is written by hand from the week's deals, for whom
-the human names (「挑重点，目前用户少，可以手动做……就做我和mark的」), in English and German; a week without one shows none. It is the player's own: no one else sees it.
+deals, also under a finished tournament, as the reason to come back (「我主要想让这个做为一个留存点」). The weeks' analyses
+written by hand are gone (SKATGO-232, the human: 「skat profile里的每周分析，删掉，去掉这个功能」). It is the player's own: no one else sees it.
 The ids one person plays under count as one, as on the XP board. Free play stays free and needs no account. At its
 top an account's avatar, as the forum shows it (SKATGO-232, the human: 「每个用户打开profile页面，可以点击，刷新自己的头像。还能上传……
 大小自动压缩到一个行业惯例的中小尺寸」, 「上传过还要能重复上传，还要能刷新。上传过的刷新，要有提示，会移除上传的头像」): a new look drawn at
 a tap, or a picture of their own uploaded, cut square and made small (256 pixels) in the browser and kept by SkatGo; a new
 upload replaces the one before, and a new look after an upload asks first, then deletes the picture. Under it the forum's
-latest mentions of the player. The way is common and simple, as the human asked (「我说的流程可能不标准，你才取常见的但是简洁的流程」). A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
+latest mentions of the player, and its nickname. It is the one profile (the human: 「这里的 your profile，有两个，混乱……一个
+profile页面，放在setting的第一个大按钮。然后内容就合并当前的profile和skat profile」): the settings open with the way to it, and
+the nickname and the account's deletion are on it. The way is common and simple, as the human asked (「我说的流程可能不标准，你才取常见的但是简洁的流程」). A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
 
 A guest's games are kept too (SKATGO-182, the human: 「游客存档，登录后合并进账号」): every free deal and deal of the day a guest
 finishes on a device, from SKATGO-182 on, under that device. Signing in on the device takes them all into the account —

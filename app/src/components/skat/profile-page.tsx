@@ -6,13 +6,12 @@ import { type ReactNode, useEffect, useState } from 'react'
 
 import { Who } from './daily-comparison'
 import { DealRows } from './deal-history'
-import { ForumBody } from './forum-body'
 import { ProfileMe } from './profile-me'
 import { smoothPath } from './smooth-path'
 import { Btn, Panel, linkLook } from './ui'
 import { track } from '~/lib/analytics'
 import { dailyProfile, isError } from '~/lib/daily-api'
-import { type ProfileDeal, type ProfileNote, type ProfileWeek, RECENT_DEALS, daysOf, gapOf, rollingByDeal, trendOf, versusAi, weeksOf } from '~/lib/skat/profile'
+import { type ProfileDeal, RECENT_DEALS, daysOf, gapOf, rollingByDeal, trendOf, versusAi } from '~/lib/skat/profile'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
 import { getLocale } from '~/paraglide/runtime'
@@ -35,7 +34,7 @@ import { typography } from '../../theme/type'
 export function ProfilePage() {
   const account = useAccount()
   const navigate = useNavigate()
-  const [record, setRecord] = useState<{ deals: ProfileDeal[]; notes: ProfileNote[] } | 'error' | null>(null)
+  const [record, setRecord] = useState<{ deals: ProfileDeal[] } | 'error' | null>(null)
   /** The game a guest asked to play again, waiting for their sign-in (the human: 「想点此处的复牌，必须登录」). */
   const [wanted, setWanted] = useState<string | null>(null)
   useEffect(() => {
@@ -103,9 +102,13 @@ export function ProfilePage() {
         ) : (
           <>
             <History deals={record.deals} action={replay} />
-            <Record deals={record.deals} notes={record.notes} />
+            <Record deals={record.deals} />
           </>
         )}
+        {/* Deleting the account (SKATGO-185), quiet at the foot, here since the settings lead to this one profile (SKATGO-232). */}
+        {account ? (
+          <Link to="/delete-account" data-testid="profile-delete-account" {...stylex.props(typography.appLink, styles.deleteLink)}>{m.settings_delete_account()}</Link>
+        ) : null}
       </section>
     </div>
   )
@@ -113,7 +116,7 @@ export function ProfilePage() {
 
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
 
-function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }) {
+function Record({ deals }: { deals: ProfileDeal[] }) {
   const days = daysOf(deals)
   const trend = trendOf(deals)
   return (
@@ -136,7 +139,6 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
           <p {...stylex.props(typography.meta, styles.quiet)}>{m.profile_curve_note()}</p>
         </div>
       </Panel>
-      <Weeks weeks={weeksOf(deals)} notes={notes} />
     </>
   )
 }
@@ -145,7 +147,7 @@ function Record({ deals, notes }: { deals: ProfileDeal[]; notes: ProfileNote[] }
 const HISTORY_PAGE = 20
 
 /** Every game, newest first, each with its way to be played again (SKATGO-182, the human: 「历史可以放在打开的页面的顶部，默认
- *  折叠（不登录时，那就不折叠，因为就这一个）」): an account's folded behind one line, as the earlier weeks are; a guest's open. */
+ *  折叠（不登录时，那就不折叠，因为就这一个）」): an account's folded behind one line; a guest's open. */
 function History({ deals, guest = false, action }: { deals: ProfileDeal[]; guest?: boolean; action: (d: ProfileDeal) => ReactNode }) {
   const [open, setOpen] = useState(guest)
   const [shown, setShown] = useState(HISTORY_PAGE)
@@ -245,51 +247,6 @@ function VersusAi({ deals }: { deals: ProfileDeal[] }) {
   )
 }
 
-/** The weeks' analyses, one card a week, newest first (the human: 「本周ai分析加上到档案页，每周一个」, then 「不一定是四条吧，为啥
- *  这么死板」 and 「挑重点……可以手动做」): what mattered that week, written by hand for the player, in the page's language
- *  (English where there is none in it). A week without one has no card; with none at all, the section is left out. */
-function Weeks({ weeks, notes }: { weeks: ProfileWeek[]; notes: ProfileNote[] }) {
-  const [more, setMore] = useState(false)
-  const lang = getLocale()
-  const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short', timeZone: 'UTC' })
-  const noted = weeks.flatMap((w) => {
-    const note = notes.find((n) => n.week === w.week && n.lang === lang) ?? notes.find((n) => n.week === w.week && n.lang === 'en')
-    return note ? [{ w, body: note.body }] : []
-  })
-  if (!noted.length) return null
-  const card = ({ w, body }: (typeof noted)[number]) => (
-    <Panel key={w.week}>
-      <div data-testid="profile-week" data-week={w.week} {...stylex.props(styles.stack)}>
-        <div {...stylex.props(styles.stackTight)}>
-          <h3 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_week_title({ date: date.format(new Date(`${w.week}T00:00:00Z`)) })}</h3>
-          <p {...stylex.props(typography.appText, styles.quiet)}>
-            {w.perDeal === null ? m.profile_day_deals({ count: w.deals }) : m.profile_week_meta({ deals: w.deals, diff: signed(w.perDeal) })}
-          </p>
-        </div>
-        <ForumBody text={body} official />
-      </div>
-    </Panel>
-  )
-  const [newest, ...earlier] = noted
-  const Chevron = more ? ChevronUp : ChevronDown
-  return (
-    <section data-testid="profile-weeks" {...stylex.props(styles.stack)}>
-      <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.profile_weeks_title()}</h2>
-      {card(newest)}
-      {/* The newest open, the rest folded (SKATGO-169, the human: 「每周简评，只显示第一个，剩下的折叠」). */}
-      {earlier.length ? (
-        <Panel>
-          <button type="button" data-testid="profile-weeks-more" aria-expanded={more} onClick={() => setMore(!more)} {...stylex.props(typography.appBtnStrong, styles.more)}>
-            <span>{m.profile_weeks_more({ count: earlier.length })}</span>
-            <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} />
-          </button>
-        </Panel>
-      ) : null}
-      {more ? earlier.map(card) : null}
-    </section>
-  )
-}
-
 /** How many points the curve is drawn through at most. */
 const DRAWN = 40
 
@@ -367,6 +324,7 @@ const styles = stylex.create({
   lead: { margin: 0, color: color.navy },
   text: { margin: 0, color: color.text },
   quiet: { margin: 0, color: color.slate },
+  deleteLink: { alignSelf: 'flex-start', color: color.slate },
   stack: { display: 'flex', flexDirection: 'column', gap: space.x12 },
   stackTight: { display: 'flex', flexDirection: 'column', gap: space.x4 },
   // The scale's twin under the curve: its width, nothing to see.
@@ -396,7 +354,7 @@ const styles = stylex.create({
     outlineColor: color.info,
   },
   replayButton: { padding: 0, borderWidth: 0, backgroundColor: 'transparent', cursor: 'pointer' },
-  // The line that opens the earlier weeks (SKATGO-169): the white card's whole width, nothing of a button's look.
+  // The line that opens the history (SKATGO-182): the white card's whole width, nothing of a button's look.
   more: {
     display: 'flex',
     alignItems: 'center',

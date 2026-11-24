@@ -157,13 +157,9 @@ export class Store {
           revision integer NOT NULL DEFAULT 1, updated_at bigint NOT NULL,
           heartbeat_at bigint, tick_ms integer, last_error text
         );
-        -- A week's analysis of a player's record of play, written by hand per language (SKATGO-128, the human: 「挑重点，目前
-        -- 用户少，可以手动做」): the points that mattered that week and a conclusion, in the forum's marks. Keyed by the
-        -- player's id as it stands, the week's Monday and the language.
-        CREATE TABLE IF NOT EXISTS profile_notes (
-          player text NOT NULL, week text NOT NULL, lang text NOT NULL, body text NOT NULL, created_at bigint NOT NULL,
-          PRIMARY KEY (player, week, lang)
-        );
+        -- The weeks' analyses of SKATGO-128 are gone (SKATGO-232, the human: 「skat profile里的每周分析，删掉，去掉这个功能」);
+        -- their rows were backed up before.
+        DROP TABLE IF EXISTS profile_notes;
         -- A shared deal of the day (SKATGO-132): its code, the day, whose it is, the table's three Seeger-Fabian scores
         -- ([0] the player's) and the player's place among that day's players when shared — the link carries the code, so
         -- no one makes a card say what was not played. One per player and day.

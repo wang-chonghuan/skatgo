@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
 import { bp } from './breakpoints.stylex'
-import { family, fontSize, leading, weight } from './type.stylex'
+import { family, fontSize, leading, tracking, weight } from './type.stylex'
 
 // The course's typography roles. A role is the whole decision — family, size (and its phone size),
 // weight and leading — so product code picks one and never sets a font property itself
@@ -100,4 +100,30 @@ export const typography = stylex.create({
   /** …when one of them has four digits, all three smaller, so they still fit. */
   infoTotalLong: { fontFamily: family.numeral, fontSize: { default: fontSize.f22, [bp.phone]: fontSize.fBoardTotalLong }, fontWeight: weight.regular, lineHeight: leading.glyph },
   infoSub: { fontSize: fontSize.f13, fontWeight: weight.ui, lineHeight: leading.tight },
+
+  // The forum (SKATGO-231): Geist's roles as the Vercel Community sets them (theme/geist.stylex.ts). The family is set
+  // once on the forum (`forumFrame`); every role inside states its size, weight and line height.
+  forumFrame: { fontFamily: family.geist, fontWeight: weight.regular },
+  /** The forum's h1: 32 on 40, semibold, drawn tighter. */
+  forumDisplay: { fontSize: { default: fontSize.f32, [bp.phone]: fontSize.f24 }, fontWeight: weight.semibold, lineHeight: { default: leading.g40, [bp.phone]: leading.g32 }, letterSpacing: { default: tracking.display, [bp.phone]: tracking.title } },
+  /** A post's title on its page: 24 on 32, semibold. */
+  forumTitle: { fontSize: fontSize.f24, fontWeight: weight.semibold, lineHeight: leading.g32, letterSpacing: tracking.title },
+  /** A block's heading ("Discussion", "Videos"): 18 on 28, medium. */
+  forumHeading: { fontSize: fontSize.f18, fontWeight: weight.medium, lineHeight: leading.g28 },
+  /** A featured or video card's title: 18, semibold. */
+  forumCardTitle: { fontSize: fontSize.f18, fontWeight: weight.semibold, lineHeight: leading.g24 },
+  /** A row's title: 16 on 24, medium. */
+  forumRowTitle: { fontSize: fontSize.f16, fontWeight: weight.medium, lineHeight: leading.g24 },
+  /** Reading text, excerpts, dates and the navigation: 14 on 20. */
+  forumText: { fontSize: fontSize.f14, fontWeight: weight.regular, lineHeight: leading.g20 },
+  /** A name, a button: 14 on 20, medium. Restates the family: a button is a native control. */
+  forumName: { fontFamily: 'inherit', fontSize: fontSize.f14, fontWeight: weight.medium, lineHeight: leading.g20 },
+  /** A pill: 14 on 16. */
+  forumPill: { fontFamily: 'inherit', fontSize: fontSize.f14, fontWeight: weight.regular, lineHeight: leading.g16 },
+  /** A row's newest comment, an avatar's letter on a small avatar: 12 on 16. */
+  forumSmall: { fontSize: fontSize.f12, fontWeight: weight.regular, lineHeight: leading.g16 },
+  /** A heading inside a post's text. */
+  forumBodyHeading: { fontSize: fontSize.f18, fontWeight: weight.semibold, lineHeight: leading.g28 },
+  /** Bold inside a post's text. */
+  forumStrong: { fontWeight: weight.semibold },
 })

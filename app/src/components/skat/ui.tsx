@@ -26,8 +26,8 @@ import { typography } from '../../theme/type'
 const SUIT_GLYPHS = /([♣♠♥♦])/
 
 /** Inline text with the course's two conventions: **bold**, and each suit symbol in its colour
- *  (SKATGO-27). */
-export function Rich({ text }: { text: string }) {
+ *  (SKATGO-27). `strong` restyles the bold where a page has its own design (the forum's Geist, SKATGO-231). */
+export function Rich({ text, strong }: { text: string; strong?: stylex.StyleXStyles }) {
   return (
     <>
       {text.split('**').map((part, i) => {
@@ -38,7 +38,7 @@ export function Rich({ text }: { text: string }) {
             piece
           ),
         )
-        return i % 2 === 1 ? <strong key={i} {...stylex.props(typography.emphasis, styles.strong)}>{pieces}</strong> : <span key={i}>{pieces}</span>
+        return i % 2 === 1 ? <strong key={i} {...stylex.props(typography.emphasis, styles.strong, strong)}>{pieces}</strong> : <span key={i}>{pieces}</span>
       })}
     </>
   )

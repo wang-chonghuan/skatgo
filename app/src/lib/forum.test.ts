@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { cardRow, forumImagePath, inlineParts, parseBody, plainText, postIdOf, postIndexable, postParam, sectionsFor, slugOf } from './forum'
+import { cardRow, coverOf, forumImagePath, inlineParts, parseBody, plainText, postIdOf, postIndexable, postParam, sectionsFor, slugOf, videoOf } from './forum'
 
 // The forum's shared rules (SKATGO-118): what an address, a post's text and its indexing come to.
 
@@ -21,16 +21,29 @@ describe('forum addresses', () => {
 })
 
 describe('who may post where', () => {
-  it('keeps announcements to the official', () => {
-    expect(sectionsFor(false)).toEqual(['articles'])
-    expect(sectionsFor(true)).toEqual(['news', 'articles'])
+  it('keeps announcements, guides and videos to the official; a player writes in the discussion (SKATGO-231)', () => {
+    expect(sectionsFor(false)).toEqual(['talk'])
+    expect(sectionsFor(true)).toEqual(['news', 'talk', 'guides', 'videos'])
   })
   it('offers search engines the official posts and marked ones, never hidden ones', () => {
-    const base = { section: 'articles' as const, official: false, indexed: false, hidden: null }
+    const base = { section: 'talk' as const, official: false, indexed: false, hidden: null }
     expect(postIndexable(base)).toBe(false)
     expect(postIndexable({ ...base, indexed: true })).toBe(true)
     expect(postIndexable({ ...base, official: true })).toBe(true)
     expect(postIndexable({ ...base, official: true, hidden: 'Spam' })).toBe(false)
+  })
+})
+
+describe('a guide\'s picture and a video\'s address (SKATGO-231)', () => {
+  it('takes the first picture line as the cover', () => {
+    expect(coverOf('Intro\n\n![The bidding](bidding-1.svg)\n\n![Later](later.svg)')).toBe('bidding-1.svg')
+    expect(coverOf('No picture here')).toBeNull()
+  })
+  it('takes the first YouTube link, in any of its forms, as the video on YouTube', () => {
+    expect(videoOf('Watch: https://youtu.be/dQw4w9WgXcQ and more')).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+    expect(videoOf('[Video](https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=5)')).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+    expect(videoOf('https://www.youtube.com/shorts/dQw4w9WgXcQ')).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+    expect(videoOf('https://vimeo.com/123 or https://example.com/youtube.com/watch?v=dQw4w9WgXcQ')).toBeNull()
   })
 })
 

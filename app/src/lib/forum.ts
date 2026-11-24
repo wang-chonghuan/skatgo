@@ -11,12 +11,14 @@ import { type Card, type Rank, type Suit } from './skat/cards'
 // language and kept (SKATGO-124, the human: 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版」), the text as written one
 // tap away.
 
-// Two sections since SKATGO-186 (the human: 「请删除feedback和discussion两个类，没用处」): a player posts under Articles.
-export const FORUM_SECTIONS = ['news', 'articles'] as const
+// Four sections since SKATGO-231 (the human: 「我定的结构就是：公告，讨论，进阶教程体系，教学视频」): SkatGo's
+// announcements, the players' discussion, SkatGo's guides in order, and SkatGo's videos, which open on YouTube. The
+// articles of before are SkatGo's posts in the discussion (SKATGO-231, the human: 「现有5篇seo文章不要放进来吧……你决定」).
+export const FORUM_SECTIONS = ['news', 'talk', 'guides', 'videos'] as const
 export type ForumSection = (typeof FORUM_SECTIONS)[number]
 
-/** Where only the official may start a post. */
-export const OFFICIAL_SECTIONS: readonly ForumSection[] = ['news']
+/** Where only the official may start a post: everywhere but the discussion. */
+export const OFFICIAL_SECTIONS: readonly ForumSection[] = ['news', 'guides', 'videos']
 
 /** The sections an author may post in. */
 export const sectionsFor = (official: boolean): ForumSection[] => FORUM_SECTIONS.filter((s) => official || !OFFICIAL_SECTIONS.includes(s))
@@ -62,6 +64,14 @@ export type ForumPostSummary = {
   /** In the reader's language, when it was written in another (SKATGO-124): the language it was written in, the title
    *  and the excerpt translated, and on a post's own page its body. Null while the translation is being made. */
   translated: { from: string; title: string; excerpt: string; body?: string } | null
+  /** The newest comment everyone sees, its text's start in the reader's language (SKATGO-231), or null. */
+  last: { author: string; official: boolean; excerpt: string } | null
+  /** A guide's or video's picture: its text's first picture (`coverOf`), or null. */
+  cover: string | null
+  /** A video's address on YouTube: its text's first YouTube link (`videoOf`), or null. */
+  video: string | null
+  /** A guide's place in the guides, by publication (SKATGO-231): 1 for the first. */
+  number: number | null
 }
 
 export type ForumComment = {
@@ -76,12 +86,23 @@ export type ForumComment = {
   translated: { from: string; body: string } | null
 }
 
-export type ForumPost = ForumPostSummary & { body: string; thread: ForumComment[] }
+/** A guide's neighbours in the guides, by publication. */
+export type ForumNeighbour = { id: number; title: string; number: number }
+
+export type ForumPost = ForumPostSummary & { body: string; thread: ForumComment[]; prev: ForumNeighbour | null; next: ForumNeighbour | null }
 
 /** Who is looking: whether they may moderate, and whether they are signed in at all. */
 export type ForumViewer = { signedIn: boolean; official: boolean }
 
-export type ForumList = { posts: ForumPostSummary[]; more: boolean; viewer: ForumViewer }
+/** The forum's home (SKATGO-231), with its list the discussion: the newest announcements and guides, and the newest
+ *  videos. */
+export type ForumHome = { featured: ForumPostSummary[]; videos: ForumPostSummary[] }
+
+export type ForumList = { posts: ForumPostSummary[]; more: boolean; viewer: ForumViewer; home: ForumHome | null }
+
+/** How many announcements and guides, and how many videos, the home shows. */
+export const HOME_FEATURED = 4
+export const HOME_VIDEOS = 4
 
 export type ForumThread = { post: ForumPost; viewer: ForumViewer }
 
@@ -230,6 +251,20 @@ export function parseBody(text: string): ForumBlock[] {
   }
   flush()
   return blocks
+}
+
+/** A text's first picture: the file of its first picture line (SkatGo's posts only show it, SKATGO-129). */
+export function coverOf(body: string): string | null {
+  const image = parseBody(body).find((b) => b.kind === 'image')
+  return image && image.kind === 'image' ? image.file : null
+}
+
+const YOUTUBE = /https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+
+/** A text's first YouTube video, as its address on YouTube (SKATGO-231), or null. */
+export function videoOf(body: string): string | null {
+  const id = YOUTUBE.exec(body)?.[1]
+  return id ? `https://www.youtube.com/watch?v=${id}` : null
 }
 
 export type InlinePart = { text: string } | { text: string; href: string }

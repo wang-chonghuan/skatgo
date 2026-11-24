@@ -49,8 +49,10 @@ export async function askForum(op: string, payload: object, request: Pick<Reques
 
 // The avatars (SKATGO-231): DiceBear's Avataaars (Pablo Stanley's design, free for personal and commercial use) in its
 // own standard looks (the human: 「我觉得E比较好」, then, after a quieter take: 「风格改的太沉稳了，你就用E的标准默认风格吧」), on a
-// round soft tint of the site's colours so each sits in its circle.
-const STANDARD = { backgroundColor: avatarGrounds, radius: 50 }
+// round soft tint of the site's colours so each sits in its circle; its skin tones without the two darkest (the human:
+// 「能否设置不要黑人」).
+const SKIN = ['d08b5b', 'edb98a', 'ffdbb4', 'fd9841', 'f8d25c']
+const STANDARD = { backgroundColor: avatarGrounds, radius: 50, skinColor: SKIN }
 
 /** The text an avatar address names, or null — for an avatar, only at the current style's address. */
 function seedOf(path: string, kind: 'avatar' | 'multiavatar'): string | null {

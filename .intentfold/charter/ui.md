@@ -54,7 +54,6 @@ breakpoint of its own; `check-design-tokens.mjs` (Tools) fails the build otherwi
 | `constants.ts` | `phoneQuery`, `pinnedQuery`, `themeColor`, `themeColorDark`, `icon`, `stepSlide`, `deal`, `cardIndex`, `playIn`, `trick`, `finish`, `shake`, `drawer`, `confettiBurst`, `goldTrophy` | values for code that cannot read a CSS variable: `matchMedia`, the `theme-color` meta, lucide sizes, SVG attributes, `motion` and `canvas-confetti` |
 | `flags.tsx`, `icons.tsx` | `FlagEN` (the United States and the United Kingdom halved on the diagonal, SKATGO-104), `FlagDE`; the Astryx icon registry | the language switch's flags; the icons the Astryx theme is built with |
 | `parrottoonTheme.ts` | the Astryx theme, compiled to `parrottoon.{css,js,d.ts}` | the reset and prose defaults underneath (the name is historical) |
-| `geist.stylex.ts` | `geist`, `geistShape`, `geistDims` | the forum's design (SKATGO-231): Vercel's Geist colours with their night values, radii and dimensions, read from the Vercel Community; only the forum uses them |
 
 The registry holds the value and a comment saying what it is for; this file holds the rules for
 choosing. Read the registry for any value.
@@ -129,8 +128,7 @@ Product code picks a **role** from `typography` and never sets `fontFamily`, `fo
 or `lineHeight` itself. A role fixes family, size (and its phone size), weight and, where the design
 sets one, leading. Colour is not part of a role — the surface decides it.
 
-- **Families**: one geometric sans, **Red Hat Display** (`family.body`), for everything but the forum, which sets
-  **Geist** (`family.geist`, SKATGO-231, with its own weights 400 to 600, line heights `g16`–`g40` and `tracking`); **Bebas Neue**
+- **Families**: one geometric sans, **Red Hat Display** (`family.body`), for everything; **Bebas Neue**
   (`family.numeral`) only for Reizen values, "Passe" and the table's numbers. It has a single weight.
 - **Weights** (SKATGO-47; one step heavier since SKATGO-148, the human: 「整个的字体，都太细了，大部分都太细了……加粗」):
   two by purpose — `weight.text` (600) for reading text: paragraphs, explanations, leads, table rows; `weight.ui`
@@ -228,7 +226,7 @@ grid templates, the printable score sheet's handwriting row (`dims.scoreRow`, 6 
 | `ScoreSheet` | `daily-comparison.tsx` | a score sheet (SKATGO-79): the three seats' Seeger-Fabian scores of a tournament so far, the player's line, tagged "Du" in `navy`, over the AI's, tagged "AI" in `info`; no other number beside them (SKATGO-81). The AI's line is left out for days dealt before it played them. Under `VsAiTable`'s rows only; a single deal has none since SKATGO-145 |
 | `VsAiTable` | `daily-comparison.tsx` | the daily tournament's comparison with the computer (SKATGO-48, SKATGO-79): one row per finished deal — the deal's number, the player's and the AI's Seeger-Fabian score each with its role under the heading "Punkte", signed, never `good` / `bad` (SKATGO-81) — that opens to the deal's `VsAiReview` (a row without a review to open does not fold); under the rows, the tournament's `ScoreSheet`. Rows collapse instead of scrolling sideways; the newest opens after a deal and on `/daily` mid-day. On `/daily` while the day runs (`DayDeals`, "Die Spiele von heute", also rendered on the server; SKATGO-63) every deal of the tournament has a row: the ones not finished follow by number, "läuft" for the one being played and "offen" for the rest, with nothing of their cards; the total appears once a deal is finished. Free play's round result, "Deine Runde", is the same table over its six deals (SKATGO-88), each row opening to the review kept with the round (SKATGO-145) |
 | `VsAiReview` | `daily-comparison.tsx` | a finished deal against the AI (SKATGO-145), after a daily deal, a free game and lesson 11's game, and on a `VsAiTable` row; no button, nothing folded. "Bidding": the player's line over the AI's in three shared columns — the `Who` tag(s), what was said (`appBtnStrong`) over how the deal went with the card points (`appText`, `slate`), the score (`appBtnStrong`) — each row's tag(s) and score on the baseline of its first line (SKATGO-148, 「you 和AI的两个结果的行都没对齐」), one line with both tags side by side when the two read the same. Under a fine `hairline` rule, "Biggest difference from the AI" (no judgement in the name, the human: 「为啥说ai打得更好呢」): "Trick n: the AI would play X", then, each label at the left of its cards (on the line of "You led" when the player led, SKATGO-148), the cards already on the table and the player's hand before the trick as `xs` cards 8px apart, their card ringed `navy` with a "You" tag under it and the AI's ringed `info` with an "AI" tag, then who took the trick and its points. A deal where every card was the AI's choice: one line; a passed-in deal: no trick. Words `appText`, headings and numbers `appBtnStrong` (SKATGO-146). Last, under the trick, a folded card (SKATGO-153): a `hairline` box, `radii.panel`, "Every trick vs. the AI" (`appBtnStrong`, navy) and a chevron as the line to tap; opened, SKATGO-79's play record as it was — a table of the ten tricks, each card under its player's name, the player's bold, the AI's card with its tag under the player's where it differs, the trick of the biggest difference on `badSoft`, who took each with its points, a tapped trick's hand under it, the skat under the table — in the dialog's four levels (SKATGO-166): cards and lines `appText`, the player's cards `appBtnStrong`, names and column heads `smallBold`. After a deal (`after`, SKATGO-166, 「信息不重复」), under the deal's own result: instead of "Bidding", "If the AI had played your cards" (`appBtnStrong`; 「如果AI打你的牌……这样别人就看懂这啥意思了」), then its deal told as the result tells the player's (「你那个+86是什么意思？然后70 50什么意思，然后为啥不写ai打的时候，最后每个人得几分呢」): a row a side (`Who` tag, `appText`) only where the AI bid otherwise — what each said, "Passed after 24" / "Bid 35", the game left to the next line; one line of who won or lost which game and why ("AI won Clubs ♣ · 70 : 50 card points"); and the result's score table with the AI in the player's column, its deal's row alone; each of the three a part of the dialog under its heading (`ResultPart`), "Trick n: the AI would play X" under "Biggest difference from the AI" in `appText`; the record without the skat, which the result shows, its heading the line to tap |
-| `ForumBody` | `forum-body.tsx` | a forum post's or comment's text (SKATGO-118; in the forum in Geist, `geist`, SKATGO-231, the record of play's notes in the lobby design): paragraphs, `##` headings, lists, `**bold**` and suits through `Rich`, links in `info` (a player's `ugc nofollow`), and a line `[♠A ♠10 ♥K]` as a `CardRowView`; in SkatGo's posts a line `![what it shows](name.svg)` as the site's picture in the page's language, the column's width on white with a `hairline` border and `radii.panel` (SKATGO-129), in a player's post that line stays text; built as elements, never as HTML |
+| `ForumBody` | `forum-body.tsx` | a forum post's or comment's text (SKATGO-118): paragraphs, `##` headings, lists, `**bold**` and suits through `Rich`, links in `info` (a player's `ugc nofollow`), and a line `[♠A ♠10 ♥K]` as a `CardRowView`; in SkatGo's posts a line `![what it shows](name.svg)` as the site's picture in the page's language, the column's width on white with a `hairline` border and `radii.panel` (SKATGO-129), in a player's post that line stays text; built as elements, never as HTML |
 | `AnnouncementLine` | `forum-announcement.tsx` | the forum's newest announcement of the last two weeks as one line — a `good` "Neu" `Pill` and its title as an underlined `info` link — on the front page and `/daily` (SKATGO-118); nothing when there is none |
 | `GameTable` | `game-table.tsx` | the whole-game table: the felt and its stage, the info board, the seat plates, the trick, the learner's hand, the edge tabs, and the side panel — pinned beside the felt at `bp.pinned`, a drawer otherwise (SKATGO-34). The trick's cards, the skat and Lina's and Noah's cards are as big as the hand's — theirs sideways at the felt's edges, half of each on the felt (54u of 134u on a phone, clear of the seat plate; SKATGO-148, the human: 「ai的牌的尺寸应该和玩家的牌的尺寸，桌面的牌的尺寸一样，只不过ai的牌只显示半截而已」); the trick's overlap, each toward who played it and one step higher than the card to its left (`stage.trickFirst`, `trickSecond`, `trickThird`), the three centred in the frame's height, the later on top, so every card's top-left number and suit stay in the open whatever was played last (SKATGO-68). The frame and its seat plates are only the table's backdrop: the skat and the trick's cards lie over the plates (SKATGO-158, 「出的牌会被方框上的标签挡住，这个也不应该」). What Lina and Noah last said in the auction, the bid chips in the frame's top corners, lies over everything in the frame, the skat included (SKATGO-166, 「不要让牌遮住叫分，叫牌的字层级最高」). An open hand at the side — an Ouvert declarer's, or the cards laid open when a deal is decided early — is spread at `stage.stackStepOpen`, wider than a closed one, so every card reads (SKATGO-79). As an exercise's table (`exercise`, SKATGO-110/111) every hand is open, the side hands at the learner's card size, and the exercise supplies the board at the top and the dialog at the end; there is no side panel, hint tab or settlement |
 
@@ -545,29 +543,31 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   table is a full-screen table, and at its end a white card with the player's score and the shared one.
   The card picture (`multiplayer/src/card.ts`) is the same on white: the logo with "SkatGo.com" (「logo文字后面加上.com」), "1 deal today · 2 min" as the site's green button with the day beside it (「1 deal today 这个字应该强调……否则看到的人不知道能要打几副」), the score large, the three
   scores with the declarer's yellow badge, "Same cards – what will you score?" (German "Gleiche Karten – wie viele Punkte holst du?", the human: 「不要说can you beat me，应该说试试你能得几分」).
-- **The forum** (`forum-page.tsx`, SKATGO-118) wears the Vercel Community's design since SKATGO-231, as plain as it goes
-  (the human: 「我希望极简形式的……列表不要做成卡片」): Geist — its colours, its face, its sizes — from `theme/geist.stylex.ts`,
-  the roles `forum*` in `type.ts`, and its own small kit in `forum-ui.tsx` (`GButton`: the main one Geist's dark fill,
-  the others white with a hairline, 32px, radius 6; `gPillLook`: 34px, round, the chosen one dark; `GIconButton`: 32×32
-  with a hairline; `Avatar`: 24px, SkatGo's logo for SkatGo, a player's initial on Geist's grey; `GInput`,
-  `GTextArea`). Only the forum's content wears it, in one column of at most 840px on Geist's white; the site's header
-  and footer stay the lobby design. A list: the h1 "Forum" (`forumDisplay`) with the one main button at its right —
-  "Sign in" for a guest, "New post" for a player, which opens the composer in a pale panel (the official's sections as
-  pills, the title, the text, "Publish" and "Cancel"); for the official, the open reports in the same panel; then the
-  three lists as tabs on one line, "Announcements", "Discussion", "Advanced course", the current one underlined in the
-  text's colour over a hairline; then the search field with its magnifier and, beside it, "Newest" and "Most active" as
-  pills; then the posts as lines under hairlines, never boxed — the title (`forumRowTitle`, a lesson's number before it,
-  the link covering the line), the author and day, one line of its text in `secondary`, and at the right the comments'
-  count with lucide's `MessageSquare`; nothing found, one line; at the foot, over a hairline, the line on what the forum
-  is for. A post: the breadcrumb ("Forum › Discussion"), the title (`forumTitle`, 24); the author's line (avatar, name,
-  day), the text and pictures (`ForumBody` in Geist: 14 on 20, links underlined in the text's colour), and its actions:
-  "Reply" (lucide's `Reply`, a quiet text button) and the small icon buttons — report (`Flag`; the human:
-  「举报按钮一定要小，目前太大」), delete (`Trash2`), the official's hide and show (`EyeOff`, `Eye`) and "Let search engines
-  index it" — a choice opening its reason or question under them; a lesson's previous and next as one line of two quiet
-  links over a hairline; then the comments' count as the heading, each comment under a hairline with the same author
-  line, text and actions, and the comment box, into which "Reply" writes "@Name " and puts the cursor (the human:
-  「点回复时自动at即可」). The translation's small line and its "Show original" stay as SKATGO-124 has them. Dates are the day
-  in UTC, the same on the server and in the browser.
+- **The forum** (`forum-page.tsx`, SKATGO-118) is since SKATGO-231 three plain lists in the lobby design, in its colours
+  (the human: 「我希望极简形式的……列表不要做成卡片」, then 「颜色要丰富一下，还要用skatgo的设计系统……不够彩色和鲜艳」): a sub-page on the
+  grey page in the reading column. A list: the h1 "Forum" (`landingHeading`, navy) with the one `go` button at its right —
+  "Sign in" for a guest, "New post" for a player, which opens the composer in a white `option` panel (the official's
+  sections as `Toggle`s, the title, the text, "Publish" `go` and "Cancel" `quiet`); for the official, the open reports in
+  the same panel; then the three lists as tabs over a `hairline`, "Announcements", "Discussion", "Advanced course", each
+  led by its mark — its lucide icon (`Megaphone`, `MessagesSquare`, `GraduationCap`) white on its front-page tile's
+  colour, `tileNavy`, `tileGreen`, `tileOrange`, in a `dims.badge` square with `radii.tag` — the current one navy
+  `appBtnStrong` and underlined in that colour (`border.frame`); then the search field (`TextField`) and, beside it,
+  "Newest" and "Most active" as `toggleLook` pills; then the posts in one white `option` panel as lines under `hairline`s,
+  never cards of their own — the author's avatar (`dims.avatar`, round: SkatGo's logo for SkatGo, a player's initial white
+  on one of the tiles' colours or `info`, by their name; a lesson's number white on `tileOrange` in its place), the title
+  (`appBtnStrong`, navy, `info` under the pointer, the link covering the line), the author (navy, SkatGo in `go`) and day
+  (`meta`, slate), one line of its text (`note`), and at the right the comments' count with lucide's `MessageSquare`,
+  `info` once there are any; nothing found, one line; at the foot the line on what the forum is for (`note`, slate). A
+  post: the breadcrumb ("Forum › Discussion", `info`, the list's mark before its name); the post in a white card — the
+  title (`landingHeading`, a lesson's number in `tileOrange`), the author's line (a `dims.badge` avatar, name, day), the
+  text and pictures (`ForumBody`), and its actions: "Reply" (lucide's `Reply`, `info`) and small round icon buttons
+  (`dims.iconButtonSm`, a `hairline`) — report (`Flag`; the human: 「举报按钮一定要小，目前太大」), delete (`Trash2`), the
+  official's hide and show (`EyeOff`, `Eye`) — and "Let search engines index it" (`quiet`), a choice opening its reason
+  or question under them; a lesson's previous and next as two `info` links; then the comments' count (`optionTitle`) and
+  one white card of the comments under `hairline`s, each with the same author line, text and actions, the comment box
+  last, into which "Reply" writes "@Name " and puts the cursor (the human: 「点回复时自动at即可」). The translation's small
+  line and its "Show original" stay as SKATGO-124 has them. Dates are the day in UTC, the same on the server and in the
+  browser.
 - **The League** (`league-page.tsx`, `league.tsx`, `/league`, SKATGO-204): a sub-page on the grey page in the reading column,
   noindex: its H1 "Ranglistenspiel" / "Ranked match" and its tab title "Skat-Ranglistenspiel – von Bronze bis Legende" (SKATGO-210, the human: 「页面标题也不要用league了」; "Liga" before), then for an account its League as the front page's League tile is (the human chose it from two:
   「我选A」) — `tileNavy`, `radii.tile`, `elev.tileNavy`, white words: lucide's `Trophy` at `icon.tile` and "Gold-Liga"
@@ -834,7 +834,7 @@ learner will hear at a real table.
    without the human's explicit approval. Registries: every file under `app/src/theme/` —
    `color.stylex.ts`, `suits.stylex.ts`, `breakpoints.stylex.ts`, `scale.stylex.ts`,
    `shape.stylex.ts`, `elevation.stylex.ts`, `effects.stylex.ts`, `table.stylex.ts`,
-   `type.stylex.ts`, `type.ts`, `constants.ts`, `geist.stylex.ts`, `flags.tsx`, `icons.tsx`, and `parrottoonTheme.ts`
+   `type.stylex.ts`, `type.ts`, `constants.ts`, `flags.tsx`, `icons.tsx`, and `parrottoonTheme.ts`
    (with its generated `parrottoon.{css,js,d.ts}`). A missing token is a stop; reaching for a raw value instead of asking
    is the evasion this entry exists to name.
 2. **Tailwind, or any utility-CSS framework** — forbidden outright. Detectable from

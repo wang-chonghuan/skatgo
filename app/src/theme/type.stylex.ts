@@ -12,8 +12,6 @@ const SANS = '"Red Hat Display", "PingFang SC", "Hiragino Sans GB", "Microsoft Y
 
 export const family = stylex.defineVars({
   body: SANS,
-  /** The forum's face (SKATGO-231): Vercel's Geist, as its community forum sets everything (theme/geist.stylex.ts). */
-  geist: '"Geist", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif',
   /** Condensed numerals for Reizen values and "Passe". */
   numeral: '"Bebas Neue", "Red Hat Display", sans-serif',
 })
@@ -32,8 +30,6 @@ export const fontSize = stylex.defineVars({
   f22: '22px',
   f24: '24px',
   f28: '28px',
-  /** The forum's heading (SKATGO-231, Geist's 32). */
-  f32: '32px',
   f36: '36px',
   // The lobby design's measured sizes (SKATGO-26, reference.md).
   f14_21: '14.21px',
@@ -59,9 +55,6 @@ export const weight = stylex.defineVars({
    *  (SKATGO-47). One step above reading text, below the 800 of titles and emphasis (SKATGO-148). */
   ui: '700',
   regular: '400',
-  /** Geist's medium and semibold, the forum's names, row titles, buttons and titles (SKATGO-231). */
-  medium: '500',
-  semibold: '600',
   bold: '800',
   extrabold: '900',
   black: '900',
@@ -80,17 +73,4 @@ export const leading = stylex.defineVars({
   reading: '1.75',
   /** The lobby design's text leading: 24 on 16, 21 on 14, 45 on 30. */
   ui: '1.5',
-  // Geist's line heights, as the forum measures them (SKATGO-231): fixed in px, as Geist sets them.
-  g16: '16px',
-  g20: '20px',
-  g24: '24px',
-  g28: '28px',
-  g32: '32px',
-  g40: '40px',
-})
-
-/** Letter spacing: Geist draws its large headings tighter (SKATGO-231, measured at 32 and 24). */
-export const tracking = stylex.defineVars({
-  display: '-1.28px',
-  title: '-0.96px',
 })

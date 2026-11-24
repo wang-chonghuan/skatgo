@@ -33,9 +33,8 @@ export const icon = {
   inline: 20,
   /** The icon at the top of a front-page card (SKATGO-135, the human's pictures: a large outline icon over the title). */
   tile: 36,
-  /** The forum's icons (SKATGO-231): Geist's 16, in its navigation, buttons and icon buttons; 14 beside a small line. */
-  forum: 16,
-  forumSmall: 14,
+  /** The forum's small icons (SKATGO-231): in its section marks, its small buttons and beside a count. */
+  small: 16,
 }
 
 /** A lesson step slides in from the right and out to the left. */

@@ -34,6 +34,10 @@ export const dims = stylex.defineVars({
   control: '40px',
   iconButton: '44px',
   badge: '24px',
+  /** The forum's avatar in a list's row and a lesson's number there (SKATGO-231), and its small icon buttons — report,
+   *  delete, hide (the human: 「举报按钮一定要小，目前太大」). */
+  avatar: '32px',
+  iconButtonSm: '32px',
   /** The front page header's mark (SKATGO-31): the new icon's square carries white margin, so it is shown larger.
    *  Smaller since SKATGO-161, with the lower header. */
   landingMark: '44px',

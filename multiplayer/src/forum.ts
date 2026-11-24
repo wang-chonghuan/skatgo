@@ -2,16 +2,17 @@ import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
 import {
-  ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_LANGS, FORUM_SECTIONS, OFFICIAL_SECTIONS, PAGE_SIZE, POST_MAX,
-  REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumAnnouncement, type ForumComment, type ForumList, type ForumPost,
-  type ForumLang, type ForumPostSummary, type ForumReport, type ForumSection, type ForumThread, plainText, postIndexable,
+  ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_LANGS, FORUM_SECTIONS, FORUM_SORTS, OFFICIAL_SECTIONS, PAGE_SIZE,
+  PARTICIPANTS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumAnnouncement, type ForumComment, type ForumList,
+  type ForumNeighbour, type ForumPost, type ForumLang, type ForumPostSummary, type ForumReport, type ForumSection,
+  type ForumThread, plainText, postIndexable,
 } from '../../app/src/lib/forum'
 import { nameOf } from './daily'
 import { Rejected, secretEquals } from './model'
 import type { Store } from './store'
 import { type Translation, translateForAll, translationsOf } from './translate'
 
-// The forum (SKATGO-118): posts in two sections (SKATGO-186), in whatever language their authors write, flat comments, and the least moderation the law
+// The forum (SKATGO-118): posts in three lists (SKATGO-231), in whatever language their authors write, flat comments, and the least moderation the law
 // asks of a host — a report, the official hiding with a reason, authors deleting their own. The web service
 // calls these routes with the admission key and names the viewer: a signed-in account (`user:<Clerk id>`) or
 // nobody, and whether the account is the official's. Only names leave here, never a player id: whether
@@ -33,7 +34,10 @@ const target = z.union([z.object({ post: id }).strict(), z.object({ comment: id 
 
 // The reader's language (SKATGO-124): what is written in another comes translated into it.
 const lang = z.enum(FORUM_LANGS).optional()
-const listInput = z.object({ ...viewer, section: section.optional(), page: z.number().int().min(1).max(1000).optional(), lang }).strict()
+const listInput = z.object({
+  ...viewer, section: section.optional(), page: z.number().int().min(1).max(1000).optional(), lang,
+  q: z.string().transform((s) => s.trim()).pipe(z.string().max(QUERY_MAX)).optional(), sort: z.enum(FORUM_SORTS).optional(),
+}).strict()
 const postInput = z.object({ ...viewer, id, lang }).strict()
 const createInput = z.object({ ...author, section, title: text(TITLE_MIN, TITLE_MAX), body: text(1, POST_MAX) }).strict()
 const commentInput = z.object({ ...author, post: id, body: text(1, COMMENT_MAX) }).strict()
@@ -56,6 +60,7 @@ const num = (v: unknown) => Number(v)
 type PostRow = {
   id: string; section: string; author: string; official: boolean; title: string; body: string
   indexed: boolean; hidden_reason: string | null; created_at: string; last_activity: string; name: string | null; comments: string
+  number: string | null; participants: string[] | null
 }
 
 /** A text's translation when it was written in a language other than `lang`. */
@@ -75,34 +80,61 @@ function summary(r: PostRow, who: string | null, known: Map<string, Translation>
   const translated = body || title
     ? { from: (body ?? title)!.from, title: title?.text ?? r.title, excerpt: body ? plainText(body.text, 160) : p.excerpt }
     : null
-  return { ...p, indexable: postIndexable(p), translated }
+  return { ...p, indexable: postIndexable(p), translated, number: r.number === null ? null : num(r.number), participants: r.participants ?? [] }
 }
 
-// A post with its author's name and the count of comments everyone sees. Hidden posts and comments are seen
-// only by their author and the official: `$v` is the viewer (or null), `$o` whether the viewer is official.
+/** The texts a row shows, for the translations to look up. */
+const textsOf = (rows: PostRow[]) => rows.flatMap((r) => [r.title, r.body])
+
+// A post with its author's name, the count of comments everyone sees, the players who wrote them, newest first
+// (SKATGO-231), and a lesson's place among the lessons everyone sees, by publication. Hidden posts and comments are
+// seen only by their author and the official: `$1` is the viewer (or null), `$2` whether the viewer is official.
 const POSTS = `
   SELECT p.*, d.nickname AS name,
-    (SELECT count(*) FROM forum_comments c WHERE c.post_id = p.id AND c.hidden_reason IS NULL) AS comments
+    (SELECT count(*) FROM forum_comments c WHERE c.post_id = p.id AND c.hidden_reason IS NULL) AS comments,
+    (SELECT array_agg(w.nickname ORDER BY w.last DESC) FROM (
+      SELECT cd.nickname, max(c.created_at) AS last FROM forum_comments c JOIN daily_players cd ON cd.player = c.author
+       WHERE c.post_id = p.id AND c.hidden_reason IS NULL AND NOT c.official
+       GROUP BY cd.nickname ORDER BY last DESC LIMIT ${PARTICIPANTS}) w) AS participants,
+    CASE WHEN p.section = 'guides' THEN (SELECT count(*) FROM forum_posts g WHERE g.section = 'guides' AND g.hidden_reason IS NULL
+      AND (g.created_at, g.id) <= (p.created_at, p.id)) END AS number
     FROM forum_posts p LEFT JOIN daily_players d ON d.player = p.author`
+
+/** A text's key in the translations: its sha256, as translate.ts keys it. */
+const hashOf = (column: string) => `encode(sha256(convert_to(${column}, 'UTF8')), 'hex')`
 const VISIBLE = `(p.hidden_reason IS NULL OR $2::boolean OR p.author = $1)`
 
-/** One page of the posts, newest activity first; the newest announcement of the last two weeks first
- *  of all, on the first page of the whole list or of the announcements. */
-export async function forumList(store: Store, i: z.infer<typeof listInput>, now = Date.now()): Promise<ForumList> {
+/** One page of a list (SKATGO-231): the announcements when no list is named. The newest first, or the most commented
+ *  first; narrowed to the posts whose title or text — as written, or in the reader's language — holds the words
+ *  searched for. */
+export async function forumList(store: Store, i: z.infer<typeof listInput>): Promise<ForumList> {
   const page = i.page ?? 1
-  // The announcement stands first on the first page, and is left out of every page's own rows.
-  const pinned = !i.section || i.section === 'news' ? await latest(store.pool, now) : null
-  const lead = pinned && page === 1 ? 1 : 0
+  const order = i.sort === 'active' ? 'comments DESC, p.last_activity DESC, p.id DESC' : 'p.created_at DESC, p.id DESC'
+  // The words as a pattern, its own wildcards taken literally.
+  const pattern = i.q ? `%${i.q.replace(/[\\%_]/g, (c) => `\\${c}`)}%` : null
   const { rows } = await store.pool.query(
-    `${POSTS} WHERE ${VISIBLE} AND ($3::text IS NULL OR p.section = $3) AND p.id <> $4
-      ORDER BY p.last_activity DESC, p.id DESC LIMIT $5 OFFSET $6`,
-    [i.player, i.official, i.section ?? null, pinned?.id ?? 0, PAGE_SIZE - lead + 1, Math.max(0, (page - 1) * PAGE_SIZE - (pinned ? 1 : 0))],
+    `${POSTS} WHERE ${VISIBLE} AND p.section = $3
+      AND ($4::text IS NULL OR p.title ILIKE $4 OR p.body ILIKE $4 OR EXISTS (
+        SELECT 1 FROM translations t WHERE t.lang = $5 AND t.hash IN (${hashOf('p.title')}, ${hashOf('p.body')}) AND t.text ILIKE $4))
+      ORDER BY ${order} LIMIT $6 OFFSET $7`,
+    [i.player, i.official, i.section ?? FORUM_SECTIONS[0], pattern, i.lang ?? '', PAGE_SIZE + 1, (page - 1) * PAGE_SIZE],
   )
-  const first = lead ? (await store.pool.query(`${POSTS} WHERE p.id = $1`, [pinned!.id])).rows : []
-  const all: PostRow[] = [...first, ...rows]
-  const known = i.lang ? await translationsOf(store, all.flatMap((r) => [r.title, r.body]), i.lang) : new Map<string, Translation>()
-  const posts = all.map((r) => summary(r, i.player, known, i.lang))
+  const known = i.lang ? await translationsOf(store, textsOf(rows), i.lang) : new Map<string, Translation>()
+  const posts = rows.map((r: PostRow) => summary(r, i.player, known, i.lang))
   return { posts: posts.slice(0, PAGE_SIZE), more: posts.length > PAGE_SIZE, viewer: { signedIn: i.player !== null, official: i.official } }
+}
+
+/** A lesson's neighbours among the lessons everyone sees, by publication. */
+async function neighbours(store: Store, r: PostRow): Promise<{ prev: ForumNeighbour | null; next: ForumNeighbour | null }> {
+  if (r.section !== 'guides' || r.number === null) return { prev: null, next: null }
+  const n = num(r.number)
+  const near = async (dir: '<' | '>', order: string, number: number) => {
+    const { rows } = await store.pool.query(
+      `SELECT id, title FROM forum_posts WHERE section = 'guides' AND hidden_reason IS NULL AND (created_at, id) ${dir} ($1, $2)
+        ORDER BY ${order} LIMIT 1`, [r.created_at, r.id])
+    return rows[0] ? { id: num(rows[0].id), title: rows[0].title as string, number } : null
+  }
+  return { prev: await near('<', 'created_at DESC, id DESC', n - 1), next: await near('>', 'created_at, id', n + 1) }
 }
 
 /** A post and its comments, oldest first, flat. */
@@ -115,7 +147,7 @@ export async function forumPost(store: Store, i: z.infer<typeof postInput>): Pro
     [i.player, i.official, i.id],
   )
   const known = i.lang
-    ? await translationsOf(store, [rows[0].title, rows[0].body, ...comments.map((c) => c.body as string)], i.lang)
+    ? await translationsOf(store, [...textsOf(rows), ...comments.map((c) => c.body as string)], i.lang)
     : new Map<string, Translation>()
   const thread: ForumComment[] = comments.map((c) => {
     const t = other(known, c.body, i.lang)
@@ -126,7 +158,10 @@ export async function forumPost(store: Store, i: z.infer<typeof postInput>): Pro
   })
   const head = summary(rows[0], i.player, known, i.lang)
   const body = other(known, rows[0].body, i.lang)
-  const post: ForumPost = { ...head, body: rows[0].body, thread, translated: head.translated && { ...head.translated, body: body?.text ?? rows[0].body } }
+  const post: ForumPost = {
+    ...head, body: rows[0].body, thread, translated: head.translated && { ...head.translated, body: body?.text ?? rows[0].body },
+    ...(await neighbours(store, rows[0])),
+  }
   return { post, viewer: { signedIn: i.player !== null, official: i.official } }
 }
 

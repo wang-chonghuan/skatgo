@@ -114,6 +114,9 @@ export class Store {
           created_at bigint NOT NULL, resolved_at bigint
         );
         CREATE UNIQUE INDEX IF NOT EXISTS forum_reports_once ON forum_reports (reporter, post_id, (coalesce(comment_id, 0)));
+        -- Three lists since SKATGO-231: SkatGo's articles of before are announcements, at the same addresses, the
+        -- discussion the players' own.
+        UPDATE forum_posts SET section = 'news' WHERE section = 'articles';
         -- A signed-in player's finished free deals (SKATGO-128), for their record of play: once per game (its pool, deal
         -- and start), with the day it was played and, in the player's game and in the AI's game of the same deal, the
         -- three seats' Seeger-Fabian scores ([0] the player's), who declared and whether they won, and since SKATGO-169 which

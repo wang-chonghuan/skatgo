@@ -543,29 +543,34 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   table is a full-screen table, and at its end a white card with the player's score and the shared one.
   The card picture (`multiplayer/src/card.ts`) is the same on white: the logo with "SkatGo.com" (「logo文字后面加上.com」), "1 deal today · 2 min" as the site's green button with the day beside it (「1 deal today 这个字应该强调……否则看到的人不知道能要打几副」), the score large, the three
   scores with the declarer's yellow badge, "Same cards – what will you score?" (German "Gleiche Karten – wie viele Punkte holst du?", the human: 「不要说can you beat me，应该说试试你能得几分」).
-- **The forum** (`forum-page.tsx`, SKATGO-118) is two sub-pages on the grey page in the reading column. The
-  list: its H1, with no lead under it, and beside it the one `go` button — "Anmelden" for a guest, "Neuer Beitrag"
-  for a player, which opens the composer in a white card (the human: 「sign in放在 Forum 的旁边，放个按钮就行」) — the sections the author may use as
-  `Toggle`s, the title (`TextField`), the text (`TextArea`) with a line on its marks, "Veröffentlichen" (`go`) and
-  "Abbrechen" (`quiet`); for the official, while there are any, the open reports in a `tip` panel, each with its reasons, a link to
-  it, a reason field, "Ausblenden" and "Ignorieren" (`quiet`); the section filter as `toggleLook` links, "Alle"
-  first; then the posts as white
-  option cards — the title (`optionDesc`, navy, a link) and the start of its text (`bodySmall`, SKATGO-119), both in
-  the reader's language (SKATGO-124), and one
-  line of small facts (`meta`): the section in slate, the author in navy — "Gelöschter Spieler" for a deleted account's (SKATGO-185) — or "SkatGo" in `go` (`smallBold`), the
-  date and the count of comments; at the foot of the list, in small slate print, a line on what the forum is for
-  (the human chose 「摘要+底部小字」, SKATGO-119; nothing under the title). A post: "← Alle Beiträge" and its
-  section as links, then the post in a white card of its own, as each comment is (the human: 「每一个帖子或回复，都放在
-  卡片里」): the H1, the same line of facts, a hidden post's reason in a `bad` panel for its author and
-  the official, the text (`ForumBody`) — the post and each comment in the reader's language when written in another,
-  with one small slate line, "Automatisch übersetzt", and a very small underlined `info` button, "Original
-  anzeigen" / "Übersetzung anzeigen" (`micro`; SKATGO-124, the human: 「有个非常小的链接式的小按钮」): a post's under its
-  line of facts, where it is seen before a long text, a comment's under its text — the viewer's `quiet` small actions — "Melden", "Löschen" for their own
-  (asked once more, "Ja, löschen" `stop`), and for the official "Ausblenden" / "Wieder anzeigen" and a player's
-  post that is not hidden "Für Suchmaschinen freigeben" — then "Kommentare": each a white card with its line of facts, text and
-  actions, in the order written, with no way to reply to one, and the comment box under them (a `TextArea`, the
-  "@Name" hint, "Kommentieren" `go`), or for a guest the invitation with the `go` sign-in. Dates are the day in
-  UTC, the same on the server and in the browser.
+- **The forum** (`forum-page.tsx`, SKATGO-118) is since SKATGO-231 three plain lists in the lobby design, in its colours
+  (the human: 「我希望极简形式的……列表不要做成卡片」, then 「颜色要丰富一下，还要用skatgo的设计系统……不够彩色和鲜艳」): a sub-page on the
+  grey page in the reading column. A list: the h1 "Forum" (`landingHeading`, navy) with the one `go` button at its right —
+  "Sign in" for a guest, "New post" for a player, which opens the composer in a white `option` panel (the official's
+  sections as `Toggle`s, the title, the text, "Publish" `go` and "Cancel" `quiet`); for the official, the open reports in
+  the same panel; then the three lists as tabs over a `hairline`, "Announcements", "Discussion", "Advanced course", each
+  led by its mark — its lucide icon (`Megaphone`, `MessagesSquare`, `GraduationCap`) white on its front-page tile's
+  colour, `tileNavy`, `tileGreen`, `tileOrange`, in a `dims.badge` square with `radii.tag` — the current one navy
+  `appBtnStrong` and underlined in that colour (`border.frame`); then the search field (`TextField`) and, beside it,
+  "Newest" and "Most active" as `toggleLook` pills; then the posts in one white `option` panel as lines under `hairline`s,
+  never cards of their own — the post's own picture (`dims.avatar`, round: DiceBear's Avataaars of its title as written, in its
+  standard looks — without its two darkest skin tones (the human: 「能否设置不要黑人」) — on soft tints of the site's colours, `avatarGrounds` in `constants.ts` — the human: 「每个帖子都根据标题自动生成一个
+  这样的图片」, 「我觉得E比较好」, then 「风格改的太沉稳了，你就用E的标准默认风格吧」; no logo, 「我发的帖子，都用skatgo的logo，不好看，太重复了」), the title
+  (`appBtnStrong`, navy, `info` under the pointer, the link covering the line), the author (navy, SkatGo in `go`) and day
+  (`meta`, slate), one line of its text (`note`), and at the right the players who commented — up to three of their
+  avatars, the same Avataaars of their names, `dims.badge`, each over the one before by `dims.avatarOverlap` in a
+  white ring — and the comments' count with
+  lucide's `MessageSquare`, `info` once there are any; nothing found, one line; at the foot the line on what the forum is for (`note`, slate). A
+  post: the breadcrumb ("Forum › Discussion", `info`, the list's mark before its name); the post in a white card — the
+  title (`landingHeading`; a lesson's without its number, the human: 「课程前面不要加1，2，3那个橙色的编号」), the author's line (a player's picture of their name, `dims.badge`, or for SkatGo its list's mark; name, day), the
+  text and pictures (`ForumBody`), and its actions: "Reply" (lucide's `Reply`, `info`) and small round icon buttons
+  (`dims.iconButtonSm`, a `hairline`) — report (`Flag`; the human: 「举报按钮一定要小，目前太大」), delete (`Trash2`), the
+  official's hide and show (`EyeOff`, `Eye`) — and "Let search engines index it" (`quiet`), a choice opening its reason
+  or question under them; a lesson's previous and next as two `info` links; then the comments' count (`optionTitle`) and
+  one white card of the comments under `hairline`s, each with the same author line, text and actions, the comment box
+  last, into which "Reply" writes "@Name " and puts the cursor (the human: 「点回复时自动at即可」). The translation's small
+  line and its "Show original" stay as SKATGO-124 has them. Dates are the day in UTC, the same on the server and in the
+  browser.
 - **The League** (`league-page.tsx`, `league.tsx`, `/league`, SKATGO-204): a sub-page on the grey page in the reading column,
   noindex: its H1 "Ranglistenspiel" / "Ranked match" and its tab title "Skat-Ranglistenspiel – von Bronze bis Legende" (SKATGO-210, the human: 「页面标题也不要用league了」; "Liga" before), then for an account its League as the front page's League tile is (the human chose it from two:
   「我选A」) — `tileNavy`, `radii.tile`, `elev.tileNavy`, white words: lucide's `Trophy` at `icon.tile` and "Gold-Liga"

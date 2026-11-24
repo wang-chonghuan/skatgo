@@ -1,4 +1,9 @@
-import { postPath } from '~/lib/forum'
+import * as avataaars from '@dicebear/avataaars'
+import { createAvatar } from '@dicebear/core'
+import multiavatar from '@multiavatar/multiavatar/esm'
+
+import { AVATAR_SEED_MAX, AVATAR_STYLE, postPath } from '~/lib/forum'
+import { avatarGrounds } from '../theme/constants'
 import { samePath } from '~/lib/head'
 import { signedInUser } from '~/lib/session'
 import { sitemapXml } from '~/lib/sitemap'
@@ -42,9 +47,51 @@ export async function askForum(op: string, payload: object, request: Pick<Reques
   }
 }
 
+// The avatars (SKATGO-231): DiceBear's Avataaars (Pablo Stanley's design, free for personal and commercial use) in its
+// own standard looks (the human: 「我觉得E比较好」, then, after a quieter take: 「风格改的太沉稳了，你就用E的标准默认风格吧」), on a
+// round soft tint of the site's colours so each sits in its circle; its skin tones without the two darkest (the human:
+// 「能否设置不要黑人」).
+const SKIN = ['d08b5b', 'edb98a', 'ffdbb4', 'fd9841', 'f8d25c']
+const STANDARD = { backgroundColor: avatarGrounds, radius: 50, skinColor: SKIN }
+
+/** The text an avatar address names, or null — for an avatar, only at the current style's address. */
+function seedOf(path: string, kind: 'avatar' | 'multiavatar'): string | null {
+  const prefix = kind === 'avatar' ? `avatar\\/${AVATAR_STYLE}` : 'multiavatar'
+  const match = new RegExp(`^\\/api\\/forum\\/${prefix}\\/([^/]+)\\.svg$`).exec(path)
+  try {
+    const seed = match ? decodeURIComponent(match[1]) : null
+    return seed && seed.length <= AVATAR_SEED_MAX ? seed : null
+  } catch {
+    return null
+  }
+}
+
+const svg = (body: string) =>
+  new Response(body, {
+    headers: {
+      'content-type': 'image/svg+xml; charset=utf-8',
+      'cache-control': 'public, max-age=31536000, immutable',
+      'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'",
+      'x-content-type-options': 'nosniff',
+    },
+  })
+
+/** GET /api/forum/avatar/<style>/<text>.svg — the picture of a text, a post's title or a player's name: DiceBear's Avataaars,
+ *  drawn here, never by dicebear.com, so no visitor's address leaves the site; the text is not in the picture. The
+ *  same text is always the same picture, so a browser keeps it for a year. GET /api/forum/multiavatar/<text>.svg is
+ *  the first try's Multiavatar, kept for now (the human: 「老的集成暂时不用删」) and shown nowhere. */
+function avatar(request: Request, path: string): Response {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return json(405, { error: 'GET only' })
+  const kind = path.startsWith(`${PREFIX}multiavatar/`) ? 'multiavatar' : 'avatar'
+  const seed = seedOf(path, kind)
+  if (!seed) return json(404, { error: 'not found' })
+  return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...STANDARD }).toString())
+}
+
 export async function handleForum(request: Request): Promise<Response> {
-  if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const path = new URL(request.url).pathname
+  if (path.startsWith(`${PREFIX}avatar/`) || path.startsWith(`${PREFIX}multiavatar/`)) return avatar(request, path)
+  if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const op = path.startsWith(PREFIX) ? path.slice(PREFIX.length) : ''
   if (!READS.has(op) && !WRITES.has(op)) return json(404, { error: 'not found' })
   let body: unknown

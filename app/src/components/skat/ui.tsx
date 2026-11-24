@@ -80,7 +80,7 @@ export function linkLook(tone: Tone = 'go', size: Size = 'md', shape: Shape = 'p
 
 /** A one-line text field — a name, as the daily leaderboard and a private table ask for it. Enter
  *  submits. */
-export function TextField({ id, testId, value, onChange, onEnter, invalid, autoComplete, digits }: {
+export function TextField({ id, testId, value, onChange, onEnter, invalid, autoComplete, digits, name, search, placeholder, label }: {
   id: string
   testId?: string
   value: string
@@ -90,12 +90,20 @@ export function TextField({ id, testId, value, onChange, onEnter, invalid, autoC
   autoComplete?: string
   /** A number of this many digits, as a room's (SKATGO-163): the phone's number pad, and no more digits than that. */
   digits?: number
+  /** For a form a browser can send without the page's script, and a search field (the forum's lists, SKATGO-231). */
+  name?: string
+  search?: boolean
+  placeholder?: string
+  label?: string
 }) {
   return (
     <input
       id={id}
+      name={name}
+      placeholder={placeholder}
+      aria-label={label}
       data-testid={testId}
-      type="text"
+      type={search ? 'search' : 'text'}
       inputMode={digits ? 'numeric' : undefined}
       maxLength={digits}
       autoComplete={autoComplete}
@@ -112,16 +120,19 @@ export function TextField({ id, testId, value, onChange, onEnter, invalid, autoC
 
 /** Text over several lines — a forum post's text or a comment (SKATGO-118). It starts a few lines tall for what it
  *  holds (SKATGO-119) and grows with what is written (where the browser can; elsewhere it can be dragged taller). */
-export function TextArea({ id, testId, value, onChange, size, invalid }: {
+export function TextArea({ id, testId, value, onChange, size, invalid, inputRef }: {
   id: string
   testId?: string
   value: string
   onChange: (value: string) => void
   size: 'post' | 'comment'
   invalid?: boolean
+  /** To put the cursor in the box from outside it (a forum reply's "@Name", SKATGO-231). */
+  inputRef?: Ref<HTMLTextAreaElement>
 }) {
   return (
     <textarea
+      ref={inputRef}
       id={id}
       data-testid={testId}
       value={value}

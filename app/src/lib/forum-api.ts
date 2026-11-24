@@ -1,7 +1,7 @@
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest, setResponseHeader } from '@tanstack/react-start/server'
 
-import type { ForumAnnouncement, ForumList, ForumReport, ForumSection, ForumThread } from './forum'
+import type { ForumAnnouncement, ForumList, ForumReport, ForumSection, ForumSort, ForumThread } from './forum'
 import { askForum } from './forum-handler'
 import { getLocale } from '~/paraglide/runtime'
 
@@ -51,7 +51,7 @@ const read = createIsomorphicFn()
   .client((op: 'list' | 'post' | 'latest', payload: object): Promise<ForumAnswer<unknown>> => viaApi(op, payload))
 
 // Read in the page's language: what is written in the other comes translated (SKATGO-124).
-export const readForumList = (input: { section?: ForumSection; page?: number }) => read('list', { ...input, lang: getLocale() }) as Promise<ForumAnswer<ForumList>>
+export const readForumList = (input: { section?: ForumSection; page?: number; q?: string; sort?: ForumSort }) => read('list', { ...input, lang: getLocale() }) as Promise<ForumAnswer<ForumList>>
 export const readForumPost = (id: number) => read('post', { id, lang: getLocale() }) as Promise<ForumAnswer<ForumThread>>
 
 /** The newest announcement of the last two weeks, or null — also when the forum does not answer: the line

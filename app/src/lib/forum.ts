@@ -11,12 +11,39 @@ import { type Card, type Rank, type Suit } from './skat/cards'
 // language and kept (SKATGO-124, the human: 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版」), the text as written one
 // tap away.
 
-// Two sections since SKATGO-186 (the human: 「请删除feedback和discussion两个类，没用处」): a player posts under Articles.
-export const FORUM_SECTIONS = ['news', 'articles'] as const
+// Three lists since SKATGO-231 (the human: 「公告列表，讨论列表，高级课程列表。就这三个就行了」): SkatGo's announcements,
+// the players' discussion, and SkatGo's advanced course, its lessons in order. The articles of before are SkatGo's
+// announcements (the human, of the agent's advice: 「按建议改」), so the discussion is the players'. The first is the
+// forum's own page.
+export const FORUM_SECTIONS = ['news', 'talk', 'guides'] as const
 export type ForumSection = (typeof FORUM_SECTIONS)[number]
 
-/** Where only the official may start a post. */
-export const OFFICIAL_SECTIONS: readonly ForumSection[] = ['news']
+/** Where only the official may start a post: everywhere but the discussion. */
+export const OFFICIAL_SECTIONS: readonly ForumSection[] = ['news', 'guides']
+
+/** How a list is sorted (SKATGO-231, the human: 「可以检索和排序（时间， 互动量）」): the newest first, or the most
+ *  commented first. */
+export const FORUM_SORTS = ['new', 'active'] as const
+export type ForumSort = (typeof FORUM_SORTS)[number]
+
+/** The longest search a list takes. */
+export const QUERY_MAX = 100
+
+/** How many of a post's commenters a list's line shows. */
+export const PARTICIPANTS = 3
+
+/** The longest text an avatar is drawn from. */
+export const AVATAR_SEED_MAX = 200
+
+/** The avatars' style, in their address: a browser keeps an avatar for a year, so a new style needs new addresses or
+ *  it shows the old pictures (the human, after the style changed: 「有缓存，我看不出来」). Raise it with every change of
+ *  style or options in lib/forum-handler.ts. */
+export const AVATAR_STYLE = 'a3'
+
+/** An avatar's address (SKATGO-231, the human: 「每个帖子都根据标题自动生成一个这样的图片」): the picture of a post's title as
+ *  written, or of a player's name, drawn by the web service (lib/forum-handler.ts), the same text always the same
+ *  picture. */
+export const avatarPath = (seed: string) => `/api/forum/avatar/${AVATAR_STYLE}/${encodeURIComponent(seed.slice(0, AVATAR_SEED_MAX))}.svg`
 
 /** The sections an author may post in. */
 export const sectionsFor = (official: boolean): ForumSection[] => FORUM_SECTIONS.filter((s) => official || !OFFICIAL_SECTIONS.includes(s))
@@ -62,6 +89,11 @@ export type ForumPostSummary = {
   /** In the reader's language, when it was written in another (SKATGO-124): the language it was written in, the title
    *  and the excerpt translated, and on a post's own page its body. Null while the translation is being made. */
   translated: { from: string; title: string; excerpt: string; body?: string } | null
+  /** A lesson's place in the advanced course, by publication (SKATGO-231): 1 for the first. */
+  number: number | null
+  /** The players who commented on it, newest first, at most `PARTICIPANTS` names — SkatGo's own comments and deleted
+   *  players' not among them (SKATGO-231). */
+  participants: string[]
 }
 
 export type ForumComment = {
@@ -76,7 +108,10 @@ export type ForumComment = {
   translated: { from: string; body: string } | null
 }
 
-export type ForumPost = ForumPostSummary & { body: string; thread: ForumComment[] }
+/** A lesson's neighbours in the advanced course, by publication. */
+export type ForumNeighbour = { id: number; title: string; number: number }
+
+export type ForumPost = ForumPostSummary & { body: string; thread: ForumComment[]; prev: ForumNeighbour | null; next: ForumNeighbour | null }
 
 /** Who is looking: whether they may moderate, and whether they are signed in at all. */
 export type ForumViewer = { signedIn: boolean; official: boolean }

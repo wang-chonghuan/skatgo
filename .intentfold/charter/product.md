@@ -292,8 +292,8 @@ often. Under them come the kinds SKATGO-110 had hidden, shown again since SKATGO
 exercises each, each kind a card opening to its exercises; they need no account and record nothing. Every answer is an exact solver's or the rules engine's; positions may draw on Skat books (the
 human, SKATGO-103: 「可以参考书上的」). The list of exercises is a search entry in both languages, a single
 exercise is not (the human: 「单页不收录，但是题目页要收录」). The articles are in plain
-words — the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」 — and are SkatGo's posts in the forum's
-Articles, nowhere else on the site (SKATGO-120, the human: 「移除这个文章在app里的所有其他引用的，就放论坛里」). The
+words — the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」 — and are SkatGo's posts in the forum, among its
+announcements since SKATGO-231, nowhere else on the site (SKATGO-120, the human: 「移除这个文章在app里的所有其他引用的，就放论坛里」). The
 first, twelve tricks for bidding, playing alone and defending, written for the search "Skat Tricks", is one
 post, in English, read in German as its translation (SKATGO-124, the human: 「12 个 Skat 技巧会出现两次。保留英文版」;
 the German post deleted, SKATGO-125: 「你彻底删掉」), each trick linking to the exercises that practise it; its old address,
@@ -345,11 +345,18 @@ search entry.
 
 A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted
 「官方发公告，官方发一些技术的文章，用户可以评论，用户也可以发文章……就做一个简单版本的。以后既能用来seo又有个公告和用户交流，放文章的地方」.
-Two sections: announcements, which only SkatGo writes; and articles, by SkatGo or a player (discussion and feedback were
-removed in SKATGO-186, the human: 「请删除feedback和discussion两个类，没用处」).
-The list shows them together, newest activity first, the latest announcement of the last two weeks on top, and
-can be narrowed to one. Under every post, comments in the order written, flat — no reply to a comment; whom one
-means is "@Name" in the text (the human: 「评论不要搞嵌套，太麻烦，用户自己 @ 一个人就行，也不用通知」). Nothing in the forum
+Three lists since SKATGO-231 (the human: 「公告列表，讨论列表，高级课程列表。就这三个就行了」, reversing SKATGO-186's two): the
+announcements and the advanced course, which only SkatGo writes, and the discussion, where players write and SkatGo too.
+The advanced course is a series of lessons: numbered in the order they are published, each leading to the one before
+and after. The articles SkatGo wrote before are announcements, at their addresses, so the discussion is the players' own (the
+human, of the agent's advice: 「按建议改」, after 「这类论坛一看就是只有老板在发帖的」). No post carries the logo: each has a picture
+drawn from its title, each player one from their name (the human: 「每个帖子都根据标题自动生成一个这样的图片」, then 「我觉得E比较好」 and
+「你就用E的标准默认风格吧」), and a line shows the players who commented. Each list is plain lines, never cards, searched by words in a post's title or text and sorted by time or
+by how many comments (the human: 「每个主题，都是一系列列表，然后可以检索和排序（时间， 互动量）……列表不要做成卡片」); the forum's own
+page is the announcements. A post shows its text and pictures, then its comments (「点进列表项后，是图文显示，下面可以评论」).
+Under every post, comments in the order written, flat — no reply to a comment; whom one
+means is "@Name" in the text (the human: 「评论不要搞嵌套，太麻烦，用户自己 @ 一个人就行，也不用通知」), which "Reply" writes into the
+comment box (SKATGO-231: 「点回复时自动at即可」). Nothing in the forum
 notifies anyone. Anyone reads; writing takes an account, and a player writes under their leaderboard name, never
 an email address; SkatGo writes as SkatGo. SkatGo's posts are for search engines; a player's post only once SkatGo
 marks it. The latest announcement also stands as one line on the front page and on `/daily`
@@ -361,9 +368,9 @@ and each reader sees it in the language they read the site in: machine-translate
 and language and kept, saying so in a small line with the text as written one tap away (SKATGO-124, the human:
 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版。用便宜的翻译功能实现」, 「用户可以点击查看原文，有个非常小的链接式的
 小按钮」); a text already in the reader's language, or saying it in both, stands as written. The Skat-Tricks' articles
-are SkatGo's posts in its articles section (SKATGO-120). Not in it, by the
+are SkatGo's announcements (SKATGO-120, SKATGO-231). Not in it, by the
 human's agreement (「都同意」): notifications, nested replies, pictures in players' posts (SkatGo's own posts may show the site's own pictures, one per
-language — SKATGO-129, the human: 「给论坛增加加图片的功能」), search, profiles, likes, blocking (with the
+language — SKATGO-129, the human: 「给论坛增加加图片的功能」), profiles, likes, blocking (with the
 apps later) and competitions (later, in the product itself).
 
 SkatGo for Android (SKATGO-185, the human: 「我打算做成google play app了……不要因为套web什么的被不许上架」): the site itself, opened

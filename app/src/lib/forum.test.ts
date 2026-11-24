@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { cardRow, forumImagePath, inlineParts, parseBody, plainText, postIdOf, postIndexable, postParam, sectionsFor, slugOf } from './forum'
+import { avatarPath, cardRow, forumImagePath, inlineParts, parseBody, plainText, postIdOf, postIndexable, postParam, sectionsFor, slugOf } from './forum'
 
 // The forum's shared rules (SKATGO-118): what an address, a post's text and its indexing come to.
 
@@ -21,16 +21,23 @@ describe('forum addresses', () => {
 })
 
 describe('who may post where', () => {
-  it('keeps announcements to the official', () => {
-    expect(sectionsFor(false)).toEqual(['articles'])
-    expect(sectionsFor(true)).toEqual(['news', 'articles'])
+  it('keeps announcements and the advanced course to the official; a player writes in the discussion (SKATGO-231)', () => {
+    expect(sectionsFor(false)).toEqual(['talk'])
+    expect(sectionsFor(true)).toEqual(['news', 'talk', 'guides'])
   })
   it('offers search engines the official posts and marked ones, never hidden ones', () => {
-    const base = { section: 'articles' as const, official: false, indexed: false, hidden: null }
+    const base = { section: 'talk' as const, official: false, indexed: false, hidden: null }
     expect(postIndexable(base)).toBe(false)
     expect(postIndexable({ ...base, indexed: true })).toBe(true)
     expect(postIndexable({ ...base, official: true })).toBe(true)
     expect(postIndexable({ ...base, official: true, hidden: 'Spam' })).toBe(false)
+  })
+})
+
+describe('an avatar\'s address (SKATGO-231)', () => {
+  it('names its text, encoded, and draws from at most the first 200 characters', () => {
+    expect(avatarPath('Hearts or Clubs?/x')).toBe('/api/forum/avatar/a3/Hearts%20or%20Clubs%3F%2Fx.svg')
+    expect(avatarPath('x'.repeat(300))).toBe(`/api/forum/avatar/a3/${'x'.repeat(200)}.svg`)
   })
 })
 

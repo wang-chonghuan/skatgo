@@ -213,7 +213,6 @@ function PostRow({ post }: { post: ForumPostSummary }) {
       <Avatar seed={post.title} />
       <div {...stylex.props(styles.rowBody)}>
         <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.appBtnStrong, styles.rowTitle)}>
-          {post.number ? <span {...stylex.props(styles.lessonNo)}>{`${post.number}. `}</span> : null}
           {post.translated?.title ?? post.title}
         </Link>
         <p {...stylex.props(typography.meta, styles.slate, styles.meta)}>
@@ -381,7 +380,6 @@ function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
         {/* The post in a white card of its own (the human, SKATGO-118: 「每一个帖子或回复，都放在卡片里」). */}
         <div data-testid="forum-post-card" {...stylex.props(styles.panel, styles.padded, styles.entry)}>
           <h1 {...stylex.props(typography.landingHeading, styles.title)}>
-            {post.number ? <span {...stylex.props(styles.lessonNo)}>{`${post.number}. `}</span> : null}
             {shown?.title ?? post.title}
           </h1>
           <Byline of={post} section={post.section} />
@@ -708,7 +706,6 @@ const styles = stylex.create({
   crumbSection: { display: 'inline-flex', alignItems: 'center', gap: space.x8 },
   link: { color: color.info, textDecoration: { default: 'none', ':hover': 'underline' }, ...focusRing },
   entry: { display: 'flex', flexDirection: 'column', gap: space.x12, minWidth: 0 },
-  lessonNo: { color: color.tileOrange },
   commentRow: { borderTopWidth: { default: border.hair, ':first-child': 0 }, borderTopStyle: 'solid', borderTopColor: color.hairline },
   byline: { display: 'flex', alignItems: 'center', gap: space.x8 },
   reply: {

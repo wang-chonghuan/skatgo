@@ -554,15 +554,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   `appBtnStrong` and underlined in that colour (`border.frame`); then the search field (`TextField`) and, beside it,
   "Newest" and "Most active" as `toggleLook` pills; then the posts in one white `option` panel as lines under `hairline`s,
   never cards of their own — the post's own picture (`dims.avatar`, round: Multiavatar's picture of its title as written,
-  the human: 「每个帖子都根据标题自动生成一个这样的图片」; no logo, 「我发的帖子，都用skatgo的logo，不好看，太重复了」), the title (a
-  lesson's number before it in `tileOrange`)
+  the human: 「每个帖子都根据标题自动生成一个这样的图片」; no logo, 「我发的帖子，都用skatgo的logo，不好看，太重复了」), the title
   (`appBtnStrong`, navy, `info` under the pointer, the link covering the line), the author (navy, SkatGo in `go`) and day
   (`meta`, slate), one line of its text (`note`), and at the right the players who commented — up to three of their
   avatars, Multiavatar's pictures of their names, `dims.badge`, each over the one before by `dims.avatarOverlap` in a
   white ring — and the comments' count with
   lucide's `MessageSquare`, `info` once there are any; nothing found, one line; at the foot the line on what the forum is for (`note`, slate). A
   post: the breadcrumb ("Forum › Discussion", `info`, the list's mark before its name); the post in a white card — the
-  title (`landingHeading`, a lesson's number in `tileOrange`), the author's line (a player's picture of their name, `dims.badge`, or for SkatGo its list's mark; name, day), the
+  title (`landingHeading`; a lesson's without its number, the human: 「课程前面不要加1，2，3那个橙色的编号」), the author's line (a player's picture of their name, `dims.badge`, or for SkatGo its list's mark; name, day), the
   text and pictures (`ForumBody`), and its actions: "Reply" (lucide's `Reply`, `info`) and small round icon buttons
   (`dims.iconButtonSm`, a `hairline`) — report (`Flag`; the human: 「举报按钮一定要小，目前太大」), delete (`Trash2`), the
   official's hide and show (`EyeOff`, `Eye`) — and "Let search engines index it" (`quiet`), a choice opening its reason

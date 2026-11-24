@@ -1,11 +1,13 @@
+import { randomBytes } from 'node:crypto'
 import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
 import {
-  ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_LANGS, FORUM_SECTIONS, FORUM_SORTS, OFFICIAL_SECTIONS, PAGE_SIZE,
-  PARTICIPANTS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumAnnouncement, type ForumComment, type ForumList,
+  ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_LANGS, FORUM_SECTIONS, FORUM_SORTS, IMAGE_BYTES, IMAGE_ID,
+  MENTIONS_PER_TEXT, MENTIONS_SHOWN, OFFICIAL_SECTIONS, PAGE_SIZE, PARTICIPANTS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX,
+  TITLE_MIN, type Face, type ForumAnnouncement, type ForumComment, type ForumList, type ForumMe, type ForumMention,
   type ForumNeighbour, type ForumPost, type ForumLang, type ForumPostSummary, type ForumReport, type ForumSection,
-  type ForumThread, plainText, postIndexable,
+  type ForumThread, imageTypeOf, mentionCandidates, plainText, postIndexable,
 } from '../../app/src/lib/forum'
 import { nameOf } from './daily'
 import { Rejected, secretEquals } from './model'
@@ -16,7 +18,9 @@ import { type Translation, translateForAll, translationsOf } from './translate'
 // asks of a host — a report, the official hiding with a reason, authors deleting their own. The web service
 // calls these routes with the admission key and names the viewer: a signed-in account (`user:<Clerk id>`) or
 // nobody, and whether the account is the official's. Only names leave here, never a player id: whether
-// something is the viewer's own travels as `mine`. Nothing here notifies anyone (the human: 「也不用通知」).
+// something is the viewer's own travels as `mine`, and a player's picture as their face (SKATGO-232). Nothing here
+// notifies anyone outside the site: an "@Name" is kept for that player's /profile and the count on their avatar (SKATGO-232,
+// the human: 「如果有人在论坛里at这个用户，就要显示提示角标，profile里显示最新的at的消息」).
 
 const DAY = 24 * 60 * 60 * 1000
 
@@ -51,6 +55,14 @@ const moderateInput = z.discriminatedUnion('action', [
   z.object({ ...author, action: z.enum(['index', 'unindex']), post: id }).strict(),
 ])
 const latestInput = z.object({ lang }).strict()
+const meInput = z.object({ ...author }).strict()
+/** An uploaded picture, base64: at most `IMAGE_BYTES` once decoded. */
+const image = z.string().max(Math.ceil(IMAGE_BYTES / 3) * 4).regex(/^[A-Za-z0-9+/]+={0,2}$/)
+const faceInput = z.discriminatedUnion('action', [
+  z.object({ ...author, action: z.literal('refresh') }).strict(),
+  z.object({ ...author, action: z.literal('upload'), image }).strict(),
+])
+const imageInput = z.object({ id: z.string().regex(IMAGE_ID) }).strict()
 
 /** Exactly one of a post or a comment. */
 const one = (i: { post?: number; comment?: number }) => target.parse(i.post !== undefined ? { post: i.post } : { comment: i.comment })
@@ -60,8 +72,13 @@ const num = (v: unknown) => Number(v)
 type PostRow = {
   id: string; section: string; author: string; official: boolean; title: string; body: string
   indexed: boolean; hidden_reason: string | null; created_at: string; last_activity: string; name: string | null; comments: string
-  number: string | null; participants: string[] | null
+  number: string | null; participants: { name: string; seed: string | null; image: string | null }[] | null
+  face_seed: string | null; face_image: string | null
 }
+
+/** A face from its row: the picture uploaded, the seed drawn, or the picture of the name. */
+const faceOf = (seed: string | null | undefined, image: string | null | undefined): Face =>
+  image ? { image } : seed ? { seed } : null
 
 /** A text's translation when it was written in a language other than `lang`. */
 const other = (known: Map<string, Translation>, text: string, lang: ForumLang | undefined) => {
@@ -80,7 +97,10 @@ function summary(r: PostRow, who: string | null, known: Map<string, Translation>
   const translated = body || title
     ? { from: (body ?? title)!.from, title: title?.text ?? r.title, excerpt: body ? plainText(body.text, 160) : p.excerpt }
     : null
-  return { ...p, indexable: postIndexable(p), translated, number: r.number === null ? null : num(r.number), participants: r.participants ?? [] }
+  return {
+    ...p, indexable: postIndexable(p), translated, number: r.number === null ? null : num(r.number),
+    participants: (r.participants ?? []).map((w) => ({ name: w.name, face: faceOf(w.seed, w.image) })), face: faceOf(r.face_seed, r.face_image),
+  }
 }
 
 /** The texts a row shows, for the translations to look up. */
@@ -90,15 +110,16 @@ const textsOf = (rows: PostRow[]) => rows.flatMap((r) => [r.title, r.body])
 // (SKATGO-231), and a lesson's place among the lessons everyone sees, by publication. Hidden posts and comments are
 // seen only by their author and the official: `$1` is the viewer (or null), `$2` whether the viewer is official.
 const POSTS = `
-  SELECT p.*, d.nickname AS name,
+  SELECT p.*, d.nickname AS name, a.seed AS face_seed, a.image_id AS face_image,
     (SELECT count(*) FROM forum_comments c WHERE c.post_id = p.id AND c.hidden_reason IS NULL) AS comments,
-    (SELECT array_agg(w.nickname ORDER BY w.last DESC) FROM (
-      SELECT cd.nickname, max(c.created_at) AS last FROM forum_comments c JOIN daily_players cd ON cd.player = c.author
+    (SELECT array_agg(json_build_object('name', w.nickname, 'seed', w.seed, 'image', w.image_id) ORDER BY w.last DESC) FROM (
+      SELECT cd.nickname, ca.seed, ca.image_id, max(c.created_at) AS last FROM forum_comments c
+        JOIN daily_players cd ON cd.player = c.author LEFT JOIN player_avatars ca ON ca.player = c.author
        WHERE c.post_id = p.id AND c.hidden_reason IS NULL AND NOT c.official
-       GROUP BY cd.nickname ORDER BY last DESC LIMIT ${PARTICIPANTS}) w) AS participants,
+       GROUP BY cd.nickname, ca.seed, ca.image_id ORDER BY last DESC LIMIT ${PARTICIPANTS}) w) AS participants,
     CASE WHEN p.section = 'guides' THEN (SELECT count(*) FROM forum_posts g WHERE g.section = 'guides' AND g.hidden_reason IS NULL
       AND (g.created_at, g.id) <= (p.created_at, p.id)) END AS number
-    FROM forum_posts p LEFT JOIN daily_players d ON d.player = p.author`
+    FROM forum_posts p LEFT JOIN daily_players d ON d.player = p.author LEFT JOIN player_avatars a ON a.player = p.author`
 
 /** A text's key in the translations: its sha256, as translate.ts keys it. */
 const hashOf = (column: string) => `encode(sha256(convert_to(${column}, 'UTF8')), 'hex')`
@@ -142,7 +163,8 @@ export async function forumPost(store: Store, i: z.infer<typeof postInput>): Pro
   const { rows } = await store.pool.query(`${POSTS} WHERE p.id = $3 AND ${VISIBLE}`, [i.player, i.official, i.id])
   if (!rows[0]) throw new NotFound()
   const { rows: comments } = await store.pool.query(
-    `SELECT c.*, d.nickname AS name FROM forum_comments c LEFT JOIN daily_players d ON d.player = c.author
+    `SELECT c.*, d.nickname AS name, a.seed AS face_seed, a.image_id AS face_image FROM forum_comments c
+       LEFT JOIN daily_players d ON d.player = c.author LEFT JOIN player_avatars a ON a.player = c.author
       WHERE c.post_id = $3 AND (c.hidden_reason IS NULL OR $2::boolean OR c.author = $1) ORDER BY c.created_at, c.id`,
     [i.player, i.official, i.id],
   )
@@ -154,6 +176,7 @@ export async function forumPost(store: Store, i: z.infer<typeof postInput>): Pro
     return {
       id: num(c.id), author: c.name ?? '', official: c.official, body: c.body, createdAt: num(c.created_at),
       hidden: c.hidden_reason, mine: i.player !== null && c.author === i.player, translated: t ? { from: t.from, body: t.text } : null,
+      face: faceOf(c.face_seed, c.face_image),
     }
   })
   const head = summary(rows[0], i.player, known, i.lang)
@@ -171,6 +194,27 @@ async function withinLimit(c: pg.PoolClient, table: 'forum_posts' | 'forum_comme
   if (rows[0].n >= limit) throw new TooMany()
 }
 
+/** The players a text names with "@" (SKATGO-232), kept for each one's /profile: for each "@" the longest name an
+ *  account holds, never the writer's own, at most `MENTIONS_PER_TEXT` players. */
+async function mention(c: pg.PoolClient, who: string, post: number, comment: number | null, body: string, now: number) {
+  const groups = mentionCandidates(body)
+  if (!groups.length) return
+  const { rows } = await c.query(
+    `SELECT player, lower(nickname) AS name FROM daily_players WHERE lower(nickname) = ANY($1) AND player LIKE 'user:%' AND player <> $2`,
+    [groups.flat(), who])
+  const byName = new Map(rows.map((r) => [r.name as string, r.player as string]))
+  const named = new Set<string>()
+  for (const names of groups) {
+    const found = names.findLast((n) => byName.has(n))
+    if (found) named.add(byName.get(found)!)
+  }
+  for (const player of [...named].slice(0, MENTIONS_PER_TEXT)) {
+    await c.query(
+      `INSERT INTO forum_mentions (player, post_id, comment_id, created_at) VALUES ($1, $2, $3, $4)
+       ON CONFLICT (player, post_id, (coalesce(comment_id, 0))) DO NOTHING`, [player, post, comment, now])
+  }
+}
+
 export async function forumCreate(store: Store, i: z.infer<typeof createInput>, now = Date.now()) {
   if (OFFICIAL_SECTIONS.includes(i.section) && !i.official) throw new Forbidden()
   return store.transaction(async (c) => {
@@ -182,6 +226,7 @@ export async function forumCreate(store: Store, i: z.infer<typeof createInput>, 
        VALUES ($1, $2, $3, $4, $5, $6, $6) RETURNING id`,
       [i.section, i.player, i.official, i.title, i.body, now],
     )
+    await mention(c, i.player, num(rows[0].id), null, i.body, now)
     return { id: num(rows[0].id), title: i.title }
   }).then((made) => {
     // Translated now, so readers of the other language find it ready.
@@ -201,6 +246,7 @@ export async function forumComment(store: Store, i: z.infer<typeof commentInput>
       [i.post, i.player, i.official, i.body, now],
     )
     await c.query('UPDATE forum_posts SET last_activity = $2 WHERE id = $1', [i.post, now])
+    await mention(c, i.player, i.post, num(made[0].id), i.body, now)
     return { id: num(made[0].id) }
   }).then((made) => {
     translateForAll(store, [i.body])
@@ -315,6 +361,71 @@ export async function forumLatest(store: Store, i: z.infer<typeof latestInput>, 
   return { announcement: { ...found, translated: t ? { from: t.from, title: t.text } : null } }
 }
 
+/** The mentions of `who` everyone may still see: those in hidden posts and comments are left out. */
+const MENTIONS = `
+  FROM forum_mentions m JOIN forum_posts p ON p.id = m.post_id LEFT JOIN forum_comments c ON c.id = m.comment_id
+  WHERE m.player = $1 AND p.hidden_reason IS NULL AND (m.comment_id IS NULL OR c.hidden_reason IS NULL)`
+
+/** How many mentions the account has not seen, for the count on its avatar (SKATGO-232). */
+export async function forumUnread(store: Store, i: z.infer<typeof meInput>) {
+  const { rows } = await store.pool.query(`SELECT count(*)::int AS n ${MENTIONS} AND m.read_at IS NULL`, [i.player])
+  return { unread: rows[0].n as number }
+}
+
+/** The account's own, for /profile (SKATGO-232): its name — given now if it has none, as writing in the forum gives
+ *  one — its face, and its latest mentions: who, in which post, one line of the text, when. */
+export async function forumMe(store: Store, i: z.infer<typeof meInput>, now = Date.now()): Promise<ForumMe> {
+  const name = await store.transaction((c) => nameOf(c, i.player, now))
+  const own = (await store.pool.query('SELECT seed, image_id FROM player_avatars WHERE player = $1', [i.player])).rows[0]
+  const { rows } = await store.pool.query(
+    `SELECT m.id, m.post_id, m.comment_id, m.created_at, m.read_at, p.title, coalesce(c.body, p.body) AS body,
+            coalesce(c.official, p.official) AS official, d.nickname AS name, a.seed, a.image_id
+     ${MENTIONS.replace('WHERE', `LEFT JOIN daily_players d ON d.player = coalesce(c.author, p.author)
+       LEFT JOIN player_avatars a ON a.player = coalesce(c.author, p.author) WHERE`)}
+     ORDER BY m.created_at DESC, m.id DESC LIMIT ${MENTIONS_SHOWN}`, [i.player])
+  const mentions: ForumMention[] = rows.map((r) => ({
+    id: num(r.id), by: r.name ?? '', face: faceOf(r.seed, r.image_id), official: r.official, postId: num(r.post_id), postTitle: r.title,
+    commentId: r.comment_id === null ? null : num(r.comment_id), excerpt: plainText(r.body, 140), createdAt: num(r.created_at),
+    unread: r.read_at === null,
+  }))
+  return { name, face: faceOf(own?.seed, own?.image_id), unread: (await forumUnread(store, i)).unread, mentions }
+}
+
+/** The account saw its mentions: none is new any more. */
+export async function forumSeen(store: Store, i: z.infer<typeof meInput>, now = Date.now()) {
+  await store.pool.query('UPDATE forum_mentions SET read_at = $2 WHERE player = $1 AND read_at IS NULL', [i.player, now])
+  return { unread: 0 }
+}
+
+/** A player draws a new look, which also deletes a picture they uploaded, or uploads a picture in place of the one
+ *  before (SKATGO-232). The picture is the browser's 256×256 WebP or JPEG; the service checks its bytes and size. */
+export async function forumFace(store: Store, i: z.infer<typeof faceInput>, now = Date.now()): Promise<{ face: Face }> {
+  if (i.action === 'refresh') {
+    const seed = randomBytes(8).toString('hex')
+    await store.pool.query(
+      `INSERT INTO player_avatars (player, seed, updated_at) VALUES ($1, $2, $3) ON CONFLICT (player)
+       DO UPDATE SET seed = EXCLUDED.seed, image_id = NULL, image = NULL, image_type = NULL, updated_at = EXCLUDED.updated_at`,
+      [i.player, seed, now])
+    return { face: { seed } }
+  }
+  const bytes = Buffer.from(i.image, 'base64')
+  const type = imageTypeOf(bytes)
+  if (!type || bytes.length > IMAGE_BYTES) throw new Rejected('image_refused')
+  const id = randomBytes(16).toString('hex')
+  await store.pool.query(
+    `INSERT INTO player_avatars (player, image_id, image, image_type, updated_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (player)
+     DO UPDATE SET image_id = EXCLUDED.image_id, image = EXCLUDED.image, image_type = EXCLUDED.image_type, updated_at = EXCLUDED.updated_at`,
+    [i.player, id, bytes, type, now])
+  return { face: { image: id } }
+}
+
+/** An uploaded picture's bytes, by its id, for the web to serve. */
+export async function forumImage(store: Store, i: z.infer<typeof imageInput>) {
+  const { rows } = await store.pool.query('SELECT image, image_type FROM player_avatars WHERE image_id = $1', [i.id])
+  if (!rows[0]?.image) throw new NotFound()
+  return { type: rows[0].image_type as string, data: (rows[0].image as Buffer).toString('base64') }
+}
+
 /** Every post search engines may read, for the forum's sitemap. */
 export async function forumSitemap(store: Store) {
   const { rows } = await store.pool.query(
@@ -326,7 +437,8 @@ export async function forumSitemap(store: Store) {
 /** The routes, behind the admission key. */
 export function forumRoutes(store: Store, key: string, ready: () => boolean) {
   const router = express.Router()
-  router.use(express.json({ limit: '64kb' }))
+  // An uploaded picture comes as base64 (SKATGO-232): at most `IMAGE_BYTES`, a third more written out.
+  router.use(express.json({ limit: '128kb' }))
   router.use((req, res, nextHandler) => {
     if (!ready()) return void res.status(503).json({ error: 'not_ready' })
     if (!secretEquals(req.get('x-admission-key'), key)) return void res.status(403).json({ error: 'admission_denied' })
@@ -357,6 +469,11 @@ export function forumRoutes(store: Store, key: string, ready: () => boolean) {
   router.post('/moderate', run(async (body) => forumModerate(store, moderateInput.parse(body))))
   router.post('/latest', run(async (body) => forumLatest(store, latestInput.parse(body))))
   router.post('/sitemap', run(async () => forumSitemap(store)))
+  router.post('/me', run(async (body) => forumMe(store, meInput.parse(body))))
+  router.post('/unread', run(async (body) => forumUnread(store, meInput.parse(body))))
+  router.post('/seen', run(async (body) => forumSeen(store, meInput.parse(body))))
+  router.post('/face', run(async (body) => forumFace(store, faceInput.parse(body))))
+  router.post('/image', run(async (body) => forumImage(store, imageInput.parse(body))))
   router.use((_err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     res.status(400).json({ error: 'invalid_request' })
   })

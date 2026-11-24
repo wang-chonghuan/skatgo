@@ -40,6 +40,12 @@ export const dims = stylex.defineVars({
   iconButtonSm: '32px',
   /** How far each of a line's commenters' avatars lies over the one before (SKATGO-231). */
   avatarOverlap: '-8px',
+  /** A player's own avatar at the top of /profile (SKATGO-232). */
+  avatarProfile: '96px',
+  /** The count of unread mentions on the header's account picture (SKATGO-232): a round mark at its corner, a little
+   *  outside it. */
+  mentionBadge: '18px',
+  mentionBadgeOffset: '-4px',
   /** The front page header's mark (SKATGO-31): the new icon's square carries white margin, so it is shown larger.
    *  Smaller since SKATGO-161, with the lower header. */
   landingMark: '44px',

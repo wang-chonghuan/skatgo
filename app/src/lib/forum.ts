@@ -3,7 +3,7 @@ import { type Card, type Rank, type Suit } from './skat/cards'
 // The forum (SKATGO-118): the official's announcements and articles, players' posts, and flat comments under
 // every post — the human: 「评论不要搞嵌套……用户自己 @ 一个人就行，也不用通知」. One forum per language. The
 // rules here are shared by the multiplayer service, which stores and judges every write, and by the pages,
-// which show and link what it answers. Nothing here sends a notification, and nothing ever will.
+// which show and link what it answers. Nothing here sends a notification outside the site: an "@Name" shows on that player's own page (SKATGO-232).
 //
 // One forum for both languages (the human, in review: 「德语和英语论坛不要分开」): the pages' own words follow the
 // site's language, and a post or comment is in whatever language its author writes (「别人想发什么语言就发什么语言」);
@@ -44,6 +44,78 @@ export const AVATAR_STYLE = 'a3'
  *  written, or of a player's name, drawn by the web service (lib/forum-handler.ts), the same text always the same
  *  picture. */
 export const avatarPath = (seed: string) => `/api/forum/avatar/${AVATAR_STYLE}/${encodeURIComponent(seed.slice(0, AVATAR_SEED_MAX))}.svg`
+
+/** A player's face (SKATGO-232, the human: 「每个用户打开profile页面，可以点击，刷新自己的头像。还能上传」): null for the
+ *  picture of their name, as before; a seed they drew a new look from; or the id of the picture they uploaded. Never
+ *  the account: only names and faces leave the forum. */
+export type Face = { seed: string } | { image: string } | null
+
+/** An uploaded picture's id: 32 hexadecimal digits, new with every upload, so its address is kept for a year. */
+export const IMAGE_ID = /^[0-9a-f]{32}$/
+
+/** An uploaded picture's address. */
+export const imagePath = (id: string) => `/api/forum/avatar/u/${id}`
+
+/** A face's picture: the uploaded one, or the drawing of its seed, or of the player's name. */
+export const facePath = (face: Face, name: string) =>
+  face && 'image' in face ? imagePath(face.image) : avatarPath(face?.seed ?? name)
+
+/** An uploaded picture (SKATGO-232): the browser crops it square and draws it at this size, as WebP where it can
+ *  write WebP, as JPEG where not, at most `IMAGE_BYTES`; the service takes nothing else. A file chosen may be
+ *  at most `FILE_BYTES` before that. */
+export const IMAGE_SIZE = 256
+export const IMAGE_BYTES = 64 * 1024
+export const FILE_BYTES = 10 * 1024 * 1024
+export const IMAGE_TYPES = ['image/webp', 'image/jpeg'] as const
+export type ImageType = (typeof IMAGE_TYPES)[number]
+/** The files a player may choose. */
+export const FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
+
+/** The type an uploaded picture's bytes say it is, or null. */
+export function imageTypeOf(bytes: Uint8Array): ImageType | null {
+  const at = (i: number, ...b: number[]) => b.every((v, k) => bytes[i + k] === v)
+  if (at(0, 0xff, 0xd8, 0xff)) return 'image/jpeg'
+  if (at(0, 0x52, 0x49, 0x46, 0x46) && at(8, 0x57, 0x45, 0x42, 0x50)) return 'image/webp'
+  return null
+}
+
+/** How many players one post or comment may mention, and how many of a player's mentions /profile lists. */
+export const MENTIONS_PER_TEXT = 10
+export const MENTIONS_SHOWN = 20
+
+/** The names an "@" in a text may stand for (SKATGO-232): for each "@", the words after it, one, two, … up to
+ *  four, each without the marks that end a sentence, lower case — a name has spaces ("@Flinker Fuchs"). The
+ *  service keeps, for each "@", the longest that is a player's name. */
+export function mentionCandidates(text: string): string[][] {
+  const out: string[][] = []
+  for (const m of text.matchAll(/(?<![\p{L}\p{N}_])@([^\s@][^@\n]*)/gu)) {
+    const words = m[1].trim().split(/\s+/u).slice(0, 4)
+    const names: string[] = []
+    for (let n = 1; n <= words.length; n++) {
+      const name = words.slice(0, n).join(' ').replace(/[.,!?:;)\]"'»“”]+$/u, '').normalize('NFC').toLowerCase()
+      if (name && !names.includes(name)) names.push(name)
+    }
+    if (names.length) out.push(names)
+  }
+  return out
+}
+
+/** A mention of the viewer, as /profile lists it: who, in which post, one line of the text, when; whether read. */
+export type ForumMention = {
+  id: number
+  by: string
+  face: Face
+  official: boolean
+  postId: number
+  postTitle: string
+  commentId: number | null
+  excerpt: string
+  createdAt: number
+  unread: boolean
+}
+
+/** The viewer's own: their name and face, how many mentions they have not seen, and the latest. */
+export type ForumMe = { name: string; face: Face; unread: number; mentions: ForumMention[] }
 
 /** The sections an author may post in. */
 export const sectionsFor = (official: boolean): ForumSection[] => FORUM_SECTIONS.filter((s) => official || !OFFICIAL_SECTIONS.includes(s))
@@ -91,9 +163,11 @@ export type ForumPostSummary = {
   translated: { from: string; title: string; excerpt: string; body?: string } | null
   /** A lesson's place in the advanced course, by publication (SKATGO-231): 1 for the first. */
   number: number | null
-  /** The players who commented on it, newest first, at most `PARTICIPANTS` names — SkatGo's own comments and deleted
+  /** The players who commented on it, newest first, at most `PARTICIPANTS`, by name and face — SkatGo's own comments and deleted
    *  players' not among them (SKATGO-231). */
-  participants: string[]
+  participants: { name: string; face: Face }[]
+  /** The author's face (SKATGO-232). */
+  face: Face
 }
 
 export type ForumComment = {
@@ -106,6 +180,8 @@ export type ForumComment = {
   mine: boolean
   /** In the reader's language, when it was written in another (SKATGO-124); null otherwise or while being made. */
   translated: { from: string; body: string } | null
+  /** The author's face (SKATGO-232). */
+  face: Face
 }
 
 /** A lesson's neighbours in the advanced course, by publication. */

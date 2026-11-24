@@ -2,14 +2,18 @@ import type { Store } from './store'
 
 // An account deleted by its owner (SKATGO-185): what SkatGo holds under it goes — its entries on the daily boards, its
 // nickname, its record of play, its practice answers, its weeks' notes, its shared results, the referrals it is part of,
-// its reports — and so do the games of every device signed in to it (SKATGO-182: they are the account's). Its forum
+// its reports, its face and picture and the mentions of it (SKATGO-232) — and so do the games of every device signed in to it (SKATGO-182: they are the account's). Its forum
 // posts and comments stay, under no one (the human: 「帖子改匿名」). Private rooms are left to expire as they do.
 
 /** The author of a post or comment whose account was deleted: no player, so no name. */
 export const GONE = 'gone'
 
 /** The tables keyed by the player alone. */
-const OWN = ['daily_entries', 'daily_players', 'play_deals', 'ladder_answers', 'bidding_answers', 'profile_notes', 'dod_shares']
+const OWN = [
+  'daily_entries', 'daily_players', 'play_deals', 'ladder_answers', 'bidding_answers', 'profile_notes', 'dod_shares',
+  // Its face and uploaded picture, and the mentions of it (SKATGO-232).
+  'player_avatars', 'forum_mentions',
+]
 
 /**
  * Deletes everything held under the account `who` (`user:<id>`), at once; asking again finds nothing more to delete.

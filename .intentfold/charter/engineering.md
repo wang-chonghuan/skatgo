@@ -30,7 +30,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
 - **Accounts are Clerk's** (`@clerk/tanstack-react-start`, SKATGO-12): the users live at Clerk, not
   here. An account is deleted by its owner (SKATGO-185): `/api/account/delete` (`lib/account-handler.ts`, signed in,
   JSON only) has the game service forget it first — `/daily/forget` (`multiplayer/src/forget.ts`) deletes every row under
-  the account and the `anon:` ids joined to it in one transaction, and gives its forum posts and comments the author `gone`,
+  the account and the `anon:` ids joined to it in one transaction (its avatar and picture and the mentions of it among
+  them, SKATGO-232), and gives its forum posts and comments the author `gone`,
   which has no name and shows as a deleted player — then deletes the user at Clerk (404 counts as done); the answer sets a
   new device cookie. A local test account, which has no Clerk user, loses its cookie instead. Accounts are optional: the course and free play require none; opening a private
   table does (SKATGO-117), writing in the forum (SKATGO-118), and playing the daily tournament
@@ -154,7 +155,17 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   account is the official's: `FORUM_OFFICIALS`, a comma list of Clerk account ids in the web's environment. The
   rules both sides share — sections, limits, what may be indexed, the text's marks, the address — are
   `app/src/lib/forum.ts`. Only names leave the service: an author stands under their leaderboard name
-  (`nameOf` in `src/daily.ts`), and whether something is the viewer's travels as `mine`. Nothing notifies anyone.
+  (`nameOf` in `src/daily.ts`), and whether something is the viewer's travels as `mine`. A player's picture travels
+  as their `face` (SKATGO-232): null for the picture of their name, `{ seed }` for a look they drew, `{ image }` for the
+  id of a picture they uploaded — never the account. `player_avatars` keeps one row a player (the seed, or the picture's
+  bytes, type and id, a new random id with each upload, the old picture overwritten); the web serves a picture at
+  `/api/forum/avatar/u/<id>` (immutable, a year), asking the service's `/forum/image`. The browser makes the picture
+  (`lib/face-image.ts`: the middle square, 256×256 on white, WebP or else JPEG, ≤ 64 KB); the service takes only WebP or
+  JPEG by their bytes (`imageTypeOf`) within that size. A post or comment's "@Name" — for each "@" the longest name an
+  account holds (`mentionCandidates`), never the writer's own, at most ten players — is a row in `forum_mentions`
+  (deleted with its post or comment, not shown while either is hidden). The account's own ops, signed in only: `me`
+  (name, face, unread count, the latest twenty), `unread`, `seen`, `face` (`refresh` | `upload`). The header asks
+  `unread` on each page but /profile (`lib/use-unread.ts`); /profile marks them seen. Nothing goes out of the site.
   What people write comes in the reader's language (SKATGO-124): list and post take the page's `lang`, and each text
   written in another carries `translated`. `multiplayer/src/translate.ts` keeps one table, `translations` (a text's
   sha256, the language, the language it was written in, the text in that language), for any text anywhere; what is
@@ -231,6 +242,7 @@ also built from the repository root. Neither project imports the other's runtime
 | `app/src/lib/room-handler.ts`, `room-ticket.ts`, `room-code.ts`, `room-client.ts`, `app/src/components/skat/table-room.tsx`; `multiplayer/src/room.ts`, `model.ts`, `referral.ts` | private rooms (SKATGO-61, rooms since SKATGO-163): `/api/room/ticket`, `/api/room/mine` and `/api/room/referral`, the signed admission ticket, the room's number, the browser's room client, the friends page's cards and the room's page; the room, its seats (`claimSeat`, `freeSeat`) and the service's `/rooms` routes (an account's room, a number's status, referrals) |
 | `app/src/lib/forum.ts`, `forum-handler.ts`, `forum-api.ts`, `app/src/components/skat/forum-page.tsx`, `forum-ui.tsx`, `forum-body.tsx`, `forum-announcement.tsx`; `multiplayer/src/forum.ts` | the forum (SKATGO-118): the shared rules (sections — three since SKATGO-231, `news` the forum's own page, `talk` the players', `guides` the advanced course; the orders `FORUM_SORTS`, newest or most commented; `DAILY_LIMITS`, `postIndexable`, `slugOf`, the text's marks in `parseBody`), a list's search over a post's title and text as written and in the reader's language (the translations' sha256 keys), the lessons' numbers by publication and each one's neighbours, the web's `/api/forum/*` and `/sitemap-forum.xml`, the loaders' reads (`createIsomorphicFn`: on the server straight to the forum as the request's viewer, in the browser through `/api/forum`; the announcement cached a minute on the server), the pages and their few pieces of their own (`forum-ui.tsx`: avatar, commenters, small icon button; ui.md), the avatars — DiceBear's Avataaars of a post's title or a player's name, in its standard looks, drawn by the web at `/api/forum/avatar/<style>/<text>.svg` (`avatarPath`; the style `AVATAR_STYLE` in the address, raised with each change of style, as a browser keeps an avatar for a year) from `@dicebear/core` and `@dicebear/avataaars` (exact versions, approved in SKATGO-231), never by dicebear.com, a year in the browser's cache; the first try, `@multiavatar/multiavatar` (also approved there), is kept for now at `/api/forum/multiavatar/<text>.svg` and shown nowhere — and the service's routes; the migration moves SKATGO-186's `articles` to `talk`; tested by `lib/forum.test.ts` and `multiplayer/test/forum.test.ts` |
 | `app/src/lib/test-account.ts` | local test accounts for acceptance (SKATGO-117), read only by `session.ts` and the root route |
+| `app/src/components/skat/profile-me.tsx`, `app/src/lib/face-image.ts`, `app/src/lib/use-unread.ts` | an account's avatar and its forum mentions (SKATGO-232): the top of /profile (new look, upload, the mentions list, marking them seen), the browser's picture making, and the header's count; the service side is in the forum's row |
 | `app/src/lib/account-handler.ts`, `app/src/components/skat/delete-account-page.tsx`; `multiplayer/src/forget.ts` | deleting an account (SKATGO-185): the web's `/api/account/delete`, the page, and the service's `/daily/forget`; tested by `multiplayer/test/forget.test.ts` |
 | `app/public/friends/`, `app/src/lib/friends.ts` | About SkatGo's recommended sites (SKATGO-198): each site's own picture, cut square to 80×80 WebP from that site's own files (32karten's header jack on its banner blue, the "P" of pagat's banner wordmark on its cream, DSkV's suit icon, The Checker Maven's header checker), and their names, addresses and one-line notes |
 | `app/public/sw.js`, `app/src/lib/service-worker.ts`, `app/src/components/skat/offline-page.tsx` | the service worker (SKATGO-185), its registration, and the offline page it keeps |

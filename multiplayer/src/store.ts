@@ -117,6 +117,18 @@ export class Store {
         -- Three lists since SKATGO-231: SkatGo's articles of before are announcements, at the same addresses, the
         -- discussion the players' own.
         UPDATE forum_posts SET section = 'news' WHERE section = 'articles';
+        -- A player's face (SKATGO-232): the seed of the look they drew, or the picture they uploaded (256×256 WebP or
+        -- JPEG, its id new with each upload); no row is the picture of their name.
+        CREATE TABLE IF NOT EXISTS player_avatars (
+          player text PRIMARY KEY, seed text, image_id text UNIQUE, image bytea, image_type text, updated_at bigint NOT NULL
+        );
+        -- Who was named with "@" in a post or comment (SKATGO-232), once each, and when they saw it on /profile.
+        CREATE TABLE IF NOT EXISTS forum_mentions (
+          id bigserial PRIMARY KEY, player text NOT NULL, post_id bigint NOT NULL REFERENCES forum_posts(id) ON DELETE CASCADE,
+          comment_id bigint REFERENCES forum_comments(id) ON DELETE CASCADE, created_at bigint NOT NULL, read_at bigint
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS forum_mentions_once ON forum_mentions (player, post_id, (coalesce(comment_id, 0)));
+        CREATE INDEX IF NOT EXISTS forum_mentions_player ON forum_mentions (player, created_at DESC);
         -- A signed-in player's finished free deals (SKATGO-128), for their record of play: once per game (its pool, deal
         -- and start), with the day it was played and, in the player's game and in the AI's game of the same deal, the
         -- three seats' Seeger-Fabian scores ([0] the player's), who declared and whether they won, and since SKATGO-169 which

@@ -1,7 +1,7 @@
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest, setResponseHeader } from '@tanstack/react-start/server'
 
-import type { ForumAnnouncement, ForumList, ForumReport, ForumSection, ForumSort, ForumThread } from './forum'
+import type { Face, ForumAnnouncement, ForumList, ForumMe, ForumReport, ForumSection, ForumSort, ForumThread } from './forum'
 import { askForum } from './forum-handler'
 import { getLocale } from '~/paraglide/runtime'
 
@@ -73,3 +73,10 @@ export type Moderation =
   | { action: 'dismiss'; report: number }
   | { action: 'index' | 'unindex'; post: number }
 export const moderate = (m: Moderation) => viaApi<{ done: true }>('moderate', m)
+
+// The account's own (SKATGO-232): its face and mentions for /profile, their count for the header.
+export const readMe = () => viaApi<ForumMe>('me', {})
+export const readUnread = () => viaApi<{ unread: number }>('unread', {})
+export const markSeen = () => viaApi<{ unread: number }>('seen', {})
+export const drawNewLook = () => viaApi<{ face: Face }>('face', { action: 'refresh' })
+export const uploadFace = (image: string) => viaApi<{ face: Face }>('face', { action: 'upload', image })

@@ -7,7 +7,7 @@ import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 
 import {
   COMMENT_MAX, DAILY_LIMITS, FORUM_SECTIONS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumComment,
   type ForumNeighbour, type ForumPost, type ForumPostSummary, type ForumReport, type ForumSection, type ForumSort,
-  type ForumViewer, postParam, sectionsFor,
+  type ForumViewer, type Face, avatarPath, facePath, postParam, sectionsFor,
 } from '~/lib/forum'
 import { track } from '~/lib/analytics'
 import { addComment, createPost, deleteOwn, moderate, readReports, report } from '~/lib/forum-api'
@@ -94,10 +94,11 @@ function SectionMark({ section }: { section: ForumSection }) {
   )
 }
 
-/** Who wrote a post or comment, beside their name: SkatGo's list's mark, or the player's avatar from their name. */
-function AuthorMark({ of, section }: { of: { official: boolean; author: string }; section: ForumSection }) {
+/** Who wrote a post or comment, beside their name: SkatGo's list's mark, or the player's avatar. */
+function AuthorMark({ of, section }: { of: { official: boolean; author: string; face: Face }; section: ForumSection }) {
   if (of.official || !of.author) return <SectionMark section={section} />
-  return <Avatar seed={of.author} small />
+  // Their own face since SKATGO-232: a look they drew or a picture they uploaded, else the picture of their name.
+  return <Avatar src={facePath(of.face, of.author)} small />
 }
 
 type View = { section?: ForumSection; q?: string; sort?: ForumSort; page?: number }
@@ -210,7 +211,7 @@ function PostRow({ post }: { post: ForumPostSummary }) {
   return (
     <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} data-number={post.number ?? undefined} data-comments={post.comments} {...stylex.props(styles.row)}>
       {/* Each post's own picture, from its title as written (the human: 「每个帖子都根据标题自动生成一个这样的图片」). */}
-      <Avatar seed={post.title} />
+      <Avatar src={avatarPath(post.title)} />
       <div {...stylex.props(styles.rowBody)}>
         <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.appBtnStrong, styles.rowTitle)}>
           {post.translated?.title ?? post.title}
@@ -223,7 +224,7 @@ function PostRow({ post }: { post: ForumPostSummary }) {
         {post.hidden !== null ? <p {...stylex.props(typography.small, styles.bad)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
       </div>
       <span {...stylex.props(styles.rowEnd)}>
-        <Participants names={post.participants} />
+        <Participants people={post.participants} />
         <span aria-label={commentsOf(post.comments)} {...stylex.props(typography.smallBold, styles.count, post.comments > 0 && styles.countSome)}>
           <MessageSquare size={icon.small} aria-hidden />
           {post.comments}
@@ -437,7 +438,7 @@ function Neighbour({ to, testId, end }: { to: ForumNeighbour; testId: string; en
 function CommentRow({ comment: c, post, viewer, onReply }: { comment: ForumComment; post: ForumPost; viewer: ForumViewer; onReply: (name: string) => void }) {
   const [original, setOriginal] = useState(false)
   return (
-    <li data-testid="forum-comment" data-comment-id={c.id} {...stylex.props(styles.padded, styles.entry, styles.commentRow)}>
+    <li id={`comment-${c.id}`} data-testid="forum-comment" data-comment-id={c.id} {...stylex.props(styles.padded, styles.entry, styles.commentRow)}>
       <Byline of={c} section={post.section} />
       {c.hidden !== null ? <p {...stylex.props(typography.small, styles.bad)}>{m.forum_hidden_note({ reason: c.hidden })}</p> : null}
       <ForumBody text={c.translated && !original ? c.translated.body : c.body} official={c.official} />

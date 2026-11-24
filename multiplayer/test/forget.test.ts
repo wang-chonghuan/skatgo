@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto'
 import pg from 'pg'
 import { dailyClaim } from '../src/daily'
 import { GONE, forgetPlayer } from '../src/forget'
-import { forumComment, forumCreate, forumPost } from '../src/forum'
+import { forumComment, forumCreate, forumFace, forumPost } from '../src/forum'
 import { idsOf, recordFreeDeal } from '../src/profile'
 import { Store } from '../src/store'
 import type { Played } from '../../app/src/lib/skat/profile'
@@ -19,7 +19,7 @@ const USER_TABLES: [string, string][] = [
   ['daily_entries', 'player'], ['daily_players', 'player'], ['play_deals', 'player'], ['ladder_answers', 'player'],
   ['bidding_answers', 'player'], ['profile_notes', 'player'], ['dod_shares', 'player'], ['account_referrals', 'account'],
   ['account_referrals', 'referrer'], ['forum_reports', 'reporter'], ['forum_posts', 'author'], ['forum_comments', 'author'],
-  ['player_aliases', 'player'], ['player_aliases', 'same_as'],
+  ['player_aliases', 'player'], ['player_aliases', 'same_as'], ['player_avatars', 'player'], ['forum_mentions', 'player'],
 ]
 
 test('forget: an account and its devices leave every table; its forum writing stays anonymous', { timeout: 60_000 }, async (t) => {
@@ -62,14 +62,19 @@ test('forget: an account and its devices leave every table; its forum writing st
   }
   await q("INSERT INTO account_referrals (account, referrer, room_id, created_at) VALUES ('user:anna', 'user:ben', 'r', 1), ('user:ben', 'user:anna', 'r', 1)")
   const post = await forumCreate(store, { player: 'user:anna', official: false, section: 'talk', title: 'Annas Frage zum Reizen', body: 'Wie hoch?' }, now)
-  await forumComment(store, { player: 'user:anna', official: false, post: post.id, body: 'Noch eine Frage' }, now + 1)
-  await forumComment(store, { player: 'user:ben', official: false, post: post.id, body: 'Bis 18' }, now + 2)
+  await forumComment(store, { player: 'user:anna', official: false, post: post.id, body: 'Noch eine Frage, @Ben?' }, now + 1)
+  await forumComment(store, { player: 'user:ben', official: false, post: post.id, body: '@Anna bis 18' }, now + 2)
+  // Their faces, Anna's an uploaded picture (SKATGO-232); each mentioned the other.
+  const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]).toString('base64')
+  await forumFace(store, { player: 'user:anna', official: false, action: 'upload', image: jpeg })
+  await forumFace(store, { player: 'user:ben', official: false, action: 'refresh' })
   await q("INSERT INTO forum_reports (post_id, reporter, created_at) VALUES ($1, 'user:anna', 1), ($1, 'user:ben', 2)", [post.id])
   const benBefore = await count('user:ben')
 
   assert.deepEqual(await forgetPlayer(store, 'user:anna'), { forgotten: true })
 
-  // Nothing is left under Anna or her device; Ben has everything he had but the two referrals that named Anna.
+  // Nothing is left under Anna or her device — her picture and the mention of her too; Ben has everything he had but the two
+  // referrals that named Anna, the mention of him in her comment among it.
   assert.equal(await count('user:anna'), 0)
   assert.equal(await count(a), 0)
   assert.equal(await count('user:ben'), benBefore - 2)

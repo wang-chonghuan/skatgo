@@ -14,6 +14,7 @@ import { carryGame } from '~/lib/free-api'
 import { dailyName, dailyNick, isError } from '~/lib/daily-api'
 import { setPerson, track } from '~/lib/analytics'
 import { useAccount } from '~/lib/use-account'
+import { useUnread } from '~/lib/use-unread'
 import { type Locale, getLocale, localizeHref, locales, setLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -106,13 +107,29 @@ export function Account({ shape = 'pill' }: { shape?: 'pill' | 'landing' }) {
       <Show when="signed-in">
         {/* The account's record of play first in its menu, where a player looks for it (SKATGO-128, the human:
             「应该是点profile头像就能看到入口」). */}
-        <UserButton>
-          <UserButton.MenuItems>
-            <UserButton.Link label={m.profile_title()} labelIcon={<ChartLine size={icon.header} strokeWidth={icon.outline} />} href={localizeHref('/profile')} />
-          </UserButton.MenuItems>
-        </UserButton>
+        <span {...stylex.props(styles.accountPicture)}>
+          <UserButton>
+            <UserButton.MenuItems>
+              <UserButton.Link label={m.profile_title()} labelIcon={<ChartLine size={icon.header} strokeWidth={icon.outline} />} href={localizeHref('/profile')} />
+            </UserButton.MenuItems>
+          </UserButton>
+          <MentionCount />
+        </span>
       </Show>
     </>
+  )
+}
+
+/** How many forum mentions the account has not seen (SKATGO-232, the human: 「如果有人在论坛里at这个用户，就要显示提示角标」):
+ *  a small round count at the corner of its picture, nothing when there are none; /profile lists them, and seeing it
+ *  clears the count. The menu under the picture leads there. */
+function MentionCount() {
+  const unread = useUnread(Boolean(useAccount()))
+  if (!unread) return null
+  return (
+    <span data-testid="mention-count" role="status" aria-label={m.mentions_unread({ count: unread })} {...stylex.props(typography.label, styles.mentionCount)}>
+      {unread > 9 ? '9+' : unread}
+    </span>
   )
 }
 
@@ -562,6 +579,26 @@ const focus = {
 } as const
 
 const styles = stylex.create({
+  accountPicture: { position: 'relative', display: 'inline-flex', alignItems: 'center' },
+  mentionCount: {
+    position: 'absolute',
+    top: dims.mentionBadgeOffset,
+    insetInlineEnd: dims.mentionBadgeOffset,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
+    minWidth: dims.mentionBadge,
+    height: dims.mentionBadge,
+    paddingInline: space.x4,
+    borderRadius: radii.round,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.surface,
+    color: color.onColor,
+    backgroundColor: color.stop,
+    pointerEvents: 'none',
+  },
   // The card backs in the settings (SKATGO-102): small cards in rows, the chosen one ringed in green.
   backs: { display: 'grid', gridTemplateColumns: dims.backChoices, gap: space.x8 },
   backChoice: {

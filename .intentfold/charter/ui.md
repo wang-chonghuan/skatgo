@@ -260,7 +260,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     browser that cannot show the night), then the
     choice of deck: the Turnierblatt by default, the Deutsches Blatt, or the Turnierblatt with English
     letters J / Q / K / A — SKATGO-66), and sign-in
-    or the account. The account's menu (Clerk's, under its picture) starts with the account's record of play,
+    or the account. At its picture's corner, a little outside it (`dims.mentionBadgeOffset`), the count of the forum's
+    mentions not yet seen (SKATGO-232): white `label` digits on `stop`, round, `dims.mentionBadge` high, ringed in
+    `surface`, "9+" past nine, nothing at none; it does not take the tap. The account's menu (Clerk's, under its picture) starts with the account's record of play,
     "Dein Skat-Profil", with lucide's `ChartLine` (SKATGO-128, the human: 「应该是点profile头像就能看到入口」); the
     settings carry the same link in `info` under the nickname, and on its line, at the right, "Konto löschen" in `slate`
     (SKATGO-185).
@@ -498,7 +500,14 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   in the same shape: the British Skat Association, with the Union Jack as its picture (it has no logo), opening its list
   of Skat servers, SkatGo first (weddslist.com/skat/servers.html). The front page carries no outside link.
 - **The record of play** (`profile-page.tsx`, SKATGO-128) is a sub-page on the grey page in the reading column,
-  noindex: its H1, "Dein Skat-Profil", and one-line lead; for a guest who has not played a `go` "Anmelden und Profil
+  noindex: its H1, "Dein Skat-Profil", and one-line lead; for an account then its own (`profile-me.tsx`, SKATGO-232): its
+  avatar, round, `dims.avatarProfile`, beside its name (`optionTitle`, navy), one line on what it is ("Dein Bild im Forum.",
+  `meta`, slate) and two `quiet` buttons, "Neuer Avatar" and "Bild hochladen" (the file chooser, JPG, PNG or WebP), a
+  refused file or a failure one `small` `bad` line under them, a new look after an upload the browser's own question
+  first; then, when there are any, "Erwähnungen" (`optionTitle`) and the latest twenty as lines under `hairline`s, each a
+  link to the comment (or post) it is in: the writer's avatar (`dims.badge`; SkatGo's logo for SkatGo), "Anna hat dich in
+  „Titel“ erwähnt" (`smallBold`), one line of the text (`note`, slate) and the day and time (`meta`, slate), led by "Neu"
+  (`smallBold`, `stop`) while unseen, each line cut with an ellipsis. Then, for a guest who has not played a `go` "Anmelden und Profil
   ansehen" opening Clerk's sign-in; with no deal yet a white card saying so, with `go` to the tournament and `quiet` to
   free play. Then every game (SKATGO-182, 「历史可以放在打开的页面的顶部，默认折叠（不登录时，那就不折叠，因为就这一个）」) in a white
   card: headed "Deine Spiele (412)" (`optionTitle`): for an account folded, the heading the line to tap with a chevron, as the
@@ -558,11 +567,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   这样的图片」, 「我觉得E比较好」, then 「风格改的太沉稳了，你就用E的标准默认风格吧」; no logo, 「我发的帖子，都用skatgo的logo，不好看，太重复了」), the title
   (`appBtnStrong`, navy, `info` under the pointer, the link covering the line), the author (navy, SkatGo in `go`) and day
   (`meta`, slate), one line of its text (`note`), and at the right the players who commented — up to three of their
-  avatars, the same Avataaars of their names, `dims.badge`, each over the one before by `dims.avatarOverlap` in a
+  avatars, the same as their author lines, `dims.badge`, each over the one before by `dims.avatarOverlap` in a
   white ring — and the comments' count with
   lucide's `MessageSquare`, `info` once there are any; nothing found, one line; at the foot the line on what the forum is for (`note`, slate). A
   post: the breadcrumb ("Forum › Discussion", `info`, the list's mark before its name); the post in a white card — the
-  title (`landingHeading`; a lesson's without its number, the human: 「课程前面不要加1，2，3那个橙色的编号」), the author's line (a player's picture of their name, `dims.badge`, or for SkatGo its list's mark; name, day), the
+  title (`landingHeading`; a lesson's without its number, the human: 「课程前面不要加1，2，3那个橙色的编号」), the author's line (a player's avatar — their uploaded picture, the look they drew, or else the picture of their name
+  (SKATGO-232) — `dims.badge`, or for SkatGo its list's mark; name, day), the
   text and pictures (`ForumBody`), and its actions: "Reply" (lucide's `Reply`, `info`) and small round icon buttons
   (`dims.iconButtonSm`, a `hairline`) — report (`Flag`; the human: 「举报按钮一定要小，目前太大」), delete (`Trash2`), the
   official's hide and show (`EyeOff`, `Eye`) — and "Let search engines index it" (`quiet`), a choice opening its reason

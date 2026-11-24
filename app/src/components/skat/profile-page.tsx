@@ -7,6 +7,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { Who } from './daily-comparison'
 import { DealRows } from './deal-history'
 import { ForumBody } from './forum-body'
+import { ProfileMe } from './profile-me'
 import { smoothPath } from './smooth-path'
 import { Btn, Panel, linkLook } from './ui'
 import { track } from '~/lib/analytics'
@@ -65,6 +66,8 @@ export function ProfilePage() {
       <section {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.profile_title()}</h1>
         <p {...stylex.props(typography.landingBody, styles.lead)}>{m.profile_lead()}</p>
+        {/* An account's avatar and the forum's mentions of it, first (SKATGO-232). */}
+        {account ? <ProfileMe key={account} /> : null}
         {account === null && record !== null && record !== 'error' && record.deals.length > 0 ? (
           <>
             <History deals={record.deals} guest action={replay} />

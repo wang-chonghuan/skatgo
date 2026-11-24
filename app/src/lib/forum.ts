@@ -35,10 +35,15 @@ export const PARTICIPANTS = 3
 /** The longest text an avatar is drawn from. */
 export const AVATAR_SEED_MAX = 200
 
-/** An avatar's address (SKATGO-231, the human: 「每个帖子都根据标题自动生成一个这样的图片」): Multiavatar's picture of a post's
- *  title as written, or of a player's name, drawn by the web service (lib/forum-handler.ts), the same text always the same
+/** The avatars' style, in their address: a browser keeps an avatar for a year, so a new style needs new addresses or
+ *  it shows the old pictures (the human, after the style changed: 「有缓存，我看不出来」). Raise it with every change of
+ *  style or options in lib/forum-handler.ts. */
+export const AVATAR_STYLE = 'a1'
+
+/** An avatar's address (SKATGO-231, the human: 「每个帖子都根据标题自动生成一个这样的图片」): the picture of a post's title as
+ *  written, or of a player's name, drawn by the web service (lib/forum-handler.ts), the same text always the same
  *  picture. */
-export const avatarPath = (seed: string) => `/api/forum/avatar/${encodeURIComponent(seed.slice(0, AVATAR_SEED_MAX))}.svg`
+export const avatarPath = (seed: string) => `/api/forum/avatar/${AVATAR_STYLE}/${encodeURIComponent(seed.slice(0, AVATAR_SEED_MAX))}.svg`
 
 /** The sections an author may post in. */
 export const sectionsFor = (official: boolean): ForumSection[] => FORUM_SECTIONS.filter((s) => official || !OFFICIAL_SECTIONS.includes(s))

@@ -2,7 +2,7 @@ import * as avataaars from '@dicebear/avataaars'
 import { createAvatar, type StyleOptions } from '@dicebear/core'
 import multiavatar from '@multiavatar/multiavatar/esm'
 
-import { AVATAR_SEED_MAX, postPath } from '~/lib/forum'
+import { AVATAR_SEED_MAX, AVATAR_STYLE, postPath } from '~/lib/forum'
 import { avatarGrounds } from '../theme/constants'
 import { samePath } from '~/lib/head'
 import { signedInUser } from '~/lib/session'
@@ -74,9 +74,10 @@ const GROWN_UP: Partial<avataaars.Options & StyleOptions<avataaars.Options>> = {
   radius: 50,
 }
 
-/** The text an avatar address names, or null. */
+/** The text an avatar address names, or null — for an avatar, only at the current style's address. */
 function seedOf(path: string, kind: 'avatar' | 'multiavatar'): string | null {
-  const match = new RegExp(`^\\/api\\/forum\\/${kind}\\/([^/]+)\\.svg$`).exec(path)
+  const prefix = kind === 'avatar' ? `avatar\\/${AVATAR_STYLE}` : 'multiavatar'
+  const match = new RegExp(`^\\/api\\/forum\\/${prefix}\\/([^/]+)\\.svg$`).exec(path)
   try {
     const seed = match ? decodeURIComponent(match[1]) : null
     return seed && seed.length <= AVATAR_SEED_MAX ? seed : null
@@ -95,7 +96,7 @@ const svg = (body: string) =>
     },
   })
 
-/** GET /api/forum/avatar/<text>.svg — the picture of a text, a post's title or a player's name: DiceBear's Avataaars,
+/** GET /api/forum/avatar/<style>/<text>.svg — the picture of a text, a post's title or a player's name: DiceBear's Avataaars,
  *  drawn here, never by dicebear.com, so no visitor's address leaves the site; the text is not in the picture. The
  *  same text is always the same picture, so a browser keeps it for a year. GET /api/forum/multiavatar/<text>.svg is
  *  the first try's Multiavatar, kept for now (the human: 「老的集成暂时不用删」) and shown nowhere. */

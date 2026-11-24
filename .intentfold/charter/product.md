@@ -31,7 +31,7 @@ leaderboard per day, which can be looked at for seven days, today's included (SK
 its board at once, with nothing to fill in (SKATGO-90, the human: 「让用户填名字，太麻烦了」), under the player's
 name: the one they set before, or a name of two friendly German words given at random — never the
 email address, never words of cards, a number only when every name without one is taken; the same
-device, or the same account, keeps its name. An account sets its nickname in the settings, to a name no other
+device, or the same account, keeps its name. An account sets its nickname on its profile (in the settings until SKATGO-232), to a name no other
 player holds, and it shows everywhere at once — on every day's board, earlier days' included, the XP board and the
 forum (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行榜就用这个昵称，改一次，整体都改」); the board
 itself offers no renaming (「禁止改名了」). The system never changes a player's name (the human's red line:
@@ -163,11 +163,16 @@ when the deal's comparison is worked out — counted per day. A deal is judged a
 same for the AI's game of the same cards from the same seat, so defence counts too. The curve is one point a day, the
 day's average per deal, so whether the player gets better shows from the first days, not after a fixed number of
 deals (「30副不行」); the last day stands against the days before, better or worse only beyond the noise of single
-deals, also under a finished tournament, as the reason to come back (「我主要想让这个做为一个留存点」). A week can have its
-analysis on the same page (「本周ai分析加上到档案页，每周一个」): only what mattered that week, as many points as there were,
-and a conclusion (「不一定是四条吧，为啥这么死板」). While players are few it is written by hand from the week's deals, for whom
-the human names (「挑重点，目前用户少，可以手动做……就做我和mark的」), in English and German; a week without one shows none. It is the player's own: no one else sees it.
-The ids one person plays under count as one, as on the XP board. Free play stays free and needs no account. A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
+deals, also under a finished tournament, as the reason to come back (「我主要想让这个做为一个留存点」). The weeks' analyses
+written by hand are gone (SKATGO-232, the human: 「skat profile里的每周分析，删掉，去掉这个功能」). It is the player's own: no one else sees it.
+The ids one person plays under count as one, as on the XP board. Free play stays free and needs no account. At its
+top an account's avatar, as the forum shows it (SKATGO-232, the human: 「每个用户打开profile页面，可以点击，刷新自己的头像。还能上传……
+大小自动压缩到一个行业惯例的中小尺寸」, 「上传过还要能重复上传，还要能刷新。上传过的刷新，要有提示，会移除上传的头像」): a new look drawn at
+a tap, or a picture of their own uploaded, cut square and made small (256 pixels) in the browser and kept by SkatGo; a new
+upload replaces the one before, and a new look after an upload asks first, then deletes the picture. Under it the forum's
+latest mentions of the player, and its nickname. It is the one profile (the human: 「这里的 your profile，有两个，混乱……一个
+profile页面，放在setting的第一个大按钮。然后内容就合并当前的profile和skat profile」): the settings open with the way to it, and
+the nickname and the account's deletion are on it. The way is common and simple, as the human asked (「我说的流程可能不标准，你才取常见的但是简洁的流程」). A first version, to be refined with the human (「我看到后，开始和你讨论如何优化和细化」).
 
 A guest's games are kept too (SKATGO-182, the human: 「游客存档，登录后合并进账号」): every free deal and deal of the day a guest
 finishes on a device, from SKATGO-182 on, under that device. Signing in on the device takes them all into the account —
@@ -351,13 +356,15 @@ The advanced course is a series of lessons: numbered in the order they are publi
 and after. The articles SkatGo wrote before are announcements, at their addresses, so the discussion is the players' own (the
 human, of the agent's advice: 「按建议改」, after 「这类论坛一看就是只有老板在发帖的」). No post carries the logo: each has a picture
 drawn from its title, each player one from their name (the human: 「每个帖子都根据标题自动生成一个这样的图片」, then 「我觉得E比较好」 and
-「你就用E的标准默认风格吧」), and a line shows the players who commented. Each list is plain lines, never cards, searched by words in a post's title or text and sorted by time or
+「你就用E的标准默认风格吧」) — or, since SKATGO-232, the new look they drew or the picture they uploaded on `/profile` — and a line
+shows the players who commented. Each list is plain lines, never cards, searched by words in a post's title or text and sorted by time or
 by how many comments (the human: 「每个主题，都是一系列列表，然后可以检索和排序（时间， 互动量）……列表不要做成卡片」); the forum's own
 page is the announcements. A post shows its text and pictures, then its comments (「点进列表项后，是图文显示，下面可以评论」).
 Under every post, comments in the order written, flat — no reply to a comment; whom one
 means is "@Name" in the text (the human: 「评论不要搞嵌套，太麻烦，用户自己 @ 一个人就行，也不用通知」), which "Reply" writes into the
-comment box (SKATGO-231: 「点回复时自动at即可」). Nothing in the forum
-notifies anyone. Anyone reads; writing takes an account, and a player writes under their leaderboard name, never
+comment box (SKATGO-231: 「点回复时自动at即可」). A player named so learns it on the site only, never by email or push
+(SKATGO-232, the human: 「如果有人在论坛里at这个用户，就要显示提示角标，profile里显示最新的at的消息，点了跳转到论坛相应位置」): a count
+on their account's picture until they open `/profile`, where the latest are listed, each leading to where it was written. Anyone reads; writing takes an account, and a player writes under their leaderboard name, never
 an email address; SkatGo writes as SkatGo. SkatGo's posts are for search engines; a player's post only once SkatGo
 marks it. The latest announcement also stands as one line on the front page and on `/daily`
 for two weeks. The least moderation the law asks of a host: anyone signed in may report a post or comment,
@@ -369,15 +376,16 @@ and language and kept, saying so in a small line with the text as written one ta
 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版。用便宜的翻译功能实现」, 「用户可以点击查看原文，有个非常小的链接式的
 小按钮」); a text already in the reader's language, or saying it in both, stands as written. The Skat-Tricks' articles
 are SkatGo's announcements (SKATGO-120, SKATGO-231). Not in it, by the
-human's agreement (「都同意」): notifications, nested replies, pictures in players' posts (SkatGo's own posts may show the site's own pictures, one per
-language — SKATGO-129, the human: 「给论坛增加加图片的功能」), profiles, likes, blocking (with the
+human's agreement (「都同意」): notifications beyond the mentions on the site, nested replies, pictures in players' posts (SkatGo's own posts may show the site's own pictures, one per
+language — SKATGO-129, the human: 「给论坛增加加图片的功能」), public profiles, likes, blocking (with the
 apps later) and competitions (later, in the product itself).
 
 SkatGo for Android (SKATGO-185, the human: 「我打算做成google play app了……不要因为套web什么的被不许上架」): the site itself, opened
 full-screen as an app from Google Play — no second product beside it; the site goes on as it is (「我网页版也要运营」), and what
 changes on the site changes in the app. An account is deleted by its owner, from the settings or on a page anyone can open,
 the address Google Play is given: the account goes, and everything SkatGo holds under it — its name, its places on the
-boards, its games and those of the devices signed in to it, its practice answers, its shared results — while its forum
+boards, its games and those of the devices signed in to it, its practice answers, its shared results, its avatar and
+uploaded picture and the mentions of it (SKATGO-232) — while its forum
 posts and comments stay, under a deleted player (「帖子改匿名」). What the browser keeps, the course's progress among it, is the
 device's and stays. Without a network the site answers with a page of its own, not the browser's.
 

@@ -11,9 +11,9 @@ import { APPEARANCES, type Appearance, nightSupported, readAppearance, useAppear
 import { type Deck, useSettings } from '~/lib/skat/settings'
 import { m } from '~/paraglide/messages'
 import { carryGame } from '~/lib/free-api'
-import { dailyName, dailyNick, isError } from '~/lib/daily-api'
-import { setPerson, track } from '~/lib/analytics'
+import { track } from '~/lib/analytics'
 import { useAccount } from '~/lib/use-account'
+import { useUnread } from '~/lib/use-unread'
 import { type Locale, getLocale, localizeHref, locales, setLocale } from '~/paraglide/runtime'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
@@ -24,7 +24,7 @@ import { border, layer, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { FlagDE, FlagEN } from '../../theme/flags'
 import { typography } from '../../theme/type'
-import { Btn, Modal, TextField, suitText } from './ui'
+import { Btn, Modal, linkLook, suitText } from './ui'
 
 // The frame pieces of the lobby design (SKATGO-26, reference.md): the public site's white header over
 // every page but the tables (SKATGO-43, SKATGO-47), with the language menu, the deck settings and the account. Navigation
@@ -106,13 +106,29 @@ export function Account({ shape = 'pill' }: { shape?: 'pill' | 'landing' }) {
       <Show when="signed-in">
         {/* The account's record of play first in its menu, where a player looks for it (SKATGO-128, the human:
             「应该是点profile头像就能看到入口」). */}
-        <UserButton>
-          <UserButton.MenuItems>
-            <UserButton.Link label={m.profile_title()} labelIcon={<ChartLine size={icon.header} strokeWidth={icon.outline} />} href={localizeHref('/profile')} />
-          </UserButton.MenuItems>
-        </UserButton>
+        <span {...stylex.props(styles.accountPicture)}>
+          <UserButton>
+            <UserButton.MenuItems>
+              <UserButton.Link label={m.profile_title()} labelIcon={<ChartLine size={icon.header} strokeWidth={icon.outline} />} href={localizeHref('/profile')} />
+            </UserButton.MenuItems>
+          </UserButton>
+          <MentionCount />
+        </span>
       </Show>
     </>
+  )
+}
+
+/** How many forum mentions the account has not seen (SKATGO-232, the human: 「如果有人在论坛里at这个用户，就要显示提示角标」):
+ *  a small round count at the corner of its picture, nothing when there are none; /profile lists them, and seeing it
+ *  clears the count. The menu under the picture leads there. */
+function MentionCount() {
+  const unread = useUnread(Boolean(useAccount()))
+  if (!unread) return null
+  return (
+    <span data-testid="mention-count" role="status" aria-label={m.mentions_unread({ count: unread })} {...stylex.props(typography.label, styles.mentionCount)}>
+      {unread > 9 ? '9+' : unread}
+    </span>
   )
 }
 
@@ -254,56 +270,14 @@ export function SettingsButton() {
   )
 }
 
-/** The account's nickname, first in the settings (SKATGO-126, the human: 「允许用户给自己搞个昵称，从设置里可以搞，然后排行
- *  榜就用这个昵称，改一次，整体都改」): the name every board, the XP board and the forum show. Nothing for a guest. Under it,
- *  the way to the account's record of play (SKATGO-128) and to deleting the account (SKATGO-185). */
-function Nickname({ onClose }: { onClose: () => void }) {
-  const account = useAccount()
-  const [value, setValue] = useState('')
-  const [saved, setSaved] = useState<string | null>(null)
-  const [problem, setProblem] = useState<'refused' | 'taken' | null>(null)
-  const [saving, setSaving] = useState(false)
-  useEffect(() => {
-    if (!account) return
-    void dailyNick().then((r) => {
-      if (isError(r)) return
-      setValue(r.nickname ?? '')
-      setSaved(r.nickname)
-    })
-  }, [account])
-  if (!account) return null
-  async function save() {
-    setSaving(true)
-    const r = await dailyName(value)
-    setSaving(false)
-    if (isError(r)) return setProblem(r.error === 'nickname_taken' ? 'taken' : 'refused')
-    track('daily_nickname_set')
-    setPerson({ nickname: r.nickname })
-    setProblem(null)
-    setValue(r.nickname)
-    setSaved(r.nickname)
-  }
-  const unchanged = value.trim() === '' || value.trim() === saved
+/** The way to the player's profile, the settings' first and big button (SKATGO-232, the human: 「一个profile页面，放在setting的第一个
+ *  大按钮」): the one profile, where an account's avatar, nickname, forum mentions and record of play are, and a guest's
+ *  games of this device. The nickname (SKATGO-126) and the account's deletion (SKATGO-185) moved there with it. */
+function ProfileEntry({ onClose }: { onClose: () => void }) {
   return (
-    <section data-testid="settings-nickname" {...stylex.props(styles.section)}>
-      <label htmlFor="settings-nickname" {...stylex.props(typography.small, styles.sectionTitle)}>{m.settings_nickname()}</label>
-      <div {...stylex.props(styles.nickRow)}>
-        <TextField id="settings-nickname" testId="settings-nickname-field" autoComplete="nickname" value={value} invalid={problem !== null} onChange={(v) => { setValue(v); setProblem(null) }} onEnter={() => { if (!saving && !unchanged) void save() }} />
-        {/* The field's height and corners, as the settings' cards have them (the human: 「按钮的圆角和其他的按钮的圆角怎么不一样，
-            按钮和输入框的高度也不同」). */}
-        <Btn testId="settings-nickname-save" shape="block" size="md" disabled={saving || unchanged} onClick={() => void save()}>{m.daily_nick_save()}</Btn>
-      </div>
-      {problem ? (
-        <p data-testid="settings-nickname-refused" data-problem={problem} role="alert" {...stylex.props(typography.small, styles.refused)}>
-          {problem === 'taken' ? m.daily_nick_taken() : m.daily_nick_refused()}
-        </p>
-      ) : null}
-      {/* The account's record of play (SKATGO-128) and, quieter, its deletion (SKATGO-185). */}
-      <div {...stylex.props(styles.accountLinks)}>
-        <Link to="/profile" data-testid="settings-profile" onClick={onClose} {...stylex.props(typography.appLink, styles.profileLink)}>{m.profile_title()}</Link>
-        <Link to="/delete-account" data-testid="settings-delete-account" onClick={onClose} {...stylex.props(typography.appLink, styles.deleteLink)}>{m.settings_delete_account()}</Link>
-      </div>
-    </section>
+    <Link to="/profile" data-testid="settings-profile" onClick={onClose} {...linkLook('go', 'lg', 'block')}>
+      {m.profile_title()}
+    </Link>
   )
 }
 
@@ -337,7 +311,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const chooseAppearance = useAppearance((s) => s.choose)
   return (
     <Modal title={m.settings_open()} onClose={onClose} testId="settings-dialog" closeTestId="settings-close">
-        <Nickname onClose={onClose} />
+        <ProfileEntry onClose={onClose} />
         {/* Day or night (SKATGO-184): like the device, or always one of them; it applies at once, on every page. A browser
             that cannot show the night (lib/appearance.ts) is not offered it. */}
         {nightSupported() ? <section {...stylex.props(styles.section)}>
@@ -562,6 +536,26 @@ const focus = {
 } as const
 
 const styles = stylex.create({
+  accountPicture: { position: 'relative', display: 'inline-flex', alignItems: 'center' },
+  mentionCount: {
+    position: 'absolute',
+    top: dims.mentionBadgeOffset,
+    insetInlineEnd: dims.mentionBadgeOffset,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
+    minWidth: dims.mentionBadge,
+    height: dims.mentionBadge,
+    paddingInline: space.x4,
+    borderRadius: radii.round,
+    borderWidth: border.hair,
+    borderStyle: 'solid',
+    borderColor: color.surface,
+    color: color.onColor,
+    backgroundColor: color.stop,
+    pointerEvents: 'none',
+  },
   // The card backs in the settings (SKATGO-102): small cards in rows, the chosen one ringed in green.
   backs: { display: 'grid', gridTemplateColumns: dims.backChoices, gap: space.x8 },
   backChoice: {
@@ -603,11 +597,6 @@ const styles = stylex.create({
   decks: { display: 'flex', flexDirection: 'column', gap: space.x10 },
   section: { display: 'flex', flexDirection: 'column', gap: space.x8 },
   // The button takes the field's height.
-  nickRow: { display: 'flex', alignItems: 'stretch', gap: space.x8 },
-  refused: { margin: 0, color: color.bad },
-  accountLinks: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', gap: space.x12 },
-  profileLink: { color: color.info },
-  deleteLink: { color: color.slate },
   sectionTitle: { margin: 0, color: color.slate, textTransform: 'uppercase' },
   deck: {
     display: 'flex',

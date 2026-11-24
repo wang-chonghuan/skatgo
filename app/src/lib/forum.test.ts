@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { avatarPath, cardRow, forumImagePath, inlineParts, parseBody, plainText, postIdOf, postIndexable, postParam, sectionsFor, slugOf } from './forum'
+import {
+  avatarPath, cardRow, facePath, forumImagePath, imageTypeOf, inlineParts, mentionCandidates, parseBody, plainText, postIdOf, postIndexable, postParam,
+  sectionsFor, slugOf,
+} from './forum'
 
 // The forum's shared rules (SKATGO-118): what an address, a post's text and its indexing come to.
 
@@ -85,5 +88,28 @@ describe('a post\'s text', () => {
   it('says it plainly in a description', () => {
     expect(plainText('## Kopf\n**fett** und [Link](https://a.de)\n[♠A]')).toBe('Kopf fett und Link')
     expect(plainText('wort '.repeat(60), 40).length).toBeLessThanOrEqual(40)
+  })
+})
+
+// A player's face and the mentions of them (SKATGO-232).
+describe('faces and mentions', () => {
+  it('shows an uploaded picture, a drawn look, or the picture of the name', () => {
+    expect(facePath({ image: 'a'.repeat(32) }, 'Anna')).toBe(`/api/forum/avatar/u/${'a'.repeat(32)}`)
+    expect(facePath({ seed: '1f2e' }, 'Anna')).toBe(avatarPath('1f2e'))
+    expect(facePath(null, 'Anna')).toBe(avatarPath('Anna'))
+  })
+
+  it('knows WebP and JPEG by their bytes, and nothing else', () => {
+    expect(imageTypeOf(new Uint8Array([0xff, 0xd8, 0xff, 0xe0]))).toBe('image/jpeg')
+    expect(imageTypeOf(new TextEncoder().encode('RIFF\0\0\0\0WEBPVP8 '))).toBe('image/webp')
+    expect(imageTypeOf(new TextEncoder().encode('<svg/>'))).toBe(null)
+    expect(imageTypeOf(new Uint8Array([0x89, 0x50, 0x4e, 0x47]))).toBe(null)
+  })
+
+  it('reads the names an "@" may stand for, a word at a time', () => {
+    expect(mentionCandidates('@Flinker Fuchs bis 18, ja')).toEqual([['flinker', 'flinker fuchs', 'flinker fuchs bis', 'flinker fuchs bis 18']])
+    expect(mentionCandidates('Hallo @Anna! und @Ben.')).toEqual([['anna', 'anna! und'], ['ben']])
+    expect(mentionCandidates('mail@example.com, @ allein')).toEqual([])
+    expect(mentionCandidates('@Jörg\n@Ölf')).toEqual([['jörg'], ['ölf']])
   })
 })

@@ -1,5 +1,5 @@
 import type { Move } from '~/lib/skat/game'
-import type { ProfileDeal, ProfileNote } from '~/lib/skat/profile'
+import type { ProfileDeal } from '~/lib/skat/profile'
 import { jsonHeaders } from '~/lib/session-token'
 import type { TalkKind, TalkReply } from '~/lib/table-talk'
 import { DAILY_DEALS, type DailyBoard, type DailyReply, type DailySize, type DealReview } from '~/lib/skat/tournament'
@@ -44,7 +44,7 @@ export const dailyBoard = (back: number, size: DailySize = DAILY_DEALS) => post<
 export const dailyReview = (deal: number, size: DailySize = DAILY_DEALS) => post<DealReview>('review', { deal, size })
 
 /** The signed-in account's record of play (SKATGO-128): every deal against the AI, in the order played. */
-export const dailyProfile = () => post<{ deals: ProfileDeal[]; notes: ProfileNote[] }>('profile', {})
+export const dailyProfile = () => post<{ deals: ProfileDeal[] }>('profile', {})
 
 /** The tournament: whether Lina or Noah has a line to say now at the deal in progress (SKATGO-142). Any failure is
  *  silence. */

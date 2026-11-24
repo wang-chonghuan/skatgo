@@ -2,9 +2,10 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'
 import pg from 'pg'
-import { ANNOUNCEMENT_DAYS, DAILY_LIMITS } from '../../app/src/lib/forum'
+import { ANNOUNCEMENT_DAYS, DAILY_LIMITS, IMAGE_BYTES } from '../../app/src/lib/forum'
 import {
-  forumComment, forumCreate, forumDelete, forumLatest, forumList, forumModerate, forumPost, forumReport, forumReports, forumSitemap,
+  forumComment, forumCreate, forumDelete, forumFace, forumImage, forumLatest, forumList, forumMe, forumModerate, forumPost,
+  forumReport, forumReports, forumSeen, forumSitemap, forumUnread,
 } from '../src/forum'
 import { Store } from '../src/store'
 
@@ -72,7 +73,7 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   assert.equal(thread.comments, 2)
   // A line shows the players who commented, newest first; SkatGo's own comment is not among them.
   assert.deepEqual(thread.participants.length, 1)
-  assert.ok(!thread.participants.includes(''))
+  assert.ok(!thread.participants.some((p) => p.name === ''))
 
   // Sorted by interaction: the most commented first.
   assert.equal((await forumList(store, { ...guest, section: 'talk', sort: 'active' })).posts[0].id, post.id)
@@ -137,4 +138,84 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
     [tick()])
   await store.migrate()
   assert.equal((await forumPost(store, { ...guest, id: Number(rows[0].id) })).post.section, 'news')
+})
+
+test('forum: faces and mentions', { timeout: 60_000 }, async (t) => {
+  const base = new URL(process.env.DATABASE_URL || '')
+  assert(['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname), 'Tests refuse external databases')
+  const server = new pg.Pool({ connectionString: base.href })
+  const name = `skatgo_faces_${randomBytes(6).toString('hex')}`
+  await server.query(`CREATE DATABASE "${name}"`)
+  base.pathname = `/${name}`
+  const store = new Store(base.href)
+  t.after(async () => {
+    await store.close()
+    await server.query(`DROP DATABASE "${name}" WITH (FORCE)`)
+    await server.end()
+  })
+  await store.migrate()
+  assert.ok(await store.acquire(() => {}))
+  const cara = { player: 'user:cara', official: false }
+  for (const [who, nick] of [['user:anna', 'Anna'], ['user:ben', 'Flinker Fuchs'], ['user:cara', 'Flinker'], ['anon:x', 'Gast']]) {
+    await store.pool.query('INSERT INTO daily_players (player, nickname, created_at) VALUES ($1, $2, 1)', [who, nick])
+  }
+  let clock = Date.now() - 60_000
+  const tick = () => ++clock
+
+  // A face: none at first — the picture of the name; a new look is a seed, the same after reading again.
+  assert.deepEqual(await forumMe(store, anna), { name: 'Anna', face: null, unread: 0, mentions: [] })
+  const drawn = (await forumFace(store, { ...anna, action: 'refresh' })).face
+  assert.ok(drawn && 'seed' in drawn)
+  assert.deepEqual((await forumMe(store, anna)).face, drawn)
+
+  // An upload: WebP or JPEG by its bytes, at most IMAGE_BYTES; anything else refused, the face unchanged.
+  const webp = (n: number) => Buffer.concat([Buffer.from('RIFF\0\0\0\0WEBPVP8 '), Buffer.alloc(n)]).toString('base64')
+  await assert.rejects(forumFace(store, { ...anna, action: 'upload', image: Buffer.from('<svg></svg>').toString('base64') }), { message: 'image_refused' })
+  await assert.rejects(forumFace(store, { ...anna, action: 'upload', image: webp(IMAGE_BYTES) }), { message: 'image_refused' })
+  assert.deepEqual((await forumMe(store, anna)).face, drawn)
+  const up = (await forumFace(store, { ...anna, action: 'upload', image: webp(100) })).face
+  assert.ok(up && 'image' in up)
+  assert.equal((await forumImage(store, { id: up.image })).type, 'image/webp')
+  // A second upload replaces the first, which is gone; a new look deletes the picture.
+  const again = (await forumFace(store, { ...anna, action: 'upload', image: webp(200) })).face
+  assert.ok(again && 'image' in again && again.image !== up.image)
+  await assert.rejects(forumImage(store, { id: up.image }))
+  const fresh = (await forumFace(store, { ...anna, action: 'refresh' })).face
+  assert.ok(fresh && 'seed' in fresh)
+  await assert.rejects(forumImage(store, { id: again.image }))
+  assert.equal(Number((await store.pool.query('SELECT count(*) FROM player_avatars WHERE image IS NOT NULL')).rows[0].count), 0)
+
+  // The face goes with the name: on the post, its comments and its line's commenters.
+  const post = await forumCreate(store, { ...ben, section: 'talk', title: 'Reizen bis 18?', body: 'Hallo @anna!' }, tick())
+  const c1 = await forumComment(store, { ...anna, post: post.id, body: '@Flinker Fuchs bis 18, @Flinker auch? @Gast @Niemand @Anna' }, tick())
+  const shown = (await forumPost(store, { ...guest, id: post.id })).post
+  assert.deepEqual(shown.thread[0].face, fresh)
+  assert.equal(shown.face, null)
+  assert.deepEqual(shown.participants, [{ name: 'Anna', face: fresh }])
+  assert.deepEqual((await forumList(store, { ...guest, section: 'talk' })).posts[0].participants, [{ name: 'Anna', face: fresh }])
+
+  // "@Name", the longest name an account holds, any case, never the writer's own nor a guest's: Ben and Cara once each,
+  // Anna by Ben's post.
+  assert.deepEqual(await forumUnread(store, ben), { unread: 1 })
+  assert.deepEqual(await forumUnread(store, cara), { unread: 1 })
+  assert.deepEqual(await forumUnread(store, anna), { unread: 1 })
+  const benMe = await forumMe(store, ben)
+  assert.deepEqual(benMe.mentions.map((m) => [m.by, m.postTitle, m.commentId, m.unread]), [['Anna', 'Reizen bis 18?', c1.id, true]])
+  assert.deepEqual(benMe.mentions[0].face, fresh)
+  assert.equal((await forumMe(store, anna)).mentions[0].commentId, null)
+
+  // Seen: nothing new; the list stays.
+  await forumSeen(store, ben)
+  assert.deepEqual(await forumUnread(store, ben), { unread: 0 })
+  assert.equal((await forumMe(store, ben)).mentions[0].unread, false)
+
+  // A hidden comment's mention is not shown; restored, it is again.
+  await forumModerate(store, { ...admin, action: 'hide', comment: c1.id, reason: 'x' })
+  assert.deepEqual(await forumUnread(store, cara), { unread: 0 })
+  assert.deepEqual((await forumMe(store, cara)).mentions, [])
+  await forumModerate(store, { ...admin, action: 'restore', comment: c1.id })
+  assert.deepEqual(await forumUnread(store, cara), { unread: 1 })
+  // A deleted comment takes its mentions with it.
+  await forumDelete(store, { ...anna, comment: c1.id })
+  assert.deepEqual(await forumUnread(store, cara), { unread: 0 })
 })

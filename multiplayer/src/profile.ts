@@ -3,7 +3,7 @@ import { viewSeat } from '../../app/src/lib/skat/room-view'
 import type { Card } from '../../app/src/lib/skat/cards'
 import type { DealSummary } from '../../app/src/lib/skat/tournament'
 import { card } from './computers'
-import type { Played, ProfileDeal, ProfileNote } from '../../app/src/lib/skat/profile'
+import type { Played, ProfileDeal } from '../../app/src/lib/skat/profile'
 import type { Store } from './store'
 
 // A player's record of play (SKATGO-128, the human: 「每个用户的打牌档案页面，每天打了几副牌，就按deal算，而且每个deal都要算和ai的
@@ -54,7 +54,7 @@ const handOf = (dealer: 0 | 1 | 2, deck: Card[]) => deal(dealer, deck).hands[0].
 /** Free play's pool, as far as a record needs it: its version and each deal's dealer and deck. */
 export type PoolDecks = { version: string; deals: { dealer: 0 | 1 | 2; deck: string }[] }
 
-export async function playProfile(store: Store, who: string, pool: PoolDecks | null = null): Promise<{ deals: ProfileDeal[]; notes: ProfileNote[] }> {
+export async function playProfile(store: Store, who: string, pool: PoolDecks | null = null): Promise<{ deals: ProfileDeal[] }> {
   const players = await idsOf(store, who)
   const { rows: entries } = await store.pool.query(
     // Of each tournament deal only what a record reads — its dealer and deck, and the AI's summary — never the AI's whole
@@ -87,9 +87,5 @@ export async function playProfile(store: Store, who: string, pool: PoolDecks | n
     deals.push({ day: f.day, source: 'free', key: f.game, at: Number(f.at), ...(d ? { hand: handOf(dealer, d.deck.split(' ').map(card)) } : {}), mine: f.mine, ai: f.ai })
   }
   deals.sort((a, b) => a.day.localeCompare(b.day) || a.at - b.at)
-  // The weeks' analyses written for this person, under any of their ids (SKATGO-128); none for a guest device.
-  const { rows: notes } = who.startsWith('anon:')
-    ? { rows: [] }
-    : await store.pool.query('SELECT week, lang, body FROM profile_notes WHERE player = ANY($1) ORDER BY week DESC', [players])
-  return { deals: deals.map(({ at: _, ...d }) => d), notes: notes.map((n) => ({ week: n.week, lang: n.lang, body: n.body })) }
+  return { deals: deals.map(({ at: _, ...d }) => d) }
 }

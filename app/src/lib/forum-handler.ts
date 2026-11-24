@@ -2,7 +2,7 @@ import * as avataaars from '@dicebear/avataaars'
 import { createAvatar } from '@dicebear/core'
 import multiavatar from '@multiavatar/multiavatar/esm'
 
-import { AVATAR_SEED_MAX, AVATAR_STYLE, postPath } from '~/lib/forum'
+import { AVATAR_SEED_MAX, AVATAR_STYLE, IMAGE_ID, IMAGE_TYPES, postPath } from '~/lib/forum'
 import { avatarGrounds } from '../theme/constants'
 import { samePath } from '~/lib/head'
 import { signedInUser } from '~/lib/session'
@@ -19,7 +19,8 @@ import { sitemapXml } from '~/lib/sitemap'
 
 const PREFIX = '/api/forum/'
 const READS = new Set(['list', 'post', 'latest'])
-const WRITES = new Set(['create', 'comment', 'delete', 'report', 'reports', 'moderate'])
+// The account's own (SKATGO-232) — its face, its mentions and their count — take a signed-in account like a write.
+const WRITES = new Set(['create', 'comment', 'delete', 'report', 'reports', 'moderate', 'me', 'unread', 'seen', 'face'])
 
 const json = (status: number, body: object) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
@@ -32,7 +33,7 @@ export async function askForum(op: string, payload: object, request: Pick<Reques
   const key = process.env.MULTIPLAYER_ADMISSION_KEY
   if (!base || !key) return { status: 503, body: { error: 'unavailable' } }
   const userId = request ? await signedInUser(request as Request) : null
-  const viewer = op === 'latest' ? {} : { player: userId ? `user:${userId}` : null, official: userId !== null && officials().has(userId) }
+  const viewer = op === 'latest' || op === 'image' ? {} : { player: userId ? `user:${userId}` : null, official: userId !== null && officials().has(userId) }
   try {
     const upstream = await fetch(new URL(`/forum/${op}`, base), {
       method: 'POST',
@@ -88,8 +89,29 @@ function avatar(request: Request, path: string): Response {
   return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...STANDARD }).toString())
 }
 
+/** GET /api/forum/avatar/u/<id> — a picture a player uploaded (SKATGO-232), as the forum keeps it: a new id with each
+ *  upload, so a browser keeps it for a year; a picture replaced or removed is not found. */
+async function uploaded(request: Request, id: string): Promise<Response> {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return json(405, { error: 'GET only' })
+  if (!IMAGE_ID.test(id)) return json(404, { error: 'not found' })
+  const answer = await askForum('image', { id }, null)
+  const found = answer.body as { type?: string; data?: string }
+  if (answer.status !== 200 || !found.data || !IMAGE_TYPES.some((t) => t === found.type)) {
+    return json(answer.status === 404 ? 404 : 503, { error: answer.status === 404 ? 'not found' : 'unavailable' })
+  }
+  return new Response(Buffer.from(found.data, 'base64'), {
+    headers: {
+      'content-type': found.type!,
+      'cache-control': 'public, max-age=31536000, immutable',
+      'content-security-policy': "default-src 'none'",
+      'x-content-type-options': 'nosniff',
+    },
+  })
+}
+
 export async function handleForum(request: Request): Promise<Response> {
   const path = new URL(request.url).pathname
+  if (path.startsWith(`${PREFIX}avatar/u/`)) return uploaded(request, path.slice(`${PREFIX}avatar/u/`.length))
   if (path.startsWith(`${PREFIX}avatar/`) || path.startsWith(`${PREFIX}multiavatar/`)) return avatar(request, path)
   if (request.method !== 'POST') return json(405, { error: 'POST only' })
   const op = path.startsWith(PREFIX) ? path.slice(PREFIX.length) : ''

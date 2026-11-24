@@ -3,7 +3,7 @@ import type pg from 'pg'
 import { z } from 'zod'
 import {
   ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_LANGS, FORUM_SECTIONS, FORUM_SORTS, OFFICIAL_SECTIONS, PAGE_SIZE,
-  POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumAnnouncement, type ForumComment, type ForumList,
+  PARTICIPANTS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumAnnouncement, type ForumComment, type ForumList,
   type ForumNeighbour, type ForumPost, type ForumLang, type ForumPostSummary, type ForumReport, type ForumSection,
   type ForumThread, plainText, postIndexable,
 } from '../../app/src/lib/forum'
@@ -60,7 +60,7 @@ const num = (v: unknown) => Number(v)
 type PostRow = {
   id: string; section: string; author: string; official: boolean; title: string; body: string
   indexed: boolean; hidden_reason: string | null; created_at: string; last_activity: string; name: string | null; comments: string
-  number: string | null
+  number: string | null; participants: string[] | null
 }
 
 /** A text's translation when it was written in a language other than `lang`. */
@@ -80,18 +80,22 @@ function summary(r: PostRow, who: string | null, known: Map<string, Translation>
   const translated = body || title
     ? { from: (body ?? title)!.from, title: title?.text ?? r.title, excerpt: body ? plainText(body.text, 160) : p.excerpt }
     : null
-  return { ...p, indexable: postIndexable(p), translated, number: r.number === null ? null : num(r.number) }
+  return { ...p, indexable: postIndexable(p), translated, number: r.number === null ? null : num(r.number), participants: r.participants ?? [] }
 }
 
 /** The texts a row shows, for the translations to look up. */
 const textsOf = (rows: PostRow[]) => rows.flatMap((r) => [r.title, r.body])
 
-// A post with its author's name, the count of comments everyone sees, and a lesson's place among the lessons everyone
-// sees, by publication (SKATGO-231). Hidden posts and comments are seen only by their author and the official: `$1`
-// is the viewer (or null), `$2` whether the viewer is official.
+// A post with its author's name, the count of comments everyone sees, the players who wrote them, newest first
+// (SKATGO-231), and a lesson's place among the lessons everyone sees, by publication. Hidden posts and comments are
+// seen only by their author and the official: `$1` is the viewer (or null), `$2` whether the viewer is official.
 const POSTS = `
   SELECT p.*, d.nickname AS name,
     (SELECT count(*) FROM forum_comments c WHERE c.post_id = p.id AND c.hidden_reason IS NULL) AS comments,
+    (SELECT array_agg(w.nickname ORDER BY w.last DESC) FROM (
+      SELECT cd.nickname, max(c.created_at) AS last FROM forum_comments c JOIN daily_players cd ON cd.player = c.author
+       WHERE c.post_id = p.id AND c.hidden_reason IS NULL AND NOT c.official
+       GROUP BY cd.nickname ORDER BY last DESC LIMIT ${PARTICIPANTS}) w) AS participants,
     CASE WHEN p.section = 'guides' THEN (SELECT count(*) FROM forum_posts g WHERE g.section = 'guides' AND g.hidden_reason IS NULL
       AND (g.created_at, g.id) <= (p.created_at, p.id)) END AS number
     FROM forum_posts p LEFT JOIN daily_players d ON d.player = p.author`

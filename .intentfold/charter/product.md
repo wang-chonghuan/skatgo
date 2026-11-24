@@ -292,8 +292,8 @@ often. Under them come the kinds SKATGO-110 had hidden, shown again since SKATGO
 exercises each, each kind a card opening to its exercises; they need no account and record nothing. Every answer is an exact solver's or the rules engine's; positions may draw on Skat books (the
 human, SKATGO-103: 「可以参考书上的」). The list of exercises is a search entry in both languages, a single
 exercise is not (the human: 「单页不收录，但是题目页要收录」). The articles are in plain
-words — the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」 — and are SkatGo's posts in the forum, in its
-discussion since SKATGO-231, nowhere else on the site (SKATGO-120, the human: 「移除这个文章在app里的所有其他引用的，就放论坛里」). The
+words — the human: 「文章要写得深入浅出，让用户能看懂，别故作高深」 — and are SkatGo's posts in the forum, among its
+announcements since SKATGO-231, nowhere else on the site (SKATGO-120, the human: 「移除这个文章在app里的所有其他引用的，就放论坛里」). The
 first, twelve tricks for bidding, playing alone and defending, written for the search "Skat Tricks", is one
 post, in English, read in German as its translation (SKATGO-124, the human: 「12 个 Skat 技巧会出现两次。保留英文版」;
 the German post deleted, SKATGO-125: 「你彻底删掉」), each trick linking to the exercises that practise it; its old address,
@@ -348,8 +348,9 @@ A forum at `/forum` (SKATGO-118), in the product's own code: the human wanted
 Three lists since SKATGO-231 (the human: 「公告列表，讨论列表，高级课程列表。就这三个就行了」, reversing SKATGO-186's two): the
 announcements and the advanced course, which only SkatGo writes, and the discussion, where players write and SkatGo too.
 The advanced course is a series of lessons: numbered in the order they are published, each leading to the one before
-and after. The articles SkatGo wrote before stand in the discussion, at their addresses (the human: 「现有5篇seo文章不要放进
-来吧……你决定」). Each list is plain lines, never cards, searched by words in a post's title or text and sorted by time or
+and after. The articles SkatGo wrote before are announcements, at their addresses, so the discussion is the players' own (the
+human, of the agent's advice: 「按建议改」, after 「这类论坛一看就是只有老板在发帖的」). SkatGo's posts carry no logo, their list's
+mark instead, and a line shows the players who commented. Each list is plain lines, never cards, searched by words in a post's title or text and sorted by time or
 by how many comments (the human: 「每个主题，都是一系列列表，然后可以检索和排序（时间， 互动量）……列表不要做成卡片」); the forum's own
 page is the announcements. A post shows its text and pictures, then its comments (「点进列表项后，是图文显示，下面可以评论」).
 Under every post, comments in the order written, flat — no reply to a comment; whom one
@@ -366,7 +367,7 @@ and each reader sees it in the language they read the site in: machine-translate
 and language and kept, saying so in a small line with the text as written one tap away (SKATGO-124, the human:
 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版。用便宜的翻译功能实现」, 「用户可以点击查看原文，有个非常小的链接式的
 小按钮」); a text already in the reader's language, or saying it in both, stands as written. The Skat-Tricks' articles
-are SkatGo's posts in its discussion (SKATGO-120, SKATGO-231). Not in it, by the
+are SkatGo's announcements (SKATGO-120, SKATGO-231). Not in it, by the
 human's agreement (「都同意」): notifications, nested replies, pictures in players' posts (SkatGo's own posts may show the site's own pictures, one per
 language — SKATGO-129, the human: 「给论坛增加加图片的功能」), profiles, likes, blocking (with the
 apps later) and competitions (later, in the product itself).

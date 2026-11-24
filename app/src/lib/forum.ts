@@ -13,7 +13,8 @@ import { type Card, type Rank, type Suit } from './skat/cards'
 
 // Three lists since SKATGO-231 (the human: 「公告列表，讨论列表，高级课程列表。就这三个就行了」): SkatGo's announcements,
 // the players' discussion, and SkatGo's advanced course, its lessons in order. The articles of before are SkatGo's
-// posts in the discussion (the human: 「现有5篇seo文章不要放进来吧……你决定」). The first is the forum's own page.
+// announcements (the human, of the agent's advice: 「按建议改」), so the discussion is the players'. The first is the
+// forum's own page.
 export const FORUM_SECTIONS = ['news', 'talk', 'guides'] as const
 export type ForumSection = (typeof FORUM_SECTIONS)[number]
 
@@ -27,6 +28,9 @@ export type ForumSort = (typeof FORUM_SORTS)[number]
 
 /** The longest search a list takes. */
 export const QUERY_MAX = 100
+
+/** How many of a post's commenters a list's line shows. */
+export const PARTICIPANTS = 3
 
 /** The sections an author may post in. */
 export const sectionsFor = (official: boolean): ForumSection[] => FORUM_SECTIONS.filter((s) => official || !OFFICIAL_SECTIONS.includes(s))
@@ -74,6 +78,9 @@ export type ForumPostSummary = {
   translated: { from: string; title: string; excerpt: string; body?: string } | null
   /** A lesson's place in the advanced course, by publication (SKATGO-231): 1 for the first. */
   number: number | null
+  /** The players who commented on it, newest first, at most `PARTICIPANTS` names — SkatGo's own comments and deleted
+   *  players' not among them (SKATGO-231). */
+  participants: string[]
 }
 
 export type ForumComment = {

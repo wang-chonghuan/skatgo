@@ -70,6 +70,10 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   const thread = (await forumPost(store, { ...guest, id: post.id })).post
   assert.deepEqual(thread.thread.map((c) => c.body), ['@Anna bis 18', 'Siehe Artikel'])
   assert.equal(thread.comments, 2)
+  // A line shows the players who commented, newest first; SkatGo's own comment is not among them.
+  assert.deepEqual(thread.participants.length, 1)
+  assert.ok(!thread.participants.includes(''))
+
   // Sorted by interaction: the most commented first.
   assert.equal((await forumList(store, { ...guest, section: 'talk', sort: 'active' })).posts[0].id, post.id)
   assert.equal((await forumList(store, { ...guest, section: 'talk', sort: 'new' })).posts[0].title, 'Hello')
@@ -127,10 +131,10 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   await assert.rejects(forumCreate(store, { ...ben, section: 'talk', title: 'One more', body: 'x' }))
   await forumCreate(store, { ...admin, section: 'talk', title: 'Official', body: 'x' })
 
-  // The articles of before are posts in the discussion, at the same address (SKATGO-231).
+  // The articles of before are SkatGo's announcements, at the same address (SKATGO-231).
   const { rows } = await store.pool.query(
     `INSERT INTO forum_posts (section, author, official, title, body, created_at, last_activity) VALUES ('articles', 'user:admin', true, 'Alt', 'x', $1, $1) RETURNING id`,
     [tick()])
   await store.migrate()
-  assert.equal((await forumPost(store, { ...guest, id: Number(rows[0].id) })).post.section, 'talk')
+  assert.equal((await forumPost(store, { ...guest, id: Number(rows[0].id) })).post.section, 'news')
 })

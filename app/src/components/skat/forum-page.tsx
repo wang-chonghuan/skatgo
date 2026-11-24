@@ -23,7 +23,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ForumBody } from './forum-body'
-import { Avatar, IconButton, LessonNumber } from './forum-ui'
+import { Avatar, IconButton, LessonNumber, Participants } from './forum-ui'
 import { Btn, TextArea, TextField, Toggle, toggleLook } from './ui'
 
 // The forum (SKATGO-118), since SKATGO-231 as plain as it goes and in SkatGo's own colours (the human: 「我希望极简形式的。
@@ -83,14 +83,22 @@ function Frame({ children }: { children: ReactNode }) {
   )
 }
 
-/** A list's mark: its icon, white on its colour. */
-function SectionMark({ section }: { section: ForumSection }) {
+/** A list's mark: its icon, white on its colour; `large` where a player's post has its author's avatar, for SkatGo's
+ *  own posts, which carry no logo (the human: 「我发的帖子，都用skatgo的logo，不好看，太重复了」). */
+function SectionMark({ section, large }: { section: ForumSection; large?: boolean }) {
   const Icon = SECTION_ICON[section]
   return (
-    <span aria-hidden {...stylex.props(styles.mark, styles[section])}>
+    <span aria-hidden {...stylex.props(styles.mark, large && styles.markLarge, styles[section])}>
       <Icon size={icon.small} />
     </span>
   )
+}
+
+/** Who wrote a post or comment, as a mark: a lesson's number, SkatGo's list's mark, or a player's avatar. */
+function AuthorMark({ of, section, small }: { of: { official: boolean; author: string; number?: number | null }; section: ForumSection; small?: boolean }) {
+  if (of.number && !small) return <LessonNumber n={of.number} />
+  if (of.official) return <SectionMark section={section} large={!small} />
+  return <Avatar name={of.author} small={small} />
 }
 
 type View = { section?: ForumSection; q?: string; sort?: ForumSort; page?: number }
@@ -202,7 +210,7 @@ function SearchBox({ section, sort, q }: { section: ForumSection; sort: ForumSor
 function PostRow({ post }: { post: ForumPostSummary }) {
   return (
     <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} data-number={post.number ?? undefined} data-comments={post.comments} {...stylex.props(styles.row)}>
-      {post.number ? <LessonNumber n={post.number} /> : <Avatar name={post.author} official={post.official} />}
+      <AuthorMark of={post} section={post.section} />
       <div {...stylex.props(styles.rowBody)}>
         <Link to="/forum/$post" params={{ post: postParam(post) }} {...stylex.props(typography.appBtnStrong, styles.rowTitle)}>
           {post.translated?.title ?? post.title}
@@ -214,9 +222,12 @@ function PostRow({ post }: { post: ForumPostSummary }) {
         {post.excerpt ? <p data-testid="forum-excerpt" {...stylex.props(typography.note, styles.text, styles.excerpt)}>{post.translated?.excerpt ?? post.excerpt}</p> : null}
         {post.hidden !== null ? <p {...stylex.props(typography.small, styles.bad)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
       </div>
-      <span aria-label={commentsOf(post.comments)} {...stylex.props(typography.smallBold, styles.count, post.comments > 0 && styles.countSome)}>
-        <MessageSquare size={icon.small} aria-hidden />
-        {post.comments}
+      <span {...stylex.props(styles.rowEnd)}>
+        <Participants names={post.participants} />
+        <span aria-label={commentsOf(post.comments)} {...stylex.props(typography.smallBold, styles.count, post.comments > 0 && styles.countSome)}>
+          <MessageSquare size={icon.small} aria-hidden />
+          {post.comments}
+        </span>
       </span>
     </li>
   )
@@ -372,7 +383,7 @@ function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
             {post.number ? <span {...stylex.props(styles.lessonNo)}>{`${post.number}. `}</span> : null}
             {shown?.title ?? post.title}
           </h1>
-          <Byline of={post} />
+          <Byline of={post} section={post.section} />
           {/* Under the facts, where it is seen before a long text is read. */}
           {post.translated ? <Translated original={original} onSwitch={() => setOriginal(!original)} /> : null}
           {post.hidden !== null ? <p data-testid="forum-hidden" {...stylex.props(typography.appText, styles.bad)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
@@ -403,11 +414,11 @@ function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
   )
 }
 
-/** Avatar, name and date over a post or a comment. */
-function Byline({ of }: { of: ForumPostSummary | ForumComment }) {
+/** The author's mark, name and date over a post or a comment. */
+function Byline({ of, section }: { of: ForumPostSummary | ForumComment; section: ForumSection }) {
   return (
     <div {...stylex.props(styles.byline)}>
-      <Avatar name={of.author} official={of.official} small />
+      <AuthorMark of={of} section={section} small />
       <span data-testid={of.official ? 'forum-official' : 'forum-author'} {...stylex.props(typography.smallBold, of.official ? styles.official : styles.author)}>{nameOf(of)}</span>
       <time {...stylex.props(typography.meta, styles.slate)}>{dateOf(of.createdAt)}</time>
     </div>
@@ -428,7 +439,7 @@ function CommentRow({ comment: c, post, viewer, onReply }: { comment: ForumComme
   const [original, setOriginal] = useState(false)
   return (
     <li data-testid="forum-comment" data-comment-id={c.id} {...stylex.props(styles.padded, styles.entry, styles.commentRow)}>
-      <Byline of={c} />
+      <Byline of={c} section={post.section} />
       {c.hidden !== null ? <p {...stylex.props(typography.small, styles.bad)}>{m.forum_hidden_note({ reason: c.hidden })}</p> : null}
       <ForumBody text={c.translated && !original ? c.translated.body : c.body} official={c.official} />
       {c.translated ? <Translated original={original} onSwitch={() => setOriginal(!original)} /> : null}
@@ -650,6 +661,7 @@ const styles = stylex.create({
   talkLine: { borderBottomColor: color.tileGreen },
   guidesLine: { borderBottomColor: color.tileOrange },
   mark: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: dims.badge, height: dims.badge, borderRadius: radii.tag, color: color.onColor },
+  markLarge: { width: dims.avatar, height: dims.avatar, borderRadius: radii.round },
   news: { backgroundColor: color.tileNavy },
   talk: { backgroundColor: color.tileGreen },
   guides: { backgroundColor: color.tileOrange },
@@ -688,7 +700,8 @@ const styles = stylex.create({
   author: { color: color.navy },
   official: { color: color.go },
   excerpt: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  count: { display: 'inline-flex', alignItems: 'center', gap: space.x4, flexShrink: 0, paddingTop: space.x2, color: color.slate },
+  rowEnd: { display: 'inline-flex', alignItems: 'center', gap: space.x10, flexShrink: 0 },
+  count: { display: 'inline-flex', alignItems: 'center', gap: space.x4, flexShrink: 0, color: color.slate },
   countSome: { color: color.info },
   // A post's page.
   crumbs: { display: 'flex', alignItems: 'center', gap: space.x8 },

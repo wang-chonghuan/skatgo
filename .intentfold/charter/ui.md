@@ -335,8 +335,8 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     three drawn for it (`practice-card.webp`, a grandfather and a girl over cards, a puzzle piece above, in the forum picture's flat style;
     SKATGO-149, the human: 「把practice放到forum下面」, 「选B」) and "Endspiel-Rätsel, Reizen und mehr – für alle, die die Regeln schon kennen."
     to `/skat-tricks`, and "Fortgeschrittenenkurs" (SKATGO-234, in the place of SKATGO-204's bidding card) with its own picture in the same
-    flat style, not at a table (`advanced-card.webp`: an old man pulling a young one up a staircase of giant cards to a club flag; the
-    human: 「别搞的跟其他的一样，都是个桌子」, 「不要老人，要两个人，一个老头，一个年轻人」) and "Vertiefende Lektionen für alle, die die Regeln kennen – je ein Thema." to
+    flat style, not at a table (`advanced-card.webp`: a young woman leading an older man up a staircase of giant cards to a club flag; the
+    human: 「别搞的跟其他的一样，都是个桌子」, 「不要老人，要两个人，一个老头，一个年轻人」, 「要一男一女那个版本」) and "Vertiefende Lektionen für alle, die die Regeln kennen – je ein Thema." to
     `/advanced-course` — the two on PC side by side in
     the wide third column (`homeWaysNarrow`), each about as wide as a colour card, under `bp.cards` the next free places. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
     The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,

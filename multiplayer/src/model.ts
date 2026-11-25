@@ -9,6 +9,7 @@ import { declarationAdvice } from '../../app/src/lib/skat/ai'
 import { seegerFabian, summarize } from '../../app/src/lib/skat/tournament'
 import { AWAY_MS, leftOutcome, type LeagueResult, type LeftOutcome } from '../../app/src/lib/skat/league'
 import type { RoomDeal, RoomPrivate, RoomPublic } from '../../app/src/lib/skat/room-view'
+import type { Face } from '../../app/src/lib/forum'
 import type { Logged } from './computers'
 
 export const GRACE_MS = 30_000
@@ -71,6 +72,9 @@ export type Slot = {
   /** A League table's persona in this seat (SKATGO-204): its `sim:` id; it plays the seat as a computer does, under
    *  `nickname`, and is never an account. */
   persona?: string
+  /** A League seat's person's face when the table formed (SKATGO-238), shown to the others at the table; none for a persona,
+   *  whose picture is the drawing of its name, as on the boards. */
+  face?: Face
   /** A League sitting's person who left (SKATGO-205): a computer finishes the deal on the table for them, and the seat goes
    *  to a persona when the next is dealt. Away `AWAY_MS` counts as leaving (SKATGO-206). */
   leaving?: boolean
@@ -369,6 +373,7 @@ export function publicView(s: Snapshot): RoomPublic {
     seats: s.seats.map((p, i) => ({
       seat: i, kind: p.account || p.persona ? 'human' : isEmpty(p) ? 'empty' : 'ai',
       nickname: p.nickname,
+      face: p.face ?? null,
       host: p.account !== null && p.account === s.host,
       connected: !!p.session || !!p.persona,
       ready: (s.nextBy ?? []).includes(i) || !!p.persona,

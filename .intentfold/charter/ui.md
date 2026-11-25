@@ -690,7 +690,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   禁止动这个背景板」). In landscape a face stands beside the board. In portrait it stands under the board's foot
   (`tableBand.boardFoot`), 4u above a ten-card stack. Only where a face does not fit does the stage move down, by
   what the face lacks, and the table gets a little smaller so the hand still fits. The table's geometry does not
-  depend on the faces switch. The settings carry the switch,
+  depend on the faces switch. A League table (SKATGO-238, the human: 「联赛时，我想把对方玩家的头像显示出来，就显示在free play的那个
+  对应的地方」, 「不做表情吧，就头像不变」) puts its two opponents' own pictures in the faces' places, still — the face stored
+  for them when the table formed, or the drawing of their name, as on the boards — whatever the switch says. The settings carry the switch,
   "Avatare" — "Avatare von Lina und Noah am Tisch", on by default (「配置里要加上一个配置……默认是开的」), under the table
   talk's; off, the table stays exactly where it is. Two more sets (SKATGO-167, the human: 「再弄两套头像，一男一女，风格不同，然后
   设置页面可以看着头像选桌上的头像，名字暂时可以不变，可以男明用女头像」, then 「画风必须一致」): four more people, two women and two men,

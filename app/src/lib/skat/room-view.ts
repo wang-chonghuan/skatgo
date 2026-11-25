@@ -8,12 +8,15 @@ import type { Bidding, Game, Phase, Played, Seat } from './game'
 import type { DealSummary } from './tournament'
 import type { Declaration } from './value'
 import type { LeagueResult } from './league'
+import type { Face } from '../forum'
 
 export type RoomSeat = {
   seat: number
   /** A person's seat, a computer's, or — while the room waits for its first deal (SKATGO-163) — an empty one. */
   kind: 'human' | 'ai' | 'empty'
   nickname: string | null
+  /** A League opponent's picture (SKATGO-238): their own, or null for the drawing of their name. */
+  face: Face
   /** The room's host: who may take a person out. */
   host: boolean
   connected: boolean

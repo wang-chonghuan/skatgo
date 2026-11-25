@@ -34,6 +34,13 @@ import { Btn, Panel, Pill, TextField, linkLook } from './ui'
 /** How long a lost room keeps trying to come back, and the waits between tries (then every 10 s). */
 const RETRY_FOR = 2 * 60 * 1000
 const WAITS = [1000, 2000, 4000, 8000]
+/** A phone woken from its lock can leave a connection that neither opens nor closes (SKATGO-238, the human: 「手机锁屏，再打开，
+ *  就会显示在连接中，其实就时卡死了……不要卡死」): an entry not done in ENTER_WITHIN is let go and tried again; the SDK's own
+ *  reconnection has BACK_WITHIN, then the seat is entered afresh; and a seat that looks connected when the page comes back
+ *  to the front must answer a ping within ANSWER_WITHIN. */
+const ENTER_WITHIN = 12_000
+const BACK_WITHIN = 8_000
+const ANSWER_WITHIN = 3_000
 
 const errorText = (e: TableError) =>
   ({
@@ -208,15 +215,35 @@ export function useSeat<E extends string>({ enter, passing, here, active, key = 
   const awaiting = useRef<number | null>(null)
   /** When the last change to the game was put on the table, for the next one's beat. */
   const lastMove = useRef(0)
+  /** How long the SDK's own reconnection may still take before the seat is entered afresh (SKATGO-238). */
+  const giveUp = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  /** Lets a connection that is not coming back go — quietly, its handlers no longer heard — and enters the seat afresh,
+   *  the table staying on screen under its line meanwhile (SKATGO-238). */
+  function abandon(r: Room) {
+    if (room.current !== r || leaving.current) return
+    clearTimeout(giveUp.current)
+    room.current = null
+    awaiting.current = null
+    setSending(false)
+    r.reconnection.enabled = false
+    void r.leave(false).catch(() => {})
+    setStage({ kind: 'connecting' })
+    back.current = null
+    void comeIn()
+  }
 
   function attach(r: Room) {
     room.current = r
+    // Every handler below is this connection's only while it is the seat's: one let go (`abandon`) is no longer heard.
+    const mine = () => room.current === r
     // Nothing sent before is still on its way: a receipt for it will never come on this connection.
     awaiting.current = null
     setSending(false)
     setDropped(false)
     setStage({ kind: 'seated' })
     r.onStateChange(() => {
+      if (!mine()) return
       const next = readState(r)
       if (!next) return
       latest.current = next
@@ -229,12 +256,14 @@ export function useSeat<E extends string>({ enter, passing, here, active, key = 
     // A move taken stays on its way until the state it made is here (SKATGO-164): the receipt comes first, and a table
     // no longer busy on the state before would put the card just played back in the hand for that moment.
     r.onMessage('receipt', (receipt: { ok?: boolean; revision?: number }) => {
+      if (!mine()) return
       if (receipt?.ok && typeof receipt.revision === 'number' && receipt.revision > (latest.current?.pub.revision ?? 0)) {
         awaiting.current = receipt.revision
       } else setSending(false)
     })
     // Taken out by the host, left, opened on another device, or the room closed: this page lets the room go.
     r.onMessage('dismissed', (d: { why?: Gone }) => {
+      if (!mine()) return
       leaving.current = true
       const why = d?.why ?? 'closed'
       if (dismissed?.(why)) return
@@ -242,13 +271,22 @@ export function useSeat<E extends string>({ enter, passing, here, active, key = 
     })
     // A lost connection: the SDK's own reconnection first, with the table kept on screen; when that gives up, the
     // account comes back to its seat (a computer has kept it warm meanwhile), trying again until the service is back.
-    r.onDrop(() => setDropped(true))
+    r.onDrop(() => {
+      if (!mine()) return
+      setDropped(true)
+      clearTimeout(giveUp.current)
+      giveUp.current = setTimeout(() => abandon(r), BACK_WITHIN)
+    })
     r.onReconnect(() => {
+      if (!mine()) return
+      clearTimeout(giveUp.current)
       setDropped(false)
       awaiting.current = null
       setSending(false)
     })
     r.onLeave(() => {
+      if (!mine()) return
+      clearTimeout(giveUp.current)
       room.current = null
       awaiting.current = null
       setSending(false)
@@ -277,8 +315,19 @@ export function useSeat<E extends string>({ enter, passing, here, active, key = 
     trying.current = true
     leaving.current = false
     clearTimeout(back.current?.timer)
-    const r = await enter()
+    // An entry that hangs — a request or a socket opened while the phone woke — is let go after ENTER_WITHIN, and the room it
+    // may still bring is left (SKATGO-238).
+    const entering = enter()
+    let wait: ReturnType<typeof setTimeout> | undefined
+    const late = new Promise<'late'>((done) => { wait = setTimeout(() => done('late'), ENTER_WITHIN) })
+    const r = await Promise.race([entering, late])
+    clearTimeout(wait)
     trying.current = false
+    if (r === 'late') {
+      void entering.then((x) => { if (typeof x !== 'string') void x.leave(true).catch(() => {}) })
+      if (leaving.current) return
+      return later()
+    }
     if (leaving.current) {
       if (typeof r !== 'string') void r.leave(true)
       return
@@ -297,16 +346,28 @@ export function useSeat<E extends string>({ enter, passing, here, active, key = 
     if (!active) return
     setStage({ kind: 'connecting' })
     void comeIn()
-    // A phone back in front, or the network back: the next try is now rather than after its wait.
+    // A phone back in front, or the network back: the next try is now rather than after its wait. A seat still in the SDK's
+    // reconnection is entered afresh at once, and one that looks connected must answer within ANSWER_WITHIN, or it is
+    // too (SKATGO-238).
     const now = () => {
-      if (back.current && document.visibilityState === 'visible') void comeIn()
+      if (document.visibilityState !== 'visible') return
+      if (back.current) return void comeIn()
+      const r = room.current
+      if (!r) return
+      if (r.reconnection.isReconnecting) return abandon(r)
+      let answered = false
+      r.ping(() => { answered = true })
+      setTimeout(() => { if (!answered) abandon(r) }, ANSWER_WITHIN)
     }
     document.addEventListener('visibilitychange', now)
+    window.addEventListener('pageshow', now)
     window.addEventListener('online', now)
     return () => {
       leaving.current = true
       clearTimeout(back.current?.timer)
+      clearTimeout(giveUp.current)
       document.removeEventListener('visibilitychange', now)
+      window.removeEventListener('pageshow', now)
       window.removeEventListener('online', now)
       void room.current?.leave(true)
     }

@@ -96,7 +96,7 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   Terms omit participant-composition claims rather than asserting presence, absence, possibility or
   human-only participation.
 - **The League** (SKATGO-204) runs in `multiplayer/src/league.ts` under `/league` behind the admission key; the rules both
-  sides share — tiers, fees per deal, a deal's points (`dealPoints`, SKATGO-216), promotion and relegation (`START_AT`, `PROMOTE_AT`, `RELEGATE_AT`, SKATGO-217, 1500 / 2000 / 0 since SKATGO-237, 1500 / 3000 / 0 from SKATGO-219), the day's coins (`CHECKIN_COINS`) —
+  sides share — tiers, fees per deal, a deal's points (`dealPoints`, SKATGO-216), promotion and relegation (`START_AT`, `PROMOTE_AT`, `RELEGATE_AT`, SKATGO-217, 1000 / 2000 / 0 since SKATGO-238, 1500 / 2000 / 0 from SKATGO-237, 1500 / 3000 / 0 from SKATGO-219), the day's coins (`CHECKIN_COINS`) —
   are `app/src/lib/skat/league.ts`, held to the tickets by `league.test.ts`. `league_players` holds an account's coins (the
   day's check-in: `checkin_day` by `dayOf`), tier and points (`scale` 6 since SKATGO-237's ×2/3 to the 2000 line, 5 from SKATGO-219's ×1.5 to the 3000 line, 4 from SKATGO-217's move to 1000, each change of scale run once by the migration);
   `league_matches` a sitting (its own id, its room, tier, who sat down where, when it ended); `league_deals` each finished
@@ -323,7 +323,10 @@ also built from the repository root. Neither project imports the other's runtime
   stays `/healthz`, because the new process becomes ready only after the old one hands over the
   rooms, and a readiness check there would deadlock every deploy. The browser keeps trying to come
   back for two minutes (a seat still open elsewhere for 20 s), the table on screen under a
-  reconnecting line. A move is stale only if the game changed after its revision (`played`), not
+  reconnecting line — and never hangs on a connection that neither opens nor closes, as a phone woken from its lock
+  leaves (SKATGO-238, the human: 「手机锁屏，再打开，就会显示在连接中，其实就时卡死了……不要卡死」): an entry not done in 12 s is
+  tried again, the SDK's own reconnection has 8 s before the seat is entered afresh, and on coming back to the page a seat
+  still reconnecting is entered afresh at once and one that looks connected must answer a ping in 3 s (`useSeat`). A move is stale only if the game changed after its revision (`played`), not
   when someone drops or returns; a room admits six connections for three seats so a reconnection
   reservation never locks it. A newcomer who signed up to come into a room is recorded in `account_referrals`
   (multiplayer's PostgreSQL) through `/api/room/referral`, only for an account made within the hour, its seat in the

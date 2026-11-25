@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-235",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-235",
+  "branch": "SKATGO-235-leave-old-tables",
+  "base": "d71e060",
+  "ports": { "web": 55235, "multiplayer": 56235, "database": 57235 }
+}

@@ -19,6 +19,7 @@ import { personaPolicy } from './personas/play'
 import { played, recordFreeDeal } from './profile'
 import type { Policy } from './skatzero/policy'
 import type { Store } from './store'
+import { leaveOtherTables } from './tables'
 
 // The League (SKATGO-204, the human: 「分场天梯先做，而且人机匹配，有人则匹配人，没人则匹配AI」): a signed-in player's coins from a
 // daily check-in, their tier and league points, and the table they sit at, paying their tier's fee for each deal. A sitting
@@ -317,7 +318,6 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
           const s = await standingOf(c, w.player, true)
           if (s.tier !== g.tier) answer(w.player, { error: 'tier_changed' })
           else if (s.coins < FEES[g.tier]) answer(w.player, { error: 'not_enough_coins' })
-          else if (await store.roomOf(w.player, null, c)) answer(w.player, { error: 'already_in_room' })
           else seated.push(w.player)
         }
         if (!seated.length) return null
@@ -354,6 +354,8 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
       })
       if (!made) return
       await host(made.room)
+      // At the new table, each leaves any other they sat down at while waiting (SKATGO-235).
+      for (const account of made.seated) await leaveOtherTables(store, account, made.room)
       for (const account of made.seated) answer(account, { room: made.room })
     } catch (e) {
       const error = e instanceof Rejected ? e.message : 'unavailable'
@@ -380,7 +382,9 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
     const who = z.object({ player }).strict().parse(body).player
     const table = await tableOf(store, who)
     if (table) return { room: table }
-    if (await store.roomOf(who)) throw new Rejected('already_in_room')
+    // Going to the League, the account leaves every other table (SKATGO-235, the human: 「比如打过私人桌，再打联赛，就显示我在
+    // 另一个桌，让我先退出，其实我已经无法退出了」).
+    await leaveOtherTables(store, who)
     const s = await standingOf(store.pool, who)
     if (s.coins < FEES[s.tier]) throw new Rejected('not_enough_coins')
     const m = await enqueue(who, s.tier)

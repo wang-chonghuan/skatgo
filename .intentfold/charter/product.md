@@ -192,11 +192,13 @@ The League at `/league` (SKATGO-204, the human: 「分场天梯先做，而且�
 Bronze, Silver, Gold, Platinum, Diamond and Legend, German Bronze, Silber, Gold, Platin, Diamant, Legende ("Gold-Liga",
 "Legenden-Liga"; the top one Legend, 「最高级的钻石改为传奇」; Platinum and Diamond as a European ranks them, under Legend) —
 played a deal at a time at a table of three (SKATGO-205, the human: 「能否不管round，就从一个deal里，用简单直观的方法，让
-玩家觉得打一个deal就有一个获得感」), each deal costing 3, 4, 5, 6, 10 or 12 coins (3, 4, 5, 7, 8, 10 until SKATGO-210: 「每个tier的扣分是：3，4，5，6，10，12」), taken when it is dealt and kept if the player
+玩家觉得打一个deal就有一个获得感」), each deal costing 4 coins in every tier since SKATGO-235 (the human: 「100个，每tier都是4个……还是90个……我觉得高级场不够了也不行。但是其实用户还
+可以攒金币」; 3, 4, 5, 6, 10, 12 from SKATGO-210, 3, 4, 5, 7, 8, 10 before), taken when it is dealt and kept if the player
 leaves during it; the player leaves the table whenever they like. Coins come only from checking in: a signed-in player's first open of SkatGo on a
-day gives 100 (「不打开游戏就不给，打开了就能积累」; SKATGO-219, with the lines half as far again: 「增加每天的金币量，然后增加升级要的局数，
+day gives 90 since SKATGO-235 — 22 deals and a half a day, a little under what the two players who played most did (20.6 and 26.6 a
+day; the human: 「尽量满足它们，稍微欠一点，留个念想」) (「不打开游戏就不给，打开了就能积累」; 100 from SKATGO-219, with the lines half as far again: 「增加每天的金币量，然后增加升级要的局数，
 让玩家有更多的时间玩，但是要在过瘾和厌倦中找到平衡，不要给太多导致厌倦，也不要给的太少不过瘾」; 60 from SKATGO-210: 「每天自动给的金币太多了，没意思」, then 「60」; 100 before it), the day the daily
-tournament's; they add up through a week, Monday to Sunday, and the first check-in of a new week starts again from 100, what
+tournament's; they add up through a week, Monday to Sunday, and the first check-in of a new week starts again from the day's coins, what
 was left gone (「必须每周金币清零」); they cannot be
 bought for now (「暂时不开放购买」) and are never exchanged for money or goods (「金币只要不能换实物就行」). Too few coins
 stops the League only: the player gets up after the deal they are in. A table waits five seconds for other people of the
@@ -241,7 +243,10 @@ AI），点开始游戏」). Once it plays, a friend coming in takes a computer'
 people the number lets nobody else in. Every human participant at the table has an account, the room's host and
 whoever comes in alike (the human: 「我打算把私人桌改成必须三个玩家都登录」), and sits under the name the boards show;
 Synthetic players use separate internal identities for assigned computer seats, not account admission; an
-account is in one room at a time. The page offers two cards, a new room and a room to come into, or, while the account
+account is in one room at a time — the League's table counting as one — and the new table settles it: opening a room,
+entering one or playing the League takes the account out of every other table, as its own Leave would (a private seat
+to a computer, a League seat left by the League's rule), never refused (SKATGO-235, the human: 「如果用户开新桌，自动从所有
+老桌退场。不要让用户被卡死」). The page offers two cards, a new room and a room to come into, or, while the account
 is in one, the way back to it (「私人桌进入后，两张卡片，新建房间，加入房间。如果已经在了一个房间，则显示回到房间」). At the table the
 room's number is an item of the table's menu, and a tap copies its link (「点击后复制链接，而不只是房间号」, then, the
 corner not working: 「我建议放到退出按钮里，加一个菜单项」); a room's menu button is the table's, not the way out of other

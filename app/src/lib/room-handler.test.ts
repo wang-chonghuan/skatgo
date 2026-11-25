@@ -29,8 +29,7 @@ const service = async (url: URL | string) => {
   if (u.pathname === '/rooms/referral') return reply(200, { recorded: true })
   const status = { '/rooms/482917': 'open', '/rooms/555555': 'full', '/rooms/777777': 'member' }[u.pathname]
   if (!status) return reply(404, { error: 'room_not_found' })
-  const elsewhere = u.searchParams.get('account') === 'user:test_seated' && status !== 'member' ? '777777' : null
-  return reply(200, { status, elsewhere })
+  return reply(200, { status })
 }
 
 let upstream: ReturnType<typeof vi.fn>
@@ -90,8 +89,9 @@ describe('POST /api/room/ticket', () => {
     expect([none.status, await none.json()]).toEqual([404, { error: 'room_not_found' }])
     const malformed = await handleRoom(post('/api/room/ticket', { for: 'join', room: '01234' }, account('friend')))
     expect([malformed.status, await malformed.json()]).toEqual([404, { error: 'room_not_found' }])
-    const busy = await handleRoom(post('/api/room/ticket', { for: 'join', room: '482917' }, account('seated')))
-    expect([busy.status, await busy.json()]).toEqual([409, { error: 'already_in_room', room: '777777' }])
+    // Seated at another table: a ticket all the same — entering, the account leaves that table (SKATGO-235).
+    const seated = await handleRoom(post('/api/room/ticket', { for: 'join', room: '482917' }, account('seated')))
+    expect(seated.status).toBe(200)
   })
   it('lets an account enter ten wrong numbers a minute, then makes it wait', async () => {
     for (let i = 0; i < WRONG_LIMITS.count; i++) {

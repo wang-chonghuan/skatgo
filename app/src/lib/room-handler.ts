@@ -124,7 +124,7 @@ export async function handleRoom(request: Request): Promise<Response> {
         return json(404, { error: 'room_not_found' })
       }
       if (r.status !== 200) return json(503, { error: 'not_ready' })
-      if (typeof r.body.elsewhere === 'string') return json(409, { error: 'already_in_room', room: r.body.elsewhere })
+      // Seated elsewhere is no obstacle (SKATGO-235): entering, the account leaves that table.
       if (r.body.status === 'full') return json(409, { error: 'room_full' })
       return json(200, { endpoint, ticket: issueTicket(key, { purpose: 'join', user: account, room }) })
     }

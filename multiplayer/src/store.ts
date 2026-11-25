@@ -310,15 +310,22 @@ export class Store {
     const { rowCount } = await c.query('INSERT INTO multiplayer_rooms VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING', [s.id, s, s.expiresAt])
     return rowCount === 1
   }
-  /** The live room an account has a seat in (SKATGO-163: one at a time), but `except`; null if none. A League table
-   *  that has ended holds nobody (SKATGO-204). */
-  async roomOf(account: string, except: string | null = null, c: pg.Pool | pg.PoolClient = this.pool): Promise<string | null> {
+  /** The live rooms an account has a seat in, but `except`. A League table that has ended holds nobody (SKATGO-204), and
+   *  a League seat its person left holds them no more (SKATGO-235), though it keeps their name until the next deal. */
+  async roomsOf(account: string, except: string | null = null, c: pg.Pool | pg.PoolClient = this.pool): Promise<string[]> {
     const { rows } = await c.query(
       `SELECT id FROM multiplayer_rooms WHERE expires_at > $1 AND snapshot->>'schema' = '3'
-         AND snapshot->'seats' @> $2::jsonb AND id IS DISTINCT FROM $3
-         AND NOT coalesce((snapshot->'league'->>'finished')::boolean, false) LIMIT 1`,
-      [Date.now(), JSON.stringify([{ account }]), except])
-    return (rows[0]?.id as string | undefined) ?? null
+         AND id IS DISTINCT FROM $3
+         AND NOT coalesce((snapshot->'league'->>'finished')::boolean, false)
+         AND EXISTS (SELECT 1 FROM jsonb_array_elements(snapshot->'seats') x
+                      WHERE x->>'account' = $2 AND NOT coalesce((x->>'leaving')::boolean, false))
+       ORDER BY id`,
+      [Date.now(), account, except])
+    return rows.map((r) => r.id as string)
+  }
+  /** The live room an account has a seat in, but `except`; null if none — for "Back to room". */
+  async roomOf(account: string, except: string | null = null, c: pg.Pool | pg.PoolClient = this.pool): Promise<string | null> {
+    return (await this.roomsOf(account, except, c))[0] ?? null
   }
   async read(id: string): Promise<Snapshot> {
     const { rows } = await this.pool.query('SELECT snapshot FROM multiplayer_rooms WHERE id = $1', [id])

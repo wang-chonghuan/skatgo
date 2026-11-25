@@ -332,6 +332,16 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.equal(lost.points[pd2.seat], forfeitPoints(away2.declarer, away2.detail?.value ?? 0, pd2.seat))
     assert.deepEqual(lost.forfeits, [pd2.seat])
     assert.deepEqual(await call('review', { player: 'user:d', match: shared, deal: next }), { status: 409, body: { error: 'no_such_deal' } })
+
+    // Seated at a private table and gone from it without leaving, then to the League (SKATGO-235): seated there, out of the
+    // private table — which, nobody left in it, closes.
+    await call('checkin', { player: 'user:f' })
+    const privateTable = await attach(await new Client(endpoint).create('skat', { admissionKey, account: 'user:f' }))
+    privateTable.room.connection.close()
+    const went = await call('play', { player: 'user:f' })
+    assert.equal(went.status, 200, JSON.stringify(went.body))
+    assert.equal((await snapshot(went.body.room)).seats.filter(p => p.account === 'user:f').length, 1)
+    await until(async () => (await sql.query('SELECT 1 FROM multiplayer_rooms WHERE id=$1', [privateTable.room.roomId])).rowCount === 0)
   } catch (e) {
     console.error(logs.slice(-4000))
     throw e

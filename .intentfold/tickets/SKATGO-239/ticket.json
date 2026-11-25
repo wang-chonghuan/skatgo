@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-239",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "auto-deploy",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-239",
+  "branch": "SKATGO-239-dark-small-avatars",
+  "base": "d65aceb8b37358fdafb00fc93841197781ada907",
+  "ports": { "web": 55239, "multiplayer": 56239, "database": 57239 }
+}

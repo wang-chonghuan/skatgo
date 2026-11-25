@@ -600,7 +600,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`homeTileTitle`); then two large numbers (`homeCardTitle`), the coins first with lucide's `Coins` (the human: 「没显示该玩家
   的总金币数」), "Münzen" and "+100 heute" beside it on the same line, and the League points without a sign with
   "Ligapunkte" beside them on theirs (SKATGO-220, the human: 「全部放在同一行……只有屏幕窄到实际放不下时才允许换行，不要横向溢出」;
-  under the numbers before), and the two lines under them, "Aufstieg bei 3000 · Abstieg bei 0" (`appText`, `onColorSoft`; SKATGO-219's lines; SKATGO-217, the human: 「你不用给分差，只用说明这个0和
+  under the numbers before), and the two lines under them, "Aufstieg bei 2000 · Abstieg bei 0" (`appText`, `onColorSoft`; SKATGO-237's lines, 3000 from SKATGO-219; SKATGO-217, the human: 「你不用给分差，只用说明这个0和
   2000就行了」 — the lines, never the distance to them) — each only where there is one, none up from Legend and none down from
   Bronze; the `ProgressBar` from the relegation line to the promotion line (none in Legend); then the one `go`, "Spielen · 15
   Münzen" — "Suche Mitspieler … 5" on it while it waits, counting the five seconds down (the human: 「等待时要有个倒计时」), the number gone once they are up, disabled with one line when the coins are too few ("Zu wenig Münzen –
@@ -638,7 +638,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   page in the table's place in the browser's history, and a table address with no table to come to — closed, left, or
   opened on another device — goes straight to the League page the same way, with no "table closed" page (SKATGO-209, the
   human: 「点返回按钮，跳到 this table has closed. 页面……特别影响体验」). The League
-  card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from 0 to 3000 in every tier but Legend (SKATGO-219; 0 to 2000 from SKATGO-217, −1000 to +1000 before, −20 to +30 before that), the board's points without a sign.
+  card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from 0 to 2000 in every tier but Legend (SKATGO-237; 0 to 3000 from SKATGO-219, 0 to 2000 from SKATGO-217, −1000 to +1000 before, −20 to +30 before that), the board's points without a sign.
 - **The tables** (`/play`, `/daily/play`, a private table, a League table since SKATGO-204, and an open-card endgame's page since SKATGO-111):
   the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a

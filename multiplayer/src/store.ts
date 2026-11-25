@@ -234,6 +234,11 @@ export class Store {
         UPDATE league_players SET points = round(points * 1.5), scale = 5 WHERE scale = 4;
         ALTER TABLE league_players ALTER COLUMN scale SET DEFAULT 5;
         ALTER TABLE league_players ALTER COLUMN points SET DEFAULT 1500;
+        -- SKATGO-237 moves the promotion line to 2000, start 1500 and relegation 0 kept (the human: 「确保他们这个进度不变，
+        -- 分数按百分比换算」): a row on scale 5 is scaled by 2/3 to a whole number, keeping its place between 0 and the
+        -- promotion line, tier and coins kept — once; a new account still starts at 1500.
+        UPDATE league_players SET points = round(points * 2 / 3.0), scale = 6 WHERE scale = 5;
+        ALTER TABLE league_players ALTER COLUMN scale SET DEFAULT 6;
         -- SKATGO-163 made tables rooms with a number, every seat an account's: the tables of before (schema 2, seats
         -- held by browser tokens) end here; the deploy backs them up first.
         DELETE FROM multiplayer_rooms WHERE snapshot->>'schema' = '2';

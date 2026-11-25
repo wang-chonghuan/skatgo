@@ -361,7 +361,8 @@ const styles = stylex.create({
   stepOff: { opacity: opacity.iconDisabled, cursor: 'not-allowed', backgroundColor: { default: color.surface, ':hover': color.surface } },
   rank: { minWidth: space.x24 },
   boardHeadRow: { display: 'flex', paddingInline: space.x8, paddingBottom: space.x4 },
-  boardRow: { paddingInline: space.x8 },
+  // Rank, avatar, name and points on one line through the avatar's middle (SKATGO-236).
+  boardRow: { paddingInline: space.x8, alignItems: 'center' },
   mine: { backgroundColor: color.goodSoft, borderRadius: radii.column },
   gap: { marginTop: space.x16 },
   result: { display: 'flex', flexDirection: 'column', gap: space.x12 },

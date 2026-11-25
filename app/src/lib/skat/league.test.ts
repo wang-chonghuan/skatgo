@@ -15,9 +15,9 @@ const sf = (declarer: 0 | 1 | 2, won: boolean, value: number) =>
 describe('the League', () => {
   it('has six tiers, Bronze to Legend, and their fees per deal', () => {
     expect(TIERS).toEqual(['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend'])
-    expect(FEES).toEqual([3, 4, 5, 6, 10, 12])
+    expect(FEES).toEqual([4, 4, 4, 4, 4, 4])
     expect(AWAY_MS).toBe(60_000)
-    expect(CHECKIN_COINS).toBe(100)
+    expect(CHECKIN_COINS).toBe(90)
     expect([START_AT, PROMOTE_AT, RELEGATE_AT]).toEqual([1500, 3000, 0])
   })
 

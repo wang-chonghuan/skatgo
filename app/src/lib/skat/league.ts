@@ -11,17 +11,19 @@ export const TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend
 export type Tier = (typeof TIERS)[number]
 export const LEGEND = TIERS.length - 1
 
-/** Coins a deal costs in each tier, taken when it is dealt and kept if the player leaves during it (SKATGO-210, the human:
- *  「每个tier的扣分是：3，4，5，6，10，12」): a day's coins buy 33 deals in Bronze, 10 in Diamond, 8 in Legend. */
-export const FEES: readonly number[] = [3, 4, 5, 6, 10, 12]
+/** Coins a deal costs in each tier, taken when it is dealt and kept if the player leaves during it: 4 in every tier since
+ *  SKATGO-235 (the human: 「100个，每tier都是4个……还是90个……我觉得高级场不够了也不行。但是其实用户还可以攒金币」), so a day's coins buy 22
+ *  deals and a half wherever one plays — a little under what the two players who played most did a day (20.6 and 26.6, the
+ *  human: 「尽量满足它们，稍微欠一点，留个念想」); 3, 4, 5, 6, 10, 12 from SKATGO-210. */
+export const FEES: readonly number[] = [4, 4, 4, 4, 4, 4]
 
 /** Coins a day's check-in gives: the first time a signed-in player opens SkatGo that day (the human: 「不打开游戏就不给，打开了
- *  就能积累」) — 100 since SKATGO-219, with the lines half as far again (the human: 「增加每天的金币量，然后增加升级要的局数，
+ *  就能积累」) — 90 since SKATGO-235 (with a deal at 4 in every tier, above), 100 from SKATGO-219, with the lines half as far again (the human: 「增加每天的金币量，然后增加升级要的局数，
  *  让玩家有更多的时间玩，但是要在过瘾和厌倦中找到平衡」); 60 from SKATGO-210 (「每天自动给的金币太多了，没意思」, 「100个太多，
  *  而且必须每周金币清零」, then 「每天30个我觉得太少」, 「60」), when a tier took a third fewer deals. They add up through a
- *  week, Monday to Sunday in Berlin, and the week's first check-in starts again from 100, what was left gone. They cannot
+ *  week, Monday to Sunday in Berlin, and the week's first check-in starts again from the day's coins, what was left gone. They cannot
  *  be bought or exchanged. */
-export const CHECKIN_COINS = 100
+export const CHECKIN_COINS = 90
 
 /** League points of a deal for one seat (SKATGO-216, the human: 「我们搞这么复杂，你思考一下，用sf是不是更好？…巧用一下它们的
  *  算分系统」, then 「开工单改成SF减两家平均」): the seat's Seeger-Fabian score minus the average of the other two seats' — the

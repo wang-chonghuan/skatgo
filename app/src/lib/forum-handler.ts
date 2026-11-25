@@ -65,6 +65,9 @@ const MATURE = {
   eyebrows: ['default', 'defaultNatural', 'raisedExcited', 'flatNatural'],
 } satisfies Partial<avataaars.Options & { backgroundColor: string[]; radius: number }>
 
+/** The table's square variant (SKATGO-238/239): square, no ground, the person at 80 % and lowered to the foot. */
+const TABLE = { radius: 0, backgroundColor: ['transparent'], scale: 80, translateY: 10 }
+
 /** The text an avatar address names, or null — for an avatar, only at the current style's address. */
 function seedOf(path: string, kind: 'avatar' | 'multiavatar'): string | null {
   const prefix = kind === 'avatar' ? `avatar\\/${AVATAR_STYLE}` : 'multiavatar'
@@ -96,10 +99,11 @@ function avatar(request: Request, path: string): Response {
   const kind = path.startsWith(`${PREFIX}multiavatar/`) ? 'multiavatar' : 'avatar'
   const seed = seedOf(path, kind)
   if (!seed) return json(404, { error: 'not found' })
-  // `?square`: the same picture on a square ground, filling the table's square face box as free play's faces do (SKATGO-238,
-  // the human: 「默认的框不是方形吗……怎么改成圆形了？」).
+  // `?square`: the same person for the table's square face box (SKATGO-238, the human: 「默认的框不是方形吗……怎么改成圆形了？」),
+  // with no ground of its own, so the box's dark square shows as behind Lina and Noah, and drawn smaller, the shoulders
+  // still at the box's foot (SKATGO-239, the human: 「头像背景……能否改为深灰黑色，像其他头像一样」, 「联赛里头像尺寸太大，请调小」).
   const square = new URL(request.url).searchParams.has('square')
-  return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...MATURE, ...(square ? { radius: 0 } : {}) }).toString())
+  return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...MATURE, ...(square ? TABLE : {}) }).toString())
 }
 
 /** GET /api/forum/avatar/u/<id> — a picture a player uploaded (SKATGO-232), as the forum keeps it: a new id with each

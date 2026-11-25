@@ -327,7 +327,7 @@ function LeaguePlaying({ state, busy, send, collect, notice, leave }: {
   // The opponents' own pictures, left and right (SKATGO-238): their face, or the drawing of their name.
   const picture = (v: 1 | 2) => {
     const s = state.pub.seats[roomSeat(v, me)]
-    return facePath(s.face ?? null, s.nickname ?? '')
+    return facePath(s.face ?? null, s.nickname ?? '', true)
   }
   const faces = [picture(1), picture(2)] as const
   const totals = [0, 1, 2].map((v) => state.pub.scores[roomSeat(v, me)]) as [number, number, number]

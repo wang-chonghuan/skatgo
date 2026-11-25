@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-237",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-237",
+  "branch": "SKATGO-237-league-promotion-line",
+  "base": "53680a1c73457d04085b9dfdc4c0c3123b9ac07d",
+  "ports": { "web": 55237, "multiplayer": 56237, "database": 57237 }
+}

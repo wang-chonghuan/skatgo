@@ -16,6 +16,7 @@ import {
 import type { Policy } from './skatzero/policy'
 import { MatchState, PlayerState } from './state'
 import { Store } from './store'
+import { type LiveTable, leaveOtherTables, registerTable, unregisterTable } from './tables'
 
 export const RESTORE = Symbol('trusted-restore')
 /** Whether anyone is at the table now. */
@@ -92,7 +93,8 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
       } else {
         const by = admitted(admission.parse(options))
         if (!ready() || !by || !by.open) throw new ServerError(403, 'admission_denied')
-        if (await store.roomOf(by.account)) throw new ServerError(409, 'already_in_room')
+        // A new table: the account leaves every other first (SKATGO-235).
+        await leaveOtherTables(store, by.account)
         const nickname = await store.transaction(c => nameOf(c, by.account, Date.now()))
         // A number nobody's live room holds (the table's key keeps it unique); a few tries, then the room is refused.
         let stored = false
@@ -103,6 +105,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         if (!stored) throw new ServerError(503, 'room_capacity')
         this.roomId = this.snapshot.id
       }
+      registerTable(this.roomId, this.live)
       await this.setPrivate(true)
       this.setPatchRate(50)
       for (let i = 0; i < 3; i++) this.state.players.set(String(i), new PlayerState())
@@ -123,6 +126,9 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
     /** The account's own seat back, or — as a newcomer — a computer's seat, or that of someone away (SKATGO-163). The
      *  same account open elsewhere gives way to this connection. */
     async onJoin(client: Client, _options: unknown, by: Admitted) {
+      // Coming to this table, the account leaves every other (SKATGO-235) — before this table's turn, so two tables never
+      // wait on each other.
+      await leaveOtherTables(store, by.account, this.roomId)
       return this.enqueue(async () => {
         const elsewhere: string[] = []
         const result = await store.change(this.roomId, async (s, c) => {
@@ -141,7 +147,6 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           } else {
             // A League table's seats are its own people's (SKATGO-204): nobody else comes in.
             if (s.league) throw new Rejected('room_full')
-            if (await store.roomOf(by.account, s.id, c)) throw new Rejected('already_in_room')
             seat = claimSeat(s, by.account, await nameOf(c, by.account, Date.now()), client.sessionId)
             claimed = true
           }
@@ -421,6 +426,35 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
     onDispose() {
       this.disposed = true
       clearTimeout(this.timer)
+      unregisterTable(this.roomId, this.live)
+    }
+    /** This table as the registry knows it (SKATGO-235). */
+    private live: LiveTable = { leave: (account) => this.leaveFor(account) }
+    /** The account gone to another table: out of this one as its own Leave takes it (SKATGO-235) — a private seat to a
+     *  computer (the room closed when nobody is left), a League seat left by the League's rule; its connection here, if
+     *  any, told it plays elsewhere. */
+    private leaveFor(account: string) {
+      return this.enqueue(async () => {
+        if (this.disposed) return
+        const gone: string[] = []
+        const result = await store.change(this.roomId, async (s, c) => {
+          const seat = s.seats.findIndex(p => p.account === account && !p.leaving)
+          if (seat < 0) return { changed: false, value: null }
+          const session = s.seats[seat].session
+          const before = s.game
+          const scored = s.scored
+          applyAction(s, seat as Seat, { type: 'leave' }, pick)
+          await settleLeague(s, c, scored)
+          if (s.league && nextDue(s)) await leagueDeal(s, c, pick)
+          if (session && s.seats[seat].session !== session) gone.push(session)
+          if (s.game !== before) s.played = s.revision + 1
+          s.nextActionAt = Date.now() + aiDelay
+          return { changed: true, value: null }
+        })
+        for (const session of gone) this.dismiss(session, 'elsewhere')
+        if (emptyRoom(result.snapshot)) return this.close()
+        this.publish(result.snapshot)
+      })
     }
   }
 }

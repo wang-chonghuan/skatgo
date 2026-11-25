@@ -66,9 +66,8 @@ export function roomRoutes(store: Store, key: string, ready: () => boolean) {
     const account = String(req.query.account ?? '')
     if (!ROOM_CODE.test(req.params.code) || !ACCOUNT.test(account)) return void res.status(400).json({ error: 'invalid_request' })
     try {
-      const status = await roomStatus(store, req.params.code, account)
-      const elsewhere = status === 'member' ? null : await store.roomOf(account, req.params.code)
-      res.set('cache-control', 'no-store').json({ status, elsewhere })
+      // Seated elsewhere is no obstacle (SKATGO-235): entering, the account leaves that table.
+      res.set('cache-control', 'no-store').json({ status: await roomStatus(store, req.params.code, account) })
     } catch (e) {
       if (e instanceof Rejected) res.status(404).json({ error: 'room_not_found' })
       else res.status(503).json({ error: 'storage_unavailable' })

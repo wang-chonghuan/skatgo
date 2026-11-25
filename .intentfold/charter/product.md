@@ -241,7 +241,10 @@ AI），点开始游戏」). Once it plays, a friend coming in takes a computer'
 people the number lets nobody else in. Every human participant at the table has an account, the room's host and
 whoever comes in alike (the human: 「我打算把私人桌改成必须三个玩家都登录」), and sits under the name the boards show;
 Synthetic players use separate internal identities for assigned computer seats, not account admission; an
-account is in one room at a time. The page offers two cards, a new room and a room to come into, or, while the account
+account is in one room at a time — the League's table counting as one — and the new table settles it: opening a room,
+entering one or playing the League takes the account out of every other table, as its own Leave would (a private seat
+to a computer, a League seat left by the League's rule), never refused (SKATGO-235, the human: 「如果用户开新桌，自动从所有
+老桌退场。不要让用户被卡死」). The page offers two cards, a new room and a room to come into, or, while the account
 is in one, the way back to it (「私人桌进入后，两张卡片，新建房间，加入房间。如果已经在了一个房间，则显示回到房间」). At the table the
 room's number is an item of the table's menu, and a tap copies its link (「点击后复制链接，而不只是房间号」, then, the
 corner not working: 「我建议放到退出按钮里，加一个菜单项」); a room's menu button is the table's, not the way out of other

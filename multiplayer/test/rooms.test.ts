@@ -311,13 +311,23 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       b.room.connection.close()
       await until(() => p.public.deals === 2)
     })
-    await t.test('one room at a time: an account in a room opens and enters no other', async () => {
-      const { p } = await create(1)
+    await t.test('one room at a time: a new table takes the account out of its old one (SKATGO-235)', async () => {
+      // Seated with someone else, then opening a new room: the old seat goes to a computer, its connection told why.
+      const { p, group } = await create(2)
+      const b = group[1]
+      const fresh = await attach(await open(p.account), p.account)
+      assert.notEqual(fresh.room.roomId, p.room.roomId)
+      await until(() => p.dismissed === 'elsewhere')
+      await until(() => b.public.seats[0].kind === 'ai')
+      assert.equal((await snapshot(p.room.roomId)).seats.some(x => x.account === p.account), false)
+      // Entering another room by its number: out of the room just opened, which, empty now, closes.
       const { p: q } = await create(1)
-      await assert.rejects(open(p.account), /already_in_room/)
-      await assert.rejects(enter(q.room.roomId, p.account), /already_in_room/)
       const r = await fetch(`${endpoint}/rooms/${q.room.roomId}?account=${encodeURIComponent(p.account)}`, { headers: { 'x-admission-key': admissionKey } })
-      assert.deepEqual(await r.json(), { status: 'open', elsewhere: p.room.roomId })
+      assert.deepEqual(await r.json(), { status: 'open' })
+      const there = await attach(await enter(q.room.roomId, p.account), p.account)
+      assert.equal(there.public.seats[there.seat].kind, 'human')
+      await until(() => fresh.dismissed === 'elsewhere' || fresh.dismissed === 'closed')
+      await until(async () => (await sql.query('SELECT 1 FROM multiplayer_rooms WHERE id=$1', [fresh.room.roomId])).rowCount === 0)
     })
     await t.test('the same account from another device comes back to its seat; the first connection is let go', async () => {
       const { p } = await create(1)

@@ -57,7 +57,8 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   same; a sign-in carries a device's name to an account without one. The leader names entries finished
   before without a name when it starts. An account sets its name from the settings (`/daily/name`, read with `/daily/nick`; SKATGO-126), and every board shows
   each entry under its player's name now, the name written with the entry only when there is none. A route that is sent a size
-  refuses it (400). The leaderboard is computed from those rows on request, ranked by the
+  refuses it (400). The leaderboard is computed from those rows on request — each row with its account's face from
+  `player_avatars` (SKATGO-236; none for a guest device or a persona, `faceOf` in `app/src/lib/forum.ts`) — ranked by the
   entry's Seeger-Fabian total (`daily_entries.total`, SKATGO-81), ties to the earlier finish, with the
   AI's total from the player's seat beside it, from the deals' stored `benchmark` (SKATGO-80). The
   XP board (SKATGO-172, replacing SKATGO-123's Elo) is computed the same way, on request, from those rows and

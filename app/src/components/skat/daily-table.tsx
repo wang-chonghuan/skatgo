@@ -5,6 +5,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { setPerson, track } from '~/lib/analytics'
+import { facePath } from '~/lib/forum'
 import { type DailyError, dailyAct, dailyBoard, dailyState, dailyTalk, isError } from '~/lib/daily-api'
 import { useTableTalk } from '~/lib/table-talk'
 import { useAccount } from '~/lib/use-account'
@@ -18,6 +19,7 @@ import { border, opacity, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { DayDeals, VsAiTable, Who, dailyAsk } from './daily-comparison'
+import { Avatar } from './forum-ui'
 import { DodDone } from './dod-share'
 import { BOT_DELAY, GameTable } from './game-table'
 import { Btn, Panel, linkLook } from './ui'
@@ -171,7 +173,12 @@ export function Leaderboard({ back, board, onShow }: { back: number; board: Dail
                       {...stylex.props(typography.appText, styles.row, styles.boardRow, apart && styles.gap, l.row.me && styles.mine)}
                     >
                       <span {...stylex.props(styles.muted, styles.rank)}>{l.row.rank}</span>
-                      <span data-testid="daily-board-name" {...stylex.props(styles.what)}>{l.row.nickname}</span>
+                      {/* The player's avatar before their name, as the forum shows it (SKATGO-236, the human: 「每日1deal和6deal的榜单上，
+                          名字的左边，显示头像」): their picture or look, a guest's or a persona's the picture of the name. */}
+                      <span {...stylex.props(styles.what, styles.who)}>
+                        <Avatar src={facePath(l.row.face, l.row.nickname)} small testId="daily-board-avatar" />
+                        <span data-testid="daily-board-name" {...stylex.props(styles.name)}>{l.row.nickname}</span>
+                      </span>
                       <span {...stylex.props(styles.score)}>{l.row.total === null ? null : signed(l.row.total)}</span>
                     </li>
                   )
@@ -371,5 +378,7 @@ const styles = stylex.create({
   },
   muted: { color: color.slate, flexShrink: 0 },
   what: { flexGrow: 1 },
+  who: { display: 'flex', alignItems: 'center', gap: space.x8, minWidth: 0 },
+  name: { minWidth: 0, overflowWrap: 'anywhere' },
   score: { flexShrink: 0 },
 })

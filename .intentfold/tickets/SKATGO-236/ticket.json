@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-236",
+  "mode": "autonomous",
+  "stage": "developing",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-236",
+  "branch": "SKATGO-236-board-avatars",
+  "base": "ddf9ac0",
+  "ports": { "web": 55236, "multiplayer": 56236, "database": 57236 }
+}

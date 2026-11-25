@@ -7,6 +7,7 @@ import pg from 'pg'
 import { sameCard } from '../../app/src/lib/skat/cards'
 import { xpOf } from '../../app/src/lib/skat/xp'
 import { dailyBoard, dailyName, dailyRoutes, COMPUTER, dayOf, prepareDay } from '../src/daily'
+import { forumFace } from '../src/forum'
 import { loadPool } from '../src/free'
 import { replayLog } from '../src/computers'
 import { summarize } from '../../app/src/lib/skat/tournament'
@@ -219,8 +220,18 @@ test('personas: real games, complete boards, XP, idempotence, cancellation and r
     assert.equal(board.rows.find((r) => r.nickname === p.nickname)?.total, completed.find((j) => j.snapshot.size === size)!.result.total)
     assert(board.ai)
   }
+  // Faces on the boards (SKATGO-236): the account's own look on its rows, a persona's none — the picture of its name.
+  const look = (await forumFace(store, { player: real, official: false, action: 'refresh' })).face
+  let seen = 0
+  for (const size of [1, 6] as const) {
+    const rows = (await dailyBoard(store, real, 'today', size, now)).rows
+    const mine = rows.find((r) => r.me)
+    if (mine) { assert.deepEqual(mine.face, look); seen++ }
+    assert.equal(rows.find((r) => r.nickname === p.nickname)?.face, null)
+  }
+  assert(seen > 0, 'the account stands on a board')
   await assert.rejects(dailyName(store, real, p.nickname), /nickname_taken/)
-  assert.deepEqual(await playProfile(store, `sim:${p.id}`), { deals: [], notes: [] })
+  assert.deepEqual(await playProfile(store, `sim:${p.id}`), { deals: [] })
 
   const app = express()
   const key = randomBytes(32).toString('hex')

@@ -50,6 +50,10 @@ export const avatarPath = (seed: string) => `/api/forum/avatar/${AVATAR_STYLE}/$
  *  the account: only names and faces leave the forum. */
 export type Face = { seed: string } | { image: string } | null
 
+/** A face from a stored row: the picture uploaded, the seed drawn, or — neither — the picture of the name. */
+export const faceOf = (seed: string | null | undefined, image: string | null | undefined): Face =>
+  image ? { image } : seed ? { seed } : null
+
 /** An uploaded picture's id: 32 hexadecimal digits, new with every upload, so its address is kept for a year. */
 export const IMAGE_ID = /^[0-9a-f]{32}$/
 

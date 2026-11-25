@@ -7,7 +7,7 @@ import {
   MENTIONS_PER_TEXT, MENTIONS_SHOWN, OFFICIAL_SECTIONS, PAGE_SIZE, PARTICIPANTS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX,
   TITLE_MIN, type Face, type ForumAnnouncement, type ForumComment, type ForumList, type ForumMe, type ForumMention,
   type ForumPost, type ForumLang, type ForumPostSummary, type ForumReport, type ForumSection,
-  type ForumThread, imageTypeOf, mentionCandidates, plainText, postIndexable,
+  type ForumThread, faceOf, imageTypeOf, mentionCandidates, plainText, postIndexable,
 } from '../../app/src/lib/forum'
 import { nameOf } from './daily'
 import { Rejected, secretEquals } from './model'
@@ -75,10 +75,6 @@ type PostRow = {
   participants: { name: string; seed: string | null; image: string | null }[] | null
   face_seed: string | null; face_image: string | null
 }
-
-/** A face from its row: the picture uploaded, the seed drawn, or the picture of the name. */
-const faceOf = (seed: string | null | undefined, image: string | null | undefined): Face =>
-  image ? { image } : seed ? { seed } : null
 
 /** A text's translation when it was written in a language other than `lang`. */
 const other = (known: Map<string, Translation>, text: string, lang: ForumLang | undefined) => {

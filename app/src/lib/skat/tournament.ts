@@ -6,6 +6,7 @@
 import type { Card } from './cards'
 import type { Bidding, Game, Phase, Played, Seat } from './game'
 import type { Declaration } from './value'
+import type { Face } from '../forum'
 
 /** How many days back a leaderboard can be looked at, today included (SKATGO-80, the human: 「要保留显示最近7天
  *  的」). */
@@ -255,8 +256,9 @@ export type DailyReply = {
 
 /** One row of a day's leaderboard (SKATGO-36): a nickname and its Seeger-Fabian total, which ranks it
  *  (SKATGO-81), never who is behind it. */
-/** `total` is null on a board kept `hidden` (SKATGO-195). */
-export type BoardRow = { rank: number; nickname: string; total: number | null; me: boolean }
+/** `total` is null on a board kept `hidden` (SKATGO-195). `face`: the player's avatar as the forum shows it (SKATGO-236),
+ *  null for the picture of the name — a guest's and a persona's. */
+export type BoardRow = { rank: number; nickname: string; face: Face; total: number | null; me: boolean }
 
 /** A day's leaderboard, and where the asking player stands on it. */
 export type DailyBoard = {

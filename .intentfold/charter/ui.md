@@ -359,7 +359,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   is the same table played again as free play's replay is (its pill, its result's heading, the review against the AI), its
   foot "Replay this deal" (`quiet`), its close the same X; until the player has played it, today's board shows who has played
   but no score and no AI score, the AI's row last (SKATGO-194, 「否则透露叫牌方向了。打完可以显示」) — the service sends none
-  then, its board marked `hidden` (SKATGO-195), and the board shows what it is sent; once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
+  then, its board marked `hidden` (SKATGO-195), and the board shows what it is sent; on both boards each player's
+  row has their avatar between rank and name (SKATGO-236, the human: 「每日1deal和6deal的榜单上，名字的左边，显示头像」) — the
+  forum's `Avatar`, round, `dims.badge`: their picture or look, a guest's or a persona's the picture of the name; the AI's
+  row keeps its own mark; once played, a white card that says it is done and what sharing is for — "Du hast das Spiel von heute
   gespielt" (`dialogTitle`) over "Deine Freunde bekommen dieselben Karten – schau, wie viele Punkte sie holen." — and no
   scores, no place: the card below carries them (SKATGO-132, 「我不懂你显示这些垃圾干什么……你完成了same one deal today,
   分享给朋友，看看他们能打几分」, 「1 played today · you're #1 这个不要显示」) — "Mit Freunden teilen" as the one `go`

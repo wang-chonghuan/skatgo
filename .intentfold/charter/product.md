@@ -226,8 +226,8 @@ never below 0. Bronze has no relegation and its points stop at 0 (SKATGO-207, th
 SKATGO-205, and again before SKATGO-216, started again from 0, tiers and coins kept; SKATGO-217 added 1000 to every
 player's, keeping their distance to the lines; SKATGO-219 multiplied every player's by 1.5, to a whole number, keeping their
 place between the lines (the human: 「现有玩家的分数，按照新的3000分，按比例换算一下覆盖到db里，不要给人家清零了」); SKATGO-237
-kept every player's points as they were, the start and relegation lines unchanged, one already past 2000 going up after
-their next deal. Standings
+multiplied every player's by 2/3, to a whole number, keeping their progress to the new 2000 line (the human:
+「确保他们这个进度不变，分数按百分比换算」). Standings
 never start again — no week, no season. Each deal ends in free play's result with the AI's game, under its League points, and earns XP as any
 deal against the AI does. A deal counts only when the player sees it to its result (SKATGO-206, the human: 「没进入结算页面就不算
 打完，就不进历史。离桌多久应该算输，比如1分钟？如果是庄家就-3，如果是防家就-1」): left during it — the button, or away a minute,

@@ -4,8 +4,8 @@ import { AWAY_MS, CHECKIN_COINS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, START_AT
 import { seegerFabian } from './tournament'
 
 // The League's numbers: six tiers and their fees per deal; per deal the seat's Seeger-Fabian score minus the average of the
-// other two seats' (SKATGO-216), adding up to 0 at a table; each tier from 1500, up at 2000 (SKATGO-237) and down at 0, the new tier
-// from 1500 again, the same in every tier (SKATGO-219), Bronze stopping at 0, no promotion from Legend. A deal not seen to its end (SKATGO-206) is lost for the one who left; away a minute counts as
+// other two seats' (SKATGO-216), adding up to 0 at a table; each tier from 1000 (SKATGO-238), up at 2000 (SKATGO-237) and down at 0, the new tier
+// from 1000 again, the same in every tier (SKATGO-219), Bronze stopping at 0, no promotion from Legend. A deal not seen to its end (SKATGO-206) is lost for the one who left; away a minute counts as
 // leaving.
 
 /** Seeger-Fabian of a deal at a three-player table, as a finished game gives it. */
@@ -18,7 +18,7 @@ describe('the League', () => {
     expect(FEES).toEqual([4, 4, 4, 4, 4, 4])
     expect(AWAY_MS).toBe(60_000)
     expect(CHECKIN_COINS).toBe(90)
-    expect([START_AT, PROMOTE_AT, RELEGATE_AT]).toEqual([1500, 2000, 0])
+    expect([START_AT, PROMOTE_AT, RELEGATE_AT]).toEqual([1000, 2000, 0])
   })
 
   it('scores a deal as the seat’s Seeger-Fabian minus the other two’s average (SKATGO-216)', () => {
@@ -70,27 +70,27 @@ describe('the League', () => {
     expect(standingAfter({ tier: 2, points: 1400 }, 0)).toEqual({ tier: 2, points: 1400, moved: 0 })
   })
 
-  it('moves up at 2000 and down at 0, the new tier from 1500, the same lines in every tier (SKATGO-219, 237)', () => {
-    expect(standingAfter({ tier: 1, points: 1950 }, 86)).toEqual({ tier: 2, points: 1500, moved: 1 })
-    expect(standingAfter({ tier: 1, points: 1914 }, 86)).toEqual({ tier: 2, points: 1500, moved: 1 })
+  it('moves up at 2000 and down at 0, the new tier from 1000, the same lines in every tier (SKATGO-219, 237, 238)', () => {
+    expect(standingAfter({ tier: 1, points: 1950 }, 86)).toEqual({ tier: 2, points: 1000, moved: 1 })
+    expect(standingAfter({ tier: 1, points: 1914 }, 86)).toEqual({ tier: 2, points: 1000, moved: 1 })
     expect(standingAfter({ tier: 3, points: 1913 }, 86)).toEqual({ tier: 3, points: 1999, moved: 0 })
-    expect(standingAfter({ tier: 3, points: 100 }, -162)).toEqual({ tier: 2, points: 1500, moved: -1 })
-    expect(standingAfter({ tier: 3, points: 43 }, -43)).toEqual({ tier: 2, points: 1500, moved: -1 })
+    expect(standingAfter({ tier: 3, points: 100 }, -162)).toEqual({ tier: 2, points: 1000, moved: -1 })
+    expect(standingAfter({ tier: 3, points: 43 }, -43)).toEqual({ tier: 2, points: 1000, moved: -1 })
     expect(standingAfter({ tier: 3, points: 44 }, -43)).toEqual({ tier: 3, points: 1, moved: 0 })
-    // Every tier but Legend goes up at 2000, every tier but Bronze down at 0, the new one from 1500.
-    for (let tier = 0; tier < LEGEND; tier++) expect(standingAfter({ tier, points: 1999 }, 1)).toEqual({ tier: tier + 1, points: 1500, moved: 1 })
-    for (let tier = 1; tier <= LEGEND; tier++) expect(standingAfter({ tier, points: 1 }, -1)).toEqual({ tier: tier - 1, points: 1500, moved: -1 })
+    // Every tier but Legend goes up at 2000, every tier but Bronze down at 0, the new one from 1000.
+    for (let tier = 0; tier < LEGEND; tier++) expect(standingAfter({ tier, points: 1999 }, 1)).toEqual({ tier: tier + 1, points: 1000, moved: 1 })
+    for (let tier = 1; tier <= LEGEND; tier++) expect(standingAfter({ tier, points: 1 }, -1)).toEqual({ tier: tier - 1, points: 1000, moved: -1 })
   })
 
   it('never relegates from Bronze, never promotes from Legend', () => {
     // Bronze stops at 0 (SKATGO-207): never a negative.
     expect(standingAfter({ tier: 0, points: 20 }, -43)).toEqual({ tier: 0, points: 0, moved: 0 })
     expect(standingAfter({ tier: 0, points: 0 }, -162)).toEqual({ tier: 0, points: 0, moved: 0 })
-    expect(standingAfter({ tier: 0, points: 1950 }, 86)).toEqual({ tier: 1, points: 1500, moved: 1 })
-    expect(standingAfter({ tier: 1, points: 100 }, -162)).toEqual({ tier: 0, points: 1500, moved: -1 })
+    expect(standingAfter({ tier: 0, points: 1950 }, 86)).toEqual({ tier: 1, points: 1000, moved: 1 })
+    expect(standingAfter({ tier: 1, points: 100 }, -162)).toEqual({ tier: 0, points: 1000, moved: -1 })
     // Legend runs on past 2000, and goes down at 0.
     expect(standingAfter({ tier: LEGEND, points: 1990 }, 86)).toEqual({ tier: LEGEND, points: 2076, moved: 0 })
     expect(standingAfter({ tier: LEGEND, points: 3500 }, 86)).toEqual({ tier: LEGEND, points: 3586, moved: 0 })
-    expect(standingAfter({ tier: LEGEND, points: 10 }, -43)).toEqual({ tier: LEGEND - 1, points: 1500, moved: -1 })
+    expect(standingAfter({ tier: LEGEND, points: 10 }, -43)).toEqual({ tier: LEGEND - 1, points: 1000, moved: -1 })
   })
 })

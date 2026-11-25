@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-238",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-238",
+  "branch": "SKATGO-238-league-start-reconnect-avatars",
+  "base": "7a53009febf0882dc51174ac39dc12f57949f580",
+  "ports": { "web": 55238, "multiplayer": 56238, "database": 57238 }
+}

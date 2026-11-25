@@ -239,6 +239,9 @@ export class Store {
         -- promotion line, tier and coins kept — once; a new account still starts at 1500.
         UPDATE league_players SET points = round(points * 2 / 3.0), scale = 6 WHERE scale = 5;
         ALTER TABLE league_players ALTER COLUMN scale SET DEFAULT 6;
+        -- SKATGO-238 starts each tier at 1000, halfway to the 2000 line (the human: 「1000吧， 好理解」): a new account starts
+        -- there; nobody's points change, the lines being where they were.
+        ALTER TABLE league_players ALTER COLUMN points SET DEFAULT 1000;
         -- SKATGO-163 made tables rooms with a number, every seat an account's: the tables of before (schema 2, seats
         -- held by browser tokens) end here; the deploy backs them up first.
         DELETE FROM multiplayer_rooms WHERE snapshot->>'schema' = '2';

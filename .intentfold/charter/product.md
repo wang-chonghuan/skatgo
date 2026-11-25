@@ -214,13 +214,13 @@ nor fall, and a player rises only while they play better than the tier's table, 
 玩家能爬上去，一般的玩家落到他自己的档次」). Before it: SKATGO-205's +3 for their side won, −3 for their own game lost and −1 for a
 lost defence (「庄赢+3，防赢+3，庄输-3」, 「我建议就1」), with SKATGO-210's and 214's 0 for a defence that took 31, then 40 card
 points, and SKATGO-215's −2 — rules that let everyone climb by playing more (「这样太无聊了，不刺激了」). Each tier starts
-the player at 1500 points; 2000 moves them up a tier and 0 down one, at 1500 again there, the same lines in every tier (SKATGO-237,
-the human: 「2000分比较好，3000分我感觉升级太慢，用户没有获得感」, the start kept at 1500 rather than 1000 for retention
-(「你从留存角度思考」); SKATGO-219: 「每个tier的升级分数都要一样，别乱搞」; 1500, 3000 and 0 from SKATGO-219; 1000, 2000 and 0 from
-SKATGO-217: 「每个档次，初始给1000分。达到2000了晋级，达到0了降级。这样好理解吧？」; from 0, +1000 up and −1000 down before) —
-promotion close and relegation far: one better than Bronze's table by about 15 a deal first goes up on their first day,
-around their 27th deal, and back up about 37 deals after a fall; climbing slows by itself as each tier's table is
-stronger, so each player settles at the tier they cannot beat. The page
+the player at 1000 points; 2000 moves them up a tier and 0 down one, at 1000 again there, the same lines in every tier
+(SKATGO-238, the human: 「1000吧， 好理解」 — halfway, easy to remember; SKATGO-237: 「2000分比较好，3000分我感觉升级太慢，用户没有
+获得感」, with a start of 1500 until SKATGO-238; SKATGO-219: 「每个tier的升级分数都要一样，别乱搞」; 1500, 3000 and 0 from SKATGO-219;
+1000, 2000 and 0 from SKATGO-217: 「每个档次，初始给1000分。达到2000了晋级，达到0了降级。这样好理解吧？」; from 0, +1000 up and −1000
+down before) — about eleven deals won in a row go up a tier, one better than the tier's table by about 15 a deal in
+about 70; climbing slows by itself as each tier's table is stronger, so each player settles at the tier they cannot
+beat. SKATGO-238 changed nobody's points, the two lines staying where they were. The page
 states the two lines, never the distance to them (「你不用给分差，只用说明这个0和2000就行了。易于理解。」), and the points are
 never below 0. Bronze has no relegation and its points stop at 0 (SKATGO-207, the human: 「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」) and Legend no promotion, its points running on past 2000; a player who moves gets up and sits down again in their new tier. The points earned before
 SKATGO-205, and again before SKATGO-216, started again from 0, tiers and coins kept; SKATGO-217 added 1000 to every

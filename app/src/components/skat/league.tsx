@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp, Coins, Trophy } from 'lucide-react'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { checkInOnce } from '~/lib/checkin'
+import { facePath } from '~/lib/forum'
 import { type LeagueError, type LeagueState, PASSING_LEAGUE, enterLeague, leagueReview, leagueState, playLeague } from '~/lib/league-api'
 import { CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, START_AT, TIERS, type BoardRow, type LeagueBoard, type LeagueResult } from '~/lib/skat/league'
 import { roomGame, roomSeat } from '~/lib/skat/room-view'
@@ -323,6 +324,12 @@ function LeaguePlaying({ state, busy, send, collect, notice, leave }: {
   // The finished deal's review for this seat — asked once per deal, as free play asks once per game.
   const review = useMemo(() => () => leagueReview(league.match, deal - 1), [league.match, deal])
   if (!game) return null
+  // The opponents' own pictures, left and right (SKATGO-238): their face, or the drawing of their name.
+  const picture = (v: 1 | 2) => {
+    const s = state.pub.seats[roomSeat(v, me)]
+    return facePath(s.face ?? null, s.nickname ?? '', true)
+  }
+  const faces = [picture(1), picture(2)] as const
   const totals = [0, 1, 2].map((v) => state.pub.scores[roomSeat(v, me)]) as [number, number, number]
   const ended = game.phase === 'done' || game.phase === 'passedIn'
   const others = state.pub.seats.filter((s) => s.kind === 'human' && s.connected && !s.ready && s.seat !== me)
@@ -336,7 +343,7 @@ function LeaguePlaying({ state, busy, send, collect, notice, leave }: {
         fullScreen
         room={{
           game, busy, send: (move) => send(move), collect, next: () => send({ type: 'next' }), names: seatNames(state), totals, notice, deal,
-          stats: null, waiting, code: state.pub.roomId, leave, people: [], kick: () => {},
+          stats: null, waiting, code: state.pub.roomId, leave, people: [], kick: () => {}, faces,
           league: {
             review,
             line: mine ? <DealLine result={mine} declared={state.pub.declarer === me} /> : undefined,

@@ -11,6 +11,7 @@ import { roomSeat, viewSeat } from '../../app/src/lib/skat/room-view'
 import { auctionOf, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, advance, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
 import { dayOf, nameOf } from './daily'
+import { faceOf } from '../../app/src/lib/forum'
 import { deckOf, plan, poolDealOf, type Pool } from './free'
 import { Rejected, TTL_MS, dealNext, secretEquals, type PoolDeal, type Slot, type Snapshot } from './model'
 import { MAX_POPULATION, population, type Persona } from './personas/config'
@@ -78,6 +79,12 @@ export function personaTurnPolicy(base: Policy, s: Snapshot, seat: Seat): Policy
   const id = s.seats[seat].persona
   if (!id || !s.league || !s.game) return null
   return leaguePolicy(base, personaOf(id), s.league.tier, `${s.league.match}|${s.deals}|${seat}|${s.game.tricks.length}|${s.game.trick.length}`)
+}
+
+/** A person's face as stored (SKATGO-232), for their League seat (SKATGO-238): null when they have none. */
+async function faceOfPlayer(c: pg.PoolClient, player: string) {
+  const { rows } = await c.query('SELECT seed, image_id FROM player_avatars WHERE player = $1', [player])
+  return faceOf(rows[0]?.seed, rows[0]?.image_id)
 }
 
 /** Two (or however many are asked) personas of the tier free now: at no live League table, with no board activity due
@@ -324,7 +331,7 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
         const others = await opponents(c, g.tier, 3 - seated.length, now)
         const seats: Slot[] = [
           ...await Promise.all(seated.map(async (account) => ({
-            account, nickname: await nameOf(c, account, now), session: null,
+            account, nickname: await nameOf(c, account, now), face: await faceOfPlayer(c, account), session: null,
             // Away until they come in: if they never do, the grace runs out and a computer plays for them.
             disconnectedAt: now, autopilot: false, joinsAt: null,
           }))),

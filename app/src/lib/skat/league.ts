@@ -73,14 +73,14 @@ export function dealOutcome(declarer: number | null, won: boolean, seat: number)
 
 /** League points a player has on coming into a tier — a new account in Bronze, and anyone moved up or down — and the two
  *  lines from there, the same in every tier (SKATGO-219, the human: 「每个tier的升级分数都要一样，别乱搞」): 2000 moves them up
- *  a tier, 0 down one (SKATGO-237, the human: 「2000分比较好，3000分我感觉升级太慢，用户没有获得感」). Promotion is close
- *  and relegation far: a player better than Bronze's table by about 15 a deal first goes up around their 27th deal, on
- *  their first day, and back up about 37 deals after a fall (a deal's League points swing by about 80); 1500 was kept
- *  over a start of 1000 for that early first step and quick return (「你从留存角度思考」). The page states the two lines,
+ *  a tier, 0 down one (SKATGO-237, the human: 「2000分比较好，3000分我感觉升级太慢，用户没有获得感」), starting halfway
+ *  between them at 1000 (SKATGO-238, the human: 「1000吧， 好理解」): about eleven deals won in a row go up a tier, and a
+ *  player better than the tier's table by about 15 a deal goes up in about 70 (a deal's League points swing by about 80).
+ *  The page states the two lines,
  *  never the distance to them (SKATGO-217: 「你不用给分差，只用说明这个0和2000就行了」), and the points are never below 0.
- *  Before, 1500 to start, 3000 up and 0 down (SKATGO-219), 1000, 2000 and 0 (SKATGO-217), from 0 to +1000 and −1000
+ *  Before, 1500 to start and 2000 up (SKATGO-237), 1500, 3000 and 0 (SKATGO-219), 1000, 2000 and 0 (SKATGO-217), from 0 to +1000 and −1000
  *  (SKATGO-216), +30 and −20 (SKATGO-205). */
-export const START_AT = 1500
+export const START_AT = 1000
 export const PROMOTE_AT = 2000
 /** The relegation line, and Bronze's floor: Bronze has no relegation and its points stop here (SKATGO-207, the human:
  *  「我看青铜最低是0吧，有人玩了，说搞那么负，没动力爬了」). */

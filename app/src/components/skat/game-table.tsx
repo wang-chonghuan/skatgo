@@ -190,6 +190,9 @@ export type RoomTable = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' | 
    *  free play's; the deal's League points as the result's first line (`line`); and, when the player cannot sit on, the way
    *  back to the League in place of the next deal (`done`). Its menu is the way out's: leaving it is `leave`. */
   league?: { review?: AskReview; line?: ReactNode; done?: ReactNode }
+  /** The two opponents' pictures, left (seat 1) and right (seat 2), still, where free play shows Lina's and Noah's faces —
+   *  a League table's (SKATGO-238, the human: 「不做表情吧，就头像不变」). */
+  faces?: readonly [string, string]
 }
 
 /** An open-card endgame of the Skat-Tricks (SKATGO-110): a deal stopped a few tricks before its end, every hand
@@ -471,7 +474,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
     document.addEventListener('pointerdown', seen, true)
     return () => document.removeEventListener('pointerdown', seen, true)
   }, [shownTalk])
-  const facesShown = faces && !exercise && !room
+  // A League table shows its opponents' own pictures there (SKATGO-238), whatever the settings say of Lina's and Noah's.
+  const facesShown = room?.faces ? true : faces && !exercise && !room
   const talkCard = shownTalk ? (
     <p key={shownTalk.id} role="status" data-testid="skat-talk" data-seat={shownTalk.seat} {...stylex.props(typography.appText, styles.talk, shownTalk.seat === 1 ? styles.talkLeft : styles.talkRight, !facesShown && (shownTalk.seat === 1 ? styles.talkBare : styles.talkBareRight))}>
       <span>
@@ -549,7 +553,9 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
         {/* Lina's and Noah's faces above their stacks (SKATGO-147); not at a private table, where people sit, nor on an
             exercise's open board; and only while the settings show them. Drawn before the stacks, so a hand laid open
             long enough to reach a face on a phone lies over it rather than under it (SKATGO-148). */}
-        {facesShown ? ([1, 2] as const).map((seat) => <SeatFace key={seat} seat={seat} game={game} />) : null}
+        {room?.faces
+          ? ([1, 2] as const).map((seat) => <StillFace key={seat} seat={seat} src={room.faces![seat - 1]} />)
+          : facesShown ? ([1, 2] as const).map((seat) => <SeatFace key={seat} seat={seat} game={game} />) : null}
         {/* Both opponents' hands: the same cards as the learner's, turned sideways and stacked down the
             left and right edges, running off the felt so only part of each shows (SKATGO-26). */}
         {([1, 2] as Seat[]).map((seat) => (
@@ -990,6 +996,16 @@ function SeatFace({ seat, game }: { seat: 1 | 2; game: Game }) {
       {FACES.map((f) => (
         <img key={f} src={faceSrc(avatar, f)} alt={f === face ? nameOf(seat) : ''} aria-hidden={f === face ? undefined : 'true'} {...stylex.props(styles.faceImage, f !== face && styles.faceHidden)} />
       ))}
+    </div>
+  )
+}
+
+/** A League opponent's own picture (SKATGO-238), where free play shows Lina's or Noah's face, always the same. */
+function StillFace({ seat, src }: { seat: 1 | 2; src: string }) {
+  const nameOf = useNameOf()
+  return (
+    <div data-testid={`skat-face-${seat}`} data-face="still" {...stylex.props(styles.face, seat === 1 ? styles.faceLeft : styles.faceRight)}>
+      <img src={src} alt={nameOf(seat)} {...stylex.props(styles.faceImage)} />
     </div>
   )
 }

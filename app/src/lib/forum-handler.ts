@@ -87,7 +87,7 @@ const svg = (body: string) =>
     },
   })
 
-/** GET /api/forum/avatar/<style>/<text>.svg — the picture of a text, a post's title or a player's name: DiceBear's Avataaars,
+/** GET /api/forum/avatar/<style>/<text>.svg[?square] — the picture of a text, a post's title or a player's name: DiceBear's Avataaars,
  *  drawn here, never by dicebear.com, so no visitor's address leaves the site; the text is not in the picture. The
  *  same text is always the same picture, so a browser keeps it for a year. GET /api/forum/multiavatar/<text>.svg is
  *  the first try's Multiavatar, kept for now (the human: 「老的集成暂时不用删」) and shown nowhere. */
@@ -96,7 +96,10 @@ function avatar(request: Request, path: string): Response {
   const kind = path.startsWith(`${PREFIX}multiavatar/`) ? 'multiavatar' : 'avatar'
   const seed = seedOf(path, kind)
   if (!seed) return json(404, { error: 'not found' })
-  return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...MATURE }).toString())
+  // `?square`: the same picture on a square ground, filling the table's square face box as free play's faces do (SKATGO-238,
+  // the human: 「默认的框不是方形吗……怎么改成圆形了？」).
+  const square = new URL(request.url).searchParams.has('square')
+  return svg(kind === 'multiavatar' ? multiavatar(seed) : createAvatar(avataaars, { seed, ...MATURE, ...(square ? { radius: 0 } : {}) }).toString())
 }
 
 /** GET /api/forum/avatar/u/<id> — a picture a player uploaded (SKATGO-232), as the forum keeps it: a new id with each

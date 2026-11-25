@@ -60,9 +60,10 @@ export const IMAGE_ID = /^[0-9a-f]{32}$/
 /** An uploaded picture's address. */
 export const imagePath = (id: string) => `/api/forum/avatar/u/${id}`
 
-/** A face's picture: the uploaded one, or the drawing of its seed, or of the player's name. */
-export const facePath = (face: Face, name: string) =>
-  face && 'image' in face ? imagePath(face.image) : avatarPath(face?.seed ?? name)
+/** A face's picture: the uploaded one, or the drawing of its seed, or of the player's name — `square` on a square ground
+ *  rather than its circle, for the table's square face box (SKATGO-238); an uploaded picture is square already. */
+export const facePath = (face: Face, name: string, square = false) =>
+  face && 'image' in face ? imagePath(face.image) : `${avatarPath(face?.seed ?? name)}${square ? '?square' : ''}`
 
 /** An uploaded picture (SKATGO-232): the browser crops it square and draws it at this size, as WebP where it can
  *  write WebP, as JPEG where not, at most `IMAGE_BYTES`; the service takes nothing else. A file chosen may be

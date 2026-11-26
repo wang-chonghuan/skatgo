@@ -167,6 +167,8 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   /** Hard hands (SKATGO-248): the game is set — said over the skat step, no Hand; the server declares it after the
    *  discard. */
   fixed?: Contract
+  /** Hard hands (SKATGO-248): which deal of its kind this is, of how many. */
+  deal?: { n: number; of: number }
 }
 
 /** A private table (SKATGO-61): the room's deal turned so the viewer is seat 0, the people's
@@ -243,7 +245,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
   const remote = tournament ?? server ?? room ?? exercise
   // Which deal of how many (SKATGO-93): the tournament's, free play's round of six, and lesson 11's single
   // deal; a private table's only which, its deals having no end (SKATGO-165, the human: 「但是没有总墩数」).
-  const dealOf: { n: number; of?: number } | null = tournament ? { n: tournament.deal + 1, of: tournament.of } : server?.round ? { n: server.round.deal + 1, of: server.round.of } : server ? { n: 1, of: 1 } : room ? { n: room.deal } : null
+  const dealOf: { n: number; of?: number } | null = tournament ? { n: tournament.deal + 1, of: tournament.of } : server?.round ? { n: server.round.deal + 1, of: server.round.of } : server?.deal ? server.deal : server ? { n: 1, of: 1 } : room ? { n: room.deal } : null
   // The learner's own card goes on the table the moment it is tapped (SKATGO-73); the server's answer,
   // with the computers' replies, replaces it when it comes. Until then the table shows `pending`.
   const [pending, setPending] = useState<{ from: Game; game: Game } | null>(null)
@@ -762,7 +764,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             </section>
           ) : null}
 
-          <section data-testid="skat-history" {...stylex.props(styles.history)}>
+          {/* Hard hands (SKATGO-248) have no auction to show. */}
+          {server?.fixed ? null : <section data-testid="skat-history" {...stylex.props(styles.history)}>
             <h2 {...stylex.props(typography.panelLabel, styles.panelTitle)}>{m.table_history()}</h2>
             <div {...stylex.props(styles.auction)}>
               {([1, ME, 2] as Seat[]).map((seat) => (
@@ -782,7 +785,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                 </div>
               ))}
             </div>
-          </section>
+          </section>}
         </div>
         )}
       </aside>

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { type ChallengeReply, challengeAct, challengeAgain, challengeNew, challengeReview } from '~/lib/challenge-api'
 import type { FreeError } from '~/lib/free-api'
-import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeKind, contractOfGame } from '~/lib/skat/challenge'
+import { CHALLENGE_KINDS, type ChallengeKind, contractOfGame } from '~/lib/skat/challenge'
 import type { Move } from '~/lib/skat/game'
 import { type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -44,7 +44,6 @@ export function ChallengePage() {
               <Link to="/hard-hands/play" search={{ kind, n: 1 }} data-testid="hard-hands-kind" data-kind={kind} {...stylex.props(styles.card)}>
                 <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{KIND_TEXT[kind].title()}</span>
                 <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{KIND_TEXT[kind].text()}</span>
-                <span {...stylex.props(typography.meta, styles.cardEnd)}>{m.challenge_deals({ n: CHALLENGE_DEALS })}</span>
               </Link>
             </li>
           ))}
@@ -129,6 +128,7 @@ export function ChallengePlayPage() {
         collect: () => setRelease(true),
         next,
         fixed: contractOfGame(reply.game),
+        deal: { n, of: reply.of },
         review,
         close,
         done: (
@@ -199,7 +199,6 @@ const styles = stylex.create({
     transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
     ...focus,
   },
-  cardEnd: { display: 'flex', justifyContent: 'flex-end', marginTop: 'auto', color: color.slate },
   summary: { display: 'flex', flexDirection: 'column', justifyContent: 'center', flexGrow: 1, padding: space.x16, maxWidth: dims.readingColumn, marginInline: 'auto', width: '100%', boxSizing: 'border-box' },
   foot: { display: 'flex', flexDirection: 'column', gap: space.x12 },
 })

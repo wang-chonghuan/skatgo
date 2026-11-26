@@ -40,7 +40,7 @@ export function ownSlice(dealer: Seat): [number, number] {
 /** A challenge's deal as it starts: the auction over, seat 0 the declarer at the lowest bid, the skat still face down. */
 export function challengeStart(dealer: Seat, deck: Card[]): Game {
   const g = deal(dealer, deck)
-  return { ...g, phase: 'skat', declarer: 0, bid: CHALLENGE_BID, turn: forehandOf(dealer) }
+  return { ...g, phase: 'skat', declarer: 0, bid: CHALLENGE_BID, bidding: { ...g.bidding, value: CHALLENGE_BID }, turn: forehandOf(dealer) }
 }
 
 const jacks = (hand: Card[]) => hand.filter((c) => c.rank === 'J').length

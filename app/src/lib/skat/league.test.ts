@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { AWAY_MS, CHECKIN_COINS, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, START_AT, TIERS, dealOutcome, dealPoints, forfeitPoints, leftOutcome, standingAfter } from './league'
+import { AWAY_MS, CHECKIN_COINS, COINS_MAX, FEES, LEGEND, PROMOTE_AT, RELEGATE_AT, START_AT, TIERS, dealOutcome, dealPoints, forfeitPoints, leftOutcome, standingAfter } from './league'
 import { seegerFabian } from './tournament'
 
 // The League's numbers: six tiers and their fees per deal; per deal the seat's Seeger-Fabian score minus the average of the
@@ -15,9 +15,9 @@ const sf = (declarer: 0 | 1 | 2, won: boolean, value: number) =>
 describe('the League', () => {
   it('has six tiers, Bronze to Legend, and their fees per deal', () => {
     expect(TIERS).toEqual(['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legend'])
-    expect(FEES).toEqual([4, 4, 4, 4, 4, 4])
+    expect(FEES).toEqual([4, 4, 5, 5, 6, 6])
     expect(AWAY_MS).toBe(60_000)
-    expect(CHECKIN_COINS).toBe(90)
+    expect([CHECKIN_COINS, COINS_MAX]).toEqual([100, 200])
     expect([START_AT, PROMOTE_AT, RELEGATE_AT]).toEqual([1000, 2000, 0])
   })
 

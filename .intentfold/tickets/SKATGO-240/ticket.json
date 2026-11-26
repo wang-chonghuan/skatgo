@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-240",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-240",
+  "branch": "SKATGO-240-coins-cap-fees",
+  "base": "1b9ee8b8744a61d30c74710f32954759abd476a4",
+  "ports": {
+    "web": 55240,
+    "multiplayer": 56240,
+    "database": 57240
+  }
+}

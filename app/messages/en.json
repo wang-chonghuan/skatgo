@@ -972,7 +972,7 @@
   "league_about_tiers": "Six tiers, Bronze to Legend: the higher the tier, the stronger your opponents. Climb as high as your Skat takes you.",
   "league_about_deal": "Each deal: your Seeger-Fabian score minus the average of the other two players’. A game worth 36 won as declarer: +86 for you, −43 for each defender.",
   "league_about_move": "Every tier starts you at {start} points. At {up} you go up a tier, at {down} down one. In Bronze you never go below {down}.",
-  "league_about_coins": "Each deal costs a few coins. You get {n} free every day you open SkatGo signed in; on Monday the week's coins start again from {n}.",
+  "league_about_coins": "Each deal costs a few coins. You get {n} free a day and can save up to {max}.",
   "league_play_meta_title": "League table | SkatGo",
   "league_play_meta_description": "A League table on SkatGo.",
   "league_result_up": "Up to the {league}!",

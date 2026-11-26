@@ -388,7 +388,7 @@ client and names the account (`user:<Clerk id>`), never a guest for anything but
   deal and still named, by tier, then points, equal ones sharing a rank; the first `BOARD_SIZE`, and the asker's own row
   as `me` when further down), and for an account its coins, tier, points, whether today's check-in counted and the table
   it is seated at.
-- `checkin` (`{ player }`): `CHECKIN_COINS` on the account's first call of a Berlin day (`dayOf`), else nothing.
+- `checkin` (`{ player }`): `CHECKIN_COINS` on the account's first call of a Berlin day (`dayOf`), up to `COINS_MAX`, else nothing.
 - `play` (`{ player }`): the account's table, or a new one in its tier: the request waits up to `MATCH_WAIT_MS`
   for other accounts of the tier (in the leader's memory), then the seats left go to personas of the tier's band, the
   first deal's fees are taken and the room and `league_matches` row stored in one transaction; answers `{ room }`, or 409

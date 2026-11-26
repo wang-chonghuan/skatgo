@@ -4,7 +4,7 @@ import type pg from 'pg'
 import { z } from 'zod'
 import { actor, deal, next, type Seat } from '../../app/src/lib/skat/game'
 import {
-  BOARD_SIZE, CHECKIN_COINS, FEES, MATCH_WAIT_MS, TIERS, dealOutcome, dealPoints, forfeitPoints, leftOutcome, standingAfter,
+  BOARD_SIZE, CHECKIN_COINS, COINS_MAX, FEES, MATCH_WAIT_MS, TIERS, dealOutcome, dealPoints, forfeitPoints, leftOutcome, standingAfter,
   type BoardRow, type DealOutcome, type LeagueBoard, type LeagueMe, type LeagueResult,
 } from '../../app/src/lib/skat/league'
 import { roomSeat, viewSeat } from '../../app/src/lib/skat/room-view'
@@ -292,17 +292,16 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
   }))
 
   // The day's check-in: the first open of SkatGo on a Berlin day gives CHECKIN_COINS, once (the human: 「不打开游戏就不给，打开了
-  // 就能积累」); the first of a new week (Monday on) gives them in place of what was left (SKATGO-210: 「必须每周金币清零」).
+  // 就能积累」), up to COINS_MAX (SKATGO-240: 「每天100个，200个封顶」); no weekly reset since.
   router.post('/checkin', run(async (body) => {
     const who = z.object({ player }).strict().parse(body).player
     const day = dayOf(Date.now())
     const { rows } = await store.pool.query(
-      `INSERT INTO league_players (player, coins, checkin_day, updated_at) VALUES ($1, $2, $3, $4)
+      `INSERT INTO league_players (player, coins, checkin_day, updated_at) VALUES ($1, LEAST($2::integer, $5::integer), $3, $4)
        ON CONFLICT (player) DO UPDATE SET checkin_day = $3,
-         coins = CASE WHEN date_trunc('week', league_players.checkin_day::date) = date_trunc('week', $3::date)
-                      THEN league_players.coins + $2 ELSE $2 END
+         coins = LEAST(league_players.coins + $2, $5)
          WHERE league_players.checkin_day IS DISTINCT FROM $3
-       RETURNING coins`, [who, CHECKIN_COINS, day, Date.now()])
+       RETURNING coins`, [who, CHECKIN_COINS, day, Date.now(), COINS_MAX])
     if (rows[0]) return { coins: rows[0].coins as number, added: CHECKIN_COINS }
     return { coins: (await standingOf(store.pool, who)).coins, added: 0 }
   }))

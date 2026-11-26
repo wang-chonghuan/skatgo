@@ -6,6 +6,7 @@ import { type ChallengeReply, challengeAct, challengeAgain, challengeNew, challe
 import type { FreeError } from '~/lib/free-api'
 import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeKind, aimsSchneider, contractOfGame } from '~/lib/skat/challenge'
 import { kindProgress, useChallengeProgress } from '~/lib/skat/challenge-progress'
+import type { Card } from '~/lib/skat/cards'
 import type { Move } from '~/lib/skat/game'
 import { type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -17,6 +18,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { BOT_DELAY, GameTable } from './game-table'
+import { PlayingCard } from './playing-card'
 import { TableLoading } from './table-loading'
 import { Btn, Panel, ProgressBar } from './ui'
 
@@ -33,8 +35,26 @@ const KIND_TEXT: Record<ChallengeKind, { title: () => string; text: () => string
   schneider: { title: m.challenge_kind_schneider_title, text: m.challenge_kind_schneider_text },
 }
 
-/** The list: what the module is for, and each kind as the course's option cards with its progress, opening its first deal
- *  not yet passed. */
+const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
+
+/**
+ * Each kind's look (SKATGO-249, the human: 「这个页面不要全部白色……大胆设计，要美观」, then 「和home页面的四个卡片太像了」): a
+ * stage in one of the table's contract tints — the six of them, one a kind — and on it five of skatgo's cards fanned as a
+ * hand held up, telling the kind: the one Jack among the trumps, the side suits standing in for trumps, the lone Jack of a
+ * Grand, a Null's gap, the good hand, Schneider's four Jacks.
+ */
+const KIND_LOOK: Record<ChallengeKind, { tint: keyof typeof stageTints; art: Card[] }> = {
+  'one-jack-suit': { tint: 'clubs', art: [card('D', 'J'), card('C', 'A'), card('C', '10'), card('C', 'K'), card('C', '8')] },
+  'short-trumps': { tint: 'diamonds', art: [card('C', 'J'), card('H', 'A'), card('H', '10'), card('S', 'A'), card('S', '10')] },
+  'one-jack-grand': { tint: 'grand', art: [card('S', 'J'), card('C', 'A'), card('C', '10'), card('H', 'A'), card('H', '10')] },
+  'null-weak-spot': { tint: 'null', art: [card('C', '7'), card('C', '9'), card('S', '7'), card('D', '8'), card('D', 'Q')] },
+  'bad-seat': { tint: 'hearts', art: [card('C', 'J'), card('H', 'J'), card('H', 'A'), card('H', '10'), card('H', 'K')] },
+  schneider: { tint: 'spades', art: [card('C', 'J'), card('S', 'J'), card('H', 'J'), card('D', 'J'), card('C', 'A')] },
+}
+const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
+
+/** The list: what the module is for, and each kind as a card — its hand on its stage, its words and its progress —
+ *  opening its first deal not yet passed. */
 export function ChallengePage() {
   const { passed } = useChallengeProgress()
   return (
@@ -46,14 +66,26 @@ export function ChallengePage() {
           {CHALLENGE_KINDS.map((kind) => {
             const { done, next } = kindProgress(passed, kind)
             const count = m.challenge_progress({ n: done, count: CHALLENGE_DEALS })
+            const look = KIND_LOOK[kind]
             return (
               <li key={kind} {...stylex.props(styles.item)}>
                 <Link to="/hard-hands/play" search={{ kind, n: next }} data-testid="hard-hands-kind" data-kind={kind} {...stylex.props(styles.card)}>
-                  <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{KIND_TEXT[kind].title()}</span>
-                  <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{KIND_TEXT[kind].text()}</span>
-                  <span {...stylex.props(styles.progress)}>
-                    <span data-testid="hard-hands-progress" {...stylex.props(typography.meta, styles.optionDesc)}>{count}</span>
-                    <ProgressBar value={done / CHALLENGE_DEALS} label={count} />
+                  <span aria-hidden="true" {...stylex.props(styles.stage, stageTints[look.tint])}>
+                    <span {...stylex.props(styles.fan)}>
+                      {look.art.map((c, i) => (
+                        <span key={i} {...stylex.props(styles.fanCard, fanPose[FAN[i]])}>
+                          <PlayingCard card={c} size="lg" />
+                        </span>
+                      ))}
+                    </span>
+                  </span>
+                  <span {...stylex.props(styles.body)}>
+                    <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{KIND_TEXT[kind].title()}</span>
+                    <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{KIND_TEXT[kind].text()}</span>
+                    <span {...stylex.props(styles.progress)}>
+                      <span data-testid="hard-hands-progress" {...stylex.props(typography.meta, styles.optionDesc)}>{count}</span>
+                      <ProgressBar value={done / CHALLENGE_DEALS} label={count} />
+                    </span>
                   </span>
                 </Link>
               </li>
@@ -175,7 +207,25 @@ const focus = {
   outlineOffset: border.focusOffset,
 } as const
 
-// The advanced course's column and option cards (advanced-course-page.tsx).
+const fanPose = stylex.create({
+  fanFarLeft: { transform: pose.fanFarLeft },
+  fanLeft: { transform: pose.fanLeft },
+  fanMid: { transform: pose.fanMid },
+  fanRight: { transform: pose.fanRight },
+  fanFarRight: { transform: pose.fanFarRight },
+})
+
+// The table's contract tints (game-table.tsx), one a kind.
+const stageTints = stylex.create({
+  clubs: { backgroundColor: color.tintClubs },
+  diamonds: { backgroundColor: color.tintDiamonds },
+  grand: { backgroundColor: color.tintGrand },
+  null: { backgroundColor: color.tintNull },
+  hearts: { backgroundColor: color.tintHearts },
+  spades: { backgroundColor: color.tintSpades },
+})
+
+// The advanced course's column and option cards (advanced-course-page.tsx), each card's top its stage.
 const styles = stylex.create({
   root: { display: 'flex', flexDirection: 'column' },
   column: {
@@ -196,7 +246,6 @@ const styles = stylex.create({
   link: { color: color.info },
   optionTitle: { margin: 0, color: color.navy },
   optionDesc: { margin: 0, color: color.slate },
-  progress: { display: 'flex', flexDirection: 'column', gap: space.x8, marginTop: 'auto' },
   list: {
     listStyleType: 'none',
     margin: 0,
@@ -204,28 +253,39 @@ const styles = stylex.create({
     display: 'grid',
     gridTemplateColumns: { default: dims.twoColumns, [bp.cards]: dims.oneColumn },
     gridAutoRows: dims.equalRows,
-    gap: space.x16,
+    gap: { default: space.x24, [bp.phone]: space.x16 },
   },
   item: { margin: 0, display: 'flex' },
   card: {
     display: 'flex',
     flexDirection: 'column',
-    gap: space.x10,
     flexGrow: 1,
-    padding: space.x24,
+    overflow: 'hidden',
     borderRadius: radii.option,
     borderWidth: border.tile,
     borderStyle: 'solid',
-    borderColor: 'transparent',
+    borderColor: color.edge,
     backgroundColor: color.surface,
     boxShadow: elev.option,
     color: color.text,
     textDecoration: 'none',
     transform: { default: pose.rest, ':hover': pose.lift },
-    transitionProperty: 'transform, border-color',
+    transitionProperty: 'transform',
     transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
     ...focus,
   },
+  // The stage: the hand held up in the middle of the tint, its fanned edges clear of the card's.
+  stage: {
+    display: 'flex',
+    justifyContent: 'center',
+    paddingTop: { default: space.x32, [bp.phone]: space.x24 },
+    paddingBottom: { default: space.x48, [bp.phone]: space.x36 },
+  },
+  fan: { display: 'flex' },
+  fanCard: { display: 'block', marginInline: dims.fanRowOverlap, transformOrigin: 'bottom center' },
+  body: { display: 'flex', flexDirection: 'column', gap: space.x10, flexGrow: 1, padding: { default: space.x24, [bp.phone]: space.x16 } },
+  // The count and its bar at the card's foot, wherever its words end.
+  progress: { display: 'flex', flexDirection: 'column', gap: space.x8, marginTop: 'auto', paddingTop: space.x8 },
   summary: { display: 'flex', flexDirection: 'column', justifyContent: 'center', flexGrow: 1, padding: space.x16, maxWidth: dims.readingColumn, marginInline: 'auto', width: '100%', boxSizing: 'border-box' },
   foot: { display: 'flex', flexDirection: 'column', gap: space.x12 },
 })

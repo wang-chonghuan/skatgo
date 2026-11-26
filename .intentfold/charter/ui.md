@@ -445,9 +445,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   paragraphs and links, each trick a numbered sub-heading, the ways into the daily tournament and to the
   exercises as links; nothing outside the forum links it (SKATGO-120, the human: 「就放论坛里」). The course lists the advanced course
   and the exercises as option cards under the lessons (SKATGO-234). Hard hands (`challenge-page.tsx`, SKATGO-248) is the
-  advanced course's column: the H1, a lead, its six kinds (SKATGO-249: five until then) as the course's option cards (title, one line, then at the card's
-  foot its progress, "12 of 30 passed" in `meta`, slate, over a `ProgressBar` — SKATGO-249), each opening its first deal not
-  passed at `/hard-hands/play`, then links to the Skat Tricks and the advanced course. Its table
+  advanced course's column: the H1 and a lead, then its six kinds (SKATGO-249: five until then) as cards with a stage
+  (SKATGO-249, the human: 「这个页面不要全部白色……大胆设计，要美观」, and not the front page's colour tiles: 「和home页面的四个卡片太像
+  了」): the card's top in one of the table's six contract tints, a kind each, and on it five of skatgo's cards fanned as a
+  hand held up (the hero fan's poses), telling the kind — the one Jack among the trumps, a Null's gap, Schneider's four
+  Jacks; under it the title (`optionTitle`), the line (`optionDesc`) and at its foot the progress, "12 of 30 passed"
+  (`meta`, slate) over a `ProgressBar` — each opening its first deal not passed at `/hard-hands/play`, then links to the Skat Tricks and the advanced course. Its table
   is the whole screen, free play's table — the bid 18 on the board, the deal "n of 30", no auction in the panel: over the skat
   step one line, "Dein Spiel: …" (the Schneider kind's "Dein Spiel: …, Ziel Schneider", SKATGO-249), and only "Skat aufnehmen", then the discard; the result with the AI's run of the same cards, its foot — for the Schneider kind first one line, "Schneider geschafft: 94 Augen" or "Kein Schneider: 72 Augen, 90 nötig" (SKATGO-249) — "Nächstes Spiel" (`go`) and "Dasselbe Blatt noch mal"
   (`quiet`). The advanced course's page (`advanced-course-page.tsx`) is the

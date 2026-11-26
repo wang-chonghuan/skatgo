@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { type ChallengeReply, challengeAct, challengeAgain, challengeNew, challengeReview } from '~/lib/challenge-api'
 import type { FreeError } from '~/lib/free-api'
-import { CHALLENGE_KINDS, type ChallengeKind, contractOfGame } from '~/lib/skat/challenge'
+import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeKind, aimsSchneider, contractOfGame } from '~/lib/skat/challenge'
+import { kindProgress, useChallengeProgress } from '~/lib/skat/challenge-progress'
+import type { Card } from '~/lib/skat/cards'
 import type { Move } from '~/lib/skat/game'
 import { type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -16,12 +18,13 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { BOT_DELAY, GameTable } from './game-table'
+import { PlayingCard } from './playing-card'
 import { TableLoading } from './table-loading'
-import { Btn, Panel } from './ui'
+import { Btn, Panel, ProgressBar } from './ui'
 
 // Hard hands (SKATGO-248, the human: 「我要新模块难牌挑战」): the kinds of hand that are hard to play, each a run of deals from the
 // easiest, the game set and the player the declarer; after each deal the AI's run of the same cards beside theirs. Counted
-// nowhere (grill Q2).
+// nowhere (grill Q2) but in each kind's progress (SKATGO-249): the deals of it passed, on its card.
 
 const KIND_TEXT: Record<ChallengeKind, { title: () => string; text: () => string }> = {
   'one-jack-suit': { title: m.challenge_kind_one_jack_suit_title, text: m.challenge_kind_one_jack_suit_text },
@@ -29,24 +32,65 @@ const KIND_TEXT: Record<ChallengeKind, { title: () => string; text: () => string
   'one-jack-grand': { title: m.challenge_kind_one_jack_grand_title, text: m.challenge_kind_one_jack_grand_text },
   'null-weak-spot': { title: m.challenge_kind_null_weak_spot_title, text: m.challenge_kind_null_weak_spot_text },
   'bad-seat': { title: m.challenge_kind_bad_seat_title, text: m.challenge_kind_bad_seat_text },
+  schneider: { title: m.challenge_kind_schneider_title, text: m.challenge_kind_schneider_text },
 }
 
-/** The list: what the module is for, and each kind as the course's option cards, opening its first deal. */
+const card = (suit: Card['suit'], rank: Card['rank']): Card => ({ suit, rank })
+
+/**
+ * Each kind's look (SKATGO-249, the human: 「这个页面不要全部白色……大胆设计，要美观」, then 「和home页面的四个卡片太像了」): a
+ * stage in one of the table's contract tints — the six of them, one a kind — and on it five of skatgo's cards fanned as a
+ * hand held up, telling the kind: the one Jack among the trumps, the side suits standing in for trumps, the lone Jack of a
+ * Grand, a Null's gap, the good hand, Schneider's four Jacks.
+ */
+const KIND_LOOK: Record<ChallengeKind, { tint: keyof typeof stageTints; art: Card[] }> = {
+  'one-jack-suit': { tint: 'clubs', art: [card('D', 'J'), card('C', 'A'), card('C', '10'), card('C', 'K'), card('C', '8')] },
+  'short-trumps': { tint: 'diamonds', art: [card('C', 'J'), card('H', 'A'), card('H', '10'), card('S', 'A'), card('S', '10')] },
+  'one-jack-grand': { tint: 'grand', art: [card('S', 'J'), card('C', 'A'), card('C', '10'), card('H', 'A'), card('H', '10')] },
+  'null-weak-spot': { tint: 'null', art: [card('C', '7'), card('C', '9'), card('S', '7'), card('D', '8'), card('D', 'Q')] },
+  'bad-seat': { tint: 'hearts', art: [card('C', 'J'), card('H', 'J'), card('H', 'A'), card('H', '10'), card('H', 'K')] },
+  schneider: { tint: 'spades', art: [card('C', 'J'), card('S', 'J'), card('H', 'J'), card('D', 'J'), card('C', 'A')] },
+}
+const FAN = ['fanFarLeft', 'fanLeft', 'fanMid', 'fanRight', 'fanFarRight'] as const
+
+/** The list: what the module is for, and each kind as a card — its hand on its stage, its words and its progress —
+ *  opening its first deal not yet passed. */
 export function ChallengePage() {
+  const { passed } = useChallengeProgress()
   return (
     <div data-testid="hard-hands" {...stylex.props(styles.root)}>
       <div {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.challenge_title()}</h1>
         <p {...stylex.props(typography.appText, styles.lead)}>{m.challenge_lead()}</p>
         <ol {...stylex.props(styles.list)}>
-          {CHALLENGE_KINDS.map((kind) => (
-            <li key={kind} {...stylex.props(styles.item)}>
-              <Link to="/hard-hands/play" search={{ kind, n: 1 }} data-testid="hard-hands-kind" data-kind={kind} {...stylex.props(styles.card)}>
-                <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{KIND_TEXT[kind].title()}</span>
-                <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{KIND_TEXT[kind].text()}</span>
-              </Link>
-            </li>
-          ))}
+          {CHALLENGE_KINDS.map((kind) => {
+            const { done, next } = kindProgress(passed, kind)
+            const count = m.challenge_progress({ n: done, count: CHALLENGE_DEALS })
+            const look = KIND_LOOK[kind]
+            return (
+              <li key={kind} {...stylex.props(styles.item)}>
+                <Link to="/hard-hands/play" search={{ kind, n: next }} data-testid="hard-hands-kind" data-kind={kind} {...stylex.props(styles.card)}>
+                  <span aria-hidden="true" {...stylex.props(styles.stage, stageTints[look.tint])}>
+                    <span {...stylex.props(styles.fan)}>
+                      {look.art.map((c, i) => (
+                        <span key={i} {...stylex.props(styles.fanCard, fanPose[FAN[i]])}>
+                          <PlayingCard card={c} size="lg" />
+                        </span>
+                      ))}
+                    </span>
+                  </span>
+                  <span {...stylex.props(styles.body)}>
+                    <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{KIND_TEXT[kind].title()}</span>
+                    <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{KIND_TEXT[kind].text()}</span>
+                    <span {...stylex.props(styles.progress)}>
+                      <span data-testid="hard-hands-progress" {...stylex.props(typography.meta, styles.optionDesc)}>{count}</span>
+                      <ProgressBar value={done / CHALLENGE_DEALS} label={count} />
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
         </ol>
         <nav {...stylex.props(styles.links)}>
           <Link to="/skat-tricks" {...stylex.props(typography.appLink, styles.link)}>{m.home_practice()}</Link>
@@ -100,7 +144,13 @@ export function ChallengePlayPage() {
   }, [queue, shown, release])
   const game = useMemo(() => (shown ? gameFromView(shown) : null), [shown])
   const token = reply?.token ?? null
-  const review = useCallback(() => challengeReview(token ?? ''), [token])
+  const { pass } = useChallengeProgress()
+  // The review says whether the deal is passed; an account's pass the service has already kept, a guest's is this browser's.
+  const review = useCallback(async () => {
+    const r = await challengeReview(token ?? '')
+    if (!('error' in r) && r.passed) pass(r.kind, r.n)
+    return r
+  }, [token, pass])
   if (failed) {
     return (
       <div {...stylex.props(styles.summary)}>
@@ -128,11 +178,19 @@ export function ChallengePlayPage() {
         collect: () => setRelease(true),
         next,
         fixed: contractOfGame(reply.game),
+        aim: aimsSchneider(kind) ? 'schneider' : undefined,
         deal: { n, of: reply.of },
         review,
         close,
         done: (
           <div {...stylex.props(styles.foot)}>
+            {aimsSchneider(kind) && game.result ? (
+              <p data-testid="hard-hands-aim" {...stylex.props(typography.appText, styles.title)}>
+                {game.result.won && game.result.declarerPoints >= 90
+                  ? m.challenge_schneider_made({ points: game.result.declarerPoints })
+                  : m.challenge_schneider_missed({ points: game.result.declarerPoints })}
+              </p>
+            ) : null}
             <Btn testId="hard-hands-next" shape="block" size="lg" onClick={next}>{n < reply.of ? m.challenge_next() : m.challenge_back()}</Btn>
             <Btn testId="hard-hands-again" tone="quiet" shape="block" size="lg" onClick={() => void begin(() => challengeAgain(token!))}>{m.challenge_again()}</Btn>
           </div>
@@ -149,7 +207,25 @@ const focus = {
   outlineOffset: border.focusOffset,
 } as const
 
-// The advanced course's column and option cards (advanced-course-page.tsx).
+const fanPose = stylex.create({
+  fanFarLeft: { transform: pose.fanFarLeft },
+  fanLeft: { transform: pose.fanLeft },
+  fanMid: { transform: pose.fanMid },
+  fanRight: { transform: pose.fanRight },
+  fanFarRight: { transform: pose.fanFarRight },
+})
+
+// The table's contract tints (game-table.tsx), one a kind.
+const stageTints = stylex.create({
+  clubs: { backgroundColor: color.tintClubs },
+  diamonds: { backgroundColor: color.tintDiamonds },
+  grand: { backgroundColor: color.tintGrand },
+  null: { backgroundColor: color.tintNull },
+  hearts: { backgroundColor: color.tintHearts },
+  spades: { backgroundColor: color.tintSpades },
+})
+
+// The advanced course's column and option cards (advanced-course-page.tsx), each card's top its stage.
 const styles = stylex.create({
   root: { display: 'flex', flexDirection: 'column' },
   column: {
@@ -177,28 +253,39 @@ const styles = stylex.create({
     display: 'grid',
     gridTemplateColumns: { default: dims.twoColumns, [bp.cards]: dims.oneColumn },
     gridAutoRows: dims.equalRows,
-    gap: space.x16,
+    gap: { default: space.x24, [bp.phone]: space.x16 },
   },
   item: { margin: 0, display: 'flex' },
   card: {
     display: 'flex',
     flexDirection: 'column',
-    gap: space.x10,
     flexGrow: 1,
-    padding: space.x24,
+    overflow: 'hidden',
     borderRadius: radii.option,
     borderWidth: border.tile,
     borderStyle: 'solid',
-    borderColor: 'transparent',
+    borderColor: color.edge,
     backgroundColor: color.surface,
     boxShadow: elev.option,
     color: color.text,
     textDecoration: 'none',
     transform: { default: pose.rest, ':hover': pose.lift },
-    transitionProperty: 'transform, border-color',
+    transitionProperty: 'transform',
     transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
     ...focus,
   },
+  // The stage: the hand held up in the middle of the tint, its fanned edges clear of the card's.
+  stage: {
+    display: 'flex',
+    justifyContent: 'center',
+    paddingTop: { default: space.x32, [bp.phone]: space.x24 },
+    paddingBottom: { default: space.x48, [bp.phone]: space.x36 },
+  },
+  fan: { display: 'flex' },
+  fanCard: { display: 'block', marginInline: dims.fanRowOverlap, transformOrigin: 'bottom center' },
+  body: { display: 'flex', flexDirection: 'column', gap: space.x10, flexGrow: 1, padding: { default: space.x24, [bp.phone]: space.x16 } },
+  // The count and its bar at the card's foot, wherever its words end.
+  progress: { display: 'flex', flexDirection: 'column', gap: space.x8, marginTop: 'auto', paddingTop: space.x8 },
   summary: { display: 'flex', flexDirection: 'column', justifyContent: 'center', flexGrow: 1, padding: space.x16, maxWidth: dims.readingColumn, marginInline: 'auto', width: '100%', boxSizing: 'border-box' },
   foot: { display: 'flex', flexDirection: 'column', gap: space.x12 },
 })

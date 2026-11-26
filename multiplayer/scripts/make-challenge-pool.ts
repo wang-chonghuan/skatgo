@@ -1,7 +1,9 @@
-// Hard hands' pool (SKATGO-248): per kind, deals whose player's ten cards are of the kind and that SkatZero, declaring the
+// Hard hands' pool (SKATGO-248): per kind, deals whose player's twelve cards — the ten and the skat, SKATGO-249 — are of the
+// kind and that SkatZero, declaring the
 // set game, makes in 50–90 % of the ways the other twenty cards can lie — the same ten and skat, the rest dealt anew
 // RUNS times (the first run the deal as kept). The bad seat's: a hand the rules of thumb would play, the game SkatZero's
-// own choice of suit or Grand from forehand, made there in at least 90 % and from middlehand in 50–90 %.
+// own choice of suit or Grand from forehand, made there in at least 90 % and from middlehand in 50–90 %. The Schneider kind's
+// (SKATGO-249): a hand anyone wins, made with Schneider in 50–90 %.
 //
 //   node --import tsx scripts/make-challenge-pool.ts [processes=8]          find deals into the scratch file, then write
 //   node --import tsx scripts/make-challenge-pool.ts --write                write the pool from the scratch file
@@ -15,9 +17,9 @@ import { createHash } from 'node:crypto'
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { type Card, fullDeck, shuffle } from '../../app/src/lib/skat/cards'
-import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeGame, type ChallengeKind, dealerFor, gameOfKind, ofKind, ownSlice, seatOf } from '../../app/src/lib/skat/challenge'
+import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeGame, type ChallengeKind, dealerFor, gameOfKind, madeAim, ofKind, ownSlice, seatOf, twelveOf } from '../../app/src/lib/skat/challenge'
 import { routineOf } from '../../app/src/lib/skat/bidding/practice'
-import type { Seat } from '../../app/src/lib/skat/game'
+import type { Game, Seat } from '../../app/src/lib/skat/game'
 import { aiPlays, type ChallengeDeal, redeal } from '../src/challenge'
 import { card, raw } from '../src/computers'
 import { declareAfterPickup } from '../src/skatzero/bidding'
@@ -25,7 +27,7 @@ import { type Policy, loadPolicy } from '../src/skatzero/policy'
 
 const DIR = new URL('../skatzero/', import.meta.url)
 const FOUND = new URL('challenge-found.jsonl', DIR)
-const SEED = 'skatgo-challenge/1'
+const SEED = 'skatgo-challenge/2'
 /** Lies of the other twenty cards a deal is judged over. */
 const RUNS = 40
 /** Deals found per kind before the pool is chosen from them. */
@@ -56,13 +58,16 @@ function moved(deck: Card[], from: Seat, to: Seat): Card[] {
   return [...out, deck[30], deck[31]]
 }
 
+/** Whether SkatZero's run reached the kind's aim: the game, for the Schneider kind with Schneider. */
+const made = (kind: ChallengeKind, end: Game) => madeAim(kind, end.result?.won ?? null, (end.result?.declarerPoints ?? 0) >= 90)
+
 /** SkatZero's rate over RUNS lies, stopping as soon as it falls outside [low, high]; null when outside. */
-async function rate(policy: Policy, dealer: Seat, deck: Card[], game: ChallengeGame, random: () => number, low: number, high: number): Promise<number | null> {
+async function rate(policy: Policy, kind: ChallengeKind, dealer: Seat, deck: Card[], game: ChallengeGame, random: () => number, low: number, high: number): Promise<number | null> {
   let won = 0
   for (let r = 0; r < RUNS; r++) {
     const lie = r === 0 ? deck : redeal(dealer, deck, (n) => Math.floor(random() * n))
     const end = await aiPlays(policy, dealer, lie, game)
-    if (end.result?.won) won++
+    if (made(kind, end)) won++
     const lost = r + 1 - won
     if (won > high * RUNS || lost > (1 - low) * RUNS) return null
   }
@@ -78,7 +83,8 @@ async function worker(kind: ChallengeKind, index: number) {
   for (let tried = 0; ; tried++) {
     const deck = shuffle(fullDeck(), random)
     const hand = deck.slice(a, b)
-    if (!ofKind(kind, hand)) continue
+    const twelve = twelveOf(dealer, deck)
+    if (!ofKind(kind, twelve)) continue
     let found: ChallengeDeal | null = null
     if (kind === 'bad-seat') {
       if (routineOf(hand).contract === 'pass') continue
@@ -88,13 +94,13 @@ async function worker(kind: ChallengeKind, index: number) {
       const choice = await declareAfterPickup(policy, [...front.slice(c, d), front[30], front[31]].map(raw), 0, 18)
       if (!['C', 'S', 'H', 'D', 'G'].includes(choice.mode)) continue
       const game = choice.mode as ChallengeGame
-      const strong = await rate(policy, fore, front, game, random, HIGH, 1)
+      const strong = await rate(policy, kind, fore, front, game, random, HIGH, 1)
       if (strong === null) continue
-      const r = await rate(policy, dealer, deck, game, random, LOW, HIGH)
+      const r = await rate(policy, kind, dealer, deck, game, random, LOW, HIGH)
       if (r !== null) found = { dealer, deck: text(deck), game, rate: r, front: strong }
     } else {
-      const game = gameOfKind(kind, hand)
-      const r = await rate(policy, dealer, deck, game, random, LOW, HIGH)
+      const game = gameOfKind(kind, twelve)
+      const r = await rate(policy, kind, dealer, deck, game, random, LOW, HIGH)
       if (r !== null) found = { dealer, deck: text(deck), game, rate: r }
     }
     if (found) {
@@ -115,7 +121,7 @@ const counts = () => Object.fromEntries(CHALLENGE_KINDS.map((k) => [k, found().f
 
 async function main(processes: number) {
   // Workers per kind in proportion to how rare its deals are; each stops when its kind has enough.
-  const share: Record<ChallengeKind, number> = { 'one-jack-suit': 1, 'short-trumps': 1, 'one-jack-grand': 1, 'null-weak-spot': 2, 'bad-seat': 3 }
+  const share: Record<ChallengeKind, number> = { 'one-jack-suit': 1, 'short-trumps': 1, 'one-jack-grand': 1, 'null-weak-spot': 2, 'bad-seat': 3, schneider: 1 }
   const total = Object.values(share).reduce((x, y) => x + y, 0)
   const children: { kind: ChallengeKind; child: ReturnType<typeof fork> }[] = []
   let started = Date.now() % 100000
@@ -163,7 +169,7 @@ async function check(sample: number) {
     const deals = pool.kinds[kind]
     const inBounds = deals.every((d) => d.rate >= LOW && d.rate <= HIGH && (kind !== 'bad-seat' || (d.front ?? 0) >= HIGH))
     const ordered = deals.every((d, i) => i === 0 || deals[i - 1].rate >= d.rate)
-    const patterned = deals.every((d) => ofKind(kind, d.deck.split(' ').map(card).slice(...ownSlice(d.dealer))))
+    const patterned = deals.every((d) => ofKind(kind, twelveOf(d.dealer, d.deck.split(' ').map(card))))
     const again: number[] = []
     for (const d of deals.slice(0, sample)) {
       const random = rng(`check|${kind}|${d.deck}`)
@@ -171,7 +177,7 @@ async function check(sample: number) {
       for (let r = 0; r < RUNS; r++) {
         const deck = d.deck.split(' ').map(card)
         const end = await aiPlays(policy, d.dealer, r === 0 ? deck : redeal(d.dealer, deck, (n) => Math.floor(random() * n)), d.game)
-        if (end.result?.won) won++
+        if (made(kind, end)) won++
       }
       again.push(won / RUNS)
     }

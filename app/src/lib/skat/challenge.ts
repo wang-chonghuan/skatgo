@@ -4,10 +4,11 @@ import type { Declaration } from './value'
 
 // Hard hands (SKATGO-248, the human: 「要做一个刻意挑战，针对特定的牌型，给出合约，去打」, 「我要新模块难牌挑战」): deals picked for a
 // kind of hand that is hard to play, the game already set, the player always the declarer in seat 0. Every deal of a kind
-// was picked offline (multiplayer/scripts/make-challenge-pool.ts) for its pattern and for SkatZero making it in 50–90 % of
+// was picked offline (multiplayer/scripts/make-challenge-pool.ts) for its pattern — in the twelve cards with the skat
+// (SKATGO-249) — and for SkatZero making it in 50–90 % of
 // the ways the other twenty cards can lie. These rules are shared by the script, the service and the pages.
 
-export const CHALLENGE_KINDS = ['one-jack-suit', 'short-trumps', 'one-jack-grand', 'null-weak-spot', 'bad-seat'] as const
+export const CHALLENGE_KINDS = ['one-jack-suit', 'short-trumps', 'one-jack-grand', 'null-weak-spot', 'bad-seat', 'schneider'] as const
 export type ChallengeKind = (typeof CHALLENGE_KINDS)[number]
 
 /** How many deals each kind has, easiest first (the human: each kind's own fixed deals, 「同意这个方案」). */
@@ -64,28 +65,67 @@ export function nullSafe(hand: Card[], s: Suit): boolean {
   return held.every((r, k) => r <= 2 * k)
 }
 
-/** Whether the player's ten cards are of `kind`, as dealt (before the skat). The bad seat has no pattern: SkatZero's
- *  rates in the two seats decide it. */
-export function ofKind(kind: ChallengeKind, hand: Card[]): boolean {
+/** The Null suits that could be made to take a trick. */
+const weakSuits = (hand: Card[]) => SUITS.filter((s) => !nullSafe(hand, s)).length
+
+/**
+ * Whether the player's cards are of `kind` once the skat is picked up (SKATGO-249, the human: 「题库按拿底牌后的牌重做」):
+ * `twelve` is the ten as dealt and the skat — the game is set before the skat is seen, so what the skat brings must not
+ * make the hand another kind. Trumps and Jacks are counted in the twelve; a Null keeps one weak spot whichever two are put
+ * away. The bad seat has no pattern: SkatZero's rates in the two seats decide it.
+ */
+export function ofKind(kind: ChallengeKind, twelve: Card[]): boolean {
   switch (kind) {
     case 'one-jack-suit': {
-      const t = trumpsIn(hand, longestSuit(hand))
-      return jacks(hand) === 1 && t >= 5 && t <= 6
+      const t = trumpsIn(twelve, longestSuit(twelve))
+      return jacks(twelve) === 1 && t >= 5 && t <= 6
     }
     case 'short-trumps':
-      return trumpsIn(hand, longestSuit(hand)) <= 4
+      return trumpsIn(twelve, longestSuit(twelve)) <= 4
     case 'one-jack-grand':
-      return jacks(hand) === 1
-    case 'null-weak-spot':
-      return SUITS.filter((s) => !nullSafe(hand, s)).length === 1
+      return jacks(twelve) === 1
+    case 'null-weak-spot': {
+      let fewest = SUITS.length
+      for (let i = 0; i < twelve.length; i++) {
+        for (let j = i + 1; j < twelve.length; j++) fewest = Math.min(fewest, weakSuits(twelve.filter((_, k) => k !== i && k !== j)))
+      }
+      return fewest === 1
+    }
     case 'bad-seat':
       return true
+    case 'schneider':
+      return strongGrand(twelve) || trumpsIn(twelve, longestSuit(twelve)) >= 7
   }
 }
 
-/** The game a kind is played with, from the ten cards; the bad seat's comes from the pool (SkatZero's own choice). */
-export function gameOfKind(kind: Exclude<ChallengeKind, 'bad-seat'>, hand: Card[]): ChallengeGame {
+/** Three or four Jacks: the Schneider kind's Grand. */
+const strongGrand = (twelve: Card[]) => jacks(twelve) >= 3
+
+/** The Schneider kind (SKATGO-249, the human: 「Schneider 挑战」): a hand anyone wins, so the aim is Schneider — 90 points or
+ *  more — rather than the game alone. */
+export const aimsSchneider = (kind: ChallengeKind) => kind === 'schneider'
+
+/** Whether a declarer's finished deal reached the kind's aim: the game won, and for the Schneider kind with Schneider. */
+export const madeAim = (kind: ChallengeKind, won: boolean | null, schneider: boolean) => won === true && (!aimsSchneider(kind) || schneider)
+
+/** The game a kind is played with, from the twelve cards; the bad seat's comes from the pool (SkatZero's own choice). */
+export function gameOfKind(kind: Exclude<ChallengeKind, 'bad-seat'>, twelve: Card[]): ChallengeGame {
   if (kind === 'one-jack-grand') return 'G'
   if (kind === 'null-weak-spot') return 'N'
-  return longestSuit(hand)
+  if (kind === 'schneider' && strongGrand(twelve)) return 'G'
+  return longestSuit(twelve)
+}
+
+/** The player's twelve cards in a deck: the ten as dealt to seat 0 and the skat. */
+export const twelveOf = (dealer: Seat, deck: Card[]): Card[] => [...deck.slice(...ownSlice(dealer)), deck[30], deck[31]]
+
+/** Each kind's deals passed, by number (SKATGO-249): won, or lost where SkatZero's run of the same cards lost too. */
+export type ChallengeProgress = Partial<Record<ChallengeKind, number[]>>
+
+/** How many of a kind's deals are passed, and the deal its card opens: the first not passed, or the first when all are. */
+export function kindProgress(passed: ChallengeProgress, kind: ChallengeKind, of = CHALLENGE_DEALS): { done: number; next: number } {
+  const ns = new Set(passed[kind] ?? [])
+  let next = 1
+  while (next <= of && ns.has(next)) next++
+  return { done: [...ns].filter((n) => n >= 1 && n <= of).length, next: next > of ? 1 : next }
 }

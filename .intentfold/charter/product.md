@@ -362,15 +362,25 @@ search entry.
 Hard hands at `/hard-hands` (SKATGO-248, the human: 「要做一个刻意挑战，针对特定的牌型，给出合约，去打」, 「我要新模块难牌挑战」),
 "Hard hands" / "Schwere Blätter", from its own picture card on the front page: hands anyone wins teach little (「谁都能打赢
 BBAA这种牌型」), so these are the hard ones, by kind — a suit game with one Jack (five or six trumps), a suit game with few
-trumps (four or fewer in the ten), a Grand with one Jack, a Null with one weak spot, and a good hand in a bad seat
+trumps (four or fewer), a Grand with one Jack, a Null with one weak spot whichever two are put away, each counted in the
+twelve cards with the skat (SKATGO-249, the human: 「题库按拿底牌后的牌重做」 — the game is set before the skat is seen, so
+the skat must not make it another kind), a good hand in a bad seat
 (「坏位置的赢牌」: a hand SkatZero makes from forehand at least nine times in ten, played from middlehand) — the player always
-the declarer (「这五种是庄还是防？」). The game is set and said before the skat is picked up; there is no bidding and no Hand; the
+the declarer (「这五种是庄还是防？」). A sixth, so the kinds are an even six (SKATGO-249, the human: 「能否改为6个，偶数」, then
+「Schneider 挑战」): Schneider as the aim — a hand anyone wins (three or four Jacks, played as a Grand, or seven trumps or more),
+where the aim is Schneider, 90 points or more, said with the game; its deals are those SkatZero makes with Schneider in
+50–90 %, and passing one is Schneider made, or missed where SkatZero missed it too. The game is set and said before the skat is picked up; there is no bidding and no Hand; the
 two put away are the player's, then the game is declared for them. Each kind is thirty fixed deals, picked offline from
 random ones for the kind's pattern and for SkatZero, declaring the same game, making it in 50–90 % of the ways the other twenty
 cards can lie, spread evenly from the easiest (the highest rate) to the hardest (「同意这个方案」); a deal is opened by its
 number, then the next. After a deal its result stands beside SkatZero's run of the same cards with the same game; the same
 hand can be played again, the player's ten and the skat kept and the other twenty dealt anew. Nothing is counted: no
-record, no XP, no board, no League (SKATGO-248's grill); a guest plays every deal.
+record, no XP, no board, no League (SKATGO-248's grill); a guest plays every deal. Each kind keeps its progress
+(SKATGO-249, the human: 「这几个东西的每个卡片应该有进度条」, 「先做每类的进度吧，要个bar」): the deals of it passed — won, or lost
+where SkatZero's run of the same cards lost too, since the hardest are lost about half the time however well they are
+played — and a pass is never undone; its card opens the first deal not passed. An account's progress is the account's;
+a guest's stays in the browser and joins the account on signing in. A roguelike run through the kinds was discussed and
+put off (「rouguelike的先不做」).
 
 An advanced course at `/advanced-course` (SKATGO-234, the human: 「去掉的卡片，新增一个进阶课程，或者高级课程之类的，用来放之前就规划的
 那个书上的专题等」), "Advanced course" / "Fortgeschrittenenkurs", from the course's page (from the front page's picture card in the

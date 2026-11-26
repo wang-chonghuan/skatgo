@@ -6,7 +6,7 @@ import { dailyRoutes, nameUnnamed, prepareDays } from './daily'
 import { forumRoutes } from './forum'
 import { translateForum } from './translate'
 import { freeRoutes, loadPool } from './free'
-import { challengeRoutes, loadChallengePool } from './challenge'
+import { challengeRecordRoutes, challengeRoutes, loadChallengePool } from './challenge'
 import { ladderRoutes } from './ladder'
 import { leagueRoutes } from './league'
 import { biddingRoutes } from './bidding'
@@ -67,7 +67,8 @@ app.get(['/healthz', '/readyz'], async (req, res) => {
 })
 app.use('/daily', dailyRoutes(store, key, () => ready && !stopping, () => policy, () => pool))
 app.use('/free', freeRoutes(store, key, () => ready && !stopping, () => policy, () => pool))
-app.use('/challenge', challengeRoutes(key, () => ready && !stopping, () => policy, () => challenges))
+app.use('/challenge', challengeRoutes(store, key, () => ready && !stopping, () => policy, () => challenges))
+app.use('/challenge-record', challengeRecordRoutes(store, key, () => ready && !stopping))
 app.use('/ladder', ladderRoutes(store, key, () => ready && !stopping))
 app.use('/bidding', biddingRoutes(store, key, () => ready && !stopping))
 app.use('/rooms', roomRoutes(store, key, () => ready && !stopping))

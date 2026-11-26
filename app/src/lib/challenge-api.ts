@@ -7,6 +7,8 @@ import type { FreeError } from '~/lib/free-api'
 // deal is the token the server hands back, kept in the page's memory.
 
 export type ChallengeReply = { token: string; steps: SeatView[]; revision: number; game: ChallengeGame; of: number }
+/** The review, with whether the deal is passed (SKATGO-249) — won, or lost where SkatZero lost too. */
+export type ChallengeReview = DealReview & { kind: ChallengeKind; n: number; passed: boolean }
 
 async function post<T>(op: 'new' | 'act' | 'review' | 'again', body: object): Promise<T | FreeError> {
   try {
@@ -25,4 +27,4 @@ export const challengeAct = (token: string, revision: number, action: Move) => p
 /** The same ten cards and skat, the other twenty dealt anew. */
 export const challengeAgain = (token: string) => post<ChallengeReply>('again', { token })
 /** The finished deal's review with SkatZero's run of it in the player's seat. */
-export const challengeReview = (token: string) => post<DealReview>('review', { token })
+export const challengeReview = (token: string) => post<ChallengeReview>('review', { token })

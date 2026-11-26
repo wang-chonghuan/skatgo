@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-249",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-249",
+  "branch": "SKATGO-249-hard-hands-progress",
+  "base": "3178c7c295d11ccfb24e573c179fc58e6395651a",
+  "ports": {
+    "web": 55249,
+    "multiplayer": 56249,
+    "database": 57249
+  }
+}

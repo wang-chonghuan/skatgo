@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-246",
+  "mode": "autonomous",
+  "stage": "handed-off",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-246",
+  "branch": "SKATGO-246-private-faces",
+  "base": "41bd1ff3d315de7aa13e779abc8d6d477d221f4d",
+  "ports": {
+    "web": 55246,
+    "multiplayer": 56246,
+    "database": 57246
+  }
+}

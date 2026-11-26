@@ -8,7 +8,7 @@ import { computerTurn, decided, type Logged } from './computers'
 import { nameOf } from './daily'
 import { plan, poolDealOf, type Pool } from './free'
 import { AWAY_MS, leftOutcome } from '../../app/src/lib/skat/league'
-import { leagueDeal, personaTurnPolicy, settleLeague, settlePending } from './league'
+import { faceOfPlayer, leagueDeal, personaTurnPolicy, settleLeague, settlePending } from './league'
 import {
   applyAction, applySeatMove, claimSeat, commandSchema, dealIfReady, emptyRoom, GRACE_MS, hash, logMove, newRoom, nextDue, playingLeague, privateView, publicView,
   Rejected, roomOnly, scoreEnded, secretEquals, TTL_MS, type PoolDeal, type Snapshot,
@@ -95,11 +95,13 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         if (!ready() || !by || !by.open) throw new ServerError(403, 'admission_denied')
         // A new table: the account leaves every other first (SKATGO-235).
         await leaveOtherTables(store, by.account)
-        const nickname = await store.transaction(c => nameOf(c, by.account, Date.now()))
+        // The host's name, and their face for the others at the table (SKATGO-246, the human: 「私人桌也显示对手头像」).
+        const { nickname, face } = await store.transaction(async c => ({ nickname: await nameOf(c, by.account, Date.now()), face: await faceOfPlayer(c, by.account) }))
         // A number nobody's live room holds (the table's key keeps it unique); a few tries, then the room is refused.
         let stored = false
         for (let i = 0; i < 20 && !stored; i++) {
           this.snapshot = newRoom(drawNumber(), by.account, nickname)
+          this.snapshot.seats[0].face = face
           stored = await store.create(this.snapshot)
         }
         if (!stored) throw new ServerError(503, 'room_capacity')
@@ -139,6 +141,8 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             if (p.session && p.session !== client.sessionId) elsewhere.push(p.session)
             p.session = client.sessionId
             p.disconnectedAt = null
+            // Their face as it is now (SKATGO-246): a new look shows from their next coming in.
+            p.face = await faceOfPlayer(c, by.account)
             p.autopilot = p.joinsAt !== null
             // Back at a League table they had left, before the next deal took their seat: they stay (SKATGO-205).
             delete p.leaving
@@ -148,6 +152,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
             // A League table's seats are its own people's (SKATGO-204): nobody else comes in.
             if (s.league) throw new Rejected('room_full')
             seat = claimSeat(s, by.account, await nameOf(c, by.account, Date.now()), client.sessionId)
+            s.seats[seat].face = await faceOfPlayer(c, by.account)
             claimed = true
           }
           return { changed: true, value: { seat, claimed } }

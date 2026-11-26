@@ -673,7 +673,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   same way (「锦标赛也加进去，1deal和6deal都加」). The settings carry the switch, "Tischgespräche" — "Lina und Noah reden am
   Tisch", on by default, as the sounds' switch.
 - **Lina's and Noah's faces** (SKATGO-147, the human: 「给noah和lina的牌的上方，加两个头像，一男，一女……有点搞笑的的风格」):
-  on every table where they sit — not a private table, not an exercise's open-card board — a cartoon face above each
+  on every table where they sit — not a League or private table, which show their opponents' own pictures there (below), not an exercise's open-card board — a cartoon face above each
   one's stack at the felt's edge (`stage.face`, `faceTop`, `faceInset`) — on a wide table higher, in the felt's corner
   beside the info board and under the way out, clear of a hand laid open; on a phone a hand laid open long enough lies
   over the face, never under it (SKATGO-148, 「头像位置往上面移动一点，这样就不当着亮的牌了」) — from `app/public/faces/`, each on a square with rounded corners (`radii.panel`) as large as the picture
@@ -691,8 +691,9 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   (`tableBand.boardFoot`), 4u above a ten-card stack. Only where a face does not fit does the stage move down, by
   what the face lacks, and the table gets a little smaller so the hand still fits. The table's geometry does not
   depend on the faces switch. A League table (SKATGO-238, the human: 「联赛时，我想把对方玩家的头像显示出来，就显示在free play的那个
-  对应的地方」, 「不做表情吧，就头像不变」) puts its two opponents' own pictures in the faces' places, still — the face stored
-  for them when the table formed, or the drawing of their name, as on the boards — whatever the switch says; a drawing
+  对应的地方」, 「不做表情吧，就头像不变」), and a private table since SKATGO-246 (「私人桌也显示对手头像」), puts its two opponents' own pictures in the faces' places, still — the face stored
+  for them when they sat down (at a private table again each time they come back), or the drawing of their name, as on the boards; a private table's
+  computer the drawing of its name, Lina or Max — whatever the switch says; a drawing
   there is square, with no ground of its own, on the box's dark square as Lina and Noah are, the person at 80 % with the
   shoulders at the box's foot (SKATGO-239, the human: 「头像背景……能否改为深灰黑色，像其他头像一样」, 「联赛里头像尺寸太大，
   请调小」); an uploaded photo fills the box. The settings carry the switch,

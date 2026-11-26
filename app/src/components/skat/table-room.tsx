@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { track } from '~/lib/analytics'
+import { facePath } from '~/lib/forum'
 import {
   PASSING, type RoomAction, type TableError, type TableState, enterRoom, findRoom, myRoom, openRoom, readState, sayBrought, sendAction,
 } from '~/lib/room-client'
@@ -586,6 +587,13 @@ function Playing({ state, busy, send, collect, notice }: { state: TableState; bu
   const game = useMemo(() => roomGame(state.pub, state.mine), [state])
   const names = seatNames(state)
   const me = state.mine.seat
+  // The opponents' pictures, left and right, still, as at a League table (SKATGO-246, the human: 「私人桌也显示对手头像」):
+  // a person's face, or the drawing of their name; a computer's the drawing of its name, Lina or Max.
+  const picture = (v: 1 | 2) => {
+    const s = state.pub.seats[roomSeat(v, me)]
+    return facePath(s.face ?? null, s.nickname ?? seatName(state, s.seat), true)
+  }
+  const faces = [picture(1), picture(2)] as const
   const totals = [0, 1, 2].map((v) => state.pub.scores[roomSeat(v, me)]) as [number, number, number]
   if (!game) return null
   const ended = game.phase === 'done' || game.phase === 'passedIn'
@@ -603,7 +611,7 @@ function Playing({ state, busy, send, collect, notice }: { state: TableState; bu
         fullScreen
         room={{
           game, busy, send: (move) => send(move), collect, next: () => send({ type: 'next' }), names, totals, notice, deal: state.pub.deals,
-          stats: <Stats state={state} />, waiting,
+          stats: <Stats state={state} />, waiting, faces,
           code: state.pub.roomId, leave: () => send({ type: 'leave' }), people, kick: (seat: Seat) => send({ type: 'kick', seat }),
         }}
       />

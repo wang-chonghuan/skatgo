@@ -385,8 +385,8 @@ comment box (SKATGO-231: 「点回复时自动at即可」). A player named so le
 (SKATGO-232, the human: 「如果有人在论坛里at这个用户，就要显示提示角标，profile里显示最新的at的消息，点了跳转到论坛相应位置」): a count
 on their account's picture until they open `/profile`, where the latest are listed, each leading to where it was written. Anyone reads; writing takes an account, and a player writes under their leaderboard name, never
 an email address; SkatGo writes as SkatGo. SkatGo's posts are for search engines; a player's post only once SkatGo
-marks it. SkatGo's newest post also stands as one line on the front page and on `/daily`
-for two weeks. The least moderation the law asks of a host: anyone signed in may report a post or comment,
+marks it. SkatGo's newest post also stands as one line on `/daily` for two weeks (on the front page
+too until SKATGO-131). The least moderation the law asks of a host: anyone signed in may report a post or comment,
 SkatGo hides with a reason its author sees, an author may delete their own, and each account writes only so much
 a day. It is one forum for both languages (the human, in review: 「德语和英语论坛不要分开」): its own words follow the
 site's language, and a post or comment is in whatever language its author writes (「别人想发什么语言就发什么语言」);

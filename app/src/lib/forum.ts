@@ -127,7 +127,7 @@ export const DAILY_LIMITS = { posts: 5, comments: 30, reports: 20 } as const
 
 export const PAGE_SIZE = 30
 
-/** How long SkatGo's newest post stands as the line on the front page and /daily. */
+/** How long SkatGo's newest post stands as the line on /daily. */
 export const ANNOUNCEMENT_DAYS = 14
 
 /** The languages a forum text is shown in: the site's (SKATGO-124). */

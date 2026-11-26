@@ -331,8 +331,8 @@ async function latest(db: pg.Pool | pg.PoolClient, now: number): Promise<ForumAn
   return rows[0] ? { id: num(rows[0].id), title: rows[0].title, createdAt: num(rows[0].created_at), translated: null } : null
 }
 
-/** SkatGo's own newest post of the last two weeks (its announcements' list until SKATGO-247), for the line on the front
- *  page and /daily, or null; its title in the reader's language (SKATGO-124). */
+/** SkatGo's own newest post of the last two weeks (its announcements' list until SKATGO-247), for the line on /daily, or
+ *  null; its title in the reader's language (SKATGO-124). */
 export async function forumLatest(store: Store, i: z.infer<typeof latestInput>, now = Date.now()) {
   const found = await latest(store.pool, now)
   if (!found || !i.lang) return { announcement: found }

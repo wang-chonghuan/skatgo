@@ -61,7 +61,9 @@ export function ChallengePage() {
 /** A deal of a kind on the table, the whole screen: the set game said over the skat step; at its end the result with the
  *  AI's run of the same cards, then the next deal of the kind or the same hand once more with the others dealt anew. */
 export function ChallengePlayPage() {
-  const { kind, n } = useSearch({ from: '/hard-hands_/play' })
+  const search = useSearch({ from: '/hard-hands_/play' })
+  const kind = search.kind ?? CHALLENGE_KINDS[0]
+  const n = search.n ?? 1
   const navigate = useNavigate()
   const close = () => void navigate({ to: '/hard-hands' })
   const [reply, setReply] = useState<ChallengeReply | null>(null)

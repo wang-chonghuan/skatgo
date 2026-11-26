@@ -370,7 +370,12 @@ random ones for the kind's pattern and for SkatZero, declaring the same game, ma
 cards can lie, spread evenly from the easiest (the highest rate) to the hardest (「同意这个方案」); a deal is opened by its
 number, then the next. After a deal its result stands beside SkatZero's run of the same cards with the same game; the same
 hand can be played again, the player's ten and the skat kept and the other twenty dealt anew. Nothing is counted: no
-record, no XP, no board, no League (SKATGO-248's grill); a guest plays every deal.
+record, no XP, no board, no League (SKATGO-248's grill); a guest plays every deal. Each kind keeps its progress
+(SKATGO-249, the human: 「这几个东西的每个卡片应该有进度条」, 「先做每类的进度吧，要个bar」): the deals of it passed — won, or lost
+where SkatZero's run of the same cards lost too, since the hardest are lost about half the time however well they are
+played — and a pass is never undone; its card opens the first deal not passed. An account's progress is the account's;
+a guest's stays in the browser and joins the account on signing in. A roguelike run through the kinds was discussed and
+put off (「rouguelike的先不做」).
 
 An advanced course at `/advanced-course` (SKATGO-234, the human: 「去掉的卡片，新增一个进阶课程，或者高级课程之类的，用来放之前就规划的
 那个书上的专题等」), "Advanced course" / "Fortgeschrittenenkurs", from the course's page (from the front page's picture card in the

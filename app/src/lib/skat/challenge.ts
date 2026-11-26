@@ -89,3 +89,14 @@ export function gameOfKind(kind: Exclude<ChallengeKind, 'bad-seat'>, hand: Card[
   if (kind === 'null-weak-spot') return 'N'
   return longestSuit(hand)
 }
+
+/** Each kind's deals passed, by number (SKATGO-249): won, or lost where SkatZero's run of the same cards lost too. */
+export type ChallengeProgress = Partial<Record<ChallengeKind, number[]>>
+
+/** How many of a kind's deals are passed, and the deal its card opens: the first not passed, or the first when all are. */
+export function kindProgress(passed: ChallengeProgress, kind: ChallengeKind, of = CHALLENGE_DEALS): { done: number; next: number } {
+  const ns = new Set(passed[kind] ?? [])
+  let next = 1
+  while (next <= of && ns.has(next)) next++
+  return { done: [...ns].filter((n) => n >= 1 && n <= of).length, next: next > of ? 1 : next }
+}

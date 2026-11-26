@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto'
 import pg from 'pg'
 import { dailyClaim } from '../src/daily'
 import { GONE, forgetPlayer } from '../src/forget'
+import { challengePass } from '../src/challenge'
 import { forumComment, forumCreate, forumFace, forumPost } from '../src/forum'
 import { idsOf, recordFreeDeal } from '../src/profile'
 import { Store } from '../src/store'
@@ -20,6 +21,7 @@ const USER_TABLES: [string, string][] = [
   ['bidding_answers', 'player'], ['dod_shares', 'player'], ['account_referrals', 'account'],
   ['account_referrals', 'referrer'], ['forum_reports', 'reporter'], ['forum_posts', 'author'], ['forum_comments', 'author'],
   ['player_aliases', 'player'], ['player_aliases', 'same_as'], ['player_avatars', 'player'], ['forum_mentions', 'player'],
+  ['challenge_passes', 'player'],
 ]
 
 test('forget: an account and its devices leave every table; its forum writing stays anonymous', { timeout: 60_000 }, async (t) => {
@@ -58,6 +60,8 @@ test('forget: an account and its devices leave every table; its forum writing st
     await q("INSERT INTO ladder_answers (player, step, solved_at, updated_at) VALUES ($1, 's1', 1, 1)", [who])
     await q("INSERT INTO bidding_answers (player, question, first, answered_at, updated_at) VALUES ($1, 'v2-1-0', 18, 1, 1)", [who])
     await q("INSERT INTO dod_shares (code, day, player, scores, created_at) VALUES ($1, '2026-11-09', $2, '[0,0,0]', 1)", [who.slice(5, 9).padEnd(8, 'x'), who])
+    // Hard hands' progress (SKATGO-249).
+    await challengePass(store, who, { 'null-weak-spot': [1, 2] })
   }
   await q("INSERT INTO account_referrals (account, referrer, room_id, created_at) VALUES ('user:anna', 'user:ben', 'r', 1), ('user:ben', 'user:anna', 'r', 1)")
   const post = await forumCreate(store, { player: 'user:anna', official: false, title: 'Annas Frage zum Reizen', body: 'Wie hoch?' }, now)

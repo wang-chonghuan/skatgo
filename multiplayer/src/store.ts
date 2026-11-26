@@ -173,6 +173,12 @@ export class Store {
           player text NOT NULL, step text NOT NULL, solved_at bigint, misses integer NOT NULL DEFAULT 0,
           updated_at bigint NOT NULL, PRIMARY KEY (player, step)
         );
+        -- Hard hands' progress (SKATGO-249): the deals of each kind an account has passed, by number — won, or lost where
+        -- SkatZero's run of the same cards lost too. A pass is never taken back.
+        CREATE TABLE IF NOT EXISTS challenge_passes (
+          player text NOT NULL CHECK (player LIKE 'user:%'), kind text NOT NULL, n smallint NOT NULL CHECK (n BETWEEN 1 AND 30),
+          passed_at bigint NOT NULL, PRIMARY KEY (player, kind, n)
+        );
         -- The bidding practice's record (SKATGO-150): per account and question the first answer given (0 a pass, else the
         -- bid) — the analysis counts it alone — and whether a later answer got it right, which clears it from the mistakes.
         CREATE TABLE IF NOT EXISTS bidding_answers (

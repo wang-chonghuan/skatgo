@@ -1094,6 +1094,7 @@
   "challenge_your_game": "Your game: {game}",
   "challenge_next": "Next deal",
   "challenge_again": "Same hand again",
+  "challenge_progress": "{n} of {count} passed",
   "challenge_failed": "This deal could not be dealt. Try again in a moment.",
   "challenge_back": "Back to hard hands",
   "home_hard_text": "Hard-to-play hands, the game already set – then see how the AI played them."

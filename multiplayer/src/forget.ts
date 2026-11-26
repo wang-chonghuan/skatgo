@@ -1,7 +1,7 @@
 import type { Store } from './store'
 
 // An account deleted by its owner (SKATGO-185): what SkatGo holds under it goes — its entries on the daily boards, its
-// nickname, its record of play, its practice answers, its shared results, the referrals it is part of,
+// nickname, its record of play, its practice answers and hard hands' progress, its shared results, the referrals it is part of,
 // its reports, its face and picture and the mentions of it (SKATGO-232) — and so do the games of every device signed in to it (SKATGO-182: they are the account's). Its forum
 // posts and comments stay, under no one (the human: 「帖子改匿名」). Private rooms are left to expire as they do.
 
@@ -13,6 +13,8 @@ const OWN = [
   'daily_entries', 'daily_players', 'play_deals', 'ladder_answers', 'bidding_answers', 'dod_shares',
   // Its face and uploaded picture, and the mentions of it (SKATGO-232).
   'player_avatars', 'forum_mentions',
+  // Its hard hands' progress (SKATGO-249).
+  'challenge_passes',
 ]
 
 /**

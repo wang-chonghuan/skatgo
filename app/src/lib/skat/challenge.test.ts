@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { type Card, fullDeck } from './cards'
-import { CHALLENGE_BID, challengeStart, dealerFor, gameOfKind, longestSuit, nullSafe, ofKind, ownSlice } from './challenge'
+import { CHALLENGE_BID, challengeStart, kindProgress, dealerFor, gameOfKind, longestSuit, nullSafe, ofKind, ownSlice } from './challenge'
 import { actor, roleOf } from './game'
 
 // Hard hands (SKATGO-248): the kinds' patterns, the games they are played with, and where a deal starts.
@@ -50,5 +50,18 @@ describe('the start', () => {
       expect(actor(g)).toBe(0)
       expect(g.hands[0]).toEqual(deck.slice(...ownSlice(dealer)))
     }
+  })
+})
+
+// SKATGO-249: a kind's card counts the deals passed and opens the first not passed — the first again once all are.
+describe('kindProgress', () => {
+  it('counts the passed deals and opens the first not passed', () => {
+    expect(kindProgress({}, 'bad-seat')).toEqual({ done: 0, next: 1 })
+    expect(kindProgress({ 'bad-seat': [1, 2, 4] }, 'bad-seat')).toEqual({ done: 3, next: 3 })
+    expect(kindProgress({ 'bad-seat': [2] }, 'bad-seat')).toEqual({ done: 1, next: 1 })
+    expect(kindProgress({ 'bad-seat': [1] }, 'null-weak-spot')).toEqual({ done: 0, next: 1 })
+  })
+  it('opens the first deal again when all are passed', () => {
+    expect(kindProgress({ 'one-jack-grand': Array.from({ length: 30 }, (_, i) => i + 1) }, 'one-jack-grand')).toEqual({ done: 30, next: 1 })
   })
 })

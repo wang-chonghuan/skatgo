@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { type ChallengeReply, challengeAct, challengeAgain, challengeNew, challengeReview } from '~/lib/challenge-api'
 import type { FreeError } from '~/lib/free-api'
-import { CHALLENGE_KINDS, type ChallengeKind, contractOfGame } from '~/lib/skat/challenge'
+import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeKind, contractOfGame } from '~/lib/skat/challenge'
+import { kindProgress, useChallengeProgress } from '~/lib/skat/challenge-progress'
 import type { Move } from '~/lib/skat/game'
 import { type SeatView, gameFromView } from '~/lib/skat/tournament'
 import { m } from '~/paraglide/messages'
@@ -17,11 +18,11 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { BOT_DELAY, GameTable } from './game-table'
 import { TableLoading } from './table-loading'
-import { Btn, Panel } from './ui'
+import { Btn, Panel, ProgressBar } from './ui'
 
 // Hard hands (SKATGO-248, the human: 「我要新模块难牌挑战」): the kinds of hand that are hard to play, each a run of deals from the
 // easiest, the game set and the player the declarer; after each deal the AI's run of the same cards beside theirs. Counted
-// nowhere (grill Q2).
+// nowhere (grill Q2) but in each kind's progress (SKATGO-249): the deals of it passed, on its card.
 
 const KIND_TEXT: Record<ChallengeKind, { title: () => string; text: () => string }> = {
   'one-jack-suit': { title: m.challenge_kind_one_jack_suit_title, text: m.challenge_kind_one_jack_suit_text },
@@ -31,22 +32,32 @@ const KIND_TEXT: Record<ChallengeKind, { title: () => string; text: () => string
   'bad-seat': { title: m.challenge_kind_bad_seat_title, text: m.challenge_kind_bad_seat_text },
 }
 
-/** The list: what the module is for, and each kind as the course's option cards, opening its first deal. */
+/** The list: what the module is for, and each kind as the course's option cards with its progress, opening its first deal
+ *  not yet passed. */
 export function ChallengePage() {
+  const { passed } = useChallengeProgress()
   return (
     <div data-testid="hard-hands" {...stylex.props(styles.root)}>
       <div {...stylex.props(styles.column)}>
         <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.challenge_title()}</h1>
         <p {...stylex.props(typography.appText, styles.lead)}>{m.challenge_lead()}</p>
         <ol {...stylex.props(styles.list)}>
-          {CHALLENGE_KINDS.map((kind) => (
-            <li key={kind} {...stylex.props(styles.item)}>
-              <Link to="/hard-hands/play" search={{ kind, n: 1 }} data-testid="hard-hands-kind" data-kind={kind} {...stylex.props(styles.card)}>
-                <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{KIND_TEXT[kind].title()}</span>
-                <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{KIND_TEXT[kind].text()}</span>
-              </Link>
-            </li>
-          ))}
+          {CHALLENGE_KINDS.map((kind) => {
+            const { done, next } = kindProgress(passed, kind)
+            const count = m.challenge_progress({ n: done, count: CHALLENGE_DEALS })
+            return (
+              <li key={kind} {...stylex.props(styles.item)}>
+                <Link to="/hard-hands/play" search={{ kind, n: next }} data-testid="hard-hands-kind" data-kind={kind} {...stylex.props(styles.card)}>
+                  <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{KIND_TEXT[kind].title()}</span>
+                  <span {...stylex.props(typography.optionDesc, styles.optionDesc)}>{KIND_TEXT[kind].text()}</span>
+                  <span {...stylex.props(styles.progress)}>
+                    <span data-testid="hard-hands-progress" {...stylex.props(typography.meta, styles.optionDesc)}>{count}</span>
+                    <ProgressBar value={done / CHALLENGE_DEALS} label={count} />
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
         </ol>
         <nav {...stylex.props(styles.links)}>
           <Link to="/skat-tricks" {...stylex.props(typography.appLink, styles.link)}>{m.home_practice()}</Link>
@@ -100,7 +111,13 @@ export function ChallengePlayPage() {
   }, [queue, shown, release])
   const game = useMemo(() => (shown ? gameFromView(shown) : null), [shown])
   const token = reply?.token ?? null
-  const review = useCallback(() => challengeReview(token ?? ''), [token])
+  const { pass } = useChallengeProgress()
+  // The review says whether the deal is passed; an account's pass the service has already kept, a guest's is this browser's.
+  const review = useCallback(async () => {
+    const r = await challengeReview(token ?? '')
+    if (!('error' in r) && r.passed) pass(r.kind, r.n)
+    return r
+  }, [token, pass])
   if (failed) {
     return (
       <div {...stylex.props(styles.summary)}>
@@ -170,6 +187,7 @@ const styles = stylex.create({
   link: { color: color.info },
   optionTitle: { margin: 0, color: color.navy },
   optionDesc: { margin: 0, color: color.slate },
+  progress: { display: 'flex', flexDirection: 'column', gap: space.x8, marginTop: 'auto' },
   list: {
     listStyleType: 'none',
     margin: 0,

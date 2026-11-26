@@ -1094,6 +1094,7 @@
   "challenge_your_game": "Dein Spiel: {game}",
   "challenge_next": "Nächstes Spiel",
   "challenge_again": "Dasselbe Blatt noch mal",
+  "challenge_progress": "{n} von {count} geschafft",
   "challenge_failed": "Dieses Spiel konnte nicht gegeben werden. Versuch es gleich noch einmal.",
   "challenge_back": "Zurück zu den schweren Blättern",
   "home_hard_text": "Schwer zu spielende Blätter, das Spiel schon festgelegt – danach siehst du, wie die KI sie gespielt hat."

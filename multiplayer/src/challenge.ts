@@ -1,21 +1,24 @@
 import { createHash, randomInt } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import express from 'express'
+import type pg from 'pg'
 import { z } from 'zod'
 import { type Card, sameCard } from '../../app/src/lib/skat/cards'
-import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeGame, type ChallengeKind, challengeStart, declarationOf, ownSlice } from '../../app/src/lib/skat/challenge'
+import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeGame, type ChallengeKind, type ChallengeProgress, challengeStart, declarationOf, ownSlice } from '../../app/src/lib/skat/challenge'
 import { actor, discard, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
-import { PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
+import { type DealReview, PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, POSITION, advance, card, decide, judgePlays, playsOf, raw, replayLog, reviewOf } from './computers'
 import { deckOf, open, seal, tokenKey } from './free'
 import { actionSchema, applySeatMove, Rejected, secretEquals } from './model'
 import { discardFor } from './skatzero/bidding'
 import { type Policy, viewOf } from './skatzero/policy'
+import type { Store } from './store'
 
 // Hard hands on the server (SKATGO-248): a deal of the challenge pool, the game set, the player declaring in seat 0
 // against two SkatZero defenders. As free play (free.ts), the server keeps nothing: the deal as dealt and every move
 // travel in a sealed token. Played again, the player's ten cards and the skat stay and the other twenty are dealt anew.
-// Counted nowhere — no record, no XP, no board, no League (grill Q2).
+// Counted nowhere — no record of play, no XP, no board, no League (grill Q2) — but each kind's progress (SKATGO-249, the
+// human: 「先做每类的进度吧，要个bar」): the deals of it an account has passed, kept here; a guest's stay in the browser.
 
 /** One deal of the pool: how it was dealt, the game, and SkatZero's rate over the other twenty cards' lies — for the bad
  *  seat also from forehand (`front`). */
@@ -80,13 +83,71 @@ export async function aiPlays(policy: Policy, dealer: Seat, deck: Card[], game: 
   return end
 }
 
+/** A deal is passed when the player made the game, or lost it where SkatZero, with the same cards and game, lost too —
+ *  not worse than the AI (SKATGO-249): the hardest deals are lost about half the time however well they are played. */
+export const passedDeal = (review: Pick<DealReview, 'mine' | 'ai'>) => review.mine.won === true || review.ai?.won === false
+
+async function progressOf(c: pg.PoolClient | pg.Pool, who: string): Promise<ChallengeProgress> {
+  const { rows } = await c.query('SELECT kind, n FROM challenge_passes WHERE player = $1 ORDER BY kind, n', [who])
+  const out: ChallengeProgress = {}
+  for (const r of rows) if (CHALLENGE_KINDS.includes(r.kind)) (out[r.kind as ChallengeKind] ??= []).push(r.n)
+  return out
+}
+
+/** Deals passed: once passed a deal stays so, whatever comes after. */
+export async function challengePass(store: Store, who: string, passes: ChallengeProgress, now = Date.now()): Promise<ChallengeProgress> {
+  return store.transaction(async (c) => {
+    for (const [kind, ns] of Object.entries(passes)) {
+      for (const n of ns ?? []) {
+        await c.query('INSERT INTO challenge_passes (player, kind, n, passed_at) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING', [who, kind, n, now])
+      }
+    }
+    return progressOf(c, who)
+  })
+}
+
+const player = z.string().regex(/^user:[A-Za-z0-9_]{1,64}$/)
+const progressSchema = z.partialRecord(z.enum(CHALLENGE_KINDS), z.array(z.number().int().min(1).max(CHALLENGE_DEALS)).max(CHALLENGE_DEALS))
+
+/** An account's progress, behind the admission key: `/state`, and `/merge` for what a guest passed in the browser before
+ *  signing in. The web service names the player. Each answers with the account's whole progress. */
+export function challengeRecordRoutes(store: Store, admissionKey: string, ready: () => boolean) {
+  const router = express.Router()
+  router.use(express.json({ limit: '16kb' }))
+  router.use((req, res, nextHandler) => {
+    if (!ready()) return void res.status(503).json({ error: 'not_ready' })
+    if (!secretEquals(req.get('x-admission-key'), admissionKey)) return void res.status(403).json({ error: 'admission_denied' })
+    nextHandler()
+  })
+  const run = (work: (body: unknown) => Promise<ChallengeProgress>) => async (req: express.Request, res: express.Response) => {
+    try {
+      res.set('cache-control', 'no-store').json({ passed: await work(req.body) })
+    } catch (e) {
+      if (e instanceof z.ZodError) res.status(400).json({ error: 'invalid_request' })
+      else {
+        console.error('challenge_record_unavailable')
+        res.status(503).json({ error: 'storage_unavailable' })
+      }
+    }
+  }
+  router.post('/state', run(async (body) => progressOf(store.pool, z.object({ player }).strict().parse(body).player)))
+  router.post('/merge', run(async (body) => {
+    const i = z.object({ player, passed: progressSchema }).strict().parse(body)
+    return challengePass(store, i.player, i.passed)
+  }))
+  router.use((_err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    res.status(400).json({ error: 'invalid_request' })
+  })
+  return router
+}
+
 const TOKEN_LABEL = 'skatgo-challenge/1'
 const TOKEN_MS = 24 * 60 * 60 * 1000
 type Token = { v: 1; pool: string; kind: ChallengeKind; n: number; dealer: Seat; deck: string; t: number; log: Logged[] }
 
 const deckText = (deck: Card[]) => deck.map(raw).join(' ')
 
-export function challengeRoutes(admissionKey: string, ready: () => boolean, policy: () => Policy | null, pool: () => ChallengePool | null) {
+export function challengeRoutes(store: Store, admissionKey: string, ready: () => boolean, policy: () => Policy | null, pool: () => ChallengePool | null) {
   const key = tokenKey(admissionKey, TOKEN_LABEL)
   const router = express.Router()
   router.use(express.json({ limit: '64kb' }))
@@ -164,16 +225,24 @@ export function challengeRoutes(admissionKey: string, ready: () => boolean, poli
   }))
 
   // The finished deal's review: its replay, where SkatZero would have played another card, and SkatZero's own run of the
-  // same deal with the same game in the player's seat.
+  // same deal with the same game in the player's seat — and whether the deal is passed (SKATGO-249), recorded for the
+  // account the web service names; a guest's pass is the browser's to keep. A record that fails to write costs the pass,
+  // never the review.
   const tokenInput = z.object({ token: z.string().max(20_000) }).strict()
+  const reviewInput = z.object({ token: z.string().max(20_000), player: player.optional() }).strict()
   router.post('/review', run(async (body) => {
-    const i = tokenInput.parse(body)
+    const i = reviewInput.parse(body)
     const t = opened(i.token)
     const deck = deckOf(t.deck)
     const end = replayLog(t.dealer, deck, t.log, startOf(t))
     if (end.phase !== 'done') throw new Rejected('not_finished')
     const ai = await aiPlays(policy()!, t.dealer, deck, gameOf(t))
-    return reviewOf(end, await judgePlays(policy()!, playsOf(t.dealer, deck, t.log, startOf(t))), { ai: summarize(ai), aiAuction: auctionOf(ai) })
+    const review = reviewOf(end, await judgePlays(policy()!, playsOf(t.dealer, deck, t.log, startOf(t))), { ai: summarize(ai), aiAuction: auctionOf(ai) })
+    const passed = passedDeal(review)
+    if (passed && i.player) {
+      await challengePass(store, i.player, { [t.kind]: [t.n] }).catch(() => console.error('challenge_pass_not_recorded'))
+    }
+    return { ...review, kind: t.kind, n: t.n, passed }
   }))
 
   // Once more: the same ten and skat, the other twenty dealt anew — never as they just lay.

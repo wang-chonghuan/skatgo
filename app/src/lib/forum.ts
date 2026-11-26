@@ -11,15 +11,9 @@ import { type Card, type Rank, type Suit } from './skat/cards'
 // language and kept (SKATGO-124, the human: 「不管用户发啥语言的帖子，看到的都是他ui上的语言的翻译版」), the text as written one
 // tap away.
 
-// Two lists since SKATGO-234 (the human: 「当前论坛有三个栏目，我觉得应该精简，应该还改成声明和讨论，讨论是用户自己可以开帖，
-// 声明是发布一些官方公告之类。高级课程不放这里了」): SkatGo's announcements and the players' discussion. SKATGO-231's third,
-// the advanced course, left the forum for a course of its own (`/advanced-course`). The articles of before are SkatGo's
-// announcements (SKATGO-231, the human, of the agent's advice: 「按建议改」). The first is the forum's own page.
-export const FORUM_SECTIONS = ['news', 'talk'] as const
-export type ForumSection = (typeof FORUM_SECTIONS)[number]
-
-/** Where only the official may start a post: everywhere but the discussion. */
-export const OFFICIAL_SECTIONS: readonly ForumSection[] = ['news']
+// One list since SKATGO-247 (the human: 「论坛继续改，不区分声明和讨论的，全部都一个板块，谁都能往上发东西」): SkatGo's posts and the
+// players' together, anyone signed in writing into it. SKATGO-234's two lists (announcements only SkatGo wrote, and the
+// discussion) and SKATGO-231's three before them are gone; a post's stored section is no longer read.
 
 /** How a list is sorted (SKATGO-231, the human: 「可以检索和排序（时间， 互动量）」): the newest first, or the most
  *  commented first. */
@@ -122,9 +116,6 @@ export type ForumMention = {
 /** The viewer's own: their name and face, how many mentions they have not seen, and the latest. */
 export type ForumMe = { name: string; face: Face; unread: number; mentions: ForumMention[] }
 
-/** The sections an author may post in. */
-export const sectionsFor = (official: boolean): ForumSection[] => FORUM_SECTIONS.filter((s) => official || !OFFICIAL_SECTIONS.includes(s))
-
 export const TITLE_MIN = 3
 export const TITLE_MAX = 120
 export const POST_MAX = 20_000
@@ -136,7 +127,7 @@ export const DAILY_LIMITS = { posts: 5, comments: 30, reports: 20 } as const
 
 export const PAGE_SIZE = 30
 
-/** How long an announcement stands first in the list and as the line on the front page and /daily. */
+/** How long SkatGo's newest post stands as the line on /daily. */
 export const ANNOUNCEMENT_DAYS = 14
 
 /** The languages a forum text is shown in: the site's (SKATGO-124). */
@@ -145,7 +136,6 @@ export type ForumLang = (typeof FORUM_LANGS)[number]
 
 export type ForumPostSummary = {
   id: number
-  section: ForumSection
   title: string
   /** The text's start, without its marks, for the list (SKATGO-119). */
   excerpt: string
@@ -216,7 +206,7 @@ export type ForumReport = {
 
 /** Whether search engines may read a post: the official's, or a player's the official marked — never a
  *  hidden one (SKATGO-118: user content is not indexed until the official says so). */
-export function postIndexable(p: { section: ForumSection; official: boolean; indexed: boolean; hidden: string | null }): boolean {
+export function postIndexable(p: { official: boolean; indexed: boolean; hidden: string | null }): boolean {
   return p.hidden === null && (p.official || p.indexed)
 }
 

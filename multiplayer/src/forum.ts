@@ -3,10 +3,10 @@ import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
 import {
-  ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_LANGS, FORUM_SECTIONS, FORUM_SORTS, IMAGE_BYTES, IMAGE_ID,
-  MENTIONS_PER_TEXT, MENTIONS_SHOWN, OFFICIAL_SECTIONS, PAGE_SIZE, PARTICIPANTS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX,
+  ANNOUNCEMENT_DAYS, COMMENT_MAX, DAILY_LIMITS, FORUM_LANGS, FORUM_SORTS, IMAGE_BYTES, IMAGE_ID,
+  MENTIONS_PER_TEXT, MENTIONS_SHOWN, PAGE_SIZE, PARTICIPANTS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX,
   TITLE_MIN, type Face, type ForumAnnouncement, type ForumComment, type ForumList, type ForumMe, type ForumMention,
-  type ForumPost, type ForumLang, type ForumPostSummary, type ForumReport, type ForumSection,
+  type ForumPost, type ForumLang, type ForumPostSummary, type ForumReport,
   type ForumThread, faceOf, imageTypeOf, mentionCandidates, plainText, postIndexable,
 } from '../../app/src/lib/forum'
 import { nameOf } from './daily'
@@ -30,7 +30,6 @@ class TooMany extends Error {}
 
 const player = z.string().regex(/^user:[A-Za-z0-9_]{1,64}$/)
 const id = z.number().int().positive().max(Number.MAX_SAFE_INTEGER)
-const section = z.enum(FORUM_SECTIONS)
 const text = (min: number, max: number) => z.string().transform((s) => s.trim()).pipe(z.string().min(min).max(max))
 const viewer = { player: player.nullable(), official: z.boolean() }
 const author = { player, official: z.boolean() }
@@ -39,11 +38,11 @@ const target = z.union([z.object({ post: id }).strict(), z.object({ comment: id 
 // The reader's language (SKATGO-124): what is written in another comes translated into it.
 const lang = z.enum(FORUM_LANGS).optional()
 const listInput = z.object({
-  ...viewer, section: section.optional(), page: z.number().int().min(1).max(1000).optional(), lang,
+  ...viewer, page: z.number().int().min(1).max(1000).optional(), lang,
   q: z.string().transform((s) => s.trim()).pipe(z.string().max(QUERY_MAX)).optional(), sort: z.enum(FORUM_SORTS).optional(),
 }).strict()
 const postInput = z.object({ ...viewer, id, lang }).strict()
-const createInput = z.object({ ...author, section, title: text(TITLE_MIN, TITLE_MAX), body: text(1, POST_MAX) }).strict()
+const createInput = z.object({ ...author, title: text(TITLE_MIN, TITLE_MAX), body: text(1, POST_MAX) }).strict()
 const commentInput = z.object({ ...author, post: id, body: text(1, COMMENT_MAX) }).strict()
 const deleteInput = z.object({ ...author, post: id.optional(), comment: id.optional() }).strict()
 const reportInput = z.object({ ...author, post: id.optional(), comment: id.optional(), reason: text(0, REASON_MAX).optional() }).strict()
@@ -70,7 +69,7 @@ const one = (i: { post?: number; comment?: number }) => target.parse(i.post !== 
 const num = (v: unknown) => Number(v)
 
 type PostRow = {
-  id: string; section: string; author: string; official: boolean; title: string; body: string
+  id: string; author: string; official: boolean; title: string; body: string
   indexed: boolean; hidden_reason: string | null; created_at: string; last_activity: string; name: string | null; comments: string
   participants: { name: string; seed: string | null; image: string | null }[] | null
   face_seed: string | null; face_image: string | null
@@ -86,7 +85,7 @@ function summary(r: PostRow, who: string | null, known: Map<string, Translation>
   const body = other(known, r.body, lang)
   const title = other(known, r.title, lang)
   const p = {
-    id: num(r.id), section: r.section as ForumSection, title: r.title, excerpt: plainText(r.body, 160),
+    id: num(r.id), title: r.title, excerpt: plainText(r.body, 160),
     author: r.name ?? '', official: r.official, createdAt: num(r.created_at), lastActivity: num(r.last_activity),
     comments: num(r.comments), indexed: r.indexed, hidden: r.hidden_reason, mine: who !== null && r.author === who,
   }
@@ -119,7 +118,7 @@ const POSTS = `
 const hashOf = (column: string) => `encode(sha256(convert_to(${column}, 'UTF8')), 'hex')`
 const VISIBLE = `(p.hidden_reason IS NULL OR $2::boolean OR p.author = $1)`
 
-/** One page of a list (SKATGO-231): the announcements when no list is named. The newest first, or the most commented
+/** One page of the forum's one list (SKATGO-231, one since SKATGO-247): the newest first, or the most commented
  *  first; narrowed to the posts whose title or text — as written, or in the reader's language — holds the words
  *  searched for. */
 export async function forumList(store: Store, i: z.infer<typeof listInput>): Promise<ForumList> {
@@ -128,11 +127,11 @@ export async function forumList(store: Store, i: z.infer<typeof listInput>): Pro
   // The words as a pattern, its own wildcards taken literally.
   const pattern = i.q ? `%${i.q.replace(/[\\%_]/g, (c) => `\\${c}`)}%` : null
   const { rows } = await store.pool.query(
-    `${POSTS} WHERE ${VISIBLE} AND p.section = $3
-      AND ($4::text IS NULL OR p.title ILIKE $4 OR p.body ILIKE $4 OR EXISTS (
-        SELECT 1 FROM translations t WHERE t.lang = $5 AND t.hash IN (${hashOf('p.title')}, ${hashOf('p.body')}) AND t.text ILIKE $4))
-      ORDER BY ${order} LIMIT $6 OFFSET $7`,
-    [i.player, i.official, i.section ?? FORUM_SECTIONS[0], pattern, i.lang ?? '', PAGE_SIZE + 1, (page - 1) * PAGE_SIZE],
+    `${POSTS} WHERE ${VISIBLE}
+      AND ($3::text IS NULL OR p.title ILIKE $3 OR p.body ILIKE $3 OR EXISTS (
+        SELECT 1 FROM translations t WHERE t.lang = $4 AND t.hash IN (${hashOf('p.title')}, ${hashOf('p.body')}) AND t.text ILIKE $3))
+      ORDER BY ${order} LIMIT $5 OFFSET $6`,
+    [i.player, i.official, pattern, i.lang ?? '', PAGE_SIZE + 1, (page - 1) * PAGE_SIZE],
   )
   const known = i.lang ? await translationsOf(store, textsOf(rows), i.lang) : new Map<string, Translation>()
   const posts = rows.map((r: PostRow) => summary(r, i.player, known, i.lang))
@@ -196,15 +195,15 @@ async function mention(c: pg.PoolClient, who: string, post: number, comment: num
 }
 
 export async function forumCreate(store: Store, i: z.infer<typeof createInput>, now = Date.now()) {
-  if (OFFICIAL_SECTIONS.includes(i.section) && !i.official) throw new Forbidden()
   return store.transaction(async (c) => {
     if (!i.official) await withinLimit(c, 'forum_posts', 'author', i.player, DAILY_LIMITS.posts, now)
     // The author stands under their leaderboard name, given now if they have none yet (SKATGO-90).
     await nameOf(c, i.player, now)
     const { rows } = await c.query(
+      // One list since SKATGO-247: the stored section is no longer read, every new post writes the same.
       `INSERT INTO forum_posts (section, author, official, title, body, created_at, last_activity)
-       VALUES ($1, $2, $3, $4, $5, $6, $6) RETURNING id`,
-      [i.section, i.player, i.official, i.title, i.body, now],
+       VALUES ('talk', $1, $2, $3, $4, $5, $5) RETURNING id`,
+      [i.player, i.official, i.title, i.body, now],
     )
     await mention(c, i.player, num(rows[0].id), null, i.body, now)
     return { id: num(rows[0].id), title: i.title }
@@ -302,7 +301,7 @@ export async function forumModerate(store: Store, i: z.infer<typeof moderateInpu
       return { done: true }
     }
     if (i.action === 'index' || i.action === 'unindex') {
-      const { rows } = await c.query('SELECT section, official FROM forum_posts WHERE id = $1', [i.post])
+      const { rows } = await c.query('SELECT official FROM forum_posts WHERE id = $1', [i.post])
       if (!rows[0]) throw new NotFound()
       // The official's own posts are always indexed (SKATGO-118).
       if (rows[0].official) throw new Rejected('not_markable')
@@ -326,14 +325,14 @@ export async function forumModerate(store: Store, i: z.infer<typeof moderateInpu
 
 async function latest(db: pg.Pool | pg.PoolClient, now: number): Promise<ForumAnnouncement | null> {
   const { rows } = await db.query(
-    `SELECT id, title, created_at FROM forum_posts WHERE section = 'news' AND hidden_reason IS NULL AND created_at > $1
+    `SELECT id, title, created_at FROM forum_posts WHERE official AND hidden_reason IS NULL AND created_at > $1
       ORDER BY created_at DESC, id DESC LIMIT 1`,
     [now - ANNOUNCEMENT_DAYS * DAY])
   return rows[0] ? { id: num(rows[0].id), title: rows[0].title, createdAt: num(rows[0].created_at), translated: null } : null
 }
 
-/** The announcement of the last two weeks, for the line on the front page and /daily, or null; its title in the
- *  reader's language (SKATGO-124). */
+/** SkatGo's own newest post of the last two weeks (its announcements' list until SKATGO-247), for the line on /daily, or
+ *  null; its title in the reader's language (SKATGO-124). */
 export async function forumLatest(store: Store, i: z.infer<typeof latestInput>, now = Date.now()) {
   const found = await latest(store.pool, now)
   if (!found || !i.lang) return { announcement: found }

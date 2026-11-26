@@ -1,7 +1,7 @@
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest, setResponseHeader } from '@tanstack/react-start/server'
 
-import type { Face, ForumAnnouncement, ForumList, ForumMe, ForumReport, ForumSection, ForumSort, ForumThread } from './forum'
+import type { Face, ForumAnnouncement, ForumList, ForumMe, ForumReport, ForumSort, ForumThread } from './forum'
 import { askForum } from './forum-handler'
 import { getLocale } from '~/paraglide/runtime'
 
@@ -44,24 +44,24 @@ const read = createIsomorphicFn()
     const { status, body } = await askForum(op, payload, getRequest())
     // A post the forum could not answer for is not a post that does not exist: the crawler is told to come back
     // (src/server.ts turns this mark into a 503; the router itself answers only 200, 404 or 500). The list stays a
-    // page of its own, its lead and sections, with a line saying the posts cannot be read now.
+    // page of its own, with a line saying the posts cannot be read now.
     if (status >= 500 && op === 'post') setResponseHeader(UNAVAILABLE, 'forum')
     return answerOf(status, body)
   })
   .client((op: 'list' | 'post' | 'latest', payload: object): Promise<ForumAnswer<unknown>> => viaApi(op, payload))
 
 // Read in the page's language: what is written in the other comes translated (SKATGO-124).
-export const readForumList = (input: { section?: ForumSection; page?: number; q?: string; sort?: ForumSort }) => read('list', { ...input, lang: getLocale() }) as Promise<ForumAnswer<ForumList>>
+export const readForumList = (input: { page?: number; q?: string; sort?: ForumSort }) => read('list', { ...input, lang: getLocale() }) as Promise<ForumAnswer<ForumList>>
 export const readForumPost = (id: number) => read('post', { id, lang: getLocale() }) as Promise<ForumAnswer<ForumThread>>
 
-/** The newest announcement of the last two weeks, or null — also when the forum does not answer: the line
+/** SkatGo's newest post of the last two weeks, or null — also when the forum does not answer: the line
  *  simply is not there. */
 export async function readAnnouncement(): Promise<ForumAnnouncement | null> {
   const answer = (await read('latest', { lang: getLocale() })) as ForumAnswer<{ announcement: ForumAnnouncement | null }>
   return answer.ok ? answer.data.announcement : null
 }
 
-export const createPost = (input: { section: ForumSection; title: string; body: string }) =>
+export const createPost = (input: { title: string; body: string }) =>
   viaApi<{ id: number; title: string }>('create', input)
 export const addComment = (post: number, body: string) => viaApi<{ id: number }>('comment', { post, body })
 export const deleteOwn = (what: { post: number } | { comment: number }) => viaApi<{ deleted: true }>('delete', what)

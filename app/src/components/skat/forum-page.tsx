@@ -1,13 +1,13 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useLoaderData, useNavigate, useRouter, useSearch } from '@tanstack/react-router'
-import { ChevronRight, Eye, EyeOff, Flag, type LucideIcon, Megaphone, MessageSquare, MessagesSquare, Reply, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Flag, Megaphone, MessageSquare, Reply, Trash2 } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import {
-  COMMENT_MAX, DAILY_LIMITS, FORUM_SECTIONS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumComment,
-  type ForumPost, type ForumPostSummary, type ForumReport, type ForumSection, type ForumSort,
-  type ForumViewer, type Face, avatarPath, facePath, postParam, sectionsFor,
+  COMMENT_MAX, DAILY_LIMITS, POST_MAX, QUERY_MAX, REASON_MAX, TITLE_MAX, TITLE_MIN, type ForumComment,
+  type ForumPost, type ForumPostSummary, type ForumReport, type ForumSort,
+  type ForumViewer, type Face, avatarPath, facePath, postParam,
 } from '~/lib/forum'
 import { track } from '~/lib/analytics'
 import { addComment, createPost, deleteOwn, moderate, readReports, report } from '~/lib/forum-api'
@@ -24,27 +24,14 @@ import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { ForumBody } from './forum-body'
 import { Avatar, IconButton, Participants } from './forum-ui'
-import { Btn, TextArea, TextField, Toggle, toggleLook } from './ui'
+import { Btn, TextArea, TextField, toggleLook } from './ui'
 
 // The forum (SKATGO-118), since SKATGO-231 as plain as it goes and in SkatGo's own colours (the human: 「我希望极简形式的。
 // 每个主题，都是一系列列表，然后可以检索和排序（时间， 互动量）。公告列表，讨论列表，高级课程列表。就这三个就行了。列表不要做成卡片。点进列表项
-// 后，是图文显示，下面可以评论，点回复时自动at即可」, then 「颜色要丰富一下，还要用skatgo的设计系统」): its lists — two since SKATGO-234,
-// the announcements and the discussion — under one row of tabs, each in its section tile's colour, each searchable and sorted by time or by comments, its posts as lines in one
-// white panel; a post's page its text and pictures, then its comments, flat, a reply writing "@Name" into the comment
+// 后，是图文显示，下面可以评论，点回复时自动at即可」, then 「颜色要丰富一下，还要用skatgo的设计系统」): one list since SKATGO-247 (the human:
+// 「不区分声明和讨论的，全部都一个板块，谁都能往上发东西」; two, announcements and discussion, from SKATGO-234), searchable and
+// sorted by time or by comments, its posts as lines in one white panel; a post's page its text and pictures, then its comments, flat, a reply writing "@Name" into the comment
 // box. Rendered on the server from the routes' loaders; what changes after a write is read again through the router.
-
-const SECTION_NAME: Record<ForumSection, () => string> = {
-  news: m.forum_section_news,
-  talk: m.forum_section_talk,
-}
-
-/** Each list's mark: its icon on its colour — the front page's tiles: the announcements navy, the discussion green. */
-const SECTION_ICON: Record<ForumSection, LucideIcon> = { news: Megaphone, talk: MessagesSquare }
-
-const SECTION_EMPTY: Record<ForumSection, () => string> = {
-  news: m.forum_empty_news,
-  talk: m.forum_empty_talk,
-}
 
 const SORT_NAME: Record<ForumSort, () => string> = { new: m.forum_sort_new, active: m.forum_sort_active }
 
@@ -80,39 +67,36 @@ function Frame({ children }: { children: ReactNode }) {
   )
 }
 
-/** A list's mark: its icon, white on its colour — also SkatGo's mark beside its name, never the logo (the human:
- *  「我发的帖子，都用skatgo的logo，不好看，太重复了」). */
-function SectionMark({ section }: { section: ForumSection }) {
-  const Icon = SECTION_ICON[section]
+/** SkatGo's mark beside its name: the megaphone, white on navy — its announcements' mark until SKATGO-247 — never the
+ *  logo (the human: 「我发的帖子，都用skatgo的logo，不好看，太重复了」). */
+function OfficialMark() {
   return (
-    <span aria-hidden {...stylex.props(styles.mark, styles[section])}>
-      <Icon size={icon.small} />
+    <span aria-hidden {...stylex.props(styles.mark)}>
+      <Megaphone size={icon.small} />
     </span>
   )
 }
 
-/** Who wrote a post or comment, beside their name: SkatGo's list's mark, or the player's avatar. */
-function AuthorMark({ of, section }: { of: { official: boolean; author: string; face: Face }; section: ForumSection }) {
-  if (of.official || !of.author) return <SectionMark section={section} />
+/** Who wrote a post or comment, beside their name: SkatGo's mark, or the player's avatar. */
+function AuthorMark({ of }: { of: { official: boolean; author: string; face: Face } }) {
+  if (of.official || !of.author) return <OfficialMark />
   // Their own face since SKATGO-232: a look they drew or a picture they uploaded, else the picture of their name.
   return <Avatar src={facePath(of.face, of.author)} small />
 }
 
-type View = { section?: ForumSection; q?: string; sort?: ForumSort; page?: number }
+type View = { q?: string; sort?: ForumSort; page?: number }
 
-/** A list (SKATGO-231): its tabs, its search and order, its posts. */
+/** The list (SKATGO-231; one since SKATGO-247): its search and order, its posts. */
 export function ForumPage() {
   const answer = useLoaderData({ from: '/forum' })
-  const { section: chosen, page = 1, q, sort = 'new' } = useSearch({ from: '/forum' })
-  const section = chosen ?? FORUM_SECTIONS[0]
+  const { page = 1, q, sort = 'new' } = useSearch({ from: '/forum' })
   const data = answer.ok ? answer.data : null
   const [writing, setWriting] = useState(false)
   useViewerSync(data?.viewer ?? null)
   // Only what differs from a list's defaults stays in the address; a new view starts on its first page.
   const view = (over: View) => {
-    const next: View = { section, q, sort, page: undefined, ...over }
+    const next: View = { q, sort, page: undefined, ...over }
     return {
-      section: next.section === FORUM_SECTIONS[0] ? undefined : next.section,
       q: next.q || undefined,
       sort: next.sort === 'new' ? undefined : next.sort,
       page: next.page && next.page > 1 ? next.page : undefined,
@@ -120,31 +104,16 @@ export function ForumPage() {
   }
   return (
     <Frame>
-      <section data-testid="forum" data-section={section} {...stylex.props(styles.stack)}>
+      <section data-testid="forum" {...stylex.props(styles.stack)}>
         {/* The way to write sits beside the title (the human: 「sign in放在 Forum 的旁边，放个按钮就行」). */}
         <div {...stylex.props(styles.head)}>
           <h1 {...stylex.props(typography.landingHeading, styles.title)}>{m.forum_title()}</h1>
           {data && !writing ? <WriteButton viewer={data.viewer} onWrite={() => setWriting(true)} /> : null}
         </div>
-        <nav aria-label={m.forum_sections()} data-testid="forum-sections" {...stylex.props(styles.tabs)}>
-          {FORUM_SECTIONS.map((s) => (
-            <Link
-              key={s}
-              to="/forum"
-              search={view({ section: s, q: undefined })}
-              data-section={s}
-              aria-current={s === section ? 'page' : undefined}
-              {...stylex.props(s === section ? typography.appBtnStrong : typography.appBtn, styles.tab, s === section && styles.tabCurrent, s === section && styles[`${s}Line`])}
-            >
-              <SectionMark section={s} />
-              {SECTION_NAME[s]()}
-            </Link>
-          ))}
-        </nav>
-        {data && writing ? <Composer official={data.viewer.official} initial={section} onCancel={() => setWriting(false)} /> : null}
+        {data && writing ? <Composer onCancel={() => setWriting(false)} /> : null}
         {data?.viewer.official ? <Reports /> : null}
         <div {...stylex.props(styles.toolbar)}>
-          <SearchBox section={section} sort={sort} q={q} key={`${section}:${q ?? ''}`} />
+          <SearchBox sort={sort} q={q} key={q ?? ''} />
           <div role="group" aria-label={m.forum_sort()} {...stylex.props(styles.sorts)}>
             {(['new', 'active'] as const).map((s) => (
               <Link key={s} to="/forum" search={view({ sort: s })} data-sort={s} aria-current={s === sort ? 'true' : undefined} {...toggleLook(s === sort)}>
@@ -156,7 +125,7 @@ export function ForumPage() {
         {!data ? (
           <p {...stylex.props(typography.appText, styles.slate)}>{m.forum_unavailable()}</p>
         ) : data.posts.length === 0 ? (
-          <p data-testid="forum-empty" {...stylex.props(typography.appText, styles.slate)}>{q ? m.forum_no_results({ q }) : SECTION_EMPTY[section]()}</p>
+          <p data-testid="forum-empty" {...stylex.props(typography.appText, styles.slate)}>{q ? m.forum_no_results({ q }) : m.forum_empty()}</p>
         ) : (
           <ol data-testid="forum-list" {...stylex.props(styles.panel, styles.list)}>{data.posts.map((p) => <PostRow key={p.id} post={p} />)}</ol>
         )}
@@ -175,7 +144,7 @@ export function ForumPage() {
 
 /** The list's search: a form a browser can send without the page's script — to the page's own address, in its
  *  language — read on the server as any view. */
-function SearchBox({ section, sort, q }: { section: ForumSection; sort: ForumSort; q?: string }) {
+function SearchBox({ sort, q }: { sort: ForumSort; q?: string }) {
   const [words, setWords] = useState(q ?? '')
   const navigate = useNavigate()
   const id = useId()
@@ -189,12 +158,11 @@ function SearchBox({ section, sort, q }: { section: ForumSection; sort: ForumSor
         const text = words.trim().slice(0, QUERY_MAX)
         void navigate({
           to: '/forum',
-          search: { section: section === FORUM_SECTIONS[0] ? undefined : section, q: text || undefined, sort: sort === 'new' ? undefined : sort },
+          search: { q: text || undefined, sort: sort === 'new' ? undefined : sort },
         })
       }}
       {...stylex.props(styles.search)}
     >
-      {section === FORUM_SECTIONS[0] ? null : <input type="hidden" name="section" value={section} />}
       {sort === 'new' ? null : <input type="hidden" name="sort" value={sort} />}
       <TextField id={id} name="q" search testId="forum-search-input" value={words} onChange={setWords} placeholder={m.forum_search()} label={m.forum_search()} />
     </form>
@@ -206,7 +174,7 @@ function SearchBox({ section, sort, q }: { section: ForumSection; sort: ForumSor
  *  comments」). */
 function PostRow({ post }: { post: ForumPostSummary }) {
   return (
-    <li data-testid="forum-post" data-post-id={post.id} data-section={post.section} data-comments={post.comments} {...stylex.props(styles.row)}>
+    <li data-testid="forum-post" data-post-id={post.id} data-comments={post.comments} {...stylex.props(styles.row)}>
       {/* Each post's own picture, from its title as written (the human: 「每个帖子都根据标题自动生成一个这样的图片」). */}
       <Avatar src={avatarPath(post.title)} />
       <div {...stylex.props(styles.rowBody)}>
@@ -243,9 +211,7 @@ function WriteButton({ viewer, onWrite }: { viewer: ForumViewer; onWrite: () => 
   return <Btn testId="forum-new" onClick={onWrite}>{m.forum_new()}</Btn>
 }
 
-function Composer({ official, initial, onCancel }: { official: boolean; initial: ForumSection; onCancel: () => void }) {
-  const allowed = sectionsFor(official)
-  const [section, setSection] = useState<ForumSection>(allowed.includes(initial) ? initial : allowed[0])
+function Composer({ onCancel }: { onCancel: () => void }) {
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -258,7 +224,7 @@ function Composer({ official, initial, onCancel }: { official: boolean; initial:
     if (t.length < TITLE_MIN || t.length > TITLE_MAX) return setError(m.forum_error_title())
     if (!b || b.length > POST_MAX) return setError(m.forum_error_body({ max: POST_MAX }))
     setBusy(true)
-    const answer = await createPost({ section, title: t, body: b })
+    const answer = await createPost({ title: t, body: b })
     setBusy(false)
     if (!answer.ok) return setError(errorText(answer.error))
     void navigate({ to: '/forum/$post', params: { post: postParam(answer.data) } })
@@ -266,13 +232,6 @@ function Composer({ official, initial, onCancel }: { official: boolean; initial:
   return (
     <div data-testid="forum-composer" {...stylex.props(styles.panel, styles.padded, styles.form)}>
       <h2 {...stylex.props(typography.optionTitle, styles.title)}>{m.forum_new()}</h2>
-      {allowed.length > 1 ? (
-        <div role="group" aria-label={m.forum_field_section()} {...stylex.props(styles.sorts)}>
-          {allowed.map((s) => (
-            <Toggle key={s} testId={`forum-section-${s}`} pressed={section === s} onClick={() => setSection(s)}>{SECTION_NAME[s]()}</Toggle>
-          ))}
-        </div>
-      ) : null}
       <label htmlFor={`${id}-title`} {...stylex.props(typography.label, styles.title)}>{m.forum_field_title()}</label>
       <TextField id={`${id}-title`} testId="forum-title" value={title} onChange={setTitle} />
       <label htmlFor={`${id}-body`} {...stylex.props(typography.label, styles.title)}>{m.forum_field_body()}</label>
@@ -366,21 +325,16 @@ function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
   const shown = post.translated && !original ? post.translated : null
   return (
     <Frame>
-      <article data-testid="forum-thread" data-post-id={post.id} data-section={post.section} data-indexable={post.indexable} {...stylex.props(styles.stack)}>
+      <article data-testid="forum-thread" data-post-id={post.id} data-indexable={post.indexable} {...stylex.props(styles.stack)}>
         <nav aria-label={m.forum_title()} {...stylex.props(typography.appLink, styles.crumbs)}>
           <Link to="/forum" {...stylex.props(styles.link)}>{m.forum_title()}</Link>
-          <ChevronRight size={icon.small} aria-hidden {...stylex.props(styles.slate)} />
-          <Link to="/forum" search={post.section === FORUM_SECTIONS[0] ? {} : { section: post.section }} {...stylex.props(styles.link, styles.crumbSection)}>
-            <SectionMark section={post.section} />
-            {SECTION_NAME[post.section]()}
-          </Link>
         </nav>
         {/* The post in a white card of its own (the human, SKATGO-118: 「每一个帖子或回复，都放在卡片里」). */}
         <div data-testid="forum-post-card" {...stylex.props(styles.panel, styles.padded, styles.entry)}>
           <h1 {...stylex.props(typography.landingHeading, styles.title)}>
             {shown?.title ?? post.title}
           </h1>
-          <Byline of={post} section={post.section} />
+          <Byline of={post} />
           {/* Under the facts, where it is seen before a long text is read. */}
           {post.translated ? <Translated original={original} onSwitch={() => setOriginal(!original)} /> : null}
           {post.hidden !== null ? <p data-testid="forum-hidden" {...stylex.props(typography.appText, styles.bad)}>{m.forum_hidden_note({ reason: post.hidden })}</p> : null}
@@ -406,10 +360,10 @@ function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
 }
 
 /** The author's mark, name and date over a post or a comment. */
-function Byline({ of, section }: { of: ForumPostSummary | ForumComment; section: ForumSection }) {
+function Byline({ of }: { of: ForumPostSummary | ForumComment }) {
   return (
     <div {...stylex.props(styles.byline)}>
-      <AuthorMark of={of} section={section} />
+      <AuthorMark of={of} />
       <span data-testid={of.official ? 'forum-official' : 'forum-author'} {...stylex.props(typography.smallBold, of.official ? styles.official : styles.author)}>{nameOf(of)}</span>
       <time {...stylex.props(typography.meta, styles.slate)}>{dateOf(of.createdAt)}</time>
     </div>
@@ -421,7 +375,7 @@ function CommentRow({ comment: c, post, viewer, onReply }: { comment: ForumComme
   const [original, setOriginal] = useState(false)
   return (
     <li id={`comment-${c.id}`} data-testid="forum-comment" data-comment-id={c.id} {...stylex.props(styles.padded, styles.entry, styles.commentRow)}>
-      <Byline of={c} section={post.section} />
+      <Byline of={c} />
       {c.hidden !== null ? <p {...stylex.props(typography.small, styles.bad)}>{m.forum_hidden_note({ reason: c.hidden })}</p> : null}
       <ForumBody text={c.translated && !original ? c.translated.body : c.body} official={c.official} />
       {c.translated ? <Translated original={original} onSwitch={() => setOriginal(!original)} /> : null}
@@ -616,34 +570,8 @@ const styles = stylex.create({
   slate: { margin: 0, color: color.slate },
   bad: { margin: 0, color: color.bad },
   head: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: space.x16 },
-  // The lists as tabs, each with its mark; the current one's line in its own colour.
-  tabs: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    columnGap: { default: space.x24, [bp.phone]: space.x16 },
-    borderBottomWidth: border.hair,
-    borderBottomStyle: 'solid',
-    borderBottomColor: color.hairline,
-  },
-  tab: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: space.x8,
-    paddingBlock: space.x12,
-    borderBottomWidth: border.frame,
-    borderBottomStyle: 'solid',
-    borderBottomColor: 'transparent',
-    color: { default: color.slate, ':hover': color.navy },
-    textDecoration: 'none',
-    whiteSpace: 'nowrap',
-    ...focusRing,
-  },
-  tabCurrent: { color: color.navy },
-  newsLine: { borderBottomColor: color.tileNavy },
-  talkLine: { borderBottomColor: color.tileGreen },
-  mark: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: dims.badge, height: dims.badge, borderRadius: radii.tag, color: color.onColor },
-  news: { backgroundColor: color.tileNavy },
-  talk: { backgroundColor: color.tileGreen },
+  // SkatGo's mark: white on navy, the front page's navy tile.
+  mark: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: dims.badge, height: dims.badge, borderRadius: radii.tag, color: color.onColor, backgroundColor: color.tileNavy },
   toolbar: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x12 },
   search: { display: 'flex', flexGrow: 1, minWidth: 0, margin: 0 },
   sorts: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.x8 },
@@ -684,7 +612,6 @@ const styles = stylex.create({
   countSome: { color: color.info },
   // A post's page.
   crumbs: { display: 'flex', alignItems: 'center', gap: space.x8 },
-  crumbSection: { display: 'inline-flex', alignItems: 'center', gap: space.x8 },
   link: { color: color.info, textDecoration: { default: 'none', ':hover': 'underline' }, ...focusRing },
   entry: { display: 'flex', flexDirection: 'column', gap: space.x12, minWidth: 0 },
   commentRow: { borderTopWidth: { default: border.hair, ':first-child': 0 }, borderTopStyle: 'solid', borderTopColor: color.hairline },

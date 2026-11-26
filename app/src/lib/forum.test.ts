@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   avatarPath, cardRow, facePath, forumImagePath, imageTypeOf, inlineParts, mentionCandidates, parseBody, plainText, postIdOf, postIndexable, postParam,
-  sectionsFor, slugOf,
+  slugOf,
 } from './forum'
 
 // The forum's shared rules (SKATGO-118): what an address, a post's text and its indexing come to.
@@ -23,13 +23,9 @@ describe('forum addresses', () => {
   })
 })
 
-describe('who may post where', () => {
-  it('keeps announcements and the advanced course to the official; a player writes in the discussion (SKATGO-231)', () => {
-    expect(sectionsFor(false)).toEqual(['talk'])
-    expect(sectionsFor(true)).toEqual(['news', 'talk'])
-  })
+describe('what search engines read', () => {
   it('offers search engines the official posts and marked ones, never hidden ones', () => {
-    const base = { section: 'talk' as const, official: false, indexed: false, hidden: null }
+    const base = { official: false, indexed: false, hidden: null }
     expect(postIndexable(base)).toBe(false)
     expect(postIndexable({ ...base, indexed: true })).toBe(true)
     expect(postIndexable({ ...base, official: true })).toBe(true)

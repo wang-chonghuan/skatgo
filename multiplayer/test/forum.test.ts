@@ -19,7 +19,7 @@ const anna = { player: 'user:anna', official: false }
 const ben = { player: 'user:ben', official: false }
 const guest = { player: null, official: false }
 
-test('forum: sections, visibility, moderation, search and limits', { timeout: 60_000 }, async (t) => {
+test('forum: one list, visibility, moderation, search and limits', { timeout: 60_000 }, async (t) => {
   const base = new URL(process.env.DATABASE_URL || '')
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname), 'Tests refuse external databases')
   const server = new pg.Pool({ connectionString: base.href })
@@ -39,29 +39,27 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   let clock = Date.now() - 60_000
   const tick = () => ++clock
 
-  // Only the official announces; a player writes in the discussion — two lists since SKATGO-234.
-  await assert.rejects(forumCreate(store, { ...anna, section: 'news', title: 'Neu hier', body: 'Hallo' }, tick()), { name: 'Error' })
-  const article = await forumCreate(store, { ...admin, section: 'news', title: 'Wann Grand?', body: '## Regel\n[♣B ♠B ♥A]' }, tick())
-  const news = await forumCreate(store, { ...admin, section: 'news', title: 'Turnier am Sonntag', body: 'Alle sind eingeladen.' }, tick())
-  const post = await forumCreate(store, { ...anna, section: 'talk', title: 'Frage zum Reizen', body: 'Wie weit reize ich?' }, tick())
-  await forumCreate(store, { ...anna, section: 'talk', title: 'Fehler beim Tisch', body: 'Die Karte hing 100% fest.' }, tick())
-  await forumCreate(store, { ...ben, section: 'talk', title: 'Hello', body: 'From Ohio' }, tick())
+  // One list since SKATGO-247: SkatGo and the players write into it alike.
+  const article = await forumCreate(store, { ...admin, title: 'Wann Grand?', body: '## Regel\n[♣B ♠B ♥A]' }, tick())
+  const news = await forumCreate(store, { ...admin, title: 'Turnier am Sonntag', body: 'Alle sind eingeladen.' }, tick())
+  const post = await forumCreate(store, { ...anna, title: 'Frage zum Reizen', body: 'Wie weit reize ich?' }, tick())
+  await forumCreate(store, { ...anna, title: 'Fehler beim Tisch', body: 'Die Karte hing 100% fest.' }, tick())
+  await forumCreate(store, { ...ben, title: 'Hello', body: 'From Ohio' }, tick())
 
-  // Two lists, the announcements first when none is named, the newest first; one forum for every language; names,
-  // never ids.
-  const list = await forumList(store, { ...guest, section: 'talk' })
-  assert.deepEqual(list.posts.map((p) => p.title), ['Hello', 'Fehler beim Tisch', 'Frage zum Reizen'])
-  assert.deepEqual((await forumList(store, { ...guest })).posts.map((p) => p.id), [news.id, article.id])
-  assert.ok(list.posts.every((p) => p.author && !p.author.startsWith('user:') && !p.mine))
-  assert.equal((await forumList(store, { ...anna, section: 'talk' })).posts.find((p) => p.id === post.id)?.mine, true)
+  // Every post in the one list, the newest first; one forum for every language; names, never ids.
+  const list = await forumList(store, { ...guest })
+  assert.deepEqual(list.posts.map((p) => p.title), ['Hello', 'Fehler beim Tisch', 'Frage zum Reizen', 'Turnier am Sonntag', 'Wann Grand?'])
+  assert.deepEqual(list.posts.filter((p) => p.official).map((p) => p.id), [news.id, article.id])
+  assert.ok(list.posts.filter((p) => !p.official).every((p) => p.author && !p.author.startsWith('user:') && !p.mine))
+  assert.equal((await forumList(store, { ...anna })).posts.find((p) => p.id === post.id)?.mine, true)
 
   // Search: the words in the title or the text, any case; its wildcards taken literally.
-  const found = async (q: string) => (await forumList(store, { ...guest, section: 'talk', q })).posts.map((p) => p.title)
+  const found = async (q: string) => (await forumList(store, { ...guest, q })).posts.map((p) => p.title)
   assert.deepEqual(await found('reiz'), ['Frage zum Reizen'])
   assert.deepEqual(await found('OHIO'), ['Hello'])
   assert.deepEqual(await found('100%'), ['Fehler beim Tisch'])
   assert.deepEqual(await found('_'), [])
-  assert.deepEqual(await found(''), ['Hello', 'Fehler beim Tisch', 'Frage zum Reizen'])
+  assert.deepEqual(await found(''), ['Hello', 'Fehler beim Tisch', 'Frage zum Reizen', 'Turnier am Sonntag', 'Wann Grand?'])
 
   // Flat comments, in order; a comment moves the post up, and the list shows the newest.
   const first = await forumComment(store, { ...ben, post: post.id, body: '@Anna bis 18' }, tick())
@@ -74,8 +72,8 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   assert.ok(!thread.participants.some((p) => p.name === ''))
 
   // Sorted by interaction: the most commented first.
-  assert.equal((await forumList(store, { ...guest, section: 'talk', sort: 'active' })).posts[0].id, post.id)
-  assert.equal((await forumList(store, { ...guest, section: 'talk', sort: 'new' })).posts[0].title, 'Hello')
+  assert.equal((await forumList(store, { ...guest, sort: 'active' })).posts[0].id, post.id)
+  assert.equal((await forumList(store, { ...guest, sort: 'new' })).posts[0].title, 'Hello')
 
   // Search engines: the official's posts; a player's once marked.
   const indexed = async () => (await forumSitemap(store)).posts.map((p) => p.id).sort((a, b) => a - b)
@@ -111,27 +109,30 @@ test('forum: sections, visibility, moderation, search and limits', { timeout: 60
   await forumDelete(store, { ...anna, post: post.id })
   await assert.rejects(forumPost(store, { ...admin, id: post.id }))
 
-  // The announcement line: two weeks.
+  // The line on the front page and /daily: SkatGo's own newest post of two weeks, never a player's newer one.
   const now = tick()
   assert.equal((await forumLatest(store, {}, now)).announcement?.id, news.id)
   assert.equal((await forumLatest(store, {}, now + (ANNOUNCEMENT_DAYS + 1) * DAY)).announcement, null)
 
   // A day's posts, then refused; the official has no limit.
-  for (let n = 1; n < DAILY_LIMITS.posts; n++) await forumCreate(store, { ...ben, section: 'talk', title: `Post ${n}`, body: 'x' })
-  await assert.rejects(forumCreate(store, { ...ben, section: 'talk', title: 'One more', body: 'x' }))
-  await forumCreate(store, { ...admin, section: 'talk', title: 'Official', body: 'x' })
+  for (let n = 1; n < DAILY_LIMITS.posts; n++) await forumCreate(store, { ...ben, title: `Post ${n}`, body: 'x' })
+  await assert.rejects(forumCreate(store, { ...ben, title: 'One more', body: 'x' }))
+  await forumCreate(store, { ...admin, title: 'Official', body: 'x' })
 
-  // The articles of before are SkatGo's announcements, at the same address (SKATGO-231).
+  // The posts of every list there ever was — SkatGo's articles of before (SKATGO-231), the advanced course's lessons
+  // (SKATGO-234), the announcements — stand in the one list, at the same addresses.
   const { rows } = await store.pool.query(
     `INSERT INTO forum_posts (section, author, official, title, body, created_at, last_activity) VALUES ('articles', 'user:admin', true, 'Alt', 'x', $1, $1) RETURNING id`,
     [tick()])
-  // So are the advanced course's lessons of SKATGO-231, which left the forum in SKATGO-234.
   const { rows: lesson } = await store.pool.query(
     `INSERT INTO forum_posts (section, author, official, title, body, created_at, last_activity) VALUES ('guides', 'user:admin', true, 'Lektion', 'x', $1, $1) RETURNING id`,
     [tick()])
   await store.migrate()
-  assert.equal((await forumPost(store, { ...guest, id: Number(rows[0].id) })).post.section, 'news')
-  assert.equal((await forumPost(store, { ...guest, id: Number(lesson[0].id) })).post.section, 'news')
+  const ids = (await forumList(store, { ...guest })).posts.map((p) => p.id)
+  for (const old of [Number(rows[0].id), Number(lesson[0].id), news.id, article.id]) {
+    assert.ok(ids.includes(old))
+    assert.equal((await forumPost(store, { ...guest, id: old })).post.id, old)
+  }
 })
 
 test('forum: faces and mentions', { timeout: 60_000 }, async (t) => {
@@ -180,13 +181,13 @@ test('forum: faces and mentions', { timeout: 60_000 }, async (t) => {
   assert.equal(Number((await store.pool.query('SELECT count(*) FROM player_avatars WHERE image IS NOT NULL')).rows[0].count), 0)
 
   // The face goes with the name: on the post, its comments and its line's commenters.
-  const post = await forumCreate(store, { ...ben, section: 'talk', title: 'Reizen bis 18?', body: 'Hallo @anna!' }, tick())
+  const post = await forumCreate(store, { ...ben, title: 'Reizen bis 18?', body: 'Hallo @anna!' }, tick())
   const c1 = await forumComment(store, { ...anna, post: post.id, body: '@Flinker Fuchs bis 18, @Flinker auch? @Gast @Niemand @Anna' }, tick())
   const shown = (await forumPost(store, { ...guest, id: post.id })).post
   assert.deepEqual(shown.thread[0].face, fresh)
   assert.equal(shown.face, null)
   assert.deepEqual(shown.participants, [{ name: 'Anna', face: fresh }])
-  assert.deepEqual((await forumList(store, { ...guest, section: 'talk' })).posts[0].participants, [{ name: 'Anna', face: fresh }])
+  assert.deepEqual((await forumList(store, { ...guest })).posts[0].participants, [{ name: 'Anna', face: fresh }])
 
   // "@Name", the longest name an account holds, any case, never the writer's own nor a guest's: Ben and Cara once each,
   // Anna by Ben's post.

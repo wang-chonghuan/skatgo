@@ -60,7 +60,7 @@ test('forget: an account and its devices leave every table; its forum writing st
     await q("INSERT INTO dod_shares (code, day, player, scores, created_at) VALUES ($1, '2026-11-09', $2, '[0,0,0]', 1)", [who.slice(5, 9).padEnd(8, 'x'), who])
   }
   await q("INSERT INTO account_referrals (account, referrer, room_id, created_at) VALUES ('user:anna', 'user:ben', 'r', 1), ('user:ben', 'user:anna', 'r', 1)")
-  const post = await forumCreate(store, { player: 'user:anna', official: false, section: 'talk', title: 'Annas Frage zum Reizen', body: 'Wie hoch?' }, now)
+  const post = await forumCreate(store, { player: 'user:anna', official: false, title: 'Annas Frage zum Reizen', body: 'Wie hoch?' }, now)
   await forumComment(store, { player: 'user:anna', official: false, post: post.id, body: 'Noch eine Frage, @Ben?' }, now + 1)
   await forumComment(store, { player: 'user:ben', official: false, post: post.id, body: '@Anna bis 18' }, now + 2)
   // Their faces, Anna's an uploaded picture (SKATGO-232); each mentioned the other.

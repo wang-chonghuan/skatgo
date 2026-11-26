@@ -93,7 +93,7 @@ export class Store {
           hash text NOT NULL, lang text NOT NULL, source_lang text NOT NULL, text text NOT NULL, created_at bigint NOT NULL,
           PRIMARY KEY (hash, lang)
         );
-        -- The forum (SKATGO-118): posts per section, flat comments, and reports — once per reporter
+        -- The forum (SKATGO-118): posts (one list since SKATGO-247, the section no longer read), flat comments, and reports — once per reporter
         -- and thing reported. An author's delete removes the row and what hangs from it.
         CREATE TABLE IF NOT EXISTS forum_posts (
           id bigserial PRIMARY KEY, section text NOT NULL, author text NOT NULL,

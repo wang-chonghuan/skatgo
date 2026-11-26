@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-247",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-247",
+  "branch": "SKATGO-247-forum-one-board",
+  "base": "64925e457b2d21ae59c1646ab52e2313bd30e510",
+  "ports": {
+    "web": 55247,
+    "multiplayer": 56247,
+    "database": 57247
+  }
+}

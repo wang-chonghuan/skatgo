@@ -579,7 +579,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   avatars, the same as their author lines, `dims.badge`, each over the one before by `dims.avatarOverlap` in a
   white ring — and the comments' count with
   lucide's `MessageSquare`, `info` once there are any; nothing found, one line; at the foot the line on what the forum is for (`note`, slate). A
-  post: the breadcrumb, the one link "Forum" (`info`; "Forum › Discussion" with the list's mark until SKATGO-247); the post in a white card — the
+  post: the breadcrumb "Home › Forum" (`info` links, as the structured breadcrumb; "Forum › Discussion" with the list's mark until SKATGO-247); the post in a white card — the
   title (`landingHeading`), the author's line (a player's avatar — their uploaded picture, the look they drew, or else the picture of their name
   (SKATGO-232) — `dims.badge`, or for SkatGo its mark — lucide's `Megaphone` white on `tileNavy` in a `dims.badge`
   square with `radii.tag`, the announcements' mark until SKATGO-247; name, day), the

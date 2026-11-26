@@ -1,7 +1,7 @@
 import { SignInButton } from '@clerk/tanstack-react-start'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useLoaderData, useNavigate, useRouter, useSearch } from '@tanstack/react-router'
-import { Eye, EyeOff, Flag, Megaphone, MessageSquare, Reply, Trash2 } from 'lucide-react'
+import { ChevronRight, Eye, EyeOff, Flag, Megaphone, MessageSquare, Reply, Trash2 } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import {
@@ -327,6 +327,10 @@ function Thread({ post, viewer }: { post: ForumPost; viewer: ForumViewer }) {
     <Frame>
       <article data-testid="forum-thread" data-post-id={post.id} data-indexable={post.indexable} {...stylex.props(styles.stack)}>
         <nav aria-label={m.forum_title()} {...stylex.props(typography.appLink, styles.crumbs)}>
+          {/* Home › Forum, as the page's structured breadcrumb says — two links of the page's own (the search check's
+              contextual links; the list's tab was the second until SKATGO-247). */}
+          <Link to="/" {...stylex.props(styles.link)}>{m.nav_home()}</Link>
+          <ChevronRight size={icon.small} aria-hidden {...stylex.props(styles.slate)} />
           <Link to="/forum" {...stylex.props(styles.link)}>{m.forum_title()}</Link>
         </nav>
         {/* The post in a white card of its own (the human, SKATGO-118: 「每一个帖子或回复，都放在卡片里」). */}

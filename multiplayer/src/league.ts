@@ -81,8 +81,9 @@ export function personaTurnPolicy(base: Policy, s: Snapshot, seat: Seat): Policy
   return leaguePolicy(base, personaOf(id), s.league.tier, `${s.league.match}|${s.deals}|${seat}|${s.game.tricks.length}|${s.game.trick.length}`)
 }
 
-/** A person's face as stored (SKATGO-232), for their League seat (SKATGO-238): null when they have none. */
-async function faceOfPlayer(c: pg.PoolClient, player: string) {
+/** A person's face as stored (SKATGO-232), for their League seat (SKATGO-238) and their private table's (SKATGO-246): null
+ *  when they have none. */
+export async function faceOfPlayer(c: pg.PoolClient, player: string) {
   const { rows } = await c.query('SELECT seed, image_id FROM player_avatars WHERE player = $1', [player])
   return faceOf(rows[0]?.seed, rows[0]?.image_id)
 }

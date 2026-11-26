@@ -550,8 +550,8 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
             </div>
           ) : null}
         </div>
-        {/* Lina's and Noah's faces above their stacks (SKATGO-147); not at a private table, where people sit, nor on an
-            exercise's open board; and only while the settings show them. Drawn before the stacks, so a hand laid open
+        {/* Lina's and Noah's faces above their stacks (SKATGO-147); not on an exercise's open board, and only while the
+            settings show them. A League or private table shows its opponents' own pictures there instead, still (SKATGO-238/246). Drawn before the stacks, so a hand laid open
             long enough to reach a face on a phone lies over it rather than under it (SKATGO-148). */}
         {room?.faces
           ? ([1, 2] as const).map((seat) => <StillFace key={seat} seat={seat} src={room.faces![seat - 1]} />)

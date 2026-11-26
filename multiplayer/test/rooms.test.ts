@@ -199,8 +199,12 @@ test('real SDK rooms, privacy, takeover, persistence and process fencing', { tim
       const ben = someone()
       const ticket = issueTicket(admissionKey, { purpose: 'join', user: ben, room: p.room.roomId })
       await assert.rejects(new Client(endpoint).joinById(other.p.room.roomId, { ticket }), /admission_denied/)
+      // Their stored face comes with them, for the others at the table (SKATGO-246); the host has none, the drawing of their name.
+      await sql.query("INSERT INTO player_avatars (player, seed, updated_at) VALUES ($1, 'look-ben', 0)", [ben])
       const b = await attach(await new Client(endpoint).joinById(p.room.roomId, { ticket }), ben)
       assert.equal(b.seat, 1)
+      assert.deepEqual(b.public.seats[1].face, { seed: 'look-ben' })
+      assert.equal(b.public.seats[0].face, null)
     })
     await t.test('a waiting room: people sit down at once, the host gives seats to the AI or takes them back, and starts', async () => {
       const { p, group } = await create(2, true)

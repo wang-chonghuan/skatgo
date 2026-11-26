@@ -185,6 +185,21 @@ export const paraglideOptions: Parameters<typeof paraglideVitePlugin>[0] = {
       ],
     },
     // The League (SKATGO-204): a "Liga" in German, its round's table "spielen" as free play's.
+    // Hard hands (SKATGO-248): its list, and its table, never indexed.
+    {
+      pattern: '/hard-hands',
+      localized: [
+        ['en', '/en/hard-hands'],
+        ['de', '/de/schwere-blaetter'],
+      ],
+    },
+    {
+      pattern: '/hard-hands/play',
+      localized: [
+        ['en', '/en/hard-hands/play'],
+        ['de', '/de/schwere-blaetter/spielen'],
+      ],
+    },
     {
       pattern: '/league',
       localized: [

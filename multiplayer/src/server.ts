@@ -6,6 +6,7 @@ import { dailyRoutes, nameUnnamed, prepareDays } from './daily'
 import { forumRoutes } from './forum'
 import { translateForum } from './translate'
 import { freeRoutes, loadPool } from './free'
+import { challengeRoutes, loadChallengePool } from './challenge'
 import { ladderRoutes } from './ladder'
 import { leagueRoutes } from './league'
 import { biddingRoutes } from './bidding'
@@ -39,9 +40,12 @@ await store.migrate()
 let policy: Policy | null = null
 // Free play's pool of prepared deals (SKATGO-40), checked against the manifest like the models.
 let pool: Awaited<ReturnType<typeof loadPool>> | null = null
-const policyLoad = Promise.all([loadPolicy(new URL('../skatzero/', import.meta.url)), loadPool(new URL('../skatzero/', import.meta.url))]).then(
-  ([p, deals]) => {
+// Hard hands' pool (SKATGO-248), checked as it loads.
+let challenges: Awaited<ReturnType<typeof loadChallengePool>> | null = null
+const policyLoad = Promise.all([loadPolicy(new URL('../skatzero/', import.meta.url)), loadPool(new URL('../skatzero/', import.meta.url)), loadChallengePool(new URL('../skatzero/', import.meta.url))]).then(
+  ([p, deals, hard]) => {
     pool = deals
+    challenges = hard
     policy = p
     console.log(JSON.stringify({ event: 'skatzero_ready', rss: process.memoryUsage().rss }))
   },
@@ -63,6 +67,7 @@ app.get(['/healthz', '/readyz'], async (req, res) => {
 })
 app.use('/daily', dailyRoutes(store, key, () => ready && !stopping, () => policy, () => pool))
 app.use('/free', freeRoutes(store, key, () => ready && !stopping, () => policy, () => pool))
+app.use('/challenge', challengeRoutes(key, () => ready && !stopping, () => policy, () => challenges))
 app.use('/ladder', ladderRoutes(store, key, () => ready && !stopping))
 app.use('/bidding', biddingRoutes(store, key, () => ready && !stopping))
 app.use('/rooms', roomRoutes(store, key, () => ready && !stopping))

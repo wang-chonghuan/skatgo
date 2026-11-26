@@ -164,6 +164,9 @@ export type ServerGame = Pick<Tournament, 'game' | 'busy' | 'send' | 'collect' |
   close?: () => void
   /** Free play: what Lina (1) or Noah (2) just said (SKATGO-142), shown on their side. */
   talk?: { seat: 1 | 2; line: string; id: number } | null
+  /** Hard hands (SKATGO-248): the game is set — said over the skat step, no Hand; the server declares it after the
+   *  discard. */
+  fixed?: Contract
 }
 
 /** A private table (SKATGO-61): the room's deal turned so the viewer is seat 0, the people's
@@ -518,7 +521,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
                 </span>
               ) : (
                 <div data-testid="skat-actions" {...stylex.props(styles.words)}>
-                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done ?? room?.league?.done} lead={room?.league?.line} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review ?? room?.league?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} out={room?.league ? room.leave : undefined} />
+                  <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done ?? room?.league?.done} lead={room?.league?.line} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review ?? room?.league?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} out={room?.league ? room.leave : undefined} fixed={server?.fixed} />
                 </div>
               )}
             </div>
@@ -653,7 +656,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
               {...stylex.props(styles.drawer)}
             >
               <span aria-hidden="true" {...stylex.props(styles.drawerHandle)} />
-              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done ?? room?.league?.done} lead={room?.league?.line} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review ?? room?.league?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} out={room?.league ? room.leave : undefined} />
+              <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done ?? room?.league?.done} lead={room?.league?.line} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review ?? room?.league?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} out={room?.league ? room.leave : undefined} fixed={server?.fixed} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -755,7 +758,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
 
           {acting && movesInPanel ? (
             <section data-testid="skat-actions" aria-label={m.table_your_move()} {...stylex.props(styles.panelMoves)}>
-              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done ?? room?.league?.done} lead={room?.league?.line} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review ?? room?.league?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} out={room?.league ? room.leave : undefined} />
+              <ActionsFor compact game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done ?? room?.league?.done} lead={room?.league?.line} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review ?? room?.league?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} out={room?.league ? room.leave : undefined} fixed={server?.fixed} />
             </section>
           ) : null}
 
@@ -804,7 +807,7 @@ function Table({ onSettled, fullScreen = false, tournament, server, room, exerci
           on a phone is a drawer that slides. */}
       {dialog ? (
         <div data-testid="skat-actions">
-          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done ?? room?.league?.done} lead={room?.league?.line} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review ?? room?.league?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} out={room?.league ? room.leave : undefined} />
+          <ActionsFor game={game} picked={picked} draft={draft} setDraft={setDraft} dispatch={dispatch} setPicked={setPicked} setHint={setHint} onNewGame={newGame} hints={hints} dealScore={tournament ? seegerFabian(game)[ME] : null} last={tournament ? tournament.deal + 1 >= tournament.of : false} daily={dailyAfter} done={tournament?.done ?? server?.done ?? room?.league?.done} lead={room?.league?.line} close={tournament?.close ?? server?.close} again={server?.again} replaying={server?.replaying} room={!!room} totals={dealOf?.of === 1 || server?.replaying ? null : totals} freeReview={server?.review ?? room?.league?.review} roundLast={server?.round ? server.round.deal + 1 >= server.round.of : null} seeger={!!(tournament || server || room)} out={room?.league ? room.leave : undefined} fixed={server?.fixed} />
         </div>
       ) : null}
 
@@ -858,6 +861,7 @@ function ActionsFor({
   roundLast,
   seeger,
   out,
+  fixed,
 }: {
   game: Game
   picked: Card[]
@@ -897,9 +901,12 @@ function ActionsFor({
   lead?: ReactNode
   /** A League sitting's way out, under the next deal in its result (SKATGO-208). */
   out?: () => void
+  /** Hard hands' set game (SKATGO-248). */
+  fixed?: Contract
 }) {
   return (
     <Actions
+      fixed={fixed}
       out={out}
       done={done}
       lead={lead}
@@ -1188,6 +1195,8 @@ type ActionsProps = {
   freeReview?: AskReview
   /** A League deal's points, the result's first line (SKATGO-205). */
   lead?: ReactNode
+  /** Hard hands' set game (SKATGO-248): said over the skat step; no Hand. */
+  fixed?: Contract
 }
 
 function Actions(p: ActionsProps) {
@@ -1219,7 +1228,7 @@ function Actions(p: ActionsProps) {
         {p.out ? <Btn testId="league-leave" tone="quiet" shape="block" size="lg" onClick={p.out}>{m.table_leave()}</Btn> : null}
       </div>
     ) : <Row>{on}</Row>)
-    return <DealResult game={game} totals={p.totals} vsAi={vsAi} next={foot} lead={p.lead} replaying={p.replaying} onClose={p.close} />
+    return <DealResult game={game} totals={p.totals} vsAi={vsAi} next={foot} lead={p.lead} replaying={p.replaying} uncounted={!!p.fixed} onClose={p.close} />
   }
 
   if (game.phase === 'passedIn') {
@@ -1268,6 +1277,18 @@ function Actions(p: ActionsProps) {
         <Btn testId="skat-hold" shape="block" size="lg" onClick={() => p.onBid('hold')}>{m.bid_hold_button({ value: b.value })}</Btn>
         <Btn testId="skat-pass" shape="block" size="lg" onClick={() => p.onBid('pass')}>{m.bid_pass()}</Btn>
         {p.hints ? <Btn tone="info" shape="block" size="lg" onClick={p.onBidHint}>{m.bid_hint_button()}</Btn> : null}
+      </Row>
+    )
+  }
+
+  if (game.phase === 'skat' && p.fixed) {
+    // Hard hands (SKATGO-248): the game is set, so the discard is made for it; picking up is the only way on.
+    return (
+      <Row>
+        <Say>{m.challenge_your_game({ game: contractName(p.fixed) })}</Say>
+        {game.pickedUp
+          ? <Btn testId="skat-discard" shape="block" size="lg" disabled={p.picked.length !== 2} onClick={p.onDiscard}>{m.skat_discard_button({ n: p.picked.length })}</Btn>
+          : <Btn testId="skat-pickup" shape="block" size="lg" onClick={p.onPickUp}>{m.skat_pick_up()}</Btn>}
       </Row>
     )
   }
@@ -1496,7 +1517,7 @@ function Result({ game, next }: { game: Game; next: ReactNode }) {
  * score is counted, without the score; and against the AI, the review. Each fact once, in four levels: the dialog's
  * title, 16 bold, 16, and the tags' 13 bold.
  */
-function DealResult({ game, totals, vsAi, next, lead, replaying = false, onClose }: { game: Game; totals: [number, number, number] | null; vsAi: { ask: AskReview; cacheKey?: string } | null; next: ReactNode; lead?: ReactNode; replaying?: boolean; onClose?: () => void }) {
+function DealResult({ game, totals, vsAi, next, lead, replaying = false, uncounted = false, onClose }: { game: Game; totals: [number, number, number] | null; vsAi: { ask: AskReview; cacheKey?: string } | null; next: ReactNode; lead?: ReactNode; replaying?: boolean; /** Hard hands (SKATGO-248): counted nowhere, so no XP line; not a replay. */ uncounted?: boolean; onClose?: () => void }) {
   const nameOf = useNameOf()
   const panel = useScrolledIn()
   const r = game.phase === 'done' ? game.result : null
@@ -1515,7 +1536,7 @@ function DealResult({ game, totals, vsAi, next, lead, replaying = false, onClose
         {/* A League deal's points first (SKATGO-205), then the deal's XP, where the deal counts: not a deal played again
             (SKATGO-170/172/173). */}
         {lead}
-        {vsAi && !replaying ? <DealXp ask={vsAi.ask} cacheKey={vsAi.cacheKey} /> : null}
+        {vsAi && !replaying && !uncounted ? <DealXp ask={vsAi.ask} cacheKey={vsAi.cacheKey} /> : null}
         <ResultPart first testId="result-part-deal" title={replaying ? m.free_replay_result() : m.result_section_deal()}>
           <Panel tone={humanWon === null ? 'card' : humanWon ? 'good' : 'bad'}>
             <div data-testid="skat-result-card" data-won={humanWon === null ? undefined : String(humanWon)} {...stylex.props(styles.resultBody)}>

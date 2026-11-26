@@ -64,7 +64,7 @@ export function EntryPage() {
       {/* Under them the rest, as picture cards (SKATGO-135, the human: 「私人牌桌和论坛，用卡片的形式，继续放到下面」): a private
           table with the illustration the hero once had (SKATGO-33), and the forum with the human's picture of people at a
           card table (`forum-card.webp`, cropped to the card), then the Skat Tricks (SKATGO-149; named so since SKATGO-234,
-          the bidding practice among them) and the advanced course (SKATGO-234, in the bidding practice's place). */}
+          the bidding practice among them) and hard hands (SKATGO-248, in the advanced course's place). */}
       <div data-testid="entry-more" {...stylex.props(styles.more)}>
         <Link to="/with-friends" data-testid="entry-card" data-section="friends" {...stylex.props(styles.white, styles.picture, styles.lift)}>
           <span {...stylex.props(styles.pictureDim)}><img src="/hero-table.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage, styles.pictureMultiply)} /></span>
@@ -91,13 +91,13 @@ export function EntryPage() {
               <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_practice_text()}</span>
             </span>
           </Link>
-          {/* The advanced course (SKATGO-234, the human: 「去掉的卡片，新增一个进阶课程，或者高级课程之类的」), in the place the
-              bidding practice had: its own picture in the forum picture's flat style. */}
-          <Link to="/advanced-course" data-testid="entry-card" data-section="advanced" {...stylex.props(styles.white, styles.picture, styles.lift)}>
-            <span {...stylex.props(styles.pictureDim)}><img src="/advanced-card.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage, styles.pictureMultiply)} /></span>
+          {/* Hard hands (SKATGO-248, the human: 「各一张卡」), in the advanced course's place — the advanced course is reached from
+              the course since (「把高级课程也放到learn里面」): its own picture in the cards' flat style. */}
+          <Link to="/hard-hands" data-testid="entry-card" data-section="hard-hands" {...stylex.props(styles.white, styles.picture, styles.lift)}>
+            <span {...stylex.props(styles.pictureDim)}><img src="/hard-hands-card.webp" alt="" loading="lazy" {...stylex.props(styles.pictureTop, styles.pictureImage, styles.pictureMultiply)} /></span>
             <span {...stylex.props(styles.pictureBody)}>
-              <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.advanced_title()}</h2>
-              <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_advanced_text()}</span>
+              <h2 {...stylex.props(typography.homeCardTitle, styles.whiteTitle)}>{m.challenge_title()}</h2>
+              <span {...stylex.props(typography.optionDesc, styles.pictureText)}>{m.home_hard_text()}</span>
             </span>
           </Link>
         </div>

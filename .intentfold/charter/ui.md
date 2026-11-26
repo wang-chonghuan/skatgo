@@ -638,7 +638,7 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   page in the table's place in the browser's history, and a table address with no table to come to — closed, left, or
   opened on another device — goes straight to the League page the same way, with no "table closed" page (SKATGO-209, the
   human: 「点返回按钮，跳到 this table has closed. 页面……特别影响体验」). The League
-  card's button reads "Spielen · 4 Münzen pro Spiel", the tiers' cards "4 Münzen pro Spiel", the bar runs from 0 to 2000 in every tier but Legend (SKATGO-237; 0 to 3000 from SKATGO-219, 0 to 2000 from SKATGO-217, −1000 to +1000 before, −20 to +30 before that), the board's points without a sign.
+  card's button reads "Spielen · 5 Münzen pro Spiel" in Gold, the tiers' cards "4 / 4 / 5 / 5 / 6 / 6 Münzen pro Spiel" (SKATGO-240; 4 in each from SKATGO-235), the coins bullet one sentence, "Jeden Tag gibt es 100 gratis, sparen kannst du bis 200." (SKATGO-240, the human: 「文案不要啰嗦」), the bar runs from 0 to 2000 in every tier but Legend (SKATGO-237; 0 to 3000 from SKATGO-219, 0 to 2000 from SKATGO-217, −1000 to +1000 before, −20 to +30 before that), the board's points without a sign.
 - **The tables** (`/play`, `/daily/play`, a private table, a League table since SKATGO-204, and an open-card endgame's page since SKATGO-111):
   the felt fills the screen and never scrolls;
   nothing to read sits below it, and none is a search entry page (noindex) — the human, SKATGO-69, for a

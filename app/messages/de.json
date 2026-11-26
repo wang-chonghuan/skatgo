@@ -972,7 +972,7 @@
   "league_about_tiers": "Sechs Ligen, von Bronze bis Legende: Je höher die Liga, desto stärker die Gegner. Steig auf, so weit dein Skat dich trägt.",
   "league_about_deal": "Jedes Spiel: deine Seeger-Fabian-Punkte minus den Durchschnitt der beiden anderen. Ein Spiel im Wert von 36 als Alleinspieler gewonnen: du +86, jeder Gegenspieler −43.",
   "league_about_move": "In jeder Liga startest du mit {start} Punkten. Bei {up} geht es eine Liga höher, bei {down} eine tiefer. In Bronze geht es nie unter {down}.",
-  "league_about_coins": "Jedes Spiel kostet ein paar Münzen. {n} gibt es gratis an jedem Tag, an dem du SkatGo angemeldet öffnest; montags beginnt es wieder bei {n}.",
+  "league_about_coins": "Jedes Spiel kostet ein paar Münzen. Jeden Tag gibt es {n} gratis, sparen kannst du bis {max}.",
   "league_play_meta_title": "Liga-Tisch | SkatGo",
   "league_play_meta_description": "Ein Ligatisch auf SkatGo.",
   "league_result_up": "Aufstieg in die {league}!",

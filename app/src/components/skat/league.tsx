@@ -7,7 +7,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { checkInOnce } from '~/lib/checkin'
 import { facePath } from '~/lib/forum'
 import { type LeagueError, type LeagueState, PASSING_LEAGUE, enterLeague, leagueReview, leagueState, playLeague } from '~/lib/league-api'
-import { CHECKIN_COINS, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, START_AT, TIERS, type BoardRow, type LeagueBoard, type LeagueResult } from '~/lib/skat/league'
+import { CHECKIN_COINS, COINS_MAX, FEES, LEGEND, MATCH_WAIT_MS, PROMOTE_AT, RELEGATE_AT, START_AT, TIERS, type BoardRow, type LeagueBoard, type LeagueResult } from '~/lib/skat/league'
 import { roomGame, roomSeat } from '~/lib/skat/room-view'
 import { useAccount } from '~/lib/use-account'
 import { m } from '~/paraglide/messages'
@@ -190,7 +190,7 @@ function About() {
         <Chevron aria-hidden="true" size={icon.inline} strokeWidth={icon.outline} {...stylex.props(styles.chevron)} />
       </summary>
       <ul data-testid="league-about-text" {...stylex.props(styles.bullets)}>
-        {[m.league_about_tiers(), m.league_about_deal(), m.league_about_move({ start: START_AT, up: PROMOTE_AT, down: RELEGATE_AT }), m.league_about_coins({ n: CHECKIN_COINS })].map((t) => (
+        {[m.league_about_tiers(), m.league_about_deal(), m.league_about_move({ start: START_AT, up: PROMOTE_AT, down: RELEGATE_AT }), m.league_about_coins({ n: CHECKIN_COINS, max: COINS_MAX })].map((t) => (
           <li key={t} {...stylex.props(typography.appText, styles.ink)}>{t}</li>
         ))}
       </ul>

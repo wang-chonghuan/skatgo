@@ -6,9 +6,8 @@ import { once } from 'node:events'
 import { Client, type Room } from '@colyseus/sdk'
 import pg from 'pg'
 import { legalPlays } from '../../app/src/lib/skat/cards'
-import { AWAY_MS, CHECKIN_COINS, FEES, START_AT, dealPoints, forfeitPoints, standingAfter } from '../../app/src/lib/skat/league'
+import { AWAY_MS, CHECKIN_COINS, COINS_MAX, FEES, START_AT, dealPoints, forfeitPoints, standingAfter } from '../../app/src/lib/skat/league'
 import { summarize } from '../../app/src/lib/skat/tournament'
-import { dayOf } from '../src/daily'
 import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS } from '../src/model'
 import { Store } from '../src/store'
 
@@ -61,20 +60,21 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     const coins = async (player: string) => (await call('state', { player })).body.me.coins as number
     const snapshot = async (id: string): Promise<Snapshot> => (await sql.query('SELECT snapshot FROM multiplayer_rooms WHERE id=$1', [id])).rows[0].snapshot
 
-    // The day's check-in: CHECKIN_COINS on the first open, nothing on the next; a later day of the same week on top of what
-    // is left; the first of a new week from CHECKIN_COINS again, what was left gone (SKATGO-210).
+    // The day's check-in: CHECKIN_COINS on the first open, nothing on the next; a later day on top of what is left, up to
+    // COINS_MAX (SKATGO-240: 「每天100个，200个封顶」); a balance above it comes down to it; no weekly reset.
     const C = CHECKIN_COINS
     assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: C, added: C })
     assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: C, added: 0 })
-    const today = dayOf(Date.now())
-    const midnight = new Date(`${today}T00:00:00Z`)
-    const monday = new Date(midnight.getTime() - ((midnight.getUTCDay() + 6) % 7) * 86_400_000).toISOString().slice(0, 10)
-    if (monday !== today) {
-      await sql.query('UPDATE league_players SET coins = 40, checkin_day = $1 WHERE player = $2', [monday, 'user:a'])
-      assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: 40 + C, added: C })
+    const lastDay = async (left: number, day = '2000-01-01') => {
+      await sql.query('UPDATE league_players SET coins = $1, checkin_day = $2 WHERE player = $3', [left, day, 'user:a'])
+      return (await call('checkin', { player: 'user:a' })).body.coins as number
     }
-    await sql.query("UPDATE league_players SET coins = 40, checkin_day = '2000-01-01' WHERE player = 'user:a'")
-    assert.deepEqual((await call('checkin', { player: 'user:a' })).body, { coins: C, added: C })
+    assert.equal(await lastDay(50), 50 + C)
+    assert.equal(await lastDay(150), COINS_MAX)
+    assert.equal(await lastDay(380), COINS_MAX)
+    // A week's first check-in keeps what was left: Sunday 2 November 2025, then today, a later week.
+    assert.equal(await lastDay(60, '2025-11-02'), 60 + C)
+    assert.equal(await lastDay(0), C)
     assert.equal((await call('checkin', { player: 'sim:x' })).status, 400)
 
     // A new account: Bronze, 1500 points (SKATGO-219); too few coins for the fee is refused.

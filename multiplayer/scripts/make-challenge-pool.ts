@@ -1,4 +1,5 @@
-// Hard hands' pool (SKATGO-248): per kind, deals whose player's ten cards are of the kind and that SkatZero, declaring the
+// Hard hands' pool (SKATGO-248): per kind, deals whose player's twelve cards — the ten and the skat, SKATGO-249 — are of the
+// kind and that SkatZero, declaring the
 // set game, makes in 50–90 % of the ways the other twenty cards can lie — the same ten and skat, the rest dealt anew
 // RUNS times (the first run the deal as kept). The bad seat's: a hand the rules of thumb would play, the game SkatZero's
 // own choice of suit or Grand from forehand, made there in at least 90 % and from middlehand in 50–90 %.
@@ -15,7 +16,7 @@ import { createHash } from 'node:crypto'
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { type Card, fullDeck, shuffle } from '../../app/src/lib/skat/cards'
-import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeGame, type ChallengeKind, dealerFor, gameOfKind, ofKind, ownSlice, seatOf } from '../../app/src/lib/skat/challenge'
+import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeGame, type ChallengeKind, dealerFor, gameOfKind, ofKind, ownSlice, seatOf, twelveOf } from '../../app/src/lib/skat/challenge'
 import { routineOf } from '../../app/src/lib/skat/bidding/practice'
 import type { Seat } from '../../app/src/lib/skat/game'
 import { aiPlays, type ChallengeDeal, redeal } from '../src/challenge'
@@ -25,7 +26,7 @@ import { type Policy, loadPolicy } from '../src/skatzero/policy'
 
 const DIR = new URL('../skatzero/', import.meta.url)
 const FOUND = new URL('challenge-found.jsonl', DIR)
-const SEED = 'skatgo-challenge/1'
+const SEED = 'skatgo-challenge/2'
 /** Lies of the other twenty cards a deal is judged over. */
 const RUNS = 40
 /** Deals found per kind before the pool is chosen from them. */
@@ -78,7 +79,8 @@ async function worker(kind: ChallengeKind, index: number) {
   for (let tried = 0; ; tried++) {
     const deck = shuffle(fullDeck(), random)
     const hand = deck.slice(a, b)
-    if (!ofKind(kind, hand)) continue
+    const twelve = twelveOf(dealer, deck)
+    if (!ofKind(kind, twelve)) continue
     let found: ChallengeDeal | null = null
     if (kind === 'bad-seat') {
       if (routineOf(hand).contract === 'pass') continue
@@ -93,7 +95,7 @@ async function worker(kind: ChallengeKind, index: number) {
       const r = await rate(policy, dealer, deck, game, random, LOW, HIGH)
       if (r !== null) found = { dealer, deck: text(deck), game, rate: r, front: strong }
     } else {
-      const game = gameOfKind(kind, hand)
+      const game = gameOfKind(kind, twelve)
       const r = await rate(policy, dealer, deck, game, random, LOW, HIGH)
       if (r !== null) found = { dealer, deck: text(deck), game, rate: r }
     }
@@ -163,7 +165,7 @@ async function check(sample: number) {
     const deals = pool.kinds[kind]
     const inBounds = deals.every((d) => d.rate >= LOW && d.rate <= HIGH && (kind !== 'bad-seat' || (d.front ?? 0) >= HIGH))
     const ordered = deals.every((d, i) => i === 0 || deals[i - 1].rate >= d.rate)
-    const patterned = deals.every((d) => ofKind(kind, d.deck.split(' ').map(card).slice(...ownSlice(d.dealer))))
+    const patterned = deals.every((d) => ofKind(kind, twelveOf(d.dealer, d.deck.split(' ').map(card))))
     const again: number[] = []
     for (const d of deals.slice(0, sample)) {
       const random = rng(`check|${kind}|${d.deck}`)

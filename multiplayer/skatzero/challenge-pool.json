@@ -1,185 +1,185 @@
 {
- "seed": "skatgo-challenge/1",
+ "seed": "skatgo-challenge/2",
  "runs": 40,
  "kinds": {
   "one-jack-suit": [
    {
     "dealer": 2,
-    "deck": "S8 H8 SQ SK DK SJ S9 DT S7 HT CA D7 C8 H7 DQ HA DJ HJ HK C7 H9 D9 CT ST D8 CJ HQ CQ SA C9 DA CK",
+    "deck": "DQ SJ DA CT SA ST S8 D9 HQ H8 CJ DJ C8 CK HK S9 HJ H7 DK H9 HA SQ CA S7 C7 CQ SK C9 HT D7 DT D8",
+    "game": "D",
+    "rate": 0.9
+   },
+   {
+    "dealer": 2,
+    "deck": "HK SA H9 HT HQ S9 SQ CT DT H8 CQ C9 SJ C7 ST D7 CA DJ HA CK D9 CJ SK C8 S7 D8 DQ H7 DK DA S8 HJ",
+    "game": "H",
+    "rate": 0.9
+   },
+   {
+    "dealer": 2,
+    "deck": "HA C9 H9 DJ SA C8 H7 S8 DA SQ SJ CT DK DT DQ SK H8 C7 HT D9 HK CJ S9 CK HQ HJ D8 D7 CQ S7 CA ST",
     "game": "S",
-    "rate": 0.9
+    "rate": 0.875
    },
    {
     "dealer": 2,
-    "deck": "DT HQ HK D9 DJ HA CT C8 ST HT H8 DQ DA D7 CA SK S7 C7 CQ H7 H9 S8 SJ DK C9 S9 SQ SA CJ CK D8 HJ",
-    "game": "H",
-    "rate": 0.9
-   },
-   {
-    "dealer": 2,
-    "deck": "CA SJ H8 D9 HA HT S9 H9 S7 C9 DK DQ HQ D7 SK ST S8 CQ DJ SQ DT CK C8 D8 HJ DA CT C7 H7 CJ SA HK",
-    "game": "H",
-    "rate": 0.9
-   },
-   {
-    "dealer": 2,
-    "deck": "CK DT C9 H8 CA SK DA H7 CQ SJ HK HT HQ C8 ST D7 SQ S9 CT SA D8 HJ C7 D9 DJ S7 HA DK DQ S8 H9 CJ",
+    "deck": "D7 D8 SA ST C9 CJ CT HA C8 DA C7 DT DQ HQ S9 HJ S7 DJ CA D9 DK HK SK SQ S8 H9 H7 HT SJ CQ CK H8",
     "game": "C",
-    "rate": 0.9
-   },
-   {
-    "dealer": 2,
-    "deck": "SK HA S9 HK DA DK H9 C9 HJ H7 H8 D8 SJ HQ HT D7 S7 S8 DQ C8 C7 SA ST CA CT D9 CQ SQ DJ CK CJ DT",
-    "game": "H",
     "rate": 0.875
    },
    {
     "dealer": 2,
-    "deck": "SA DA D7 CA DJ DK S8 D9 S9 CT D8 CQ C9 C7 ST H9 H7 SJ CK H8 SK SQ CJ HJ DT HK HQ HT DQ C8 S7 HA",
-    "game": "D",
-    "rate": 0.875
-   },
-   {
-    "dealer": 2,
-    "deck": "CA S9 DT DQ D9 HJ CT D7 HK SQ DJ HQ H9 C7 SA S8 HA DK ST SJ D8 H7 HT H8 CK C8 S7 C9 CQ DA SK CJ",
-    "game": "D",
+    "deck": "CJ C9 D8 C7 S7 SA S8 DT DA CA HA H9 DJ DQ HT CQ H7 HQ HJ D7 D9 SJ H8 SK HK SQ C8 DK CT ST CK S9",
+    "game": "C",
     "rate": 0.85
    },
    {
     "dealer": 2,
-    "deck": "S8 CJ H8 SQ S7 DQ SA S9 C7 HT C8 CA SK CT C9 H9 D9 HK CK D8 SJ HA CQ DK DA DT HJ H7 HQ ST DJ D7",
+    "deck": "HQ HA SQ ST CT HJ SK D8 SA D9 HT CQ DJ DT CK CJ S7 DQ S9 HK SJ H8 H9 C9 DK C8 DA S8 D7 C7 CA H7",
     "game": "S",
     "rate": 0.85
    },
    {
     "dealer": 2,
-    "deck": "D8 D9 C9 SK HK H7 CJ DQ DT DK C8 CK ST D7 DA S9 CT HQ HT DJ SA HJ CQ CA SJ H9 SQ C7 S7 S8 H8 HA",
-    "game": "D",
-    "rate": 0.85
-   },
-   {
-    "dealer": 2,
-    "deck": "DK CQ S9 D7 H9 HQ H8 CJ HT C8 CT C9 S7 HK CK SA S8 DA D8 ST DJ HJ C7 DQ D9 SK DT H7 HA SQ CA SJ",
-    "game": "H",
-    "rate": 0.85
-   },
-   {
-    "dealer": 2,
-    "deck": "DA HK C9 CA S8 HT HQ H7 HJ CT H8 DT H9 DQ D9 CQ SA DJ DK S7 D8 C7 C8 SQ ST SJ D7 HA CJ S9 SK CK",
-    "game": "H",
+    "deck": "CA S9 SQ HQ D7 HJ SA DT SK ST SJ CJ CK C8 CQ C7 DA D8 S7 HT H8 S8 H7 H9 D9 HK DK CT HA DJ DQ C9",
+    "game": "S",
     "rate": 0.825
    },
    {
     "dealer": 2,
-    "deck": "H7 SK HK S9 C8 CA CK D9 SJ CQ HA SQ DQ S7 DA H8 DK CJ HT C7 D8 DT D7 S8 ST DJ CT H9 HQ C9 SA HJ",
-    "game": "C",
+    "deck": "H8 SJ HQ CA S7 HK SQ HT D7 DK C7 C8 DT DJ H9 HJ S8 SK DQ CK D9 D8 SA DA CJ H7 S9 CT CQ ST C9 HA",
+    "game": "H",
     "rate": 0.8
    },
    {
     "dealer": 2,
-    "deck": "DT H7 DQ SA H9 SK S9 S7 SJ CK D7 S8 D9 C8 C9 HQ H8 CJ CQ CT HA DK HT CA C7 DA ST D8 DJ HK SQ HJ",
-    "game": "S",
-    "rate": 0.8
-   },
-   {
-    "dealer": 2,
-    "deck": "CA HA DT D9 S8 DJ CK DK DA HQ SK SJ CJ D8 C8 C9 SA HK CT HT HJ SQ DQ C7 S9 ST S7 H8 CQ D7 H7 H9",
+    "deck": "DQ S7 SA HK HT C9 CA HJ DT CT S8 CJ D9 DK ST SK HA H8 CK C8 CQ H9 C7 SQ S9 DA DJ HQ H7 SJ D7 D8",
     "game": "D",
+    "rate": 0.8
+   },
+   {
+    "dealer": 2,
+    "deck": "C8 D8 S8 S7 DT CJ H9 ST CT DA CK DJ H8 HT HQ HK SK SA C7 HA C9 S9 DK H7 HJ SJ DQ SQ D7 D9 CQ CA",
+    "game": "C",
     "rate": 0.775
    },
    {
     "dealer": 2,
-    "deck": "CA CK CT DA C7 DK C9 HJ H7 S8 CJ SA HA SJ HT H8 SK DQ C8 D9 D7 ST HK SQ DT CQ H9 S9 S7 DJ D8 HQ",
-    "game": "C",
-    "rate": 0.75
-   },
-   {
-    "dealer": 2,
-    "deck": "DK DT SA D9 C9 DA H8 DJ SQ HQ S7 CQ HT CJ CA HJ H7 SJ HK D7 ST C7 SK S9 S8 CK CT D8 HA C8 H9 DQ",
-    "game": "D",
-    "rate": 0.75
-   },
-   {
-    "dealer": 2,
-    "deck": "CA SK H7 C7 HQ SQ DJ D9 C9 CT HA SA H9 D7 DK H8 HT C8 CK CQ ST HK SJ DQ DT D8 HJ S8 S9 S7 DA CJ",
-    "game": "C",
-    "rate": 0.725
-   },
-   {
-    "dealer": 2,
-    "deck": "D9 DA ST SK DJ CK HT DQ DT S7 C8 C9 CJ HJ H9 S8 SQ CT D8 HK SJ H7 C7 CA CQ D7 SA HQ H8 DK S9 HA",
-    "game": "D",
-    "rate": 0.725
-   },
-   {
-    "dealer": 2,
-    "deck": "CK HK DQ CJ HT D8 DA D9 H7 DT SQ SA DJ CT DK ST S9 H9 S7 H8 SK C8 C7 D7 HA HQ HJ SJ CQ CA S8 C9",
-    "game": "D",
-    "rate": 0.725
-   },
-   {
-    "dealer": 2,
-    "deck": "CK CT HA ST D9 C8 CA SJ H8 H7 S9 D7 SK HJ CQ DK DJ CJ HT HQ C7 DQ DA S7 SQ SA DT C9 D8 S8 HK H9",
-    "game": "C",
-    "rate": 0.7
-   },
-   {
-    "dealer": 2,
-    "deck": "CK CQ H9 HK SJ D8 C7 C8 DA SA HQ D7 CT DJ H7 DQ C9 CJ SK DT D9 CA S9 HA HT S8 DK ST H8 SQ S7 HJ",
-    "game": "C",
-    "rate": 0.7
-   },
-   {
-    "dealer": 2,
-    "deck": "HA CA D9 HK S8 H9 DK HT C9 HJ ST DJ D7 D8 HQ SK SQ SJ CT CK C7 SA CJ DT CQ S9 DA DQ S7 H7 H8 C8",
+    "deck": "S8 H8 SJ H7 DK SK HT DQ HK HA S9 CK ST CQ SQ DT H9 C9 D8 CT CA SA DJ D9 C7 D7 HJ HQ S7 CJ DA C8",
     "game": "H",
+    "rate": 0.75
+   },
+   {
+    "dealer": 2,
+    "deck": "DT CT D7 DK S7 HT H9 CK HA D9 DJ C9 CQ S9 H7 C8 S8 D8 SJ DQ HK ST DA SQ H8 CA HJ SA C7 HQ SK CJ",
+    "game": "D",
+    "rate": 0.75
+   },
+   {
+    "dealer": 2,
+    "deck": "C7 DQ HJ SQ SK CT C8 HA C9 HT DT CA SJ CK S7 D8 CJ S9 CQ D7 H7 DK DJ HK SA S8 H8 ST H9 HQ D9 DA",
+    "game": "C",
+    "rate": 0.725
+   },
+   {
+    "dealer": 2,
+    "deck": "CQ DQ D7 H8 C7 C8 HK HA SK CT S7 H7 SA C9 HQ HT DA DK ST CJ DT H9 DJ S9 SJ D9 SQ S8 D8 CK HJ CA",
+    "game": "C",
+    "rate": 0.7
+   },
+   {
+    "dealer": 2,
+    "deck": "H7 HK CT SK D9 CJ SA CK DK C9 DA H8 C8 S7 ST CQ S9 D7 C7 DQ SJ SQ HJ S8 DT H9 HT HQ D8 DJ CA HA",
+    "game": "C",
+    "rate": 0.7
+   },
+   {
+    "dealer": 2,
+    "deck": "DK CK CT S7 SK DA HJ ST SA DT H8 HK DQ C9 HA CA HT SQ H7 S8 DJ HQ D8 CQ CJ SJ D7 C7 C8 S9 H9 D9",
+    "game": "S",
     "rate": 0.675
    },
    {
     "dealer": 2,
-    "deck": "HT HA SQ CJ DT H9 H8 CQ C9 DQ ST SJ S8 SK C8 HK H7 C7 SA DK CT S7 DA S9 CK D9 CA D8 HJ HQ DJ D7",
-    "game": "H",
+    "deck": "DK DA HQ SQ H7 S8 SK D8 HA S7 HT D9 SJ H8 CT CA CK DT DJ D7 C9 CJ SA C7 ST CQ C8 H9 HK DQ S9 HJ",
+    "game": "S",
+    "rate": 0.675
+   },
+   {
+    "dealer": 2,
+    "deck": "DQ CJ CA H8 CQ C7 C9 DT DA D9 SJ DK H9 DJ CK CT D7 S9 D8 ST H7 HQ HJ C8 S8 SQ HA SA HT HK S7 SK",
+    "game": "C",
     "rate": 0.65
    },
    {
     "dealer": 2,
-    "deck": "H9 C9 SK H7 CJ DK C8 H8 HA CT SQ HQ C7 HJ CK SJ ST S8 DA HT DJ HK DQ D7 D8 DT S7 S9 CA CQ SA D9",
+    "deck": "C9 DK C7 CK CT HK HJ DA SQ HA H7 SJ H8 S9 SA S8 H9 DJ D7 S7 C8 D9 SK HT CQ DT CA CJ DQ D8 ST HQ",
+    "game": "C",
+    "rate": 0.625
+   },
+   {
+    "dealer": 2,
+    "deck": "C9 H8 HT CT H9 HK HJ S7 C7 S9 DQ SK D8 SJ DK CJ CQ S8 C8 DJ D7 HA HQ SA DT ST D9 SQ CA CK DA H7",
     "game": "H",
     "rate": 0.625
    },
    {
     "dealer": 2,
-    "deck": "S9 SJ S8 H7 S7 CT HK HQ ST CA CK DT D9 HA HJ DA CQ DQ SA D7 SQ D8 DK C7 H9 H8 CJ DJ SK C9 HT C8",
-    "game": "S",
+    "deck": "S7 HK H9 SJ CA C9 DK H7 CT SA DA C7 S9 DJ HJ H8 SQ S8 HT DT D9 ST CJ SK C8 D7 DQ D8 CQ HA HQ CK",
+    "game": "C",
     "rate": 0.6
    },
    {
     "dealer": 2,
-    "deck": "D8 DJ CK HA C8 HK SA H8 HQ S9 SJ CA ST CT DA DQ HJ S8 HT DK S7 SK H7 C9 D7 CQ DT C7 SQ H9 CJ D9",
-    "game": "H",
+    "deck": "HT S7 DJ SK D7 HA C8 CT HK DT SJ D9 H7 S8 DK C7 S9 HQ ST CQ D8 CK SQ H8 DA SA HJ H9 CJ DQ C9 CA",
+    "game": "C",
     "rate": 0.6
    },
    {
     "dealer": 2,
-    "deck": "CQ SK C8 ST SQ S9 DK HA S7 CJ C7 HK HJ C9 SA CA HQ SJ CT D7 S8 DA H9 D9 HT H7 DQ D8 DT DJ CK H8",
-    "game": "S",
+    "deck": "DA CT SJ C9 DK CK CA HQ SK H8 C8 HJ DJ SQ D8 CJ ST D7 D9 DQ DT S8 HA C7 H9 H7 S7 CQ S9 HT SA HK",
+    "game": "C",
     "rate": 0.575
    },
    {
     "dealer": 2,
-    "deck": "SQ HJ ST DA DK DT C8 SA CK SK S9 H7 D9 CQ H9 DJ S7 HK CA SJ C7 D7 S8 HT D8 CT HA HQ CJ DQ H8 C9",
+    "deck": "D7 DA S9 CK C9 C7 SQ CA DJ DK H7 C8 SA CQ HT SK D8 HJ D9 H8 CT HQ HK CJ SJ DT H9 S8 S7 DQ HA ST",
+    "game": "C",
+    "rate": 0.575
+   },
+   {
+    "dealer": 2,
+    "deck": "H7 S8 CT SA DT HT S9 HJ SQ C8 ST D8 HQ D7 CK CQ C9 S7 C7 DA HA CJ SJ DJ HK D9 H9 SK DQ H8 DK CA",
     "game": "S",
     "rate": 0.55
    },
    {
     "dealer": 2,
-    "deck": "HT CK HQ C8 C9 CJ ST H9 H8 DQ CA HJ D8 DT CQ S8 HK SJ DJ SK S9 CT DA SQ D7 C7 H7 SA D9 DK HA S7",
-    "game": "H",
+    "deck": "DQ C8 ST SK C9 C7 H8 CQ CJ CT S7 S9 DJ S8 H7 DK DT HQ H9 SQ D8 HT D9 HJ CK SA SJ CA DA HK HA D7",
+    "game": "C",
+    "rate": 0.55
+   },
+   {
+    "dealer": 2,
+    "deck": "DA DQ CK D7 HK H9 D9 C8 D8 DJ CT HQ SJ SA CQ CA H7 SQ S9 C9 H8 HT C7 DK ST DT HJ S7 CJ S8 HA SK",
+    "game": "D",
     "rate": 0.525
    },
    {
     "dealer": 2,
-    "deck": "CA C8 D8 S7 DT CJ C9 DA SQ D7 SA CK CQ HA H8 DK HJ S9 DJ D9 DQ H7 SK HQ CT S8 C7 SJ ST H9 HT HK",
+    "deck": "DA H7 S7 H9 CT HK DJ CA SA CQ D7 S9 HJ HT HA CJ DQ DT C7 CK DK D9 H8 D8 S8 ST HQ C8 SJ SQ C9 SK",
+    "game": "C",
+    "rate": 0.5
+   },
+   {
+    "dealer": 2,
+    "deck": "SA DJ H7 CA S7 DK CT HQ D8 C7 D7 S9 ST SK HK DQ CQ CJ CK D9 DA H9 C8 H8 SQ SJ S8 HT DT HJ HA C9",
+    "game": "C",
+    "rate": 0.5
+   },
+   {
+    "dealer": 2,
+    "deck": "DQ SQ D9 D8 H9 SK C7 SA D7 DT DK H8 HT CQ CT HJ S9 S7 DA HA SJ C8 ST S8 HK H7 CJ CK CA HQ C9 DJ",
     "game": "D",
     "rate": 0.5
    }
@@ -187,181 +187,181 @@
   "short-trumps": [
    {
     "dealer": 2,
-    "deck": "D8 D9 HA HQ DA CT S7 C7 CJ C9 CQ DJ HT DT D7 HJ SQ DQ C8 CK HK H7 SK ST S9 CA DK SA H9 S8 SJ H8",
+    "deck": "SA S7 H7 CT DT CA HA SJ C8 DA HK S9 C7 S8 DK H8 D7 CJ D8 C9 HQ SQ HJ DQ D9 DJ CK ST CQ H9 SK HT",
     "game": "C",
     "rate": 0.9
    },
    {
     "dealer": 2,
-    "deck": "S7 H9 C8 CA SQ ST HA C7 SA CK H8 HK CQ CT D8 D7 C9 SJ HJ DQ DA DT SK HQ S8 D9 S9 CJ HT H7 DK DJ",
+    "deck": "D8 CJ CT C8 HT ST DA SA H7 S7 DK H9 DT SJ HK DQ C9 HQ HJ D7 SQ H8 DJ D9 C7 S9 SK CQ S8 CA HA CK",
     "game": "C",
-    "rate": 0.9
+    "rate": 0.85
    },
    {
     "dealer": 2,
-    "deck": "SK C9 CA DA DK HJ HK C7 HA DQ H7 CQ S7 H8 HT S8 SJ CK D8 CT SQ ST DJ D9 SA HQ DT C8 S9 H9 CJ D7",
-    "game": "C",
-    "rate": 0.875
-   },
-   {
-    "dealer": 2,
-    "deck": "SJ HA SA H8 C7 S7 DQ CA DA HQ SK D7 H9 DK HT D8 CT S8 S9 DT C9 CJ DJ CK ST H7 CQ D9 HJ C8 SQ HK",
+    "deck": "H8 CA D8 HT CT DT SQ DA SA HA SJ H9 HJ CQ S8 D9 DJ DQ SK H7 S7 C8 HQ D7 ST DK S9 C9 CK CJ HK C7",
     "game": "H",
-    "rate": 0.875
-   },
-   {
-    "dealer": 2,
-    "deck": "D8 ST HA SK D9 DT CT SJ C7 HT CQ DA SA S8 DJ H8 CA CK HK S7 H7 HQ DQ D7 DK C9 C8 CJ S9 H9 HJ SQ",
-    "game": "D",
     "rate": 0.825
    },
    {
     "dealer": 2,
-    "deck": "HT ST CA DT H9 HA S7 DA SQ CQ HJ H7 CT CJ HQ DQ H8 C8 C7 D7 C9 HK DJ SK DK SJ S8 CK D8 S9 D9 SA",
+    "deck": "SA C9 D8 CA ST S9 CQ HK HA C8 D9 H7 C7 SQ SK H8 HQ DT DK H9 HJ DJ S7 S8 SJ DQ CK CT D7 CJ HT DA",
+    "game": "C",
+    "rate": 0.8
+   },
+   {
+    "dealer": 2,
+    "deck": "DK DA DT H7 SA C7 S7 C8 CA HA D9 SJ SQ HK DJ D7 HJ ST CQ CJ D8 CT DQ SK CK H9 C9 HT S8 S9 H8 HQ",
+    "game": "H",
+    "rate": 0.8
+   },
+   {
+    "dealer": 2,
+    "deck": "DK DT CA HT DA S8 SA D9 C9 SK SJ H7 DJ SQ CT C7 HK S9 C8 D7 CQ H9 HQ ST DQ HJ CJ D8 H8 CK HA S7",
     "game": "S",
-    "rate": 0.825
-   },
-   {
-    "dealer": 2,
-    "deck": "CA C7 H9 C9 DA DK D7 DT CK H7 C8 HJ DJ H8 DQ ST SK S7 S8 CT D8 SQ S9 SJ SA D9 HA HQ CQ HT HK CJ",
-    "game": "C",
-    "rate": 0.8
-   },
-   {
-    "dealer": 2,
-    "deck": "SA S8 H8 DK CK D9 CJ CT HQ H7 CA H9 C9 S7 CQ SJ HJ S9 C7 HA DQ HT D7 D8 SQ DT HK SK ST C8 DJ DA",
-    "game": "H",
-    "rate": 0.8
-   },
-   {
-    "dealer": 2,
-    "deck": "H9 DT H8 SK H7 DA S9 CT DJ C7 DK DQ CJ C8 SA HQ C9 CQ D8 CK HA SQ S8 ST D9 D7 S7 SJ HJ HK HT CA",
-    "game": "H",
     "rate": 0.775
    },
    {
     "dealer": 2,
-    "deck": "D7 HA SA DT DK H7 CQ HK CA SJ HJ S7 D9 HQ ST DQ C8 S9 SQ H8 D8 SK CJ S8 HT H9 C9 DJ CT CK C7 DA",
-    "game": "H",
+    "deck": "DA HA SQ H7 DQ ST SA S7 CT DT D8 CQ SK SJ S8 H9 DJ HJ CK S9 H8 D7 D9 HK DK C8 C7 C9 HT CJ HQ CA",
+    "game": "S",
     "rate": 0.75
    },
    {
     "dealer": 2,
-    "deck": "CT D9 S8 D8 D7 DQ H7 H8 SA ST DA SJ CK S7 CJ HT HQ SQ HJ SK DJ C7 HK S9 C9 DT C8 CQ DK H9 CA HA",
-    "game": "D",
+    "deck": "D9 CA D8 ST HA H7 C9 SA SK D7 S9 HQ H9 HJ S7 CK HK SQ CQ DT CJ DK SJ C7 HT C8 DQ H8 DJ CT S8 DA",
+    "game": "S",
     "rate": 0.725
    },
    {
     "dealer": 2,
-    "deck": "C9 DK D7 D9 H9 DJ CA S8 HT H7 HK SJ SK CT CJ DT C8 D8 DQ ST SQ HQ C7 SA H8 S9 CK S7 HJ CQ DA HA",
-    "game": "H",
-    "rate": 0.725
-   },
-   {
-    "dealer": 2,
-    "deck": "S9 HJ CA S8 DT D8 C8 H7 HT SJ CK CT HA S7 D7 DQ C9 SK HQ CQ DA H8 H9 CJ SQ HK D9 C7 ST DK DJ SA",
+    "deck": "ST C8 DT HA H9 DK CJ CA CT DQ D8 D9 SK H7 CK HQ HJ C7 SQ C9 SJ DJ HT D7 S7 S8 S9 DA CQ H8 SA HK",
     "game": "C",
     "rate": 0.725
    },
    {
     "dealer": 2,
-    "deck": "CQ HA SQ C8 DQ DK S9 ST DT S8 HJ C9 CA C7 HK CK HQ S7 H8 DA H9 DJ SA H7 D8 D9 CJ CT HT D7 SK SJ",
-    "game": "S",
+    "deck": "C7 DQ HA D9 H7 CA SA DA DJ CT DK S8 CJ CK HK D7 HT C9 C8 HQ SK ST H9 CQ S7 SJ D8 DT S9 HJ SQ H8",
+    "game": "C",
     "rate": 0.7
    },
    {
     "dealer": 2,
-    "deck": "S9 CT SQ CA C7 CK ST HQ D9 S7 C8 DK DT HK CJ S8 H9 SA DJ HT DQ D8 C9 H8 H7 HA DA D7 SK HJ CQ SJ",
-    "game": "C",
+    "deck": "S8 DT D8 CA DQ CT DA S9 SK ST S7 SA SJ HK CQ H9 CJ DK C7 C8 D7 SQ HQ H7 DJ D9 HJ C9 H8 HT CK HA",
+    "game": "S",
     "rate": 0.675
    },
    {
     "dealer": 2,
-    "deck": "CT HK CK SQ C8 HJ HA SK DA S9 H8 HT D7 CQ DJ DK SA CA D9 C9 H9 D8 S7 CJ C7 HQ H7 S8 ST DT DQ SJ",
-    "game": "C",
-    "rate": 0.675
-   },
-   {
-    "dealer": 2,
-    "deck": "CT HA HK HJ DJ CQ DK S8 DA SK HQ HT H8 C7 H9 C9 D7 S7 H7 DQ S9 C8 SA CJ CA DT ST D9 SJ D8 SQ CK",
-    "game": "C",
-    "rate": 0.65
-   },
-   {
-    "dealer": 2,
-    "deck": "DA H7 HQ S7 DJ DK HK C7 D7 C8 CK ST SJ S9 SK H9 C9 CA DT SA D9 CT DQ CQ SQ CJ HA H8 D8 S8 HT HJ",
+    "deck": "H8 S7 HT CK DK SA DA CA D9 HQ H7 C7 H9 S8 C8 D7 D8 CJ DQ HJ SK ST CQ SJ S9 DJ DT HA SQ C9 CT HK",
     "game": "H",
+    "rate": 0.675
+   },
+   {
+    "dealer": 2,
+    "deck": "C9 DA S9 HA HT CQ CK S8 C7 ST D7 D8 SQ C8 HK H8 CJ CA DQ HQ S7 DT CT DJ SK DK H9 HJ SJ D9 H7 SA",
+    "game": "C",
     "rate": 0.65
    },
    {
     "dealer": 2,
-    "deck": "DQ HT SA C7 HA SK ST HJ DA HQ D7 DK SJ H8 HK S8 D9 DJ H9 SQ S9 CK D8 C9 CJ H7 DT S7 C8 CT CA CQ",
+    "deck": "H8 S9 CA H7 HQ S8 DT ST D7 DA C8 C9 CT DJ C7 SQ D8 CK CQ SJ D9 HK HJ DQ SK CJ HT SA DK H9 HA S7",
+    "game": "S",
+    "rate": 0.65
+   },
+   {
+    "dealer": 2,
+    "deck": "HQ CK SJ HA DK S7 SA ST C9 CA S9 H8 CQ CJ D8 HT DA DQ H7 CT SK S8 D9 C7 DJ D7 C8 SQ HJ H9 HK DT",
+    "game": "C",
+    "rate": 0.625
+   },
+   {
+    "dealer": 2,
+    "deck": "HA ST DA S9 S7 H7 SK C7 CA HK CK H9 SA CQ DJ D9 DQ HT C8 SJ SQ DK CJ H8 S8 HJ D7 C9 HQ CT DT D8",
     "game": "S",
     "rate": 0.625
    },
    {
     "dealer": 2,
-    "deck": "H9 DQ H7 SQ DT DA CK CJ HA CA C8 CT S8 DK DJ HK D9 S9 SJ SA S7 H8 HJ HQ CQ D8 C9 D7 HT C7 SK ST",
-    "game": "H",
-    "rate": 0.625
-   },
-   {
-    "dealer": 2,
-    "deck": "SK SA DA DT CK D7 CQ CA HJ HA D9 HK H9 H7 SQ CT ST C7 HT D8 DJ H8 S9 C9 C8 DQ DK SJ CJ S8 S7 HQ",
+    "deck": "CT C8 DK ST C7 HA C9 SK DA S8 DT SJ DJ DQ HJ CA HK H9 HQ CJ H7 D7 S9 SQ H8 HT D9 CQ CK S7 SA D8",
     "game": "C",
     "rate": 0.6
    },
    {
     "dealer": 2,
-    "deck": "SA D8 S7 CQ ST DA DQ CT HQ SJ C9 H7 CJ H9 C7 CK HK D7 HT CA SQ H8 HA SK DJ S8 C8 DT DK HJ S9 D9",
+    "deck": "DA SA HT HJ CT HK C8 D8 HA D9 H8 CQ H7 SK DT DJ CJ S8 CA CK SQ S7 HQ C7 H9 D7 DQ C9 SJ DK ST S9",
     "game": "S",
+    "rate": 0.6
+   },
+   {
+    "dealer": 2,
+    "deck": "HA HT D7 SA ST C7 CA H8 S7 CQ H7 CJ SQ DA DK H9 S9 HQ DQ CK S8 HK C8 D9 SK HJ D8 DJ SJ CT C9 DT",
+    "game": "C",
+    "rate": 0.6
+   },
+   {
+    "dealer": 2,
+    "deck": "HA H8 CT H9 ST C8 D8 C9 C7 SA D7 HQ HT HJ D9 SK CQ HK CJ DJ S9 SJ SQ S8 DT DQ CA H7 CK S7 DA DK",
+    "game": "C",
     "rate": 0.575
    },
    {
     "dealer": 2,
-    "deck": "H8 SJ C7 HT D7 CK S8 HA D9 DA C8 ST DQ SA D8 S9 H9 CQ DT DK S7 CT H7 DJ C9 SQ HK SK HJ CJ CA HQ",
-    "game": "H",
+    "deck": "C7 HK CQ HQ DQ DA D8 CJ CA S8 S7 SQ H8 HJ HT SJ DJ D9 H7 CK DK ST D7 H9 DT S9 SK CT C8 C9 SA HA",
+    "game": "C",
     "rate": 0.575
    },
    {
     "dealer": 2,
-    "deck": "D9 DT S7 HA H7 CK HT SA D8 SJ CJ HQ H8 DQ C9 H9 ST SK S8 DK HK SQ HJ CT D7 S9 DA C7 CA C8 DJ CQ",
-    "game": "H",
+    "deck": "DQ SA H9 C8 CK SK HA ST C9 C7 H7 DJ HJ CA DK S8 SQ D9 S9 S7 D7 CQ D8 HT H8 HQ CT SJ HK CJ DA DT",
+    "game": "C",
+    "rate": 0.575
+   },
+   {
+    "dealer": 2,
+    "deck": "SA C9 DA DJ CT HA SK SQ H9 D7 D8 DQ H8 CQ HT C7 CJ S7 H7 C8 S9 ST SJ CA DK S8 HJ CK D9 HQ HK DT",
+    "game": "S",
     "rate": 0.55
    },
    {
     "dealer": 2,
-    "deck": "D9 S8 DK CK CT SA HJ ST CQ HT DT H9 SK S9 C8 SJ H8 HQ D8 DA SQ DQ S7 HA C9 CA CJ D7 DJ HK H7 C7",
+    "deck": "CT SK HT DQ HQ S7 CA HA ST DT C7 D7 SJ CK SA CJ D9 CQ H7 DK H8 SQ DA HK DJ S8 H9 S9 C8 C9 HJ D8",
+    "game": "S",
+    "rate": 0.55
+   },
+   {
+    "dealer": 2,
+    "deck": "S9 ST CJ CQ HA DK D9 C8 HK C9 DT H9 S7 DJ DQ CA CK S8 H7 SQ SK SJ CT C7 DA HQ D8 HJ D7 H8 SA HT",
     "game": "C",
     "rate": 0.525
    },
    {
     "dealer": 2,
-    "deck": "D8 CA H8 ST H7 HK SJ CQ S8 DA HA C9 CK S7 HJ HT C7 HQ CT DT DK D7 S9 C8 D9 SQ CJ DQ H9 SA DJ SK",
-    "game": "H",
+    "deck": "H9 CJ DA HA DT ST C8 C9 D7 CK D9 DQ HK CT S9 H7 C7 D8 SA CA DK HQ SQ SK S7 SJ CQ H8 DJ HJ HT S8",
+    "game": "C",
     "rate": 0.525
    },
    {
     "dealer": 2,
-    "deck": "H8 HQ SK ST D7 CJ S7 C8 DT HA SA HJ S8 C7 S9 HT D8 CA HK DK DJ CK CT H7 DQ SQ DA D9 CQ H9 C9 SJ",
+    "deck": "ST CA SK HA CT D9 DT D8 HK DQ S7 DJ DK HT H7 H9 CJ C9 H8 HJ SQ SJ D7 S8 CK DA C7 CQ C8 HQ SA S9",
     "game": "S",
     "rate": 0.525
    },
    {
     "dealer": 2,
-    "deck": "DJ CQ H7 ST D8 S7 CK HQ DT DA SQ SA S9 D9 S8 SJ CA C9 H9 H8 D7 C8 SK DK HK DQ HA CT C7 HT CJ HJ",
-    "game": "D",
+    "deck": "CT S8 ST D7 HK HT CA SA HA C9 H9 SK D8 CK SQ DJ C7 C8 DK HQ H8 H7 DT CQ S7 HJ S9 DA CJ D9 SJ DQ",
+    "game": "C",
+    "rate": 0.525
+   },
+   {
+    "dealer": 2,
+    "deck": "DA S8 HK D9 D7 ST CA S7 CT DQ HQ DK H9 CK CJ CQ H7 C7 D8 C9 H8 DJ DT HA C8 SA SK SJ SQ HJ HT S9",
+    "game": "S",
     "rate": 0.5
    },
    {
     "dealer": 2,
-    "deck": "SK SQ HQ HA C8 DQ CQ D7 DK DA CT C9 CK D8 D9 S8 H7 CJ HK S7 SA HT H8 SJ ST CA H9 S9 HJ C7 DT DJ",
-    "game": "D",
-    "rate": 0.5
-   },
-   {
-    "dealer": 2,
-    "deck": "CA C9 SJ SQ CT HT H9 SK SA HK S8 D8 D9 ST H8 D7 HA C7 H7 DK CK HJ HQ DT CJ DA DJ S9 S7 C8 DQ CQ",
+    "deck": "HK ST DA HA DQ DJ DK SK CA C7 CT HJ H8 SJ SA DT S8 CK CJ D8 S9 H7 S7 D9 SQ H9 C8 D7 HQ CQ C9 HT",
     "game": "C",
     "rate": 0.5
    }
@@ -369,181 +369,181 @@
   "one-jack-grand": [
    {
     "dealer": 2,
-    "deck": "SK CA SA C7 C9 D8 CJ D7 DA CK HJ S7 SJ C8 S8 H7 HK ST H8 DT HQ HT S9 CT DQ HA H9 CQ D9 DK DJ SQ",
+    "deck": "D8 ST H8 SA CK HA S9 HK HT DA C7 C8 CA H9 DT DK HJ SQ CT S7 CQ HQ SJ DJ DQ D9 D7 S8 H7 C9 SK CJ",
     "game": "G",
     "rate": 0.9
    },
    {
     "dealer": 2,
-    "deck": "H8 D8 HA HK CJ D7 HT C8 DA CQ H7 CT ST SA C7 DT D9 HQ S7 HJ C9 CA S9 DK DQ H9 S8 CK SJ SQ DJ SK",
+    "deck": "SA HK S7 DQ CA S8 DA HJ HT HQ ST D8 H7 CQ H9 SQ D7 CJ C8 SJ HA SK H8 S9 C9 CK D9 DJ C7 DK CT DT",
+    "game": "G",
+    "rate": 0.9
+   },
+   {
+    "dealer": 2,
+    "deck": "CA HK S8 D9 ST SA SK DA S7 HA S9 DJ DT D7 SQ DK H7 HT HQ CK D8 CJ C7 H9 HJ H8 CQ C8 C9 CT SJ DQ",
     "game": "G",
     "rate": 0.875
    },
    {
     "dealer": 2,
-    "deck": "HA D8 H8 SJ HK CT S7 DQ SA H9 D9 SK C9 D7 CJ S9 H7 SQ CQ HQ CK DT DK C7 S8 DJ HJ ST C8 HT CA DA",
-    "game": "G",
-    "rate": 0.85
-   },
-   {
-    "dealer": 2,
-    "deck": "SJ DK H9 C9 SQ DA HA CA HT S9 CK D7 S7 DQ HQ D8 C8 HJ HK D9 CJ ST CQ CT H7 S8 SK SA DT H8 DJ C7",
-    "game": "G",
-    "rate": 0.85
-   },
-   {
-    "dealer": 2,
-    "deck": "ST SA HQ D7 CJ H8 HA CQ D9 H7 S7 HK CT DA HT DT HJ SQ C7 S9 CA S8 C8 DQ DJ H9 DK SK C9 D8 SJ CK",
+    "deck": "DA D7 HT HQ C7 DT HA H8 CT S7 CQ HJ CK SK H9 HK DQ SQ C9 D8 DJ S8 SA S9 D9 CA DK H7 SJ C8 CJ ST",
     "game": "G",
     "rate": 0.825
    },
    {
     "dealer": 2,
-    "deck": "SK D8 SA CK DA HT HA ST C7 HJ D7 C9 H8 S7 CJ C8 CQ S8 H9 SQ S9 HQ DJ SJ H7 DT CA D9 DQ CT HK DK",
-    "game": "G",
-    "rate": 0.825
-   },
-   {
-    "dealer": 2,
-    "deck": "S7 DK HA C9 DT CJ SA CA C8 H7 SK D8 D7 H9 HQ HK S8 C7 CK DA SQ S9 DQ SJ DJ HJ CQ H8 ST HT CT D9",
+    "deck": "CA DA HQ HT DT HK DQ H8 HA CT DJ D9 DK D8 H7 S9 SJ CQ C9 S8 SA S7 HJ C8 C7 H9 CK SQ ST SK CJ D7",
     "game": "G",
     "rate": 0.8
    },
    {
     "dealer": 2,
-    "deck": "CK DK H7 D9 CA CJ HK S7 CT D7 DT HT ST S8 H9 S9 SJ HQ DQ C7 SK DA CQ HA SQ C8 C9 D8 H8 SA DJ HJ",
-    "game": "G",
-    "rate": 0.8
-   },
-   {
-    "dealer": 2,
-    "deck": "SA HQ S9 DA D8 HK SJ DT C7 C9 DQ CK HT C8 SQ ST S8 D9 H9 HJ DK DJ S7 CT H7 CQ CJ SK D7 H8 HA CA",
+    "deck": "HK DA ST S7 SK H9 DK DT SA CJ C7 SQ HT H7 H8 HA S9 SJ D9 CQ C8 D7 HJ DJ CK DQ CA D8 C9 S8 CT HQ",
     "game": "G",
     "rate": 0.775
    },
    {
     "dealer": 2,
-    "deck": "CJ HA D7 CQ D8 H8 HK HQ CA DA S8 CK HT SQ SK HJ C9 DT ST S7 D9 CT DK SJ H9 DQ C7 S9 DJ H7 C8 SA",
+    "deck": "ST CT HK DQ HT HA CA S9 SK DT SA D8 HQ SJ DA HJ D9 DJ DK C9 H7 C8 SQ D7 CQ C7 H8 H9 S8 S7 CJ CK",
+    "game": "G",
+    "rate": 0.775
+   },
+   {
+    "dealer": 2,
+    "deck": "D7 DA SA C8 CJ CQ DK DQ CA S8 D8 HJ D9 C7 H7 H9 SJ SK DJ H8 CK HK S7 HA SQ S9 HT DT HQ ST CT C9",
     "game": "G",
     "rate": 0.75
    },
    {
     "dealer": 2,
-    "deck": "HK SQ ST SK D9 S9 DA CT HA HJ HQ S7 C9 D7 DJ C8 CA CQ CJ H9 S8 H7 HT DQ D8 H8 DT SA DK CK SJ C7",
-    "game": "G",
-    "rate": 0.75
-   },
-   {
-    "dealer": 2,
-    "deck": "ST HJ H7 D9 D7 DA SQ S8 DT HT S9 D8 C8 CA SJ S7 HK H8 H9 DJ DQ DK CT SA HA C7 CQ C9 SK CK CJ HQ",
+    "deck": "S8 CJ D8 D9 HQ S7 C8 ST HA DT HT DK DQ C7 SA H7 CQ S9 C9 HK D7 SJ SQ CK CT H8 SK H9 HJ DJ DA CA",
     "game": "G",
     "rate": 0.725
    },
    {
     "dealer": 2,
-    "deck": "HQ HA CA DA HK DT CQ H9 SJ DK C7 H8 H7 CK S7 SA C9 CT S9 DJ SK D8 DQ S8 HJ CJ D7 C8 SQ D9 HT ST",
+    "deck": "D8 CA DA H9 SA CT SK C8 CK D7 CQ D9 DT C9 H8 S8 C7 HQ DQ S9 H7 SQ HT DJ DK S7 ST SJ CJ HK HJ HA",
     "game": "G",
     "rate": 0.725
    },
    {
     "dealer": 2,
-    "deck": "D7 HJ SA H8 CT HA S9 CK S7 DT H9 D8 DA CA C7 C8 DQ S8 HT SQ DJ SK H7 ST HK C9 CQ D9 SJ HQ DK CJ",
+    "deck": "C9 C8 D9 DT SK CK CJ DA HA DQ H9 S9 ST H8 HT SQ DJ D8 D7 HJ DK CQ SJ C7 S7 HK HQ H7 CA S8 CT SA",
     "game": "G",
     "rate": 0.725
    },
    {
     "dealer": 2,
-    "deck": "D8 CJ DA C7 H9 HA S9 ST D7 SK S8 DJ SA HJ C8 CQ CK HQ S7 H7 H8 DT DK DQ C9 SJ CT SQ D9 HT CA HK",
+    "deck": "DA CA DJ SA D8 S7 H8 S9 D9 HT HK CT HQ CQ ST DT CJ SQ C9 S8 SJ DK H7 CK C8 HJ DQ H9 SK D7 C7 HA",
     "game": "G",
     "rate": 0.7
    },
    {
     "dealer": 2,
-    "deck": "DT CQ DK HK HJ HT HQ SA H8 CK SK DJ SQ H7 HA S7 DA D9 ST C9 S9 S8 C8 DQ D8 H9 CJ CT C7 D7 CA SJ",
+    "deck": "CA HT HA D8 H7 S7 HJ D9 DT HQ C9 CJ C8 C7 SK DK CQ D7 S9 SA HK ST DQ SJ H8 CK SQ S8 H9 DJ CT DA",
     "game": "G",
     "rate": 0.675
    },
    {
     "dealer": 2,
-    "deck": "HJ H7 CA DA H8 D7 CK SQ S8 ST C9 DJ DT DK SK DQ CQ D9 C7 D8 H9 C8 CT SJ HK S7 HQ SA HA S9 CJ HT",
+    "deck": "CT DQ HQ HK D8 HT CA HA D9 ST SA S9 D7 C9 DJ H7 DT SQ CK DK H9 H8 C7 S7 HJ SK SJ DA CQ C8 CJ S8",
     "game": "G",
     "rate": 0.675
    },
    {
     "dealer": 2,
-    "deck": "ST CQ CA DA SA HK H9 DK S8 SJ D8 H7 C7 HA HJ C8 HQ CK DQ D7 SK DT C9 S9 H8 D9 CT CJ DJ SQ HT S7",
+    "deck": "CJ D9 DK DQ HA HT CA C7 SA H7 SJ C8 H8 SK DJ ST SQ DT H9 D8 S8 S7 HJ HK CT HQ CQ DA C9 S9 CK D7",
     "game": "G",
     "rate": 0.65
    },
    {
     "dealer": 2,
-    "deck": "D7 H9 HK DA D8 DT HT DK CA DJ S8 CQ HA C8 S7 SJ S9 SQ SA CJ C7 SK DQ D9 ST HQ CT C9 CK H7 H8 HJ",
-    "game": "G",
-    "rate": 0.65
-   },
-   {
-    "dealer": 2,
-    "deck": "DA D7 CT SK D9 HT D8 S8 DT CJ S9 SA H9 DJ C7 CK C8 HQ HJ SQ HA C9 SJ HK H7 ST CQ S7 DK H8 CA DQ",
+    "deck": "S8 HA SA CJ S7 H8 H7 C8 HT H9 SK CT DA D9 DJ C7 DQ CQ ST C9 HK DK HQ D8 HJ SJ DT CK SQ S9 CA D7",
     "game": "G",
     "rate": 0.625
    },
    {
     "dealer": 2,
-    "deck": "H9 H7 CQ SA HJ HA D7 HQ S9 D8 HT SJ DT ST HK DA CK DQ D9 S8 S7 SK H8 C8 C7 C9 DK DJ CA SQ CJ CT",
+    "deck": "CA CT DT C7 H9 CJ SK S9 ST H8 D7 C8 DQ DK H7 S7 C9 S8 SA SQ HK SJ D9 HQ CQ HJ DJ CK HT DA HA D8",
+    "game": "G",
+    "rate": 0.625
+   },
+   {
+    "dealer": 2,
+    "deck": "CA CK S7 CJ DA SK DT C9 SA D9 DK CT CQ ST HK S9 S8 DJ D8 H9 HJ C8 DQ H8 HA SQ SJ HQ HT D7 H7 C7",
     "game": "G",
     "rate": 0.6
    },
    {
     "dealer": 2,
-    "deck": "H9 HK HA S7 CQ CA CT C8 CJ C7 S8 D9 SQ DQ DA DT H8 SK DK HT D7 DJ SJ D8 HQ S9 CK HJ H7 C9 ST SA",
+    "deck": "HA SK D9 C7 CJ H9 DA HQ SA HK D8 H7 DJ CQ C8 ST S7 CT C9 HJ S9 D7 S8 SJ CA DK DQ H8 SQ DT CK HT",
     "game": "G",
     "rate": 0.6
    },
    {
     "dealer": 2,
-    "deck": "DA S9 H8 HA CA SJ SK CT D7 S8 CQ C7 CJ D8 H7 S7 HQ C9 DJ ST DQ C8 SQ DK D9 H9 CK HJ DT SA HT HK",
-    "game": "G",
-    "rate": 0.6
-   },
-   {
-    "dealer": 2,
-    "deck": "D7 C8 H9 CA SA CT H8 HA SJ H7 CJ DQ S8 S7 S9 DJ DT C9 D9 CQ DA C7 HJ HK HQ SQ CK ST DK D8 SK HT",
+    "deck": "HA DT SJ C8 S7 DA H7 C7 CT CK SQ C9 HJ S9 CJ D9 HK DQ SA D8 HT HQ DK S8 SK DJ H9 CQ H8 ST D7 CA",
     "game": "G",
     "rate": 0.575
    },
    {
     "dealer": 2,
-    "deck": "S8 C8 SA CJ H8 HA CQ D7 HT D8 DJ H7 C9 SJ S7 CT CA S9 DK C7 HQ ST SK H9 CK DA SQ DT HK D9 DQ HJ",
+    "deck": "DT C9 D7 H7 DA D8 SA S9 HQ CT D9 C8 SK DK CK SJ HT CJ C7 CQ HA H8 SQ DJ S8 HK DQ ST S7 H9 HJ CA",
+    "game": "G",
+    "rate": 0.575
+   },
+   {
+    "dealer": 2,
+    "deck": "H9 HT C9 HK D7 DA ST S9 HA SA CQ DJ HQ HJ CK S8 D8 SQ CJ D9 DQ CT DT C7 S7 CA C8 DK H7 H8 SK SJ",
+    "game": "G",
+    "rate": 0.575
+   },
+   {
+    "dealer": 2,
+    "deck": "CQ C9 D7 H7 DT HT S9 HA ST SA SQ C7 CK DA S8 HJ CA SK HQ DJ CT SJ DK D9 D8 C8 H9 S7 DQ H8 HK CJ",
     "game": "G",
     "rate": 0.55
    },
    {
     "dealer": 2,
-    "deck": "DQ CK S9 H9 DA SJ S8 HQ SA S7 CQ D7 CA DT SK H7 D8 D9 DJ SQ DK HT HK C7 H8 HA C9 ST CJ C8 CT HJ",
+    "deck": "CA C9 ST CJ DK D9 DA HQ HK HA HJ DQ S7 CQ S9 SA DJ SJ SQ SK C7 HT DT CT H7 C8 H9 S8 D7 CK H8 D8",
+    "game": "G",
+    "rate": 0.55
+   },
+   {
+    "dealer": 2,
+    "deck": "DT CK CT SJ HQ HA H8 CA SA CQ S7 S9 H7 C9 HT C8 SQ DK CJ ST HJ DJ DQ DA HK D9 SK H9 C7 D7 D8 S8",
+    "game": "G",
+    "rate": 0.55
+   },
+   {
+    "dealer": 2,
+    "deck": "HJ HT DA H9 H8 SA ST D8 DQ SK SQ CQ C7 DJ D7 S7 CA C8 CK S9 DK SJ HQ HK DT D9 CJ CT H7 S8 HA C9",
     "game": "G",
     "rate": 0.525
    },
    {
     "dealer": 2,
-    "deck": "H9 HT DK CK S7 DA SK DT CJ CQ DQ C9 CA C7 H8 DJ D8 HQ D9 HK HJ S9 S8 D7 CT H7 SQ ST SA HA C8 SJ",
+    "deck": "ST DQ CJ CK DA CA SQ HA SK S7 CT H9 SA HK C8 SJ D7 HT CQ S8 H7 D9 HQ D8 DK DJ S9 H8 DT HJ C9 C7",
     "game": "G",
     "rate": 0.525
    },
    {
     "dealer": 2,
-    "deck": "SA CJ HT HA S7 CA DK D8 SQ CK DT H7 H9 SJ DQ D7 DA S9 HK C8 C9 SK DJ CT HJ H8 CQ HQ ST S8 D9 C7",
-    "game": "G",
-    "rate": 0.525
-   },
-   {
-    "dealer": 2,
-    "deck": "CQ SJ DK S9 D7 H9 HA DA S7 CT H8 HQ HJ HK DQ SQ CJ HT S8 C9 SA DT H7 C7 DJ D9 C8 CK SK D8 CA ST",
+    "deck": "S9 HA S7 CJ ST CT CK H9 H7 C7 D7 DA D8 CQ D9 HT S8 DK H8 HJ HK C8 SJ DQ SQ SK CA DJ C9 HQ DT SA",
     "game": "G",
     "rate": 0.5
    },
    {
     "dealer": 2,
-    "deck": "D8 CJ D7 CT C7 HA S8 DA S7 H9 HJ DQ HT HQ C9 SJ SQ HK CA H7 S9 C8 CQ H8 CK D9 DK SA DT SK ST DJ",
+    "deck": "D7 S7 ST H9 DA CA SA C9 SK HJ DK H7 CQ HK SJ CJ DJ DT C7 H8 S8 C8 D8 HQ S9 HA CT DQ D9 CK SQ HT",
+    "game": "G",
+    "rate": 0.5
+   },
+   {
+    "dealer": 2,
+    "deck": "D9 SK HT DA DT C8 SQ CJ ST SA CT HJ CA DK HA S8 HK D8 D7 C7 H7 SJ CQ H9 DQ S9 S7 CK H8 DJ HQ C9",
     "game": "G",
     "rate": 0.5
    }
@@ -551,181 +551,181 @@
   "null-weak-spot": [
    {
     "dealer": 2,
-    "deck": "C9 HJ D7 C7 HK HT SQ H8 H7 H9 CJ CK D9 SK ST HA SA D8 CT SJ CQ DA S7 HQ S9 DK DT S8 C8 DQ DJ CA",
+    "deck": "CK C8 C7 H7 S8 H9 SA CT CQ SQ HT ST CJ DJ D7 SJ DA HK D8 HJ DT HA S9 HQ D9 S7 H8 SK DQ DK C9 CA",
     "game": "N",
     "rate": 0.9
    },
    {
     "dealer": 2,
-    "deck": "ST DT D7 D9 SK SA DQ S7 S9 CJ CK D8 HA HT DA CT C8 H7 DJ HJ C7 SJ H9 CQ HK DK HQ S8 C9 H8 SQ CA",
-    "game": "N",
-    "rate": 0.9
-   },
-   {
-    "dealer": 2,
-    "deck": "CT D7 D8 CJ DQ DA C7 H7 C9 CQ HQ HA DK SJ ST C8 DJ H8 HT S9 CK HK SQ SK H9 S8 DT D9 SA S7 HJ CA",
+    "deck": "SQ HK D7 D9 CQ S9 S7 DA C9 CT C8 H7 SJ SA H8 HT H9 DK ST DJ HA D8 HJ CK S8 CJ DQ HQ SK DT CA C7",
     "game": "N",
     "rate": 0.875
    },
    {
     "dealer": 2,
-    "deck": "SQ D9 SK D8 D7 HT HJ S7 S9 SJ ST C9 CQ DA C7 HQ H9 CK HA HK H8 DQ CA DT CJ DK H7 C8 SA S8 DJ CT",
+    "deck": "DK DT ST DA S8 H7 D7 SA CT D9 H8 SK C9 HK CJ DQ S7 HT HJ CK S9 HA D8 SQ HQ DJ C8 CA SJ CQ H9 C7",
     "game": "N",
     "rate": 0.85
    },
    {
     "dealer": 2,
-    "deck": "H7 HA C7 ST H9 D7 H8 HJ SQ S7 D9 CT HT SJ CQ S8 DA DK HK S9 C9 C8 CA DQ DT CK SK SA D8 DJ HQ CJ",
+    "deck": "H9 D7 CT D8 S9 ST C8 H7 DT DJ SJ C7 CJ H8 S8 HJ SK S7 DA CK C9 HQ CA DK CQ DQ SA SQ HA D9 HK HT",
+    "game": "N",
+    "rate": 0.825
+   },
+   {
+    "dealer": 2,
+    "deck": "H8 S8 D7 C9 D9 HJ SJ HA S7 C7 SQ DQ CA ST HK S9 SA HQ H7 CJ DK DT D8 SK CQ CT CK H9 C8 HT DA DJ",
+    "game": "N",
+    "rate": 0.825
+   },
+   {
+    "dealer": 2,
+    "deck": "SK D7 ST D8 H8 H9 S7 H7 D9 C7 SA C8 DJ C9 DT CT HJ HT CA HK DK CJ DA SQ SJ CK DQ S9 HA S8 CQ HQ",
     "game": "N",
     "rate": 0.8
    },
    {
     "dealer": 2,
-    "deck": "S7 C7 C9 DJ D9 CK D8 C8 CQ CA SJ HQ SA H8 HK S9 D7 DT DK H7 HT S8 DA CT HA CJ SQ SK H9 DQ HJ ST",
+    "deck": "D7 S9 DJ H7 C8 DT SQ DK D9 HT CT H8 SA SK D8 DQ SJ S7 ST CA CJ S8 HJ C9 HQ HK CK H9 DA HA CQ C7",
     "game": "N",
     "rate": 0.8
    },
    {
     "dealer": 2,
-    "deck": "DT D7 SQ DJ H7 D9 HT C7 ST H8 C8 DA DQ DK HA S7 SK HJ CT H9 SA S9 S8 C9 CK D8 CA HQ SJ CJ CQ HK",
+    "deck": "C7 DK HT CQ H8 H7 CJ S9 HQ SA D8 SQ SK CT S7 ST DT CK DA DQ CA D7 DJ HA HJ D9 H9 HK SJ C8 C9 S8",
     "game": "N",
     "rate": 0.775
    },
    {
     "dealer": 2,
-    "deck": "HT C9 D7 C7 S7 D9 DJ DT H8 HK S8 DA DK CQ C8 CA HJ D8 H9 SK HQ CT SA S9 H7 CK HA SJ DQ SQ CJ ST",
-    "game": "N",
-    "rate": 0.775
-   },
-   {
-    "dealer": 2,
-    "deck": "DJ C8 CT H7 DT D7 D9 H9 C7 S9 SJ ST CK CQ S7 C9 S8 HQ SK HA H8 D8 SA SQ DA CA CJ HT DQ HK DK HJ",
+    "deck": "SJ H7 DA S8 H9 CA C8 C9 C7 SA HJ HQ D8 DJ DQ DT HK SK S9 CK D7 SQ H8 CQ D9 DK S7 HA ST HT CT CJ",
     "game": "N",
     "rate": 0.75
    },
    {
     "dealer": 2,
-    "deck": "HT D9 DT C8 D8 C7 S9 D7 DJ S7 DA SK H9 H8 DK SQ HK C9 H7 DQ CJ SA HA S8 CQ CK HJ CT SJ ST HQ CA",
-    "game": "N",
-    "rate": 0.75
-   },
-   {
-    "dealer": 2,
-    "deck": "DJ H7 D9 DK H9 D7 C8 DT DA HT CJ C9 CQ HQ S7 H8 SJ HJ CT DQ C7 SK S9 ST SA D8 SQ CK CA S8 HA HK",
+    "deck": "CA H9 S8 D9 S7 HK C8 SQ D8 DJ CJ HQ SA DQ S9 CK DK CQ HT SK H7 C9 C7 DA CT HA DT H8 SJ HJ ST D7",
     "game": "N",
     "rate": 0.725
    },
    {
     "dealer": 2,
-    "deck": "HT S7 C8 HK CJ C7 D9 CQ S8 D7 DJ HQ D8 HA SJ H8 H9 DK DA HJ CT CA CK DT S9 SQ SK C9 DQ ST SA H7",
+    "deck": "S9 SQ CA H7 H9 D8 H8 DT HT S7 DA CK C9 CT ST S8 DQ HQ DK CJ SK SJ SA CQ D9 D7 C8 HJ HA DJ C7 HK",
     "game": "N",
     "rate": 0.725
    },
    {
     "dealer": 2,
-    "deck": "HT H7 H8 D7 HA D8 HJ DT C7 CA S8 CT D9 CJ SK DJ DQ C9 CK S7 SJ S9 HK SQ HQ C8 DK H9 ST DA CQ SA",
+    "deck": "HA SA CT DT D9 D7 SQ S7 HK ST DQ HJ H7 S8 DJ SK D8 C8 CK HQ HT DA H8 C7 DK H9 C9 CQ CJ CA SJ S9",
     "game": "N",
     "rate": 0.7
    },
    {
     "dealer": 2,
-    "deck": "SQ SK H7 D7 H8 HT HK DJ S7 D9 DA C8 DT CJ DK HJ H9 CQ D8 SA S8 C7 C9 CA S9 DQ CT SJ HA CK ST HQ",
+    "deck": "HQ D8 DT SK S8 DQ S9 C8 SA ST CK DK CQ D7 D9 C7 HT CA CJ H8 HJ DJ H9 SJ CT HA DA C9 HK H7 S7 SQ",
     "game": "N",
     "rate": 0.7
    },
    {
     "dealer": 2,
-    "deck": "H8 H7 CJ CA C7 C8 SQ CK ST CT DT SJ HJ D7 S7 HQ SK HK DK SA CQ HT DA D9 DQ S8 DJ S9 D8 H9 HA C9",
+    "deck": "DQ H8 C8 SA H7 CJ CK DK D8 C7 CT DA S8 SQ S7 DT SK HJ HQ HT H9 D9 S9 HK ST D7 SJ HA DJ CQ CA C9",
     "game": "N",
     "rate": 0.675
    },
    {
     "dealer": 2,
-    "deck": "SJ D7 H7 S7 S9 DA ST D9 DQ C7 HK HQ C9 H9 H8 D8 DK HT HA SQ CQ CT SA CK S8 DJ C8 DT CJ CA SK HJ",
-    "game": "N",
-    "rate": 0.675
-   },
-   {
-    "dealer": 2,
-    "deck": "H9 H7 S9 CK C7 C8 CQ H8 C9 SQ HT HJ D7 S7 D9 S8 CT D8 CJ HQ DT HA SK DA DK SA ST DQ HK SJ CA DJ",
-    "game": "N",
-    "rate": 0.675
-   },
-   {
-    "dealer": 2,
-    "deck": "D8 S7 S9 C8 CT C7 D7 ST DK DA DJ CK HJ HQ HA SJ DQ SK H7 S8 HT D9 CJ HK C9 DT H8 SA CA SQ H9 CQ",
+    "deck": "HA DQ SK D9 H7 CQ S7 S9 CK D7 CA SA HK DA CT SJ H8 C7 HJ H9 CJ D8 DJ S8 DT C8 HT HQ DK C9 ST SQ",
     "game": "N",
     "rate": 0.65
    },
    {
     "dealer": 2,
-    "deck": "HJ H8 DJ DA CT C8 H7 CQ C7 H9 CK SJ C9 S8 HK DT S7 D9 ST SQ S9 HT CJ HQ D8 DQ D7 DK SA HA SK CA",
+    "deck": "DT CT ST CJ D9 HK D7 DA SA D8 SJ H9 HJ S8 SQ SK CK H7 CA S7 HT DK DQ HA DJ CQ H8 S9 C8 HQ C7 C9",
     "game": "N",
     "rate": 0.65
    },
    {
     "dealer": 2,
-    "deck": "SK S7 C7 C8 S8 CT C9 S9 HQ HA D7 HJ CK H8 H7 DJ CA CQ ST D9 DT DK D8 HT CJ DA SQ H9 SA HK SJ DQ",
+    "deck": "ST HA CQ SJ H8 DT SQ H9 S9 H7 CA C7 C8 D8 DA HT SK CT SA DJ HJ C9 HK S8 D9 DQ DK HQ CK D7 S7 CJ",
     "game": "N",
     "rate": 0.625
    },
    {
     "dealer": 2,
-    "deck": "HQ S8 SA S7 SJ D8 DT DK D7 S9 C9 HT H7 HA CA HJ DA ST C7 C8 H9 CT H8 DQ D9 CJ SQ CQ SK DJ CK HK",
+    "deck": "H8 S7 C9 C7 CA SQ CJ DQ DJ H9 CT DK CK ST HJ SK DA D7 HT SJ D8 HK S8 D9 S9 HA DT HQ SA CQ H7 C8",
     "game": "N",
     "rate": 0.625
    },
    {
     "dealer": 2,
-    "deck": "C9 SJ SK C8 S7 C7 DQ D8 DA S8 HQ H7 DT CT SQ CA DK ST HJ D7 HT H9 SA CQ HA CK DJ CJ H8 HK D9 S9",
+    "deck": "C7 HA C8 D9 D7 DA HQ DQ DJ CT SQ HK S7 ST SK H7 SJ DT CA CQ CK H9 D8 SA C9 HJ CJ S9 DK H8 S8 HT",
     "game": "N",
     "rate": 0.625
    },
    {
     "dealer": 2,
-    "deck": "CA C7 HA HQ S7 C8 H8 CQ HT CJ DA D8 S9 SA C9 D7 ST H9 HK DK DJ SJ H7 SQ CT D9 DQ DT HJ S8 CK SK",
+    "deck": "C9 CT C7 S7 DA CA S9 SK HJ D9 CQ D8 C8 CK HQ HT SQ ST D7 H8 DK HK HA SA DQ SJ H9 H7 DJ DT S8 CJ",
     "game": "N",
     "rate": 0.6
    },
    {
     "dealer": 2,
-    "deck": "H7 H8 ST S9 CT D7 D9 C7 C8 CQ CA S8 HJ CK SA DQ D8 HK HT DT SQ DJ S7 H9 DK CJ HA C9 DA SJ HQ SK",
+    "deck": "C7 DT HJ H9 ST C8 CK S8 SK H8 DA SJ HQ HT CQ DQ DJ SA HK SQ H7 CJ D7 CA C9 DK CT D8 HA D9 S9 S7",
+    "game": "N",
+    "rate": 0.6
+   },
+   {
+    "dealer": 2,
+    "deck": "D7 CT DJ H9 H7 S9 ST C9 HA D9 DA C7 CA DQ S8 SJ CQ CK HQ SK D8 HJ DK DT SQ H8 C8 HT CJ HK S7 SA",
     "game": "N",
     "rate": 0.575
    },
    {
     "dealer": 2,
-    "deck": "D8 DT H7 D9 C7 H8 S8 S9 DQ S7 CT HK CQ C9 HT SK C8 H9 CJ CA HA DK SA CK DA SQ D7 SJ HQ HJ ST DJ",
+    "deck": "CJ D9 SJ ST CT S8 D7 C9 SA DJ HJ C8 HK HQ DQ DK C7 CA CK H9 DT HA HT CQ S9 H8 SQ DA SK H7 D8 S7",
+    "game": "N",
+    "rate": 0.575
+   },
+   {
+    "dealer": 2,
+    "deck": "H7 D8 DT DJ C9 C8 H8 DA D9 S7 HQ H9 CQ CJ S8 HJ DQ HA HK C7 SQ CA SJ SK CT CK SA ST D7 HT DK S9",
     "game": "N",
     "rate": 0.55
    },
    {
     "dealer": 2,
-    "deck": "HT DT SQ DK ST H9 H7 HQ D7 D8 HA DJ C8 CA DQ SJ HJ H8 CJ C7 DA S9 SA D9 SK S7 CK CT C9 S8 CQ HK",
+    "deck": "DA H7 C9 HT D9 HA H8 SK CA HK CQ DK HQ H9 D8 DJ CT CJ C7 CK SJ C8 SA DQ ST S8 SQ S7 DT S9 HJ D7",
+    "game": "N",
+    "rate": 0.55
+   },
+   {
+    "dealer": 2,
+    "deck": "DA D7 SA SJ DQ S8 HJ H9 SQ D9 HQ ST H7 D8 DK CQ C9 HT S9 HA CJ DJ C8 SK CK DT HK H8 CT CA S7 C7",
+    "game": "N",
+    "rate": 0.55
+   },
+   {
+    "dealer": 2,
+    "deck": "CA HQ D9 C9 D7 DJ HK S8 C7 CJ DT C8 HT DQ ST S9 H9 S7 HA H8 SK SJ SQ DA HJ D8 H7 DK CQ CK CT SA",
     "game": "N",
     "rate": 0.525
    },
    {
     "dealer": 2,
-    "deck": "DA C7 DK S7 D9 C9 SQ DJ D7 DQ CT HJ HA HK D8 H9 DT SJ S9 CJ H8 ST CA CK H7 SA HQ C8 CQ SK S8 HT",
-    "game": "N",
-    "rate": 0.525
-   },
-   {
-    "dealer": 2,
-    "deck": "HK DT D9 HQ H8 H7 DQ D8 H9 DJ SQ C9 ST CJ S7 S9 CT C7 SA CA D7 HJ SJ HT C8 DA CQ S8 HA SK DK CK",
+    "deck": "SQ DQ DK SJ ST HJ DA D7 S7 S9 CT C7 HK HQ C9 D8 HA S8 C8 CJ CQ DJ H8 CA SK SA H9 D9 CK H7 DT HT",
     "game": "N",
     "rate": 0.5
    },
    {
     "dealer": 2,
-    "deck": "DT C7 CQ D9 C9 H7 C8 HJ DQ H8 SQ HK DA SJ D7 SA HQ HA S7 CJ DJ ST DK CT SK D8 HT CA H9 S8 CK S9",
+    "deck": "C9 DJ CJ H9 CQ S7 D7 H7 DA C7 SQ H8 HA SJ HQ D8 HK CA S9 HT SA DT S8 SK D9 CT CK ST HJ DQ C8 DK",
     "game": "N",
     "rate": 0.5
    },
    {
     "dealer": 2,
-    "deck": "CT C7 CK DA SJ C8 S7 SA SQ S8 HJ D7 D9 H9 H8 S9 DJ HK H7 DT SK CA CQ CJ C9 DK HQ ST DQ D8 HA HT",
+    "deck": "D8 DQ D7 CJ DK S7 CT CA H7 C7 DT ST SJ DJ CQ HJ S9 HK H9 C9 HQ SQ SK D9 SA CK DA HA HT C8 H8 S8",
     "game": "N",
     "rate": 0.5
    }
@@ -733,213 +733,213 @@
   "bad-seat": [
    {
     "dealer": 1,
-    "deck": "S8 DT S9 D9 C8 CK HJ CQ H7 H9 SK SA DJ SQ D7 DQ SJ CA HK DA CT HQ HA CJ HT H8 S7 ST DK C7 C9 D8",
-    "game": "D",
+    "deck": "C9 CK SA H8 SJ DK DA SK D9 ST H9 HA CJ CA D7 HJ C7 S8 D8 DJ S9 DT CT DQ HQ C8 S7 HT SQ CQ H7 HK",
+    "game": "G",
     "rate": 0.9,
-    "front": 0.925
+    "front": 1
    },
    {
     "dealer": 1,
-    "deck": "S7 SJ C7 D7 CK SQ CQ CA ST C9 CJ DA D9 DQ S9 C8 SA SK S8 D8 HQ DJ H9 HK H7 DT HT HJ H8 HA CT DK",
-    "game": "D",
+    "deck": "D7 HK DA CQ CK C9 SQ S9 HJ DT CT H9 HT DK H8 C7 D8 H7 HQ SJ SA ST HA S8 DJ S7 CA SK C8 DQ CJ D9",
+    "game": "H",
     "rate": 0.9,
     "front": 0.95
    },
    {
     "dealer": 1,
-    "deck": "HK H8 DT S9 SJ CT CJ DA DK DJ CK C9 CQ HJ C7 SK SA HQ D8 C8 S8 HT H9 H7 D9 D7 HA SQ DQ ST S7 CA",
+    "deck": "H9 D8 HT DA SQ HK CT ST SA S9 C8 H7 HJ DT H8 DK DJ SJ C7 D7 C9 CJ S8 D9 SK CA S7 HQ HA DQ CK CQ",
     "game": "C",
     "rate": 0.9,
-    "front": 0.95
-   },
-   {
-    "dealer": 1,
-    "deck": "S8 DQ DJ C7 C8 SK SJ HK H7 CA D7 S9 CK HT SQ DT DK DA CJ D9 CQ S7 HQ D8 CT HA H9 SA C9 H8 HJ ST",
-    "game": "D",
-    "rate": 0.9,
-    "front": 1
-   },
-   {
-    "dealer": 1,
-    "deck": "H7 HK CJ D8 HT HA S8 SJ SK S7 SQ CA CK DK DA HJ DJ C9 ST D9 HQ CQ SA H8 DQ H9 D7 CT C8 C7 DT S9",
-    "game": "D",
-    "rate": 0.9,
-    "front": 0.975
-   },
-   {
-    "dealer": 1,
-    "deck": "DT CJ C9 HK HJ D7 C7 DK H9 CQ SA DJ ST D8 CA SJ DQ CK H8 D9 S9 DA SQ H7 C8 HQ SK S8 CT S7 HT HA",
-    "game": "G",
-    "rate": 0.9,
-    "front": 0.975
-   },
-   {
-    "dealer": 1,
-    "deck": "HQ S9 DT C9 CT D9 ST DK H9 C8 SQ SA H8 CQ HJ CA HK D8 DQ SJ C7 S7 HA DJ D7 HT H7 CK DA S8 SK CJ",
-    "game": "D",
-    "rate": 0.875,
-    "front": 0.975
-   },
-   {
-    "dealer": 1,
-    "deck": "H7 CQ H9 HQ SQ D9 SA C8 CA C7 DA HA HJ DK H8 HK C9 DQ S7 DT D8 SJ SK CK HT S9 D7 ST CJ S8 CT DJ",
-    "game": "D",
-    "rate": 0.875,
-    "front": 1
-   },
-   {
-    "dealer": 1,
-    "deck": "D8 S8 H8 CK H7 C8 HA CQ CJ CA DQ SA HJ DK SK D9 C7 HK S9 DT H9 ST DA SQ CT D7 C9 S7 HQ DJ SJ HT",
-    "game": "D",
-    "rate": 0.875,
     "front": 0.925
    },
    {
     "dealer": 1,
-    "deck": "D9 CQ C9 HJ DQ H9 H7 DA ST SJ SA C7 SK CJ CA DJ DK HA S8 DT S9 HQ HK D8 D7 S7 H8 CT HT C8 CK SQ",
+    "deck": "H7 SK CT CA DJ SQ DQ C9 S9 D9 S7 CQ SA HK HQ HA DT SJ CJ D7 S8 C8 H9 HJ DK DA D8 C7 CK H8 ST HT",
     "game": "G",
-    "rate": 0.875,
+    "rate": 0.9,
     "front": 1
    },
    {
     "dealer": 1,
-    "deck": "D8 H7 SA D9 ST C8 H9 DJ C7 SQ CQ HT DK SK C9 SJ HA CA S8 HJ CK CJ HQ DT CT D7 S7 S9 DQ HK DA H8",
-    "game": "G",
-    "rate": 0.875,
-    "front": 0.975
+    "deck": "CK H8 C9 H9 HQ CJ ST S8 SA C7 D8 DQ DT CQ HA HT C8 DJ DK DA SK SQ SJ H7 D9 D7 S9 HJ S7 CA CT HK",
+    "game": "D",
+    "rate": 0.9,
+    "front": 1
    },
    {
     "dealer": 1,
-    "deck": "S9 HQ SK DQ CA H8 H7 ST HJ CT DJ HK SQ S7 SA CJ DT C7 SJ CQ HT D7 DK CK DA H9 D8 D9 C8 HA S8 C9",
-    "game": "C",
-    "rate": 0.85,
-    "front": 0.975
-   },
-   {
-    "dealer": 1,
-    "deck": "H8 D7 CT S8 HT DK SJ CK DA C9 S7 HK DT SA HJ H9 D9 S9 SK ST HA CJ C8 D8 DQ CA SQ C7 CQ H7 HQ DJ",
+    "deck": "HJ ST DQ H8 CT SQ DT D9 D8 DK SJ HK SK DJ C9 CQ HQ S8 S7 CJ SA D7 CA S9 H9 C7 HA C8 DA CK H7 HT",
     "game": "S",
-    "rate": 0.85,
+    "rate": 0.9,
+    "front": 0.975
+   },
+   {
+    "dealer": 1,
+    "deck": "C8 ST H8 C9 DJ DA S8 S7 D8 H7 HA D9 HQ SJ CQ CK CA C7 DQ HT HK SK D7 CJ SQ H9 SA HJ S9 DT CT DK",
+    "game": "C",
+    "rate": 0.9,
     "front": 1
    },
    {
     "dealer": 1,
-    "deck": "C7 H9 D7 H8 HA H7 SQ S9 C9 HJ ST DK SA D9 S8 DQ CJ DJ HK SJ S7 HT C8 CA DA DT D8 CK HQ SK CT CQ",
+    "deck": "DT DA HK SK H7 HT S9 H9 C7 DK S8 DQ SQ CT S7 CA CK DJ HJ C9 D9 CQ SA CJ HA SJ D7 D8 C8 HQ ST H8",
+    "game": "S",
+    "rate": 0.875,
+    "front": 0.975
+   },
+   {
+    "dealer": 1,
+    "deck": "D7 D8 SJ H7 S9 S8 DQ DK HA SA CT HJ C8 CA C9 HK D9 S7 CJ CK HQ DJ C7 SK CQ SQ HT DT H9 H8 ST DA",
     "game": "G",
-    "rate": 0.85,
+    "rate": 0.875,
+    "front": 1
+   },
+   {
+    "dealer": 1,
+    "deck": "HA DK CK CQ D9 C8 DQ H9 CJ D7 S7 S9 ST SK CA SJ C7 HQ HJ DA S8 HK H8 C9 DJ H7 SQ D8 DT SA HT CT",
+    "game": "G",
+    "rate": 0.875,
+    "front": 0.975
+   },
+   {
+    "dealer": 1,
+    "deck": "H7 DJ CQ H9 DK SA ST DA C8 S7 SK H8 CA SJ HA HT D9 CK HJ C9 CJ DT CT DQ S9 HQ C7 S8 D8 SQ HK D7",
+    "game": "H",
+    "rate": 0.875,
+    "front": 0.975
+   },
+   {
+    "dealer": 1,
+    "deck": "S7 CT C9 SA H7 H9 HQ DT DQ S9 H8 CQ HT SQ HA SJ D9 HJ DJ ST CJ CA CK DK SK C7 S8 D7 D8 HK C8 DA",
+    "game": "G",
+    "rate": 0.875,
     "front": 0.925
    },
    {
     "dealer": 1,
-    "deck": "HQ CQ C8 ST SJ S8 CJ C7 C9 DT HA SQ H7 SA H8 CA CT HJ H9 D7 D8 S7 DK DA DQ S9 DJ CK D9 HT HK SK",
+    "deck": "CQ SJ DQ H9 DT S8 SA HJ D9 S9 CT H7 H8 CK C8 HA DJ SK HQ C9 SQ HT S7 HK ST D7 D8 C7 DK CA CJ DA",
+    "game": "C",
+    "rate": 0.875,
+    "front": 0.975
+   },
+   {
+    "dealer": 1,
+    "deck": "HJ HA HT D8 H7 C9 S9 H9 ST SA H8 DK CA CJ S7 DA DQ C8 CT DT DJ CK D7 HK D9 SQ HQ S8 C7 CQ SJ SK",
+    "game": "G",
+    "rate": 0.875,
+    "front": 1
+   },
+   {
+    "dealer": 1,
+    "deck": "ST CQ H8 CT S7 S8 CA SQ DJ C9 SA CJ S9 D7 H7 CK DT HK SJ HA HJ HT DQ DK DA D9 HQ SK D8 C8 H9 C7",
     "game": "H",
     "rate": 0.85,
-    "front": 0.975
+    "front": 0.925
    },
    {
     "dealer": 1,
-    "deck": "CA DA CT SK D8 SQ SJ DK CQ CJ S7 S8 HQ DT HK H8 S9 SA DJ ST D9 C9 H7 D7 C8 CK HA C7 DQ H9 HT HJ",
+    "deck": "HA S9 HT H8 D8 D7 SK CQ DK CA H7 SQ SJ D9 DJ DA SA HJ CK C7 H9 CT CJ S7 HQ C8 DQ DT ST C9 HK S8",
+    "game": "S",
+    "rate": 0.85,
+    "front": 0.925
+   },
+   {
+    "dealer": 1,
+    "deck": "HJ DJ D7 DQ C7 H8 CA DK SA D8 SK HK H9 DA S8 CK HT DT SJ CJ C8 HQ HA CQ D9 SQ S9 C9 CT ST H7 S7",
     "game": "H",
+    "rate": 0.85,
+    "front": 0.925
+   },
+   {
+    "dealer": 1,
+    "deck": "DK ST CA HT H7 SQ H9 CT H8 DT S7 SJ S9 D9 DA D8 D7 C8 HK SA C7 CK CQ CJ HA DJ C9 DQ HQ S8 SK HJ",
+    "game": "D",
     "rate": 0.825,
     "front": 0.925
    },
    {
     "dealer": 1,
-    "deck": "C7 DQ CT S7 SJ CQ HQ HA H8 D7 HT HJ DK CA SA CJ SQ C8 DT H9 D9 HK DA S9 SK CK DJ S8 D8 H7 ST C9",
-    "game": "G",
-    "rate": 0.825,
-    "front": 0.925
-   },
-   {
-    "dealer": 1,
-    "deck": "DT CT ST SK D9 S7 SJ S9 H9 DQ HA CA D7 C7 DA H7 H8 C9 CJ HT SQ CQ HQ CK S8 HK HJ C8 DJ D8 SA DK",
-    "game": "G",
-    "rate": 0.825,
-    "front": 0.975
-   },
-   {
-    "dealer": 1,
-    "deck": "CT D8 HQ S7 SJ DA HA H7 DT DQ D7 ST S9 C7 CK SK DJ SQ CA HK H9 DK C8 HJ CJ CQ HT D9 S8 C9 SA H8",
+    "deck": "SA D7 DA SQ CJ C9 HQ DT H8 CK HT SJ C8 HJ DJ DQ H7 ST CA HK D9 HA CT C7 D8 CQ SK S9 H9 DK S7 S8",
     "game": "S",
     "rate": 0.825,
     "front": 0.95
    },
    {
     "dealer": 1,
-    "deck": "S9 H9 H8 DK H7 CJ DA DQ SQ D7 SK ST CK CA SA HJ C7 D8 SJ C9 CT HK DJ DT HT HQ S7 C8 D9 S8 HA CQ",
+    "deck": "ST SK H9 SJ D9 C7 S8 S7 HQ C8 HJ DK HT DA CA CQ CT D8 S9 DJ DT CK C9 D7 SQ HK H8 CJ DQ HA H7 SA",
     "game": "G",
     "rate": 0.825,
-    "front": 0.95
-   },
-   {
-    "dealer": 1,
-    "deck": "DA CQ C7 DT SK CT H7 H9 HQ D7 SA CK HJ S8 H8 CJ CA SQ D8 HK HT SJ HA DQ DJ DK D9 C9 C8 S7 ST S9",
-    "game": "G",
-    "rate": 0.8,
-    "front": 0.975
-   },
-   {
-    "dealer": 1,
-    "deck": "HQ DT HT HA S8 S7 CQ S9 CT D7 SA H9 SJ H8 CA CJ C8 C9 C7 DA SQ DK D9 HK D8 DJ H7 ST DQ HJ CK SK",
-    "game": "G",
-    "rate": 0.8,
-    "front": 0.975
-   },
-   {
-    "dealer": 1,
-    "deck": "SA H7 HT S9 C8 C7 DK H8 SQ CT CJ D7 DJ SK DA CK DT CA HK DQ D8 H9 HQ SJ HJ S8 ST CQ HA S7 D9 C9",
-    "game": "G",
-    "rate": 0.775,
     "front": 0.925
    },
    {
     "dealer": 1,
-    "deck": "S8 CA C8 D7 DQ DT H7 D9 ST HA DJ SQ DK SA C7 H8 SJ CT HT CQ SK H9 D8 CK CJ C9 S9 HK DA HQ S7 HJ",
+    "deck": "H9 SK S9 C7 D9 S8 SA CK CQ HJ ST C8 D7 H7 DT D8 CJ SJ HA S7 CA HK SQ DK CT DJ HQ HT H8 C9 DA DQ",
+    "game": "G",
+    "rate": 0.825,
+    "front": 1
+   },
+   {
+    "dealer": 1,
+    "deck": "H8 CK D7 DA CT DJ C9 H7 HJ C8 D8 SQ CJ SA ST HK HA CQ SJ D9 CA C7 DT S9 DK DQ S7 HT S8 H9 SK HQ",
+    "game": "G",
+    "rate": 0.8,
+    "front": 1
+   },
+   {
+    "dealer": 1,
+    "deck": "D8 D9 HJ DT DK S7 SK CQ CK ST SJ C8 C9 H8 SQ SA CJ C7 H7 CT S8 DJ HQ HK D7 HA DA CA HT H9 S9 DQ",
+    "game": "C",
+    "rate": 0.8,
+    "front": 0.95
+   },
+   {
+    "dealer": 1,
+    "deck": "DJ D7 CQ C7 DT CT D8 H9 SA CA HA DA DK SJ H7 CJ HT H8 S9 S8 ST S7 D9 C8 C9 SK HJ DQ HQ HK SQ CK",
+    "game": "G",
+    "rate": 0.775,
+    "front": 0.975
+   },
+   {
+    "dealer": 1,
+    "deck": "H8 DQ S9 SQ HA C7 D8 HK CJ H7 CQ C8 D7 SK HJ C9 HT SA ST DJ CA HQ S8 D9 DT H9 SJ CT DK DA CK S7",
     "game": "C",
     "rate": 0.775,
     "front": 0.95
    },
    {
     "dealer": 1,
-    "deck": "HK CK C8 DA DJ ST H8 H9 HA DT SQ DQ CT CA CQ S8 SJ S7 C7 CJ HQ C9 D9 D8 SK H7 HJ HT D7 DK SA S9",
+    "deck": "C7 C9 D7 HQ D8 CQ HJ DQ C8 D9 ST DJ S9 CT CA SJ H8 HA SQ HT S7 H9 S8 DT SK CJ SA DA HK CK H7 DK",
     "game": "G",
     "rate": 0.75,
-    "front": 0.975
+    "front": 0.95
    },
    {
     "dealer": 1,
-    "deck": "HK DQ DA HT SJ H8 CT H7 ST D7 CQ CK C9 D8 HQ HJ S9 CA HA SA C8 SK SQ S7 DJ CJ DK DT S8 H9 C7 D9",
+    "deck": "SA S7 CQ H7 C7 D9 SQ CJ SK ST S9 CT C9 H9 D7 SJ C8 HK CK HA DK DQ H8 HT DT DA HJ S8 CA D8 HQ DJ",
     "game": "C",
-    "rate": 0.725,
-    "front": 0.975
+    "rate": 0.7,
+    "front": 0.925
    },
    {
     "dealer": 1,
-    "deck": "H9 SJ C8 DK H7 S7 SQ HK DT SA HQ CJ HJ SK S9 DQ C7 CT C9 CK ST S8 DA HT CQ DJ H8 D9 D8 D7 CA HA",
-    "game": "G",
+    "deck": "H7 DA HJ S7 DJ ST H8 DQ CK DT CJ C7 C8 SJ S9 HA DK CQ D8 SK D9 HK CA HQ S8 D7 CT SA H9 SQ C9 HT",
+    "game": "C",
     "rate": 0.7,
-    "front": 0.975
+    "front": 0.925
    },
    {
     "dealer": 1,
-    "deck": "HT C7 C9 H8 HQ D7 SA S9 DJ SQ DT SK HJ ST CT D8 D9 DA CA DQ HA C8 CQ H7 S7 CJ S8 DK HK CK H9 SJ",
+    "deck": "D8 ST C9 CK D9 H8 CT SK SA SJ SQ DA HT C8 H7 DK DT HA HJ DQ DJ C7 S8 S7 CQ D7 H9 HK CA S9 CJ HQ",
     "game": "G",
-    "rate": 0.7,
+    "rate": 0.625,
     "front": 1
    },
    {
     "dealer": 1,
-    "deck": "CT D8 C8 S8 HK SJ DJ C9 CQ HA DT SA S7 DQ D7 DK S9 CJ C7 DA HT CK H8 H7 HQ H9 SQ D9 ST CA SK HJ",
-    "game": "G",
-    "rate": 0.65,
-    "front": 1
-   },
-   {
-    "dealer": 1,
-    "deck": "D7 C9 S7 D8 C8 C7 SK HA HJ CJ CQ D9 DJ CT DK DA SJ S9 DT CK HT ST DQ H8 SA HK HQ SQ H9 H7 S8 CA",
+    "deck": "DA D9 C7 DJ DT D7 H8 DK CJ CK S9 S7 CQ ST CA S8 SQ D8 SJ HJ HA HQ C8 CT SK C9 DQ HK HT H7 H9 SA",
     "game": "G",
     "rate": 0.5,
-    "front": 1
+    "front": 0.975
    }
   ]
  }

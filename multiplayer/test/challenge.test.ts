@@ -6,7 +6,7 @@ import express from 'express'
 import pg from 'pg'
 import { sameCard } from '../../app/src/lib/skat/cards'
 import { legalFor } from '../../app/src/lib/skat/game'
-import { CHALLENGE_DEALS, CHALLENGE_KINDS, contractOfGame, ofKind, ownSlice } from '../../app/src/lib/skat/challenge'
+import { CHALLENGE_DEALS, CHALLENGE_KINDS, contractOfGame, ofKind, ownSlice, twelveOf } from '../../app/src/lib/skat/challenge'
 import { type DealSummary, gameFromView } from '../../app/src/lib/skat/tournament'
 import { challengePass, challengeRecordRoutes, challengeRoutes, loadChallengePool, passedDeal, redeal } from '../src/challenge'
 import { Store } from '../src/store'
@@ -20,7 +20,7 @@ import { loadPolicy } from '../src/skatzero/policy'
 const DIR = new URL('../skatzero/', import.meta.url)
 const KEY = 'k'.repeat(64)
 
-test('the pool: thirty deals a kind, of the kind, easiest first, rates within 50–90 %', async () => {
+test('the pool: thirty deals a kind, of the kind with the skat picked up, easiest first, rates within 50–90 %', async () => {
   const pool = await loadChallengePool(DIR)
   for (const kind of CHALLENGE_KINDS) {
     const deals = pool.kinds[kind]
@@ -28,7 +28,7 @@ test('the pool: thirty deals a kind, of the kind, easiest first, rates within 50
     for (const [i, d] of deals.entries()) {
       assert.ok(d.rate >= 0.5 && d.rate <= 0.9, `${kind} ${i + 1}: rate ${d.rate}`)
       if (i > 0) assert.ok(deals[i - 1].rate >= d.rate, `${kind}: easiest first`)
-      assert.ok(ofKind(kind, deckOf(d.deck).slice(...ownSlice(d.dealer))), `${kind} ${i + 1}: of its kind`)
+      assert.ok(ofKind(kind, twelveOf(d.dealer, deckOf(d.deck))), `${kind} ${i + 1}: of its kind with the skat`)
       if (kind === 'bad-seat') assert.ok((d.front ?? 0) >= 0.9, `bad seat ${i + 1}: made from forehand`)
     }
   }

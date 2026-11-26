@@ -362,7 +362,9 @@ search entry.
 Hard hands at `/hard-hands` (SKATGO-248, the human: 「要做一个刻意挑战，针对特定的牌型，给出合约，去打」, 「我要新模块难牌挑战」),
 "Hard hands" / "Schwere Blätter", from its own picture card on the front page: hands anyone wins teach little (「谁都能打赢
 BBAA这种牌型」), so these are the hard ones, by kind — a suit game with one Jack (five or six trumps), a suit game with few
-trumps (four or fewer in the ten), a Grand with one Jack, a Null with one weak spot, and a good hand in a bad seat
+trumps (four or fewer), a Grand with one Jack, a Null with one weak spot whichever two are put away, each counted in the
+twelve cards with the skat (SKATGO-249, the human: 「题库按拿底牌后的牌重做」 — the game is set before the skat is seen, so
+the skat must not make it another kind), and a good hand in a bad seat
 (「坏位置的赢牌」: a hand SkatZero makes from forehand at least nine times in ten, played from middlehand) — the player always
 the declarer (「这五种是庄还是防？」). The game is set and said before the skat is picked up; there is no bidding and no Hand; the
 two put away are the player's, then the game is declared for them. Each kind is thirty fixed deals, picked offline from

@@ -445,11 +445,11 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   paragraphs and links, each trick a numbered sub-heading, the ways into the daily tournament and to the
   exercises as links; nothing outside the forum links it (SKATGO-120, the human: 「就放论坛里」). The course lists the advanced course
   and the exercises as option cards under the lessons (SKATGO-234). Hard hands (`challenge-page.tsx`, SKATGO-248) is the
-  advanced course's column: the H1, a lead, its five kinds as the course's option cards (title, one line, then at the card's
+  advanced course's column: the H1, a lead, its six kinds (SKATGO-249: five until then) as the course's option cards (title, one line, then at the card's
   foot its progress, "12 of 30 passed" in `meta`, slate, over a `ProgressBar` — SKATGO-249), each opening its first deal not
   passed at `/hard-hands/play`, then links to the Skat Tricks and the advanced course. Its table
   is the whole screen, free play's table — the bid 18 on the board, the deal "n of 30", no auction in the panel: over the skat
-  step one line, "Dein Spiel: …", and only "Skat aufnehmen", then the discard; the result with the AI's run of the same cards, its foot "Nächstes Spiel" (`go`) and "Dasselbe Blatt noch mal"
+  step one line, "Dein Spiel: …" (the Schneider kind's "Dein Spiel: …, Ziel Schneider", SKATGO-249), and only "Skat aufnehmen", then the discard; the result with the AI's run of the same cards, its foot — for the Schneider kind first one line, "Schneider geschafft: 94 Augen" or "Kein Schneider: 72 Augen, 90 nötig" (SKATGO-249) — "Nächstes Spiel" (`go`) and "Dasselbe Blatt noch mal"
   (`quiet`). The advanced course's page (`advanced-course-page.tsx`) is the
   course's in small: its H1, one line on whom it is for, and its lessons as the course's option cards (title, promise, minutes,
   stars once done); an advanced lesson's page is a course lesson's (`lesson-page.tsx` `AdvancedLessonPage`): the H1, a kicker

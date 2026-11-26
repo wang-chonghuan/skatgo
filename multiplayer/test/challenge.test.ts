@@ -94,6 +94,14 @@ test('passed: won, or lost where the AI lost too; lost where the AI won is not',
   assert.equal(passedDeal({ mine: summary(false), ai: summary(true) }), false)
 })
 
+test('passed, the Schneider kind: Schneider made, or missed where the AI missed it too', () => {
+  const withS = (won: boolean, schneider: boolean): DealSummary => ({ ...summary(won), detail: { value: 0, declarerPoints: schneider ? 95 : 70, defenderPoints: 0, overbid: false, schneider, schwarz: false } })
+  assert.equal(passedDeal({ mine: withS(true, true), ai: withS(true, true) }, 'schneider'), true)
+  assert.equal(passedDeal({ mine: withS(true, false), ai: withS(true, true) }, 'schneider'), false)
+  assert.equal(passedDeal({ mine: withS(true, false), ai: withS(true, false) }, 'schneider'), true)
+  assert.equal(passedDeal({ mine: withS(true, false), ai: withS(true, true) }, 'one-jack-suit'), true)
+})
+
 test('progress: the review records an account\'s pass, a guest\'s is merged, nothing is undone', { timeout: 180_000 }, async (t) => {
   const base = new URL(process.env.DATABASE_URL || '')
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname), 'Tests refuse external databases')

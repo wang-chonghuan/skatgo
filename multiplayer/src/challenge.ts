@@ -4,7 +4,7 @@ import express from 'express'
 import type pg from 'pg'
 import { z } from 'zod'
 import { type Card, sameCard } from '../../app/src/lib/skat/cards'
-import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeGame, type ChallengeKind, type ChallengeProgress, challengeStart, declarationOf, ownSlice } from '../../app/src/lib/skat/challenge'
+import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeGame, type ChallengeKind, type ChallengeProgress, challengeStart, declarationOf, madeAim, ownSlice } from '../../app/src/lib/skat/challenge'
 import { actor, discard, pickUpSkat, roleOf, type Game, type Move, type Seat } from '../../app/src/lib/skat/game'
 import { type DealReview, PLAYER, auctionOf, seatView, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, POSITION, advance, card, decide, judgePlays, playsOf, raw, replayLog, reviewOf } from './computers'
@@ -84,8 +84,12 @@ export async function aiPlays(policy: Policy, dealer: Seat, deck: Card[], game: 
 }
 
 /** A deal is passed when the player made the game, or lost it where SkatZero, with the same cards and game, lost too —
- *  not worse than the AI (SKATGO-249): the hardest deals are lost about half the time however well they are played. */
-export const passedDeal = (review: Pick<DealReview, 'mine' | 'ai'>) => review.mine.won === true || review.ai?.won === false
+ *  not worse than the AI (SKATGO-249): the hardest deals are lost about half the time however well they are played. For
+ *  the Schneider kind the aim is the game with Schneider. */
+export function passedDeal(review: Pick<DealReview, 'mine' | 'ai'>, kind: ChallengeKind = 'one-jack-suit') {
+  const made = (s: DealReview['mine'] | null) => (s ? madeAim(kind, s.won, s.detail?.schneider ?? false) : true)
+  return made(review.mine) || !made(review.ai)
+}
 
 async function progressOf(c: pg.PoolClient | pg.Pool, who: string): Promise<ChallengeProgress> {
   const { rows } = await c.query('SELECT kind, n FROM challenge_passes WHERE player = $1 ORDER BY kind, n', [who])
@@ -238,7 +242,7 @@ export function challengeRoutes(store: Store, admissionKey: string, ready: () =>
     if (end.phase !== 'done') throw new Rejected('not_finished')
     const ai = await aiPlays(policy()!, t.dealer, deck, gameOf(t))
     const review = reviewOf(end, await judgePlays(policy()!, playsOf(t.dealer, deck, t.log, startOf(t))), { ai: summarize(ai), aiAuction: auctionOf(ai) })
-    const passed = passedDeal(review)
+    const passed = passedDeal(review, t.kind)
     if (passed && i.player) {
       await challengePass(store, i.player, { [t.kind]: [t.n] }).catch(() => console.error('challenge_pass_not_recorded'))
     }

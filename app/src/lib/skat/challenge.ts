@@ -8,7 +8,7 @@ import type { Declaration } from './value'
 // (SKATGO-249) — and for SkatZero making it in 50–90 % of
 // the ways the other twenty cards can lie. These rules are shared by the script, the service and the pages.
 
-export const CHALLENGE_KINDS = ['one-jack-suit', 'short-trumps', 'one-jack-grand', 'null-weak-spot', 'bad-seat'] as const
+export const CHALLENGE_KINDS = ['one-jack-suit', 'short-trumps', 'one-jack-grand', 'null-weak-spot', 'bad-seat', 'schneider'] as const
 export type ChallengeKind = (typeof CHALLENGE_KINDS)[number]
 
 /** How many deals each kind has, easiest first (the human: each kind's own fixed deals, 「同意这个方案」). */
@@ -93,13 +93,26 @@ export function ofKind(kind: ChallengeKind, twelve: Card[]): boolean {
     }
     case 'bad-seat':
       return true
+    case 'schneider':
+      return strongGrand(twelve) || trumpsIn(twelve, longestSuit(twelve)) >= 7
   }
 }
+
+/** Three or four Jacks: the Schneider kind's Grand. */
+const strongGrand = (twelve: Card[]) => jacks(twelve) >= 3
+
+/** The Schneider kind (SKATGO-249, the human: 「Schneider 挑战」): a hand anyone wins, so the aim is Schneider — 90 points or
+ *  more — rather than the game alone. */
+export const aimsSchneider = (kind: ChallengeKind) => kind === 'schneider'
+
+/** Whether a declarer's finished deal reached the kind's aim: the game won, and for the Schneider kind with Schneider. */
+export const madeAim = (kind: ChallengeKind, won: boolean | null, schneider: boolean) => won === true && (!aimsSchneider(kind) || schneider)
 
 /** The game a kind is played with, from the twelve cards; the bad seat's comes from the pool (SkatZero's own choice). */
 export function gameOfKind(kind: Exclude<ChallengeKind, 'bad-seat'>, twelve: Card[]): ChallengeGame {
   if (kind === 'one-jack-grand') return 'G'
   if (kind === 'null-weak-spot') return 'N'
+  if (kind === 'schneider' && strongGrand(twelve)) return 'G'
   return longestSuit(twelve)
 }
 

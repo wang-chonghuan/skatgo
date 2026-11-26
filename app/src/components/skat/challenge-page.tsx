@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { type ChallengeReply, challengeAct, challengeAgain, challengeNew, challengeReview } from '~/lib/challenge-api'
 import type { FreeError } from '~/lib/free-api'
-import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeKind, contractOfGame } from '~/lib/skat/challenge'
+import { CHALLENGE_DEALS, CHALLENGE_KINDS, type ChallengeKind, aimsSchneider, contractOfGame } from '~/lib/skat/challenge'
 import { kindProgress, useChallengeProgress } from '~/lib/skat/challenge-progress'
 import type { Move } from '~/lib/skat/game'
 import { type SeatView, gameFromView } from '~/lib/skat/tournament'
@@ -30,6 +30,7 @@ const KIND_TEXT: Record<ChallengeKind, { title: () => string; text: () => string
   'one-jack-grand': { title: m.challenge_kind_one_jack_grand_title, text: m.challenge_kind_one_jack_grand_text },
   'null-weak-spot': { title: m.challenge_kind_null_weak_spot_title, text: m.challenge_kind_null_weak_spot_text },
   'bad-seat': { title: m.challenge_kind_bad_seat_title, text: m.challenge_kind_bad_seat_text },
+  schneider: { title: m.challenge_kind_schneider_title, text: m.challenge_kind_schneider_text },
 }
 
 /** The list: what the module is for, and each kind as the course's option cards with its progress, opening its first deal
@@ -145,11 +146,19 @@ export function ChallengePlayPage() {
         collect: () => setRelease(true),
         next,
         fixed: contractOfGame(reply.game),
+        aim: aimsSchneider(kind) ? 'schneider' : undefined,
         deal: { n, of: reply.of },
         review,
         close,
         done: (
           <div {...stylex.props(styles.foot)}>
+            {aimsSchneider(kind) && game.result ? (
+              <p data-testid="hard-hands-aim" {...stylex.props(typography.appText, styles.title)}>
+                {game.result.won && game.result.declarerPoints >= 90
+                  ? m.challenge_schneider_made({ points: game.result.declarerPoints })
+                  : m.challenge_schneider_missed({ points: game.result.declarerPoints })}
+              </p>
+            ) : null}
             <Btn testId="hard-hands-next" shape="block" size="lg" onClick={next}>{n < reply.of ? m.challenge_next() : m.challenge_back()}</Btn>
             <Btn testId="hard-hands-again" tone="quiet" shape="block" size="lg" onClick={() => void begin(() => challengeAgain(token!))}>{m.challenge_again()}</Btn>
           </div>

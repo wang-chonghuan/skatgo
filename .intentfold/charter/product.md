@@ -364,9 +364,12 @@ Hard hands at `/hard-hands` (SKATGO-248, the human: 「要做一个刻意挑战�
 BBAA这种牌型」), so these are the hard ones, by kind — a suit game with one Jack (five or six trumps), a suit game with few
 trumps (four or fewer), a Grand with one Jack, a Null with one weak spot whichever two are put away, each counted in the
 twelve cards with the skat (SKATGO-249, the human: 「题库按拿底牌后的牌重做」 — the game is set before the skat is seen, so
-the skat must not make it another kind), and a good hand in a bad seat
+the skat must not make it another kind), a good hand in a bad seat
 (「坏位置的赢牌」: a hand SkatZero makes from forehand at least nine times in ten, played from middlehand) — the player always
-the declarer (「这五种是庄还是防？」). The game is set and said before the skat is picked up; there is no bidding and no Hand; the
+the declarer (「这五种是庄还是防？」). A sixth, so the kinds are an even six (SKATGO-249, the human: 「能否改为6个，偶数」, then
+「Schneider 挑战」): Schneider as the aim — a hand anyone wins (three or four Jacks, played as a Grand, or seven trumps or more),
+where the aim is Schneider, 90 points or more, said with the game; its deals are those SkatZero makes with Schneider in
+50–90 %, and passing one is Schneider made, or missed where SkatZero missed it too. The game is set and said before the skat is picked up; there is no bidding and no Hand; the
 two put away are the player's, then the game is declared for them. Each kind is thirty fixed deals, picked offline from
 random ones for the kind's pattern and for SkatZero, declaring the same game, making it in 50–90 % of the ways the other twenty
 cards can lie, spread evenly from the easiest (the highest rate) to the hardest (「同意这个方案」); a deal is opened by its

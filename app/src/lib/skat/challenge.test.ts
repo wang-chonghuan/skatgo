@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { type Card, fullDeck } from './cards'
-import { CHALLENGE_BID, challengeStart, kindProgress, dealerFor, gameOfKind, longestSuit, nullSafe, ofKind, ownSlice } from './challenge'
+import { CHALLENGE_BID, challengeStart, kindProgress, madeAim, dealerFor, gameOfKind, longestSuit, nullSafe, ofKind, ownSlice } from './challenge'
 import { actor, roleOf } from './game'
 
 // Hard hands (SKATGO-248): the kinds' patterns, the games they are played with, and where a deal starts.
@@ -45,6 +45,25 @@ describe('the kinds, with the skat', () => {
     expect(ofKind('null-weak-spot', cards('C7 C9 S8 SK SA H7 H9 D8 DT DQ C8 H8'))).toBe(false)
     // The weak spot put away: the skat's two let the Queen and King of spades go, nothing weak is left.
     expect(ofKind('null-weak-spot', cards('C7 C9 SQ SK H7 H9 HJ D7 D9 DJ C8 H8'))).toBe(false)
+  })
+})
+
+// SKATGO-249: the Schneider kind — a hand anyone wins, its aim Schneider.
+describe('the Schneider kind', () => {
+  it('three or four Jacks is its Grand, seven trumps or more its suit game', () => {
+    const grand = cards('CJ SJ HJ CA CT HA HT S7 S8 D7 D8 H7')
+    expect(ofKind('schneider', grand)).toBe(true)
+    expect(gameOfKind('schneider', grand)).toBe('G')
+    const suit = cards('CJ DJ HA HT HK HQ H9 H8 SA S7 D7 C7')
+    expect(ofKind('schneider', suit)).toBe(true)
+    expect(gameOfKind('schneider', suit)).toBe('H')
+    expect(ofKind('schneider', cards('CJ DJ HA HT HK HQ SA ST S9 S7 D7 C7'))).toBe(false) // six trumps at most
+  })
+  it('its aim is the game with Schneider; other kinds\' the game', () => {
+    expect(madeAim('schneider', true, true)).toBe(true)
+    expect(madeAim('schneider', true, false)).toBe(false)
+    expect(madeAim('one-jack-suit', true, false)).toBe(true)
+    expect(madeAim('one-jack-suit', false, false)).toBe(false)
   })
 })
 

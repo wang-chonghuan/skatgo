@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-247",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-247",
   "branch": "SKATGO-247-forum-one-board",

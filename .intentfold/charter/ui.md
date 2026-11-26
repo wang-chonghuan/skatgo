@@ -334,10 +334,10 @@ Recurring patterns — reuse them rather than inventing a neighbour:
     and articles about Skat." (SKATGO-186) to `/forum`, then "Skat Tricks" (in both languages, SKATGO-234; "Üben" before) with cover B of
     three drawn for it (`practice-card.webp`, a grandfather and a girl over cards, a puzzle piece above, in the forum picture's flat style;
     SKATGO-149, the human: 「把practice放到forum下面」, 「选B」) and "Endspiel-Rätsel, Reizen und mehr – für alle, die die Regeln schon kennen."
-    to `/skat-tricks`, and "Fortgeschrittenenkurs" (SKATGO-234, in the place of SKATGO-204's bidding card) with its own picture in the same
-    flat style, not at a table (`advanced-card.webp`: a young woman leading an older man up a staircase of giant cards to a club flag; the
-    human: 「别搞的跟其他的一样，都是个桌子」, 「不要老人，要两个人，一个老头，一个年轻人」, 「要一男一女那个版本」) and "Vertiefende Lektionen für alle, die die Regeln kennen – je ein Thema." to
-    `/advanced-course` — the two on PC side by side in
+    to `/skat-tricks`, and "Schwere Blätter" (SKATGO-248, in the place of SKATGO-234's advanced course card, which the course's
+    page now leads to: 「我想把高级课程也放到learn里面」, 「各一张卡」) with its own picture in the same flat style, not at a table
+    (`hard-hands-card.webp`, as the advanced course's was: 「别搞的跟其他的一样，都是个桌子」) and "Schwer zu spielende Blätter, das Spiel
+    schon festgelegt – danach siehst du, wie die KI sie gespielt hat." to `/hard-hands` — the two on PC side by side in
     the wide third column (`homeWaysNarrow`), each about as wide as a colour card, under `bp.cards` the next free places. The rules are the footer's; the questions people ask are on About SkatGo (SKATGO-134).
     The page's new tokens — `dims.homeWays`, `homeWaysNarrow`, `homeCard`, the long cards' placement, `homeCurve`,
     `homePicture`, `icon.tile`, `progressCurve` (SKATGO-136) and the roles `homeCardTitle` and `homeTileTitle` — came with the human's pictures, which were the approval (Redline 1).
@@ -444,7 +444,12 @@ Recurring patterns — reuse them rather than inventing a neighbour:
   article of the Skat-Tricks is SkatGo's post in the forum and reads as any post: its headings, short
   paragraphs and links, each trick a numbered sub-heading, the ways into the daily tournament and to the
   exercises as links; nothing outside the forum links it (SKATGO-120, the human: 「就放论坛里」). The course lists the advanced course
-  and the exercises as option cards under the lessons (SKATGO-234). The advanced course's page (`advanced-course-page.tsx`) is the
+  and the exercises as option cards under the lessons (SKATGO-234). Hard hands (`challenge-page.tsx`, SKATGO-248) is the
+  advanced course's column: the H1, a lead, its five kinds as the course's option cards (title, one line), each opening its first deal at
+  `/hard-hands/play`, then links to the Skat Tricks and the advanced course. Its table
+  is the whole screen, free play's table — the bid 18 on the board, the deal "n of 30", no auction in the panel: over the skat
+  step one line, "Dein Spiel: …", and only "Skat aufnehmen", then the discard; the result with the AI's run of the same cards, its foot "Nächstes Spiel" (`go`) and "Dasselbe Blatt noch mal"
+  (`quiet`). The advanced course's page (`advanced-course-page.tsx`) is the
   course's in small: its H1, one line on whom it is for, and its lessons as the course's option cards (title, promise, minutes,
   stars once done); an advanced lesson's page is a course lesson's (`lesson-page.tsx` `AdvancedLessonPage`): the H1, a kicker
   "Fortgeschrittenenkurs, etwa 4 Min.", the promise, the player, the ways on ("Alle Lektionen des Fortgeschrittenenkurses") and

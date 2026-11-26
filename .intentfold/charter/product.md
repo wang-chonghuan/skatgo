@@ -359,9 +359,22 @@ reached: the questions run in order from the first, any before can be done again
 选择后面的题，要从1题开始按顺序做，但是能回到之前的题」). There is no set of ten (「不要10题，你就自然，先不用这个复杂」). It is a
 search entry.
 
+Hard hands at `/hard-hands` (SKATGO-248, the human: 「要做一个刻意挑战，针对特定的牌型，给出合约，去打」, 「我要新模块难牌挑战」),
+"Hard hands" / "Schwere Blätter", from its own picture card on the front page: hands anyone wins teach little (「谁都能打赢
+BBAA这种牌型」), so these are the hard ones, by kind — a suit game with one Jack (five or six trumps), a suit game with few
+trumps (four or fewer in the ten), a Grand with one Jack, a Null with one weak spot, and a good hand in a bad seat
+(「坏位置的赢牌」: a hand SkatZero makes from forehand at least nine times in ten, played from middlehand) — the player always
+the declarer (「这五种是庄还是防？」). The game is set and said before the skat is picked up; there is no bidding and no Hand; the
+two put away are the player's, then the game is declared for them. Each kind is thirty fixed deals, picked offline from
+random ones for the kind's pattern and for SkatZero, declaring the same game, making it in 50–90 % of the ways the other twenty
+cards can lie, spread evenly from the easiest (the highest rate) to the hardest (「同意这个方案」); a deal is opened by its
+number, then the next. After a deal its result stands beside SkatZero's run of the same cards with the same game; the same
+hand can be played again, the player's ten and the skat kept and the other twenty dealt anew. Nothing is counted: no
+record, no XP, no board, no League (SKATGO-248's grill); a guest plays every deal.
+
 An advanced course at `/advanced-course` (SKATGO-234, the human: 「去掉的卡片，新增一个进阶课程，或者高级课程之类的，用来放之前就规划的
-那个书上的专题等」), "Advanced course" / "Fortgeschrittenenkurs", from the front page's picture card in the bidding practice's
-place and from the course's page: one topic a lesson for players who know the rules, after SKATGO-225's plan — the topics
+那个书上的专题等」), "Advanced course" / "Fortgeschrittenenkurs", from the course's page (from the front page's picture card in the
+bidding practice's place until SKATGO-248, the human: 「我想把高级课程也放到learn里面」): one topic a lesson for players who know the rules, after SKATGO-225's plan — the topics
 and their order follow two Skat books' advanced chapters, the text is SkatGo's own, written anew and plainer than the books,
 never their passages, example hands or pictures (the human: 「你要参考他的结构和主题点，顺序，然后要参考原文，重写，不是改写，你重写的
 要比原文更加深入浅出」); each lesson's title and address name the topic people search for, never "lesson n". A lesson plays

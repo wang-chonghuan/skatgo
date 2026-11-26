@@ -7,6 +7,7 @@ import { handleCard, handleDaily } from './lib/daily-handler'
 import { UNAVAILABLE } from './lib/forum-api'
 import { forumSitemap, handleForum } from './lib/forum-handler'
 import { handleFree } from './lib/free-handler'
+import { handleChallenge } from './lib/challenge-handler'
 import { handleLeague } from './lib/league-handler'
 import { handleRoom } from './lib/room-handler'
 import { handleTricks } from './lib/tricks-handler'
@@ -53,6 +54,7 @@ export default {
     const url = new URL(req.url)
     if (url.pathname.startsWith('/api/daily/')) return handleDaily(req)
     if (url.pathname.startsWith('/api/free/')) return handleFree(req)
+    if (url.pathname.startsWith('/api/challenge/')) return handleChallenge(req)
     if (url.pathname.startsWith('/api/room/')) return handleRoom(req)
     if (url.pathname.startsWith('/api/league/')) return handleLeague(req)
     if (url.pathname.startsWith('/api/tricks/')) return handleTricks(req)

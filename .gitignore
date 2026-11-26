@@ -151,3 +151,4 @@ vite.config.ts.timestamp-*
 
 # macOS folder metadata
 .DS_Store
+multiplayer/skatzero/challenge-found.jsonl

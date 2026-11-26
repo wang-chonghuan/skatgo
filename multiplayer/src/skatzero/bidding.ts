@@ -352,3 +352,15 @@ export async function declareAfterPickup(policy: Policy, hand12: ZCard[], positi
   }
   return { mode: best, discard: discards[best]! }
 }
+
+/** SkatZero's two cards to put away for a game it did not choose (SKATGO-248's hard hands, where the game is set): the
+ *  same per-game step `bestGameAndDiscard` takes for each game, for this one game only. */
+export async function discardFor(policy: Policy, hand12: ZCard[], position: number, mode: PickupMode): Promise<[ZCard, ZCard]> {
+  const others = DECK.filter((c) => !hand12.includes(c))
+  const p = prepare(mode, hand12, others)
+  const { values } = await policy.score(p.gametype, state(p, { blindHand: false, discard: { pos: (3 - position) % 3 } }))
+  let arg = 0
+  for (let i = 1; i < values.length; i++) if (values[i] > values[arg]) arg = i
+  const pair = discardPairs(p.hand)[arg]
+  return ('CSH'.includes(mode) && mode.length === 1 ? swapColors(pair, mode, 'D') : pair) as [ZCard, ZCard]
+}

@@ -29,9 +29,9 @@ export function decide<T>(work: Promise<T>): Promise<T> {
 }
 
 /** Each card seat 0 played in a recorded deal, with the deal as it stood just before it (SKATGO-79). */
-export function playsOf(dealer: Seat, deck: Card[], log: Logged[]): { g: Game; card: Card }[] {
+export function playsOf(dealer: Seat, deck: Card[], log: Logged[], start?: Game): { g: Game; card: Card }[] {
   const plays: { g: Game; card: Card }[] = []
-  let g = deal(dealer, deck)
+  let g = start ?? deal(dealer, deck)
   for (const { seat, move } of log) {
     if (g.phase === 'trickEnd') g = collectTrick(g)
     if (seat === PLAYER && move.type === 'play') plays.push({ g, card: move.card })
@@ -80,9 +80,9 @@ export function reviewOf(end: Game, judged: Pick<DealReview, 'differs'>, rest: P
 }
 
 /** A deal as it stands after its recorded moves; finished tricks are collected by rule. No computer is
- *  asked. */
-export function replayLog(dealer: Seat, deck: Card[], log: Logged[]): Game {
-  let g = deal(dealer, deck)
+ *  asked. `start`: a deal that does not begin with the auction — a hard hand's (SKATGO-248). */
+export function replayLog(dealer: Seat, deck: Card[], log: Logged[], start?: Game): Game {
+  let g = start ?? deal(dealer, deck)
   for (const { seat, move } of log) {
     if (g.phase === 'trickEnd') g = collectTrick(g)
     g = applySeatMove(g, seat, move)

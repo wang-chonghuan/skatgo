@@ -267,8 +267,8 @@ const styles = stylex.create({
     display: 'flex',
     justifyContent: 'center',
     minWidth: 0,
-    paddingBlock: { default: space.x32, [bp.phone]: space.x24 },
-    paddingInline: { default: space.x48, [bp.phone]: space.x16 },
+    paddingBlock: { default: space.x24, [bp.phone]: space.x16 },
+    paddingInline: { default: space.x48, [bp.phone]: space.x12 },
   },
   body: { display: 'flex', flexDirection: 'column', gap: space.x10, flexGrow: 1, padding: { default: space.x24, [bp.phone]: space.x16 } },
   // The count and its bar at the card's foot, wherever its words end.

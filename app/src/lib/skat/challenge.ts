@@ -129,3 +129,16 @@ export function kindProgress(passed: ChallengeProgress, kind: ChallengeKind, of 
   while (next <= of && ns.has(next)) next++
   return { done: [...ns].filter((n) => n >= 1 && n <= of).length, next: next > of ? 1 : next }
 }
+
+/**
+ * A typical hand of each kind, the ten as dealt, and its game (SKATGO-250, the human: 「每个图片，用德国传统花色，直接显示一手
+ * 典型的牌」): the picture on the kind's card, sorted as the table sorts it for that game.
+ */
+export const TYPICAL_HANDS: Record<ChallengeKind, { hand: string; game: ChallengeGame }> = {
+  'one-jack-suit': { hand: 'D:J | C:A 10 K 9 8 | S:A K | H:10 | D:7', game: 'C' },
+  'short-trumps': { hand: 'H:J A 10 K | S:A 10 | C:A K | D:8 7', game: 'H' },
+  'one-jack-grand': { hand: 'S:J | C:A 10 K | H:A 10 | S:A 10 | D:A 8', game: 'G' },
+  'null-weak-spot': { hand: 'C:7 8 9 | S:7 9 | H:7 8 9 | D:8 Q', game: 'N' },
+  'bad-seat': { hand: 'C:J | H:J | C:A 10 K Q | S:A | H:A 10 | D:7', game: 'C' },
+  schneider: { hand: 'C:J | S:J | H:J | D:J | C:A 10 K | S:A 10 | H:A', game: 'G' },
+}

@@ -172,10 +172,13 @@ type Props = {
   /** Extra data-* attributes: how a scripted check finds the expected answer without re-deriving the rules. */
   data?: Record<string, string>
   onClick?: () => void
+  /** A picture drawn in one deck whatever the settings say (SKATGO-250: hard hands' stages, German suits). */
+  deck?: Deck
 }
 
-export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glow, verdict, legal, data, onClick }: Props) {
-  const deckChoice = useDeck()
+export function PlayingCard({ card, faceDown, size = 'md', selected, dimmed, glow, verdict, legal, data, onClick, deck: drawnIn }: Props) {
+  const chosen = useDeck()
+  const deckChoice = drawnIn ?? chosen
   const back = useBack()
   const german = deckChoice === 'german'
   const letters = indexOf(card.rank, deckChoice)

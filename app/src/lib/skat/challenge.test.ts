@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { type Card, fullDeck } from './cards'
-import { CHALLENGE_BID, challengeStart, kindProgress, madeAim, dealerFor, gameOfKind, longestSuit, nullSafe, ofKind, ownSlice } from './challenge'
+import { type Card, cards as hand, fullDeck, sortHand } from './cards'
+import { CHALLENGE_BID, CHALLENGE_KINDS, TYPICAL_HANDS, challengeStart, contractOfGame, kindProgress, madeAim, dealerFor, gameOfKind, longestSuit, nullSafe, ofKind, ownSlice } from './challenge'
 import { actor, roleOf } from './game'
 
 // Hard hands (SKATGO-248): the kinds' patterns, the games they are played with, and where a deal starts.
@@ -64,6 +64,23 @@ describe('the Schneider kind', () => {
     expect(madeAim('schneider', true, false)).toBe(false)
     expect(madeAim('one-jack-suit', true, false)).toBe(true)
     expect(madeAim('one-jack-suit', false, false)).toBe(false)
+  })
+})
+
+// SKATGO-250: each kind's picture is a typical hand of it — ten cards, of its kind, its game the kind's.
+describe('the typical hands', () => {
+  it('are ten cards of their kind, played with the kind\'s game', () => {
+    for (const kind of CHALLENGE_KINDS) {
+      const { hand: spec, game } = TYPICAL_HANDS[kind]
+      const ten = hand(spec)
+      expect(ten, kind).toHaveLength(10)
+      expect(new Set(ten.map((c) => c.suit + c.rank)).size, kind).toBe(10)
+      if (kind === 'null-weak-spot') expect(['C', 'S', 'H', 'D'].filter((s) => !nullSafe(ten, s as Card['suit']))).toEqual(['D'])
+      else expect(ofKind(kind, ten), kind).toBe(true)
+      if (kind !== 'bad-seat' && kind !== 'schneider') expect(gameOfKind(kind, ten), kind).toBe(game)
+      expect(sortHand(ten, contractOfGame(game)), kind).toHaveLength(10)
+    }
+    expect(gameOfKind('schneider', hand(TYPICAL_HANDS.schneider.hand))).toBe('G')
   })
 })
 

@@ -1,0 +1,14 @@
+{
+  "ticket": "SKATGO-250",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-250",
+  "branch": "SKATGO-250-hard-hands-art",
+  "base": "d85cf10f2b54402172240701483eea8affa5ddff",
+  "ports": {
+    "web": 55250,
+    "multiplayer": 56250,
+    "database": 57250
+  }
+}

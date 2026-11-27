@@ -18,7 +18,7 @@ import { border, space } from '../../theme/scale.stylex'
 import { dims, radii } from '../../theme/shape.stylex'
 import { typography } from '../../theme/type'
 import { BOT_DELAY, GameTable } from './game-table'
-import { Fan } from './card-row'
+import { PlayingCard } from './playing-card'
 import { TableLoading } from './table-loading'
 import { Btn, Panel, ProgressBar } from './ui'
 
@@ -71,7 +71,13 @@ export function ChallengePage() {
               <li key={kind} {...stylex.props(styles.item)}>
                 <Link to="/hard-hands/play" search={{ kind, n: next }} data-testid="hard-hands-kind" data-kind={kind} {...stylex.props(styles.card)}>
                   <span aria-hidden="true" data-testid="hard-hands-hand" {...stylex.props(styles.stage, stageTints[KIND_TINT[kind]])}>
-                    <Fan cards={handOf(kind)} size="lg" row deck="german" />
+                    <span {...stylex.props(styles.hand)}>
+                      {handOf(kind).map((c, i) => (
+                        <span key={i} {...stylex.props(styles.handCard, i === 9 && styles.handLast)}>
+                          <PlayingCard card={c} size="fill" deck="german" />
+                        </span>
+                      ))}
+                    </span>
                   </span>
                   <span {...stylex.props(styles.body)}>
                     <span {...stylex.props(typography.optionTitle, styles.optionTitle)}>{KIND_TEXT[kind].title()}</span>
@@ -262,14 +268,27 @@ const styles = stylex.create({
     transitionDuration: { default: timing.tile, [bp.reducedMotion]: timing.instant },
     ...focus,
   },
-  // The stage: the hand in one row across the tint, the tint at its sides and over and under it.
+  // The stage: the hand in one row on the tint, only the cards' upper halves showing above its lower edge — centred, the tint
+  // at its sides; on a phone from the left, the last cards running past the right edge.
   stage: {
     display: 'flex',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
+    justifyContent: { default: 'center', [bp.phone]: 'flex-start' },
     minWidth: 0,
-    paddingBlock: { default: space.x24, [bp.phone]: space.x16 },
-    paddingInline: { default: space.x48, [bp.phone]: space.x12 },
+    boxSizing: 'border-box',
+    height: { default: dims.handPictureHeight, [bp.phone]: dims.handPictureHeightPhone },
+    overflow: 'hidden',
+    paddingTop: { default: space.x24, [bp.phone]: space.x16 },
+    paddingInline: { default: space.x48, [bp.phone]: space.x16 },
   },
+  hand: { display: 'flex', flexShrink: 0 },
+  handCard: {
+    display: 'block',
+    flexShrink: 0,
+    width: { default: dims.handPictureCard, [bp.phone]: dims.handPictureCardPhone },
+    marginRight: { default: dims.handPictureOverlap, [bp.phone]: dims.handPictureOverlapPhone },
+  },
+  handLast: { marginRight: 0 },
   body: { display: 'flex', flexDirection: 'column', gap: space.x10, flexGrow: 1, padding: { default: space.x24, [bp.phone]: space.x16 } },
   // The count and its bar at the card's foot, wherever its words end.
   progress: { display: 'flex', flexDirection: 'column', gap: space.x8, marginTop: 'auto', paddingTop: space.x8 },

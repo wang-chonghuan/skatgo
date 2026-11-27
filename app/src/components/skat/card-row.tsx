@@ -3,7 +3,6 @@ import { motion } from 'motion/react'
 
 import { type Card, cardId, legalPlays, sameCard } from '~/lib/skat/cards'
 import type { CardRow } from '~/lib/skat/lessons/types'
-import type { Deck } from '~/lib/skat/settings'
 import { bp } from '../../theme/breakpoints.stylex'
 import { color } from '../../theme/color.stylex'
 import { deal } from '../../theme/constants'
@@ -58,8 +57,6 @@ type FanProps = {
   /** The card table's hand (SKATGO-34): each card carries a shared layout id, so a played card flies
    *  from its place in the hand to the trick, where the table gives it the same id. */
   flight?: boolean
-  /** Drawn in this deck whatever the settings say (SKATGO-250). */
-  deck?: Deck
 }
 
 /**
@@ -70,7 +67,7 @@ type FanProps = {
 /** The shared layout id of a card on its way from the hand to the trick (SKATGO-34). */
 export const flightId = (c: Card) => `flight-${cardId(c)}`
 
-export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [], verdicts = [], badges = [], answer, sequence, testId, row, flight, deck }: FanProps) {
+export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [], verdicts = [], badges = [], answer, sequence, testId, row, flight }: FanProps) {
   const has = (list: Card[], c: Card) => list.some((d) => sameCard(c, d))
   // More than six cards are held as two rows on a phone. At 375px a single row of ten leaves each
   // card a 25px sliver, which a finger cannot hit reliably (measured: a tap on a card's centre landed
@@ -107,7 +104,6 @@ export function Fan({ cards, size = 'lg', onPick, selected = [], legal, glow = [
                 <motion.div layoutId={flight ? flightId(c) : undefined} {...stylex.props(styles.flight, flight && styles.movingCard)}>
                 <PlayingCard
                   card={c}
-                  deck={deck}
                   size={size}
                   onClick={onPick ? () => onPick(c) : undefined}
                   selected={has(selected, c)}

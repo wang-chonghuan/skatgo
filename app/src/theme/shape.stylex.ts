@@ -158,6 +158,16 @@ export const dims = stylex.defineVars({
   cardLg: '96px',
   cardLgPhone: '72px',
   cardAspect: '5 / 7',
+  /** Hard hands' pictures (SKATGO-250, the human: 「其实显示上半部分即可」, then 「给我看看半张的」): a typical hand of ten
+   *  in one row, each card a step past the one before, only its upper half showing above the picture's edge — the card,
+   *  the overlap that leaves a step of 40px (36px on a phone) and the picture's height, its top padding included (24px,
+   *  16px on a phone, and a little over half a card). */
+  handPictureCard: '120px',
+  handPictureCardPhone: '88px',
+  handPictureOverlap: '-80px',
+  handPictureOverlapPhone: '-52px',
+  handPictureHeight: '116px',
+  handPictureHeightPhone: '84px',
   /** The card backs to choose from in the settings (SKATGO-102): as many small cards to a row as fit. */
   backChoices: 'repeat(auto-fill, minmax(52px, 1fr))',
   /** The player against the AI on the record of play (SKATGO-169): the row's name, then the two figures. */

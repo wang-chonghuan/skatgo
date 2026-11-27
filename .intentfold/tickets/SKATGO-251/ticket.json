@@ -1,7 +1,7 @@
 {
   "ticket": "SKATGO-251",
   "mode": "autonomous",
-  "stage": "handoff-ready",
+  "stage": "handed-off",
   "finish": "review",
   "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-251",
   "branch": "SKATGO-251-daily-league-deals",

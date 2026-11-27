@@ -11,8 +11,9 @@ import { summarize } from '../../app/src/lib/skat/tournament'
 import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS } from '../src/model'
 import { Store } from '../src/store'
 import { dayOf } from '../src/daily'
-import { loadPool } from '../src/free'
-import { strongestSeat } from '../src/league-pool'
+import { deckOf, loadPool } from '../src/free'
+import { strongestSeat, turned } from '../src/league-pool'
+import { deal } from '../../app/src/lib/skat/game'
 
 // The League (SKATGO-204, a deal at a time since SKATGO-205) against a real service and a database of its own: the day's
 // check-in, the fee per deal, a table found in five seconds with personas in the empty seats or with another person of the
@@ -218,6 +219,16 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.deepEqual(await call('review', { player: 'user:a', match, deal: 3 }), { status: 409, body: { error: 'no_such_deal' } })
     await call('review', { player: 'user:a', match, deal: 0 })
     assert.equal((await sql.query("SELECT count(*)::int AS n FROM play_deals WHERE player = 'user:a' AND game LIKE 'league:%'")).rows[0].n, 3)
+    // A deal of the day's pool played again from the record (SKATGO-251): the same hand as at the table, from the database.
+    const { rows: [record] } = await sql.query("SELECT game FROM play_deals WHERE player = 'user:a' AND game LIKE 'league:%' ORDER BY game LIMIT 1")
+    const [, keptPool, keptN, keptSeat, keptMatch, keptDeal] = record.game.split(':')
+    assert.equal(keptPool, `league@${today}`)
+    const again = await fetch(`${endpoint}/free/again`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-admission-key': admissionKey }, body: JSON.stringify({ player: 'user:a', game: record.game }) })
+    assert.equal(again.status, 200)
+    const { rows: [table] } = await sql.query('SELECT dealer FROM league_deals WHERE match = $1 AND deal = $2', [keptMatch, Number(keptDeal)])
+    const stored = free.deals[Number(keptN)]
+    const atTable = deal(table.dealer, deckOf(turned(stored, table.dealer).deck)).hands[Number(keptSeat)]
+    assert.deepEqual(((await again.json()) as any).steps[0].hand, atTable)
     assert.equal((await call('review', { player: 'user:c', match, deal: 0 })).status, 409)
 
     // Away at the shared table: a computer plays the seat after the grace; back with a new connection, the seat is theirs

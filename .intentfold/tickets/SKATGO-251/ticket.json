@@ -1,0 +1,10 @@
+{
+  "ticket": "SKATGO-251",
+  "mode": "autonomous",
+  "stage": "handoff-ready",
+  "finish": "review",
+  "worktree": "/Users/yong/work/skatgo-ws/skatgo--SKATGO-251",
+  "branch": "SKATGO-251-daily-league-deals",
+  "base": "0b465d48ca29296a7bf1bced8fc1c57099587d93",
+  "ports": { "web": 55251, "multiplayer": 56251, "database": 57251 }
+}

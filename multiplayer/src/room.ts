@@ -262,7 +262,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         applyAction(s, seat, cmd.action, pick)
         await settleLeague(s, c, scored)
         // A League sitting's next deal, its fees and seats (SKATGO-205), once this made it due.
-        if (s.league && nextDue(s)) await leagueDeal(s, c, pick)
+        if (s.league && nextDue(s)) await leagueDeal(s, c)
         s.seats.forEach((x, i) => { if (sessions[i] && x.session !== sessions[i]) gone.push(sessions[i]!) })
         // A change to the game itself: a move, a deal — not asking for the next deal while others have not (SKATGO-165).
         if (s.game !== before) s.played = s.revision + 1
@@ -361,7 +361,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
         // Nobody online, nothing played (SKATGO-163): the computers do not go on by themselves — but at a League sitting, whose
         // next step comes by itself once nobody here is left to ask for it: the next deal, or the sitting's end (SKATGO-205).
         if (s.league && now >= s.nextActionAt && nextDue(s, now)) {
-          await leagueDeal(s, c, pick, now)
+          await leagueDeal(s, c, now)
           s.seats.forEach((x, i) => { if (sessions[i] && x.session !== sessions[i]) gone.push(sessions[i]!) })
           s.nextActionAt = now + aiDelay
           if (!s.league.finished) s.expiresAt = now + TTL_MS
@@ -450,7 +450,7 @@ export function makeRoom(store: Store, key: string, ready: () => boolean, aiDela
           const scored = s.scored
           applyAction(s, seat as Seat, { type: 'leave' }, pick)
           await settleLeague(s, c, scored)
-          if (s.league && nextDue(s)) await leagueDeal(s, c, pick)
+          if (s.league && nextDue(s)) await leagueDeal(s, c)
           if (session && s.seats[seat].session !== session) gone.push(session)
           if (s.game !== before) s.played = s.revision + 1
           s.nextActionAt = Date.now() + aiDelay

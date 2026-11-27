@@ -104,7 +104,18 @@ Record here only decisions, boundaries, and commands that the repository cannot 
   — `/league/play` waits in the leader's memory up to `MATCH_WAIT_MS` for other accounts of the tier, then fills the seats
   with personas of that tier's band (`population(500)` weakest to strongest by their card-error rates, six equal bands; none
   already at a League table, none with a board activity due within 30 minutes, none under a name a person holds), takes the
-  first deal's fees and stores room and sitting in one transaction, and hosts the room as a restored one. Persona seats bid on the
+  first deal's fees and stores room and sitting in one transaction, and hosts the room as a restored one. Its deals come from
+  the day's pool (SKATGO-251, `multiplayer/src/league-pool.ts`): `league_pool` holds each Berlin day's `LEAGUE_POOL_DEALS`
+  (300) deals — a cryptographic shuffle, a random dealer, every seat's plan as free play's pool keeps it (`poolPlan` in
+  `free.ts`, shared with `scripts/make-free-pool.ts`) and the seat holding the strongest hand (`strongestSeat`) — filled by
+  the leader for today and tomorrow (`prepareLeaguePools`, beside `prepareDays`: at start, then hourly, a deal at a time,
+  each stored as made; about 35–40 s a deal in production). `leagueDealFor` draws a deal none of the table's people has
+  been dealt (`league_seen`, which an account's deletion empties) from today's pool and, while today's is not complete,
+  yesterday's; `chooseDeal` makes each person the one to hold the strongest hand with chance min(1/2, 1/people), and
+  `turned` gives the stored deal to the table's dealer, hands and plans going round with it. None left: forming answers
+  `not_ready`, and a sitting's next deal waits, still due, unpaid. A deal is named `league@<day>` and its number, in
+  `league_deals` and the record's key; the review and free play's "again" read such a deal from `league_pool` (again
+  carrying it in its sealed token, with no prepared odds before the skat), older ones from free play's pool. Persona seats bid on the
   pool's plan and play their cards with their own strength policy, its card errors kept by tier (`TIER_ERRORS`, Legend
   none: SkatZero's cards; measured in the tickets' `calibration.txt`), and publish as players; nobody comes in by number.
   Each deal is scored in the transaction that ended it (`settleLeague`: each person's standing once, their points stored with

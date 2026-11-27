@@ -10,6 +10,9 @@ import { AWAY_MS, CHECKIN_COINS, COINS_MAX, FEES, START_AT, dealPoints, forfeitP
 import { summarize } from '../../app/src/lib/skat/tournament'
 import { type Command, type PrivateView, type PublicView, type Snapshot, GRACE_MS } from '../src/model'
 import { Store } from '../src/store'
+import { dayOf } from '../src/daily'
+import { loadPool } from '../src/free'
+import { strongestSeat } from '../src/league-pool'
 
 // The League (SKATGO-204, a deal at a time since SKATGO-205) against a real service and a database of its own: the day's
 // check-in, the fee per deal, a table found in five seconds with personas in the empty seats or with another person of the
@@ -46,12 +49,20 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
   const rooms: Room<any, any>[] = []
   try {
     server = spawn(process.execPath, ['dist/server.mjs'], {
-      env: { ...process.env, DATABASE_URL: base.href, MULTIPLAYER_ADMISSION_KEY: admissionKey, PORT: String(port), AI_DELAY_MS: '20', APP_VERSION: 'acceptance' },
+      env: { ...process.env, DATABASE_URL: base.href, MULTIPLAYER_ADMISSION_KEY: admissionKey, PORT: String(port), AI_DELAY_MS: '20', APP_VERSION: 'acceptance', LEAGUE_POOL_DEALS: '0' },
       stdio: ['ignore', 'pipe', 'pipe'],
     })
     server.stdout?.on('data', d => { logs += d.toString() })
     server.stderr?.on('data', d => { logs += d.toString() })
     await until(async () => { try { return (await fetch(`${endpoint}/readyz`)).status === 200 } catch { return false } }, 120_000)
+    // Today's League pool (SKATGO-251), laid here from free play's deals rather than worked out for minutes: the service
+    // makes none itself (LEAGUE_POOL_DEALS 0), so it deals only from these.
+    const today = dayOf(Date.now())
+    const free = await loadPool(new URL('../skatzero/', import.meta.url), { odds: false })
+    for (const [n, d] of free.deals.slice(0, 120).entries()) {
+      await sql.query('INSERT INTO league_pool (day, n, dealer, deck, computers, strongest, created_at) VALUES ($1, $2, $3, $4, $5, $6, 0)',
+        [today, n, d.dealer, d.deck, JSON.stringify(d.computers), strongestSeat(d.dealer, [0, 1, 2].map((s) => d.computers[String(s) as '0'].maxBid))])
+    }
 
     const call = async (op: string, body: object) => {
       const r = await fetch(`${endpoint}/league/${op}`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-admission-key': admissionKey }, body: JSON.stringify(body) })
@@ -343,6 +354,14 @@ test('League: check-in, matching, deals scored one by one, leaving, the grace, t
     assert.equal(went.status, 200, JSON.stringify(went.body))
     assert.equal((await snapshot(went.body.room)).seats.filter(p => p.account === 'user:f').length, 1)
     await until(async () => (await sql.query('SELECT 1 FROM multiplayer_rooms WHERE id=$1', [privateTable.room.roomId])).rowCount === 0)
+
+    // Every deal dealt here came from today's pool, and no account was dealt the same deal twice (SKATGO-251).
+    const { rows: pools } = await sql.query(`SELECT DISTINCT pool FROM league_deals WHERE match <> 'board'`)
+    assert.deepEqual(pools.map((r) => r.pool), [`league@${today}`])
+    const { rows: twice } = await sql.query(
+      `SELECT seat, d.pool, d.pool_id FROM league_deals d JOIN league_matches m ON m.id = d.match, jsonb_array_elements_text(m.seats) seat
+        WHERE seat LIKE 'user:%' AND d.match <> 'board' GROUP BY 1, 2, 3 HAVING count(*) > 1`)
+    assert.equal(twice.length, 0, JSON.stringify(twice))
   } catch (e) {
     console.error(logs.slice(-4000))
     throw e

@@ -10,7 +10,7 @@
     "start": "node --env-file-if-exists=.env dist/server.mjs",
     "personas": "node --env-file-if-exists=.env dist/personas.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "node --env-file-if-exists=.env --import tsx --test test/*.test.ts",
+    "test": "LEAGUE_POOL_DEALS=0 node --env-file-if-exists=.env --import tsx --test test/*.test.ts",
     "check": "npm run typecheck && npm run build && npm test"
   },
   "dependencies": {

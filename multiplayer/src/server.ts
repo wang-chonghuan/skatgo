@@ -3,6 +3,7 @@ import express from 'express'
 import { Server, matchMaker } from '@colyseus/core'
 import { WebSocketTransport } from '@colyseus/ws-transport'
 import { dailyRoutes, nameUnnamed, prepareDays } from './daily'
+import { prepareLeaguePools } from './league-pool'
 import { forumRoutes } from './forum'
 import { translateForum } from './translate'
 import { freeRoutes, loadPool } from './free'
@@ -106,11 +107,18 @@ async function elect() {
       // The leader deals today and tomorrow ahead, with the computers' bidding (SKATGO-39); readiness
       // does not wait for it.
       void prepareDays(store, policy!)
+      // And the League's pools of today and tomorrow, each deal with every seat's bidding (SKATGO-251).
+      void prepareLeaguePools(store, policy!)
       // Entries finished before SKATGO-90 without a name go on their boards under one.
       void nameUnnamed(store).catch(() => console.error('daily_naming_failed'))
       // The forum in both languages ahead of its readers (SKATGO-124).
       void translateForum(store).catch(() => console.error('forum_translation_start_failed'))
-      setInterval(() => { if (ready && !stopping) void prepareDays(store, policy!) }, 60 * 60 * 1000).unref()
+      setInterval(() => {
+        if (ready && !stopping) {
+          void prepareDays(store, policy!)
+          void prepareLeaguePools(store, policy!)
+        }
+      }, 60 * 60 * 1000).unref()
       console.log(JSON.stringify({ event: 'ready', version, port }))
       return
     }

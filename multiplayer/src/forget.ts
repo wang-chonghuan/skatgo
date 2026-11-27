@@ -15,6 +15,8 @@ const OWN = [
   'player_avatars', 'forum_mentions',
   // Its hard hands' progress (SKATGO-249).
   'challenge_passes',
+  // Which League deals it has been dealt (SKATGO-251).
+  'league_seen',
 ]
 
 /**

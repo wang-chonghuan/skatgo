@@ -12,7 +12,8 @@ import { auctionOf, summarize } from '../../app/src/lib/skat/tournament'
 import { ComputerFailed, type Logged, advance, computerTurn, judgePlays, playsOf, replayLog, reviewOf } from './computers'
 import { dayOf, nameOf } from './daily'
 import { faceOf } from '../../app/src/lib/forum'
-import { deckOf, plan, poolDealOf, type Pool } from './free'
+import { deckOf, plan, type Pool } from './free'
+import { isLeaguePool, leagueDealFor, leaguePoolDeal } from './league-pool'
 import { Rejected, TTL_MS, dealNext, secretEquals, type PoolDeal, type Slot, type Snapshot } from './model'
 import { MAX_POPULATION, population, type Persona } from './personas/config'
 import { strengthDecisions } from './personas/decisions'
@@ -87,6 +88,9 @@ export async function faceOfPlayer(c: pg.PoolClient, player: string) {
   const { rows } = await c.query('SELECT seed, image_id FROM player_avatars WHERE player = $1', [player])
   return faceOf(rows[0]?.seed, rows[0]?.image_id)
 }
+
+/** The people at a table: each seat an account holds, and the account. */
+const peopleOf = (s: Snapshot) => s.seats.flatMap((x, seat) => (x.account ? [{ seat: seat as Seat, account: x.account }] : []))
 
 /** Two (or however many are asked) personas of the tier free now: at no live League table, with no board activity due
  *  close by, and under a name no person holds. */
@@ -222,7 +226,7 @@ export async function settlePending(s: Snapshot, c: pg.PoolClient, seat: number,
 /** The sitting's next deal (SKATGO-205), once it is due (`nextDue`): a person who left, is away, moved to another tier or
  *  cannot pay gets up — their seat a persona of the tier — and those who stay pay the tier's fee. With nobody left the
  *  sitting ends: finished, its room going in FINISHED_MS. Called in the transaction of the change that made it due. */
-export async function leagueDeal(s: Snapshot, c: pg.PoolClient, pick: (dealer: Seat) => PoolDeal, now = Date.now()) {
+export async function leagueDeal(s: Snapshot, c: pg.PoolClient, now = Date.now()) {
   const l = s.league
   if (!l || !s.game || l.finished) return
   const fee = FEES[l.tier]
@@ -243,15 +247,25 @@ export async function leagueDeal(s: Snapshot, c: pg.PoolClient, pick: (dealer: S
     const [o] = await opponents(c, l.tier, 1, now, s.seats.flatMap((x) => (x.persona ? [x.persona] : [])))
     s.seats[seat] = { account: null, nickname: o.nickname, session: null, disconnectedAt: null, autopilot: true, joinsAt: null, persona: o.id }
   }
-  s.nextBy = []
   if (!staying.length) {
+    s.nextBy = []
     await c.query('UPDATE league_matches SET finished_at = $2 WHERE id = $1 AND finished_at IS NULL', [l.match, now])
     l.finished = true
     s.expiresAt = now + FINISHED_MS
     return
   }
+  // From the day's pool (SKATGO-251). None left for these people yet (only while the first pool is being made): the
+  // deal waits, still due, and the table's next step tries again — nobody pays for a deal not dealt.
+  let d: PoolDeal
+  try {
+    d = await leagueDealFor(c, peopleOf(s), next(s.game.dealer), now)
+  } catch (e) {
+    if (e instanceof Rejected && e.message === 'not_ready') return
+    throw e
+  }
+  s.nextBy = []
   for (const account of staying) await c.query('UPDATE league_players SET coins = coins - $2, updated_at = $3 WHERE player = $1', [account, fee, now])
-  dealNext(s, pick(next(s.game.dealer)))
+  dealNext(s, d)
 }
 
 type Matched = { room: string } | { error: string }
@@ -316,8 +330,7 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
     clearTimeout(g.timer)
     const answer = (p: string, m: Matched) => g.waiters.filter((w) => w.player === p).forEach((w) => w.done(m))
     try {
-      const p = pool()
-      if (!p) throw new Rejected('not_ready')
+      if (!pool()) throw new Rejected('not_ready')
       const now = Date.now()
       const made = await store.transaction(async (c) => {
         const seated: string[] = []
@@ -342,6 +355,8 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
           ;[seats[i], seats[j]] = [seats[j], seats[i]]
         }
         const match = randomBytes(9).toString('base64url')
+        // Each deals once: the first dealer drawn, then round the table; the deal from the day's pool (SKATGO-251).
+        const first = await leagueDealFor(c, seats.flatMap((x, seat) => (x.account ? [{ seat: seat as Seat, account: x.account }] : [])), randomInt(3) as Seat, now)
         let s: Snapshot | null = null
         for (let i = 0; i < 20 && !s; i++) {
           const draft: Snapshot = {
@@ -349,8 +364,7 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
             deals: 0, scored: 0, scores: [0, 0, 0], expiresAt: now + TTL_MS, nextActionAt: now + 1500,
             league: { match, tier: g.tier, current: null },
           }
-          // Each deals once: the first dealer drawn, then round the table.
-          dealNext(draft, poolDealOf(p, randomInt(3) as Seat))
+          dealNext(draft, first)
           if (await store.insert(c, draft)) s = draft
         }
         if (!s) throw new Rejected('room_capacity')
@@ -416,8 +430,9 @@ export function leagueRoutes(store: Store, admissionKey: string, ready: () => bo
     // A deal not seen to its end is no deal of theirs (SKATGO-206): lost, or not counted yet while they are away.
     if ((d.forfeits as number[] | null)?.includes(seat)) throw new Rejected('no_such_deal')
     if (d.points && (d.points as (number | null)[])[seat] === null) throw new Rejected('not_finished')
-    if (d.pool !== p.version) throw new Rejected('no_such_deal')
-    const spec = p.deals[d.pool_id]
+    // A deal of a day's pool (SKATGO-251) as its table dealt it, or one of free play's pool from before.
+    const spec = isLeaguePool(d.pool) ? await leaguePoolDeal(store.pool, d.pool, d.pool_id, d.dealer as Seat) : d.pool === p.version ? p.deals[d.pool_id] : null
+    if (!spec) throw new Rejected('no_such_deal')
     const deck = deckOf(spec.deck)
     const dealer = viewSeat(d.dealer, seat)
     const log = (d.log as Logged[]).map((l) => ({ ...l, seat: viewSeat(l.seat, seat) }))

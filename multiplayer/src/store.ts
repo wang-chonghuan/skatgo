@@ -248,6 +248,16 @@ export class Store {
         -- SKATGO-238 starts each tier at 1000, halfway to the 2000 line (the human: 「1000吧， 好理解」): a new account starts
         -- there; nobody's points change, the lines being where they were.
         ALTER TABLE league_players ALTER COLUMN points SET DEFAULT 1000;
+        -- SKATGO-251: each Berlin day's pool of League deals, made ahead by the leader — dealer (0–2), deck (32 cards as
+        -- free play's pool writes them), every seat's SkatZero bidding, and the seat holding the strongest hand (null when
+        -- all would pass) — and which deal of which pool each account has been dealt, so it never gets one twice.
+        CREATE TABLE IF NOT EXISTS league_pool (
+          day text NOT NULL, n integer NOT NULL, dealer smallint NOT NULL, deck text NOT NULL, computers jsonb NOT NULL,
+          strongest smallint, created_at bigint NOT NULL, PRIMARY KEY (day, n)
+        );
+        CREATE TABLE IF NOT EXISTS league_seen (
+          player text NOT NULL, pool text NOT NULL, pool_id integer NOT NULL, PRIMARY KEY (player, pool, pool_id)
+        );
         -- SKATGO-163 made tables rooms with a number, every seat an account's: the tables of before (schema 2, seats
         -- held by browser tokens) end here; the deploy backs them up first.
         DELETE FROM multiplayer_rooms WHERE snapshot->>'schema' = '2';
